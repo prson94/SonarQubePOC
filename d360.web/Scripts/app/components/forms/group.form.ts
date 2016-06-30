@@ -3,7 +3,7 @@ import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange
 import { NgForm } from '@angular/common';
 import { Button, Editor, Header, InputText,  Dropdown, SelectItem } from 'primeng/primeng';
 import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
-import { FormEvents, FormHelper } from '../../models/form.model';
+import { FormEvents, FormHelper, JsonResult } from '../../models/form.model';
 import { GroupService } from '../../services/group.service';
 import * as _ from 'lodash';
 
@@ -14,7 +14,7 @@ import * as _ from 'lodash';
     directives: [Button, Editor, Header, InputText, Dropdown],
 })
 
-export class GroupForm implements OnInit, OnChanges, FormEvents {
+export class GroupForm implements OnInit, OnChanges, FormEvents { 
     @Input() id: number;
     @Input() title: string = "Edit Group";
     @Output() onComplete = new EventEmitter();
@@ -66,8 +66,29 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     }
 
     private save(): void {
-        this.onComplete.emit(null);
-        //this.onSuccess.emit(null);
-        //this.onError.emit(null);
+        this.isLoading = true;
+        if (this.id > 0) {
+            this.groupService.putGroup(this.model.group)
+                .then(r => {
+                    if (r.type == 'confirm') {
+                        this.onSuccess.emit(this.model.group);
+                    } else if (r.type == 'error') {
+                        this.onError.emit(r);
+                    }
+                    this.isLoading = false;
+                    this.onComplete.emit(null);
+                });
+        } else {
+            this.groupService.postGroup(this.model.group)
+                .then(r => {
+                    if (r.type == 'confirm') {
+                        this.onSuccess.emit(r);
+                    } else if (r.type == 'error') {
+                        this.onError.emit(r);
+                    }
+                    this.isLoading = false;
+                    this.onComplete.emit(null);
+                });
+        }
     }
 }

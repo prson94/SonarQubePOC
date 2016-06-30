@@ -782,17 +782,17 @@ $__System.register("15", ["5", "10", "14"], function(exports_1, context_1) {
           this.addNavItem('Monitor', 'dashboard', null);
           this.addNavItem('Community', 'group', null);
           var admin = this.addNavItem('Administration', 'book', null);
-          this.addSubItem(admin, 'Settings', null, '/a/admin/settings');
-          this.addSubItem(admin, 'Reference Types', null, '/a/admin/domain');
-          this.addSubItem(admin, 'Workflow', null, '/a/admin/workflow');
-          this.addSubItem(admin, 'Templates', null, '/a/admin/templates');
+          this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
+          this.addSubItem(admin, 'Reference Types', null, 'a/admin/domain');
+          this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');
+          this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
           var metaModel = this.addSubItem(admin, 'MetaModel', ' ', null);
-          this.addSubItem(metaModel, 'Artifacts', null, '/a/admin/artifacts');
-          this.addSubItem(metaModel, 'Models', null, '/a/admin/taxonomies');
-          this.addSubItem(metaModel, 'Lookups', null, '/a/admin/lookups');
+          this.addSubItem(metaModel, 'Artifacts', null, 'a/admin/artifacts');
+          this.addSubItem(metaModel, 'Models', null, 'a/admin/taxonomies');
+          this.addSubItem(metaModel, 'Lookups', null, 'a/admin/lookups');
           var security = this.addSubItem(admin, 'Security', ' ', null);
-          this.addSubItem(security, 'Groups', null, '/a/admin/groups');
-          this.addSubItem(security, 'Responsibilities', null, '/a/admin/responsibilities');
+          this.addSubItem(security, 'Groups', null, 'a/admin/groups');
+          this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
           this.sub = this.router.events.subscribe(function(e) {
             if (e instanceof router_1.NavigationEnd) {
               _this.currentRoute = e.url;
@@ -1635,47 +1635,7 @@ $__System.register("2c", ["5", "23", "24", "2d", "2e", "c", "2f", "e", "28"], fu
   };
 });
 
-$__System.register("30", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var GroupSearchResultModel,
-      GroupResourceInfo,
-      Group,
-      ResourceGroup,
-      GroupEditorModel;
-  return {
-    setters: [],
-    execute: function() {
-      GroupSearchResultModel = (function() {
-        function GroupSearchResultModel() {}
-        return GroupSearchResultModel;
-      }());
-      exports_1("GroupSearchResultModel", GroupSearchResultModel);
-      GroupResourceInfo = (function() {
-        function GroupResourceInfo() {}
-        return GroupResourceInfo;
-      }());
-      exports_1("GroupResourceInfo", GroupResourceInfo);
-      Group = (function() {
-        function Group() {}
-        return Group;
-      }());
-      exports_1("Group", Group);
-      ResourceGroup = (function() {
-        function ResourceGroup() {}
-        return ResourceGroup;
-      }());
-      exports_1("ResourceGroup", ResourceGroup);
-      GroupEditorModel = (function() {
-        function GroupEditorModel() {}
-        return GroupEditorModel;
-      }());
-      exports_1("GroupEditorModel", GroupEditorModel);
-    }
-  };
-});
-
-$__System.register("31", ["5", "3", "e", "30", "32", "25", "27", "26"], function(exports_1, context_1) {
+$__System.register("30", ["5", "3", "e", "31", "32", "25", "27", "26"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -1734,24 +1694,58 @@ $__System.register("31", ["5", "3", "e", "30", "32", "25", "27", "26"], function
         }
         GroupMembersTile.prototype.ngOnChanges = function(changes) {
           for (var p in changes) {
-            if (p == 'id') {
+            if (p == 'item') {
+              this.formMode = form_model_1.FormMode.Default;
               this.load();
             }
           }
         };
         GroupMembersTile.prototype.load = function() {
           var _this = this;
-          if (!this.id) {
+          if (!this.item || !this.item.ID) {
             return;
           }
           this.isLoading = true;
-          this.groupService.getGroupResourceList(this.id).then(function(d) {
+          this.groupService.getGroupResourceList(this.item.ID).then(function(d) {
             _this.groupItems = d;
             _this.isLoading = false;
           });
         };
+        GroupMembersTile.prototype.cancel = function() {
+          this.formMode = form_model_1.FormMode.Default;
+        };
+        GroupMembersTile.prototype.save = function() {
+          var _this = this;
+          if (this.selectedResource == "")
+            return;
+          this.isLoading = true;
+          try {
+            var rg = new group_model_1.ResourceGroup();
+            rg.GroupID = this.item.ID;
+            rg.IsOwner = false;
+            rg.ResourceID = parseInt(this.selectedResource);
+          } catch (e) {
+            this.isLoading = false;
+          }
+          this.groupService.postResourceGroup(rg).then(function(r) {
+            _this.load();
+            _this.formMode = form_model_1.FormMode.Default;
+            _this.isLoading = false;
+          });
+        };
+        GroupMembersTile.prototype.select = function(e) {
+          this.selectedRow = e.row;
+        };
         GroupMembersTile.prototype.add = function() {
-          this.formMode = form_model_1.FormMode.Adding;
+          var _this = this;
+          this.isLoading = true;
+          this.groupService.getGroupUserList(this.item.ID).then(function(d) {
+            _this.resourceList = d.resourceList;
+            console.log(d);
+            form_model_1.FormHelper.mapSelectItems(_this.resourceList);
+            _this.formMode = form_model_1.FormMode.Adding;
+            _this.isLoading = false;
+          });
         };
         GroupMembersTile.prototype.delete = function(id) {
           this.formMode = form_model_1.FormMode.Deleting;
@@ -1759,17 +1753,61 @@ $__System.register("31", ["5", "3", "e", "30", "32", "25", "27", "26"], function
             return f.ResourceID == id;
           });
         };
-        __decorate([core_1.Input(), __metadata('design:type', Number)], GroupMembersTile.prototype, "id", void 0);
+        GroupMembersTile.prototype.confirmDelete = function() {
+          this.formMode = form_model_1.FormMode.Default;
+          this.load();
+        };
+        __decorate([core_1.Input(), __metadata('design:type', group_model_1.GroupSearchResultModel)], GroupMembersTile.prototype, "item", void 0);
         __decorate([core_1.Input(), __metadata('design:type', String)], GroupMembersTile.prototype, "title", void 0);
         GroupMembersTile = __decorate([core_1.Component({
           selector: 'd3s-group-members-tile',
-          directives: [primeng_1.DataTable, primeng_1.Column, delete_form_1.DeleteForm, tile_actions_component_1.TileActionsComponent, common_1.NgSwitch, common_1.NgSwitchCase, common_1.NgSwitchDefault],
+          directives: [primeng_1.DataTable, primeng_1.Column, delete_form_1.DeleteForm, tile_actions_component_1.TileActionsComponent, common_1.NgSwitch, common_1.NgSwitchCase, common_1.NgSwitchDefault, primeng_1.Button, primeng_1.Dropdown, delete_form_1.DeleteForm],
           templateUrl: 'scripts/app/components/tiles/group-members.tile.html',
           providers: [group_service_1.GroupService]
         }), __metadata('design:paramtypes', [group_service_1.GroupService])], GroupMembersTile);
         return GroupMembersTile;
       }());
       exports_1("GroupMembersTile", GroupMembersTile);
+    }
+  };
+});
+
+$__System.register("31", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var GroupSearchResultModel,
+      GroupResourceInfo,
+      Group,
+      ResourceGroup,
+      GroupEditorModel;
+  return {
+    setters: [],
+    execute: function() {
+      GroupSearchResultModel = (function() {
+        function GroupSearchResultModel() {}
+        return GroupSearchResultModel;
+      }());
+      exports_1("GroupSearchResultModel", GroupSearchResultModel);
+      GroupResourceInfo = (function() {
+        function GroupResourceInfo() {}
+        return GroupResourceInfo;
+      }());
+      exports_1("GroupResourceInfo", GroupResourceInfo);
+      Group = (function() {
+        function Group() {}
+        return Group;
+      }());
+      exports_1("Group", Group);
+      ResourceGroup = (function() {
+        function ResourceGroup() {}
+        return ResourceGroup;
+      }());
+      exports_1("ResourceGroup", ResourceGroup);
+      GroupEditorModel = (function() {
+        function GroupEditorModel() {}
+        return GroupEditorModel;
+      }());
+      exports_1("GroupEditorModel", GroupEditorModel);
     }
   };
 });
@@ -1848,6 +1886,54 @@ $__System.register("32", ["5", "33", "f", "34"], function(exports_1, context_1) 
             return _this.handleError(err);
           });
         };
+        GroupService.prototype.putGroup = function(group) {
+          var _this = this;
+          return this.http.put('form/Group', group).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GroupService.prototype.postGroup = function(group) {
+          var _this = this;
+          return this.http.post('form/Group', group).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GroupService.prototype.deleteGroup = function(id) {
+          var _this = this;
+          return this.http.delete("form/DeleteGroupByID?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GroupService.prototype.postResourceGroup = function(resourceGroup) {
+          var _this = this;
+          return this.http.post('form/ResourceGroup', resourceGroup).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GroupService.prototype.deleteResourceGroup = function(groupID, resourceID) {
+          var _this = this;
+          return this.http.delete("form/ResourceGroup?groupID=" + groupID + "&resourceID=" + resourceID).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GroupService.prototype.getGroupUserList = function(id) {
+          var _this = this;
+          return this.http.get("form/GetGroupUserList?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
         GroupService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], GroupService);
         return GroupService;
       }(base_service_1.BaseService));
@@ -1856,7 +1942,132 @@ $__System.register("32", ["5", "33", "f", "34"], function(exports_1, context_1) 
   };
 });
 
-$__System.register("35", ["5", "3", "23", "c", "28", "e", "25", "31", "32", "26"], function(exports_1, context_1) {
+$__System.register("35", ["5", "e", "31", "26", "32", "36"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      primeng_1,
+      group_model_1,
+      form_model_1,
+      group_service_1,
+      _;
+  var GroupForm;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(primeng_1_1) {
+      primeng_1 = primeng_1_1;
+    }, function(group_model_1_1) {
+      group_model_1 = group_model_1_1;
+    }, function(form_model_1_1) {
+      form_model_1 = form_model_1_1;
+    }, function(group_service_1_1) {
+      group_service_1 = group_service_1_1;
+    }, function(_1) {
+      _ = _1;
+    }],
+    execute: function() {
+      GroupForm = (function() {
+        function GroupForm(groupService) {
+          this.groupService = groupService;
+          this.title = "Edit Group";
+          this.onComplete = new core_1.EventEmitter();
+          this.onSuccess = new core_1.EventEmitter();
+          this.onError = new core_1.EventEmitter();
+          this.onCancel = new core_1.EventEmitter();
+          this.onLoadComplete = new core_1.EventEmitter();
+          this.isLoading = false;
+          this.model = new group_model_1.GroupEditorModel();
+          this.model.group = new group_model_1.Group();
+        }
+        GroupForm.prototype.ngOnInit = function() {
+          this.initialItem = _.cloneDeep(this.model);
+        };
+        GroupForm.prototype.ngOnChanges = function(changes) {
+          for (var p in changes) {
+            if (p == 'id') {
+              this.load();
+              this.initialItem = _.cloneDeep(this.model);
+            }
+          }
+        };
+        GroupForm.prototype.load = function() {
+          var _this = this;
+          this.isLoading = true;
+          this.groupService.getGroup(this.id).then(function(d) {
+            _this.model = d;
+            form_model_1.FormHelper.mapSelectItems(_this.model.resourceList);
+            _this.onLoadComplete.emit(null);
+            _this.isLoading = false;
+            console.log(_this.model);
+          });
+          this.onLoadComplete.emit(null);
+        };
+        GroupForm.prototype.cancel = function() {
+          this.onCancel.emit(null);
+        };
+        GroupForm.prototype.save = function() {
+          var _this = this;
+          this.isLoading = true;
+          if (this.id > 0) {
+            this.groupService.putGroup(this.model.group).then(function(r) {
+              if (r.type == 'confirm') {
+                _this.onSuccess.emit(_this.model.group);
+              } else if (r.type == 'error') {
+                _this.onError.emit(r);
+              }
+              _this.isLoading = false;
+              _this.onComplete.emit(null);
+            });
+          } else {
+            this.groupService.postGroup(this.model.group).then(function(r) {
+              if (r.type == 'confirm') {
+                _this.onSuccess.emit(r);
+              } else if (r.type == 'error') {
+                _this.onError.emit(r);
+              }
+              _this.isLoading = false;
+              _this.onComplete.emit(null);
+            });
+          }
+        };
+        __decorate([core_1.Input(), __metadata('design:type', Number)], GroupForm.prototype, "id", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], GroupForm.prototype, "title", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], GroupForm.prototype, "onComplete", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], GroupForm.prototype, "onSuccess", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], GroupForm.prototype, "onError", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], GroupForm.prototype, "onCancel", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], GroupForm.prototype, "onLoadComplete", void 0);
+        GroupForm = __decorate([core_1.Component({
+          selector: 'd3s-group-form',
+          templateUrl: 'scripts/app/components/forms/group.form.html',
+          providers: [group_service_1.GroupService],
+          directives: [primeng_1.Button, primeng_1.Editor, primeng_1.Header, primeng_1.InputText, primeng_1.Dropdown]
+        }), __metadata('design:paramtypes', [group_service_1.GroupService])], GroupForm);
+        return GroupForm;
+      }());
+      exports_1("GroupForm", GroupForm);
+    }
+  };
+});
+
+$__System.register("37", ["5", "3", "23", "c", "28", "e", "25", "30", "32", "35", "27", "26"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -1893,6 +2104,8 @@ $__System.register("35", ["5", "3", "23", "c", "28", "e", "25", "31", "32", "26"
       tile_actions_component_1,
       group_members_tile_1,
       group_service_1,
+      group_form_1,
+      delete_form_1,
       form_model_1;
   var AdminGroupsComponent;
   return {
@@ -1914,6 +2127,10 @@ $__System.register("35", ["5", "3", "23", "c", "28", "e", "25", "31", "32", "26"
       group_members_tile_1 = group_members_tile_1_1;
     }, function(group_service_1_1) {
       group_service_1 = group_service_1_1;
+    }, function(group_form_1_1) {
+      group_form_1 = group_form_1_1;
+    }, function(delete_form_1_1) {
+      delete_form_1 = delete_form_1_1;
     }, function(form_model_1_1) {
       form_model_1 = form_model_1_1;
     }],
@@ -1945,24 +2162,30 @@ $__System.register("35", ["5", "3", "23", "c", "28", "e", "25", "31", "32", "26"
           this.formMode = form_model_1.FormMode.Adding;
         };
         AdminGroupsComponent.prototype.edit = function(id) {
-          this.formMode = form_model_1.FormMode.Editing;
           this.selectedRow = this.groupItems.find(function(i) {
             return i.ID == id;
           });
+          this.formMode = form_model_1.FormMode.Editing;
+        };
+        AdminGroupsComponent.prototype.cancel = function() {
+          this.formMode = form_model_1.FormMode.Default;
         };
         AdminGroupsComponent.prototype.delete = function(id) {
-          this.formMode = form_model_1.FormMode.Deleting;
           this.selectedRow = this.groupItems.find(function(i) {
             return i.ID == id;
           });
+          this.formMode = form_model_1.FormMode.Deleting;
         };
         AdminGroupsComponent.prototype.confirmDelete = function() {
           this.formMode = form_model_1.FormMode.Default;
           this.load();
         };
+        AdminGroupsComponent.prototype.select = function(e) {
+          this.selectedRow = e.data;
+        };
         AdminGroupsComponent = __decorate([core_1.Component({
           selector: 'd3s-admin-groups',
-          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, common_1.NgSwitch, common_1.NgSwitchCase, common_1.NgSwitchDefault, group_members_tile_1.GroupMembersTile],
+          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, common_1.NgSwitch, common_1.NgSwitchCase, common_1.NgSwitchDefault, group_members_tile_1.GroupMembersTile, group_form_1.GroupForm, delete_form_1.DeleteForm],
           providers: [group_service_1.GroupService],
           templateUrl: 'scripts/app/components/admin/admin-groups.component.html'
         }), __metadata('design:paramtypes', [group_service_1.GroupService, page_header_service_1.PageHeader, header_breadcrumb_service_1.HeaderBreadcrumbService])], AdminGroupsComponent);
@@ -1973,7 +2196,7 @@ $__System.register("35", ["5", "3", "23", "c", "28", "e", "25", "31", "32", "26"
   };
 });
 
-$__System.register("24", ["5", "36"], function(exports_1, context_1) {
+$__System.register("24", ["5", "38"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -2044,7 +2267,7 @@ $__System.register("24", ["5", "36"], function(exports_1, context_1) {
   };
 });
 
-$__System.register("37", [], function(exports_1, context_1) {
+$__System.register("39", [], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var WorkflowTypeRelationEditorModel,
@@ -2074,7 +2297,7 @@ $__System.register("37", [], function(exports_1, context_1) {
   };
 });
 
-$__System.register("38", ["5", "37", "26", "21", "e", "39", "3a"], function(exports_1, context_1) {
+$__System.register("3a", ["5", "39", "26", "21", "e", "3b", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -2266,7 +2489,7 @@ $__System.register("38", ["5", "37", "26", "21", "e", "39", "3a"], function(expo
   };
 });
 
-$__System.register("3b", ["5", "e"], function(exports_1, context_1) {
+$__System.register("3c", ["5", "e"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -2316,7 +2539,7 @@ $__System.register("3b", ["5", "e"], function(exports_1, context_1) {
   };
 });
 
-$__System.register("3c", ["5", "23", "24", "37", "38", "27", "e", "3b", "c", "39", "28"], function(exports_1, context_1) {
+$__System.register("3d", ["5", "23", "24", "39", "3a", "27", "e", "3c", "c", "3b", "28"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -2472,7 +2695,7 @@ $__System.register("3c", ["5", "23", "24", "37", "38", "27", "e", "3b", "c", "39
   };
 });
 
-$__System.register("3d", ["26"], function(exports_1, context_1) {
+$__System.register("3e", ["26"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -2509,7 +2732,7 @@ $__System.register("3d", ["26"], function(exports_1, context_1) {
   };
 });
 
-$__System.register("3e", ["5", "e", "3d", "3f", "3a"], function(exports_1, context_1) {
+$__System.register("3f", ["5", "e", "3e", "40", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -2618,7 +2841,7 @@ $__System.register("3e", ["5", "e", "3d", "3f", "3a"], function(exports_1, conte
   };
 });
 
-$__System.register("40", ["5", "23", "e", "2e", "41", "c", "3f", "3e", "2d", "27", "25", "28"], function(exports_1, context_1) {
+$__System.register("41", ["5", "23", "e", "2e", "42", "c", "40", "3f", "2d", "27", "25", "28"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -2755,7 +2978,7 @@ $__System.register("40", ["5", "23", "e", "2e", "41", "c", "3f", "3e", "2d", "27
   };
 });
 
-$__System.register("42", [], function(exports_1, context_1) {
+$__System.register("43", [], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var Template;
@@ -2771,7 +2994,7 @@ $__System.register("42", [], function(exports_1, context_1) {
   };
 });
 
-$__System.register("43", ["5", "44", "42", "e", "3a"], function(exports_1, context_1) {
+$__System.register("44", ["5", "45", "43", "e", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -2864,7 +3087,7 @@ $__System.register("43", ["5", "44", "42", "e", "3a"], function(exports_1, conte
   };
 });
 
-$__System.register("45", ["5", "e", "27", "43", "f", "25", "28"], function(exports_1, context_1) {
+$__System.register("46", ["5", "e", "27", "44", "f", "25", "28"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -2984,7 +3207,112 @@ $__System.register("45", ["5", "e", "27", "43", "f", "25", "28"], function(expor
   };
 });
 
-$__System.register("46", ["5", "e", "47", "f", "25", "48", "27"], function(exports_1, context_1) {
+$__System.register("47", ["5", "e", "f", "48", "36"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      primeng_1,
+      index_1,
+      taxonomy_model_1,
+      lodash_1;
+  var AdminTaxonomyLevelEditorComponent;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(primeng_1_1) {
+      primeng_1 = primeng_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(taxonomy_model_1_1) {
+      taxonomy_model_1 = taxonomy_model_1_1;
+    }, function(lodash_1_1) {
+      lodash_1 = lodash_1_1;
+    }],
+    execute: function() {
+      AdminTaxonomyLevelEditorComponent = (function() {
+        function AdminTaxonomyLevelEditorComponent(taxonomiesService) {
+          this.taxonomiesService = taxonomiesService;
+          this.closeClick = new core_1.EventEmitter();
+          this.saveClick = new core_1.EventEmitter();
+          this.action = "Edit";
+          this.availableLevels = [];
+        }
+        AdminTaxonomyLevelEditorComponent.prototype.ngOnInit = function() {
+          if (this.taxonomyLevel != undefined)
+            this.editedTaxonomyLevel = lodash_1.default.cloneDeep(this.taxonomyLevel);
+          else {
+            this.editedTaxonomyLevel = new taxonomy_model_1.TaxonomyLevel();
+            this.action = "New";
+          }
+          this.editedTaxonomyLevel.TaxonomyTypeID = this.taxonomy.ID;
+          this.getUnusedLevels();
+        };
+        AdminTaxonomyLevelEditorComponent.prototype.getUnusedLevels = function() {
+          var _this = this;
+          this.taxonomiesService.getTaxonomyLevels(this.taxonomy).then(function(result) {
+            var levels = [];
+            for (var i = 1; i <= _this.taxonomy.MaximumDepth; i++) {
+              levels.push(i);
+            }
+            for (var i = 0; i < result.length; i++) {
+              var index = levels.map(function(e) {
+                return e;
+              }).indexOf(result[i].Level);
+              console.log(index);
+              levels.splice(index, 1);
+            }
+            for (var i = 0; i < levels.length; i++) {
+              _this.availableLevels.push({
+                label: levels[i].toString(),
+                value: levels[i]
+              });
+            }
+          });
+        };
+        AdminTaxonomyLevelEditorComponent.prototype.update = function() {
+          this.saveClick.emit({
+            level: this.editedTaxonomyLevel,
+            action: this.taxonomyLevel == null ? "new" : "edit"
+          });
+        };
+        AdminTaxonomyLevelEditorComponent.prototype.close = function() {
+          this.closeClick.emit({});
+        };
+        __decorate([core_1.Input(), __metadata('design:type', taxonomy_model_1.TaxonomyLevel)], AdminTaxonomyLevelEditorComponent.prototype, "taxonomyLevel", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', taxonomy_model_1.Taxonomy)], AdminTaxonomyLevelEditorComponent.prototype, "taxonomy", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminTaxonomyLevelEditorComponent.prototype, "closeClick", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminTaxonomyLevelEditorComponent.prototype, "saveClick", void 0);
+        AdminTaxonomyLevelEditorComponent = __decorate([core_1.Component({
+          selector: 'd3s-admin-model-level-editor',
+          template: " \n                <header>{{action}} Level</header>\n                <div class=\"row\">\n                    <div class=\"col l6 s12\">\n                        <div class=\"FieldName\">Name</div>\n                        <div><input type=\"text\" pInputText [(ngModel)]=\"editedTaxonomyLevel.Name\" style=\"width: 100%;\" /></div>\n                    </div>\n                    <div class=\"col l6 s12\" *ngIf=\"taxonomyLevel==null\">\n                        <div class=\"FieldName\">Level</div>\n                        <div><p-dropdown [options]=\"availableLevels\" [(ngModel)]=\"editedTaxonomyLevel.Level\" [style]=\"{width:'100%'}\"></p-dropdown></div>\n                    </div>                    \n                    <div class=\"col s12\">\n                        <div class=\"FieldName\">Description</div>\n                        <p-editor [style]=\"{'height':'150px'}\" [(ngModel)]=\"editedTaxonomyLevel.Description\"></p-editor>\n                    </div>\n                    <div class=\"col s12\">&nbsp;</div>\n                    <div class=\"col s12\">\n                        <button pButton type=\"button\" (click)=\"update()\" label=\"Save\" style=\"width: '150px';\"></button>\n                        <button pButton type=\"button\" (click)=\"close()\" label=\"Close\" style=\"width: '150px';\"></button>\n                    </div>                    \n                </div>\n                ",
+          providers: [index_1.TaxonomiesService],
+          directives: [primeng_1.Button, primeng_1.Editor, primeng_1.InputText, primeng_1.Dropdown]
+        }), __metadata('design:paramtypes', [index_1.TaxonomiesService])], AdminTaxonomyLevelEditorComponent);
+        return AdminTaxonomyLevelEditorComponent;
+      }());
+      exports_1("AdminTaxonomyLevelEditorComponent", AdminTaxonomyLevelEditorComponent);
+      ;
+    }
+  };
+});
+
+$__System.register("49", ["5", "e", "48", "f", "25", "47", "27"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3107,7 +3435,7 @@ $__System.register("46", ["5", "e", "47", "f", "25", "48", "27"], function(expor
   };
 });
 
-$__System.register("49", [], function(exports_1, context_1) {
+$__System.register("4a", [], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var ClaimItem,
@@ -3157,7 +3485,7 @@ $__System.register("49", [], function(exports_1, context_1) {
   };
 });
 
-$__System.register("4a", ["5", "49", "e", "4b"], function(exports_1, context_1) {
+$__System.register("4b", ["5", "4a", "e", "4c"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -3299,7 +3627,7 @@ $__System.register("4a", ["5", "49", "e", "4b"], function(exports_1, context_1) 
   };
 });
 
-$__System.register("41", ["5", "e", "4a", "4b"], function(exports_1, context_1) {
+$__System.register("42", ["5", "e", "4b", "4c"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3380,7 +3708,7 @@ $__System.register("41", ["5", "e", "4a", "4b"], function(exports_1, context_1) 
   };
 });
 
-$__System.register("4c", [], function(exports_1, context_1) {
+$__System.register("4d", [], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var ResponsibilityEditorModel,
@@ -3408,7 +3736,7 @@ $__System.register("4c", [], function(exports_1, context_1) {
   };
 });
 
-$__System.register("4d", ["5", "4c", "26", "21", "e", "4e", "3a"], function(exports_1, context_1) {
+$__System.register("4e", ["5", "4d", "26", "21", "e", "4f", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3553,7 +3881,7 @@ $__System.register("4d", ["5", "4c", "26", "21", "e", "4e", "3a"], function(expo
   };
 });
 
-$__System.register("2e", ["5", "4c", "4d", "27", "e", "4e", "25"], function(exports_1, context_1) {
+$__System.register("2e", ["5", "4d", "4e", "27", "e", "4f", "25"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3671,7 +3999,7 @@ $__System.register("2e", ["5", "4c", "4d", "27", "e", "4e", "25"], function(expo
   };
 });
 
-$__System.register("4f", ["5", "e", "47", "25", "2d", "46", "41", "2e"], function(exports_1, context_1) {
+$__System.register("50", ["5", "e", "48", "25", "2d", "49", "42", "2e"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3735,7 +4063,35 @@ $__System.register("4f", ["5", "e", "47", "25", "2d", "46", "41", "2e"], functio
   };
 });
 
-$__System.register("50", ["5", "e", "f", "47", "3a"], function(exports_1, context_1) {
+$__System.register("48", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var Taxonomy,
+      TaxonomyLevel,
+      TaxonomyClassification;
+  return {
+    setters: [],
+    execute: function() {
+      Taxonomy = (function() {
+        function Taxonomy() {}
+        return Taxonomy;
+      }());
+      exports_1("Taxonomy", Taxonomy);
+      TaxonomyLevel = (function() {
+        function TaxonomyLevel() {}
+        return TaxonomyLevel;
+      }());
+      exports_1("TaxonomyLevel", TaxonomyLevel);
+      TaxonomyClassification = (function() {
+        function TaxonomyClassification() {}
+        return TaxonomyClassification;
+      }());
+      exports_1("TaxonomyClassification", TaxonomyClassification);
+    }
+  };
+});
+
+$__System.register("51", ["5", "e", "f", "48", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -3859,7 +4215,7 @@ $__System.register("50", ["5", "e", "f", "47", "3a"], function(exports_1, contex
   };
 });
 
-$__System.register("51", ["5", "e", "f", "28", "25", "4f", "50", "27"], function(exports_1, context_1) {
+$__System.register("52", ["5", "e", "f", "28", "25", "50", "51", "27"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -4007,7 +4363,7 @@ $__System.register("51", ["5", "e", "f", "28", "25", "4f", "50", "27"], function
   };
 });
 
-$__System.register("52", ["5", "10", "23", "1d"], function(exports_1, context_1) {
+$__System.register("53", ["5", "10", "23", "1d"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -4056,7 +4412,7 @@ $__System.register("52", ["5", "10", "23", "1d"], function(exports_1, context_1)
   };
 });
 
-$__System.register("53", [], function(exports_1, context_1) {
+$__System.register("54", [], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var Breadcrumb;
@@ -4077,7 +4433,7 @@ $__System.register("53", [], function(exports_1, context_1) {
   };
 });
 
-$__System.register("28", ["53"], function(exports_1, context_1) {
+$__System.register("28", ["54"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var breadcrumb_model_1;
@@ -4108,7 +4464,7 @@ $__System.register("28", ["53"], function(exports_1, context_1) {
   };
 });
 
-$__System.register("54", ["5", "e", "55", "56", "3a"], function(exports_1, context_1) {
+$__System.register("55", ["5", "e", "56", "57", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -4318,7 +4674,7 @@ $__System.register("54", ["5", "e", "55", "56", "3a"], function(exports_1, conte
   };
 });
 
-$__System.register("2d", ["5", "e", "55", "56", "25", "54", "27"], function(exports_1, context_1) {
+$__System.register("2d", ["5", "e", "56", "57", "25", "55", "27"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -4432,28 +4788,6 @@ $__System.register("2d", ["5", "e", "55", "56", "25", "54", "27"], function(expo
   };
 });
 
-$__System.register("57", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var Lookup,
-      LookupItem;
-  return {
-    setters: [],
-    execute: function() {
-      Lookup = (function() {
-        function Lookup() {}
-        return Lookup;
-      }());
-      exports_1("Lookup", Lookup);
-      LookupItem = (function() {
-        function LookupItem() {}
-        return LookupItem;
-      }());
-      exports_1("LookupItem", LookupItem);
-    }
-  };
-});
-
 $__System.register("25", ["5"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
@@ -4498,7567 +4832,6 @@ $__System.register("25", ["5"], function(exports_1, context_1) {
         return TileActionsComponent;
       }());
       exports_1("TileActionsComponent", TileActionsComponent);
-    }
-  };
-});
-
-$__System.register("3f", ["5", "33", "34", "f"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      base_service_1,
-      index_1;
-  var ArtifactTypeService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }],
-    execute: function() {
-      ArtifactTypeService = (function(_super) {
-        __extends(ArtifactTypeService, _super);
-        function ArtifactTypeService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ArtifactTypeService.prototype.getArtifactTypeEditor = function(id, parentID) {
-          var _this = this;
-          return this.http.get("form/ArtifactType?parentID=" + parentID + "&id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ArtifactTypeService.prototype.putArtifactType = function(model) {
-          var _this = this;
-          return this.http.put('form/ArtifactType', model).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ArtifactTypeService.prototype.postArtifactType = function(model) {
-          var _this = this;
-          return this.http.post('form/ArtifactType', model).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ArtifactTypeService.prototype.getArtifactTypeTree = function() {
-          var _this = this;
-          return this.http.get('artifacts/types').toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.formTree(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ArtifactTypeService.prototype.findArtifactType = function(tree, id) {
-          for (var i = 0; i < tree.length; i++) {
-            var n;
-            if (tree[i].data.ID == id)
-              return tree[i];
-            if (tree[i].children && tree[i].children.length > 0) {
-              n = this.findArtifactType(tree[i].children, id);
-            }
-            if (n)
-              return n;
-          }
-          return null;
-        };
-        ArtifactTypeService.prototype.formTree = function(data) {
-          var _this = this;
-          var tree = new Array();
-          data.filter(function(d) {
-            return d.ParentID == null;
-          }).forEach(function(d) {
-            tree.push({
-              data: d,
-              children: []
-            });
-          });
-          tree.forEach(function(t) {
-            _this.formTreeR(t, data);
-          });
-          console.log(tree);
-          return tree;
-        };
-        ArtifactTypeService.prototype.formTreeR = function(node, data) {
-          var _this = this;
-          data.filter(function(d) {
-            return d.ParentID == node.data.ID;
-          }).forEach(function(d) {
-            var child = {
-              data: d,
-              children: []
-            };
-            node.children.push(child);
-            _this.formTreeR(child, data);
-          });
-        };
-        ArtifactTypeService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ArtifactTypeService);
-        return ArtifactTypeService;
-      }(base_service_1.BaseService));
-      exports_1("ArtifactTypeService", ArtifactTypeService);
-    }
-  };
-});
-
-$__System.register("4b", ["5", "33", "34", "f"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      base_service_1,
-      index_1;
-  var ClaimsService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }],
-    execute: function() {
-      ClaimsService = (function(_super) {
-        __extends(ClaimsService, _super);
-        function ClaimsService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ClaimsService.prototype.getClaims = function(objectID, objectType) {
-          var _this = this;
-          return this.http.get("/api/ownership/" + objectType + "/" + objectID + "/responsibilitytypes").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ClaimsService.prototype.getClaimsDisplayModel = function(objectID, objectType, responsibilityTypeID) {
-          var _this = this;
-          return this.http.get("parts/ClaimsMatrix?type=" + objectType + "&id=" + objectID + "&responsibilityTypeID=" + responsibilityTypeID).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ClaimsService.prototype.putClaims = function(objectID, objectType, responsibilityTypeID, claims) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var model = {
-            claims: claims,
-            objectType: objectType,
-            objectID: objectID,
-            responsibilityTypeID: responsibilityTypeID
-          };
-          return this.http.put('form/EditClaimsMatrix', JSON.stringify(model), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ClaimsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ClaimsService);
-        return ClaimsService;
-      }(base_service_1.BaseService));
-      exports_1("ClaimsService", ClaimsService);
-    }
-  };
-});
-
-$__System.register("2f", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var DomainService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      DomainService = (function(_super) {
-        __extends(DomainService, _super);
-        function DomainService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        DomainService.prototype.getDomains = function() {
-          var _this = this;
-          return this.http.get('services/domains').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        DomainService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], DomainService);
-        return DomainService;
-      }(base_service_1.BaseService));
-      exports_1("DomainService", DomainService);
-    }
-  };
-});
-
-$__System.register("55", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var FieldDefinition,
-      FieldTypeEditorModel,
-      FieldType,
-      Field,
-      FieldTypeFusionItemEditorModel,
-      FieldTypeItemDisplayFieldEditorModel,
-      FieldTypeRelationItemEditorModel,
-      FieldTypeFusionLookupDefinition,
-      FieldTypeRelationLookupDefinition,
-      FieldTypeRelationLookupDisplayField,
-      FieldTypeFusionLookupDisplayField,
-      Lookups;
-  return {
-    setters: [],
-    execute: function() {
-      FieldDefinition = (function() {
-        function FieldDefinition() {}
-        return FieldDefinition;
-      }());
-      exports_1("FieldDefinition", FieldDefinition);
-      FieldTypeEditorModel = (function() {
-        function FieldTypeEditorModel() {
-          this.FusionItems = new Array();
-          this.LookupTokens = new Array();
-        }
-        return FieldTypeEditorModel;
-      }());
-      exports_1("FieldTypeEditorModel", FieldTypeEditorModel);
-      FieldType = (function() {
-        function FieldType() {}
-        return FieldType;
-      }());
-      exports_1("FieldType", FieldType);
-      Field = (function() {
-        function Field() {}
-        return Field;
-      }());
-      exports_1("Field", Field);
-      FieldTypeFusionItemEditorModel = (function() {
-        function FieldTypeFusionItemEditorModel() {
-          this.DisplayFields = new Array();
-          this.TargetFusionAttributeTypes = new Array();
-          this.FusionDisplayFields = new Array();
-        }
-        return FieldTypeFusionItemEditorModel;
-      }());
-      exports_1("FieldTypeFusionItemEditorModel", FieldTypeFusionItemEditorModel);
-      FieldTypeItemDisplayFieldEditorModel = (function() {
-        function FieldTypeItemDisplayFieldEditorModel() {}
-        return FieldTypeItemDisplayFieldEditorModel;
-      }());
-      exports_1("FieldTypeItemDisplayFieldEditorModel", FieldTypeItemDisplayFieldEditorModel);
-      FieldTypeRelationItemEditorModel = (function() {
-        function FieldTypeRelationItemEditorModel() {}
-        return FieldTypeRelationItemEditorModel;
-      }());
-      exports_1("FieldTypeRelationItemEditorModel", FieldTypeRelationItemEditorModel);
-      FieldTypeFusionLookupDefinition = (function() {
-        function FieldTypeFusionLookupDefinition() {}
-        return FieldTypeFusionLookupDefinition;
-      }());
-      exports_1("FieldTypeFusionLookupDefinition", FieldTypeFusionLookupDefinition);
-      FieldTypeRelationLookupDefinition = (function() {
-        function FieldTypeRelationLookupDefinition() {}
-        return FieldTypeRelationLookupDefinition;
-      }());
-      exports_1("FieldTypeRelationLookupDefinition", FieldTypeRelationLookupDefinition);
-      FieldTypeRelationLookupDisplayField = (function() {
-        function FieldTypeRelationLookupDisplayField() {}
-        return FieldTypeRelationLookupDisplayField;
-      }());
-      exports_1("FieldTypeRelationLookupDisplayField", FieldTypeRelationLookupDisplayField);
-      FieldTypeFusionLookupDisplayField = (function() {
-        function FieldTypeFusionLookupDisplayField() {}
-        return FieldTypeFusionLookupDisplayField;
-      }());
-      exports_1("FieldTypeFusionLookupDisplayField", FieldTypeFusionLookupDisplayField);
-      Lookups = (function() {
-        function Lookups() {
-          this.ReferenceTypes = new Array();
-        }
-        return Lookups;
-      }());
-      exports_1("Lookups", Lookups);
-    }
-  };
-});
-
-$__System.register("56", ["5", "33", "55", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      fields_model_1,
-      index_1,
-      base_service_1;
-  var FieldsService,
-      FtItem;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(fields_model_1_1) {
-      fields_model_1 = fields_model_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      FieldsService = (function(_super) {
-        __extends(FieldsService, _super);
-        function FieldsService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        FieldsService.prototype.getFields = function(objectID, objectType) {
-          var _this = this;
-          return this.http.get("/fields/" + objectType + "/" + objectID + ".json").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getFieldTypeEditor = function(id) {
-          var _this = this;
-          return this.http.get("form/FieldType?id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getFusionLookupDisplayFields = function(id) {
-          var _this = this;
-          return this.http.get("form/FieldType_FusionLookup_DisplayFields?id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getFusionLookupTargetAttributeTypes = function(sourceID, referenceTypeID) {
-          var _this = this;
-          return this.http.get("form/FieldType_FusionLookup_TargetAttributeTypes?s=" + sourceID + "&r=" + referenceTypeID).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getRelationLookupChildIntersectTypes = function(id) {
-          var _this = this;
-          return this.http.get("form/FieldType_RelationLookup_ChildIntersectTypes?id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getRelationLookupDisplayFields = function(id, type, intersectTypeID) {
-          var _this = this;
-          return this.http.get("form/FieldType_RelationLookup_DisplayFields?id=" + id + "&type=" + type + "&intersectTypeID=" + intersectTypeID).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getLookupTokens = function(id, type) {
-          var _this = this;
-          return this.http.get("form/FieldType_Lookup_Tokens?id=" + id + "&type=" + type).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getLookups = function(id, type) {
-          var _this = this;
-          return this.http.get("form/FieldType_Lookups?id=" + id + "&type=" + type).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            var l = new fields_model_1.Lookups();
-            l.DataTypes = _this.ftItemToSelectItem(r.DataTypes);
-            l.FusionAttributeTypes = _this.ftItemToSelectItem(r.FusionAttributeTypes);
-            l.IntersectTypes = _this.ftItemToSelectItem(r.IntersectTypes);
-            l.Lookups = _this.ftItemToSelectItem(r.Lookups);
-            l.Patterns = _this.ftItemToSelectItem(r.Patterns);
-            console.log('Lookups');
-            console.log(l);
-            return l;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getFormData = function(id) {
-          var _this = this;
-          return this.http.get("form/FieldType_FormData?id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getFusionDisplayFields = function(id) {
-          var _this = this;
-          return this.http.get("form/FieldType_FusionLookup_DisplayFields?id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            return _this.ftItemToSelectItem(r);
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.getReferenceTypes = function() {
-          return [{
-            label: 'Self Reference',
-            value: '1'
-          }, {
-            label: 'Parent Reference',
-            value: '2'
-          }, {
-            label: 'Child Reference',
-            value: '3'
-          }, {
-            label: 'Relationship Reference',
-            value: '4'
-          }];
-        };
-        FieldsService.prototype.putFieldType = function(model) {
-          var _this = this;
-          return this.http.put('form/EditFieldType', model).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.postFieldType = function(model) {
-          var _this = this;
-          return this.http.put('form/AddFieldType', model).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.deleteFieldType = function(id) {
-          var _this = this;
-          return this.http.delete("form/DeleteFieldTypeByID?id=" + id).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        FieldsService.prototype.ftItemToSelectItem = function(items) {
-          var s = new Array();
-          items.forEach(function(i) {
-            s.push({
-              label: i.title,
-              value: i.value
-            });
-          });
-          return s;
-        };
-        FieldsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], FieldsService);
-        return FieldsService;
-      }(base_service_1.BaseService));
-      exports_1("FieldsService", FieldsService);
-      FtItem = (function() {
-        function FtItem() {}
-        return FtItem;
-      }());
-    }
-  };
-});
-
-$__System.register("1f", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var ResponsibilityType,
-      ResponsibilityTypeRelation,
-      ResponsibilityTypeGroup;
-  return {
-    setters: [],
-    execute: function() {
-      ResponsibilityType = (function() {
-        function ResponsibilityType() {
-          this.ResponsibilityTypeRelations = [];
-          this.AllocationsList = [];
-        }
-        return ResponsibilityType;
-      }());
-      exports_1("ResponsibilityType", ResponsibilityType);
-      ResponsibilityTypeRelation = (function() {
-        function ResponsibilityTypeRelation() {}
-        return ResponsibilityTypeRelation;
-      }());
-      exports_1("ResponsibilityTypeRelation", ResponsibilityTypeRelation);
-      (function(ResponsibilityTypeGroup) {
-        ResponsibilityTypeGroup[ResponsibilityTypeGroup["People"] = 1] = "People";
-        ResponsibilityTypeGroup[ResponsibilityTypeGroup["Sourcing"] = 2] = "Sourcing";
-      })(ResponsibilityTypeGroup || (ResponsibilityTypeGroup = {}));
-      exports_1("ResponsibilityTypeGroup", ResponsibilityTypeGroup);
-    }
-  };
-});
-
-$__System.register("20", ["5", "33", "1f", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      responsibility_type_model_1,
-      index_1,
-      base_service_1;
-  var ResponsibilityTypeService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(responsibility_type_model_1_1) {
-      responsibility_type_model_1 = responsibility_type_model_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      ResponsibilityTypeService = (function(_super) {
-        __extends(ResponsibilityTypeService, _super);
-        function ResponsibilityTypeService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ResponsibilityTypeService.prototype.getResponsibilityTypes = function() {
-          var _this = this;
-          return this.http.get('api/ownership/types').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityTypeService.prototype.getResponsibilityType = function(id, group) {
-          var _this = this;
-          if (group === void 0) {
-            group = responsibility_type_model_1.ResponsibilityTypeGroup.People;
-          }
-          return this.http.get("form/ResponsibilityType?id=" + id + "&group=" + group).toPromise().then(function(r) {
-            return r.json();
-          }).then(function(r) {
-            var t = new responsibility_type_model_1.ResponsibilityType();
-            t = r.model;
-            t.AllocationsList = r.allocations;
-            t.ResponsibilityTypeRelations = r.selectedAllocations;
-            if (t.ResponsibilityTypeRelations == null)
-              t.ResponsibilityTypeRelations = [];
-            return t;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityTypeService.prototype.putResponsibilityType = function(responsibilityType) {
-          var _this = this;
-          return this.http.put("form/ResponsibilityType", responsibilityType).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityTypeService.prototype.postResponsibilityType = function(responsibilityType) {
-          var _this = this;
-          return this.http.post("form/ResponsibilityType", responsibilityType).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityTypeService.prototype.deleteResponsibilityType = function(id) {
-          var _this = this;
-          return this.http.delete("form/DeleteResponsibilityTypeByID?id=" + id).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityTypeService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ResponsibilityTypeService);
-        return ResponsibilityTypeService;
-      }(base_service_1.BaseService));
-      exports_1("ResponsibilityTypeService", ResponsibilityTypeService);
-    }
-  };
-});
-
-$__System.register("12", ["5"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1;
-  var HeaderActionsService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }],
-    execute: function() {
-      HeaderActionsService = (function() {
-        function HeaderActionsService() {
-          this.showNotifications = true;
-          this.showHelp = true;
-          this.showSearch = true;
-          this.showRaiseIssue = false;
-        }
-        HeaderActionsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], HeaderActionsService);
-        return HeaderActionsService;
-      }());
-      exports_1("HeaderActionsService", HeaderActionsService);
-    }
-  };
-});
-
-$__System.register("c", ["5", "7"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      Subject_1;
-  var HeaderBreadcrumbService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(Subject_1_1) {
-      Subject_1 = Subject_1_1;
-    }],
-    execute: function() {
-      HeaderBreadcrumbService = (function() {
-        function HeaderBreadcrumbService() {
-          this.breadcrumbSource = new Subject_1.Subject();
-          this.breadcrumbClearSource = new Subject_1.Subject();
-          this.breadcrumbs$ = this.breadcrumbSource.asObservable();
-          this.breadcrumbClear$ = this.breadcrumbClearSource.asObservable();
-        }
-        HeaderBreadcrumbService.prototype.showBreadcrumb = function(breadcrumb) {
-          this.breadcrumbSource.next(breadcrumb);
-        };
-        HeaderBreadcrumbService.prototype.clearBreadcrumbs = function() {
-          this.breadcrumbClearSource.next(true);
-        };
-        HeaderBreadcrumbService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], HeaderBreadcrumbService);
-        return HeaderBreadcrumbService;
-      }());
-      exports_1("HeaderBreadcrumbService", HeaderBreadcrumbService);
-    }
-  };
-});
-
-$__System.register("36", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var ObjectDetailService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      ObjectDetailService = (function(_super) {
-        __extends(ObjectDetailService, _super);
-        function ObjectDetailService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ObjectDetailService.prototype.getObjectDetail = function(objectID, objectType) {
-          var _this = this;
-          return this.http.get("api/" + objectType + "/" + objectID + "/detail").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ObjectDetailService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ObjectDetailService);
-        return ObjectDetailService;
-      }(base_service_1.BaseService));
-      exports_1("ObjectDetailService", ObjectDetailService);
-    }
-  };
-});
-
-$__System.register("23", ["5"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1;
-  var PageHeader;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }],
-    execute: function() {
-      PageHeader = (function() {
-        function PageHeader() {}
-        PageHeader = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], PageHeader);
-        return PageHeader;
-      }());
-      exports_1("PageHeader", PageHeader);
-    }
-  };
-});
-
-$__System.register("4e", ["5", "33", "26", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      form_model_1,
-      index_1,
-      base_service_1;
-  var ResponsibilityService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(form_model_1_1) {
-      form_model_1 = form_model_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      ResponsibilityService = (function(_super) {
-        __extends(ResponsibilityService, _super);
-        function ResponsibilityService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ResponsibilityService.prototype.getResponsibilityDetail = function(objectID, objectType, showHidden) {
-          var _this = this;
-          if (showHidden === void 0) {
-            showHidden = true;
-          }
-          return this.http.get("api/" + objectType + "/" + objectID + "/ownership?showHidden=" + showHidden).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            r.forEach(function(i) {
-              return i.ID = i.ResponsibilityID;
-            });
-            return r;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityService.prototype.getResponsibilityItemEditor = function(objectID, objectType, responsibilityID) {
-          var _this = this;
-          return this.http.get("form/Responsibility?responsibilityID=" + responsibilityID + "&id=" + objectID + "&type=" + objectType).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(model) {
-            form_model_1.FormHelper.mapSelectItems(model.resources);
-            form_model_1.FormHelper.mapSelectItems(model.responsibilityTypes);
-            form_model_1.FormHelper.mapSelectItems(model.contexts);
-            if (model.responsibility.ResponsibleObjectType)
-              model.selectedResource = model.responsibility.ResponsibleObjectType + '|' + model.responsibility.ResponsibleObjectID;
-            else
-              model.selectedResource = model.resources[0].value;
-            if (model.responsibility.ResponsibilityTypeID)
-              model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
-            else
-              model.selectedResponsibilityType = model.responsibilityTypes[0].value;
-            model.selectedContexts = model.contexts.filter(function(c) {
-              return c.Selected;
-            }).map(function(c) {
-              return c.value;
-            });
-            return model;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityService.prototype.postResponsibility = function(responsibility) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          return this.http.post('form/responsibility', JSON.stringify(responsibility), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ResponsibilityService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ResponsibilityService);
-        return ResponsibilityService;
-      }(base_service_1.BaseService));
-      exports_1("ResponsibilityService", ResponsibilityService);
-    }
-  };
-});
-
-$__System.register("2b", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var CompanySettingsService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      CompanySettingsService = (function(_super) {
-        __extends(CompanySettingsService, _super);
-        function CompanySettingsService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        CompanySettingsService.prototype.getSettings = function() {
-          var _this = this;
-          return this.http.get('/form/CompanySettings').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        CompanySettingsService.prototype.putSettings = function(companySettings) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        CompanySettingsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], CompanySettingsService);
-        return CompanySettingsService;
-      }(base_service_1.BaseService));
-      exports_1("CompanySettingsService", CompanySettingsService);
-    }
-  };
-});
-
-$__System.register("44", ["5", "33", "34", "17", "58"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      base_service_1,
-      messages_service_1;
-  var TemplatesService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }, function(messages_service_1_1) {
-      messages_service_1 = messages_service_1_1;
-    }, function(_1) {}],
-    execute: function() {
-      TemplatesService = (function(_super) {
-        __extends(TemplatesService, _super);
-        function TemplatesService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-          this.templatesUrl = 'api/templates/tooltip';
-        }
-        TemplatesService.prototype.getTemplates = function() {
-          var _this = this;
-          return this.http.get(this.templatesUrl).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TemplatesService.prototype.getTemplate = function(id) {
-          return this.getTemplates().then(function(templates) {
-            return templates.filter(function(template) {
-              return template.ID === id;
-            })[0];
-          });
-        };
-        TemplatesService.prototype.deleteTemplateById = function(id) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/templates/tooltip/" + id;
-          return this.http.delete(url, headers).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TemplatesService.prototype.putTemplate = function(template) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/EditTooltipTemplateRaw";
-          return this.http.put(url, JSON.stringify(template), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TemplatesService.prototype.postTemplate = function(template) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/AddTooltipTemplateRaw";
-          return this.http.post(url, JSON.stringify(template), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TemplatesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, messages_service_1.MessagesService])], TemplatesService);
-        return TemplatesService;
-      }(base_service_1.BaseService));
-      exports_1("TemplatesService", TemplatesService);
-    }
-  };
-});
-
-$__System.register("39", ["5", "33", "26", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      form_model_1,
-      index_1,
-      base_service_1;
-  var WorkflowService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(form_model_1_1) {
-      form_model_1 = form_model_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      WorkflowService = (function(_super) {
-        __extends(WorkflowService, _super);
-        function WorkflowService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        WorkflowService.prototype.getWorkflows = function() {
-          var _this = this;
-          return this.http.get('/api/workflows/relations').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService.prototype.getWorkflow = function(id, workflowType) {
-          var _this = this;
-          return this.http.get("form/WorkflowAllocation?id=" + id + "&workflowType=" + workflowType).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService.prototype.postWorkflow = function(workflow) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          return this.http.post('form/WorkflowAllocation', JSON.stringify(workflow), {headers: headers}).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService.prototype.deleteWorkflow = function(id) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          return this.http.delete("/form/DeleteWorkflowAllocationByID?id=" + id, headers).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService.prototype.getResponsibilityTypeSelectList = function(id, type) {
-          var _this = this;
-          return this.http.get("/workflow/WorkflowResponsibilityTypeOptions?type=" + type + "&id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            form_model_1.FormHelper.mapSelectItems(r);
-            return r;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService.prototype.getParentTypeSelectList = function(id, type, workflowType) {
-          var _this = this;
-          return this.http.get("/workflow/WorkflowParentTypeOptions?workflowType=" + workflowType + "&type=" + type + "&id=" + id).toPromise().then(function(response) {
-            return response.json();
-          }).then(function(r) {
-            form_model_1.FormHelper.mapSelectItems(r);
-            return r;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        WorkflowService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], WorkflowService);
-        return WorkflowService;
-      }(base_service_1.BaseService));
-      exports_1("WorkflowService", WorkflowService);
-    }
-  };
-});
-
-$__System.register("59", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var TypeaheadSearchService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      TypeaheadSearchService = (function(_super) {
-        __extends(TypeaheadSearchService, _super);
-        function TypeaheadSearchService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        TypeaheadSearchService.prototype.getResults = function(size, term) {
-          var _this = this;
-          return this.http.get("search/typeahead?q=" + term + "&num=" + size + "&t=").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TypeaheadSearchService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], TypeaheadSearchService);
-        return TypeaheadSearchService;
-      }(base_service_1.BaseService));
-      exports_1("TypeaheadSearchService", TypeaheadSearchService);
-    }
-  };
-});
-
-$__System.register("5a", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var TaxonomiesService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      TaxonomiesService = (function(_super) {
-        __extends(TaxonomiesService, _super);
-        function TaxonomiesService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        TaxonomiesService.prototype.getTaxonomies = function() {
-          var _this = this;
-          return this.http.get('/api/catalogs').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.getTaxonomy = function(id) {
-          var _this = this;
-          return this.http.get("/api/catalogs/" + id).toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.getTaxonomyLevels = function(taxonomy) {
-          var _this = this;
-          return this.http.get("/api/TaxonomyType/" + taxonomy.ID + "/levels").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.saveTaxonomyLevel = function(level) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/AddTaxonomyTypeLevelRaw";
-          return this.http.post(url, JSON.stringify(level), {headers: headers}).toPromise().then(function(res) {
-            return res.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.editTaxonomyLevel = function(level) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/EditTaxonomyTypeLevelRaw";
-          return this.http.put(url, JSON.stringify(level), {headers: headers}).toPromise().then(function(res) {
-            return res.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.deleteTaxonomyLevel = function(taxonomyTypeId, taxonomyLevelId) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/TaxonomyType/" + taxonomyTypeId + "/levels/" + taxonomyLevelId;
-          return this.http.delete(url, headers).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.getTaxonomyClassifications = function() {
-          var _this = this;
-          return this.http.get('/api/TaxonomyClassifications').toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService.prototype.saveTaxonomy = function(taxonomy) {
-          if (taxonomy.ID == undefined || !taxonomy.ID) {
-            return this.post(taxonomy);
-          }
-          return this.put(taxonomy);
-        };
-        TaxonomiesService.prototype.updateTaxonomyWithId = function(taxonomy, result) {
-          taxonomy.ID = Number(result.id);
-          return taxonomy;
-        };
-        TaxonomiesService.prototype.post = function(taxonomy) {
-          var headers = new http_1.Headers({'Content-Type': 'application/json'});
-          return this.http.post("form/AddTaxonomyTypeRaw", JSON.stringify(taxonomy), {headers: headers}).toPromise().then(function(res) {
-            return res.json();
-          }).catch(this.handleError);
-        };
-        TaxonomiesService.prototype.put = function(taxonomy) {
-          var headers = new http_1.Headers({'Content-Type': 'application/json'});
-          var url = "form/EditTaxonomyTypeRaw/" + taxonomy.ID;
-          return this.http.put(url, JSON.stringify(taxonomy), {headers: headers}).toPromise().then(function(res) {
-            return res.json();
-          }).catch(this.handleError);
-        };
-        TaxonomiesService.prototype.deleteTaxonomy = function(taxonomyId) {
-          var _this = this;
-          var headers = new http_1.Headers();
-          headers.append('Content-Type', 'application/json');
-          var url = "form/catalogs/" + taxonomyId;
-          return this.http.delete(url, headers).toPromise().catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        TaxonomiesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], TaxonomiesService);
-        return TaxonomiesService;
-      }(base_service_1.BaseService));
-      exports_1("TaxonomiesService", TaxonomiesService);
-    }
-  };
-});
-
-$__System.register("5b", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var ObjectStyleService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      ObjectStyleService = (function(_super) {
-        __extends(ObjectStyleService, _super);
-        function ObjectStyleService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        ObjectStyleService.prototype.getObjectStyle = function(objectID, objectType) {
-          var _this = this;
-          return this.http.get("api/" + objectType + "/" + objectID + "/style").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        ObjectStyleService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ObjectStyleService);
-        return ObjectStyleService;
-      }(base_service_1.BaseService));
-      exports_1("ObjectStyleService", ObjectStyleService);
-    }
-  };
-});
-
-$__System.register("5c", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var LookupService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      LookupService = (function(_super) {
-        __extends(LookupService, _super);
-        function LookupService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        LookupService.prototype.getLookups = function() {
-          var _this = this;
-          return this.http.get('resources/_Lookups').toPromise().then(function(response) {
-            return response.json().results;
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        LookupService.prototype.deleteLookup = function(lookupId) {};
-        LookupService.prototype.getLookupItems = function(lookup) {
-          var _this = this;
-          return this.http.get("resources/lookups/" + lookup.ID + "/items.json").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        LookupService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], LookupService);
-        return LookupService;
-      }(base_service_1.BaseService));
-      exports_1("LookupService", LookupService);
-    }
-  };
-});
-
-$__System.register("5d", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var SiteMessage;
-  return {
-    setters: [],
-    execute: function() {
-      SiteMessage = (function() {
-        function SiteMessage(summary, detail) {
-          this.summary = summary;
-          this.detail = detail;
-        }
-        return SiteMessage;
-      }());
-      exports_1("SiteMessage", SiteMessage);
-    }
-  };
-});
-
-$__System.register("17", ["5", "7", "5d"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      Subject_1,
-      site_message_model_1;
-  var MessagesService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(Subject_1_1) {
-      Subject_1 = Subject_1_1;
-    }, function(site_message_model_1_1) {
-      site_message_model_1 = site_message_model_1_1;
-    }],
-    execute: function() {
-      MessagesService = (function() {
-        function MessagesService() {
-          this.errorMessageSource = new Subject_1.Subject();
-          this.infoMessageSource = new Subject_1.Subject();
-          this.errorMessage$ = this.errorMessageSource.asObservable();
-          this.infoMessage$ = this.infoMessageSource.asObservable();
-        }
-        MessagesService.prototype.showError = function(summary, detail) {
-          this.errorMessageSource.next(new site_message_model_1.SiteMessage(summary, detail));
-        };
-        MessagesService.prototype.showInfoMessage = function(summary, detail) {
-          this.infoMessageSource.next(new site_message_model_1.SiteMessage(summary, detail));
-        };
-        MessagesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], MessagesService);
-        return MessagesService;
-      }());
-      exports_1("MessagesService", MessagesService);
-    }
-  };
-});
-
-$__System.register("34", ["5", "58", "17"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      messages_service_1;
-  var BaseService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(_1) {}, function(messages_service_1_1) {
-      messages_service_1 = messages_service_1_1;
-    }],
-    execute: function() {
-      BaseService = (function() {
-        function BaseService(messages) {
-          this.messages = messages;
-        }
-        BaseService.prototype.handleError = function(error) {
-          console.error('An error occurred', error);
-          this.messages.showError('Error', error.toString());
-          return Promise.reject(error.message || error);
-        };
-        BaseService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [messages_service_1.MessagesService])], BaseService);
-        return BaseService;
-      }());
-      exports_1("BaseService", BaseService);
-    }
-  };
-});
-
-$__System.register("5e", ["5", "33", "f", "34"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __extends = (this && this.__extends) || function(d, b) {
-    for (var p in b)
-      if (b.hasOwnProperty(p))
-        d[p] = b[p];
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      http_1,
-      index_1,
-      base_service_1;
-  var GridDefinitionService;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(http_1_1) {
-      http_1 = http_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(base_service_1_1) {
-      base_service_1 = base_service_1_1;
-    }],
-    execute: function() {
-      GridDefinitionService = (function(_super) {
-        __extends(GridDefinitionService, _super);
-        function GridDefinitionService(http, messagesService) {
-          _super.call(this, messagesService);
-          this.http = http;
-        }
-        GridDefinitionService.prototype.getGridDefinition = function(objectID, objectType) {
-          var _this = this;
-          return this.http.get("api/" + objectType + "/" + objectID + "/grid/definition").toPromise().then(function(response) {
-            return response.json();
-          }).catch(function(err) {
-            return _this.handleError(err);
-          });
-        };
-        GridDefinitionService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], GridDefinitionService);
-        return GridDefinitionService;
-      }(base_service_1.BaseService));
-      exports_1("GridDefinitionService", GridDefinitionService);
-    }
-  };
-});
-
-$__System.register("f", ["17", "3f", "4b", "2f", "56", "20", "12", "c", "36", "23", "4e", "2b", "44", "39", "59", "5a", "5b", "5c", "5e"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  function exportStar_1(m) {
-    var exports = {};
-    for (var n in m) {
-      if (n !== "default")
-        exports[n] = m[n];
-    }
-    exports_1(exports);
-  }
-  return {
-    setters: [function(messages_service_1_1) {
-      exportStar_1(messages_service_1_1);
-    }, function(artifact_type_service_1_1) {
-      exportStar_1(artifact_type_service_1_1);
-    }, function(claims_service_1_1) {
-      exportStar_1(claims_service_1_1);
-    }, function(domain_service_1_1) {
-      exportStar_1(domain_service_1_1);
-    }, function(fields_service_1_1) {
-      exportStar_1(fields_service_1_1);
-    }, function(responsibility_type_service_1_1) {
-      exportStar_1(responsibility_type_service_1_1);
-    }, function(header_actions_service_1_1) {
-      exportStar_1(header_actions_service_1_1);
-    }, function(header_breadcrumb_service_1_1) {
-      exportStar_1(header_breadcrumb_service_1_1);
-    }, function(object_detail_service_1_1) {
-      exportStar_1(object_detail_service_1_1);
-    }, function(page_header_service_1_1) {
-      exportStar_1(page_header_service_1_1);
-    }, function(responsibility_service_1_1) {
-      exportStar_1(responsibility_service_1_1);
-    }, function(settings_service_1_1) {
-      exportStar_1(settings_service_1_1);
-    }, function(templates_service_1_1) {
-      exportStar_1(templates_service_1_1);
-    }, function(workflow_service_1_1) {
-      exportStar_1(workflow_service_1_1);
-    }, function(typeahead_search_service_1_1) {
-      exportStar_1(typeahead_search_service_1_1);
-    }, function(taxonomies_service_1_1) {
-      exportStar_1(taxonomies_service_1_1);
-    }, function(object_style_service_1_1) {
-      exportStar_1(object_style_service_1_1);
-    }, function(lookup_service_1_1) {
-      exportStar_1(lookup_service_1_1);
-    }, function(grid_definition_service_1_1) {
-      exportStar_1(grid_definition_service_1_1);
-    }],
-    execute: function() {}
-  };
-});
-
-$__System.register("47", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var Taxonomy,
-      TaxonomyLevel,
-      TaxonomyClassification;
-  return {
-    setters: [],
-    execute: function() {
-      Taxonomy = (function() {
-        function Taxonomy() {}
-        return Taxonomy;
-      }());
-      exports_1("Taxonomy", Taxonomy);
-      TaxonomyLevel = (function() {
-        function TaxonomyLevel() {}
-        return TaxonomyLevel;
-      }());
-      exports_1("TaxonomyLevel", TaxonomyLevel);
-      TaxonomyClassification = (function() {
-        function TaxonomyClassification() {}
-        return TaxonomyClassification;
-      }());
-      exports_1("TaxonomyClassification", TaxonomyClassification);
-    }
-  };
-});
-
-(function() {
-var define = $__System.amdDefine;
-;
-(function() {
-  var undefined;
-  var VERSION = '4.13.1';
-  var LARGE_ARRAY_SIZE = 200;
-  var FUNC_ERROR_TEXT = 'Expected a function';
-  var HASH_UNDEFINED = '__lodash_hash_undefined__';
-  var PLACEHOLDER = '__lodash_placeholder__';
-  var BIND_FLAG = 1,
-      BIND_KEY_FLAG = 2,
-      CURRY_BOUND_FLAG = 4,
-      CURRY_FLAG = 8,
-      CURRY_RIGHT_FLAG = 16,
-      PARTIAL_FLAG = 32,
-      PARTIAL_RIGHT_FLAG = 64,
-      ARY_FLAG = 128,
-      REARG_FLAG = 256,
-      FLIP_FLAG = 512;
-  var UNORDERED_COMPARE_FLAG = 1,
-      PARTIAL_COMPARE_FLAG = 2;
-  var DEFAULT_TRUNC_LENGTH = 30,
-      DEFAULT_TRUNC_OMISSION = '...';
-  var HOT_COUNT = 150,
-      HOT_SPAN = 16;
-  var LAZY_FILTER_FLAG = 1,
-      LAZY_MAP_FLAG = 2,
-      LAZY_WHILE_FLAG = 3;
-  var INFINITY = 1 / 0,
-      MAX_SAFE_INTEGER = 9007199254740991,
-      MAX_INTEGER = 1.7976931348623157e+308,
-      NAN = 0 / 0;
-  var MAX_ARRAY_LENGTH = 4294967295,
-      MAX_ARRAY_INDEX = MAX_ARRAY_LENGTH - 1,
-      HALF_MAX_ARRAY_LENGTH = MAX_ARRAY_LENGTH >>> 1;
-  var argsTag = '[object Arguments]',
-      arrayTag = '[object Array]',
-      boolTag = '[object Boolean]',
-      dateTag = '[object Date]',
-      errorTag = '[object Error]',
-      funcTag = '[object Function]',
-      genTag = '[object GeneratorFunction]',
-      mapTag = '[object Map]',
-      numberTag = '[object Number]',
-      objectTag = '[object Object]',
-      promiseTag = '[object Promise]',
-      regexpTag = '[object RegExp]',
-      setTag = '[object Set]',
-      stringTag = '[object String]',
-      symbolTag = '[object Symbol]',
-      weakMapTag = '[object WeakMap]',
-      weakSetTag = '[object WeakSet]';
-  var arrayBufferTag = '[object ArrayBuffer]',
-      dataViewTag = '[object DataView]',
-      float32Tag = '[object Float32Array]',
-      float64Tag = '[object Float64Array]',
-      int8Tag = '[object Int8Array]',
-      int16Tag = '[object Int16Array]',
-      int32Tag = '[object Int32Array]',
-      uint8Tag = '[object Uint8Array]',
-      uint8ClampedTag = '[object Uint8ClampedArray]',
-      uint16Tag = '[object Uint16Array]',
-      uint32Tag = '[object Uint32Array]';
-  var reEmptyStringLeading = /\b__p \+= '';/g,
-      reEmptyStringMiddle = /\b(__p \+=) '' \+/g,
-      reEmptyStringTrailing = /(__e\(.*?\)|\b__t\)) \+\n'';/g;
-  var reEscapedHtml = /&(?:amp|lt|gt|quot|#39|#96);/g,
-      reUnescapedHtml = /[&<>"'`]/g,
-      reHasEscapedHtml = RegExp(reEscapedHtml.source),
-      reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
-  var reEscape = /<%-([\s\S]+?)%>/g,
-      reEvaluate = /<%([\s\S]+?)%>/g,
-      reInterpolate = /<%=([\s\S]+?)%>/g;
-  var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
-      reIsPlainProp = /^\w*$/,
-      rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(\.|\[\])(?:\4|$))/g;
-  var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
-      reHasRegExpChar = RegExp(reRegExpChar.source);
-  var reTrim = /^\s+|\s+$/g,
-      reTrimStart = /^\s+/,
-      reTrimEnd = /\s+$/;
-  var reBasicWord = /[a-zA-Z0-9]+/g;
-  var reEscapeChar = /\\(\\)?/g;
-  var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
-  var reFlags = /\w*$/;
-  var reHasHexPrefix = /^0x/i;
-  var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-  var reIsBinary = /^0b[01]+$/i;
-  var reIsHostCtor = /^\[object .+?Constructor\]$/;
-  var reIsOctal = /^0o[0-7]+$/i;
-  var reIsUint = /^(?:0|[1-9]\d*)$/;
-  var reLatin1 = /[\xc0-\xd6\xd8-\xde\xdf-\xf6\xf8-\xff]/g;
-  var reNoMatch = /($^)/;
-  var reUnescapedString = /['\n\r\u2028\u2029\\]/g;
-  var rsAstralRange = '\\ud800-\\udfff',
-      rsComboMarksRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
-      rsComboSymbolsRange = '\\u20d0-\\u20f0',
-      rsDingbatRange = '\\u2700-\\u27bf',
-      rsLowerRange = 'a-z\\xdf-\\xf6\\xf8-\\xff',
-      rsMathOpRange = '\\xac\\xb1\\xd7\\xf7',
-      rsNonCharRange = '\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf',
-      rsPunctuationRange = '\\u2000-\\u206f',
-      rsSpaceRange = ' \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000',
-      rsUpperRange = 'A-Z\\xc0-\\xd6\\xd8-\\xde',
-      rsVarRange = '\\ufe0e\\ufe0f',
-      rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
-  var rsApos = "['\u2019]",
-      rsAstral = '[' + rsAstralRange + ']',
-      rsBreak = '[' + rsBreakRange + ']',
-      rsCombo = '[' + rsComboMarksRange + rsComboSymbolsRange + ']',
-      rsDigits = '\\d+',
-      rsDingbat = '[' + rsDingbatRange + ']',
-      rsLower = '[' + rsLowerRange + ']',
-      rsMisc = '[^' + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + ']',
-      rsFitz = '\\ud83c[\\udffb-\\udfff]',
-      rsModifier = '(?:' + rsCombo + '|' + rsFitz + ')',
-      rsNonAstral = '[^' + rsAstralRange + ']',
-      rsRegional = '(?:\\ud83c[\\udde6-\\uddff]){2}',
-      rsSurrPair = '[\\ud800-\\udbff][\\udc00-\\udfff]',
-      rsUpper = '[' + rsUpperRange + ']',
-      rsZWJ = '\\u200d';
-  var rsLowerMisc = '(?:' + rsLower + '|' + rsMisc + ')',
-      rsUpperMisc = '(?:' + rsUpper + '|' + rsMisc + ')',
-      rsOptLowerContr = '(?:' + rsApos + '(?:d|ll|m|re|s|t|ve))?',
-      rsOptUpperContr = '(?:' + rsApos + '(?:D|LL|M|RE|S|T|VE))?',
-      reOptMod = rsModifier + '?',
-      rsOptVar = '[' + rsVarRange + ']?',
-      rsOptJoin = '(?:' + rsZWJ + '(?:' + [rsNonAstral, rsRegional, rsSurrPair].join('|') + ')' + rsOptVar + reOptMod + ')*',
-      rsSeq = rsOptVar + reOptMod + rsOptJoin,
-      rsEmoji = '(?:' + [rsDingbat, rsRegional, rsSurrPair].join('|') + ')' + rsSeq,
-      rsSymbol = '(?:' + [rsNonAstral + rsCombo + '?', rsCombo, rsRegional, rsSurrPair, rsAstral].join('|') + ')';
-  var reApos = RegExp(rsApos, 'g');
-  var reComboMark = RegExp(rsCombo, 'g');
-  var reComplexSymbol = RegExp(rsFitz + '(?=' + rsFitz + ')|' + rsSymbol + rsSeq, 'g');
-  var reComplexWord = RegExp([rsUpper + '?' + rsLower + '+' + rsOptLowerContr + '(?=' + [rsBreak, rsUpper, '$'].join('|') + ')', rsUpperMisc + '+' + rsOptUpperContr + '(?=' + [rsBreak, rsUpper + rsLowerMisc, '$'].join('|') + ')', rsUpper + '?' + rsLowerMisc + '+' + rsOptLowerContr, rsUpper + '+' + rsOptUpperContr, rsDigits, rsEmoji].join('|'), 'g');
-  var reHasComplexSymbol = RegExp('[' + rsZWJ + rsAstralRange + rsComboMarksRange + rsComboSymbolsRange + rsVarRange + ']');
-  var reHasComplexWord = /[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
-  var contextProps = ['Array', 'Buffer', 'DataView', 'Date', 'Error', 'Float32Array', 'Float64Array', 'Function', 'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object', 'Promise', 'Reflect', 'RegExp', 'Set', 'String', 'Symbol', 'TypeError', 'Uint8Array', 'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap', '_', 'isFinite', 'parseInt', 'setTimeout'];
-  var templateCounter = -1;
-  var typedArrayTags = {};
-  typedArrayTags[float32Tag] = typedArrayTags[float64Tag] = typedArrayTags[int8Tag] = typedArrayTags[int16Tag] = typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] = typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] = typedArrayTags[uint32Tag] = true;
-  typedArrayTags[argsTag] = typedArrayTags[arrayTag] = typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] = typedArrayTags[dataViewTag] = typedArrayTags[dateTag] = typedArrayTags[errorTag] = typedArrayTags[funcTag] = typedArrayTags[mapTag] = typedArrayTags[numberTag] = typedArrayTags[objectTag] = typedArrayTags[regexpTag] = typedArrayTags[setTag] = typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
-  var cloneableTags = {};
-  cloneableTags[argsTag] = cloneableTags[arrayTag] = cloneableTags[arrayBufferTag] = cloneableTags[dataViewTag] = cloneableTags[boolTag] = cloneableTags[dateTag] = cloneableTags[float32Tag] = cloneableTags[float64Tag] = cloneableTags[int8Tag] = cloneableTags[int16Tag] = cloneableTags[int32Tag] = cloneableTags[mapTag] = cloneableTags[numberTag] = cloneableTags[objectTag] = cloneableTags[regexpTag] = cloneableTags[setTag] = cloneableTags[stringTag] = cloneableTags[symbolTag] = cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] = cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
-  cloneableTags[errorTag] = cloneableTags[funcTag] = cloneableTags[weakMapTag] = false;
-  var deburredLetters = {
-    '\xc0': 'A',
-    '\xc1': 'A',
-    '\xc2': 'A',
-    '\xc3': 'A',
-    '\xc4': 'A',
-    '\xc5': 'A',
-    '\xe0': 'a',
-    '\xe1': 'a',
-    '\xe2': 'a',
-    '\xe3': 'a',
-    '\xe4': 'a',
-    '\xe5': 'a',
-    '\xc7': 'C',
-    '\xe7': 'c',
-    '\xd0': 'D',
-    '\xf0': 'd',
-    '\xc8': 'E',
-    '\xc9': 'E',
-    '\xca': 'E',
-    '\xcb': 'E',
-    '\xe8': 'e',
-    '\xe9': 'e',
-    '\xea': 'e',
-    '\xeb': 'e',
-    '\xcC': 'I',
-    '\xcd': 'I',
-    '\xce': 'I',
-    '\xcf': 'I',
-    '\xeC': 'i',
-    '\xed': 'i',
-    '\xee': 'i',
-    '\xef': 'i',
-    '\xd1': 'N',
-    '\xf1': 'n',
-    '\xd2': 'O',
-    '\xd3': 'O',
-    '\xd4': 'O',
-    '\xd5': 'O',
-    '\xd6': 'O',
-    '\xd8': 'O',
-    '\xf2': 'o',
-    '\xf3': 'o',
-    '\xf4': 'o',
-    '\xf5': 'o',
-    '\xf6': 'o',
-    '\xf8': 'o',
-    '\xd9': 'U',
-    '\xda': 'U',
-    '\xdb': 'U',
-    '\xdc': 'U',
-    '\xf9': 'u',
-    '\xfa': 'u',
-    '\xfb': 'u',
-    '\xfc': 'u',
-    '\xdd': 'Y',
-    '\xfd': 'y',
-    '\xff': 'y',
-    '\xc6': 'Ae',
-    '\xe6': 'ae',
-    '\xde': 'Th',
-    '\xfe': 'th',
-    '\xdf': 'ss'
-  };
-  var htmlEscapes = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '`': '&#96;'
-  };
-  var htmlUnescapes = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&#96;': '`'
-  };
-  var stringEscapes = {
-    '\\': '\\',
-    "'": "'",
-    '\n': 'n',
-    '\r': 'r',
-    '\u2028': 'u2028',
-    '\u2029': 'u2029'
-  };
-  var freeParseFloat = parseFloat,
-      freeParseInt = parseInt;
-  var freeExports = typeof exports == 'object' && exports;
-  var freeModule = freeExports && typeof module == 'object' && module;
-  var moduleExports = freeModule && freeModule.exports === freeExports;
-  var freeGlobal = checkGlobal(typeof global == 'object' && global);
-  var freeSelf = checkGlobal(typeof self == 'object' && self);
-  var thisGlobal = checkGlobal(typeof this == 'object' && this);
-  var root = freeGlobal || freeSelf || thisGlobal || Function('return this')();
-  function addMapEntry(map, pair) {
-    map.set(pair[0], pair[1]);
-    return map;
-  }
-  function addSetEntry(set, value) {
-    set.add(value);
-    return set;
-  }
-  function apply(func, thisArg, args) {
-    var length = args.length;
-    switch (length) {
-      case 0:
-        return func.call(thisArg);
-      case 1:
-        return func.call(thisArg, args[0]);
-      case 2:
-        return func.call(thisArg, args[0], args[1]);
-      case 3:
-        return func.call(thisArg, args[0], args[1], args[2]);
-    }
-    return func.apply(thisArg, args);
-  }
-  function arrayAggregator(array, setter, iteratee, accumulator) {
-    var index = -1,
-        length = array ? array.length : 0;
-    while (++index < length) {
-      var value = array[index];
-      setter(accumulator, value, iteratee(value), array);
-    }
-    return accumulator;
-  }
-  function arrayEach(array, iteratee) {
-    var index = -1,
-        length = array ? array.length : 0;
-    while (++index < length) {
-      if (iteratee(array[index], index, array) === false) {
-        break;
-      }
-    }
-    return array;
-  }
-  function arrayEachRight(array, iteratee) {
-    var length = array ? array.length : 0;
-    while (length--) {
-      if (iteratee(array[length], length, array) === false) {
-        break;
-      }
-    }
-    return array;
-  }
-  function arrayEvery(array, predicate) {
-    var index = -1,
-        length = array ? array.length : 0;
-    while (++index < length) {
-      if (!predicate(array[index], index, array)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  function arrayFilter(array, predicate) {
-    var index = -1,
-        length = array ? array.length : 0,
-        resIndex = 0,
-        result = [];
-    while (++index < length) {
-      var value = array[index];
-      if (predicate(value, index, array)) {
-        result[resIndex++] = value;
-      }
-    }
-    return result;
-  }
-  function arrayIncludes(array, value) {
-    var length = array ? array.length : 0;
-    return !!length && baseIndexOf(array, value, 0) > -1;
-  }
-  function arrayIncludesWith(array, value, comparator) {
-    var index = -1,
-        length = array ? array.length : 0;
-    while (++index < length) {
-      if (comparator(value, array[index])) {
-        return true;
-      }
-    }
-    return false;
-  }
-  function arrayMap(array, iteratee) {
-    var index = -1,
-        length = array ? array.length : 0,
-        result = Array(length);
-    while (++index < length) {
-      result[index] = iteratee(array[index], index, array);
-    }
-    return result;
-  }
-  function arrayPush(array, values) {
-    var index = -1,
-        length = values.length,
-        offset = array.length;
-    while (++index < length) {
-      array[offset + index] = values[index];
-    }
-    return array;
-  }
-  function arrayReduce(array, iteratee, accumulator, initAccum) {
-    var index = -1,
-        length = array ? array.length : 0;
-    if (initAccum && length) {
-      accumulator = array[++index];
-    }
-    while (++index < length) {
-      accumulator = iteratee(accumulator, array[index], index, array);
-    }
-    return accumulator;
-  }
-  function arrayReduceRight(array, iteratee, accumulator, initAccum) {
-    var length = array ? array.length : 0;
-    if (initAccum && length) {
-      accumulator = array[--length];
-    }
-    while (length--) {
-      accumulator = iteratee(accumulator, array[length], length, array);
-    }
-    return accumulator;
-  }
-  function arraySome(array, predicate) {
-    var index = -1,
-        length = array ? array.length : 0;
-    while (++index < length) {
-      if (predicate(array[index], index, array)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  function baseFindKey(collection, predicate, eachFunc) {
-    var result;
-    eachFunc(collection, function(value, key, collection) {
-      if (predicate(value, key, collection)) {
-        result = key;
-        return false;
-      }
-    });
-    return result;
-  }
-  function baseFindIndex(array, predicate, fromIndex, fromRight) {
-    var length = array.length,
-        index = fromIndex + (fromRight ? 1 : -1);
-    while ((fromRight ? index-- : ++index < length)) {
-      if (predicate(array[index], index, array)) {
-        return index;
-      }
-    }
-    return -1;
-  }
-  function baseIndexOf(array, value, fromIndex) {
-    if (value !== value) {
-      return indexOfNaN(array, fromIndex);
-    }
-    var index = fromIndex - 1,
-        length = array.length;
-    while (++index < length) {
-      if (array[index] === value) {
-        return index;
-      }
-    }
-    return -1;
-  }
-  function baseIndexOfWith(array, value, fromIndex, comparator) {
-    var index = fromIndex - 1,
-        length = array.length;
-    while (++index < length) {
-      if (comparator(array[index], value)) {
-        return index;
-      }
-    }
-    return -1;
-  }
-  function baseMean(array, iteratee) {
-    var length = array ? array.length : 0;
-    return length ? (baseSum(array, iteratee) / length) : NAN;
-  }
-  function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
-    eachFunc(collection, function(value, index, collection) {
-      accumulator = initAccum ? (initAccum = false, value) : iteratee(accumulator, value, index, collection);
-    });
-    return accumulator;
-  }
-  function baseSortBy(array, comparer) {
-    var length = array.length;
-    array.sort(comparer);
-    while (length--) {
-      array[length] = array[length].value;
-    }
-    return array;
-  }
-  function baseSum(array, iteratee) {
-    var result,
-        index = -1,
-        length = array.length;
-    while (++index < length) {
-      var current = iteratee(array[index]);
-      if (current !== undefined) {
-        result = result === undefined ? current : (result + current);
-      }
-    }
-    return result;
-  }
-  function baseTimes(n, iteratee) {
-    var index = -1,
-        result = Array(n);
-    while (++index < n) {
-      result[index] = iteratee(index);
-    }
-    return result;
-  }
-  function baseToPairs(object, props) {
-    return arrayMap(props, function(key) {
-      return [key, object[key]];
-    });
-  }
-  function baseUnary(func) {
-    return function(value) {
-      return func(value);
-    };
-  }
-  function baseValues(object, props) {
-    return arrayMap(props, function(key) {
-      return object[key];
-    });
-  }
-  function cacheHas(cache, key) {
-    return cache.has(key);
-  }
-  function charsStartIndex(strSymbols, chrSymbols) {
-    var index = -1,
-        length = strSymbols.length;
-    while (++index < length && baseIndexOf(chrSymbols, strSymbols[index], 0) > -1) {}
-    return index;
-  }
-  function charsEndIndex(strSymbols, chrSymbols) {
-    var index = strSymbols.length;
-    while (index-- && baseIndexOf(chrSymbols, strSymbols[index], 0) > -1) {}
-    return index;
-  }
-  function checkGlobal(value) {
-    return (value && value.Object === Object) ? value : null;
-  }
-  function countHolders(array, placeholder) {
-    var length = array.length,
-        result = 0;
-    while (length--) {
-      if (array[length] === placeholder) {
-        result++;
-      }
-    }
-    return result;
-  }
-  function deburrLetter(letter) {
-    return deburredLetters[letter];
-  }
-  function escapeHtmlChar(chr) {
-    return htmlEscapes[chr];
-  }
-  function escapeStringChar(chr) {
-    return '\\' + stringEscapes[chr];
-  }
-  function getValue(object, key) {
-    return object == null ? undefined : object[key];
-  }
-  function indexOfNaN(array, fromIndex, fromRight) {
-    var length = array.length,
-        index = fromIndex + (fromRight ? 1 : -1);
-    while ((fromRight ? index-- : ++index < length)) {
-      var other = array[index];
-      if (other !== other) {
-        return index;
-      }
-    }
-    return -1;
-  }
-  function isHostObject(value) {
-    var result = false;
-    if (value != null && typeof value.toString != 'function') {
-      try {
-        result = !!(value + '');
-      } catch (e) {}
-    }
-    return result;
-  }
-  function iteratorToArray(iterator) {
-    var data,
-        result = [];
-    while (!(data = iterator.next()).done) {
-      result.push(data.value);
-    }
-    return result;
-  }
-  function mapToArray(map) {
-    var index = -1,
-        result = Array(map.size);
-    map.forEach(function(value, key) {
-      result[++index] = [key, value];
-    });
-    return result;
-  }
-  function replaceHolders(array, placeholder) {
-    var index = -1,
-        length = array.length,
-        resIndex = 0,
-        result = [];
-    while (++index < length) {
-      var value = array[index];
-      if (value === placeholder || value === PLACEHOLDER) {
-        array[index] = PLACEHOLDER;
-        result[resIndex++] = index;
-      }
-    }
-    return result;
-  }
-  function setToArray(set) {
-    var index = -1,
-        result = Array(set.size);
-    set.forEach(function(value) {
-      result[++index] = value;
-    });
-    return result;
-  }
-  function setToPairs(set) {
-    var index = -1,
-        result = Array(set.size);
-    set.forEach(function(value) {
-      result[++index] = [value, value];
-    });
-    return result;
-  }
-  function stringSize(string) {
-    if (!(string && reHasComplexSymbol.test(string))) {
-      return string.length;
-    }
-    var result = reComplexSymbol.lastIndex = 0;
-    while (reComplexSymbol.test(string)) {
-      result++;
-    }
-    return result;
-  }
-  function stringToArray(string) {
-    return string.match(reComplexSymbol);
-  }
-  function unescapeHtmlChar(chr) {
-    return htmlUnescapes[chr];
-  }
-  function runInContext(context) {
-    context = context ? _.defaults({}, context, _.pick(root, contextProps)) : root;
-    var Date = context.Date,
-        Error = context.Error,
-        Math = context.Math,
-        RegExp = context.RegExp,
-        TypeError = context.TypeError;
-    var arrayProto = context.Array.prototype,
-        objectProto = context.Object.prototype,
-        stringProto = context.String.prototype;
-    var coreJsData = context['__core-js_shared__'];
-    var maskSrcKey = (function() {
-      var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
-      return uid ? ('Symbol(src)_1.' + uid) : '';
-    }());
-    var funcToString = context.Function.prototype.toString;
-    var hasOwnProperty = objectProto.hasOwnProperty;
-    var idCounter = 0;
-    var objectCtorString = funcToString.call(Object);
-    var objectToString = objectProto.toString;
-    var oldDash = root._;
-    var reIsNative = RegExp('^' + funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&').replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
-    var Buffer = moduleExports ? context.Buffer : undefined,
-        Reflect = context.Reflect,
-        Symbol = context.Symbol,
-        Uint8Array = context.Uint8Array,
-        enumerate = Reflect ? Reflect.enumerate : undefined,
-        getOwnPropertySymbols = Object.getOwnPropertySymbols,
-        iteratorSymbol = typeof(iteratorSymbol = Symbol && Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined,
-        objectCreate = Object.create,
-        propertyIsEnumerable = objectProto.propertyIsEnumerable,
-        splice = arrayProto.splice;
-    var setTimeout = function(func, wait) {
-      return context.setTimeout.call(root, func, wait);
-    };
-    var nativeCeil = Math.ceil,
-        nativeFloor = Math.floor,
-        nativeGetPrototype = Object.getPrototypeOf,
-        nativeIsFinite = context.isFinite,
-        nativeJoin = arrayProto.join,
-        nativeKeys = Object.keys,
-        nativeMax = Math.max,
-        nativeMin = Math.min,
-        nativeParseInt = context.parseInt,
-        nativeRandom = Math.random,
-        nativeReplace = stringProto.replace,
-        nativeReverse = arrayProto.reverse,
-        nativeSplit = stringProto.split;
-    var DataView = getNative(context, 'DataView'),
-        Map = getNative(context, 'Map'),
-        Promise = getNative(context, 'Promise'),
-        Set = getNative(context, 'Set'),
-        WeakMap = getNative(context, 'WeakMap'),
-        nativeCreate = getNative(Object, 'create');
-    var metaMap = WeakMap && new WeakMap;
-    var nonEnumShadows = !propertyIsEnumerable.call({'valueOf': 1}, 'valueOf');
-    var realNames = {};
-    var dataViewCtorString = toSource(DataView),
-        mapCtorString = toSource(Map),
-        promiseCtorString = toSource(Promise),
-        setCtorString = toSource(Set),
-        weakMapCtorString = toSource(WeakMap);
-    var symbolProto = Symbol ? Symbol.prototype : undefined,
-        symbolValueOf = symbolProto ? symbolProto.valueOf : undefined,
-        symbolToString = symbolProto ? symbolProto.toString : undefined;
-    function lodash(value) {
-      if (isObjectLike(value) && !isArray(value) && !(value instanceof LazyWrapper)) {
-        if (value instanceof LodashWrapper) {
-          return value;
-        }
-        if (hasOwnProperty.call(value, '__wrapped__')) {
-          return wrapperClone(value);
-        }
-      }
-      return new LodashWrapper(value);
-    }
-    function baseLodash() {}
-    function LodashWrapper(value, chainAll) {
-      this.__wrapped__ = value;
-      this.__actions__ = [];
-      this.__chain__ = !!chainAll;
-      this.__index__ = 0;
-      this.__values__ = undefined;
-    }
-    lodash.templateSettings = {
-      'escape': reEscape,
-      'evaluate': reEvaluate,
-      'interpolate': reInterpolate,
-      'variable': '',
-      'imports': {'_': lodash}
-    };
-    lodash.prototype = baseLodash.prototype;
-    lodash.prototype.constructor = lodash;
-    LodashWrapper.prototype = baseCreate(baseLodash.prototype);
-    LodashWrapper.prototype.constructor = LodashWrapper;
-    function LazyWrapper(value) {
-      this.__wrapped__ = value;
-      this.__actions__ = [];
-      this.__dir__ = 1;
-      this.__filtered__ = false;
-      this.__iteratees__ = [];
-      this.__takeCount__ = MAX_ARRAY_LENGTH;
-      this.__views__ = [];
-    }
-    function lazyClone() {
-      var result = new LazyWrapper(this.__wrapped__);
-      result.__actions__ = copyArray(this.__actions__);
-      result.__dir__ = this.__dir__;
-      result.__filtered__ = this.__filtered__;
-      result.__iteratees__ = copyArray(this.__iteratees__);
-      result.__takeCount__ = this.__takeCount__;
-      result.__views__ = copyArray(this.__views__);
-      return result;
-    }
-    function lazyReverse() {
-      if (this.__filtered__) {
-        var result = new LazyWrapper(this);
-        result.__dir__ = -1;
-        result.__filtered__ = true;
-      } else {
-        result = this.clone();
-        result.__dir__ *= -1;
-      }
-      return result;
-    }
-    function lazyValue() {
-      var array = this.__wrapped__.value(),
-          dir = this.__dir__,
-          isArr = isArray(array),
-          isRight = dir < 0,
-          arrLength = isArr ? array.length : 0,
-          view = getView(0, arrLength, this.__views__),
-          start = view.start,
-          end = view.end,
-          length = end - start,
-          index = isRight ? end : (start - 1),
-          iteratees = this.__iteratees__,
-          iterLength = iteratees.length,
-          resIndex = 0,
-          takeCount = nativeMin(length, this.__takeCount__);
-      if (!isArr || arrLength < LARGE_ARRAY_SIZE || (arrLength == length && takeCount == length)) {
-        return baseWrapperValue(array, this.__actions__);
-      }
-      var result = [];
-      outer: while (length-- && resIndex < takeCount) {
-        index += dir;
-        var iterIndex = -1,
-            value = array[index];
-        while (++iterIndex < iterLength) {
-          var data = iteratees[iterIndex],
-              iteratee = data.iteratee,
-              type = data.type,
-              computed = iteratee(value);
-          if (type == LAZY_MAP_FLAG) {
-            value = computed;
-          } else if (!computed) {
-            if (type == LAZY_FILTER_FLAG) {
-              continue outer;
-            } else {
-              break outer;
-            }
-          }
-        }
-        result[resIndex++] = value;
-      }
-      return result;
-    }
-    LazyWrapper.prototype = baseCreate(baseLodash.prototype);
-    LazyWrapper.prototype.constructor = LazyWrapper;
-    function Hash(entries) {
-      var index = -1,
-          length = entries ? entries.length : 0;
-      this.clear();
-      while (++index < length) {
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-      }
-    }
-    function hashClear() {
-      this.__data__ = nativeCreate ? nativeCreate(null) : {};
-    }
-    function hashDelete(key) {
-      return this.has(key) && delete this.__data__[key];
-    }
-    function hashGet(key) {
-      var data = this.__data__;
-      if (nativeCreate) {
-        var result = data[key];
-        return result === HASH_UNDEFINED ? undefined : result;
-      }
-      return hasOwnProperty.call(data, key) ? data[key] : undefined;
-    }
-    function hashHas(key) {
-      var data = this.__data__;
-      return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
-    }
-    function hashSet(key, value) {
-      var data = this.__data__;
-      data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
-      return this;
-    }
-    Hash.prototype.clear = hashClear;
-    Hash.prototype['delete'] = hashDelete;
-    Hash.prototype.get = hashGet;
-    Hash.prototype.has = hashHas;
-    Hash.prototype.set = hashSet;
-    function ListCache(entries) {
-      var index = -1,
-          length = entries ? entries.length : 0;
-      this.clear();
-      while (++index < length) {
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-      }
-    }
-    function listCacheClear() {
-      this.__data__ = [];
-    }
-    function listCacheDelete(key) {
-      var data = this.__data__,
-          index = assocIndexOf(data, key);
-      if (index < 0) {
-        return false;
-      }
-      var lastIndex = data.length - 1;
-      if (index == lastIndex) {
-        data.pop();
-      } else {
-        splice.call(data, index, 1);
-      }
-      return true;
-    }
-    function listCacheGet(key) {
-      var data = this.__data__,
-          index = assocIndexOf(data, key);
-      return index < 0 ? undefined : data[index][1];
-    }
-    function listCacheHas(key) {
-      return assocIndexOf(this.__data__, key) > -1;
-    }
-    function listCacheSet(key, value) {
-      var data = this.__data__,
-          index = assocIndexOf(data, key);
-      if (index < 0) {
-        data.push([key, value]);
-      } else {
-        data[index][1] = value;
-      }
-      return this;
-    }
-    ListCache.prototype.clear = listCacheClear;
-    ListCache.prototype['delete'] = listCacheDelete;
-    ListCache.prototype.get = listCacheGet;
-    ListCache.prototype.has = listCacheHas;
-    ListCache.prototype.set = listCacheSet;
-    function MapCache(entries) {
-      var index = -1,
-          length = entries ? entries.length : 0;
-      this.clear();
-      while (++index < length) {
-        var entry = entries[index];
-        this.set(entry[0], entry[1]);
-      }
-    }
-    function mapCacheClear() {
-      this.__data__ = {
-        'hash': new Hash,
-        'map': new (Map || ListCache),
-        'string': new Hash
-      };
-    }
-    function mapCacheDelete(key) {
-      return getMapData(this, key)['delete'](key);
-    }
-    function mapCacheGet(key) {
-      return getMapData(this, key).get(key);
-    }
-    function mapCacheHas(key) {
-      return getMapData(this, key).has(key);
-    }
-    function mapCacheSet(key, value) {
-      getMapData(this, key).set(key, value);
-      return this;
-    }
-    MapCache.prototype.clear = mapCacheClear;
-    MapCache.prototype['delete'] = mapCacheDelete;
-    MapCache.prototype.get = mapCacheGet;
-    MapCache.prototype.has = mapCacheHas;
-    MapCache.prototype.set = mapCacheSet;
-    function SetCache(values) {
-      var index = -1,
-          length = values ? values.length : 0;
-      this.__data__ = new MapCache;
-      while (++index < length) {
-        this.add(values[index]);
-      }
-    }
-    function setCacheAdd(value) {
-      this.__data__.set(value, HASH_UNDEFINED);
-      return this;
-    }
-    function setCacheHas(value) {
-      return this.__data__.has(value);
-    }
-    SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
-    SetCache.prototype.has = setCacheHas;
-    function Stack(entries) {
-      this.__data__ = new ListCache(entries);
-    }
-    function stackClear() {
-      this.__data__ = new ListCache;
-    }
-    function stackDelete(key) {
-      return this.__data__['delete'](key);
-    }
-    function stackGet(key) {
-      return this.__data__.get(key);
-    }
-    function stackHas(key) {
-      return this.__data__.has(key);
-    }
-    function stackSet(key, value) {
-      var cache = this.__data__;
-      if (cache instanceof ListCache && cache.__data__.length == LARGE_ARRAY_SIZE) {
-        cache = this.__data__ = new MapCache(cache.__data__);
-      }
-      cache.set(key, value);
-      return this;
-    }
-    Stack.prototype.clear = stackClear;
-    Stack.prototype['delete'] = stackDelete;
-    Stack.prototype.get = stackGet;
-    Stack.prototype.has = stackHas;
-    Stack.prototype.set = stackSet;
-    function assignInDefaults(objValue, srcValue, key, object) {
-      if (objValue === undefined || (eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key))) {
-        return srcValue;
-      }
-      return objValue;
-    }
-    function assignMergeValue(object, key, value) {
-      if ((value !== undefined && !eq(object[key], value)) || (typeof key == 'number' && value === undefined && !(key in object))) {
-        object[key] = value;
-      }
-    }
-    function assignValue(object, key, value) {
-      var objValue = object[key];
-      if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) || (value === undefined && !(key in object))) {
-        object[key] = value;
-      }
-    }
-    function assocIndexOf(array, key) {
-      var length = array.length;
-      while (length--) {
-        if (eq(array[length][0], key)) {
-          return length;
-        }
-      }
-      return -1;
-    }
-    function baseAggregator(collection, setter, iteratee, accumulator) {
-      baseEach(collection, function(value, key, collection) {
-        setter(accumulator, value, iteratee(value), collection);
-      });
-      return accumulator;
-    }
-    function baseAssign(object, source) {
-      return object && copyObject(source, keys(source), object);
-    }
-    function baseAt(object, paths) {
-      var index = -1,
-          isNil = object == null,
-          length = paths.length,
-          result = Array(length);
-      while (++index < length) {
-        result[index] = isNil ? undefined : get(object, paths[index]);
-      }
-      return result;
-    }
-    function baseClamp(number, lower, upper) {
-      if (number === number) {
-        if (upper !== undefined) {
-          number = number <= upper ? number : upper;
-        }
-        if (lower !== undefined) {
-          number = number >= lower ? number : lower;
-        }
-      }
-      return number;
-    }
-    function baseClone(value, isDeep, isFull, customizer, key, object, stack) {
-      var result;
-      if (customizer) {
-        result = object ? customizer(value, key, object, stack) : customizer(value);
-      }
-      if (result !== undefined) {
-        return result;
-      }
-      if (!isObject(value)) {
-        return value;
-      }
-      var isArr = isArray(value);
-      if (isArr) {
-        result = initCloneArray(value);
-        if (!isDeep) {
-          return copyArray(value, result);
-        }
-      } else {
-        var tag = getTag(value),
-            isFunc = tag == funcTag || tag == genTag;
-        if (isBuffer(value)) {
-          return cloneBuffer(value, isDeep);
-        }
-        if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
-          if (isHostObject(value)) {
-            return object ? value : {};
-          }
-          result = initCloneObject(isFunc ? {} : value);
-          if (!isDeep) {
-            return copySymbols(value, baseAssign(result, value));
-          }
-        } else {
-          if (!cloneableTags[tag]) {
-            return object ? value : {};
-          }
-          result = initCloneByTag(value, tag, baseClone, isDeep);
-        }
-      }
-      stack || (stack = new Stack);
-      var stacked = stack.get(value);
-      if (stacked) {
-        return stacked;
-      }
-      stack.set(value, result);
-      if (!isArr) {
-        var props = isFull ? getAllKeys(value) : keys(value);
-      }
-      arrayEach(props || value, function(subValue, key) {
-        if (props) {
-          key = subValue;
-          subValue = value[key];
-        }
-        assignValue(result, key, baseClone(subValue, isDeep, isFull, customizer, key, value, stack));
-      });
-      return result;
-    }
-    function baseConforms(source) {
-      var props = keys(source),
-          length = props.length;
-      return function(object) {
-        if (object == null) {
-          return !length;
-        }
-        var index = length;
-        while (index--) {
-          var key = props[index],
-              predicate = source[key],
-              value = object[key];
-          if ((value === undefined && !(key in Object(object))) || !predicate(value)) {
-            return false;
-          }
-        }
-        return true;
-      };
-    }
-    function baseCreate(proto) {
-      return isObject(proto) ? objectCreate(proto) : {};
-    }
-    function baseDelay(func, wait, args) {
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      return setTimeout(function() {
-        func.apply(undefined, args);
-      }, wait);
-    }
-    function baseDifference(array, values, iteratee, comparator) {
-      var index = -1,
-          includes = arrayIncludes,
-          isCommon = true,
-          length = array.length,
-          result = [],
-          valuesLength = values.length;
-      if (!length) {
-        return result;
-      }
-      if (iteratee) {
-        values = arrayMap(values, baseUnary(iteratee));
-      }
-      if (comparator) {
-        includes = arrayIncludesWith;
-        isCommon = false;
-      } else if (values.length >= LARGE_ARRAY_SIZE) {
-        includes = cacheHas;
-        isCommon = false;
-        values = new SetCache(values);
-      }
-      outer: while (++index < length) {
-        var value = array[index],
-            computed = iteratee ? iteratee(value) : value;
-        value = (comparator || value !== 0) ? value : 0;
-        if (isCommon && computed === computed) {
-          var valuesIndex = valuesLength;
-          while (valuesIndex--) {
-            if (values[valuesIndex] === computed) {
-              continue outer;
-            }
-          }
-          result.push(value);
-        } else if (!includes(values, computed, comparator)) {
-          result.push(value);
-        }
-      }
-      return result;
-    }
-    var baseEach = createBaseEach(baseForOwn);
-    var baseEachRight = createBaseEach(baseForOwnRight, true);
-    function baseEvery(collection, predicate) {
-      var result = true;
-      baseEach(collection, function(value, index, collection) {
-        result = !!predicate(value, index, collection);
-        return result;
-      });
-      return result;
-    }
-    function baseExtremum(array, iteratee, comparator) {
-      var index = -1,
-          length = array.length;
-      while (++index < length) {
-        var value = array[index],
-            current = iteratee(value);
-        if (current != null && (computed === undefined ? (current === current && !isSymbol(current)) : comparator(current, computed))) {
-          var computed = current,
-              result = value;
-        }
-      }
-      return result;
-    }
-    function baseFill(array, value, start, end) {
-      var length = array.length;
-      start = toInteger(start);
-      if (start < 0) {
-        start = -start > length ? 0 : (length + start);
-      }
-      end = (end === undefined || end > length) ? length : toInteger(end);
-      if (end < 0) {
-        end += length;
-      }
-      end = start > end ? 0 : toLength(end);
-      while (start < end) {
-        array[start++] = value;
-      }
-      return array;
-    }
-    function baseFilter(collection, predicate) {
-      var result = [];
-      baseEach(collection, function(value, index, collection) {
-        if (predicate(value, index, collection)) {
-          result.push(value);
-        }
-      });
-      return result;
-    }
-    function baseFlatten(array, depth, predicate, isStrict, result) {
-      var index = -1,
-          length = array.length;
-      predicate || (predicate = isFlattenable);
-      result || (result = []);
-      while (++index < length) {
-        var value = array[index];
-        if (depth > 0 && predicate(value)) {
-          if (depth > 1) {
-            baseFlatten(value, depth - 1, predicate, isStrict, result);
-          } else {
-            arrayPush(result, value);
-          }
-        } else if (!isStrict) {
-          result[result.length] = value;
-        }
-      }
-      return result;
-    }
-    var baseFor = createBaseFor();
-    var baseForRight = createBaseFor(true);
-    function baseForOwn(object, iteratee) {
-      return object && baseFor(object, iteratee, keys);
-    }
-    function baseForOwnRight(object, iteratee) {
-      return object && baseForRight(object, iteratee, keys);
-    }
-    function baseFunctions(object, props) {
-      return arrayFilter(props, function(key) {
-        return isFunction(object[key]);
-      });
-    }
-    function baseGet(object, path) {
-      path = isKey(path, object) ? [path] : castPath(path);
-      var index = 0,
-          length = path.length;
-      while (object != null && index < length) {
-        object = object[toKey(path[index++])];
-      }
-      return (index && index == length) ? object : undefined;
-    }
-    function baseGetAllKeys(object, keysFunc, symbolsFunc) {
-      var result = keysFunc(object);
-      return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
-    }
-    function baseGt(value, other) {
-      return value > other;
-    }
-    function baseHas(object, key) {
-      return object != null && (hasOwnProperty.call(object, key) || (typeof object == 'object' && key in object && getPrototype(object) === null));
-    }
-    function baseHasIn(object, key) {
-      return object != null && key in Object(object);
-    }
-    function baseInRange(number, start, end) {
-      return number >= nativeMin(start, end) && number < nativeMax(start, end);
-    }
-    function baseIntersection(arrays, iteratee, comparator) {
-      var includes = comparator ? arrayIncludesWith : arrayIncludes,
-          length = arrays[0].length,
-          othLength = arrays.length,
-          othIndex = othLength,
-          caches = Array(othLength),
-          maxLength = Infinity,
-          result = [];
-      while (othIndex--) {
-        var array = arrays[othIndex];
-        if (othIndex && iteratee) {
-          array = arrayMap(array, baseUnary(iteratee));
-        }
-        maxLength = nativeMin(array.length, maxLength);
-        caches[othIndex] = !comparator && (iteratee || (length >= 120 && array.length >= 120)) ? new SetCache(othIndex && array) : undefined;
-      }
-      array = arrays[0];
-      var index = -1,
-          seen = caches[0];
-      outer: while (++index < length && result.length < maxLength) {
-        var value = array[index],
-            computed = iteratee ? iteratee(value) : value;
-        value = (comparator || value !== 0) ? value : 0;
-        if (!(seen ? cacheHas(seen, computed) : includes(result, computed, comparator))) {
-          othIndex = othLength;
-          while (--othIndex) {
-            var cache = caches[othIndex];
-            if (!(cache ? cacheHas(cache, computed) : includes(arrays[othIndex], computed, comparator))) {
-              continue outer;
-            }
-          }
-          if (seen) {
-            seen.push(computed);
-          }
-          result.push(value);
-        }
-      }
-      return result;
-    }
-    function baseInverter(object, setter, iteratee, accumulator) {
-      baseForOwn(object, function(value, key, object) {
-        setter(accumulator, iteratee(value), key, object);
-      });
-      return accumulator;
-    }
-    function baseInvoke(object, path, args) {
-      if (!isKey(path, object)) {
-        path = castPath(path);
-        object = parent(object, path);
-        path = last(path);
-      }
-      var func = object == null ? object : object[toKey(path)];
-      return func == null ? undefined : apply(func, object, args);
-    }
-    function baseIsEqual(value, other, customizer, bitmask, stack) {
-      if (value === other) {
-        return true;
-      }
-      if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
-        return value !== value && other !== other;
-      }
-      return baseIsEqualDeep(value, other, baseIsEqual, customizer, bitmask, stack);
-    }
-    function baseIsEqualDeep(object, other, equalFunc, customizer, bitmask, stack) {
-      var objIsArr = isArray(object),
-          othIsArr = isArray(other),
-          objTag = arrayTag,
-          othTag = arrayTag;
-      if (!objIsArr) {
-        objTag = getTag(object);
-        objTag = objTag == argsTag ? objectTag : objTag;
-      }
-      if (!othIsArr) {
-        othTag = getTag(other);
-        othTag = othTag == argsTag ? objectTag : othTag;
-      }
-      var objIsObj = objTag == objectTag && !isHostObject(object),
-          othIsObj = othTag == objectTag && !isHostObject(other),
-          isSameTag = objTag == othTag;
-      if (isSameTag && !objIsObj) {
-        stack || (stack = new Stack);
-        return (objIsArr || isTypedArray(object)) ? equalArrays(object, other, equalFunc, customizer, bitmask, stack) : equalByTag(object, other, objTag, equalFunc, customizer, bitmask, stack);
-      }
-      if (!(bitmask & PARTIAL_COMPARE_FLAG)) {
-        var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
-            othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
-        if (objIsWrapped || othIsWrapped) {
-          var objUnwrapped = objIsWrapped ? object.value() : object,
-              othUnwrapped = othIsWrapped ? other.value() : other;
-          stack || (stack = new Stack);
-          return equalFunc(objUnwrapped, othUnwrapped, customizer, bitmask, stack);
-        }
-      }
-      if (!isSameTag) {
-        return false;
-      }
-      stack || (stack = new Stack);
-      return equalObjects(object, other, equalFunc, customizer, bitmask, stack);
-    }
-    function baseIsMatch(object, source, matchData, customizer) {
-      var index = matchData.length,
-          length = index,
-          noCustomizer = !customizer;
-      if (object == null) {
-        return !length;
-      }
-      object = Object(object);
-      while (index--) {
-        var data = matchData[index];
-        if ((noCustomizer && data[2]) ? data[1] !== object[data[0]] : !(data[0] in object)) {
-          return false;
-        }
-      }
-      while (++index < length) {
-        data = matchData[index];
-        var key = data[0],
-            objValue = object[key],
-            srcValue = data[1];
-        if (noCustomizer && data[2]) {
-          if (objValue === undefined && !(key in object)) {
-            return false;
-          }
-        } else {
-          var stack = new Stack;
-          if (customizer) {
-            var result = customizer(objValue, srcValue, key, object, source, stack);
-          }
-          if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack) : result)) {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-    function baseIsNative(value) {
-      if (!isObject(value) || isMasked(value)) {
-        return false;
-      }
-      var pattern = (isFunction(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
-      return pattern.test(toSource(value));
-    }
-    function baseIteratee(value) {
-      if (typeof value == 'function') {
-        return value;
-      }
-      if (value == null) {
-        return identity;
-      }
-      if (typeof value == 'object') {
-        return isArray(value) ? baseMatchesProperty(value[0], value[1]) : baseMatches(value);
-      }
-      return property(value);
-    }
-    function baseKeys(object) {
-      return nativeKeys(Object(object));
-    }
-    function baseKeysIn(object) {
-      object = object == null ? object : Object(object);
-      var result = [];
-      for (var key in object) {
-        result.push(key);
-      }
-      return result;
-    }
-    if (enumerate && !propertyIsEnumerable.call({'valueOf': 1}, 'valueOf')) {
-      baseKeysIn = function(object) {
-        return iteratorToArray(enumerate(object));
-      };
-    }
-    function baseLt(value, other) {
-      return value < other;
-    }
-    function baseMap(collection, iteratee) {
-      var index = -1,
-          result = isArrayLike(collection) ? Array(collection.length) : [];
-      baseEach(collection, function(value, key, collection) {
-        result[++index] = iteratee(value, key, collection);
-      });
-      return result;
-    }
-    function baseMatches(source) {
-      var matchData = getMatchData(source);
-      if (matchData.length == 1 && matchData[0][2]) {
-        return matchesStrictComparable(matchData[0][0], matchData[0][1]);
-      }
-      return function(object) {
-        return object === source || baseIsMatch(object, source, matchData);
-      };
-    }
-    function baseMatchesProperty(path, srcValue) {
-      if (isKey(path) && isStrictComparable(srcValue)) {
-        return matchesStrictComparable(toKey(path), srcValue);
-      }
-      return function(object) {
-        var objValue = get(object, path);
-        return (objValue === undefined && objValue === srcValue) ? hasIn(object, path) : baseIsEqual(srcValue, objValue, undefined, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG);
-      };
-    }
-    function baseMerge(object, source, srcIndex, customizer, stack) {
-      if (object === source) {
-        return;
-      }
-      if (!(isArray(source) || isTypedArray(source))) {
-        var props = keysIn(source);
-      }
-      arrayEach(props || source, function(srcValue, key) {
-        if (props) {
-          key = srcValue;
-          srcValue = source[key];
-        }
-        if (isObject(srcValue)) {
-          stack || (stack = new Stack);
-          baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
-        } else {
-          var newValue = customizer ? customizer(object[key], srcValue, (key + ''), object, source, stack) : undefined;
-          if (newValue === undefined) {
-            newValue = srcValue;
-          }
-          assignMergeValue(object, key, newValue);
-        }
-      });
-    }
-    function baseMergeDeep(object, source, key, srcIndex, mergeFunc, customizer, stack) {
-      var objValue = object[key],
-          srcValue = source[key],
-          stacked = stack.get(srcValue);
-      if (stacked) {
-        assignMergeValue(object, key, stacked);
-        return;
-      }
-      var newValue = customizer ? customizer(objValue, srcValue, (key + ''), object, source, stack) : undefined;
-      var isCommon = newValue === undefined;
-      if (isCommon) {
-        newValue = srcValue;
-        if (isArray(srcValue) || isTypedArray(srcValue)) {
-          if (isArray(objValue)) {
-            newValue = objValue;
-          } else if (isArrayLikeObject(objValue)) {
-            newValue = copyArray(objValue);
-          } else {
-            isCommon = false;
-            newValue = baseClone(srcValue, true);
-          }
-        } else if (isPlainObject(srcValue) || isArguments(srcValue)) {
-          if (isArguments(objValue)) {
-            newValue = toPlainObject(objValue);
-          } else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
-            isCommon = false;
-            newValue = baseClone(srcValue, true);
-          } else {
-            newValue = objValue;
-          }
-        } else {
-          isCommon = false;
-        }
-      }
-      stack.set(srcValue, newValue);
-      if (isCommon) {
-        mergeFunc(newValue, srcValue, srcIndex, customizer, stack);
-      }
-      stack['delete'](srcValue);
-      assignMergeValue(object, key, newValue);
-    }
-    function baseNth(array, n) {
-      var length = array.length;
-      if (!length) {
-        return;
-      }
-      n += n < 0 ? length : 0;
-      return isIndex(n, length) ? array[n] : undefined;
-    }
-    function baseOrderBy(collection, iteratees, orders) {
-      var index = -1;
-      iteratees = arrayMap(iteratees.length ? iteratees : [identity], baseUnary(getIteratee()));
-      var result = baseMap(collection, function(value, key, collection) {
-        var criteria = arrayMap(iteratees, function(iteratee) {
-          return iteratee(value);
-        });
-        return {
-          'criteria': criteria,
-          'index': ++index,
-          'value': value
-        };
-      });
-      return baseSortBy(result, function(object, other) {
-        return compareMultiple(object, other, orders);
-      });
-    }
-    function basePick(object, props) {
-      object = Object(object);
-      return arrayReduce(props, function(result, key) {
-        if (key in object) {
-          result[key] = object[key];
-        }
-        return result;
-      }, {});
-    }
-    function basePickBy(object, predicate) {
-      var index = -1,
-          props = getAllKeysIn(object),
-          length = props.length,
-          result = {};
-      while (++index < length) {
-        var key = props[index],
-            value = object[key];
-        if (predicate(value, key)) {
-          result[key] = value;
-        }
-      }
-      return result;
-    }
-    function baseProperty(key) {
-      return function(object) {
-        return object == null ? undefined : object[key];
-      };
-    }
-    function basePropertyDeep(path) {
-      return function(object) {
-        return baseGet(object, path);
-      };
-    }
-    function basePullAll(array, values, iteratee, comparator) {
-      var indexOf = comparator ? baseIndexOfWith : baseIndexOf,
-          index = -1,
-          length = values.length,
-          seen = array;
-      if (array === values) {
-        values = copyArray(values);
-      }
-      if (iteratee) {
-        seen = arrayMap(array, baseUnary(iteratee));
-      }
-      while (++index < length) {
-        var fromIndex = 0,
-            value = values[index],
-            computed = iteratee ? iteratee(value) : value;
-        while ((fromIndex = indexOf(seen, computed, fromIndex, comparator)) > -1) {
-          if (seen !== array) {
-            splice.call(seen, fromIndex, 1);
-          }
-          splice.call(array, fromIndex, 1);
-        }
-      }
-      return array;
-    }
-    function basePullAt(array, indexes) {
-      var length = array ? indexes.length : 0,
-          lastIndex = length - 1;
-      while (length--) {
-        var index = indexes[length];
-        if (length == lastIndex || index !== previous) {
-          var previous = index;
-          if (isIndex(index)) {
-            splice.call(array, index, 1);
-          } else if (!isKey(index, array)) {
-            var path = castPath(index),
-                object = parent(array, path);
-            if (object != null) {
-              delete object[toKey(last(path))];
-            }
-          } else {
-            delete array[toKey(index)];
-          }
-        }
-      }
-      return array;
-    }
-    function baseRandom(lower, upper) {
-      return lower + nativeFloor(nativeRandom() * (upper - lower + 1));
-    }
-    function baseRange(start, end, step, fromRight) {
-      var index = -1,
-          length = nativeMax(nativeCeil((end - start) / (step || 1)), 0),
-          result = Array(length);
-      while (length--) {
-        result[fromRight ? length : ++index] = start;
-        start += step;
-      }
-      return result;
-    }
-    function baseRepeat(string, n) {
-      var result = '';
-      if (!string || n < 1 || n > MAX_SAFE_INTEGER) {
-        return result;
-      }
-      do {
-        if (n % 2) {
-          result += string;
-        }
-        n = nativeFloor(n / 2);
-        if (n) {
-          string += string;
-        }
-      } while (n);
-      return result;
-    }
-    function baseSet(object, path, value, customizer) {
-      path = isKey(path, object) ? [path] : castPath(path);
-      var index = -1,
-          length = path.length,
-          lastIndex = length - 1,
-          nested = object;
-      while (nested != null && ++index < length) {
-        var key = toKey(path[index]);
-        if (isObject(nested)) {
-          var newValue = value;
-          if (index != lastIndex) {
-            var objValue = nested[key];
-            newValue = customizer ? customizer(objValue, key, nested) : undefined;
-            if (newValue === undefined) {
-              newValue = objValue == null ? (isIndex(path[index + 1]) ? [] : {}) : objValue;
-            }
-          }
-          assignValue(nested, key, newValue);
-        }
-        nested = nested[key];
-      }
-      return object;
-    }
-    var baseSetData = !metaMap ? identity : function(func, data) {
-      metaMap.set(func, data);
-      return func;
-    };
-    function baseSlice(array, start, end) {
-      var index = -1,
-          length = array.length;
-      if (start < 0) {
-        start = -start > length ? 0 : (length + start);
-      }
-      end = end > length ? length : end;
-      if (end < 0) {
-        end += length;
-      }
-      length = start > end ? 0 : ((end - start) >>> 0);
-      start >>>= 0;
-      var result = Array(length);
-      while (++index < length) {
-        result[index] = array[index + start];
-      }
-      return result;
-    }
-    function baseSome(collection, predicate) {
-      var result;
-      baseEach(collection, function(value, index, collection) {
-        result = predicate(value, index, collection);
-        return !result;
-      });
-      return !!result;
-    }
-    function baseSortedIndex(array, value, retHighest) {
-      var low = 0,
-          high = array ? array.length : low;
-      if (typeof value == 'number' && value === value && high <= HALF_MAX_ARRAY_LENGTH) {
-        while (low < high) {
-          var mid = (low + high) >>> 1,
-              computed = array[mid];
-          if (computed !== null && !isSymbol(computed) && (retHighest ? (computed <= value) : (computed < value))) {
-            low = mid + 1;
-          } else {
-            high = mid;
-          }
-        }
-        return high;
-      }
-      return baseSortedIndexBy(array, value, identity, retHighest);
-    }
-    function baseSortedIndexBy(array, value, iteratee, retHighest) {
-      value = iteratee(value);
-      var low = 0,
-          high = array ? array.length : 0,
-          valIsNaN = value !== value,
-          valIsNull = value === null,
-          valIsSymbol = isSymbol(value),
-          valIsUndefined = value === undefined;
-      while (low < high) {
-        var mid = nativeFloor((low + high) / 2),
-            computed = iteratee(array[mid]),
-            othIsDefined = computed !== undefined,
-            othIsNull = computed === null,
-            othIsReflexive = computed === computed,
-            othIsSymbol = isSymbol(computed);
-        if (valIsNaN) {
-          var setLow = retHighest || othIsReflexive;
-        } else if (valIsUndefined) {
-          setLow = othIsReflexive && (retHighest || othIsDefined);
-        } else if (valIsNull) {
-          setLow = othIsReflexive && othIsDefined && (retHighest || !othIsNull);
-        } else if (valIsSymbol) {
-          setLow = othIsReflexive && othIsDefined && !othIsNull && (retHighest || !othIsSymbol);
-        } else if (othIsNull || othIsSymbol) {
-          setLow = false;
-        } else {
-          setLow = retHighest ? (computed <= value) : (computed < value);
-        }
-        if (setLow) {
-          low = mid + 1;
-        } else {
-          high = mid;
-        }
-      }
-      return nativeMin(high, MAX_ARRAY_INDEX);
-    }
-    function baseSortedUniq(array, iteratee) {
-      var index = -1,
-          length = array.length,
-          resIndex = 0,
-          result = [];
-      while (++index < length) {
-        var value = array[index],
-            computed = iteratee ? iteratee(value) : value;
-        if (!index || !eq(computed, seen)) {
-          var seen = computed;
-          result[resIndex++] = value === 0 ? 0 : value;
-        }
-      }
-      return result;
-    }
-    function baseToNumber(value) {
-      if (typeof value == 'number') {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return NAN;
-      }
-      return +value;
-    }
-    function baseToString(value) {
-      if (typeof value == 'string') {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return symbolToString ? symbolToString.call(value) : '';
-      }
-      var result = (value + '');
-      return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-    }
-    function baseUniq(array, iteratee, comparator) {
-      var index = -1,
-          includes = arrayIncludes,
-          length = array.length,
-          isCommon = true,
-          result = [],
-          seen = result;
-      if (comparator) {
-        isCommon = false;
-        includes = arrayIncludesWith;
-      } else if (length >= LARGE_ARRAY_SIZE) {
-        var set = iteratee ? null : createSet(array);
-        if (set) {
-          return setToArray(set);
-        }
-        isCommon = false;
-        includes = cacheHas;
-        seen = new SetCache;
-      } else {
-        seen = iteratee ? [] : result;
-      }
-      outer: while (++index < length) {
-        var value = array[index],
-            computed = iteratee ? iteratee(value) : value;
-        value = (comparator || value !== 0) ? value : 0;
-        if (isCommon && computed === computed) {
-          var seenIndex = seen.length;
-          while (seenIndex--) {
-            if (seen[seenIndex] === computed) {
-              continue outer;
-            }
-          }
-          if (iteratee) {
-            seen.push(computed);
-          }
-          result.push(value);
-        } else if (!includes(seen, computed, comparator)) {
-          if (seen !== result) {
-            seen.push(computed);
-          }
-          result.push(value);
-        }
-      }
-      return result;
-    }
-    function baseUnset(object, path) {
-      path = isKey(path, object) ? [path] : castPath(path);
-      object = parent(object, path);
-      var key = toKey(last(path));
-      return !(object != null && baseHas(object, key)) || delete object[key];
-    }
-    function baseUpdate(object, path, updater, customizer) {
-      return baseSet(object, path, updater(baseGet(object, path)), customizer);
-    }
-    function baseWhile(array, predicate, isDrop, fromRight) {
-      var length = array.length,
-          index = fromRight ? length : -1;
-      while ((fromRight ? index-- : ++index < length) && predicate(array[index], index, array)) {}
-      return isDrop ? baseSlice(array, (fromRight ? 0 : index), (fromRight ? index + 1 : length)) : baseSlice(array, (fromRight ? index + 1 : 0), (fromRight ? length : index));
-    }
-    function baseWrapperValue(value, actions) {
-      var result = value;
-      if (result instanceof LazyWrapper) {
-        result = result.value();
-      }
-      return arrayReduce(actions, function(result, action) {
-        return action.func.apply(action.thisArg, arrayPush([result], action.args));
-      }, result);
-    }
-    function baseXor(arrays, iteratee, comparator) {
-      var index = -1,
-          length = arrays.length;
-      while (++index < length) {
-        var result = result ? arrayPush(baseDifference(result, arrays[index], iteratee, comparator), baseDifference(arrays[index], result, iteratee, comparator)) : arrays[index];
-      }
-      return (result && result.length) ? baseUniq(result, iteratee, comparator) : [];
-    }
-    function baseZipObject(props, values, assignFunc) {
-      var index = -1,
-          length = props.length,
-          valsLength = values.length,
-          result = {};
-      while (++index < length) {
-        var value = index < valsLength ? values[index] : undefined;
-        assignFunc(result, props[index], value);
-      }
-      return result;
-    }
-    function castArrayLikeObject(value) {
-      return isArrayLikeObject(value) ? value : [];
-    }
-    function castFunction(value) {
-      return typeof value == 'function' ? value : identity;
-    }
-    function castPath(value) {
-      return isArray(value) ? value : stringToPath(value);
-    }
-    function castSlice(array, start, end) {
-      var length = array.length;
-      end = end === undefined ? length : end;
-      return (!start && end >= length) ? array : baseSlice(array, start, end);
-    }
-    function cloneBuffer(buffer, isDeep) {
-      if (isDeep) {
-        return buffer.slice();
-      }
-      var result = new buffer.constructor(buffer.length);
-      buffer.copy(result);
-      return result;
-    }
-    function cloneArrayBuffer(arrayBuffer) {
-      var result = new arrayBuffer.constructor(arrayBuffer.byteLength);
-      new Uint8Array(result).set(new Uint8Array(arrayBuffer));
-      return result;
-    }
-    function cloneDataView(dataView, isDeep) {
-      var buffer = isDeep ? cloneArrayBuffer(dataView.buffer) : dataView.buffer;
-      return new dataView.constructor(buffer, dataView.byteOffset, dataView.byteLength);
-    }
-    function cloneMap(map, isDeep, cloneFunc) {
-      var array = isDeep ? cloneFunc(mapToArray(map), true) : mapToArray(map);
-      return arrayReduce(array, addMapEntry, new map.constructor);
-    }
-    function cloneRegExp(regexp) {
-      var result = new regexp.constructor(regexp.source, reFlags.exec(regexp));
-      result.lastIndex = regexp.lastIndex;
-      return result;
-    }
-    function cloneSet(set, isDeep, cloneFunc) {
-      var array = isDeep ? cloneFunc(setToArray(set), true) : setToArray(set);
-      return arrayReduce(array, addSetEntry, new set.constructor);
-    }
-    function cloneSymbol(symbol) {
-      return symbolValueOf ? Object(symbolValueOf.call(symbol)) : {};
-    }
-    function cloneTypedArray(typedArray, isDeep) {
-      var buffer = isDeep ? cloneArrayBuffer(typedArray.buffer) : typedArray.buffer;
-      return new typedArray.constructor(buffer, typedArray.byteOffset, typedArray.length);
-    }
-    function compareAscending(value, other) {
-      if (value !== other) {
-        var valIsDefined = value !== undefined,
-            valIsNull = value === null,
-            valIsReflexive = value === value,
-            valIsSymbol = isSymbol(value);
-        var othIsDefined = other !== undefined,
-            othIsNull = other === null,
-            othIsReflexive = other === other,
-            othIsSymbol = isSymbol(other);
-        if ((!othIsNull && !othIsSymbol && !valIsSymbol && value > other) || (valIsSymbol && othIsDefined && othIsReflexive && !othIsNull && !othIsSymbol) || (valIsNull && othIsDefined && othIsReflexive) || (!valIsDefined && othIsReflexive) || !valIsReflexive) {
-          return 1;
-        }
-        if ((!valIsNull && !valIsSymbol && !othIsSymbol && value < other) || (othIsSymbol && valIsDefined && valIsReflexive && !valIsNull && !valIsSymbol) || (othIsNull && valIsDefined && valIsReflexive) || (!othIsDefined && valIsReflexive) || !othIsReflexive) {
-          return -1;
-        }
-      }
-      return 0;
-    }
-    function compareMultiple(object, other, orders) {
-      var index = -1,
-          objCriteria = object.criteria,
-          othCriteria = other.criteria,
-          length = objCriteria.length,
-          ordersLength = orders.length;
-      while (++index < length) {
-        var result = compareAscending(objCriteria[index], othCriteria[index]);
-        if (result) {
-          if (index >= ordersLength) {
-            return result;
-          }
-          var order = orders[index];
-          return result * (order == 'desc' ? -1 : 1);
-        }
-      }
-      return object.index - other.index;
-    }
-    function composeArgs(args, partials, holders, isCurried) {
-      var argsIndex = -1,
-          argsLength = args.length,
-          holdersLength = holders.length,
-          leftIndex = -1,
-          leftLength = partials.length,
-          rangeLength = nativeMax(argsLength - holdersLength, 0),
-          result = Array(leftLength + rangeLength),
-          isUncurried = !isCurried;
-      while (++leftIndex < leftLength) {
-        result[leftIndex] = partials[leftIndex];
-      }
-      while (++argsIndex < holdersLength) {
-        if (isUncurried || argsIndex < argsLength) {
-          result[holders[argsIndex]] = args[argsIndex];
-        }
-      }
-      while (rangeLength--) {
-        result[leftIndex++] = args[argsIndex++];
-      }
-      return result;
-    }
-    function composeArgsRight(args, partials, holders, isCurried) {
-      var argsIndex = -1,
-          argsLength = args.length,
-          holdersIndex = -1,
-          holdersLength = holders.length,
-          rightIndex = -1,
-          rightLength = partials.length,
-          rangeLength = nativeMax(argsLength - holdersLength, 0),
-          result = Array(rangeLength + rightLength),
-          isUncurried = !isCurried;
-      while (++argsIndex < rangeLength) {
-        result[argsIndex] = args[argsIndex];
-      }
-      var offset = argsIndex;
-      while (++rightIndex < rightLength) {
-        result[offset + rightIndex] = partials[rightIndex];
-      }
-      while (++holdersIndex < holdersLength) {
-        if (isUncurried || argsIndex < argsLength) {
-          result[offset + holders[holdersIndex]] = args[argsIndex++];
-        }
-      }
-      return result;
-    }
-    function copyArray(source, array) {
-      var index = -1,
-          length = source.length;
-      array || (array = Array(length));
-      while (++index < length) {
-        array[index] = source[index];
-      }
-      return array;
-    }
-    function copyObject(source, props, object, customizer) {
-      object || (object = {});
-      var index = -1,
-          length = props.length;
-      while (++index < length) {
-        var key = props[index];
-        var newValue = customizer ? customizer(object[key], source[key], key, object, source) : source[key];
-        assignValue(object, key, newValue);
-      }
-      return object;
-    }
-    function copySymbols(source, object) {
-      return copyObject(source, getSymbols(source), object);
-    }
-    function createAggregator(setter, initializer) {
-      return function(collection, iteratee) {
-        var func = isArray(collection) ? arrayAggregator : baseAggregator,
-            accumulator = initializer ? initializer() : {};
-        return func(collection, setter, getIteratee(iteratee), accumulator);
-      };
-    }
-    function createAssigner(assigner) {
-      return rest(function(object, sources) {
-        var index = -1,
-            length = sources.length,
-            customizer = length > 1 ? sources[length - 1] : undefined,
-            guard = length > 2 ? sources[2] : undefined;
-        customizer = (assigner.length > 3 && typeof customizer == 'function') ? (length--, customizer) : undefined;
-        if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-          customizer = length < 3 ? undefined : customizer;
-          length = 1;
-        }
-        object = Object(object);
-        while (++index < length) {
-          var source = sources[index];
-          if (source) {
-            assigner(object, source, index, customizer);
-          }
-        }
-        return object;
-      });
-    }
-    function createBaseEach(eachFunc, fromRight) {
-      return function(collection, iteratee) {
-        if (collection == null) {
-          return collection;
-        }
-        if (!isArrayLike(collection)) {
-          return eachFunc(collection, iteratee);
-        }
-        var length = collection.length,
-            index = fromRight ? length : -1,
-            iterable = Object(collection);
-        while ((fromRight ? index-- : ++index < length)) {
-          if (iteratee(iterable[index], index, iterable) === false) {
-            break;
-          }
-        }
-        return collection;
-      };
-    }
-    function createBaseFor(fromRight) {
-      return function(object, iteratee, keysFunc) {
-        var index = -1,
-            iterable = Object(object),
-            props = keysFunc(object),
-            length = props.length;
-        while (length--) {
-          var key = props[fromRight ? length : ++index];
-          if (iteratee(iterable[key], key, iterable) === false) {
-            break;
-          }
-        }
-        return object;
-      };
-    }
-    function createBaseWrapper(func, bitmask, thisArg) {
-      var isBind = bitmask & BIND_FLAG,
-          Ctor = createCtorWrapper(func);
-      function wrapper() {
-        var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-        return fn.apply(isBind ? thisArg : this, arguments);
-      }
-      return wrapper;
-    }
-    function createCaseFirst(methodName) {
-      return function(string) {
-        string = toString(string);
-        var strSymbols = reHasComplexSymbol.test(string) ? stringToArray(string) : undefined;
-        var chr = strSymbols ? strSymbols[0] : string.charAt(0);
-        var trailing = strSymbols ? castSlice(strSymbols, 1).join('') : string.slice(1);
-        return chr[methodName]() + trailing;
-      };
-    }
-    function createCompounder(callback) {
-      return function(string) {
-        return arrayReduce(words(deburr(string).replace(reApos, '')), callback, '');
-      };
-    }
-    function createCtorWrapper(Ctor) {
-      return function() {
-        var args = arguments;
-        switch (args.length) {
-          case 0:
-            return new Ctor;
-          case 1:
-            return new Ctor(args[0]);
-          case 2:
-            return new Ctor(args[0], args[1]);
-          case 3:
-            return new Ctor(args[0], args[1], args[2]);
-          case 4:
-            return new Ctor(args[0], args[1], args[2], args[3]);
-          case 5:
-            return new Ctor(args[0], args[1], args[2], args[3], args[4]);
-          case 6:
-            return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5]);
-          case 7:
-            return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-        }
-        var thisBinding = baseCreate(Ctor.prototype),
-            result = Ctor.apply(thisBinding, args);
-        return isObject(result) ? result : thisBinding;
-      };
-    }
-    function createCurryWrapper(func, bitmask, arity) {
-      var Ctor = createCtorWrapper(func);
-      function wrapper() {
-        var length = arguments.length,
-            args = Array(length),
-            index = length,
-            placeholder = getHolder(wrapper);
-        while (index--) {
-          args[index] = arguments[index];
-        }
-        var holders = (length < 3 && args[0] !== placeholder && args[length - 1] !== placeholder) ? [] : replaceHolders(args, placeholder);
-        length -= holders.length;
-        if (length < arity) {
-          return createRecurryWrapper(func, bitmask, createHybridWrapper, wrapper.placeholder, undefined, args, holders, undefined, undefined, arity - length);
-        }
-        var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-        return apply(fn, this, args);
-      }
-      return wrapper;
-    }
-    function createFind(findIndexFunc) {
-      return function(collection, predicate, fromIndex) {
-        var iterable = Object(collection);
-        predicate = getIteratee(predicate, 3);
-        if (!isArrayLike(collection)) {
-          var props = keys(collection);
-        }
-        var index = findIndexFunc(props || collection, function(value, key) {
-          if (props) {
-            key = value;
-            value = iterable[key];
-          }
-          return predicate(value, key, iterable);
-        }, fromIndex);
-        return index > -1 ? collection[props ? props[index] : index] : undefined;
-      };
-    }
-    function createFlow(fromRight) {
-      return rest(function(funcs) {
-        funcs = baseFlatten(funcs, 1);
-        var length = funcs.length,
-            index = length,
-            prereq = LodashWrapper.prototype.thru;
-        if (fromRight) {
-          funcs.reverse();
-        }
-        while (index--) {
-          var func = funcs[index];
-          if (typeof func != 'function') {
-            throw new TypeError(FUNC_ERROR_TEXT);
-          }
-          if (prereq && !wrapper && getFuncName(func) == 'wrapper') {
-            var wrapper = new LodashWrapper([], true);
-          }
-        }
-        index = wrapper ? index : length;
-        while (++index < length) {
-          func = funcs[index];
-          var funcName = getFuncName(func),
-              data = funcName == 'wrapper' ? getData(func) : undefined;
-          if (data && isLaziable(data[0]) && data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) && !data[4].length && data[9] == 1) {
-            wrapper = wrapper[getFuncName(data[0])].apply(wrapper, data[3]);
-          } else {
-            wrapper = (func.length == 1 && isLaziable(func)) ? wrapper[funcName]() : wrapper.thru(func);
-          }
-        }
-        return function() {
-          var args = arguments,
-              value = args[0];
-          if (wrapper && args.length == 1 && isArray(value) && value.length >= LARGE_ARRAY_SIZE) {
-            return wrapper.plant(value).value();
-          }
-          var index = 0,
-              result = length ? funcs[index].apply(this, args) : value;
-          while (++index < length) {
-            result = funcs[index].call(this, result);
-          }
-          return result;
-        };
-      });
-    }
-    function createHybridWrapper(func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity) {
-      var isAry = bitmask & ARY_FLAG,
-          isBind = bitmask & BIND_FLAG,
-          isBindKey = bitmask & BIND_KEY_FLAG,
-          isCurried = bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG),
-          isFlip = bitmask & FLIP_FLAG,
-          Ctor = isBindKey ? undefined : createCtorWrapper(func);
-      function wrapper() {
-        var length = arguments.length,
-            args = Array(length),
-            index = length;
-        while (index--) {
-          args[index] = arguments[index];
-        }
-        if (isCurried) {
-          var placeholder = getHolder(wrapper),
-              holdersCount = countHolders(args, placeholder);
-        }
-        if (partials) {
-          args = composeArgs(args, partials, holders, isCurried);
-        }
-        if (partialsRight) {
-          args = composeArgsRight(args, partialsRight, holdersRight, isCurried);
-        }
-        length -= holdersCount;
-        if (isCurried && length < arity) {
-          var newHolders = replaceHolders(args, placeholder);
-          return createRecurryWrapper(func, bitmask, createHybridWrapper, wrapper.placeholder, thisArg, args, newHolders, argPos, ary, arity - length);
-        }
-        var thisBinding = isBind ? thisArg : this,
-            fn = isBindKey ? thisBinding[func] : func;
-        length = args.length;
-        if (argPos) {
-          args = reorder(args, argPos);
-        } else if (isFlip && length > 1) {
-          args.reverse();
-        }
-        if (isAry && ary < length) {
-          args.length = ary;
-        }
-        if (this && this !== root && this instanceof wrapper) {
-          fn = Ctor || createCtorWrapper(fn);
-        }
-        return fn.apply(thisBinding, args);
-      }
-      return wrapper;
-    }
-    function createInverter(setter, toIteratee) {
-      return function(object, iteratee) {
-        return baseInverter(object, setter, toIteratee(iteratee), {});
-      };
-    }
-    function createMathOperation(operator) {
-      return function(value, other) {
-        var result;
-        if (value === undefined && other === undefined) {
-          return 0;
-        }
-        if (value !== undefined) {
-          result = value;
-        }
-        if (other !== undefined) {
-          if (result === undefined) {
-            return other;
-          }
-          if (typeof value == 'string' || typeof other == 'string') {
-            value = baseToString(value);
-            other = baseToString(other);
-          } else {
-            value = baseToNumber(value);
-            other = baseToNumber(other);
-          }
-          result = operator(value, other);
-        }
-        return result;
-      };
-    }
-    function createOver(arrayFunc) {
-      return rest(function(iteratees) {
-        iteratees = (iteratees.length == 1 && isArray(iteratees[0])) ? arrayMap(iteratees[0], baseUnary(getIteratee())) : arrayMap(baseFlatten(iteratees, 1, isFlattenableIteratee), baseUnary(getIteratee()));
-        return rest(function(args) {
-          var thisArg = this;
-          return arrayFunc(iteratees, function(iteratee) {
-            return apply(iteratee, thisArg, args);
-          });
-        });
-      });
-    }
-    function createPadding(length, chars) {
-      chars = chars === undefined ? ' ' : baseToString(chars);
-      var charsLength = chars.length;
-      if (charsLength < 2) {
-        return charsLength ? baseRepeat(chars, length) : chars;
-      }
-      var result = baseRepeat(chars, nativeCeil(length / stringSize(chars)));
-      return reHasComplexSymbol.test(chars) ? castSlice(stringToArray(result), 0, length).join('') : result.slice(0, length);
-    }
-    function createPartialWrapper(func, bitmask, thisArg, partials) {
-      var isBind = bitmask & BIND_FLAG,
-          Ctor = createCtorWrapper(func);
-      function wrapper() {
-        var argsIndex = -1,
-            argsLength = arguments.length,
-            leftIndex = -1,
-            leftLength = partials.length,
-            args = Array(leftLength + argsLength),
-            fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
-        while (++leftIndex < leftLength) {
-          args[leftIndex] = partials[leftIndex];
-        }
-        while (argsLength--) {
-          args[leftIndex++] = arguments[++argsIndex];
-        }
-        return apply(fn, isBind ? thisArg : this, args);
-      }
-      return wrapper;
-    }
-    function createRange(fromRight) {
-      return function(start, end, step) {
-        if (step && typeof step != 'number' && isIterateeCall(start, end, step)) {
-          end = step = undefined;
-        }
-        start = toNumber(start);
-        start = start === start ? start : 0;
-        if (end === undefined) {
-          end = start;
-          start = 0;
-        } else {
-          end = toNumber(end) || 0;
-        }
-        step = step === undefined ? (start < end ? 1 : -1) : (toNumber(step) || 0);
-        return baseRange(start, end, step, fromRight);
-      };
-    }
-    function createRelationalOperation(operator) {
-      return function(value, other) {
-        if (!(typeof value == 'string' && typeof other == 'string')) {
-          value = toNumber(value);
-          other = toNumber(other);
-        }
-        return operator(value, other);
-      };
-    }
-    function createRecurryWrapper(func, bitmask, wrapFunc, placeholder, thisArg, partials, holders, argPos, ary, arity) {
-      var isCurry = bitmask & CURRY_FLAG,
-          newHolders = isCurry ? holders : undefined,
-          newHoldersRight = isCurry ? undefined : holders,
-          newPartials = isCurry ? partials : undefined,
-          newPartialsRight = isCurry ? undefined : partials;
-      bitmask |= (isCurry ? PARTIAL_FLAG : PARTIAL_RIGHT_FLAG);
-      bitmask &= ~(isCurry ? PARTIAL_RIGHT_FLAG : PARTIAL_FLAG);
-      if (!(bitmask & CURRY_BOUND_FLAG)) {
-        bitmask &= ~(BIND_FLAG | BIND_KEY_FLAG);
-      }
-      var newData = [func, bitmask, thisArg, newPartials, newHolders, newPartialsRight, newHoldersRight, argPos, ary, arity];
-      var result = wrapFunc.apply(undefined, newData);
-      if (isLaziable(func)) {
-        setData(result, newData);
-      }
-      result.placeholder = placeholder;
-      return result;
-    }
-    function createRound(methodName) {
-      var func = Math[methodName];
-      return function(number, precision) {
-        number = toNumber(number);
-        precision = nativeMin(toInteger(precision), 292);
-        if (precision) {
-          var pair = (toString(number) + 'e').split('e'),
-              value = func(pair[0] + 'e' + (+pair[1] + precision));
-          pair = (toString(value) + 'e').split('e');
-          return +(pair[0] + 'e' + (+pair[1] - precision));
-        }
-        return func(number);
-      };
-    }
-    var createSet = !(Set && (1 / setToArray(new Set([, -0]))[1]) == INFINITY) ? noop : function(values) {
-      return new Set(values);
-    };
-    function createToPairs(keysFunc) {
-      return function(object) {
-        var tag = getTag(object);
-        if (tag == mapTag) {
-          return mapToArray(object);
-        }
-        if (tag == setTag) {
-          return setToPairs(object);
-        }
-        return baseToPairs(object, keysFunc(object));
-      };
-    }
-    function createWrapper(func, bitmask, thisArg, partials, holders, argPos, ary, arity) {
-      var isBindKey = bitmask & BIND_KEY_FLAG;
-      if (!isBindKey && typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      var length = partials ? partials.length : 0;
-      if (!length) {
-        bitmask &= ~(PARTIAL_FLAG | PARTIAL_RIGHT_FLAG);
-        partials = holders = undefined;
-      }
-      ary = ary === undefined ? ary : nativeMax(toInteger(ary), 0);
-      arity = arity === undefined ? arity : toInteger(arity);
-      length -= holders ? holders.length : 0;
-      if (bitmask & PARTIAL_RIGHT_FLAG) {
-        var partialsRight = partials,
-            holdersRight = holders;
-        partials = holders = undefined;
-      }
-      var data = isBindKey ? undefined : getData(func);
-      var newData = [func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity];
-      if (data) {
-        mergeData(newData, data);
-      }
-      func = newData[0];
-      bitmask = newData[1];
-      thisArg = newData[2];
-      partials = newData[3];
-      holders = newData[4];
-      arity = newData[9] = newData[9] == null ? (isBindKey ? 0 : func.length) : nativeMax(newData[9] - length, 0);
-      if (!arity && bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG)) {
-        bitmask &= ~(CURRY_FLAG | CURRY_RIGHT_FLAG);
-      }
-      if (!bitmask || bitmask == BIND_FLAG) {
-        var result = createBaseWrapper(func, bitmask, thisArg);
-      } else if (bitmask == CURRY_FLAG || bitmask == CURRY_RIGHT_FLAG) {
-        result = createCurryWrapper(func, bitmask, arity);
-      } else if ((bitmask == PARTIAL_FLAG || bitmask == (BIND_FLAG | PARTIAL_FLAG)) && !holders.length) {
-        result = createPartialWrapper(func, bitmask, thisArg, partials);
-      } else {
-        result = createHybridWrapper.apply(undefined, newData);
-      }
-      var setter = data ? baseSetData : setData;
-      return setter(result, newData);
-    }
-    function equalArrays(array, other, equalFunc, customizer, bitmask, stack) {
-      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
-          arrLength = array.length,
-          othLength = other.length;
-      if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
-        return false;
-      }
-      var stacked = stack.get(array);
-      if (stacked) {
-        return stacked == other;
-      }
-      var index = -1,
-          result = true,
-          seen = (bitmask & UNORDERED_COMPARE_FLAG) ? new SetCache : undefined;
-      stack.set(array, other);
-      while (++index < arrLength) {
-        var arrValue = array[index],
-            othValue = other[index];
-        if (customizer) {
-          var compared = isPartial ? customizer(othValue, arrValue, index, other, array, stack) : customizer(arrValue, othValue, index, array, other, stack);
-        }
-        if (compared !== undefined) {
-          if (compared) {
-            continue;
-          }
-          result = false;
-          break;
-        }
-        if (seen) {
-          if (!arraySome(other, function(othValue, othIndex) {
-            if (!seen.has(othIndex) && (arrValue === othValue || equalFunc(arrValue, othValue, customizer, bitmask, stack))) {
-              return seen.add(othIndex);
-            }
-          })) {
-            result = false;
-            break;
-          }
-        } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, bitmask, stack))) {
-          result = false;
-          break;
-        }
-      }
-      stack['delete'](array);
-      return result;
-    }
-    function equalByTag(object, other, tag, equalFunc, customizer, bitmask, stack) {
-      switch (tag) {
-        case dataViewTag:
-          if ((object.byteLength != other.byteLength) || (object.byteOffset != other.byteOffset)) {
-            return false;
-          }
-          object = object.buffer;
-          other = other.buffer;
-        case arrayBufferTag:
-          if ((object.byteLength != other.byteLength) || !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
-            return false;
-          }
-          return true;
-        case boolTag:
-        case dateTag:
-          return +object == +other;
-        case errorTag:
-          return object.name == other.name && object.message == other.message;
-        case numberTag:
-          return (object != +object) ? other != +other : object == +other;
-        case regexpTag:
-        case stringTag:
-          return object == (other + '');
-        case mapTag:
-          var convert = mapToArray;
-        case setTag:
-          var isPartial = bitmask & PARTIAL_COMPARE_FLAG;
-          convert || (convert = setToArray);
-          if (object.size != other.size && !isPartial) {
-            return false;
-          }
-          var stacked = stack.get(object);
-          if (stacked) {
-            return stacked == other;
-          }
-          bitmask |= UNORDERED_COMPARE_FLAG;
-          stack.set(object, other);
-          return equalArrays(convert(object), convert(other), equalFunc, customizer, bitmask, stack);
-        case symbolTag:
-          if (symbolValueOf) {
-            return symbolValueOf.call(object) == symbolValueOf.call(other);
-          }
-      }
-      return false;
-    }
-    function equalObjects(object, other, equalFunc, customizer, bitmask, stack) {
-      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
-          objProps = keys(object),
-          objLength = objProps.length,
-          othProps = keys(other),
-          othLength = othProps.length;
-      if (objLength != othLength && !isPartial) {
-        return false;
-      }
-      var index = objLength;
-      while (index--) {
-        var key = objProps[index];
-        if (!(isPartial ? key in other : baseHas(other, key))) {
-          return false;
-        }
-      }
-      var stacked = stack.get(object);
-      if (stacked) {
-        return stacked == other;
-      }
-      var result = true;
-      stack.set(object, other);
-      var skipCtor = isPartial;
-      while (++index < objLength) {
-        key = objProps[index];
-        var objValue = object[key],
-            othValue = other[key];
-        if (customizer) {
-          var compared = isPartial ? customizer(othValue, objValue, key, other, object, stack) : customizer(objValue, othValue, key, object, other, stack);
-        }
-        if (!(compared === undefined ? (objValue === othValue || equalFunc(objValue, othValue, customizer, bitmask, stack)) : compared)) {
-          result = false;
-          break;
-        }
-        skipCtor || (skipCtor = key == 'constructor');
-      }
-      if (result && !skipCtor) {
-        var objCtor = object.constructor,
-            othCtor = other.constructor;
-        if (objCtor != othCtor && ('constructor' in object && 'constructor' in other) && !(typeof objCtor == 'function' && objCtor instanceof objCtor && typeof othCtor == 'function' && othCtor instanceof othCtor)) {
-          result = false;
-        }
-      }
-      stack['delete'](object);
-      return result;
-    }
-    function getAllKeys(object) {
-      return baseGetAllKeys(object, keys, getSymbols);
-    }
-    function getAllKeysIn(object) {
-      return baseGetAllKeys(object, keysIn, getSymbolsIn);
-    }
-    var getData = !metaMap ? noop : function(func) {
-      return metaMap.get(func);
-    };
-    function getFuncName(func) {
-      var result = (func.name + ''),
-          array = realNames[result],
-          length = hasOwnProperty.call(realNames, result) ? array.length : 0;
-      while (length--) {
-        var data = array[length],
-            otherFunc = data.func;
-        if (otherFunc == null || otherFunc == func) {
-          return data.name;
-        }
-      }
-      return result;
-    }
-    function getHolder(func) {
-      var object = hasOwnProperty.call(lodash, 'placeholder') ? lodash : func;
-      return object.placeholder;
-    }
-    function getIteratee() {
-      var result = lodash.iteratee || iteratee;
-      result = result === iteratee ? baseIteratee : result;
-      return arguments.length ? result(arguments[0], arguments[1]) : result;
-    }
-    var getLength = baseProperty('length');
-    function getMapData(map, key) {
-      var data = map.__data__;
-      return isKeyable(key) ? data[typeof key == 'string' ? 'string' : 'hash'] : data.map;
-    }
-    function getMatchData(object) {
-      var result = keys(object),
-          length = result.length;
-      while (length--) {
-        var key = result[length],
-            value = object[key];
-        result[length] = [key, value, isStrictComparable(value)];
-      }
-      return result;
-    }
-    function getNative(object, key) {
-      var value = getValue(object, key);
-      return baseIsNative(value) ? value : undefined;
-    }
-    function getPrototype(value) {
-      return nativeGetPrototype(Object(value));
-    }
-    function getSymbols(object) {
-      return getOwnPropertySymbols(Object(object));
-    }
-    if (!getOwnPropertySymbols) {
-      getSymbols = stubArray;
-    }
-    var getSymbolsIn = !getOwnPropertySymbols ? getSymbols : function(object) {
-      var result = [];
-      while (object) {
-        arrayPush(result, getSymbols(object));
-        object = getPrototype(object);
-      }
-      return result;
-    };
-    function getTag(value) {
-      return objectToString.call(value);
-    }
-    if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) || (Map && getTag(new Map) != mapTag) || (Promise && getTag(Promise.resolve()) != promiseTag) || (Set && getTag(new Set) != setTag) || (WeakMap && getTag(new WeakMap) != weakMapTag)) {
-      getTag = function(value) {
-        var result = objectToString.call(value),
-            Ctor = result == objectTag ? value.constructor : undefined,
-            ctorString = Ctor ? toSource(Ctor) : undefined;
-        if (ctorString) {
-          switch (ctorString) {
-            case dataViewCtorString:
-              return dataViewTag;
-            case mapCtorString:
-              return mapTag;
-            case promiseCtorString:
-              return promiseTag;
-            case setCtorString:
-              return setTag;
-            case weakMapCtorString:
-              return weakMapTag;
-          }
-        }
-        return result;
-      };
-    }
-    function getView(start, end, transforms) {
-      var index = -1,
-          length = transforms.length;
-      while (++index < length) {
-        var data = transforms[index],
-            size = data.size;
-        switch (data.type) {
-          case 'drop':
-            start += size;
-            break;
-          case 'dropRight':
-            end -= size;
-            break;
-          case 'take':
-            end = nativeMin(end, start + size);
-            break;
-          case 'takeRight':
-            start = nativeMax(start, end - size);
-            break;
-        }
-      }
-      return {
-        'start': start,
-        'end': end
-      };
-    }
-    function hasPath(object, path, hasFunc) {
-      path = isKey(path, object) ? [path] : castPath(path);
-      var result,
-          index = -1,
-          length = path.length;
-      while (++index < length) {
-        var key = toKey(path[index]);
-        if (!(result = object != null && hasFunc(object, key))) {
-          break;
-        }
-        object = object[key];
-      }
-      if (result) {
-        return result;
-      }
-      var length = object ? object.length : 0;
-      return !!length && isLength(length) && isIndex(key, length) && (isArray(object) || isString(object) || isArguments(object));
-    }
-    function initCloneArray(array) {
-      var length = array.length,
-          result = array.constructor(length);
-      if (length && typeof array[0] == 'string' && hasOwnProperty.call(array, 'index')) {
-        result.index = array.index;
-        result.input = array.input;
-      }
-      return result;
-    }
-    function initCloneObject(object) {
-      return (typeof object.constructor == 'function' && !isPrototype(object)) ? baseCreate(getPrototype(object)) : {};
-    }
-    function initCloneByTag(object, tag, cloneFunc, isDeep) {
-      var Ctor = object.constructor;
-      switch (tag) {
-        case arrayBufferTag:
-          return cloneArrayBuffer(object);
-        case boolTag:
-        case dateTag:
-          return new Ctor(+object);
-        case dataViewTag:
-          return cloneDataView(object, isDeep);
-        case float32Tag:
-        case float64Tag:
-        case int8Tag:
-        case int16Tag:
-        case int32Tag:
-        case uint8Tag:
-        case uint8ClampedTag:
-        case uint16Tag:
-        case uint32Tag:
-          return cloneTypedArray(object, isDeep);
-        case mapTag:
-          return cloneMap(object, isDeep, cloneFunc);
-        case numberTag:
-        case stringTag:
-          return new Ctor(object);
-        case regexpTag:
-          return cloneRegExp(object);
-        case setTag:
-          return cloneSet(object, isDeep, cloneFunc);
-        case symbolTag:
-          return cloneSymbol(object);
-      }
-    }
-    function indexKeys(object) {
-      var length = object ? object.length : undefined;
-      if (isLength(length) && (isArray(object) || isString(object) || isArguments(object))) {
-        return baseTimes(length, String);
-      }
-      return null;
-    }
-    function isFlattenable(value) {
-      return isArray(value) || isArguments(value);
-    }
-    function isFlattenableIteratee(value) {
-      return isArray(value) && !(value.length == 2 && !isFunction(value[0]));
-    }
-    function isIndex(value, length) {
-      length = length == null ? MAX_SAFE_INTEGER : length;
-      return !!length && (typeof value == 'number' || reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
-    }
-    function isIterateeCall(value, index, object) {
-      if (!isObject(object)) {
-        return false;
-      }
-      var type = typeof index;
-      if (type == 'number' ? (isArrayLike(object) && isIndex(index, object.length)) : (type == 'string' && index in object)) {
-        return eq(object[index], value);
-      }
-      return false;
-    }
-    function isKey(value, object) {
-      if (isArray(value)) {
-        return false;
-      }
-      var type = typeof value;
-      if (type == 'number' || type == 'symbol' || type == 'boolean' || value == null || isSymbol(value)) {
-        return true;
-      }
-      return reIsPlainProp.test(value) || !reIsDeepProp.test(value) || (object != null && value in Object(object));
-    }
-    function isKeyable(value) {
-      var type = typeof value;
-      return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean') ? (value !== '__proto__') : (value === null);
-    }
-    function isLaziable(func) {
-      var funcName = getFuncName(func),
-          other = lodash[funcName];
-      if (typeof other != 'function' || !(funcName in LazyWrapper.prototype)) {
-        return false;
-      }
-      if (func === other) {
-        return true;
-      }
-      var data = getData(other);
-      return !!data && func === data[0];
-    }
-    function isMasked(func) {
-      return !!maskSrcKey && (maskSrcKey in func);
-    }
-    var isMaskable = coreJsData ? isFunction : stubFalse;
-    function isPrototype(value) {
-      var Ctor = value && value.constructor,
-          proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
-      return value === proto;
-    }
-    function isStrictComparable(value) {
-      return value === value && !isObject(value);
-    }
-    function matchesStrictComparable(key, srcValue) {
-      return function(object) {
-        if (object == null) {
-          return false;
-        }
-        return object[key] === srcValue && (srcValue !== undefined || (key in Object(object)));
-      };
-    }
-    function mergeData(data, source) {
-      var bitmask = data[1],
-          srcBitmask = source[1],
-          newBitmask = bitmask | srcBitmask,
-          isCommon = newBitmask < (BIND_FLAG | BIND_KEY_FLAG | ARY_FLAG);
-      var isCombo = ((srcBitmask == ARY_FLAG) && (bitmask == CURRY_FLAG)) || ((srcBitmask == ARY_FLAG) && (bitmask == REARG_FLAG) && (data[7].length <= source[8])) || ((srcBitmask == (ARY_FLAG | REARG_FLAG)) && (source[7].length <= source[8]) && (bitmask == CURRY_FLAG));
-      if (!(isCommon || isCombo)) {
-        return data;
-      }
-      if (srcBitmask & BIND_FLAG) {
-        data[2] = source[2];
-        newBitmask |= bitmask & BIND_FLAG ? 0 : CURRY_BOUND_FLAG;
-      }
-      var value = source[3];
-      if (value) {
-        var partials = data[3];
-        data[3] = partials ? composeArgs(partials, value, source[4]) : value;
-        data[4] = partials ? replaceHolders(data[3], PLACEHOLDER) : source[4];
-      }
-      value = source[5];
-      if (value) {
-        partials = data[5];
-        data[5] = partials ? composeArgsRight(partials, value, source[6]) : value;
-        data[6] = partials ? replaceHolders(data[5], PLACEHOLDER) : source[6];
-      }
-      value = source[7];
-      if (value) {
-        data[7] = value;
-      }
-      if (srcBitmask & ARY_FLAG) {
-        data[8] = data[8] == null ? source[8] : nativeMin(data[8], source[8]);
-      }
-      if (data[9] == null) {
-        data[9] = source[9];
-      }
-      data[0] = source[0];
-      data[1] = newBitmask;
-      return data;
-    }
-    function mergeDefaults(objValue, srcValue, key, object, source, stack) {
-      if (isObject(objValue) && isObject(srcValue)) {
-        baseMerge(objValue, srcValue, undefined, mergeDefaults, stack.set(srcValue, objValue));
-      }
-      return objValue;
-    }
-    function parent(object, path) {
-      return path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
-    }
-    function reorder(array, indexes) {
-      var arrLength = array.length,
-          length = nativeMin(indexes.length, arrLength),
-          oldArray = copyArray(array);
-      while (length--) {
-        var index = indexes[length];
-        array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
-      }
-      return array;
-    }
-    var setData = (function() {
-      var count = 0,
-          lastCalled = 0;
-      return function(key, value) {
-        var stamp = now(),
-            remaining = HOT_SPAN - (stamp - lastCalled);
-        lastCalled = stamp;
-        if (remaining > 0) {
-          if (++count >= HOT_COUNT) {
-            return key;
-          }
-        } else {
-          count = 0;
-        }
-        return baseSetData(key, value);
-      };
-    }());
-    var stringToPath = memoize(function(string) {
-      var result = [];
-      toString(string).replace(rePropName, function(match, number, quote, string) {
-        result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
-      });
-      return result;
-    });
-    function toKey(value) {
-      if (typeof value == 'string' || isSymbol(value)) {
-        return value;
-      }
-      var result = (value + '');
-      return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-    }
-    function toSource(func) {
-      if (func != null) {
-        try {
-          return funcToString.call(func);
-        } catch (e) {}
-        try {
-          return (func + '');
-        } catch (e) {}
-      }
-      return '';
-    }
-    function wrapperClone(wrapper) {
-      if (wrapper instanceof LazyWrapper) {
-        return wrapper.clone();
-      }
-      var result = new LodashWrapper(wrapper.__wrapped__, wrapper.__chain__);
-      result.__actions__ = copyArray(wrapper.__actions__);
-      result.__index__ = wrapper.__index__;
-      result.__values__ = wrapper.__values__;
-      return result;
-    }
-    function chunk(array, size, guard) {
-      if ((guard ? isIterateeCall(array, size, guard) : size === undefined)) {
-        size = 1;
-      } else {
-        size = nativeMax(toInteger(size), 0);
-      }
-      var length = array ? array.length : 0;
-      if (!length || size < 1) {
-        return [];
-      }
-      var index = 0,
-          resIndex = 0,
-          result = Array(nativeCeil(length / size));
-      while (index < length) {
-        result[resIndex++] = baseSlice(array, index, (index += size));
-      }
-      return result;
-    }
-    function compact(array) {
-      var index = -1,
-          length = array ? array.length : 0,
-          resIndex = 0,
-          result = [];
-      while (++index < length) {
-        var value = array[index];
-        if (value) {
-          result[resIndex++] = value;
-        }
-      }
-      return result;
-    }
-    function concat() {
-      var length = arguments.length,
-          args = Array(length ? length - 1 : 0),
-          array = arguments[0],
-          index = length;
-      while (index--) {
-        args[index - 1] = arguments[index];
-      }
-      return length ? arrayPush(isArray(array) ? copyArray(array) : [array], baseFlatten(args, 1)) : [];
-    }
-    var difference = rest(function(array, values) {
-      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true)) : [];
-    });
-    var differenceBy = rest(function(array, values) {
-      var iteratee = last(values);
-      if (isArrayLikeObject(iteratee)) {
-        iteratee = undefined;
-      }
-      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true), getIteratee(iteratee)) : [];
-    });
-    var differenceWith = rest(function(array, values) {
-      var comparator = last(values);
-      if (isArrayLikeObject(comparator)) {
-        comparator = undefined;
-      }
-      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true), undefined, comparator) : [];
-    });
-    function drop(array, n, guard) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      n = (guard || n === undefined) ? 1 : toInteger(n);
-      return baseSlice(array, n < 0 ? 0 : n, length);
-    }
-    function dropRight(array, n, guard) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      n = (guard || n === undefined) ? 1 : toInteger(n);
-      n = length - n;
-      return baseSlice(array, 0, n < 0 ? 0 : n);
-    }
-    function dropRightWhile(array, predicate) {
-      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), true, true) : [];
-    }
-    function dropWhile(array, predicate) {
-      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), true) : [];
-    }
-    function fill(array, value, start, end) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      if (start && typeof start != 'number' && isIterateeCall(array, value, start)) {
-        start = 0;
-        end = length;
-      }
-      return baseFill(array, value, start, end);
-    }
-    function findIndex(array, predicate, fromIndex) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return -1;
-      }
-      var index = fromIndex == null ? 0 : toInteger(fromIndex);
-      if (index < 0) {
-        index = nativeMax(length + index, 0);
-      }
-      return baseFindIndex(array, getIteratee(predicate, 3), index);
-    }
-    function findLastIndex(array, predicate, fromIndex) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return -1;
-      }
-      var index = length - 1;
-      if (fromIndex !== undefined) {
-        index = toInteger(fromIndex);
-        index = fromIndex < 0 ? nativeMax(length + index, 0) : nativeMin(index, length - 1);
-      }
-      return baseFindIndex(array, getIteratee(predicate, 3), index, true);
-    }
-    function flatten(array) {
-      var length = array ? array.length : 0;
-      return length ? baseFlatten(array, 1) : [];
-    }
-    function flattenDeep(array) {
-      var length = array ? array.length : 0;
-      return length ? baseFlatten(array, INFINITY) : [];
-    }
-    function flattenDepth(array, depth) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      depth = depth === undefined ? 1 : toInteger(depth);
-      return baseFlatten(array, depth);
-    }
-    function fromPairs(pairs) {
-      var index = -1,
-          length = pairs ? pairs.length : 0,
-          result = {};
-      while (++index < length) {
-        var pair = pairs[index];
-        result[pair[0]] = pair[1];
-      }
-      return result;
-    }
-    function head(array) {
-      return (array && array.length) ? array[0] : undefined;
-    }
-    function indexOf(array, value, fromIndex) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return -1;
-      }
-      var index = fromIndex == null ? 0 : toInteger(fromIndex);
-      if (index < 0) {
-        index = nativeMax(length + index, 0);
-      }
-      return baseIndexOf(array, value, index);
-    }
-    function initial(array) {
-      return dropRight(array, 1);
-    }
-    var intersection = rest(function(arrays) {
-      var mapped = arrayMap(arrays, castArrayLikeObject);
-      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped) : [];
-    });
-    var intersectionBy = rest(function(arrays) {
-      var iteratee = last(arrays),
-          mapped = arrayMap(arrays, castArrayLikeObject);
-      if (iteratee === last(mapped)) {
-        iteratee = undefined;
-      } else {
-        mapped.pop();
-      }
-      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped, getIteratee(iteratee)) : [];
-    });
-    var intersectionWith = rest(function(arrays) {
-      var comparator = last(arrays),
-          mapped = arrayMap(arrays, castArrayLikeObject);
-      if (comparator === last(mapped)) {
-        comparator = undefined;
-      } else {
-        mapped.pop();
-      }
-      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped, undefined, comparator) : [];
-    });
-    function join(array, separator) {
-      return array ? nativeJoin.call(array, separator) : '';
-    }
-    function last(array) {
-      var length = array ? array.length : 0;
-      return length ? array[length - 1] : undefined;
-    }
-    function lastIndexOf(array, value, fromIndex) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return -1;
-      }
-      var index = length;
-      if (fromIndex !== undefined) {
-        index = toInteger(fromIndex);
-        index = (index < 0 ? nativeMax(length + index, 0) : nativeMin(index, length - 1)) + 1;
-      }
-      if (value !== value) {
-        return indexOfNaN(array, index - 1, true);
-      }
-      while (index--) {
-        if (array[index] === value) {
-          return index;
-        }
-      }
-      return -1;
-    }
-    function nth(array, n) {
-      return (array && array.length) ? baseNth(array, toInteger(n)) : undefined;
-    }
-    var pull = rest(pullAll);
-    function pullAll(array, values) {
-      return (array && array.length && values && values.length) ? basePullAll(array, values) : array;
-    }
-    function pullAllBy(array, values, iteratee) {
-      return (array && array.length && values && values.length) ? basePullAll(array, values, getIteratee(iteratee)) : array;
-    }
-    function pullAllWith(array, values, comparator) {
-      return (array && array.length && values && values.length) ? basePullAll(array, values, undefined, comparator) : array;
-    }
-    var pullAt = rest(function(array, indexes) {
-      indexes = baseFlatten(indexes, 1);
-      var length = array ? array.length : 0,
-          result = baseAt(array, indexes);
-      basePullAt(array, arrayMap(indexes, function(index) {
-        return isIndex(index, length) ? +index : index;
-      }).sort(compareAscending));
-      return result;
-    });
-    function remove(array, predicate) {
-      var result = [];
-      if (!(array && array.length)) {
-        return result;
-      }
-      var index = -1,
-          indexes = [],
-          length = array.length;
-      predicate = getIteratee(predicate, 3);
-      while (++index < length) {
-        var value = array[index];
-        if (predicate(value, index, array)) {
-          result.push(value);
-          indexes.push(index);
-        }
-      }
-      basePullAt(array, indexes);
-      return result;
-    }
-    function reverse(array) {
-      return array ? nativeReverse.call(array) : array;
-    }
-    function slice(array, start, end) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      if (end && typeof end != 'number' && isIterateeCall(array, start, end)) {
-        start = 0;
-        end = length;
-      } else {
-        start = start == null ? 0 : toInteger(start);
-        end = end === undefined ? length : toInteger(end);
-      }
-      return baseSlice(array, start, end);
-    }
-    function sortedIndex(array, value) {
-      return baseSortedIndex(array, value);
-    }
-    function sortedIndexBy(array, value, iteratee) {
-      return baseSortedIndexBy(array, value, getIteratee(iteratee));
-    }
-    function sortedIndexOf(array, value) {
-      var length = array ? array.length : 0;
-      if (length) {
-        var index = baseSortedIndex(array, value);
-        if (index < length && eq(array[index], value)) {
-          return index;
-        }
-      }
-      return -1;
-    }
-    function sortedLastIndex(array, value) {
-      return baseSortedIndex(array, value, true);
-    }
-    function sortedLastIndexBy(array, value, iteratee) {
-      return baseSortedIndexBy(array, value, getIteratee(iteratee), true);
-    }
-    function sortedLastIndexOf(array, value) {
-      var length = array ? array.length : 0;
-      if (length) {
-        var index = baseSortedIndex(array, value, true) - 1;
-        if (eq(array[index], value)) {
-          return index;
-        }
-      }
-      return -1;
-    }
-    function sortedUniq(array) {
-      return (array && array.length) ? baseSortedUniq(array) : [];
-    }
-    function sortedUniqBy(array, iteratee) {
-      return (array && array.length) ? baseSortedUniq(array, getIteratee(iteratee)) : [];
-    }
-    function tail(array) {
-      return drop(array, 1);
-    }
-    function take(array, n, guard) {
-      if (!(array && array.length)) {
-        return [];
-      }
-      n = (guard || n === undefined) ? 1 : toInteger(n);
-      return baseSlice(array, 0, n < 0 ? 0 : n);
-    }
-    function takeRight(array, n, guard) {
-      var length = array ? array.length : 0;
-      if (!length) {
-        return [];
-      }
-      n = (guard || n === undefined) ? 1 : toInteger(n);
-      n = length - n;
-      return baseSlice(array, n < 0 ? 0 : n, length);
-    }
-    function takeRightWhile(array, predicate) {
-      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), false, true) : [];
-    }
-    function takeWhile(array, predicate) {
-      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3)) : [];
-    }
-    var union = rest(function(arrays) {
-      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true));
-    });
-    var unionBy = rest(function(arrays) {
-      var iteratee = last(arrays);
-      if (isArrayLikeObject(iteratee)) {
-        iteratee = undefined;
-      }
-      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true), getIteratee(iteratee));
-    });
-    var unionWith = rest(function(arrays) {
-      var comparator = last(arrays);
-      if (isArrayLikeObject(comparator)) {
-        comparator = undefined;
-      }
-      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true), undefined, comparator);
-    });
-    function uniq(array) {
-      return (array && array.length) ? baseUniq(array) : [];
-    }
-    function uniqBy(array, iteratee) {
-      return (array && array.length) ? baseUniq(array, getIteratee(iteratee)) : [];
-    }
-    function uniqWith(array, comparator) {
-      return (array && array.length) ? baseUniq(array, undefined, comparator) : [];
-    }
-    function unzip(array) {
-      if (!(array && array.length)) {
-        return [];
-      }
-      var length = 0;
-      array = arrayFilter(array, function(group) {
-        if (isArrayLikeObject(group)) {
-          length = nativeMax(group.length, length);
-          return true;
-        }
-      });
-      return baseTimes(length, function(index) {
-        return arrayMap(array, baseProperty(index));
-      });
-    }
-    function unzipWith(array, iteratee) {
-      if (!(array && array.length)) {
-        return [];
-      }
-      var result = unzip(array);
-      if (iteratee == null) {
-        return result;
-      }
-      return arrayMap(result, function(group) {
-        return apply(iteratee, undefined, group);
-      });
-    }
-    var without = rest(function(array, values) {
-      return isArrayLikeObject(array) ? baseDifference(array, values) : [];
-    });
-    var xor = rest(function(arrays) {
-      return baseXor(arrayFilter(arrays, isArrayLikeObject));
-    });
-    var xorBy = rest(function(arrays) {
-      var iteratee = last(arrays);
-      if (isArrayLikeObject(iteratee)) {
-        iteratee = undefined;
-      }
-      return baseXor(arrayFilter(arrays, isArrayLikeObject), getIteratee(iteratee));
-    });
-    var xorWith = rest(function(arrays) {
-      var comparator = last(arrays);
-      if (isArrayLikeObject(comparator)) {
-        comparator = undefined;
-      }
-      return baseXor(arrayFilter(arrays, isArrayLikeObject), undefined, comparator);
-    });
-    var zip = rest(unzip);
-    function zipObject(props, values) {
-      return baseZipObject(props || [], values || [], assignValue);
-    }
-    function zipObjectDeep(props, values) {
-      return baseZipObject(props || [], values || [], baseSet);
-    }
-    var zipWith = rest(function(arrays) {
-      var length = arrays.length,
-          iteratee = length > 1 ? arrays[length - 1] : undefined;
-      iteratee = typeof iteratee == 'function' ? (arrays.pop(), iteratee) : undefined;
-      return unzipWith(arrays, iteratee);
-    });
-    function chain(value) {
-      var result = lodash(value);
-      result.__chain__ = true;
-      return result;
-    }
-    function tap(value, interceptor) {
-      interceptor(value);
-      return value;
-    }
-    function thru(value, interceptor) {
-      return interceptor(value);
-    }
-    var wrapperAt = rest(function(paths) {
-      paths = baseFlatten(paths, 1);
-      var length = paths.length,
-          start = length ? paths[0] : 0,
-          value = this.__wrapped__,
-          interceptor = function(object) {
-            return baseAt(object, paths);
-          };
-      if (length > 1 || this.__actions__.length || !(value instanceof LazyWrapper) || !isIndex(start)) {
-        return this.thru(interceptor);
-      }
-      value = value.slice(start, +start + (length ? 1 : 0));
-      value.__actions__.push({
-        'func': thru,
-        'args': [interceptor],
-        'thisArg': undefined
-      });
-      return new LodashWrapper(value, this.__chain__).thru(function(array) {
-        if (length && !array.length) {
-          array.push(undefined);
-        }
-        return array;
-      });
-    });
-    function wrapperChain() {
-      return chain(this);
-    }
-    function wrapperCommit() {
-      return new LodashWrapper(this.value(), this.__chain__);
-    }
-    function wrapperNext() {
-      if (this.__values__ === undefined) {
-        this.__values__ = toArray(this.value());
-      }
-      var done = this.__index__ >= this.__values__.length,
-          value = done ? undefined : this.__values__[this.__index__++];
-      return {
-        'done': done,
-        'value': value
-      };
-    }
-    function wrapperToIterator() {
-      return this;
-    }
-    function wrapperPlant(value) {
-      var result,
-          parent = this;
-      while (parent instanceof baseLodash) {
-        var clone = wrapperClone(parent);
-        clone.__index__ = 0;
-        clone.__values__ = undefined;
-        if (result) {
-          previous.__wrapped__ = clone;
-        } else {
-          result = clone;
-        }
-        var previous = clone;
-        parent = parent.__wrapped__;
-      }
-      previous.__wrapped__ = value;
-      return result;
-    }
-    function wrapperReverse() {
-      var value = this.__wrapped__;
-      if (value instanceof LazyWrapper) {
-        var wrapped = value;
-        if (this.__actions__.length) {
-          wrapped = new LazyWrapper(this);
-        }
-        wrapped = wrapped.reverse();
-        wrapped.__actions__.push({
-          'func': thru,
-          'args': [reverse],
-          'thisArg': undefined
-        });
-        return new LodashWrapper(wrapped, this.__chain__);
-      }
-      return this.thru(reverse);
-    }
-    function wrapperValue() {
-      return baseWrapperValue(this.__wrapped__, this.__actions__);
-    }
-    var countBy = createAggregator(function(result, value, key) {
-      hasOwnProperty.call(result, key) ? ++result[key] : (result[key] = 1);
-    });
-    function every(collection, predicate, guard) {
-      var func = isArray(collection) ? arrayEvery : baseEvery;
-      if (guard && isIterateeCall(collection, predicate, guard)) {
-        predicate = undefined;
-      }
-      return func(collection, getIteratee(predicate, 3));
-    }
-    function filter(collection, predicate) {
-      var func = isArray(collection) ? arrayFilter : baseFilter;
-      return func(collection, getIteratee(predicate, 3));
-    }
-    var find = createFind(findIndex);
-    var findLast = createFind(findLastIndex);
-    function flatMap(collection, iteratee) {
-      return baseFlatten(map(collection, iteratee), 1);
-    }
-    function flatMapDeep(collection, iteratee) {
-      return baseFlatten(map(collection, iteratee), INFINITY);
-    }
-    function flatMapDepth(collection, iteratee, depth) {
-      depth = depth === undefined ? 1 : toInteger(depth);
-      return baseFlatten(map(collection, iteratee), depth);
-    }
-    function forEach(collection, iteratee) {
-      var func = isArray(collection) ? arrayEach : baseEach;
-      return func(collection, getIteratee(iteratee, 3));
-    }
-    function forEachRight(collection, iteratee) {
-      var func = isArray(collection) ? arrayEachRight : baseEachRight;
-      return func(collection, getIteratee(iteratee, 3));
-    }
-    var groupBy = createAggregator(function(result, value, key) {
-      if (hasOwnProperty.call(result, key)) {
-        result[key].push(value);
-      } else {
-        result[key] = [value];
-      }
-    });
-    function includes(collection, value, fromIndex, guard) {
-      collection = isArrayLike(collection) ? collection : values(collection);
-      fromIndex = (fromIndex && !guard) ? toInteger(fromIndex) : 0;
-      var length = collection.length;
-      if (fromIndex < 0) {
-        fromIndex = nativeMax(length + fromIndex, 0);
-      }
-      return isString(collection) ? (fromIndex <= length && collection.indexOf(value, fromIndex) > -1) : (!!length && baseIndexOf(collection, value, fromIndex) > -1);
-    }
-    var invokeMap = rest(function(collection, path, args) {
-      var index = -1,
-          isFunc = typeof path == 'function',
-          isProp = isKey(path),
-          result = isArrayLike(collection) ? Array(collection.length) : [];
-      baseEach(collection, function(value) {
-        var func = isFunc ? path : ((isProp && value != null) ? value[path] : undefined);
-        result[++index] = func ? apply(func, value, args) : baseInvoke(value, path, args);
-      });
-      return result;
-    });
-    var keyBy = createAggregator(function(result, value, key) {
-      result[key] = value;
-    });
-    function map(collection, iteratee) {
-      var func = isArray(collection) ? arrayMap : baseMap;
-      return func(collection, getIteratee(iteratee, 3));
-    }
-    function orderBy(collection, iteratees, orders, guard) {
-      if (collection == null) {
-        return [];
-      }
-      if (!isArray(iteratees)) {
-        iteratees = iteratees == null ? [] : [iteratees];
-      }
-      orders = guard ? undefined : orders;
-      if (!isArray(orders)) {
-        orders = orders == null ? [] : [orders];
-      }
-      return baseOrderBy(collection, iteratees, orders);
-    }
-    var partition = createAggregator(function(result, value, key) {
-      result[key ? 0 : 1].push(value);
-    }, function() {
-      return [[], []];
-    });
-    function reduce(collection, iteratee, accumulator) {
-      var func = isArray(collection) ? arrayReduce : baseReduce,
-          initAccum = arguments.length < 3;
-      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEach);
-    }
-    function reduceRight(collection, iteratee, accumulator) {
-      var func = isArray(collection) ? arrayReduceRight : baseReduce,
-          initAccum = arguments.length < 3;
-      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEachRight);
-    }
-    function reject(collection, predicate) {
-      var func = isArray(collection) ? arrayFilter : baseFilter;
-      predicate = getIteratee(predicate, 3);
-      return func(collection, function(value, index, collection) {
-        return !predicate(value, index, collection);
-      });
-    }
-    function sample(collection) {
-      var array = isArrayLike(collection) ? collection : values(collection),
-          length = array.length;
-      return length > 0 ? array[baseRandom(0, length - 1)] : undefined;
-    }
-    function sampleSize(collection, n, guard) {
-      var index = -1,
-          result = toArray(collection),
-          length = result.length,
-          lastIndex = length - 1;
-      if ((guard ? isIterateeCall(collection, n, guard) : n === undefined)) {
-        n = 1;
-      } else {
-        n = baseClamp(toInteger(n), 0, length);
-      }
-      while (++index < n) {
-        var rand = baseRandom(index, lastIndex),
-            value = result[rand];
-        result[rand] = result[index];
-        result[index] = value;
-      }
-      result.length = n;
-      return result;
-    }
-    function shuffle(collection) {
-      return sampleSize(collection, MAX_ARRAY_LENGTH);
-    }
-    function size(collection) {
-      if (collection == null) {
-        return 0;
-      }
-      if (isArrayLike(collection)) {
-        var result = collection.length;
-        return (result && isString(collection)) ? stringSize(collection) : result;
-      }
-      if (isObjectLike(collection)) {
-        var tag = getTag(collection);
-        if (tag == mapTag || tag == setTag) {
-          return collection.size;
-        }
-      }
-      return keys(collection).length;
-    }
-    function some(collection, predicate, guard) {
-      var func = isArray(collection) ? arraySome : baseSome;
-      if (guard && isIterateeCall(collection, predicate, guard)) {
-        predicate = undefined;
-      }
-      return func(collection, getIteratee(predicate, 3));
-    }
-    var sortBy = rest(function(collection, iteratees) {
-      if (collection == null) {
-        return [];
-      }
-      var length = iteratees.length;
-      if (length > 1 && isIterateeCall(collection, iteratees[0], iteratees[1])) {
-        iteratees = [];
-      } else if (length > 2 && isIterateeCall(iteratees[0], iteratees[1], iteratees[2])) {
-        iteratees = [iteratees[0]];
-      }
-      iteratees = (iteratees.length == 1 && isArray(iteratees[0])) ? iteratees[0] : baseFlatten(iteratees, 1, isFlattenableIteratee);
-      return baseOrderBy(collection, iteratees, []);
-    });
-    function now() {
-      return Date.now();
-    }
-    function after(n, func) {
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      n = toInteger(n);
-      return function() {
-        if (--n < 1) {
-          return func.apply(this, arguments);
-        }
-      };
-    }
-    function ary(func, n, guard) {
-      n = guard ? undefined : n;
-      n = (func && n == null) ? func.length : n;
-      return createWrapper(func, ARY_FLAG, undefined, undefined, undefined, undefined, n);
-    }
-    function before(n, func) {
-      var result;
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      n = toInteger(n);
-      return function() {
-        if (--n > 0) {
-          result = func.apply(this, arguments);
-        }
-        if (n <= 1) {
-          func = undefined;
-        }
-        return result;
-      };
-    }
-    var bind = rest(function(func, thisArg, partials) {
-      var bitmask = BIND_FLAG;
-      if (partials.length) {
-        var holders = replaceHolders(partials, getHolder(bind));
-        bitmask |= PARTIAL_FLAG;
-      }
-      return createWrapper(func, bitmask, thisArg, partials, holders);
-    });
-    var bindKey = rest(function(object, key, partials) {
-      var bitmask = BIND_FLAG | BIND_KEY_FLAG;
-      if (partials.length) {
-        var holders = replaceHolders(partials, getHolder(bindKey));
-        bitmask |= PARTIAL_FLAG;
-      }
-      return createWrapper(key, bitmask, object, partials, holders);
-    });
-    function curry(func, arity, guard) {
-      arity = guard ? undefined : arity;
-      var result = createWrapper(func, CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-      result.placeholder = curry.placeholder;
-      return result;
-    }
-    function curryRight(func, arity, guard) {
-      arity = guard ? undefined : arity;
-      var result = createWrapper(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
-      result.placeholder = curryRight.placeholder;
-      return result;
-    }
-    function debounce(func, wait, options) {
-      var lastArgs,
-          lastThis,
-          maxWait,
-          result,
-          timerId,
-          lastCallTime,
-          lastInvokeTime = 0,
-          leading = false,
-          maxing = false,
-          trailing = true;
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      wait = toNumber(wait) || 0;
-      if (isObject(options)) {
-        leading = !!options.leading;
-        maxing = 'maxWait' in options;
-        maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
-        trailing = 'trailing' in options ? !!options.trailing : trailing;
-      }
-      function invokeFunc(time) {
-        var args = lastArgs,
-            thisArg = lastThis;
-        lastArgs = lastThis = undefined;
-        lastInvokeTime = time;
-        result = func.apply(thisArg, args);
-        return result;
-      }
-      function leadingEdge(time) {
-        lastInvokeTime = time;
-        timerId = setTimeout(timerExpired, wait);
-        return leading ? invokeFunc(time) : result;
-      }
-      function remainingWait(time) {
-        var timeSinceLastCall = time - lastCallTime,
-            timeSinceLastInvoke = time - lastInvokeTime,
-            result = wait - timeSinceLastCall;
-        return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
-      }
-      function shouldInvoke(time) {
-        var timeSinceLastCall = time - lastCallTime,
-            timeSinceLastInvoke = time - lastInvokeTime;
-        return (lastCallTime === undefined || (timeSinceLastCall >= wait) || (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-      }
-      function timerExpired() {
-        var time = now();
-        if (shouldInvoke(time)) {
-          return trailingEdge(time);
-        }
-        timerId = setTimeout(timerExpired, remainingWait(time));
-      }
-      function trailingEdge(time) {
-        timerId = undefined;
-        if (trailing && lastArgs) {
-          return invokeFunc(time);
-        }
-        lastArgs = lastThis = undefined;
-        return result;
-      }
-      function cancel() {
-        lastInvokeTime = 0;
-        lastArgs = lastCallTime = lastThis = timerId = undefined;
-      }
-      function flush() {
-        return timerId === undefined ? result : trailingEdge(now());
-      }
-      function debounced() {
-        var time = now(),
-            isInvoking = shouldInvoke(time);
-        lastArgs = arguments;
-        lastThis = this;
-        lastCallTime = time;
-        if (isInvoking) {
-          if (timerId === undefined) {
-            return leadingEdge(lastCallTime);
-          }
-          if (maxing) {
-            timerId = setTimeout(timerExpired, wait);
-            return invokeFunc(lastCallTime);
-          }
-        }
-        if (timerId === undefined) {
-          timerId = setTimeout(timerExpired, wait);
-        }
-        return result;
-      }
-      debounced.cancel = cancel;
-      debounced.flush = flush;
-      return debounced;
-    }
-    var defer = rest(function(func, args) {
-      return baseDelay(func, 1, args);
-    });
-    var delay = rest(function(func, wait, args) {
-      return baseDelay(func, toNumber(wait) || 0, args);
-    });
-    function flip(func) {
-      return createWrapper(func, FLIP_FLAG);
-    }
-    function memoize(func, resolver) {
-      if (typeof func != 'function' || (resolver && typeof resolver != 'function')) {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      var memoized = function() {
-        var args = arguments,
-            key = resolver ? resolver.apply(this, args) : args[0],
-            cache = memoized.cache;
-        if (cache.has(key)) {
-          return cache.get(key);
-        }
-        var result = func.apply(this, args);
-        memoized.cache = cache.set(key, result);
-        return result;
-      };
-      memoized.cache = new (memoize.Cache || MapCache);
-      return memoized;
-    }
-    memoize.Cache = MapCache;
-    function negate(predicate) {
-      if (typeof predicate != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      return function() {
-        return !predicate.apply(this, arguments);
-      };
-    }
-    function once(func) {
-      return before(2, func);
-    }
-    var overArgs = rest(function(func, transforms) {
-      transforms = (transforms.length == 1 && isArray(transforms[0])) ? arrayMap(transforms[0], baseUnary(getIteratee())) : arrayMap(baseFlatten(transforms, 1, isFlattenableIteratee), baseUnary(getIteratee()));
-      var funcsLength = transforms.length;
-      return rest(function(args) {
-        var index = -1,
-            length = nativeMin(args.length, funcsLength);
-        while (++index < length) {
-          args[index] = transforms[index].call(this, args[index]);
-        }
-        return apply(func, this, args);
-      });
-    });
-    var partial = rest(function(func, partials) {
-      var holders = replaceHolders(partials, getHolder(partial));
-      return createWrapper(func, PARTIAL_FLAG, undefined, partials, holders);
-    });
-    var partialRight = rest(function(func, partials) {
-      var holders = replaceHolders(partials, getHolder(partialRight));
-      return createWrapper(func, PARTIAL_RIGHT_FLAG, undefined, partials, holders);
-    });
-    var rearg = rest(function(func, indexes) {
-      return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes, 1));
-    });
-    function rest(func, start) {
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      start = nativeMax(start === undefined ? (func.length - 1) : toInteger(start), 0);
-      return function() {
-        var args = arguments,
-            index = -1,
-            length = nativeMax(args.length - start, 0),
-            array = Array(length);
-        while (++index < length) {
-          array[index] = args[start + index];
-        }
-        switch (start) {
-          case 0:
-            return func.call(this, array);
-          case 1:
-            return func.call(this, args[0], array);
-          case 2:
-            return func.call(this, args[0], args[1], array);
-        }
-        var otherArgs = Array(start + 1);
-        index = -1;
-        while (++index < start) {
-          otherArgs[index] = args[index];
-        }
-        otherArgs[start] = array;
-        return apply(func, this, otherArgs);
-      };
-    }
-    function spread(func, start) {
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      start = start === undefined ? 0 : nativeMax(toInteger(start), 0);
-      return rest(function(args) {
-        var array = args[start],
-            otherArgs = castSlice(args, 0, start);
-        if (array) {
-          arrayPush(otherArgs, array);
-        }
-        return apply(func, this, otherArgs);
-      });
-    }
-    function throttle(func, wait, options) {
-      var leading = true,
-          trailing = true;
-      if (typeof func != 'function') {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      if (isObject(options)) {
-        leading = 'leading' in options ? !!options.leading : leading;
-        trailing = 'trailing' in options ? !!options.trailing : trailing;
-      }
-      return debounce(func, wait, {
-        'leading': leading,
-        'maxWait': wait,
-        'trailing': trailing
-      });
-    }
-    function unary(func) {
-      return ary(func, 1);
-    }
-    function wrap(value, wrapper) {
-      wrapper = wrapper == null ? identity : wrapper;
-      return partial(wrapper, value);
-    }
-    function castArray() {
-      if (!arguments.length) {
-        return [];
-      }
-      var value = arguments[0];
-      return isArray(value) ? value : [value];
-    }
-    function clone(value) {
-      return baseClone(value, false, true);
-    }
-    function cloneWith(value, customizer) {
-      return baseClone(value, false, true, customizer);
-    }
-    function cloneDeep(value) {
-      return baseClone(value, true, true);
-    }
-    function cloneDeepWith(value, customizer) {
-      return baseClone(value, true, true, customizer);
-    }
-    function eq(value, other) {
-      return value === other || (value !== value && other !== other);
-    }
-    var gt = createRelationalOperation(baseGt);
-    var gte = createRelationalOperation(function(value, other) {
-      return value >= other;
-    });
-    function isArguments(value) {
-      return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') && (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
-    }
-    var isArray = Array.isArray;
-    function isArrayBuffer(value) {
-      return isObjectLike(value) && objectToString.call(value) == arrayBufferTag;
-    }
-    function isArrayLike(value) {
-      return value != null && isLength(getLength(value)) && !isFunction(value);
-    }
-    function isArrayLikeObject(value) {
-      return isObjectLike(value) && isArrayLike(value);
-    }
-    function isBoolean(value) {
-      return value === true || value === false || (isObjectLike(value) && objectToString.call(value) == boolTag);
-    }
-    var isBuffer = !Buffer ? stubFalse : function(value) {
-      return value instanceof Buffer;
-    };
-    function isDate(value) {
-      return isObjectLike(value) && objectToString.call(value) == dateTag;
-    }
-    function isElement(value) {
-      return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
-    }
-    function isEmpty(value) {
-      if (isArrayLike(value) && (isArray(value) || isString(value) || isFunction(value.splice) || isArguments(value) || isBuffer(value))) {
-        return !value.length;
-      }
-      if (isObjectLike(value)) {
-        var tag = getTag(value);
-        if (tag == mapTag || tag == setTag) {
-          return !value.size;
-        }
-      }
-      for (var key in value) {
-        if (hasOwnProperty.call(value, key)) {
-          return false;
-        }
-      }
-      return !(nonEnumShadows && keys(value).length);
-    }
-    function isEqual(value, other) {
-      return baseIsEqual(value, other);
-    }
-    function isEqualWith(value, other, customizer) {
-      customizer = typeof customizer == 'function' ? customizer : undefined;
-      var result = customizer ? customizer(value, other) : undefined;
-      return result === undefined ? baseIsEqual(value, other, customizer) : !!result;
-    }
-    function isError(value) {
-      if (!isObjectLike(value)) {
-        return false;
-      }
-      return (objectToString.call(value) == errorTag) || (typeof value.message == 'string' && typeof value.name == 'string');
-    }
-    function isFinite(value) {
-      return typeof value == 'number' && nativeIsFinite(value);
-    }
-    function isFunction(value) {
-      var tag = isObject(value) ? objectToString.call(value) : '';
-      return tag == funcTag || tag == genTag;
-    }
-    function isInteger(value) {
-      return typeof value == 'number' && value == toInteger(value);
-    }
-    function isLength(value) {
-      return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-    }
-    function isObject(value) {
-      var type = typeof value;
-      return !!value && (type == 'object' || type == 'function');
-    }
-    function isObjectLike(value) {
-      return !!value && typeof value == 'object';
-    }
-    function isMap(value) {
-      return isObjectLike(value) && getTag(value) == mapTag;
-    }
-    function isMatch(object, source) {
-      return object === source || baseIsMatch(object, source, getMatchData(source));
-    }
-    function isMatchWith(object, source, customizer) {
-      customizer = typeof customizer == 'function' ? customizer : undefined;
-      return baseIsMatch(object, source, getMatchData(source), customizer);
-    }
-    function isNaN(value) {
-      return isNumber(value) && value != +value;
-    }
-    function isNative(value) {
-      if (isMaskable(value)) {
-        throw new Error('This method is not supported with `core-js`. Try https://github.com/es-shims.');
-      }
-      return baseIsNative(value);
-    }
-    function isNull(value) {
-      return value === null;
-    }
-    function isNil(value) {
-      return value == null;
-    }
-    function isNumber(value) {
-      return typeof value == 'number' || (isObjectLike(value) && objectToString.call(value) == numberTag);
-    }
-    function isPlainObject(value) {
-      if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
-        return false;
-      }
-      var proto = getPrototype(value);
-      if (proto === null) {
-        return true;
-      }
-      var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
-      return (typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
-    }
-    function isRegExp(value) {
-      return isObject(value) && objectToString.call(value) == regexpTag;
-    }
-    function isSafeInteger(value) {
-      return isInteger(value) && value >= -MAX_SAFE_INTEGER && value <= MAX_SAFE_INTEGER;
-    }
-    function isSet(value) {
-      return isObjectLike(value) && getTag(value) == setTag;
-    }
-    function isString(value) {
-      return typeof value == 'string' || (!isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag);
-    }
-    function isSymbol(value) {
-      return typeof value == 'symbol' || (isObjectLike(value) && objectToString.call(value) == symbolTag);
-    }
-    function isTypedArray(value) {
-      return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objectToString.call(value)];
-    }
-    function isUndefined(value) {
-      return value === undefined;
-    }
-    function isWeakMap(value) {
-      return isObjectLike(value) && getTag(value) == weakMapTag;
-    }
-    function isWeakSet(value) {
-      return isObjectLike(value) && objectToString.call(value) == weakSetTag;
-    }
-    var lt = createRelationalOperation(baseLt);
-    var lte = createRelationalOperation(function(value, other) {
-      return value <= other;
-    });
-    function toArray(value) {
-      if (!value) {
-        return [];
-      }
-      if (isArrayLike(value)) {
-        return isString(value) ? stringToArray(value) : copyArray(value);
-      }
-      if (iteratorSymbol && value[iteratorSymbol]) {
-        return iteratorToArray(value[iteratorSymbol]());
-      }
-      var tag = getTag(value),
-          func = tag == mapTag ? mapToArray : (tag == setTag ? setToArray : values);
-      return func(value);
-    }
-    function toFinite(value) {
-      if (!value) {
-        return value === 0 ? value : 0;
-      }
-      value = toNumber(value);
-      if (value === INFINITY || value === -INFINITY) {
-        var sign = (value < 0 ? -1 : 1);
-        return sign * MAX_INTEGER;
-      }
-      return value === value ? value : 0;
-    }
-    function toInteger(value) {
-      var result = toFinite(value),
-          remainder = result % 1;
-      return result === result ? (remainder ? result - remainder : result) : 0;
-    }
-    function toLength(value) {
-      return value ? baseClamp(toInteger(value), 0, MAX_ARRAY_LENGTH) : 0;
-    }
-    function toNumber(value) {
-      if (typeof value == 'number') {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return NAN;
-      }
-      if (isObject(value)) {
-        var other = isFunction(value.valueOf) ? value.valueOf() : value;
-        value = isObject(other) ? (other + '') : other;
-      }
-      if (typeof value != 'string') {
-        return value === 0 ? value : +value;
-      }
-      value = value.replace(reTrim, '');
-      var isBinary = reIsBinary.test(value);
-      return (isBinary || reIsOctal.test(value)) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : (reIsBadHex.test(value) ? NAN : +value);
-    }
-    function toPlainObject(value) {
-      return copyObject(value, keysIn(value));
-    }
-    function toSafeInteger(value) {
-      return baseClamp(toInteger(value), -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER);
-    }
-    function toString(value) {
-      return value == null ? '' : baseToString(value);
-    }
-    var assign = createAssigner(function(object, source) {
-      if (nonEnumShadows || isPrototype(source) || isArrayLike(source)) {
-        copyObject(source, keys(source), object);
-        return;
-      }
-      for (var key in source) {
-        if (hasOwnProperty.call(source, key)) {
-          assignValue(object, key, source[key]);
-        }
-      }
-    });
-    var assignIn = createAssigner(function(object, source) {
-      if (nonEnumShadows || isPrototype(source) || isArrayLike(source)) {
-        copyObject(source, keysIn(source), object);
-        return;
-      }
-      for (var key in source) {
-        assignValue(object, key, source[key]);
-      }
-    });
-    var assignInWith = createAssigner(function(object, source, srcIndex, customizer) {
-      copyObject(source, keysIn(source), object, customizer);
-    });
-    var assignWith = createAssigner(function(object, source, srcIndex, customizer) {
-      copyObject(source, keys(source), object, customizer);
-    });
-    var at = rest(function(object, paths) {
-      return baseAt(object, baseFlatten(paths, 1));
-    });
-    function create(prototype, properties) {
-      var result = baseCreate(prototype);
-      return properties ? baseAssign(result, properties) : result;
-    }
-    var defaults = rest(function(args) {
-      args.push(undefined, assignInDefaults);
-      return apply(assignInWith, undefined, args);
-    });
-    var defaultsDeep = rest(function(args) {
-      args.push(undefined, mergeDefaults);
-      return apply(mergeWith, undefined, args);
-    });
-    function findKey(object, predicate) {
-      return baseFindKey(object, getIteratee(predicate, 3), baseForOwn);
-    }
-    function findLastKey(object, predicate) {
-      return baseFindKey(object, getIteratee(predicate, 3), baseForOwnRight);
-    }
-    function forIn(object, iteratee) {
-      return object == null ? object : baseFor(object, getIteratee(iteratee, 3), keysIn);
-    }
-    function forInRight(object, iteratee) {
-      return object == null ? object : baseForRight(object, getIteratee(iteratee, 3), keysIn);
-    }
-    function forOwn(object, iteratee) {
-      return object && baseForOwn(object, getIteratee(iteratee, 3));
-    }
-    function forOwnRight(object, iteratee) {
-      return object && baseForOwnRight(object, getIteratee(iteratee, 3));
-    }
-    function functions(object) {
-      return object == null ? [] : baseFunctions(object, keys(object));
-    }
-    function functionsIn(object) {
-      return object == null ? [] : baseFunctions(object, keysIn(object));
-    }
-    function get(object, path, defaultValue) {
-      var result = object == null ? undefined : baseGet(object, path);
-      return result === undefined ? defaultValue : result;
-    }
-    function has(object, path) {
-      return object != null && hasPath(object, path, baseHas);
-    }
-    function hasIn(object, path) {
-      return object != null && hasPath(object, path, baseHasIn);
-    }
-    var invert = createInverter(function(result, value, key) {
-      result[value] = key;
-    }, constant(identity));
-    var invertBy = createInverter(function(result, value, key) {
-      if (hasOwnProperty.call(result, value)) {
-        result[value].push(key);
-      } else {
-        result[value] = [key];
-      }
-    }, getIteratee);
-    var invoke = rest(baseInvoke);
-    function keys(object) {
-      var isProto = isPrototype(object);
-      if (!(isProto || isArrayLike(object))) {
-        return baseKeys(object);
-      }
-      var indexes = indexKeys(object),
-          skipIndexes = !!indexes,
-          result = indexes || [],
-          length = result.length;
-      for (var key in object) {
-        if (baseHas(object, key) && !(skipIndexes && (key == 'length' || isIndex(key, length))) && !(isProto && key == 'constructor')) {
-          result.push(key);
-        }
-      }
-      return result;
-    }
-    function keysIn(object) {
-      var index = -1,
-          isProto = isPrototype(object),
-          props = baseKeysIn(object),
-          propsLength = props.length,
-          indexes = indexKeys(object),
-          skipIndexes = !!indexes,
-          result = indexes || [],
-          length = result.length;
-      while (++index < propsLength) {
-        var key = props[index];
-        if (!(skipIndexes && (key == 'length' || isIndex(key, length))) && !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
-          result.push(key);
-        }
-      }
-      return result;
-    }
-    function mapKeys(object, iteratee) {
-      var result = {};
-      iteratee = getIteratee(iteratee, 3);
-      baseForOwn(object, function(value, key, object) {
-        result[iteratee(value, key, object)] = value;
-      });
-      return result;
-    }
-    function mapValues(object, iteratee) {
-      var result = {};
-      iteratee = getIteratee(iteratee, 3);
-      baseForOwn(object, function(value, key, object) {
-        result[key] = iteratee(value, key, object);
-      });
-      return result;
-    }
-    var merge = createAssigner(function(object, source, srcIndex) {
-      baseMerge(object, source, srcIndex);
-    });
-    var mergeWith = createAssigner(function(object, source, srcIndex, customizer) {
-      baseMerge(object, source, srcIndex, customizer);
-    });
-    var omit = rest(function(object, props) {
-      if (object == null) {
-        return {};
-      }
-      props = arrayMap(baseFlatten(props, 1), toKey);
-      return basePick(object, baseDifference(getAllKeysIn(object), props));
-    });
-    function omitBy(object, predicate) {
-      predicate = getIteratee(predicate);
-      return basePickBy(object, function(value, key) {
-        return !predicate(value, key);
-      });
-    }
-    var pick = rest(function(object, props) {
-      return object == null ? {} : basePick(object, arrayMap(baseFlatten(props, 1), toKey));
-    });
-    function pickBy(object, predicate) {
-      return object == null ? {} : basePickBy(object, getIteratee(predicate));
-    }
-    function result(object, path, defaultValue) {
-      path = isKey(path, object) ? [path] : castPath(path);
-      var index = -1,
-          length = path.length;
-      if (!length) {
-        object = undefined;
-        length = 1;
-      }
-      while (++index < length) {
-        var value = object == null ? undefined : object[toKey(path[index])];
-        if (value === undefined) {
-          index = length;
-          value = defaultValue;
-        }
-        object = isFunction(value) ? value.call(object) : value;
-      }
-      return object;
-    }
-    function set(object, path, value) {
-      return object == null ? object : baseSet(object, path, value);
-    }
-    function setWith(object, path, value, customizer) {
-      customizer = typeof customizer == 'function' ? customizer : undefined;
-      return object == null ? object : baseSet(object, path, value, customizer);
-    }
-    var toPairs = createToPairs(keys);
-    var toPairsIn = createToPairs(keysIn);
-    function transform(object, iteratee, accumulator) {
-      var isArr = isArray(object) || isTypedArray(object);
-      iteratee = getIteratee(iteratee, 4);
-      if (accumulator == null) {
-        if (isArr || isObject(object)) {
-          var Ctor = object.constructor;
-          if (isArr) {
-            accumulator = isArray(object) ? new Ctor : [];
-          } else {
-            accumulator = isFunction(Ctor) ? baseCreate(getPrototype(object)) : {};
-          }
-        } else {
-          accumulator = {};
-        }
-      }
-      (isArr ? arrayEach : baseForOwn)(object, function(value, index, object) {
-        return iteratee(accumulator, value, index, object);
-      });
-      return accumulator;
-    }
-    function unset(object, path) {
-      return object == null ? true : baseUnset(object, path);
-    }
-    function update(object, path, updater) {
-      return object == null ? object : baseUpdate(object, path, castFunction(updater));
-    }
-    function updateWith(object, path, updater, customizer) {
-      customizer = typeof customizer == 'function' ? customizer : undefined;
-      return object == null ? object : baseUpdate(object, path, castFunction(updater), customizer);
-    }
-    function values(object) {
-      return object ? baseValues(object, keys(object)) : [];
-    }
-    function valuesIn(object) {
-      return object == null ? [] : baseValues(object, keysIn(object));
-    }
-    function clamp(number, lower, upper) {
-      if (upper === undefined) {
-        upper = lower;
-        lower = undefined;
-      }
-      if (upper !== undefined) {
-        upper = toNumber(upper);
-        upper = upper === upper ? upper : 0;
-      }
-      if (lower !== undefined) {
-        lower = toNumber(lower);
-        lower = lower === lower ? lower : 0;
-      }
-      return baseClamp(toNumber(number), lower, upper);
-    }
-    function inRange(number, start, end) {
-      start = toNumber(start) || 0;
-      if (end === undefined) {
-        end = start;
-        start = 0;
-      } else {
-        end = toNumber(end) || 0;
-      }
-      number = toNumber(number);
-      return baseInRange(number, start, end);
-    }
-    function random(lower, upper, floating) {
-      if (floating && typeof floating != 'boolean' && isIterateeCall(lower, upper, floating)) {
-        upper = floating = undefined;
-      }
-      if (floating === undefined) {
-        if (typeof upper == 'boolean') {
-          floating = upper;
-          upper = undefined;
-        } else if (typeof lower == 'boolean') {
-          floating = lower;
-          lower = undefined;
-        }
-      }
-      if (lower === undefined && upper === undefined) {
-        lower = 0;
-        upper = 1;
-      } else {
-        lower = toNumber(lower) || 0;
-        if (upper === undefined) {
-          upper = lower;
-          lower = 0;
-        } else {
-          upper = toNumber(upper) || 0;
-        }
-      }
-      if (lower > upper) {
-        var temp = lower;
-        lower = upper;
-        upper = temp;
-      }
-      if (floating || lower % 1 || upper % 1) {
-        var rand = nativeRandom();
-        return nativeMin(lower + (rand * (upper - lower + freeParseFloat('1e-' + ((rand + '').length - 1)))), upper);
-      }
-      return baseRandom(lower, upper);
-    }
-    var camelCase = createCompounder(function(result, word, index) {
-      word = word.toLowerCase();
-      return result + (index ? capitalize(word) : word);
-    });
-    function capitalize(string) {
-      return upperFirst(toString(string).toLowerCase());
-    }
-    function deburr(string) {
-      string = toString(string);
-      return string && string.replace(reLatin1, deburrLetter).replace(reComboMark, '');
-    }
-    function endsWith(string, target, position) {
-      string = toString(string);
-      target = baseToString(target);
-      var length = string.length;
-      position = position === undefined ? length : baseClamp(toInteger(position), 0, length);
-      position -= target.length;
-      return position >= 0 && string.indexOf(target, position) == position;
-    }
-    function escape(string) {
-      string = toString(string);
-      return (string && reHasUnescapedHtml.test(string)) ? string.replace(reUnescapedHtml, escapeHtmlChar) : string;
-    }
-    function escapeRegExp(string) {
-      string = toString(string);
-      return (string && reHasRegExpChar.test(string)) ? string.replace(reRegExpChar, '\\$&') : string;
-    }
-    var kebabCase = createCompounder(function(result, word, index) {
-      return result + (index ? '-' : '') + word.toLowerCase();
-    });
-    var lowerCase = createCompounder(function(result, word, index) {
-      return result + (index ? ' ' : '') + word.toLowerCase();
-    });
-    var lowerFirst = createCaseFirst('toLowerCase');
-    function pad(string, length, chars) {
-      string = toString(string);
-      length = toInteger(length);
-      var strLength = length ? stringSize(string) : 0;
-      if (!length || strLength >= length) {
-        return string;
-      }
-      var mid = (length - strLength) / 2;
-      return (createPadding(nativeFloor(mid), chars) + string + createPadding(nativeCeil(mid), chars));
-    }
-    function padEnd(string, length, chars) {
-      string = toString(string);
-      length = toInteger(length);
-      var strLength = length ? stringSize(string) : 0;
-      return (length && strLength < length) ? (string + createPadding(length - strLength, chars)) : string;
-    }
-    function padStart(string, length, chars) {
-      string = toString(string);
-      length = toInteger(length);
-      var strLength = length ? stringSize(string) : 0;
-      return (length && strLength < length) ? (createPadding(length - strLength, chars) + string) : string;
-    }
-    function parseInt(string, radix, guard) {
-      if (guard || radix == null) {
-        radix = 0;
-      } else if (radix) {
-        radix = +radix;
-      }
-      string = toString(string).replace(reTrim, '');
-      return nativeParseInt(string, radix || (reHasHexPrefix.test(string) ? 16 : 10));
-    }
-    function repeat(string, n, guard) {
-      if ((guard ? isIterateeCall(string, n, guard) : n === undefined)) {
-        n = 1;
-      } else {
-        n = toInteger(n);
-      }
-      return baseRepeat(toString(string), n);
-    }
-    function replace() {
-      var args = arguments,
-          string = toString(args[0]);
-      return args.length < 3 ? string : nativeReplace.call(string, args[1], args[2]);
-    }
-    var snakeCase = createCompounder(function(result, word, index) {
-      return result + (index ? '_' : '') + word.toLowerCase();
-    });
-    function split(string, separator, limit) {
-      if (limit && typeof limit != 'number' && isIterateeCall(string, separator, limit)) {
-        separator = limit = undefined;
-      }
-      limit = limit === undefined ? MAX_ARRAY_LENGTH : limit >>> 0;
-      if (!limit) {
-        return [];
-      }
-      string = toString(string);
-      if (string && (typeof separator == 'string' || (separator != null && !isRegExp(separator)))) {
-        separator = baseToString(separator);
-        if (separator == '' && reHasComplexSymbol.test(string)) {
-          return castSlice(stringToArray(string), 0, limit);
-        }
-      }
-      return nativeSplit.call(string, separator, limit);
-    }
-    var startCase = createCompounder(function(result, word, index) {
-      return result + (index ? ' ' : '') + upperFirst(word);
-    });
-    function startsWith(string, target, position) {
-      string = toString(string);
-      position = baseClamp(toInteger(position), 0, string.length);
-      return string.lastIndexOf(baseToString(target), position) == position;
-    }
-    function template(string, options, guard) {
-      var settings = lodash.templateSettings;
-      if (guard && isIterateeCall(string, options, guard)) {
-        options = undefined;
-      }
-      string = toString(string);
-      options = assignInWith({}, options, settings, assignInDefaults);
-      var imports = assignInWith({}, options.imports, settings.imports, assignInDefaults),
-          importsKeys = keys(imports),
-          importsValues = baseValues(imports, importsKeys);
-      var isEscaping,
-          isEvaluating,
-          index = 0,
-          interpolate = options.interpolate || reNoMatch,
-          source = "__p += '";
-      var reDelimiters = RegExp((options.escape || reNoMatch).source + '|' + interpolate.source + '|' + (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' + (options.evaluate || reNoMatch).source + '|$', 'g');
-      var sourceURL = '//# sourceURL=' + ('sourceURL' in options ? options.sourceURL : ('lodash.templateSources[' + (++templateCounter) + ']')) + '\n';
-      string.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
-        interpolateValue || (interpolateValue = esTemplateValue);
-        source += string.slice(index, offset).replace(reUnescapedString, escapeStringChar);
-        if (escapeValue) {
-          isEscaping = true;
-          source += "' +\n__e(" + escapeValue + ") +\n'";
-        }
-        if (evaluateValue) {
-          isEvaluating = true;
-          source += "';\n" + evaluateValue + ";\n__p += '";
-        }
-        if (interpolateValue) {
-          source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
-        }
-        index = offset + match.length;
-        return match;
-      });
-      source += "';\n";
-      var variable = options.variable;
-      if (!variable) {
-        source = 'with (obj) {\n' + source + '\n}\n';
-      }
-      source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source).replace(reEmptyStringMiddle, '$1').replace(reEmptyStringTrailing, '$1;');
-      source = 'function(' + (variable || 'obj') + ') {\n' + (variable ? '' : 'obj || (obj = {});\n') + "var __t, __p = ''" + (isEscaping ? ', __e = _.escape' : '') + (isEvaluating ? ', __j = Array.prototype.join;\n' + "function print() { __p += __j.call(arguments, '') }\n" : ';\n') + source + 'return __p\n}';
-      var result = attempt(function() {
-        return Function(importsKeys, sourceURL + 'return ' + source).apply(undefined, importsValues);
-      });
-      result.source = source;
-      if (isError(result)) {
-        throw result;
-      }
-      return result;
-    }
-    function toLower(value) {
-      return toString(value).toLowerCase();
-    }
-    function toUpper(value) {
-      return toString(value).toUpperCase();
-    }
-    function trim(string, chars, guard) {
-      string = toString(string);
-      if (string && (guard || chars === undefined)) {
-        return string.replace(reTrim, '');
-      }
-      if (!string || !(chars = baseToString(chars))) {
-        return string;
-      }
-      var strSymbols = stringToArray(string),
-          chrSymbols = stringToArray(chars),
-          start = charsStartIndex(strSymbols, chrSymbols),
-          end = charsEndIndex(strSymbols, chrSymbols) + 1;
-      return castSlice(strSymbols, start, end).join('');
-    }
-    function trimEnd(string, chars, guard) {
-      string = toString(string);
-      if (string && (guard || chars === undefined)) {
-        return string.replace(reTrimEnd, '');
-      }
-      if (!string || !(chars = baseToString(chars))) {
-        return string;
-      }
-      var strSymbols = stringToArray(string),
-          end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
-      return castSlice(strSymbols, 0, end).join('');
-    }
-    function trimStart(string, chars, guard) {
-      string = toString(string);
-      if (string && (guard || chars === undefined)) {
-        return string.replace(reTrimStart, '');
-      }
-      if (!string || !(chars = baseToString(chars))) {
-        return string;
-      }
-      var strSymbols = stringToArray(string),
-          start = charsStartIndex(strSymbols, stringToArray(chars));
-      return castSlice(strSymbols, start).join('');
-    }
-    function truncate(string, options) {
-      var length = DEFAULT_TRUNC_LENGTH,
-          omission = DEFAULT_TRUNC_OMISSION;
-      if (isObject(options)) {
-        var separator = 'separator' in options ? options.separator : separator;
-        length = 'length' in options ? toInteger(options.length) : length;
-        omission = 'omission' in options ? baseToString(options.omission) : omission;
-      }
-      string = toString(string);
-      var strLength = string.length;
-      if (reHasComplexSymbol.test(string)) {
-        var strSymbols = stringToArray(string);
-        strLength = strSymbols.length;
-      }
-      if (length >= strLength) {
-        return string;
-      }
-      var end = length - stringSize(omission);
-      if (end < 1) {
-        return omission;
-      }
-      var result = strSymbols ? castSlice(strSymbols, 0, end).join('') : string.slice(0, end);
-      if (separator === undefined) {
-        return result + omission;
-      }
-      if (strSymbols) {
-        end += (result.length - end);
-      }
-      if (isRegExp(separator)) {
-        if (string.slice(end).search(separator)) {
-          var match,
-              substring = result;
-          if (!separator.global) {
-            separator = RegExp(separator.source, toString(reFlags.exec(separator)) + 'g');
-          }
-          separator.lastIndex = 0;
-          while ((match = separator.exec(substring))) {
-            var newEnd = match.index;
-          }
-          result = result.slice(0, newEnd === undefined ? end : newEnd);
-        }
-      } else if (string.indexOf(baseToString(separator), end) != end) {
-        var index = result.lastIndexOf(separator);
-        if (index > -1) {
-          result = result.slice(0, index);
-        }
-      }
-      return result + omission;
-    }
-    function unescape(string) {
-      string = toString(string);
-      return (string && reHasEscapedHtml.test(string)) ? string.replace(reEscapedHtml, unescapeHtmlChar) : string;
-    }
-    var upperCase = createCompounder(function(result, word, index) {
-      return result + (index ? ' ' : '') + word.toUpperCase();
-    });
-    var upperFirst = createCaseFirst('toUpperCase');
-    function words(string, pattern, guard) {
-      string = toString(string);
-      pattern = guard ? undefined : pattern;
-      if (pattern === undefined) {
-        pattern = reHasComplexWord.test(string) ? reComplexWord : reBasicWord;
-      }
-      return string.match(pattern) || [];
-    }
-    var attempt = rest(function(func, args) {
-      try {
-        return apply(func, undefined, args);
-      } catch (e) {
-        return isError(e) ? e : new Error(e);
-      }
-    });
-    var bindAll = rest(function(object, methodNames) {
-      arrayEach(baseFlatten(methodNames, 1), function(key) {
-        key = toKey(key);
-        object[key] = bind(object[key], object);
-      });
-      return object;
-    });
-    function cond(pairs) {
-      var length = pairs ? pairs.length : 0,
-          toIteratee = getIteratee();
-      pairs = !length ? [] : arrayMap(pairs, function(pair) {
-        if (typeof pair[1] != 'function') {
-          throw new TypeError(FUNC_ERROR_TEXT);
-        }
-        return [toIteratee(pair[0]), pair[1]];
-      });
-      return rest(function(args) {
-        var index = -1;
-        while (++index < length) {
-          var pair = pairs[index];
-          if (apply(pair[0], this, args)) {
-            return apply(pair[1], this, args);
-          }
-        }
-      });
-    }
-    function conforms(source) {
-      return baseConforms(baseClone(source, true));
-    }
-    function constant(value) {
-      return function() {
-        return value;
-      };
-    }
-    var flow = createFlow();
-    var flowRight = createFlow(true);
-    function identity(value) {
-      return value;
-    }
-    function iteratee(func) {
-      return baseIteratee(typeof func == 'function' ? func : baseClone(func, true));
-    }
-    function matches(source) {
-      return baseMatches(baseClone(source, true));
-    }
-    function matchesProperty(path, srcValue) {
-      return baseMatchesProperty(path, baseClone(srcValue, true));
-    }
-    var method = rest(function(path, args) {
-      return function(object) {
-        return baseInvoke(object, path, args);
-      };
-    });
-    var methodOf = rest(function(object, args) {
-      return function(path) {
-        return baseInvoke(object, path, args);
-      };
-    });
-    function mixin(object, source, options) {
-      var props = keys(source),
-          methodNames = baseFunctions(source, props);
-      if (options == null && !(isObject(source) && (methodNames.length || !props.length))) {
-        options = source;
-        source = object;
-        object = this;
-        methodNames = baseFunctions(source, keys(source));
-      }
-      var chain = !(isObject(options) && 'chain' in options) || !!options.chain,
-          isFunc = isFunction(object);
-      arrayEach(methodNames, function(methodName) {
-        var func = source[methodName];
-        object[methodName] = func;
-        if (isFunc) {
-          object.prototype[methodName] = function() {
-            var chainAll = this.__chain__;
-            if (chain || chainAll) {
-              var result = object(this.__wrapped__),
-                  actions = result.__actions__ = copyArray(this.__actions__);
-              actions.push({
-                'func': func,
-                'args': arguments,
-                'thisArg': object
-              });
-              result.__chain__ = chainAll;
-              return result;
-            }
-            return func.apply(object, arrayPush([this.value()], arguments));
-          };
-        }
-      });
-      return object;
-    }
-    function noConflict() {
-      if (root._ === this) {
-        root._ = oldDash;
-      }
-      return this;
-    }
-    function noop() {}
-    function nthArg(n) {
-      n = toInteger(n);
-      return rest(function(args) {
-        return baseNth(args, n);
-      });
-    }
-    var over = createOver(arrayMap);
-    var overEvery = createOver(arrayEvery);
-    var overSome = createOver(arraySome);
-    function property(path) {
-      return isKey(path) ? baseProperty(toKey(path)) : basePropertyDeep(path);
-    }
-    function propertyOf(object) {
-      return function(path) {
-        return object == null ? undefined : baseGet(object, path);
-      };
-    }
-    var range = createRange();
-    var rangeRight = createRange(true);
-    function stubArray() {
-      return [];
-    }
-    function stubFalse() {
-      return false;
-    }
-    function stubObject() {
-      return {};
-    }
-    function stubString() {
-      return '';
-    }
-    function stubTrue() {
-      return true;
-    }
-    function times(n, iteratee) {
-      n = toInteger(n);
-      if (n < 1 || n > MAX_SAFE_INTEGER) {
-        return [];
-      }
-      var index = MAX_ARRAY_LENGTH,
-          length = nativeMin(n, MAX_ARRAY_LENGTH);
-      iteratee = getIteratee(iteratee);
-      n -= MAX_ARRAY_LENGTH;
-      var result = baseTimes(length, iteratee);
-      while (++index < n) {
-        iteratee(index);
-      }
-      return result;
-    }
-    function toPath(value) {
-      if (isArray(value)) {
-        return arrayMap(value, toKey);
-      }
-      return isSymbol(value) ? [value] : copyArray(stringToPath(value));
-    }
-    function uniqueId(prefix) {
-      var id = ++idCounter;
-      return toString(prefix) + id;
-    }
-    var add = createMathOperation(function(augend, addend) {
-      return augend + addend;
-    });
-    var ceil = createRound('ceil');
-    var divide = createMathOperation(function(dividend, divisor) {
-      return dividend / divisor;
-    });
-    var floor = createRound('floor');
-    function max(array) {
-      return (array && array.length) ? baseExtremum(array, identity, baseGt) : undefined;
-    }
-    function maxBy(array, iteratee) {
-      return (array && array.length) ? baseExtremum(array, getIteratee(iteratee), baseGt) : undefined;
-    }
-    function mean(array) {
-      return baseMean(array, identity);
-    }
-    function meanBy(array, iteratee) {
-      return baseMean(array, getIteratee(iteratee));
-    }
-    function min(array) {
-      return (array && array.length) ? baseExtremum(array, identity, baseLt) : undefined;
-    }
-    function minBy(array, iteratee) {
-      return (array && array.length) ? baseExtremum(array, getIteratee(iteratee), baseLt) : undefined;
-    }
-    var multiply = createMathOperation(function(multiplier, multiplicand) {
-      return multiplier * multiplicand;
-    });
-    var round = createRound('round');
-    var subtract = createMathOperation(function(minuend, subtrahend) {
-      return minuend - subtrahend;
-    });
-    function sum(array) {
-      return (array && array.length) ? baseSum(array, identity) : 0;
-    }
-    function sumBy(array, iteratee) {
-      return (array && array.length) ? baseSum(array, getIteratee(iteratee)) : 0;
-    }
-    lodash.after = after;
-    lodash.ary = ary;
-    lodash.assign = assign;
-    lodash.assignIn = assignIn;
-    lodash.assignInWith = assignInWith;
-    lodash.assignWith = assignWith;
-    lodash.at = at;
-    lodash.before = before;
-    lodash.bind = bind;
-    lodash.bindAll = bindAll;
-    lodash.bindKey = bindKey;
-    lodash.castArray = castArray;
-    lodash.chain = chain;
-    lodash.chunk = chunk;
-    lodash.compact = compact;
-    lodash.concat = concat;
-    lodash.cond = cond;
-    lodash.conforms = conforms;
-    lodash.constant = constant;
-    lodash.countBy = countBy;
-    lodash.create = create;
-    lodash.curry = curry;
-    lodash.curryRight = curryRight;
-    lodash.debounce = debounce;
-    lodash.defaults = defaults;
-    lodash.defaultsDeep = defaultsDeep;
-    lodash.defer = defer;
-    lodash.delay = delay;
-    lodash.difference = difference;
-    lodash.differenceBy = differenceBy;
-    lodash.differenceWith = differenceWith;
-    lodash.drop = drop;
-    lodash.dropRight = dropRight;
-    lodash.dropRightWhile = dropRightWhile;
-    lodash.dropWhile = dropWhile;
-    lodash.fill = fill;
-    lodash.filter = filter;
-    lodash.flatMap = flatMap;
-    lodash.flatMapDeep = flatMapDeep;
-    lodash.flatMapDepth = flatMapDepth;
-    lodash.flatten = flatten;
-    lodash.flattenDeep = flattenDeep;
-    lodash.flattenDepth = flattenDepth;
-    lodash.flip = flip;
-    lodash.flow = flow;
-    lodash.flowRight = flowRight;
-    lodash.fromPairs = fromPairs;
-    lodash.functions = functions;
-    lodash.functionsIn = functionsIn;
-    lodash.groupBy = groupBy;
-    lodash.initial = initial;
-    lodash.intersection = intersection;
-    lodash.intersectionBy = intersectionBy;
-    lodash.intersectionWith = intersectionWith;
-    lodash.invert = invert;
-    lodash.invertBy = invertBy;
-    lodash.invokeMap = invokeMap;
-    lodash.iteratee = iteratee;
-    lodash.keyBy = keyBy;
-    lodash.keys = keys;
-    lodash.keysIn = keysIn;
-    lodash.map = map;
-    lodash.mapKeys = mapKeys;
-    lodash.mapValues = mapValues;
-    lodash.matches = matches;
-    lodash.matchesProperty = matchesProperty;
-    lodash.memoize = memoize;
-    lodash.merge = merge;
-    lodash.mergeWith = mergeWith;
-    lodash.method = method;
-    lodash.methodOf = methodOf;
-    lodash.mixin = mixin;
-    lodash.negate = negate;
-    lodash.nthArg = nthArg;
-    lodash.omit = omit;
-    lodash.omitBy = omitBy;
-    lodash.once = once;
-    lodash.orderBy = orderBy;
-    lodash.over = over;
-    lodash.overArgs = overArgs;
-    lodash.overEvery = overEvery;
-    lodash.overSome = overSome;
-    lodash.partial = partial;
-    lodash.partialRight = partialRight;
-    lodash.partition = partition;
-    lodash.pick = pick;
-    lodash.pickBy = pickBy;
-    lodash.property = property;
-    lodash.propertyOf = propertyOf;
-    lodash.pull = pull;
-    lodash.pullAll = pullAll;
-    lodash.pullAllBy = pullAllBy;
-    lodash.pullAllWith = pullAllWith;
-    lodash.pullAt = pullAt;
-    lodash.range = range;
-    lodash.rangeRight = rangeRight;
-    lodash.rearg = rearg;
-    lodash.reject = reject;
-    lodash.remove = remove;
-    lodash.rest = rest;
-    lodash.reverse = reverse;
-    lodash.sampleSize = sampleSize;
-    lodash.set = set;
-    lodash.setWith = setWith;
-    lodash.shuffle = shuffle;
-    lodash.slice = slice;
-    lodash.sortBy = sortBy;
-    lodash.sortedUniq = sortedUniq;
-    lodash.sortedUniqBy = sortedUniqBy;
-    lodash.split = split;
-    lodash.spread = spread;
-    lodash.tail = tail;
-    lodash.take = take;
-    lodash.takeRight = takeRight;
-    lodash.takeRightWhile = takeRightWhile;
-    lodash.takeWhile = takeWhile;
-    lodash.tap = tap;
-    lodash.throttle = throttle;
-    lodash.thru = thru;
-    lodash.toArray = toArray;
-    lodash.toPairs = toPairs;
-    lodash.toPairsIn = toPairsIn;
-    lodash.toPath = toPath;
-    lodash.toPlainObject = toPlainObject;
-    lodash.transform = transform;
-    lodash.unary = unary;
-    lodash.union = union;
-    lodash.unionBy = unionBy;
-    lodash.unionWith = unionWith;
-    lodash.uniq = uniq;
-    lodash.uniqBy = uniqBy;
-    lodash.uniqWith = uniqWith;
-    lodash.unset = unset;
-    lodash.unzip = unzip;
-    lodash.unzipWith = unzipWith;
-    lodash.update = update;
-    lodash.updateWith = updateWith;
-    lodash.values = values;
-    lodash.valuesIn = valuesIn;
-    lodash.without = without;
-    lodash.words = words;
-    lodash.wrap = wrap;
-    lodash.xor = xor;
-    lodash.xorBy = xorBy;
-    lodash.xorWith = xorWith;
-    lodash.zip = zip;
-    lodash.zipObject = zipObject;
-    lodash.zipObjectDeep = zipObjectDeep;
-    lodash.zipWith = zipWith;
-    lodash.entries = toPairs;
-    lodash.entriesIn = toPairsIn;
-    lodash.extend = assignIn;
-    lodash.extendWith = assignInWith;
-    mixin(lodash, lodash);
-    lodash.add = add;
-    lodash.attempt = attempt;
-    lodash.camelCase = camelCase;
-    lodash.capitalize = capitalize;
-    lodash.ceil = ceil;
-    lodash.clamp = clamp;
-    lodash.clone = clone;
-    lodash.cloneDeep = cloneDeep;
-    lodash.cloneDeepWith = cloneDeepWith;
-    lodash.cloneWith = cloneWith;
-    lodash.deburr = deburr;
-    lodash.divide = divide;
-    lodash.endsWith = endsWith;
-    lodash.eq = eq;
-    lodash.escape = escape;
-    lodash.escapeRegExp = escapeRegExp;
-    lodash.every = every;
-    lodash.find = find;
-    lodash.findIndex = findIndex;
-    lodash.findKey = findKey;
-    lodash.findLast = findLast;
-    lodash.findLastIndex = findLastIndex;
-    lodash.findLastKey = findLastKey;
-    lodash.floor = floor;
-    lodash.forEach = forEach;
-    lodash.forEachRight = forEachRight;
-    lodash.forIn = forIn;
-    lodash.forInRight = forInRight;
-    lodash.forOwn = forOwn;
-    lodash.forOwnRight = forOwnRight;
-    lodash.get = get;
-    lodash.gt = gt;
-    lodash.gte = gte;
-    lodash.has = has;
-    lodash.hasIn = hasIn;
-    lodash.head = head;
-    lodash.identity = identity;
-    lodash.includes = includes;
-    lodash.indexOf = indexOf;
-    lodash.inRange = inRange;
-    lodash.invoke = invoke;
-    lodash.isArguments = isArguments;
-    lodash.isArray = isArray;
-    lodash.isArrayBuffer = isArrayBuffer;
-    lodash.isArrayLike = isArrayLike;
-    lodash.isArrayLikeObject = isArrayLikeObject;
-    lodash.isBoolean = isBoolean;
-    lodash.isBuffer = isBuffer;
-    lodash.isDate = isDate;
-    lodash.isElement = isElement;
-    lodash.isEmpty = isEmpty;
-    lodash.isEqual = isEqual;
-    lodash.isEqualWith = isEqualWith;
-    lodash.isError = isError;
-    lodash.isFinite = isFinite;
-    lodash.isFunction = isFunction;
-    lodash.isInteger = isInteger;
-    lodash.isLength = isLength;
-    lodash.isMap = isMap;
-    lodash.isMatch = isMatch;
-    lodash.isMatchWith = isMatchWith;
-    lodash.isNaN = isNaN;
-    lodash.isNative = isNative;
-    lodash.isNil = isNil;
-    lodash.isNull = isNull;
-    lodash.isNumber = isNumber;
-    lodash.isObject = isObject;
-    lodash.isObjectLike = isObjectLike;
-    lodash.isPlainObject = isPlainObject;
-    lodash.isRegExp = isRegExp;
-    lodash.isSafeInteger = isSafeInteger;
-    lodash.isSet = isSet;
-    lodash.isString = isString;
-    lodash.isSymbol = isSymbol;
-    lodash.isTypedArray = isTypedArray;
-    lodash.isUndefined = isUndefined;
-    lodash.isWeakMap = isWeakMap;
-    lodash.isWeakSet = isWeakSet;
-    lodash.join = join;
-    lodash.kebabCase = kebabCase;
-    lodash.last = last;
-    lodash.lastIndexOf = lastIndexOf;
-    lodash.lowerCase = lowerCase;
-    lodash.lowerFirst = lowerFirst;
-    lodash.lt = lt;
-    lodash.lte = lte;
-    lodash.max = max;
-    lodash.maxBy = maxBy;
-    lodash.mean = mean;
-    lodash.meanBy = meanBy;
-    lodash.min = min;
-    lodash.minBy = minBy;
-    lodash.stubArray = stubArray;
-    lodash.stubFalse = stubFalse;
-    lodash.stubObject = stubObject;
-    lodash.stubString = stubString;
-    lodash.stubTrue = stubTrue;
-    lodash.multiply = multiply;
-    lodash.nth = nth;
-    lodash.noConflict = noConflict;
-    lodash.noop = noop;
-    lodash.now = now;
-    lodash.pad = pad;
-    lodash.padEnd = padEnd;
-    lodash.padStart = padStart;
-    lodash.parseInt = parseInt;
-    lodash.random = random;
-    lodash.reduce = reduce;
-    lodash.reduceRight = reduceRight;
-    lodash.repeat = repeat;
-    lodash.replace = replace;
-    lodash.result = result;
-    lodash.round = round;
-    lodash.runInContext = runInContext;
-    lodash.sample = sample;
-    lodash.size = size;
-    lodash.snakeCase = snakeCase;
-    lodash.some = some;
-    lodash.sortedIndex = sortedIndex;
-    lodash.sortedIndexBy = sortedIndexBy;
-    lodash.sortedIndexOf = sortedIndexOf;
-    lodash.sortedLastIndex = sortedLastIndex;
-    lodash.sortedLastIndexBy = sortedLastIndexBy;
-    lodash.sortedLastIndexOf = sortedLastIndexOf;
-    lodash.startCase = startCase;
-    lodash.startsWith = startsWith;
-    lodash.subtract = subtract;
-    lodash.sum = sum;
-    lodash.sumBy = sumBy;
-    lodash.template = template;
-    lodash.times = times;
-    lodash.toFinite = toFinite;
-    lodash.toInteger = toInteger;
-    lodash.toLength = toLength;
-    lodash.toLower = toLower;
-    lodash.toNumber = toNumber;
-    lodash.toSafeInteger = toSafeInteger;
-    lodash.toString = toString;
-    lodash.toUpper = toUpper;
-    lodash.trim = trim;
-    lodash.trimEnd = trimEnd;
-    lodash.trimStart = trimStart;
-    lodash.truncate = truncate;
-    lodash.unescape = unescape;
-    lodash.uniqueId = uniqueId;
-    lodash.upperCase = upperCase;
-    lodash.upperFirst = upperFirst;
-    lodash.each = forEach;
-    lodash.eachRight = forEachRight;
-    lodash.first = head;
-    mixin(lodash, (function() {
-      var source = {};
-      baseForOwn(lodash, function(func, methodName) {
-        if (!hasOwnProperty.call(lodash.prototype, methodName)) {
-          source[methodName] = func;
-        }
-      });
-      return source;
-    }()), {'chain': false});
-    lodash.VERSION = VERSION;
-    arrayEach(['bind', 'bindKey', 'curry', 'curryRight', 'partial', 'partialRight'], function(methodName) {
-      lodash[methodName].placeholder = lodash;
-    });
-    arrayEach(['drop', 'take'], function(methodName, index) {
-      LazyWrapper.prototype[methodName] = function(n) {
-        var filtered = this.__filtered__;
-        if (filtered && !index) {
-          return new LazyWrapper(this);
-        }
-        n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
-        var result = this.clone();
-        if (filtered) {
-          result.__takeCount__ = nativeMin(n, result.__takeCount__);
-        } else {
-          result.__views__.push({
-            'size': nativeMin(n, MAX_ARRAY_LENGTH),
-            'type': methodName + (result.__dir__ < 0 ? 'Right' : '')
-          });
-        }
-        return result;
-      };
-      LazyWrapper.prototype[methodName + 'Right'] = function(n) {
-        return this.reverse()[methodName](n).reverse();
-      };
-    });
-    arrayEach(['filter', 'map', 'takeWhile'], function(methodName, index) {
-      var type = index + 1,
-          isFilter = type == LAZY_FILTER_FLAG || type == LAZY_WHILE_FLAG;
-      LazyWrapper.prototype[methodName] = function(iteratee) {
-        var result = this.clone();
-        result.__iteratees__.push({
-          'iteratee': getIteratee(iteratee, 3),
-          'type': type
-        });
-        result.__filtered__ = result.__filtered__ || isFilter;
-        return result;
-      };
-    });
-    arrayEach(['head', 'last'], function(methodName, index) {
-      var takeName = 'take' + (index ? 'Right' : '');
-      LazyWrapper.prototype[methodName] = function() {
-        return this[takeName](1).value()[0];
-      };
-    });
-    arrayEach(['initial', 'tail'], function(methodName, index) {
-      var dropName = 'drop' + (index ? '' : 'Right');
-      LazyWrapper.prototype[methodName] = function() {
-        return this.__filtered__ ? new LazyWrapper(this) : this[dropName](1);
-      };
-    });
-    LazyWrapper.prototype.compact = function() {
-      return this.filter(identity);
-    };
-    LazyWrapper.prototype.find = function(predicate) {
-      return this.filter(predicate).head();
-    };
-    LazyWrapper.prototype.findLast = function(predicate) {
-      return this.reverse().find(predicate);
-    };
-    LazyWrapper.prototype.invokeMap = rest(function(path, args) {
-      if (typeof path == 'function') {
-        return new LazyWrapper(this);
-      }
-      return this.map(function(value) {
-        return baseInvoke(value, path, args);
-      });
-    });
-    LazyWrapper.prototype.reject = function(predicate) {
-      predicate = getIteratee(predicate, 3);
-      return this.filter(function(value) {
-        return !predicate(value);
-      });
-    };
-    LazyWrapper.prototype.slice = function(start, end) {
-      start = toInteger(start);
-      var result = this;
-      if (result.__filtered__ && (start > 0 || end < 0)) {
-        return new LazyWrapper(result);
-      }
-      if (start < 0) {
-        result = result.takeRight(-start);
-      } else if (start) {
-        result = result.drop(start);
-      }
-      if (end !== undefined) {
-        end = toInteger(end);
-        result = end < 0 ? result.dropRight(-end) : result.take(end - start);
-      }
-      return result;
-    };
-    LazyWrapper.prototype.takeRightWhile = function(predicate) {
-      return this.reverse().takeWhile(predicate).reverse();
-    };
-    LazyWrapper.prototype.toArray = function() {
-      return this.take(MAX_ARRAY_LENGTH);
-    };
-    baseForOwn(LazyWrapper.prototype, function(func, methodName) {
-      var checkIteratee = /^(?:filter|find|map|reject)|While$/.test(methodName),
-          isTaker = /^(?:head|last)$/.test(methodName),
-          lodashFunc = lodash[isTaker ? ('take' + (methodName == 'last' ? 'Right' : '')) : methodName],
-          retUnwrapped = isTaker || /^find/.test(methodName);
-      if (!lodashFunc) {
-        return;
-      }
-      lodash.prototype[methodName] = function() {
-        var value = this.__wrapped__,
-            args = isTaker ? [1] : arguments,
-            isLazy = value instanceof LazyWrapper,
-            iteratee = args[0],
-            useLazy = isLazy || isArray(value);
-        var interceptor = function(value) {
-          var result = lodashFunc.apply(lodash, arrayPush([value], args));
-          return (isTaker && chainAll) ? result[0] : result;
-        };
-        if (useLazy && checkIteratee && typeof iteratee == 'function' && iteratee.length != 1) {
-          isLazy = useLazy = false;
-        }
-        var chainAll = this.__chain__,
-            isHybrid = !!this.__actions__.length,
-            isUnwrapped = retUnwrapped && !chainAll,
-            onlyLazy = isLazy && !isHybrid;
-        if (!retUnwrapped && useLazy) {
-          value = onlyLazy ? value : new LazyWrapper(this);
-          var result = func.apply(value, args);
-          result.__actions__.push({
-            'func': thru,
-            'args': [interceptor],
-            'thisArg': undefined
-          });
-          return new LodashWrapper(result, chainAll);
-        }
-        if (isUnwrapped && onlyLazy) {
-          return func.apply(this, args);
-        }
-        result = this.thru(interceptor);
-        return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
-      };
-    });
-    arrayEach(['pop', 'push', 'shift', 'sort', 'splice', 'unshift'], function(methodName) {
-      var func = arrayProto[methodName],
-          chainName = /^(?:push|sort|unshift)$/.test(methodName) ? 'tap' : 'thru',
-          retUnwrapped = /^(?:pop|shift)$/.test(methodName);
-      lodash.prototype[methodName] = function() {
-        var args = arguments;
-        if (retUnwrapped && !this.__chain__) {
-          var value = this.value();
-          return func.apply(isArray(value) ? value : [], args);
-        }
-        return this[chainName](function(value) {
-          return func.apply(isArray(value) ? value : [], args);
-        });
-      };
-    });
-    baseForOwn(LazyWrapper.prototype, function(func, methodName) {
-      var lodashFunc = lodash[methodName];
-      if (lodashFunc) {
-        var key = (lodashFunc.name + ''),
-            names = realNames[key] || (realNames[key] = []);
-        names.push({
-          'name': methodName,
-          'func': lodashFunc
-        });
-      }
-    });
-    realNames[createHybridWrapper(undefined, BIND_KEY_FLAG).name] = [{
-      'name': 'wrapper',
-      'func': undefined
-    }];
-    LazyWrapper.prototype.clone = lazyClone;
-    LazyWrapper.prototype.reverse = lazyReverse;
-    LazyWrapper.prototype.value = lazyValue;
-    lodash.prototype.at = wrapperAt;
-    lodash.prototype.chain = wrapperChain;
-    lodash.prototype.commit = wrapperCommit;
-    lodash.prototype.next = wrapperNext;
-    lodash.prototype.plant = wrapperPlant;
-    lodash.prototype.reverse = wrapperReverse;
-    lodash.prototype.toJSON = lodash.prototype.valueOf = lodash.prototype.value = wrapperValue;
-    if (iteratorSymbol) {
-      lodash.prototype[iteratorSymbol] = wrapperToIterator;
-    }
-    return lodash;
-  }
-  var _ = runInContext();
-  (freeSelf || {})._ = _;
-  if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-    define("3a", [], function() {
-      return _;
-    });
-  } else if (freeModule) {
-    (freeModule.exports = _)._ = _;
-    freeExports._ = _;
-  } else {
-    root._ = _;
-  }
-}.call(this));
-
-})();
-$__System.register("48", ["5", "e", "f", "47", "3a"], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var core_1,
-      primeng_1,
-      index_1,
-      taxonomy_model_1,
-      lodash_1;
-  var AdminTaxonomyLevelEditorComponent;
-  return {
-    setters: [function(core_1_1) {
-      core_1 = core_1_1;
-    }, function(primeng_1_1) {
-      primeng_1 = primeng_1_1;
-    }, function(index_1_1) {
-      index_1 = index_1_1;
-    }, function(taxonomy_model_1_1) {
-      taxonomy_model_1 = taxonomy_model_1_1;
-    }, function(lodash_1_1) {
-      lodash_1 = lodash_1_1;
-    }],
-    execute: function() {
-      AdminTaxonomyLevelEditorComponent = (function() {
-        function AdminTaxonomyLevelEditorComponent(taxonomiesService) {
-          this.taxonomiesService = taxonomiesService;
-          this.closeClick = new core_1.EventEmitter();
-          this.saveClick = new core_1.EventEmitter();
-          this.action = "Edit";
-          this.availableLevels = [];
-        }
-        AdminTaxonomyLevelEditorComponent.prototype.ngOnInit = function() {
-          if (this.taxonomyLevel != undefined)
-            this.editedTaxonomyLevel = lodash_1.default.cloneDeep(this.taxonomyLevel);
-          else {
-            this.editedTaxonomyLevel = new taxonomy_model_1.TaxonomyLevel();
-            this.action = "New";
-          }
-          this.editedTaxonomyLevel.TaxonomyTypeID = this.taxonomy.ID;
-          this.getUnusedLevels();
-        };
-        AdminTaxonomyLevelEditorComponent.prototype.getUnusedLevels = function() {
-          var _this = this;
-          this.taxonomiesService.getTaxonomyLevels(this.taxonomy).then(function(result) {
-            var levels = [];
-            for (var i = 1; i <= _this.taxonomy.MaximumDepth; i++) {
-              levels.push(i);
-            }
-            for (var i = 0; i < result.length; i++) {
-              var index = levels.map(function(e) {
-                return e;
-              }).indexOf(result[i].Level);
-              console.log(index);
-              levels.splice(index, 1);
-            }
-            for (var i = 0; i < levels.length; i++) {
-              _this.availableLevels.push({
-                label: levels[i].toString(),
-                value: levels[i]
-              });
-            }
-          });
-        };
-        AdminTaxonomyLevelEditorComponent.prototype.update = function() {
-          this.saveClick.emit({
-            level: this.editedTaxonomyLevel,
-            action: this.taxonomyLevel == null ? "new" : "edit"
-          });
-        };
-        AdminTaxonomyLevelEditorComponent.prototype.close = function() {
-          this.closeClick.emit({});
-        };
-        __decorate([core_1.Input(), __metadata('design:type', taxonomy_model_1.TaxonomyLevel)], AdminTaxonomyLevelEditorComponent.prototype, "taxonomyLevel", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', taxonomy_model_1.Taxonomy)], AdminTaxonomyLevelEditorComponent.prototype, "taxonomy", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminTaxonomyLevelEditorComponent.prototype, "closeClick", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminTaxonomyLevelEditorComponent.prototype, "saveClick", void 0);
-        AdminTaxonomyLevelEditorComponent = __decorate([core_1.Component({
-          selector: 'd3s-admin-model-level-editor',
-          template: " \n                <header>{{action}} Level</header>\n                <div class=\"row\">\n                    <div class=\"col l6 s12\">\n                        <div class=\"FieldName\">Name</div>\n                        <div><input type=\"text\" pInputText [(ngModel)]=\"editedTaxonomyLevel.Name\" style=\"width: 100%;\" /></div>\n                    </div>\n                    <div class=\"col l6 s12\" *ngIf=\"taxonomyLevel==null\">\n                        <div class=\"FieldName\">Level</div>\n                        <div><p-dropdown [options]=\"availableLevels\" [(ngModel)]=\"editedTaxonomyLevel.Level\" [style]=\"{width:'100%'}\"></p-dropdown></div>\n                    </div>                    \n                    <div class=\"col s12\">\n                        <div class=\"FieldName\">Description</div>\n                        <p-editor [style]=\"{'height':'150px'}\" [(ngModel)]=\"editedTaxonomyLevel.Description\"></p-editor>\n                    </div>\n                    <div class=\"col s12\">&nbsp;</div>\n                    <div class=\"col s12\">\n                        <button pButton type=\"button\" (click)=\"update()\" label=\"Save\" style=\"width: '150px';\"></button>\n                        <button pButton type=\"button\" (click)=\"close()\" label=\"Close\" style=\"width: '150px';\"></button>\n                    </div>                    \n                </div>\n                ",
-          providers: [index_1.TaxonomiesService],
-          directives: [primeng_1.Button, primeng_1.Editor, primeng_1.InputText, primeng_1.Dropdown]
-        }), __metadata('design:paramtypes', [index_1.TaxonomiesService])], AdminTaxonomyLevelEditorComponent);
-        return AdminTaxonomyLevelEditorComponent;
-      }());
-      exports_1("AdminTaxonomyLevelEditorComponent", AdminTaxonomyLevelEditorComponent);
-      ;
-    }
-  };
-});
-
-$__System.register("26", [], function(exports_1, context_1) {
-  "use strict";
-  var __moduleName = context_1 && context_1.id;
-  var BaseEditorModel,
-      SelectItem,
-      FormHelper,
-      MessageType,
-      FormMessage,
-      JsonResult,
-      FormMode;
-  return {
-    setters: [],
-    execute: function() {
-      BaseEditorModel = (function() {
-        function BaseEditorModel() {}
-        return BaseEditorModel;
-      }());
-      exports_1("BaseEditorModel", BaseEditorModel);
-      SelectItem = (function() {
-        function SelectItem() {}
-        return SelectItem;
-      }());
-      exports_1("SelectItem", SelectItem);
-      (function(FormHelper) {
-        function mapSelectItems(s) {
-          s.forEach(function(s) {
-            s.value = s.Value;
-            s.label = s.Text;
-          });
-        }
-        FormHelper.mapSelectItems = mapSelectItems;
-      })(FormHelper = FormHelper || (FormHelper = {}));
-      exports_1("FormHelper", FormHelper);
-      (function(MessageType) {
-        MessageType[MessageType["Error"] = 0] = "Error";
-        MessageType[MessageType["Success"] = 1] = "Success";
-        MessageType[MessageType["Info"] = 2] = "Info";
-        MessageType[MessageType["Warning"] = 3] = "Warning";
-      })(MessageType || (MessageType = {}));
-      exports_1("MessageType", MessageType);
-      FormMessage = (function() {
-        function FormMessage() {
-          this.Visible = true;
-        }
-        FormMessage.prototype.Success = function(msg) {
-          this.MessageType = MessageType.Success;
-          this.Message = msg;
-        };
-        FormMessage.prototype.Info = function(msg) {
-          this.MessageType = MessageType.Info;
-          this.Message = msg;
-        };
-        FormMessage.prototype.Error = function(msg) {
-          this.MessageType = MessageType.Error;
-          this.Message = msg;
-        };
-        FormMessage.prototype.Warning = function(msg) {
-          this.MessageType = MessageType.Warning;
-          this.Message = msg;
-        };
-        Object.defineProperty(FormMessage.prototype, "isError", {
-          get: function() {
-            return this.MessageType == MessageType.Error;
-          },
-          enumerable: true,
-          configurable: true
-        });
-        Object.defineProperty(FormMessage.prototype, "isSuccess", {
-          get: function() {
-            return this.MessageType == MessageType.Success;
-          },
-          enumerable: true,
-          configurable: true
-        });
-        Object.defineProperty(FormMessage.prototype, "isInfo", {
-          get: function() {
-            return this.MessageType == MessageType.Info;
-          },
-          enumerable: true,
-          configurable: true
-        });
-        Object.defineProperty(FormMessage.prototype, "isWarning", {
-          get: function() {
-            return this.MessageType == MessageType.Warning;
-          },
-          enumerable: true,
-          configurable: true
-        });
-        return FormMessage;
-      }());
-      exports_1("FormMessage", FormMessage);
-      JsonResult = (function() {
-        function JsonResult(data) {
-          this.type = data.type || null;
-          this.title = data.title || null;
-          this.message = data.message || null;
-          this.action = data.action || null;
-          this.id = data.id || null;
-          this.statusCode = data.statusCode || null;
-          this.context = data.context || null;
-          this.customdata = data.customdata || null;
-        }
-        Object.defineProperty(JsonResult.prototype, "isError", {
-          get: function() {
-            return ((this.type || '').toLowerCase().trim() == 'error');
-          },
-          enumerable: true,
-          configurable: true
-        });
-        Object.defineProperty(JsonResult.prototype, "isSuccess", {
-          get: function() {
-            return ((this.type || '').toLowerCase().trim() == 'confirm' || (this.type || '').toLowerCase().trim() == 'success');
-          },
-          enumerable: true,
-          configurable: true
-        });
-        return JsonResult;
-      }());
-      exports_1("JsonResult", JsonResult);
-      (function(FormMode) {
-        FormMode[FormMode["Default"] = 1] = "Default";
-        FormMode[FormMode["Editing"] = 2] = "Editing";
-        FormMode[FormMode["Adding"] = 3] = "Adding";
-        FormMode[FormMode["Deleting"] = 4] = "Deleting";
-      })(FormMode || (FormMode = {}));
-      exports_1("FormMode", FormMode);
     }
   };
 });
@@ -12146,7 +4919,265 @@ $__System.register("21", ["5", "26"], function(exports_1, context_1) {
   };
 });
 
-$__System.registerDynamic("5f", ["5"], true, function($__require, exports, module) {
+$__System.register("27", ["5", "33", "26", "21", "e"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      form_model_1,
+      form_message_part_1,
+      primeng_1;
+  var DeleteForm;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(form_model_1_1) {
+      form_model_1 = form_model_1_1;
+    }, function(form_message_part_1_1) {
+      form_message_part_1 = form_message_part_1_1;
+    }, function(primeng_1_1) {
+      primeng_1 = primeng_1_1;
+    }],
+    execute: function() {
+      DeleteForm = (function() {
+        function DeleteForm(http) {
+          this.method = 'post';
+          this.onDeleteComplete = new core_1.EventEmitter();
+          this.onDeleteSuccess = new core_1.EventEmitter();
+          this.onDeleteFail = new core_1.EventEmitter();
+          this.onCancel = new core_1.EventEmitter();
+          this.message = new form_model_1.FormMessage();
+          this.isLoading = false;
+          this.http = http;
+        }
+        DeleteForm.prototype.delete = function() {
+          var _this = this;
+          if (this.isLoading)
+            return;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          this.isLoading = true;
+          switch (this.method.toLowerCase()) {
+            case 'callback':
+              this.callback(this.itemId);
+              this.isLoading = false;
+              break;
+            case 'post':
+              this.http.post(this.uri, JSON.stringify(this.model), {headers: headers}).map(function(data) {
+                return data.json();
+              }).subscribe(function(data) {
+                var r = new form_model_1.JsonResult(data);
+                if (r.isError) {
+                  _this.message.Error(r.message);
+                  _this.onDeleteFail.emit({message: _this.message});
+                } else if (r.isSuccess) {
+                  _this.message.Success(r.message);
+                  _this.onDeleteSuccess.emit({message: _this.message});
+                } else {
+                  _this.message.Info(r.message);
+                }
+                _this.onDeleteComplete.emit({message: _this.message});
+                _this.isLoading = false;
+              });
+              break;
+            case 'put':
+              this.http.put(this.uri, JSON.stringify(this.model), {headers: headers}).map(function(data) {
+                return data.json();
+              }).subscribe(function(data) {
+                var r = new form_model_1.JsonResult(data);
+                if (r.isError) {
+                  _this.message.Error(r.message);
+                  _this.onDeleteFail.emit({message: _this.message});
+                } else if (r.isSuccess) {
+                  _this.message.Success(r.message);
+                  _this.onDeleteSuccess.emit({message: _this.message});
+                } else {
+                  _this.message.Info(r.message);
+                }
+                _this.onDeleteComplete.emit({message: _this.message});
+                _this.isLoading = false;
+              });
+              break;
+            case 'delete':
+              if (this.model)
+                console.log('WARN: model passed to delete-generic will be ignored with DELETE method.');
+              this.http.delete(this.uri).map(function(data) {
+                return data.json();
+              }).subscribe(function(data) {
+                var r = new form_model_1.JsonResult(data);
+                if (r.isError) {
+                  _this.message.Error(r.message);
+                  _this.onDeleteFail.emit({message: _this.message});
+                } else if (r.isSuccess) {
+                  _this.message.Success(r.message);
+                  _this.onDeleteSuccess.emit({message: _this.message});
+                } else {
+                  _this.message.Info(r.message);
+                }
+                _this.onDeleteComplete.emit({message: _this.message});
+                _this.isLoading = false;
+              });
+              break;
+            default:
+              console.log('method ' + this.method + ' not implemented');
+              this.isLoading = false;
+              break;
+          }
+        };
+        DeleteForm.prototype.cancel = function() {
+          this.onCancel.emit(null);
+        };
+        __decorate([core_1.Input(), __metadata('design:type', Object)], DeleteForm.prototype, "model", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "uri", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "method", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "prompt", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', Function)], DeleteForm.prototype, "callback", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', Number)], DeleteForm.prototype, "itemId", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteComplete", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteSuccess", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteFail", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onCancel", void 0);
+        DeleteForm = __decorate([core_1.Component({
+          selector: 'delete-form',
+          templateUrl: 'scripts/app/components/forms/delete.form.html',
+          viewProviders: [http_1.HTTP_PROVIDERS],
+          directives: [form_message_part_1.FormMessagePart, primeng_1.Button]
+        }), __metadata('design:paramtypes', [http_1.Http])], DeleteForm);
+        return DeleteForm;
+      }());
+      exports_1("DeleteForm", DeleteForm);
+    }
+  };
+});
+
+$__System.register("58", ["5", "e", "f", "25", "27"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      primeng_1,
+      index_1,
+      tile_actions_component_1,
+      delete_form_1;
+  var DynamicGridComponent;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(primeng_1_1) {
+      primeng_1 = primeng_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(tile_actions_component_1_1) {
+      tile_actions_component_1 = tile_actions_component_1_1;
+    }, function(delete_form_1_1) {
+      delete_form_1 = delete_form_1_1;
+    }],
+    execute: function() {
+      DynamicGridComponent = (function() {
+        function DynamicGridComponent(gridDefinitionService, uriBasedService) {
+          this.gridDefinitionService = gridDefinitionService;
+          this.uriBasedService = uriBasedService;
+          this.title = "Items";
+          this.items = [];
+          this.columns = [];
+          this.showDelete = false;
+          this.showEditor = false;
+          this.isLoading = false;
+          this.selected = null;
+          this.theDeleteCallback = this.deleteItem.bind(this);
+        }
+        DynamicGridComponent.prototype.ngOnChanges = function(changes) {
+          if (this.objectID != null && this.objectType != null)
+            this.load();
+        };
+        DynamicGridComponent.prototype.load = function() {
+          this.getFieldsDefinition();
+          this.getData();
+        };
+        DynamicGridComponent.prototype.deleteItem = function(id) {
+          this.uriBasedService.deleteItem(this.deleteUri, id);
+          this.showDelete = false;
+          if (this.items.length > 0)
+            this.items.splice(this.findItemIndex(id), 1);
+        };
+        DynamicGridComponent.prototype.getFieldsDefinition = function() {
+          var _this = this;
+          this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType).then(function(result) {
+            _this.columns = result.Columns;
+          });
+        };
+        DynamicGridComponent.prototype.getData = function() {
+          var _this = this;
+          this.isLoading = true;
+          this.uriBasedService.getItems(this.dataUri).then(function(result) {
+            _this.items = result;
+            _this.isLoading = false;
+            if (_this.items.length > 0)
+              _this.selected = _this.items[0];
+          });
+        };
+        DynamicGridComponent.prototype.findItemIndex = function(id) {
+          var index = -1;
+          for (var _i = 0,
+              _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            index++;
+            if (item.ID == id)
+              return index;
+          }
+        };
+        __decorate([core_1.Input(), __metadata('design:type', String)], DynamicGridComponent.prototype, "objectType", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', Number)], DynamicGridComponent.prototype, "objectID", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DynamicGridComponent.prototype, "dataUri", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DynamicGridComponent.prototype, "deleteUri", void 0);
+        __decorate([core_1.Input(), __metadata('design:type', String)], DynamicGridComponent.prototype, "title", void 0);
+        DynamicGridComponent = __decorate([core_1.Component({
+          selector: 'd3s-dynamic-grid',
+          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, delete_form_1.DeleteForm],
+          providers: [index_1.GridDefinitionService, index_1.UriBasedService],
+          template: " \n                <header *ngIf=\"!showEditor && !showDelete\">{{title}}\n                    <d3s-tile-actions [hasAdd]=\"true\" [addTitle]=\"'Add lookup item'\" (addClick)=\"add()\"></d3s-tile-actions>                            \n                </header>           \n                <div *ngIf=\"isLoading\" style=\"width:100%; text-align:center;\">\n                    <div style=\"padding:10px;\"><i class=\"fa fa-spinner fa-spin fa-2x\"></i></div>\n                </div>           \n               <p-dataTable *ngIf=\"!isLoading && !showDelete && !showEditor\" [value]=\"items\" selectionMode=\"single\" [rows]=\"10\" [paginator]=\"true\" [pageLinks]=\"3\" expandableRows=\"true\" (onRowDblclick)=\"editItemClick.emit(selectedItem)\" [(selection)]=\"selected\" >                                                                       \n                    <p-column *ngFor=\"let column of columns\" [field]=\"column.datafield\" [header]=\"column.text\" [filter]=\"true\" [sortable]=\"true\"></p-column>\n                    <p-column [style]=\"{width:'40px'}\">\n                            <template let-template=\"rowData\">\n                                <div class=\"RowTools\">\n                                    <a style=\"cursor:pointer;\" (click)=\"showEditor=true;\"><i class=\"fa fa-pencil\"></i></a>                                        \n                                </div>\n                            </template>\n                    </p-column>                            \n                    <p-column  [style]=\"{width:'40px'}\">\n                            <template let-template=\"rowData\">\n                                <div class=\"RowTools\">                                \n                                    <a style=\"cursor:pointer;\" (click)=\"showDelete=true;\"><i class=\"fa fa-trash-o\"></i></a>                                    \n                                </div>\n                            </template>\n                    </p-column>                            \n                </p-dataTable>   \n                <delete-form *ngIf=\"showDelete\"\n                    [callback]=\"theDeleteCallback\"\n                    [itemId]=\"selected?.ID\"\n                    [method]=\"'callback'\"\n                    [prompt]=\"'Are you sure you want to delete the selected item?'\"                                         \n                    (onCancel)=\"showDelete=false;\"\n                ></delete-form>                                    \n                "
+        }), __metadata('design:paramtypes', [index_1.GridDefinitionService, index_1.UriBasedService])], DynamicGridComponent);
+        return DynamicGridComponent;
+      }());
+      exports_1("DynamicGridComponent", DynamicGridComponent);
+    }
+  };
+});
+
+$__System.registerDynamic("59", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12194,7 +5225,7 @@ $__System.registerDynamic("5f", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("60", ["5", "5f", "61"], true, function($__require, exports, module) {
+$__System.registerDynamic("5a", ["5", "59", "5b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12217,8 +5248,8 @@ $__System.registerDynamic("60", ["5", "5f", "61"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var accordion_1 = $__require('5f');
-  var common_1 = $__require('61');
+  var accordion_1 = $__require('59');
+  var common_1 = $__require('5b');
   var AccordionTab = (function() {
     function AccordionTab(accordion) {
       this.accordion = accordion;
@@ -12274,7 +5305,7 @@ $__System.registerDynamic("60", ["5", "5f", "61"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("62", ["5", "63", "64", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("5c", ["5", "5d", "5e", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12297,10 +5328,10 @@ $__System.registerDynamic("62", ["5", "63", "64", "65", "66"], true, function($_
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var inputtext_1 = $__require('63');
-  var button_1 = $__require('64');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var inputtext_1 = $__require('5d');
+  var button_1 = $__require('5e');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var AUTOCOMPLETE_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return AutoComplete;
@@ -12602,7 +5633,7 @@ $__System.registerDynamic("62", ["5", "63", "64", "65", "66"], true, function($_
   return module.exports;
 });
 
-$__System.registerDynamic("67", ["5", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("61", ["5", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12669,7 +5700,7 @@ $__System.registerDynamic("67", ["5", "10"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("68", ["5", "64", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("62", ["5", "5e", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12692,8 +5723,8 @@ $__System.registerDynamic("68", ["5", "64", "66"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var button_1 = $__require('64');
-  var forms_1 = $__require('66');
+  var button_1 = $__require('5e');
+  var forms_1 = $__require('60');
   var CALENDAR_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Calendar;
@@ -12867,7 +5898,7 @@ $__System.registerDynamic("68", ["5", "64", "66"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("69", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("63", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -12890,7 +5921,7 @@ $__System.registerDynamic("69", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Carousel = (function() {
     function Carousel(el, domHandler, differs, renderer) {
       this.el = el;
@@ -13104,7 +6135,7 @@ $__System.registerDynamic("69", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("6a", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("64", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13141,7 +6172,7 @@ $__System.registerDynamic("6a", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("6b", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("65", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13164,7 +6195,7 @@ $__System.registerDynamic("6b", ["5", "65", "10"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var ContextMenuSub = (function() {
     function ContextMenuSub(domHandler, router) {
@@ -13287,7 +6318,7 @@ $__System.registerDynamic("6b", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("6c", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("66", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13378,7 +6409,7 @@ $__System.registerDynamic("6c", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("6d", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("67", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13401,7 +6432,7 @@ $__System.registerDynamic("6d", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var CHECKBOX_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Checkbox;
@@ -13495,7 +6526,7 @@ $__System.registerDynamic("6d", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("6e", ["5", "61", "6f"], true, function($__require, exports, module) {
+$__System.registerDynamic("68", ["5", "5b", "69"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13518,9 +6549,9 @@ $__System.registerDynamic("6e", ["5", "61", "6f"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var common_1 = $__require('61');
-  var common_2 = $__require('61');
-  var paginator_1 = $__require('6f');
+  var common_1 = $__require('5b');
+  var common_2 = $__require('5b');
+  var paginator_1 = $__require('69');
   var DataGrid = (function() {
     function DataGrid(el, differs) {
       this.el = el;
@@ -13612,7 +6643,7 @@ $__System.registerDynamic("6e", ["5", "61", "6f"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("70", ["5", "61", "6f"], true, function($__require, exports, module) {
+$__System.registerDynamic("6a", ["5", "5b", "69"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13635,9 +6666,9 @@ $__System.registerDynamic("70", ["5", "61", "6f"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var common_1 = $__require('61');
-  var common_2 = $__require('61');
-  var paginator_1 = $__require('6f');
+  var common_1 = $__require('5b');
+  var common_2 = $__require('5b');
+  var paginator_1 = $__require('69');
   var DataList = (function() {
     function DataList(el, differs) {
       this.el = el;
@@ -13727,7 +6758,7 @@ $__System.registerDynamic("70", ["5", "61", "6f"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("71", ["5", "61", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("6b", ["5", "5b", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13750,9 +6781,9 @@ $__System.registerDynamic("71", ["5", "61", "65"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var common_1 = $__require('61');
-  var common_2 = $__require('61');
-  var domhandler_1 = $__require('65');
+  var common_1 = $__require('5b');
+  var common_2 = $__require('5b');
+  var domhandler_1 = $__require('5f');
   var DataScroller = (function() {
     function DataScroller(el, differs, renderer, domHandler) {
       this.el = el;
@@ -13866,7 +6897,7 @@ $__System.registerDynamic("71", ["5", "61", "65"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("72", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("6c", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13908,7 +6939,7 @@ $__System.registerDynamic("72", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("73", ["5", "74", "75", "72", "61", "6f", "63", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("6d", ["5", "6e", "6f", "6c", "5b", "69", "5d", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -13936,14 +6967,14 @@ $__System.registerDynamic("73", ["5", "74", "75", "72", "61", "6f", "63", "65"],
     };
   };
   var core_1 = $__require('5');
-  var column_1 = $__require('74');
-  var columntemplateloader_1 = $__require('75');
-  var rowexpansionloader_1 = $__require('72');
-  var common_1 = $__require('61');
-  var common_2 = $__require('61');
-  var paginator_1 = $__require('6f');
-  var inputtext_1 = $__require('63');
-  var domhandler_1 = $__require('65');
+  var column_1 = $__require('6e');
+  var columntemplateloader_1 = $__require('6f');
+  var rowexpansionloader_1 = $__require('6c');
+  var common_1 = $__require('5b');
+  var common_2 = $__require('5b');
+  var paginator_1 = $__require('69');
+  var inputtext_1 = $__require('5d');
+  var domhandler_1 = $__require('5f');
   var DataTable = (function() {
     function DataTable(el, domHandler, differs, cols, renderer, changeDetector) {
       var _this = this;
@@ -14818,7 +7849,7 @@ $__System.registerDynamic("73", ["5", "74", "75", "72", "61", "6f", "63", "65"],
   return module.exports;
 });
 
-$__System.registerDynamic("76", ["5", "65", "61"], true, function($__require, exports, module) {
+$__System.registerDynamic("70", ["5", "5f", "5b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -14841,8 +7872,8 @@ $__System.registerDynamic("76", ["5", "65", "61"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
-  var common_1 = $__require('61');
+  var domhandler_1 = $__require('5f');
+  var common_1 = $__require('5b');
   var Dialog = (function() {
     function Dialog(el, domHandler, renderer) {
       this.el = el;
@@ -15065,7 +8096,7 @@ $__System.registerDynamic("76", ["5", "65", "61"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("77", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("71", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15088,7 +8119,7 @@ $__System.registerDynamic("77", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Draggable = (function() {
     function Draggable(el, domHandler) {
       this.el = el;
@@ -15148,7 +8179,7 @@ $__System.registerDynamic("77", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("78", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("72", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15171,7 +8202,7 @@ $__System.registerDynamic("78", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Droppable = (function() {
     function Droppable(el, domHandler) {
       this.el = el;
@@ -15235,7 +8266,7 @@ $__System.registerDynamic("78", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("79", ["5", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("73", ["5", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15258,8 +8289,8 @@ $__System.registerDynamic("79", ["5", "65", "66"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var DROPDOWN_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Dropdown;
@@ -15551,7 +8582,7 @@ $__System.registerDynamic("79", ["5", "65", "66"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("7a", ["5", "61", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("74", ["5", "5b", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15574,9 +8605,9 @@ $__System.registerDynamic("7a", ["5", "61", "65", "66"], true, function($__requi
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var common_1 = $__require('61');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var common_1 = $__require('5b');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var EDITOR_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Editor;
@@ -15666,7 +8697,7 @@ $__System.registerDynamic("7a", ["5", "61", "65", "66"], true, function($__requi
   return module.exports;
 });
 
-$__System.registerDynamic("7b", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("75", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15744,7 +8775,7 @@ $__System.registerDynamic("7b", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("7c", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("76", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -15767,7 +8798,7 @@ $__System.registerDynamic("7c", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Galleria = (function() {
     function Galleria(el, domHandler, differs) {
       this.el = el;
@@ -15929,7 +8960,7 @@ $__System.registerDynamic("7c", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("7d", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("77", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16072,7 +9103,7 @@ $__System.registerDynamic("7d", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("7e", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("78", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16095,7 +9126,7 @@ $__System.registerDynamic("7e", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Growl = (function() {
     function Growl(el, domHandler, differs) {
       this.el = el;
@@ -16177,7 +9208,7 @@ $__System.registerDynamic("7e", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("7f", ["5", "63", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("79", ["5", "5d", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16200,8 +9231,8 @@ $__System.registerDynamic("7f", ["5", "63", "66"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var inputtext_1 = $__require('63');
-  var forms_1 = $__require('66');
+  var inputtext_1 = $__require('5d');
+  var forms_1 = $__require('60');
   var INPUTMASK_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return InputMask;
@@ -16293,7 +9324,7 @@ $__System.registerDynamic("7f", ["5", "63", "66"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("80", ["5", "66", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("7a", ["5", "60", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16316,8 +9347,8 @@ $__System.registerDynamic("80", ["5", "66", "65"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
-  var domhandler_1 = $__require('65');
+  var forms_1 = $__require('60');
+  var domhandler_1 = $__require('5f');
   var INPUTSWITCH_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return InputSwitch;
@@ -16437,7 +9468,7 @@ $__System.registerDynamic("80", ["5", "66", "65"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("81", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("7b", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16530,7 +9561,7 @@ $__System.registerDynamic("81", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("82", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("7c", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16553,7 +9584,7 @@ $__System.registerDynamic("82", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Lightbox = (function() {
     function Lightbox(el, domHandler, renderer) {
       this.el = el;
@@ -16701,7 +9732,7 @@ $__System.registerDynamic("82", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("83", ["5", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("7d", ["5", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16724,8 +9755,8 @@ $__System.registerDynamic("83", ["5", "65", "66"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var LISTBOX_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Listbox;
@@ -16902,7 +9933,7 @@ $__System.registerDynamic("83", ["5", "65", "66"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("84", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("7e", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -16925,7 +9956,7 @@ $__System.registerDynamic("84", ["5", "65", "10"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var MegaMenu = (function() {
     function MegaMenu(el, domHandler, renderer, router) {
@@ -17029,7 +10060,7 @@ $__System.registerDynamic("84", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("85", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("7f", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17052,7 +10083,7 @@ $__System.registerDynamic("85", ["5", "65", "10"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var Menu = (function() {
     function Menu(el, domHandler, renderer, router) {
@@ -17157,7 +10188,7 @@ $__System.registerDynamic("85", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("86", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("80", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17180,7 +10211,7 @@ $__System.registerDynamic("86", ["5", "65", "10"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var MenubarSub = (function() {
     function MenubarSub(domHandler, router) {
@@ -17281,7 +10312,7 @@ $__System.registerDynamic("86", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("87", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("81", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17330,7 +10361,7 @@ $__System.registerDynamic("87", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("88", ["5", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("82", ["5", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17353,8 +10384,8 @@ $__System.registerDynamic("88", ["5", "65", "66"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var MULTISELECT_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return MultiSelect;
@@ -17591,7 +10622,7 @@ $__System.registerDynamic("88", ["5", "65", "66"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("89", ["5", "64", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("83", ["5", "5e", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17614,8 +10645,8 @@ $__System.registerDynamic("89", ["5", "64", "65"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var button_1 = $__require('64');
-  var domhandler_1 = $__require('65');
+  var button_1 = $__require('5e');
+  var domhandler_1 = $__require('5f');
   var OrderList = (function() {
     function OrderList(el, domHandler) {
       this.el = el;
@@ -17769,7 +10800,7 @@ $__System.registerDynamic("89", ["5", "64", "65"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("8a", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("84", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -17792,7 +10823,7 @@ $__System.registerDynamic("8a", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var OverlayPanel = (function() {
     function OverlayPanel(el, domHandler, renderer) {
       this.el = el;
@@ -17893,7 +10924,7 @@ $__System.registerDynamic("8a", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("6f", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("69", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18013,7 +11044,7 @@ $__System.registerDynamic("6f", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("8b", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("85", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18082,7 +11113,7 @@ $__System.registerDynamic("8b", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("8c", ["5", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("86", ["5", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18199,7 +11230,7 @@ $__System.registerDynamic("8c", ["5", "10"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("8d", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("87", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18222,7 +11253,7 @@ $__System.registerDynamic("8d", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Password = (function() {
     function Password(el, domHandler) {
       this.el = el;
@@ -18343,7 +11374,7 @@ $__System.registerDynamic("8d", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("64", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("5e", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18366,7 +11397,7 @@ $__System.registerDynamic("64", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Button = (function() {
     function Button(el, domHandler) {
       this.el = el;
@@ -18469,7 +11500,7 @@ $__System.registerDynamic("64", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("8e", ["5", "64", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("88", ["5", "5e", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18492,8 +11523,8 @@ $__System.registerDynamic("8e", ["5", "64", "65"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var button_1 = $__require('64');
-  var domhandler_1 = $__require('65');
+  var button_1 = $__require('5e');
+  var domhandler_1 = $__require('5f');
   var PickList = (function() {
     function PickList(el, domHandler) {
       this.el = el;
@@ -18666,7 +11697,7 @@ $__System.registerDynamic("8e", ["5", "64", "65"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("8f", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("89", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18702,7 +11733,7 @@ $__System.registerDynamic("8f", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("90", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("8a", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18725,7 +11756,7 @@ $__System.registerDynamic("90", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var RADIO_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return RadioButton;
@@ -18776,7 +11807,7 @@ $__System.registerDynamic("90", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("91", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("8b", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -18799,7 +11830,7 @@ $__System.registerDynamic("91", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var RATING_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Rating;
@@ -18866,7 +11897,7 @@ $__System.registerDynamic("91", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("92", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("8c", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19134,7 +12165,7 @@ $__System.registerDynamic("92", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("93", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("8d", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19157,7 +12188,7 @@ $__System.registerDynamic("93", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var SELECTBUTTON_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return SelectButton;
@@ -19230,7 +12261,7 @@ $__System.registerDynamic("93", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("94", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("8e", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19258,7 +12289,7 @@ $__System.registerDynamic("94", ["5", "65", "10"], true, function($__require, ex
     };
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var SlideMenuSub = (function() {
     function SlideMenuSub(slideMenu, router) {
@@ -19397,7 +12428,7 @@ $__System.registerDynamic("94", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("95", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("8f", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19420,7 +12451,7 @@ $__System.registerDynamic("95", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var SLIDER_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Slider;
@@ -19518,7 +12549,7 @@ $__System.registerDynamic("95", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("63", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("5d", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19582,7 +12613,7 @@ $__System.registerDynamic("63", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("96", ["5", "63", "65", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("90", ["5", "5d", "5f", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19605,9 +12636,9 @@ $__System.registerDynamic("96", ["5", "63", "65", "66"], true, function($__requi
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var inputtext_1 = $__require('63');
-  var domhandler_1 = $__require('65');
-  var forms_1 = $__require('66');
+  var inputtext_1 = $__require('5d');
+  var domhandler_1 = $__require('5f');
+  var forms_1 = $__require('60');
   var SPINNER_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return Spinner;
@@ -19797,7 +12828,7 @@ $__System.registerDynamic("96", ["5", "63", "65", "66"], true, function($__requi
   return module.exports;
 });
 
-$__System.registerDynamic("97", ["5", "98", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("91", ["5", "92", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19820,8 +12851,8 @@ $__System.registerDynamic("97", ["5", "98", "65", "10"], true, function($__requi
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var splitbuttonitem_1 = $__require('98');
-  var domhandler_1 = $__require('65');
+  var splitbuttonitem_1 = $__require('92');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var SplitButton = (function() {
     function SplitButton(el, domHandler, renderer, router) {
@@ -19882,7 +12913,7 @@ $__System.registerDynamic("97", ["5", "98", "65", "10"], true, function($__requi
   return module.exports;
 });
 
-$__System.registerDynamic("98", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("92", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19924,7 +12955,7 @@ $__System.registerDynamic("98", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("99", ["5", "9a"], true, function($__require, exports, module) {
+$__System.registerDynamic("93", ["5", "94"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -19952,7 +12983,7 @@ $__System.registerDynamic("99", ["5", "9a"], true, function($__require, exports,
     };
   };
   var core_1 = $__require('5');
-  var tabpanel_1 = $__require('9a');
+  var tabpanel_1 = $__require('94');
   var TabView = (function() {
     function TabView(el, tabPanels) {
       var _this = this;
@@ -20044,7 +13075,7 @@ $__System.registerDynamic("99", ["5", "9a"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("9a", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("94", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -20087,7 +13118,7 @@ $__System.registerDynamic("9a", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("9b", ["5", "65", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("95", ["5", "5f", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -20110,7 +13141,7 @@ $__System.registerDynamic("9b", ["5", "65", "10"], true, function($__require, ex
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var router_1 = $__require('10');
   var TabMenu = (function() {
     function TabMenu(router) {
@@ -20174,7 +13205,7 @@ $__System.registerDynamic("9b", ["5", "65", "10"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("9c", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("96", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -20197,7 +13228,7 @@ $__System.registerDynamic("9c", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Terminal = (function() {
     function Terminal(el, domHandler) {
       this.el = el;
@@ -20259,32 +13290,16 @@ $__System.registerDynamic("9c", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("9d", ["3", "5", "9e", "9f"], true, function($__require, exports, module) {
+$__System.registerDynamic("97", ["3", "5", "98", "99"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var common_1 = $__require('3');
   var core_1 = $__require('5');
-  var router_1 = $__require('9e');
-  var router_state_1 = $__require('9f');
+  var router_1 = $__require('98');
+  var router_state_1 = $__require('99');
   var RouterLink = (function() {
     function RouterLink(router, route, locationStrategy) {
       this.router = router;
@@ -20326,45 +13341,38 @@ $__System.registerDynamic("9d", ["3", "5", "9e", "9f"], true, function($__requir
         this.href = this.locationStrategy.prepareExternalUrl(this.router.serializeUrl(this.urlTree));
       }
     };
-    __decorate([core_1.Input(), __metadata('design:type', String)], RouterLink.prototype, "target", void 0);
-    __decorate([core_1.Input(), __metadata('design:type', Object)], RouterLink.prototype, "queryParams", void 0);
-    __decorate([core_1.Input(), __metadata('design:type', String)], RouterLink.prototype, "fragment", void 0);
-    __decorate([core_1.HostBinding(), __metadata('design:type', String)], RouterLink.prototype, "href", void 0);
-    __decorate([core_1.Input(), __metadata('design:type', Object), __metadata('design:paramtypes', [Object])], RouterLink.prototype, "routerLink", null);
-    __decorate([core_1.HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey']), __metadata('design:type', Function), __metadata('design:paramtypes', [Number, Boolean, Boolean]), __metadata('design:returntype', Boolean)], RouterLink.prototype, "onClick", null);
-    RouterLink = __decorate([core_1.Directive({selector: '[routerLink]'}), __metadata('design:paramtypes', [router_1.Router, router_state_1.ActivatedRoute, common_1.LocationStrategy])], RouterLink);
+    RouterLink.decorators = [{
+      type: core_1.Directive,
+      args: [{selector: '[routerLink]'}]
+    }];
+    RouterLink.ctorParameters = [{type: router_1.Router}, {type: router_state_1.ActivatedRoute}, {type: common_1.LocationStrategy}];
+    RouterLink.propDecorators = {
+      'target': [{type: core_1.Input}],
+      'queryParams': [{type: core_1.Input}],
+      'fragment': [{type: core_1.Input}],
+      'href': [{type: core_1.HostBinding}],
+      'routerLink': [{type: core_1.Input}],
+      'onClick': [{
+        type: core_1.HostListener,
+        args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey']]
+      }]
+    };
     return RouterLink;
   }());
   exports.RouterLink = RouterLink;
   return module.exports;
 });
 
-$__System.registerDynamic("a0", ["5", "9e", "a1", "9d"], true, function($__require, exports, module) {
+$__System.registerDynamic("9a", ["5", "98", "9b", "97"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
   var core_1 = $__require('5');
-  var router_1 = $__require('9e');
-  var url_tree_1 = $__require('a1');
-  var router_link_1 = $__require('9d');
+  var router_1 = $__require('98');
+  var url_tree_1 = $__require('9b');
+  var router_link_1 = $__require('97');
   var RouterLinkActive = (function() {
     function RouterLinkActive(router, element, renderer) {
       var _this = this;
@@ -20372,7 +13380,7 @@ $__System.registerDynamic("a0", ["5", "9e", "a1", "9d"], true, function($__requi
       this.element = element;
       this.renderer = renderer;
       this.classes = [];
-      this.routerLinkActiveOptions = {exact: true};
+      this.routerLinkActiveOptions = {exact: false};
       this.subscription = router.events.subscribe(function(s) {
         if (s instanceof router_1.NavigationEnd) {
           _this.update();
@@ -20415,46 +13423,34 @@ $__System.registerDynamic("a0", ["5", "9e", "a1", "9d"], true, function($__requi
         return _this.renderer.setElementClass(_this.element.nativeElement, c, isActive);
       });
     };
-    __decorate([core_1.ContentChildren(router_link_1.RouterLink), __metadata('design:type', core_1.QueryList)], RouterLinkActive.prototype, "links", void 0);
-    __decorate([core_1.Input(), __metadata('design:type', Object)], RouterLinkActive.prototype, "routerLinkActiveOptions", void 0);
-    __decorate([core_1.Input(), __metadata('design:type', Object), __metadata('design:paramtypes', [Object])], RouterLinkActive.prototype, "routerLinkActive", null);
-    RouterLinkActive = __decorate([core_1.Directive({selector: '[routerLinkActive]'}), __metadata('design:paramtypes', [router_1.Router, core_1.ElementRef, core_1.Renderer])], RouterLinkActive);
+    RouterLinkActive.decorators = [{
+      type: core_1.Directive,
+      args: [{selector: '[routerLinkActive]'}]
+    }];
+    RouterLinkActive.ctorParameters = [{type: router_1.Router}, {type: core_1.ElementRef}, {type: core_1.Renderer}];
+    RouterLinkActive.propDecorators = {
+      'links': [{
+        type: core_1.ContentChildren,
+        args: [router_link_1.RouterLink]
+      }],
+      'routerLinkActiveOptions': [{type: core_1.Input}],
+      'routerLinkActive': [{type: core_1.Input}]
+    };
     return RouterLinkActive;
   }());
   exports.RouterLinkActive = RouterLinkActive;
   return module.exports;
 });
 
-$__System.registerDynamic("a2", ["5", "a3", "a4"], true, function($__require, exports, module) {
+$__System.registerDynamic("9c", ["5", "9d", "9e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
-    var c = arguments.length,
-        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-        d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
-      r = Reflect.decorate(decorators, target, key, desc);
-    else
-      for (var i = decorators.length - 1; i >= 0; i--)
-        if (d = decorators[i])
-          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-  };
-  var __metadata = (this && this.__metadata) || function(k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
-      return Reflect.metadata(k, v);
-  };
-  var __param = (this && this.__param) || function(paramIndex, decorator) {
-    return function(target, key) {
-      decorator(target, key, paramIndex);
-    };
-  };
   var core_1 = $__require('5');
-  var router_outlet_map_1 = $__require('a3');
-  var shared_1 = $__require('a4');
+  var router_outlet_map_1 = $__require('9d');
+  var shared_1 = $__require('9e');
   var RouterOutlet = (function() {
     function RouterOutlet(parentOutletMap, location, name) {
       this.location = location;
@@ -20497,23 +13493,34 @@ $__System.registerDynamic("a2", ["5", "a3", "a4"], true, function($__require, ex
       var inj = core_1.ReflectiveInjector.fromResolvedProviders(providers, this.location.parentInjector);
       this.activated = this.location.createComponent(factory, this.location.length, inj, []);
     };
-    RouterOutlet = __decorate([core_1.Directive({selector: 'router-outlet'}), __param(2, core_1.Attribute('name')), __metadata('design:paramtypes', [router_outlet_map_1.RouterOutletMap, core_1.ViewContainerRef, String])], RouterOutlet);
+    RouterOutlet.decorators = [{
+      type: core_1.Directive,
+      args: [{selector: 'router-outlet'}]
+    }];
+    RouterOutlet.ctorParameters = [{type: router_outlet_map_1.RouterOutletMap}, {type: core_1.ViewContainerRef}, {
+      type: undefined,
+      decorators: [{
+        type: core_1.Attribute,
+        args: ['name']
+      }]
+    }];
     return RouterOutlet;
   }());
   exports.RouterOutlet = RouterOutlet;
   return module.exports;
 });
 
-$__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__require, exports, module) {
+$__System.registerDynamic("9f", ["a", "a0", "9e", "9b", "a1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var of_1 = $__require('a6');
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
+  var of_1 = $__require('a0');
+  var shared_1 = $__require('9e');
+  var url_tree_1 = $__require('9b');
+  var collection_1 = $__require('a1');
   var NoMatch = (function() {
     function NoMatch(segment) {
       if (segment === void 0) {
@@ -20548,11 +13555,13 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
     var _a;
   }
   exports.applyRedirects = applyRedirects;
-  function createUrlTree(urlTree, root) {
+  function createUrlTree(urlTree, rootCandidate) {
+    var root = rootCandidate.pathsWithParams.length > 0 ? new url_tree_1.UrlSegment([], (_a = {}, _a[shared_1.PRIMARY_OUTLET] = rootCandidate, _a)) : rootCandidate;
     return of_1.of(new url_tree_1.UrlTree(root, urlTree.queryParams, urlTree.fragment));
+    var _a;
   }
   function expandSegment(routes, segment, outlet) {
-    if (segment.pathsWithParams.length === 0 && Object.keys(segment.children).length > 0) {
+    if (segment.pathsWithParams.length === 0 && segment.hasChildren()) {
       return new url_tree_1.UrlSegment([], expandSegmentChildren(routes, segment));
     } else {
       return expandPathsWithParams(segment, routes, segment.pathsWithParams, outlet, true);
@@ -20577,11 +13586,11 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
     throw new NoMatch(segment);
   }
   function expandPathsWithParamsAgainstRoute(segment, routes, route, paths, outlet, allowRedirects) {
-    if ((route.outlet ? route.outlet : shared_1.PRIMARY_OUTLET) !== outlet)
+    if (getOutlet(route) !== outlet)
       throw new NoMatch();
-    if (route.redirectTo && !allowRedirects)
+    if (route.redirectTo !== undefined && !allowRedirects)
       throw new NoMatch();
-    if (route.redirectTo) {
+    if (route.redirectTo !== undefined) {
       return expandPathsWithParamsAgainstRouteUsingRedirect(segment, routes, route, paths, outlet);
     } else {
       return matchPathsWithParamsAgainstRoute(segment, route, paths);
@@ -20614,20 +13623,23 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
       return expandPathsWithParams(segment, routes, newPaths.concat(paths.slice(lastChild)), outlet, false);
     }
   }
-  function matchPathsWithParamsAgainstRoute(segment, route, paths) {
+  function matchPathsWithParamsAgainstRoute(rawSegment, route, paths) {
     if (route.path === '**') {
       return new url_tree_1.UrlSegment(paths, {});
     } else {
-      var _a = match(segment, route, paths),
+      var _a = match(rawSegment, route, paths),
           consumedPaths = _a.consumedPaths,
           lastChild = _a.lastChild;
       var childConfig = route.children ? route.children : [];
-      var slicedPath = paths.slice(lastChild);
-      if (childConfig.length === 0 && slicedPath.length === 0) {
-        return new url_tree_1.UrlSegment(consumedPaths, {});
-      } else if (slicedPath.length === 0 && Object.keys(segment.children).length > 0) {
+      var rawSlicedPath = paths.slice(lastChild);
+      var _b = split(rawSegment, consumedPaths, rawSlicedPath, childConfig),
+          segment = _b.segment,
+          slicedPath = _b.slicedPath;
+      if (slicedPath.length === 0 && segment.hasChildren()) {
         var children = expandSegmentChildren(childConfig, segment);
         return new url_tree_1.UrlSegment(consumedPaths, children);
+      } else if (childConfig.length === 0 && slicedPath.length === 0) {
+        return new url_tree_1.UrlSegment(consumedPaths, {});
       } else {
         var cs = expandPathsWithParams(segment, childConfig, slicedPath, shared_1.PRIMARY_OUTLET, true);
         return new url_tree_1.UrlSegment(consumedPaths.concat(cs.pathsWithParams), cs.children);
@@ -20635,8 +13647,8 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
     }
   }
   function match(segment, route, paths) {
-    if (route.index || route.path === '' || route.path === '/') {
-      if (route.terminal && (Object.keys(segment.children).length > 0 || paths.length > 0)) {
+    if (route.path === '') {
+      if (route.terminal && (segment.hasChildren() || paths.length > 0)) {
         throw new NoMatch();
       } else {
         return {
@@ -20646,7 +13658,7 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
         };
       }
     }
-    var path = route.path.startsWith('/') ? route.path.substring(1) : route.path;
+    var path = route.path;
     var parts = path.split('/');
     var positionalParamSegments = {};
     var consumedPaths = [];
@@ -20665,7 +13677,7 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
       consumedPaths.push(current);
       currentIndex++;
     }
-    if (route.terminal && (Object.keys(segment.children).length > 0 || currentIndex < paths.length)) {
+    if (route.terminal && (segment.hasChildren() || currentIndex < paths.length)) {
       throw new NoMatch();
     }
     return {
@@ -20675,12 +13687,11 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
     };
   }
   function applyRedirectCommands(paths, redirectTo, posParams) {
-    if (redirectTo.startsWith('/')) {
-      var parts = redirectTo.substring(1).split('/');
-      return createPaths(redirectTo, parts, paths, posParams);
+    var r = redirectTo.startsWith('/') ? redirectTo.substring(1) : redirectTo;
+    if (r === '') {
+      return [];
     } else {
-      var parts = redirectTo.split('/');
-      return createPaths(redirectTo, parts, paths, posParams);
+      return createPaths(redirectTo, r.split('/'), paths, posParams);
     }
   }
   function createPaths(redirectTo, parts, segments, posParams) {
@@ -20707,18 +13718,109 @@ $__System.registerDynamic("a5", ["a", "a6", "a4", "a1"], true, function($__requi
       return new url_tree_1.UrlPathWithParams(part, {});
     }
   }
+  function split(segment, consumedPaths, slicedPath, config) {
+    if (slicedPath.length > 0 && containsEmptyPathRedirectsWithNamedOutlets(segment, slicedPath, config)) {
+      var s = new url_tree_1.UrlSegment(consumedPaths, createChildrenForEmptyPaths(config, new url_tree_1.UrlSegment(slicedPath, segment.children)));
+      return {
+        segment: s,
+        slicedPath: []
+      };
+    } else if (slicedPath.length === 0 && containsEmptyPathRedirects(segment, slicedPath, config)) {
+      var s = new url_tree_1.UrlSegment(segment.pathsWithParams, addEmptyPathsToChildrenIfNeeded(segment, slicedPath, config, segment.children));
+      return {
+        segment: s,
+        slicedPath: slicedPath
+      };
+    } else {
+      return {
+        segment: segment,
+        slicedPath: slicedPath
+      };
+    }
+  }
+  function addEmptyPathsToChildrenIfNeeded(segment, slicedPath, routes, children) {
+    var res = {};
+    for (var _i = 0,
+        routes_2 = routes; _i < routes_2.length; _i++) {
+      var r = routes_2[_i];
+      if (emptyPathRedirect(segment, slicedPath, r) && !children[getOutlet(r)]) {
+        res[getOutlet(r)] = new url_tree_1.UrlSegment([], {});
+      }
+    }
+    return collection_1.merge(children, res);
+  }
+  function createChildrenForEmptyPaths(routes, primarySegment) {
+    var res = {};
+    res[shared_1.PRIMARY_OUTLET] = primarySegment;
+    for (var _i = 0,
+        routes_3 = routes; _i < routes_3.length; _i++) {
+      var r = routes_3[_i];
+      if (r.path === '') {
+        res[getOutlet(r)] = new url_tree_1.UrlSegment([], {});
+      }
+    }
+    return res;
+  }
+  function containsEmptyPathRedirectsWithNamedOutlets(segment, slicedPath, routes) {
+    return routes.filter(function(r) {
+      return emptyPathRedirect(segment, slicedPath, r) && getOutlet(r) !== shared_1.PRIMARY_OUTLET;
+    }).length > 0;
+  }
+  function containsEmptyPathRedirects(segment, slicedPath, routes) {
+    return routes.filter(function(r) {
+      return emptyPathRedirect(segment, slicedPath, r);
+    }).length > 0;
+  }
+  function emptyPathRedirect(segment, slicedPath, r) {
+    if ((segment.hasChildren() || slicedPath.length > 0) && r.terminal)
+      return false;
+    return r.path === '' && r.redirectTo !== undefined;
+  }
+  function getOutlet(route) {
+    return route.outlet ? route.outlet : shared_1.PRIMARY_OUTLET;
+  }
   return module.exports;
 });
 
-$__System.registerDynamic("a7", ["a8", "9f", "a9"], true, function($__require, exports, module) {
+$__System.registerDynamic("a2", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var BehaviorSubject_1 = $__require('a8');
-  var router_state_1 = $__require('9f');
-  var tree_1 = $__require('a9');
+  function validateConfig(config) {
+    config.forEach(validateNode);
+  }
+  exports.validateConfig = validateConfig;
+  function validateNode(route) {
+    if (!!route.redirectTo && !!route.children) {
+      throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and children cannot be used together");
+    }
+    if (!!route.redirectTo && !!route.component) {
+      throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and component cannot be used together");
+    }
+    if (route.redirectTo === undefined && !route.component && !route.children) {
+      throw new Error("Invalid configuration of route '" + route.path + "': component, redirectTo, children must be provided");
+    }
+    if (route.path === undefined) {
+      throw new Error("Invalid route configuration: routes must have path specified");
+    }
+    if (route.path.startsWith('/')) {
+      throw new Error("Invalid route configuration of route '" + route.path + "': path cannot start with a slash");
+    }
+  }
+  return module.exports;
+});
+
+$__System.registerDynamic("a3", ["a4", "99", "a5"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var BehaviorSubject_1 = $__require('a4');
+  var router_state_1 = $__require('99');
+  var tree_1 = $__require('a5');
   function createRouterState(curr, prevState) {
     var root = createNode(curr._root, prevState ? prevState._root : undefined);
     var queryParams = prevState ? prevState.queryParams : new BehaviorSubject_1.BehaviorSubject(curr.queryParams);
@@ -20761,15 +13863,15 @@ $__System.registerDynamic("a7", ["a8", "9f", "a9"], true, function($__require, e
   return module.exports;
 });
 
-$__System.registerDynamic("aa", ["a4", "a1", "ab"], true, function($__require, exports, module) {
+$__System.registerDynamic("a6", ["9e", "9b", "a1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
-  var collection_1 = $__require('ab');
+  var shared_1 = $__require('9e');
+  var url_tree_1 = $__require('9b');
+  var collection_1 = $__require('a1');
   function createUrlTree(route, urlTree, commands, queryParams, fragment) {
     if (commands.length === 0) {
       return tree(urlTree.root, urlTree.root, urlTree, queryParams, fragment);
@@ -20868,7 +13970,7 @@ $__System.registerDynamic("aa", ["a4", "a1", "ab"], true, function($__require, e
   }
   function getPath(command) {
     if (!(typeof command === 'string'))
-      return command;
+      return command.toString();
     var parts = command.toString().split(':');
     return parts.length > 1 ? parts[1] : command;
   }
@@ -20882,14 +13984,14 @@ $__System.registerDynamic("aa", ["a4", "a1", "ab"], true, function($__require, e
     if (!segment) {
       segment = new url_tree_1.UrlSegment([], {});
     }
-    if (segment.pathsWithParams.length === 0 && Object.keys(segment.children).length > 0) {
+    if (segment.pathsWithParams.length === 0 && segment.hasChildren()) {
       return updateSegmentChildren(segment, startIndex, commands);
     }
     var m = prefixedWith(segment, startIndex, commands);
     var slicedCommands = commands.slice(m.lastIndex);
     if (m.match && slicedCommands.length === 0) {
       return new url_tree_1.UrlSegment(segment.pathsWithParams, {});
-    } else if (m.match && Object.keys(segment.children).length === 0) {
+    } else if (m.match && !segment.hasChildren()) {
       return createNewSegment(segment, startIndex, commands);
     } else if (m.match) {
       return updateSegmentChildren(segment, 0, slicedCommands);
@@ -20976,19 +14078,19 @@ $__System.registerDynamic("aa", ["a4", "a1", "ab"], true, function($__require, e
   return module.exports;
 });
 
-$__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true, function($__require, exports, module) {
+$__System.registerDynamic("a7", ["a", "a0", "99", "9e", "9b", "a1", "a5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var of_1 = $__require('a6');
-  var router_state_1 = $__require('9f');
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
-  var collection_1 = $__require('ab');
-  var tree_1 = $__require('a9');
+  var of_1 = $__require('a0');
+  var router_state_1 = $__require('99');
+  var shared_1 = $__require('9e');
+  var url_tree_1 = $__require('9b');
+  var collection_1 = $__require('a1');
+  var tree_1 = $__require('a5');
   var NoMatch = (function() {
     function NoMatch(segment) {
       if (segment === void 0) {
@@ -21000,7 +14102,7 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
   }());
   function recognize(rootComponentType, config, urlTree, url) {
     try {
-      var children = processSegment(config, urlTree.root, shared_1.PRIMARY_OUTLET);
+      var children = processSegment(config, urlTree.root, {}, shared_1.PRIMARY_OUTLET);
       var root = new router_state_1.ActivatedRouteSnapshot([], {}, shared_1.PRIMARY_OUTLET, rootComponentType, null, urlTree.root, -1);
       var rootNode = new tree_1.TreeNode(root, children);
       return of_1.of(new router_state_1.RouterStateSnapshot(url, rootNode, urlTree.queryParams, urlTree.fragment));
@@ -21017,16 +14119,16 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
     }
   }
   exports.recognize = recognize;
-  function processSegment(config, segment, outlet) {
-    if (segment.pathsWithParams.length === 0 && Object.keys(segment.children).length > 0) {
-      return processSegmentChildren(config, segment);
+  function processSegment(config, segment, extraParams, outlet) {
+    if (segment.pathsWithParams.length === 0 && segment.hasChildren()) {
+      return processSegmentChildren(config, segment, extraParams);
     } else {
-      return [processPathsWithParams(config, segment, 0, segment.pathsWithParams, outlet)];
+      return processPathsWithParams(config, segment, 0, segment.pathsWithParams, extraParams, outlet);
     }
   }
-  function processSegmentChildren(config, segment) {
+  function processSegmentChildren(config, segment, extraParams) {
     var children = url_tree_1.mapChildrenIntoArray(segment, function(child, childOutlet) {
-      return processSegment(config, child, childOutlet);
+      return processSegment(config, child, extraParams, childOutlet);
     });
     checkOutletNameUniqueness(children);
     sortActivatedRouteSnapshots(children);
@@ -21041,12 +14143,12 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
       return a.value.outlet.localeCompare(b.value.outlet);
     });
   }
-  function processPathsWithParams(config, segment, pathIndex, paths, outlet) {
+  function processPathsWithParams(config, segment, pathIndex, paths, extraParams, outlet) {
     for (var _i = 0,
         config_1 = config; _i < config_1.length; _i++) {
       var r = config_1[_i];
       try {
-        return processPathsWithParamsAgainstRoute(r, segment, pathIndex, paths, outlet);
+        return processPathsWithParamsAgainstRoute(r, segment, pathIndex, paths, extraParams, outlet);
       } catch (e) {
         if (!(e instanceof NoMatch))
           throw e;
@@ -21054,46 +14156,51 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
     }
     throw new NoMatch(segment);
   }
-  function processPathsWithParamsAgainstRoute(route, segment, pathIndex, paths, outlet) {
+  function processPathsWithParamsAgainstRoute(route, rawSegment, pathIndex, paths, parentExtraParams, outlet) {
     if (route.redirectTo)
       throw new NoMatch();
     if ((route.outlet ? route.outlet : shared_1.PRIMARY_OUTLET) !== outlet)
       throw new NoMatch();
     if (route.path === '**') {
       var params = paths.length > 0 ? collection_1.last(paths).parameters : {};
-      var snapshot_1 = new router_state_1.ActivatedRouteSnapshot(paths, params, outlet, route.component, route, segment, -1);
-      return new tree_1.TreeNode(snapshot_1, []);
+      var snapshot_1 = new router_state_1.ActivatedRouteSnapshot(paths, collection_1.merge(parentExtraParams, params), outlet, route.component, route, getSourceSegment(rawSegment), getPathIndexShift(rawSegment) - 1);
+      return [new tree_1.TreeNode(snapshot_1, [])];
     }
-    var _a = match(segment, route, paths),
+    var _a = match(rawSegment, route, paths, parentExtraParams),
         consumedPaths = _a.consumedPaths,
         parameters = _a.parameters,
+        extraParams = _a.extraParams,
         lastChild = _a.lastChild;
-    var snapshot = new router_state_1.ActivatedRouteSnapshot(consumedPaths, parameters, outlet, route.component, route, segment, pathIndex + lastChild - 1);
-    var slicedPath = paths.slice(lastChild);
+    var rawSlicedPath = paths.slice(lastChild);
     var childConfig = route.children ? route.children : [];
-    if (childConfig.length === 0 && slicedPath.length === 0) {
-      return new tree_1.TreeNode(snapshot, []);
-    } else if (slicedPath.length === 0 && Object.keys(segment.children).length > 0) {
-      var children = processSegmentChildren(childConfig, segment);
-      return new tree_1.TreeNode(snapshot, children);
+    var _b = split(rawSegment, consumedPaths, rawSlicedPath, childConfig),
+        segment = _b.segment,
+        slicedPath = _b.slicedPath;
+    var snapshot = new router_state_1.ActivatedRouteSnapshot(consumedPaths, parameters, outlet, route.component, route, getSourceSegment(rawSegment), getPathIndexShift(rawSegment) + pathIndex + lastChild - 1);
+    if (slicedPath.length === 0 && segment.hasChildren()) {
+      var children = processSegmentChildren(childConfig, segment, extraParams);
+      return [new tree_1.TreeNode(snapshot, children)];
+    } else if (childConfig.length === 0 && slicedPath.length === 0) {
+      return [new tree_1.TreeNode(snapshot, [])];
     } else {
-      var child = processPathsWithParams(childConfig, segment, pathIndex + lastChild, slicedPath, shared_1.PRIMARY_OUTLET);
-      return new tree_1.TreeNode(snapshot, [child]);
+      var children = processPathsWithParams(childConfig, segment, pathIndex + lastChild, slicedPath, extraParams, shared_1.PRIMARY_OUTLET);
+      return [new tree_1.TreeNode(snapshot, children)];
     }
   }
-  function match(segment, route, paths) {
-    if (route.index || route.path === '' || route.path === '/') {
-      if (route.terminal && (Object.keys(segment.children).length > 0 || paths.length > 0)) {
+  function match(segment, route, paths, parentExtraParams) {
+    if (route.path === '') {
+      if (route.terminal && (segment.hasChildren() || paths.length > 0)) {
         throw new NoMatch();
       } else {
         return {
           consumedPaths: [],
           lastChild: 0,
-          parameters: {}
+          parameters: {},
+          extraParams: {}
         };
       }
     }
-    var path = route.path.startsWith('/') ? route.path.substring(1) : route.path;
+    var path = route.path;
     var parts = path.split('/');
     var posParameters = {};
     var consumedPaths = [];
@@ -21112,14 +14219,16 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
       consumedPaths.push(current);
       currentIndex++;
     }
-    if (route.terminal && (Object.keys(segment.children).length > 0 || currentIndex < paths.length)) {
+    if (route.terminal && (segment.hasChildren() || currentIndex < paths.length)) {
       throw new NoMatch();
     }
-    var parameters = collection_1.merge(posParameters, consumedPaths[consumedPaths.length - 1].parameters);
+    var parameters = collection_1.merge(parentExtraParams, collection_1.merge(posParameters, consumedPaths[consumedPaths.length - 1].parameters));
+    var extraParams = route.component ? {} : parameters;
     return {
       consumedPaths: consumedPaths,
       lastChild: currentIndex,
-      parameters: parameters
+      parameters: parameters,
+      extraParams: extraParams
     };
   }
   function checkOutletNameUniqueness(nodes) {
@@ -21138,19 +14247,108 @@ $__System.registerDynamic("ac", ["a", "a6", "9f", "a4", "a1", "ab", "a9"], true,
       names[n.value.outlet] = n.value;
     });
   }
+  function getSourceSegment(segment) {
+    var s = segment;
+    while (s._sourceSegment) {
+      s = s._sourceSegment;
+    }
+    return s;
+  }
+  function getPathIndexShift(segment) {
+    var s = segment;
+    var res = 0;
+    while (s._sourceSegment) {
+      s = s._sourceSegment;
+      res += segment._pathIndexShift;
+    }
+    return res;
+  }
+  function split(segment, consumedPaths, slicedPath, config) {
+    if (slicedPath.length > 0 && containsEmptyPathMatchesWithNamedOutlets(segment, slicedPath, config)) {
+      var s = new url_tree_1.UrlSegment(consumedPaths, createChildrenForEmptyPaths(segment, consumedPaths, config, new url_tree_1.UrlSegment(slicedPath, segment.children)));
+      s._sourceSegment = segment;
+      s._pathIndexShift = 0;
+      return {
+        segment: s,
+        slicedPath: []
+      };
+    } else if (slicedPath.length === 0 && containsEmptyPathMatches(segment, slicedPath, config)) {
+      var s = new url_tree_1.UrlSegment(segment.pathsWithParams, addEmptyPathsToChildrenIfNeeded(segment, slicedPath, config, segment.children));
+      s._sourceSegment = segment;
+      s._pathIndexShift = 0;
+      return {
+        segment: s,
+        slicedPath: slicedPath
+      };
+    } else {
+      return {
+        segment: segment,
+        slicedPath: slicedPath
+      };
+    }
+  }
+  function addEmptyPathsToChildrenIfNeeded(segment, slicedPath, routes, children) {
+    var res = {};
+    for (var _i = 0,
+        routes_1 = routes; _i < routes_1.length; _i++) {
+      var r = routes_1[_i];
+      if (emptyPathMatch(segment, slicedPath, r) && !children[getOutlet(r)]) {
+        var s = new url_tree_1.UrlSegment([], {});
+        s._sourceSegment = segment;
+        s._pathIndexShift = segment.pathsWithParams.length;
+        res[getOutlet(r)] = s;
+      }
+    }
+    return collection_1.merge(children, res);
+  }
+  function createChildrenForEmptyPaths(segment, consumedPaths, routes, primarySegment) {
+    var res = {};
+    res[shared_1.PRIMARY_OUTLET] = primarySegment;
+    primarySegment._sourceSegment = segment;
+    primarySegment._pathIndexShift = consumedPaths.length;
+    for (var _i = 0,
+        routes_2 = routes; _i < routes_2.length; _i++) {
+      var r = routes_2[_i];
+      if (r.path === '') {
+        var s = new url_tree_1.UrlSegment([], {});
+        s._sourceSegment = segment;
+        s._pathIndexShift = consumedPaths.length;
+        res[getOutlet(r)] = s;
+      }
+    }
+    return res;
+  }
+  function containsEmptyPathMatchesWithNamedOutlets(segment, slicedPath, routes) {
+    return routes.filter(function(r) {
+      return emptyPathMatch(segment, slicedPath, r) && getOutlet(r) !== shared_1.PRIMARY_OUTLET;
+    }).length > 0;
+  }
+  function containsEmptyPathMatches(segment, slicedPath, routes) {
+    return routes.filter(function(r) {
+      return emptyPathMatch(segment, slicedPath, r);
+    }).length > 0;
+  }
+  function emptyPathMatch(segment, slicedPath, r) {
+    if ((segment.hasChildren() || slicedPath.length > 0) && r.terminal)
+      return false;
+    return r.path === '' && r.redirectTo === undefined;
+  }
+  function getOutlet(route) {
+    return route.outlet ? route.outlet : shared_1.PRIMARY_OUTLET;
+  }
   return module.exports;
 });
 
-$__System.registerDynamic("ad", ["ae", "58", "af", "b0"], true, function($__require, exports, module) {
+$__System.registerDynamic("a8", ["a9", "aa", "ab", "ac"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  $__require('ae');
-  $__require('58');
-  var forkJoin_1 = $__require('af');
-  var fromPromise_1 = $__require('b0');
+  $__require('a9');
+  $__require('aa');
+  var forkJoin_1 = $__require('ab');
+  var fromPromise_1 = $__require('ac');
   function resolve(resolver, state) {
     return resolveNode(resolver, state._root).map(function(_) {
       return state;
@@ -21159,7 +14357,7 @@ $__System.registerDynamic("ad", ["ae", "58", "af", "b0"], true, function($__requ
   exports.resolve = resolve;
   function resolveNode(resolver, node) {
     if (node.children.length === 0) {
-      return fromPromise_1.fromPromise(resolver.resolveComponent(node.value.component).then(function(factory) {
+      return fromPromise_1.fromPromise(resolveComponent(resolver, node.value).then(function(factory) {
         node.value._resolvedComponentFactory = factory;
         return node.value;
       }));
@@ -21168,44 +14366,49 @@ $__System.registerDynamic("ad", ["ae", "58", "af", "b0"], true, function($__requ
         return resolveNode(resolver, c).toPromise();
       });
       return forkJoin_1.forkJoin(c).map(function(_) {
-        return resolver.resolveComponent(node.value.component).then(function(factory) {
+        return resolveComponent(resolver, node.value).then(function(factory) {
           node.value._resolvedComponentFactory = factory;
           return node.value;
         });
       });
     }
   }
+  function resolveComponent(resolver, snapshot) {
+    if (snapshot.component && snapshot._routeConfig) {
+      return resolver.resolveComponent(snapshot.component);
+    } else {
+      return Promise.resolve(null);
+    }
+  }
   return module.exports;
 });
 
-$__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "5", "a", "7", "a6", "a5", "a7", "aa", "ac", "ad", "a3", "9f", "a4", "a1", "ab"], true, function($__require, exports, module) {
+$__System.registerDynamic("98", ["a9", "ad", "ae", "af", "b0", "5", "a", "7", "a0", "9f", "a2", "a3", "a6", "a7", "a8", "9d", "99", "9e", "9b", "a1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
+  $__require('a9');
+  $__require('ad');
   $__require('ae');
-  $__require('b1');
-  $__require('b2');
-  $__require('b3');
-  $__require('b4');
-  $__require('b5');
-  $__require('b6');
-  $__require('b7');
+  $__require('af');
+  $__require('b0');
   var core_1 = $__require('5');
   var Observable_1 = $__require('a');
   var Subject_1 = $__require('7');
-  var of_1 = $__require('a6');
-  var apply_redirects_1 = $__require('a5');
-  var create_router_state_1 = $__require('a7');
-  var create_url_tree_1 = $__require('aa');
-  var recognize_1 = $__require('ac');
-  var resolve_1 = $__require('ad');
-  var router_outlet_map_1 = $__require('a3');
-  var router_state_1 = $__require('9f');
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
-  var collection_1 = $__require('ab');
+  var of_1 = $__require('a0');
+  var apply_redirects_1 = $__require('9f');
+  var config_1 = $__require('a2');
+  var create_router_state_1 = $__require('a3');
+  var create_url_tree_1 = $__require('a6');
+  var recognize_1 = $__require('a7');
+  var resolve_1 = $__require('a8');
+  var router_outlet_map_1 = $__require('9d');
+  var router_state_1 = $__require('99');
+  var shared_1 = $__require('9e');
+  var url_tree_1 = $__require('9b');
+  var collection_1 = $__require('a1');
   var NavigationStart = (function() {
     function NavigationStart(id, url) {
       this.id = id;
@@ -21273,8 +14476,8 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
       this.outletMap = outletMap;
       this.location = location;
       this.injector = injector;
-      this.config = config;
       this.navigationId = 0;
+      this.resetConfig(config);
       this.routerEvents = new Subject_1.Subject();
       this.currentUrlTree = url_tree_1.createEmptyUrlTree();
       this.currentRouterState = router_state_1.createEmptyState(this.currentUrlTree, this.rootComponentType);
@@ -21305,6 +14508,7 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
       configurable: true
     });
     Router.prototype.resetConfig = function(config) {
+      config_1.validateConfig(config);
       this.config = config;
     };
     Router.prototype.dispose = function() {
@@ -21461,23 +14665,40 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
         if (!collection_1.shallowEqual(future.params, curr.params)) {
           this.checks.push(new CanDeactivate(outlet.component, curr), new CanActivate(future));
         }
-        this.traverseChildRoutes(futureNode, currNode, outlet ? outlet.outletMap : null);
+        if (future.component) {
+          this.traverseChildRoutes(futureNode, currNode, outlet ? outlet.outletMap : null);
+        } else {
+          this.traverseChildRoutes(futureNode, currNode, parentOutletMap);
+        }
       } else {
-        this.deactivateOutletAndItChildren(curr, outlet);
+        if (curr) {
+          if (curr.component) {
+            this.deactivateOutletAndItChildren(curr, outlet);
+          } else {
+            this.deactivateOutletMap(parentOutletMap);
+          }
+        }
         this.checks.push(new CanActivate(future));
-        this.traverseChildRoutes(futureNode, null, outlet ? outlet.outletMap : null);
+        if (future.component) {
+          this.traverseChildRoutes(futureNode, null, outlet ? outlet.outletMap : null);
+        } else {
+          this.traverseChildRoutes(futureNode, null, parentOutletMap);
+        }
       }
     };
     GuardChecks.prototype.deactivateOutletAndItChildren = function(route, outlet) {
-      var _this = this;
       if (outlet && outlet.isActivated) {
-        collection_1.forEach(outlet.outletMap._outlets, function(v) {
-          if (v.isActivated) {
-            _this.deactivateOutletAndItChildren(v.activatedRoute.snapshot, v);
-          }
-        });
+        this.deactivateOutletMap(outlet.outletMap);
         this.checks.push(new CanDeactivate(outlet.component, route));
       }
+    };
+    GuardChecks.prototype.deactivateOutletMap = function(outletMap) {
+      var _this = this;
+      collection_1.forEach(outletMap._outlets, function(v) {
+        if (v.isActivated) {
+          _this.deactivateOutletAndItChildren(v.activatedRoute.snapshot, v);
+        }
+      });
     };
     GuardChecks.prototype.runCanActivate = function(future) {
       var _this = this;
@@ -21497,7 +14718,7 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
     };
     GuardChecks.prototype.runCanDeactivate = function(component, curr) {
       var _this = this;
-      var canDeactivate = curr._routeConfig ? curr._routeConfig.canDeactivate : null;
+      var canDeactivate = curr && curr._routeConfig ? curr._routeConfig.canDeactivate : null;
       if (!canDeactivate || canDeactivate.length === 0)
         return of_1.of(true);
       return Observable_1.Observable.from(canDeactivate).map(function(c) {
@@ -21545,18 +14766,36 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
     ActivateRoutes.prototype.activateRoutes = function(futureNode, currNode, parentOutletMap) {
       var future = futureNode.value;
       var curr = currNode ? currNode.value : null;
-      var outlet = getOutlet(parentOutletMap, futureNode.value);
       if (future === curr) {
         router_state_1.advanceActivatedRoute(future);
-        this.activateChildRoutes(futureNode, currNode, outlet.outletMap);
+        if (future.component) {
+          var outlet = getOutlet(parentOutletMap, futureNode.value);
+          this.activateChildRoutes(futureNode, currNode, outlet.outletMap);
+        } else {
+          this.activateChildRoutes(futureNode, currNode, parentOutletMap);
+        }
       } else {
-        this.deactivateOutletAndItChildren(outlet);
-        var outletMap = new router_outlet_map_1.RouterOutletMap();
-        this.activateNewRoutes(outletMap, future, outlet);
-        this.activateChildRoutes(futureNode, null, outletMap);
+        if (curr) {
+          if (curr.component) {
+            var outlet = getOutlet(parentOutletMap, futureNode.value);
+            this.deactivateOutletAndItChildren(outlet);
+          } else {
+            this.deactivateOutletMap(parentOutletMap);
+          }
+        }
+        if (future.component) {
+          router_state_1.advanceActivatedRoute(future);
+          var outlet = getOutlet(parentOutletMap, futureNode.value);
+          var outletMap = new router_outlet_map_1.RouterOutletMap();
+          this.placeComponentIntoOutlet(outletMap, future, outlet);
+          this.activateChildRoutes(futureNode, null, outletMap);
+        } else {
+          router_state_1.advanceActivatedRoute(future);
+          this.activateChildRoutes(futureNode, null, parentOutletMap);
+        }
       }
     };
-    ActivateRoutes.prototype.activateNewRoutes = function(outletMap, future, outlet) {
+    ActivateRoutes.prototype.placeComponentIntoOutlet = function(outletMap, future, outlet) {
       var resolved = core_1.ReflectiveInjector.resolve([{
         provide: router_state_1.ActivatedRoute,
         useValue: future
@@ -21564,17 +14803,19 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
         provide: router_outlet_map_1.RouterOutletMap,
         useValue: outletMap
       }]);
-      router_state_1.advanceActivatedRoute(future);
       outlet.activate(future._futureSnapshot._resolvedComponentFactory, future, resolved, outletMap);
     };
     ActivateRoutes.prototype.deactivateOutletAndItChildren = function(outlet) {
-      var _this = this;
       if (outlet && outlet.isActivated) {
-        collection_1.forEach(outlet.outletMap._outlets, function(v) {
-          return _this.deactivateOutletAndItChildren(v);
-        });
+        this.deactivateOutletMap(outlet.outletMap);
         outlet.deactivate();
       }
+    };
+    ActivateRoutes.prototype.deactivateOutletMap = function(outletMap) {
+      var _this = this;
+      collection_1.forEach(outletMap._outlets, function(v) {
+        return _this.deactivateOutletAndItChildren(v);
+      });
     };
     return ActivateRoutes;
   }());
@@ -21607,7 +14848,7 @@ $__System.registerDynamic("9e", ["ae", "b1", "b2", "b3", "b4", "b5", "b6", "b7",
   return module.exports;
 });
 
-$__System.registerDynamic("a3", [], true, function($__require, exports, module) {
+$__System.registerDynamic("9d", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21626,7 +14867,7 @@ $__System.registerDynamic("a3", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("b8", ["3", "5", "9e", "a3", "9f", "b9"], true, function($__require, exports, module) {
+$__System.registerDynamic("b1", ["3", "5", "98", "9d", "99", "9b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21634,10 +14875,10 @@ $__System.registerDynamic("b8", ["3", "5", "9e", "a3", "9f", "b9"], true, functi
       GLOBAL = this;
   var common_1 = $__require('3');
   var core_1 = $__require('5');
-  var router_1 = $__require('9e');
-  var router_outlet_map_1 = $__require('a3');
-  var router_state_1 = $__require('9f');
-  var url_serializer_1 = $__require('b9');
+  var router_1 = $__require('98');
+  var router_outlet_map_1 = $__require('9d');
+  var router_state_1 = $__require('99');
+  var url_tree_1 = $__require('9b');
   exports.ROUTER_CONFIG = new core_1.OpaqueToken('ROUTER_CONFIG');
   exports.ROUTER_OPTIONS = new core_1.OpaqueToken('ROUTER_OPTIONS');
   function setupRouter(ref, resolver, urlSerializer, outletMap, location, injector, config, opts) {
@@ -21687,12 +14928,12 @@ $__System.registerDynamic("b8", ["3", "5", "9e", "a3", "9f", "b9"], true, functi
       provide: common_1.LocationStrategy,
       useClass: common_1.PathLocationStrategy
     }, {
-      provide: url_serializer_1.UrlSerializer,
-      useClass: url_serializer_1.DefaultUrlSerializer
+      provide: url_tree_1.UrlSerializer,
+      useClass: url_tree_1.DefaultUrlSerializer
     }, {
       provide: router_1.Router,
       useFactory: setupRouter,
-      deps: [core_1.ApplicationRef, core_1.ComponentResolver, url_serializer_1.UrlSerializer, router_outlet_map_1.RouterOutletMap, common_1.Location, core_1.Injector, exports.ROUTER_CONFIG, exports.ROUTER_OPTIONS]
+      deps: [core_1.ApplicationRef, core_1.ComponentResolver, url_tree_1.UrlSerializer, router_outlet_map_1.RouterOutletMap, common_1.Location, core_1.Injector, exports.ROUTER_CONFIG, exports.ROUTER_OPTIONS]
     }, router_outlet_map_1.RouterOutletMap, {
       provide: router_state_1.ActivatedRoute,
       useFactory: function(r) {
@@ -21710,7 +14951,7 @@ $__System.registerDynamic("b8", ["3", "5", "9e", "a3", "9f", "b9"], true, functi
   return module.exports;
 });
 
-$__System.registerDynamic("ba", ["3", "6", "b8"], true, function($__require, exports, module) {
+$__System.registerDynamic("b2", ["3", "6", "b1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21718,7 +14959,7 @@ $__System.registerDynamic("ba", ["3", "6", "b8"], true, function($__require, exp
       GLOBAL = this;
   var common_1 = $__require('3');
   var platform_browser_1 = $__require('6');
-  var common = $__require('b8');
+  var common_router_providers_1 = $__require('b1');
   function provideRouter(config, opts) {
     if (opts === void 0) {
       opts = {};
@@ -21726,13 +14967,13 @@ $__System.registerDynamic("ba", ["3", "6", "b8"], true, function($__require, exp
     return [{
       provide: common_1.PlatformLocation,
       useClass: platform_browser_1.BrowserPlatformLocation
-    }].concat(common.provideRouter(config, opts));
+    }].concat(common_router_providers_1.provideRouter(config, opts));
   }
   exports.provideRouter = provideRouter;
   return module.exports;
 });
 
-$__System.registerDynamic("a9", [], true, function($__require, exports, module) {
+$__System.registerDynamic("a5", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21846,7 +15087,7 @@ $__System.registerDynamic("a9", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("9f", ["a8", "a4", "a1", "ab", "a9"], true, function($__require, exports, module) {
+$__System.registerDynamic("99", ["a4", "9e", "9b", "a1", "a5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21861,11 +15102,11 @@ $__System.registerDynamic("9f", ["a8", "a4", "a1", "ab", "a9"], true, function($
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var BehaviorSubject_1 = $__require('a8');
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
-  var collection_1 = $__require('ab');
-  var tree_1 = $__require('a9');
+  var BehaviorSubject_1 = $__require('a4');
+  var shared_1 = $__require('9e');
+  var url_tree_1 = $__require('9b');
+  var collection_1 = $__require('a1');
+  var tree_1 = $__require('a5');
   var RouterState = (function(_super) {
     __extends(RouterState, _super);
     function RouterState(root, queryParams, fragment, snapshot) {
@@ -21951,10 +15192,14 @@ $__System.registerDynamic("9f", ["a8", "a4", "a1", "ab", "a9"], true, function($
     return "" + node.value + c;
   }
   function advanceActivatedRoute(route) {
-    if (route.snapshot && !collection_1.shallowEqual(route.snapshot.params, route._futureSnapshot.params)) {
+    if (route.snapshot) {
+      if (!collection_1.shallowEqual(route.snapshot.params, route._futureSnapshot.params)) {
+        route.params.next(route._futureSnapshot.params);
+      }
+      if (!collection_1.shallowEqualArrays(route.snapshot.url, route._futureSnapshot.url)) {
+        route.url.next(route._futureSnapshot.url);
+      }
       route.snapshot = route._futureSnapshot;
-      route.url.next(route.snapshot.url);
-      route.params.next(route.snapshot.params);
     } else {
       route.snapshot = route._futureSnapshot;
     }
@@ -21963,7 +15208,7 @@ $__System.registerDynamic("9f", ["a8", "a4", "a1", "ab", "a9"], true, function($
   return module.exports;
 });
 
-$__System.registerDynamic("a4", [], true, function($__require, exports, module) {
+$__System.registerDynamic("9e", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -21973,274 +15218,22 @@ $__System.registerDynamic("a4", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("b9", ["a4", "a1", "ab"], true, function($__require, exports, module) {
+$__System.registerDynamic("a1", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var shared_1 = $__require('a4');
-  var url_tree_1 = $__require('a1');
-  var collection_1 = $__require('ab');
-  var UrlSerializer = (function() {
-    function UrlSerializer() {}
-    return UrlSerializer;
-  }());
-  exports.UrlSerializer = UrlSerializer;
-  var DefaultUrlSerializer = (function() {
-    function DefaultUrlSerializer() {}
-    DefaultUrlSerializer.prototype.parse = function(url) {
-      var p = new UrlParser(url);
-      return new url_tree_1.UrlTree(p.parseRootSegment(), p.parseQueryParams(), p.parseFragment());
-    };
-    DefaultUrlSerializer.prototype.serialize = function(tree) {
-      var segment = "/" + serializeSegment(tree.root, true);
-      var query = serializeQueryParams(tree.queryParams);
-      var fragment = tree.fragment !== null ? "#" + tree.fragment : '';
-      return "" + segment + query + fragment;
-    };
-    return DefaultUrlSerializer;
-  }());
-  exports.DefaultUrlSerializer = DefaultUrlSerializer;
-  function serializePaths(segment) {
-    return segment.pathsWithParams.map(function(p) {
-      return serializePath(p);
-    }).join('/');
-  }
-  exports.serializePaths = serializePaths;
-  function serializeSegment(segment, root) {
-    if (segment.children[shared_1.PRIMARY_OUTLET] && root) {
-      var primary = serializeSegment(segment.children[shared_1.PRIMARY_OUTLET], false);
-      var children_1 = [];
-      collection_1.forEach(segment.children, function(v, k) {
-        if (k !== shared_1.PRIMARY_OUTLET) {
-          children_1.push(k + ":" + serializeSegment(v, false));
-        }
-      });
-      if (children_1.length > 0) {
-        return primary + "(" + children_1.join('//') + ")";
-      } else {
-        return "" + primary;
-      }
-    } else if (segment.children[shared_1.PRIMARY_OUTLET] && !root) {
-      var children_2 = [serializeSegment(segment.children[shared_1.PRIMARY_OUTLET], false)];
-      collection_1.forEach(segment.children, function(v, k) {
-        if (k !== shared_1.PRIMARY_OUTLET) {
-          children_2.push(k + ":" + serializeSegment(v, false));
-        }
-      });
-      return serializePaths(segment) + "/(" + children_2.join('//') + ")";
-    } else {
-      return serializePaths(segment);
+  function shallowEqualArrays(a, b) {
+    if (a.length !== b.length)
+      return false;
+    for (var i = 0; i < a.length; ++i) {
+      if (!shallowEqual(a[i], b[i]))
+        return false;
     }
+    return true;
   }
-  function serializeChildren(segment) {
-    if (segment.children[shared_1.PRIMARY_OUTLET]) {
-      var primary = serializePaths(segment.children[shared_1.PRIMARY_OUTLET]);
-      var secondary_1 = [];
-      collection_1.forEach(segment.children, function(v, k) {
-        if (k !== shared_1.PRIMARY_OUTLET) {
-          secondary_1.push(k + ":" + serializePaths(v) + serializeChildren(v));
-        }
-      });
-      var secondaryStr = secondary_1.length > 0 ? "(" + secondary_1.join('//') + ")" : '';
-      var primaryChildren = serializeChildren(segment.children[shared_1.PRIMARY_OUTLET]);
-      var primaryChildrenStr = primaryChildren ? "/" + primaryChildren : '';
-      return "" + primary + secondaryStr + primaryChildrenStr;
-    } else {
-      return '';
-    }
-  }
-  function serializePath(path) {
-    return "" + path.path + serializeParams(path.parameters);
-  }
-  exports.serializePath = serializePath;
-  function serializeParams(params) {
-    return pairs(params).map(function(p) {
-      return (";" + p.first + "=" + p.second);
-    }).join('');
-  }
-  function serializeQueryParams(params) {
-    var strs = pairs(params).map(function(p) {
-      return (p.first + "=" + p.second);
-    });
-    return strs.length > 0 ? "?" + strs.join("&") : '';
-  }
-  var Pair = (function() {
-    function Pair(first, second) {
-      this.first = first;
-      this.second = second;
-    }
-    return Pair;
-  }());
-  function pairs(obj) {
-    var res = [];
-    for (var prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
-        res.push(new Pair(prop, obj[prop]));
-      }
-    }
-    return res;
-  }
-  var SEGMENT_RE = /^[^\/\(\)\?;=&#]+/;
-  function matchPathWithParams(str) {
-    SEGMENT_RE.lastIndex = 0;
-    var match = SEGMENT_RE.exec(str);
-    return match ? match[0] : '';
-  }
-  var QUERY_PARAM_VALUE_RE = /^[^\(\)\?;&#]+/;
-  function matchUrlQueryParamValue(str) {
-    QUERY_PARAM_VALUE_RE.lastIndex = 0;
-    var match = QUERY_PARAM_VALUE_RE.exec(str);
-    return match ? match[0] : '';
-  }
-  var UrlParser = (function() {
-    function UrlParser(remaining) {
-      this.remaining = remaining;
-    }
-    UrlParser.prototype.peekStartsWith = function(str) {
-      return this.remaining.startsWith(str);
-    };
-    UrlParser.prototype.capture = function(str) {
-      if (!this.remaining.startsWith(str)) {
-        throw new Error("Expected \"" + str + "\".");
-      }
-      this.remaining = this.remaining.substring(str.length);
-    };
-    UrlParser.prototype.parseRootSegment = function() {
-      if (this.remaining === '' || this.remaining === '/') {
-        return new url_tree_1.UrlSegment([], {});
-      } else {
-        return new url_tree_1.UrlSegment([], this.parseSegmentChildren());
-      }
-    };
-    UrlParser.prototype.parseSegmentChildren = function() {
-      if (this.remaining.length == 0) {
-        return {};
-      }
-      if (this.peekStartsWith('/')) {
-        this.capture('/');
-      }
-      var paths = [this.parsePathWithParams()];
-      while (this.peekStartsWith('/') && !this.peekStartsWith('//') && !this.peekStartsWith('/(')) {
-        this.capture('/');
-        paths.push(this.parsePathWithParams());
-      }
-      var children = {};
-      if (this.peekStartsWith('/(')) {
-        this.capture('/');
-        children = this.parseParens(true);
-      }
-      var res = {};
-      if (this.peekStartsWith('(')) {
-        res = this.parseParens(false);
-      }
-      res[shared_1.PRIMARY_OUTLET] = new url_tree_1.UrlSegment(paths, children);
-      return res;
-    };
-    UrlParser.prototype.parsePathWithParams = function() {
-      var path = matchPathWithParams(this.remaining);
-      this.capture(path);
-      var matrixParams = {};
-      if (this.peekStartsWith(';')) {
-        matrixParams = this.parseMatrixParams();
-      }
-      return new url_tree_1.UrlPathWithParams(path, matrixParams);
-    };
-    UrlParser.prototype.parseQueryParams = function() {
-      var params = {};
-      if (this.peekStartsWith('?')) {
-        this.capture('?');
-        this.parseQueryParam(params);
-        while (this.remaining.length > 0 && this.peekStartsWith('&')) {
-          this.capture('&');
-          this.parseQueryParam(params);
-        }
-      }
-      return params;
-    };
-    UrlParser.prototype.parseFragment = function() {
-      if (this.peekStartsWith('#')) {
-        return this.remaining.substring(1);
-      } else {
-        return null;
-      }
-    };
-    UrlParser.prototype.parseMatrixParams = function() {
-      var params = {};
-      while (this.remaining.length > 0 && this.peekStartsWith(';')) {
-        this.capture(';');
-        this.parseParam(params);
-      }
-      return params;
-    };
-    UrlParser.prototype.parseParam = function(params) {
-      var key = matchPathWithParams(this.remaining);
-      if (!key) {
-        return;
-      }
-      this.capture(key);
-      var value = 'true';
-      if (this.peekStartsWith('=')) {
-        this.capture('=');
-        var valueMatch = matchPathWithParams(this.remaining);
-        if (valueMatch) {
-          value = valueMatch;
-          this.capture(value);
-        }
-      }
-      params[key] = value;
-    };
-    UrlParser.prototype.parseQueryParam = function(params) {
-      var key = matchPathWithParams(this.remaining);
-      if (!key) {
-        return;
-      }
-      this.capture(key);
-      var value = 'true';
-      if (this.peekStartsWith('=')) {
-        this.capture('=');
-        var valueMatch = matchUrlQueryParamValue(this.remaining);
-        if (valueMatch) {
-          value = valueMatch;
-          this.capture(value);
-        }
-      }
-      params[key] = value;
-    };
-    UrlParser.prototype.parseParens = function(allowPrimary) {
-      var segments = {};
-      this.capture('(');
-      while (!this.peekStartsWith(')') && this.remaining.length > 0) {
-        var path = matchPathWithParams(this.remaining);
-        var outletName = void 0;
-        if (path.indexOf(':') > -1) {
-          outletName = path.substr(0, path.indexOf(':'));
-          this.capture(outletName);
-          this.capture(':');
-        } else if (allowPrimary) {
-          outletName = shared_1.PRIMARY_OUTLET;
-        }
-        var children = this.parseSegmentChildren();
-        segments[outletName] = Object.keys(children).length === 1 ? children[shared_1.PRIMARY_OUTLET] : new url_tree_1.UrlSegment([], children);
-        if (this.peekStartsWith('//')) {
-          this.capture('//');
-        }
-      }
-      this.capture(')');
-      return segments;
-    };
-    return UrlParser;
-  }());
-  return module.exports;
-});
-
-$__System.registerDynamic("ab", [], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
+  exports.shallowEqualArrays = shallowEqualArrays;
   function shallowEqual(a, b) {
     var k1 = Object.keys(a);
     var k2 = Object.keys(b);
@@ -22307,15 +15300,14 @@ $__System.registerDynamic("ab", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("a1", ["a4", "b9", "ab"], true, function($__require, exports, module) {
+$__System.registerDynamic("9b", ["9e", "a1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var shared_1 = $__require('a4');
-  var url_serializer_1 = $__require('b9');
-  var collection_1 = $__require('ab');
+  var shared_1 = $__require('9e');
+  var collection_1 = $__require('a1');
   function createEmptyUrlTree() {
     return new UrlTree(new UrlSegment([], {}), {}, null);
   }
@@ -22377,7 +15369,7 @@ $__System.registerDynamic("a1", ["a4", "b9", "ab"], true, function($__require, e
       this.fragment = fragment;
     }
     UrlTree.prototype.toString = function() {
-      return new url_serializer_1.DefaultUrlSerializer().serialize(this);
+      return new DefaultUrlSerializer().serialize(this);
     };
     return UrlTree;
   }());
@@ -22392,8 +15384,11 @@ $__System.registerDynamic("a1", ["a4", "b9", "ab"], true, function($__require, e
         return v.parent = _this;
       });
     }
+    UrlSegment.prototype.hasChildren = function() {
+      return Object.keys(this.children).length > 0;
+    };
     UrlSegment.prototype.toString = function() {
-      return url_serializer_1.serializePaths(this);
+      return serializePaths(this);
     };
     return UrlSegment;
   }());
@@ -22404,7 +15399,7 @@ $__System.registerDynamic("a1", ["a4", "b9", "ab"], true, function($__require, e
       this.parameters = parameters;
     }
     UrlPathWithParams.prototype.toString = function() {
-      return url_serializer_1.serializePath(this);
+      return serializePath(this);
     };
     return UrlPathWithParams;
   }());
@@ -22461,47 +15456,289 @@ $__System.registerDynamic("a1", ["a4", "b9", "ab"], true, function($__require, e
     return res;
   }
   exports.mapChildrenIntoArray = mapChildrenIntoArray;
+  var UrlSerializer = (function() {
+    function UrlSerializer() {}
+    return UrlSerializer;
+  }());
+  exports.UrlSerializer = UrlSerializer;
+  var DefaultUrlSerializer = (function() {
+    function DefaultUrlSerializer() {}
+    DefaultUrlSerializer.prototype.parse = function(url) {
+      var p = new UrlParser(url);
+      return new UrlTree(p.parseRootSegment(), p.parseQueryParams(), p.parseFragment());
+    };
+    DefaultUrlSerializer.prototype.serialize = function(tree) {
+      var segment = "/" + serializeSegment(tree.root, true);
+      var query = serializeQueryParams(tree.queryParams);
+      var fragment = tree.fragment !== null ? "#" + tree.fragment : '';
+      return "" + segment + query + fragment;
+    };
+    return DefaultUrlSerializer;
+  }());
+  exports.DefaultUrlSerializer = DefaultUrlSerializer;
+  function serializePaths(segment) {
+    return segment.pathsWithParams.map(function(p) {
+      return serializePath(p);
+    }).join('/');
+  }
+  exports.serializePaths = serializePaths;
+  function serializeSegment(segment, root) {
+    if (segment.children[shared_1.PRIMARY_OUTLET] && root) {
+      var primary = serializeSegment(segment.children[shared_1.PRIMARY_OUTLET], false);
+      var children_1 = [];
+      collection_1.forEach(segment.children, function(v, k) {
+        if (k !== shared_1.PRIMARY_OUTLET) {
+          children_1.push(k + ":" + serializeSegment(v, false));
+        }
+      });
+      if (children_1.length > 0) {
+        return primary + "(" + children_1.join('//') + ")";
+      } else {
+        return "" + primary;
+      }
+    } else if (segment.hasChildren() && !root) {
+      var children = mapChildrenIntoArray(segment, function(v, k) {
+        if (k === shared_1.PRIMARY_OUTLET) {
+          return [serializeSegment(segment.children[shared_1.PRIMARY_OUTLET], false)];
+        } else {
+          return [(k + ":" + serializeSegment(v, false))];
+        }
+      });
+      return serializePaths(segment) + "/(" + children.join('//') + ")";
+    } else {
+      return serializePaths(segment);
+    }
+  }
+  function serializePath(path) {
+    return "" + path.path + serializeParams(path.parameters);
+  }
+  exports.serializePath = serializePath;
+  function serializeParams(params) {
+    return pairs(params).map(function(p) {
+      return (";" + p.first + "=" + p.second);
+    }).join('');
+  }
+  function serializeQueryParams(params) {
+    var strs = pairs(params).map(function(p) {
+      return (p.first + "=" + p.second);
+    });
+    return strs.length > 0 ? "?" + strs.join("&") : '';
+  }
+  var Pair = (function() {
+    function Pair(first, second) {
+      this.first = first;
+      this.second = second;
+    }
+    return Pair;
+  }());
+  function pairs(obj) {
+    var res = [];
+    for (var prop in obj) {
+      if (obj.hasOwnProperty(prop)) {
+        res.push(new Pair(prop, obj[prop]));
+      }
+    }
+    return res;
+  }
+  var SEGMENT_RE = /^[^\/\(\)\?;=&#]+/;
+  function matchPathWithParams(str) {
+    SEGMENT_RE.lastIndex = 0;
+    var match = SEGMENT_RE.exec(str);
+    return match ? match[0] : '';
+  }
+  var QUERY_PARAM_RE = /^[^=\?&#]+/;
+  function matchQueryParams(str) {
+    QUERY_PARAM_RE.lastIndex = 0;
+    var match = SEGMENT_RE.exec(str);
+    return match ? match[0] : '';
+  }
+  var QUERY_PARAM_VALUE_RE = /^[^\?&#]+/;
+  function matchUrlQueryParamValue(str) {
+    QUERY_PARAM_VALUE_RE.lastIndex = 0;
+    var match = QUERY_PARAM_VALUE_RE.exec(str);
+    return match ? match[0] : '';
+  }
+  var UrlParser = (function() {
+    function UrlParser(remaining) {
+      this.remaining = remaining;
+    }
+    UrlParser.prototype.peekStartsWith = function(str) {
+      return this.remaining.startsWith(str);
+    };
+    UrlParser.prototype.capture = function(str) {
+      if (!this.remaining.startsWith(str)) {
+        throw new Error("Expected \"" + str + "\".");
+      }
+      this.remaining = this.remaining.substring(str.length);
+    };
+    UrlParser.prototype.parseRootSegment = function() {
+      if (this.remaining === '' || this.remaining === '/') {
+        return new UrlSegment([], {});
+      } else {
+        return new UrlSegment([], this.parseSegmentChildren());
+      }
+    };
+    UrlParser.prototype.parseSegmentChildren = function() {
+      if (this.remaining.length == 0) {
+        return {};
+      }
+      if (this.peekStartsWith('/')) {
+        this.capture('/');
+      }
+      var paths = [this.parsePathWithParams()];
+      while (this.peekStartsWith('/') && !this.peekStartsWith('//') && !this.peekStartsWith('/(')) {
+        this.capture('/');
+        paths.push(this.parsePathWithParams());
+      }
+      var children = {};
+      if (this.peekStartsWith('/(')) {
+        this.capture('/');
+        children = this.parseParens(true);
+      }
+      var res = {};
+      if (this.peekStartsWith('(')) {
+        res = this.parseParens(false);
+      }
+      res[shared_1.PRIMARY_OUTLET] = new UrlSegment(paths, children);
+      return res;
+    };
+    UrlParser.prototype.parsePathWithParams = function() {
+      var path = matchPathWithParams(this.remaining);
+      if (path === '' && this.peekStartsWith(';')) {
+        throw new Error("Empty path url segment cannot have parameters: '" + this.remaining + "'.");
+      }
+      this.capture(path);
+      var matrixParams = {};
+      if (this.peekStartsWith(';')) {
+        matrixParams = this.parseMatrixParams();
+      }
+      return new UrlPathWithParams(path, matrixParams);
+    };
+    UrlParser.prototype.parseQueryParams = function() {
+      var params = {};
+      if (this.peekStartsWith('?')) {
+        this.capture('?');
+        this.parseQueryParam(params);
+        while (this.remaining.length > 0 && this.peekStartsWith('&')) {
+          this.capture('&');
+          this.parseQueryParam(params);
+        }
+      }
+      return params;
+    };
+    UrlParser.prototype.parseFragment = function() {
+      if (this.peekStartsWith('#')) {
+        return this.remaining.substring(1);
+      } else {
+        return null;
+      }
+    };
+    UrlParser.prototype.parseMatrixParams = function() {
+      var params = {};
+      while (this.remaining.length > 0 && this.peekStartsWith(';')) {
+        this.capture(';');
+        this.parseParam(params);
+      }
+      return params;
+    };
+    UrlParser.prototype.parseParam = function(params) {
+      var key = matchPathWithParams(this.remaining);
+      if (!key) {
+        return;
+      }
+      this.capture(key);
+      var value = 'true';
+      if (this.peekStartsWith('=')) {
+        this.capture('=');
+        var valueMatch = matchPathWithParams(this.remaining);
+        if (valueMatch) {
+          value = valueMatch;
+          this.capture(value);
+        }
+      }
+      params[key] = value;
+    };
+    UrlParser.prototype.parseQueryParam = function(params) {
+      var key = matchQueryParams(this.remaining);
+      if (!key) {
+        return;
+      }
+      this.capture(key);
+      var value = 'true';
+      if (this.peekStartsWith('=')) {
+        this.capture('=');
+        var valueMatch = matchUrlQueryParamValue(this.remaining);
+        if (valueMatch) {
+          value = valueMatch;
+          this.capture(value);
+        }
+      }
+      params[key] = value;
+    };
+    UrlParser.prototype.parseParens = function(allowPrimary) {
+      var segments = {};
+      this.capture('(');
+      while (!this.peekStartsWith(')') && this.remaining.length > 0) {
+        var path = matchPathWithParams(this.remaining);
+        var outletName = void 0;
+        if (path.indexOf(':') > -1) {
+          outletName = path.substr(0, path.indexOf(':'));
+          this.capture(outletName);
+          this.capture(':');
+        } else if (allowPrimary) {
+          outletName = shared_1.PRIMARY_OUTLET;
+        }
+        var children = this.parseSegmentChildren();
+        segments[outletName] = Object.keys(children).length === 1 ? children[shared_1.PRIMARY_OUTLET] : new UrlSegment([], children);
+        if (this.peekStartsWith('//')) {
+          this.capture('//');
+        }
+      }
+      this.capture(')');
+      return segments;
+    };
+    return UrlParser;
+  }());
   return module.exports;
 });
 
-$__System.registerDynamic("10", ["9d", "a0", "a2", "9e", "a3", "ba", "9f", "a4", "b9", "a1"], true, function($__require, exports, module) {
+$__System.registerDynamic("10", ["97", "9a", "9c", "98", "9d", "b2", "99", "9e", "9b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var router_link_1 = $__require('9d');
-  var router_link_active_1 = $__require('a0');
-  var router_outlet_1 = $__require('a2');
-  var router_1 = $__require('9e');
+  var router_link_1 = $__require('97');
+  var router_link_active_1 = $__require('9a');
+  var router_outlet_1 = $__require('9c');
+  var router_1 = $__require('98');
   exports.NavigationCancel = router_1.NavigationCancel;
   exports.NavigationEnd = router_1.NavigationEnd;
   exports.NavigationError = router_1.NavigationError;
   exports.NavigationStart = router_1.NavigationStart;
   exports.Router = router_1.Router;
   exports.RoutesRecognized = router_1.RoutesRecognized;
-  var router_outlet_map_1 = $__require('a3');
+  var router_outlet_map_1 = $__require('9d');
   exports.RouterOutletMap = router_outlet_map_1.RouterOutletMap;
-  var router_providers_1 = $__require('ba');
+  var router_providers_1 = $__require('b2');
   exports.provideRouter = router_providers_1.provideRouter;
-  var router_state_1 = $__require('9f');
+  var router_state_1 = $__require('99');
   exports.ActivatedRoute = router_state_1.ActivatedRoute;
   exports.ActivatedRouteSnapshot = router_state_1.ActivatedRouteSnapshot;
   exports.RouterState = router_state_1.RouterState;
   exports.RouterStateSnapshot = router_state_1.RouterStateSnapshot;
-  var shared_1 = $__require('a4');
+  var shared_1 = $__require('9e');
   exports.PRIMARY_OUTLET = shared_1.PRIMARY_OUTLET;
-  var url_serializer_1 = $__require('b9');
-  exports.DefaultUrlSerializer = url_serializer_1.DefaultUrlSerializer;
-  exports.UrlSerializer = url_serializer_1.UrlSerializer;
-  var url_tree_1 = $__require('a1');
+  var url_tree_1 = $__require('9b');
+  exports.DefaultUrlSerializer = url_tree_1.DefaultUrlSerializer;
   exports.UrlPathWithParams = url_tree_1.UrlPathWithParams;
+  exports.UrlSerializer = url_tree_1.UrlSerializer;
   exports.UrlTree = url_tree_1.UrlTree;
   exports.ROUTER_DIRECTIVES = [router_outlet_1.RouterOutlet, router_link_1.RouterLink, router_link_active_1.RouterLinkActive];
   return module.exports;
 });
 
-$__System.registerDynamic("bb", ["5", "65", "3", "10"], true, function($__require, exports, module) {
+$__System.registerDynamic("b3", ["5", "5f", "3", "10"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -22524,7 +15761,7 @@ $__System.registerDynamic("bb", ["5", "65", "3", "10"], true, function($__requir
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var common_1 = $__require('3');
   var router_1 = $__require('10');
   var TieredMenuSub = (function() {
@@ -37659,7 +30896,7 @@ var __extends = (this && this.__extends) || function(d, b) {
   d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 (function(global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs/Subject'), require('rxjs/observable/PromiseObservable'), require('rxjs/operator/toPromise'), require('rxjs/Observable'), require('@angular/common'), require('@angular/compiler')) : typeof define === 'function' && define.amd ? define("66", ["exports", "5", "7", "8", "9", "a", "3", "4"], factory) : (factory((global.ng = global.ng || {}, global.ng.forms = global.ng.forms || {}), global.ng.core, global.Rx, global.Rx, global.Rx.Observable.prototype, global.Rx, global.ng.common, global.ng.compiler));
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs/Subject'), require('rxjs/observable/PromiseObservable'), require('rxjs/operator/toPromise'), require('rxjs/Observable'), require('@angular/common'), require('@angular/compiler')) : typeof define === 'function' && define.amd ? define("60", ["exports", "5", "7", "8", "9", "a", "3", "4"], factory) : (factory((global.ng = global.ng || {}, global.ng.forms = global.ng.forms || {}), global.ng.core, global.Rx, global.Rx, global.Rx.Observable.prototype, global.Rx, global.ng.common, global.ng.compiler));
 }(this, function(exports, _angular_core, rxjs_Subject, rxjs_observable_PromiseObservable, rxjs_operator_toPromise, rxjs_Observable, _angular_common, _angular_compiler) {
   'use strict';
   var NG_VALUE_ACCESSOR = new _angular_core.OpaqueToken('NgValueAccessor');
@@ -40671,7 +33908,7 @@ var __extends = (this && this.__extends) || function(d, b) {
 }));
 
 })();
-$__System.registerDynamic("bc", ["5", "66"], true, function($__require, exports, module) {
+$__System.registerDynamic("b4", ["5", "60"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -40694,7 +33931,7 @@ $__System.registerDynamic("bc", ["5", "66"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var forms_1 = $__require('66');
+  var forms_1 = $__require('60');
   var TOGGLEBUTTON_VALUE_ACCESSOR = new core_1.Provider(forms_1.NG_VALUE_ACCESSOR, {
     useExisting: core_1.forwardRef(function() {
       return ToggleButton;
@@ -40753,7 +33990,7 @@ $__System.registerDynamic("bc", ["5", "66"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("bd", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("b5", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -40790,7 +34027,7 @@ $__System.registerDynamic("bd", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("65", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("5f", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41064,7 +34301,7 @@ $__System.registerDynamic("65", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("be", ["5", "65"], true, function($__require, exports, module) {
+$__System.registerDynamic("b6", ["5", "5f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41087,7 +34324,7 @@ $__System.registerDynamic("be", ["5", "65"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var domhandler_1 = $__require('65');
+  var domhandler_1 = $__require('5f');
   var Tooltip = (function() {
     function Tooltip(el, domHandler) {
       this.el = el;
@@ -41187,7 +34424,7 @@ $__System.registerDynamic("be", ["5", "65"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("bf", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("b7", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41229,7 +34466,7 @@ $__System.registerDynamic("bf", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("c0", ["5", "c1", "bf"], true, function($__require, exports, module) {
+$__System.registerDynamic("b8", ["5", "b9", "b7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41257,8 +34494,8 @@ $__System.registerDynamic("c0", ["5", "c1", "bf"], true, function($__require, ex
     };
   };
   var core_1 = $__require('5');
-  var tree_1 = $__require('c1');
-  var treenodetemplateloader_1 = $__require('bf');
+  var tree_1 = $__require('b9');
+  var treenodetemplateloader_1 = $__require('b7');
   var UITreeNode = (function() {
     function UITreeNode(tree) {
       this.tree = tree;
@@ -41310,7 +34547,7 @@ $__System.registerDynamic("c0", ["5", "c1", "bf"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("c1", ["5", "c0"], true, function($__require, exports, module) {
+$__System.registerDynamic("b9", ["5", "b8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41333,7 +34570,7 @@ $__System.registerDynamic("c1", ["5", "c0"], true, function($__require, exports,
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var uitreenode_1 = $__require('c0');
+  var uitreenode_1 = $__require('b8');
   var Tree = (function() {
     function Tree() {
       this.selectionChange = new core_1.EventEmitter();
@@ -41422,7 +34659,7 @@ $__System.registerDynamic("c1", ["5", "c0"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("75", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("6f", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41469,7 +34706,7 @@ $__System.registerDynamic("75", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("c2", ["5", "c3", "75"], true, function($__require, exports, module) {
+$__System.registerDynamic("ba", ["5", "bb", "6f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41497,8 +34734,8 @@ $__System.registerDynamic("c2", ["5", "c3", "75"], true, function($__require, ex
     };
   };
   var core_1 = $__require('5');
-  var treetable_1 = $__require('c3');
-  var columntemplateloader_1 = $__require('75');
+  var treetable_1 = $__require('bb');
+  var columntemplateloader_1 = $__require('6f');
   var UITreeRow = (function() {
     function UITreeRow(treeTable) {
       this.treeTable = treeTable;
@@ -41542,7 +34779,7 @@ $__System.registerDynamic("c2", ["5", "c3", "75"], true, function($__require, ex
   return module.exports;
 });
 
-$__System.registerDynamic("74", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("6e", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41594,7 +34831,7 @@ $__System.registerDynamic("74", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("61", ["5"], true, function($__require, exports, module) {
+$__System.registerDynamic("5b", ["5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41638,7 +34875,7 @@ $__System.registerDynamic("61", ["5"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("c3", ["5", "c2", "74", "61"], true, function($__require, exports, module) {
+$__System.registerDynamic("bb", ["5", "ba", "6e", "5b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41661,10 +34898,10 @@ $__System.registerDynamic("c3", ["5", "c2", "74", "61"], true, function($__requi
       return Reflect.metadata(k, v);
   };
   var core_1 = $__require('5');
-  var uitreerow_1 = $__require('c2');
-  var column_1 = $__require('74');
-  var common_1 = $__require('61');
-  var common_2 = $__require('61');
+  var uitreerow_1 = $__require('ba');
+  var column_1 = $__require('6e');
+  var common_1 = $__require('5b');
+  var common_2 = $__require('5b');
   var TreeTable = (function() {
     function TreeTable() {
       this.selectionChange = new core_1.EventEmitter();
@@ -41766,7 +35003,7 @@ $__System.registerDynamic("c3", ["5", "c2", "74", "61"], true, function($__requi
   return module.exports;
 });
 
-$__System.registerDynamic("e", ["61", "5f", "60", "62", "67", "64", "68", "69", "6a", "6b", "6c", "6d", "74", "6e", "70", "71", "73", "76", "77", "78", "79", "7a", "7b", "7c", "7d", "7e", "7f", "80", "63", "81", "82", "83", "84", "85", "86", "87", "88", "89", "8a", "6f", "8b", "8c", "8d", "8e", "8f", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "9a", "9b", "9c", "bb", "bc", "bd", "be", "c1", "c3"], true, function($__require, exports, module) {
+$__System.registerDynamic("e", ["5b", "59", "5a", "5c", "61", "5e", "62", "63", "64", "65", "66", "67", "6e", "68", "6a", "6b", "6d", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "7a", "5d", "7b", "7c", "7d", "7e", "7f", "80", "81", "82", "83", "84", "69", "85", "86", "87", "88", "89", "8a", "8b", "8c", "8d", "8e", "8f", "90", "91", "92", "93", "94", "95", "96", "b3", "b4", "b5", "b6", "b9", "bb"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -41777,48 +35014,54 @@ $__System.registerDynamic("e", ["61", "5f", "60", "62", "67", "64", "68", "69", 
       if (!exports.hasOwnProperty(p))
         exports[p] = m[p];
   }
+  __export($__require('5b'));
+  __export($__require('59'));
+  __export($__require('5a'));
+  __export($__require('5c'));
   __export($__require('61'));
-  __export($__require('5f'));
-  __export($__require('60'));
+  __export($__require('5e'));
   __export($__require('62'));
-  __export($__require('67'));
+  __export($__require('63'));
   __export($__require('64'));
+  __export($__require('65'));
+  __export($__require('66'));
+  __export($__require('67'));
+  __export($__require('6e'));
+  __export($__require('5b'));
+  __export($__require('5b'));
   __export($__require('68'));
-  __export($__require('69'));
   __export($__require('6a'));
   __export($__require('6b'));
-  __export($__require('6c'));
   __export($__require('6d'));
-  __export($__require('74'));
-  __export($__require('61'));
-  __export($__require('61'));
-  __export($__require('6e'));
   __export($__require('70'));
   __export($__require('71'));
+  __export($__require('72'));
   __export($__require('73'));
+  __export($__require('74'));
+  __export($__require('75'));
   __export($__require('76'));
   __export($__require('77'));
   __export($__require('78'));
   __export($__require('79'));
   __export($__require('7a'));
+  __export($__require('5d'));
   __export($__require('7b'));
   __export($__require('7c'));
   __export($__require('7d'));
   __export($__require('7e'));
   __export($__require('7f'));
   __export($__require('80'));
-  __export($__require('63'));
   __export($__require('81'));
   __export($__require('82'));
   __export($__require('83'));
   __export($__require('84'));
+  __export($__require('69'));
   __export($__require('85'));
   __export($__require('86'));
   __export($__require('87'));
   __export($__require('88'));
   __export($__require('89'));
   __export($__require('8a'));
-  __export($__require('6f'));
   __export($__require('8b'));
   __export($__require('8c'));
   __export($__require('8d'));
@@ -41831,22 +35074,781 @@ $__System.registerDynamic("e", ["61", "5f", "60", "62", "67", "64", "68", "69", 
   __export($__require('94'));
   __export($__require('95'));
   __export($__require('96'));
-  __export($__require('97'));
-  __export($__require('98'));
-  __export($__require('99'));
-  __export($__require('9a'));
-  __export($__require('9b'));
-  __export($__require('9c'));
+  __export($__require('b3'));
+  __export($__require('b4'));
+  __export($__require('b5'));
+  __export($__require('b6'));
+  __export($__require('b9'));
   __export($__require('bb'));
-  __export($__require('bc'));
-  __export($__require('bd'));
-  __export($__require('be'));
-  __export($__require('c1'));
-  __export($__require('c3'));
   return module.exports;
 });
 
-$__System.register("27", ["5", "33", "26", "21", "e"], function(exports_1, context_1) {
+$__System.register("40", ["5", "33", "34", "f"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      base_service_1,
+      index_1;
+  var ArtifactTypeService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }],
+    execute: function() {
+      ArtifactTypeService = (function(_super) {
+        __extends(ArtifactTypeService, _super);
+        function ArtifactTypeService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        ArtifactTypeService.prototype.getArtifactTypeEditor = function(id, parentID) {
+          var _this = this;
+          return this.http.get("form/ArtifactType?parentID=" + parentID + "&id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ArtifactTypeService.prototype.putArtifactType = function(model) {
+          var _this = this;
+          return this.http.put('form/ArtifactType', model).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ArtifactTypeService.prototype.postArtifactType = function(model) {
+          var _this = this;
+          return this.http.post('form/ArtifactType', model).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ArtifactTypeService.prototype.getArtifactTypeTree = function() {
+          var _this = this;
+          return this.http.get('artifacts/types').toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.formTree(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ArtifactTypeService.prototype.findArtifactType = function(tree, id) {
+          for (var i = 0; i < tree.length; i++) {
+            var n;
+            if (tree[i].data.ID == id)
+              return tree[i];
+            if (tree[i].children && tree[i].children.length > 0) {
+              n = this.findArtifactType(tree[i].children, id);
+            }
+            if (n)
+              return n;
+          }
+          return null;
+        };
+        ArtifactTypeService.prototype.formTree = function(data) {
+          var _this = this;
+          var tree = new Array();
+          data.filter(function(d) {
+            return d.ParentID == null;
+          }).forEach(function(d) {
+            tree.push({
+              data: d,
+              children: []
+            });
+          });
+          tree.forEach(function(t) {
+            _this.formTreeR(t, data);
+          });
+          console.log(tree);
+          return tree;
+        };
+        ArtifactTypeService.prototype.formTreeR = function(node, data) {
+          var _this = this;
+          data.filter(function(d) {
+            return d.ParentID == node.data.ID;
+          }).forEach(function(d) {
+            var child = {
+              data: d,
+              children: []
+            };
+            node.children.push(child);
+            _this.formTreeR(child, data);
+          });
+        };
+        ArtifactTypeService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ArtifactTypeService);
+        return ArtifactTypeService;
+      }(base_service_1.BaseService));
+      exports_1("ArtifactTypeService", ArtifactTypeService);
+    }
+  };
+});
+
+$__System.register("4c", ["5", "33", "34", "f"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      base_service_1,
+      index_1;
+  var ClaimsService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }],
+    execute: function() {
+      ClaimsService = (function(_super) {
+        __extends(ClaimsService, _super);
+        function ClaimsService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        ClaimsService.prototype.getClaims = function(objectID, objectType) {
+          var _this = this;
+          return this.http.get("/api/ownership/" + objectType + "/" + objectID + "/responsibilitytypes").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ClaimsService.prototype.getClaimsDisplayModel = function(objectID, objectType, responsibilityTypeID) {
+          var _this = this;
+          return this.http.get("parts/ClaimsMatrix?type=" + objectType + "&id=" + objectID + "&responsibilityTypeID=" + responsibilityTypeID).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ClaimsService.prototype.putClaims = function(objectID, objectType, responsibilityTypeID, claims) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var model = {
+            claims: claims,
+            objectType: objectType,
+            objectID: objectID,
+            responsibilityTypeID: responsibilityTypeID
+          };
+          return this.http.put('form/EditClaimsMatrix', JSON.stringify(model), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ClaimsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ClaimsService);
+        return ClaimsService;
+      }(base_service_1.BaseService));
+      exports_1("ClaimsService", ClaimsService);
+    }
+  };
+});
+
+$__System.register("2f", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var DomainService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      DomainService = (function(_super) {
+        __extends(DomainService, _super);
+        function DomainService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        DomainService.prototype.getDomains = function() {
+          var _this = this;
+          return this.http.get('services/domains').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        DomainService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], DomainService);
+        return DomainService;
+      }(base_service_1.BaseService));
+      exports_1("DomainService", DomainService);
+    }
+  };
+});
+
+$__System.register("56", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var FieldDefinition,
+      FieldTypeEditorModel,
+      FieldType,
+      Field,
+      FieldTypeFusionItemEditorModel,
+      FieldTypeItemDisplayFieldEditorModel,
+      FieldTypeRelationItemEditorModel,
+      FieldTypeFusionLookupDefinition,
+      FieldTypeRelationLookupDefinition,
+      FieldTypeRelationLookupDisplayField,
+      FieldTypeFusionLookupDisplayField,
+      Lookups;
+  return {
+    setters: [],
+    execute: function() {
+      FieldDefinition = (function() {
+        function FieldDefinition() {}
+        return FieldDefinition;
+      }());
+      exports_1("FieldDefinition", FieldDefinition);
+      FieldTypeEditorModel = (function() {
+        function FieldTypeEditorModel() {
+          this.FusionItems = new Array();
+          this.LookupTokens = new Array();
+        }
+        return FieldTypeEditorModel;
+      }());
+      exports_1("FieldTypeEditorModel", FieldTypeEditorModel);
+      FieldType = (function() {
+        function FieldType() {}
+        return FieldType;
+      }());
+      exports_1("FieldType", FieldType);
+      Field = (function() {
+        function Field() {}
+        return Field;
+      }());
+      exports_1("Field", Field);
+      FieldTypeFusionItemEditorModel = (function() {
+        function FieldTypeFusionItemEditorModel() {
+          this.DisplayFields = new Array();
+          this.TargetFusionAttributeTypes = new Array();
+          this.FusionDisplayFields = new Array();
+        }
+        return FieldTypeFusionItemEditorModel;
+      }());
+      exports_1("FieldTypeFusionItemEditorModel", FieldTypeFusionItemEditorModel);
+      FieldTypeItemDisplayFieldEditorModel = (function() {
+        function FieldTypeItemDisplayFieldEditorModel() {}
+        return FieldTypeItemDisplayFieldEditorModel;
+      }());
+      exports_1("FieldTypeItemDisplayFieldEditorModel", FieldTypeItemDisplayFieldEditorModel);
+      FieldTypeRelationItemEditorModel = (function() {
+        function FieldTypeRelationItemEditorModel() {}
+        return FieldTypeRelationItemEditorModel;
+      }());
+      exports_1("FieldTypeRelationItemEditorModel", FieldTypeRelationItemEditorModel);
+      FieldTypeFusionLookupDefinition = (function() {
+        function FieldTypeFusionLookupDefinition() {}
+        return FieldTypeFusionLookupDefinition;
+      }());
+      exports_1("FieldTypeFusionLookupDefinition", FieldTypeFusionLookupDefinition);
+      FieldTypeRelationLookupDefinition = (function() {
+        function FieldTypeRelationLookupDefinition() {}
+        return FieldTypeRelationLookupDefinition;
+      }());
+      exports_1("FieldTypeRelationLookupDefinition", FieldTypeRelationLookupDefinition);
+      FieldTypeRelationLookupDisplayField = (function() {
+        function FieldTypeRelationLookupDisplayField() {}
+        return FieldTypeRelationLookupDisplayField;
+      }());
+      exports_1("FieldTypeRelationLookupDisplayField", FieldTypeRelationLookupDisplayField);
+      FieldTypeFusionLookupDisplayField = (function() {
+        function FieldTypeFusionLookupDisplayField() {}
+        return FieldTypeFusionLookupDisplayField;
+      }());
+      exports_1("FieldTypeFusionLookupDisplayField", FieldTypeFusionLookupDisplayField);
+      Lookups = (function() {
+        function Lookups() {
+          this.ReferenceTypes = new Array();
+        }
+        return Lookups;
+      }());
+      exports_1("Lookups", Lookups);
+    }
+  };
+});
+
+$__System.register("57", ["5", "33", "56", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      fields_model_1,
+      index_1,
+      base_service_1;
+  var FieldsService,
+      FtItem;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(fields_model_1_1) {
+      fields_model_1 = fields_model_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      FieldsService = (function(_super) {
+        __extends(FieldsService, _super);
+        function FieldsService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        FieldsService.prototype.getFields = function(objectID, objectType) {
+          var _this = this;
+          return this.http.get("/fields/" + objectType + "/" + objectID + ".json").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getFieldTypeEditor = function(id) {
+          var _this = this;
+          return this.http.get("form/FieldType?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getFusionLookupDisplayFields = function(id) {
+          var _this = this;
+          return this.http.get("form/FieldType_FusionLookup_DisplayFields?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getFusionLookupTargetAttributeTypes = function(sourceID, referenceTypeID) {
+          var _this = this;
+          return this.http.get("form/FieldType_FusionLookup_TargetAttributeTypes?s=" + sourceID + "&r=" + referenceTypeID).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getRelationLookupChildIntersectTypes = function(id) {
+          var _this = this;
+          return this.http.get("form/FieldType_RelationLookup_ChildIntersectTypes?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getRelationLookupDisplayFields = function(id, type, intersectTypeID) {
+          var _this = this;
+          return this.http.get("form/FieldType_RelationLookup_DisplayFields?id=" + id + "&type=" + type + "&intersectTypeID=" + intersectTypeID).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getLookupTokens = function(id, type) {
+          var _this = this;
+          return this.http.get("form/FieldType_Lookup_Tokens?id=" + id + "&type=" + type).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getLookups = function(id, type) {
+          var _this = this;
+          return this.http.get("form/FieldType_Lookups?id=" + id + "&type=" + type).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            var l = new fields_model_1.Lookups();
+            l.DataTypes = _this.ftItemToSelectItem(r.DataTypes);
+            l.FusionAttributeTypes = _this.ftItemToSelectItem(r.FusionAttributeTypes);
+            l.IntersectTypes = _this.ftItemToSelectItem(r.IntersectTypes);
+            l.Lookups = _this.ftItemToSelectItem(r.Lookups);
+            l.Patterns = _this.ftItemToSelectItem(r.Patterns);
+            console.log('Lookups');
+            console.log(l);
+            return l;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getFormData = function(id) {
+          var _this = this;
+          return this.http.get("form/FieldType_FormData?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getFusionDisplayFields = function(id) {
+          var _this = this;
+          return this.http.get("form/FieldType_FusionLookup_DisplayFields?id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            return _this.ftItemToSelectItem(r);
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.getReferenceTypes = function() {
+          return [{
+            label: 'Self Reference',
+            value: '1'
+          }, {
+            label: 'Parent Reference',
+            value: '2'
+          }, {
+            label: 'Child Reference',
+            value: '3'
+          }, {
+            label: 'Relationship Reference',
+            value: '4'
+          }];
+        };
+        FieldsService.prototype.putFieldType = function(model) {
+          var _this = this;
+          return this.http.put('form/EditFieldType', model).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.postFieldType = function(model) {
+          var _this = this;
+          return this.http.put('form/AddFieldType', model).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.deleteFieldType = function(id) {
+          var _this = this;
+          return this.http.delete("form/DeleteFieldTypeByID?id=" + id).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        FieldsService.prototype.ftItemToSelectItem = function(items) {
+          var s = new Array();
+          items.forEach(function(i) {
+            s.push({
+              label: i.title,
+              value: i.value
+            });
+          });
+          return s;
+        };
+        FieldsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], FieldsService);
+        return FieldsService;
+      }(base_service_1.BaseService));
+      exports_1("FieldsService", FieldsService);
+      FtItem = (function() {
+        function FtItem() {}
+        return FtItem;
+      }());
+    }
+  };
+});
+
+$__System.register("1f", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var ResponsibilityType,
+      ResponsibilityTypeRelation,
+      ResponsibilityTypeGroup;
+  return {
+    setters: [],
+    execute: function() {
+      ResponsibilityType = (function() {
+        function ResponsibilityType() {
+          this.ResponsibilityTypeRelations = [];
+          this.AllocationsList = [];
+        }
+        return ResponsibilityType;
+      }());
+      exports_1("ResponsibilityType", ResponsibilityType);
+      ResponsibilityTypeRelation = (function() {
+        function ResponsibilityTypeRelation() {}
+        return ResponsibilityTypeRelation;
+      }());
+      exports_1("ResponsibilityTypeRelation", ResponsibilityTypeRelation);
+      (function(ResponsibilityTypeGroup) {
+        ResponsibilityTypeGroup[ResponsibilityTypeGroup["People"] = 1] = "People";
+        ResponsibilityTypeGroup[ResponsibilityTypeGroup["Sourcing"] = 2] = "Sourcing";
+      })(ResponsibilityTypeGroup || (ResponsibilityTypeGroup = {}));
+      exports_1("ResponsibilityTypeGroup", ResponsibilityTypeGroup);
+    }
+  };
+});
+
+$__System.register("20", ["5", "33", "1f", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      responsibility_type_model_1,
+      index_1,
+      base_service_1;
+  var ResponsibilityTypeService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(responsibility_type_model_1_1) {
+      responsibility_type_model_1 = responsibility_type_model_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      ResponsibilityTypeService = (function(_super) {
+        __extends(ResponsibilityTypeService, _super);
+        function ResponsibilityTypeService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        ResponsibilityTypeService.prototype.getResponsibilityTypes = function() {
+          var _this = this;
+          return this.http.get('api/ownership/types').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityTypeService.prototype.getResponsibilityType = function(id, group) {
+          var _this = this;
+          if (group === void 0) {
+            group = responsibility_type_model_1.ResponsibilityTypeGroup.People;
+          }
+          return this.http.get("form/ResponsibilityType?id=" + id + "&group=" + group).toPromise().then(function(r) {
+            return r.json();
+          }).then(function(r) {
+            var t = new responsibility_type_model_1.ResponsibilityType();
+            t = r.model;
+            t.AllocationsList = r.allocations;
+            t.ResponsibilityTypeRelations = r.selectedAllocations;
+            if (t.ResponsibilityTypeRelations == null)
+              t.ResponsibilityTypeRelations = [];
+            return t;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityTypeService.prototype.putResponsibilityType = function(responsibilityType) {
+          var _this = this;
+          return this.http.put("form/ResponsibilityType", responsibilityType).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityTypeService.prototype.postResponsibilityType = function(responsibilityType) {
+          var _this = this;
+          return this.http.post("form/ResponsibilityType", responsibilityType).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityTypeService.prototype.deleteResponsibilityType = function(id) {
+          var _this = this;
+          return this.http.delete("form/DeleteResponsibilityTypeByID?id=" + id).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityTypeService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ResponsibilityTypeService);
+        return ResponsibilityTypeService;
+      }(base_service_1.BaseService));
+      exports_1("ResponsibilityTypeService", ResponsibilityTypeService);
+    }
+  };
+});
+
+$__System.register("12", ["5"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1;
+  var HeaderActionsService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }],
+    execute: function() {
+      HeaderActionsService = (function() {
+        function HeaderActionsService() {
+          this.showNotifications = true;
+          this.showHelp = true;
+          this.showSearch = true;
+          this.showRaiseIssue = false;
+        }
+        HeaderActionsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], HeaderActionsService);
+        return HeaderActionsService;
+      }());
+      exports_1("HeaderActionsService", HeaderActionsService);
+    }
+  };
+});
+
+$__System.register("c", ["5", "7"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -41866,11 +35868,172 @@ $__System.register("27", ["5", "33", "26", "21", "e"], function(exports_1, conte
       return Reflect.metadata(k, v);
   };
   var core_1,
+      Subject_1;
+  var HeaderBreadcrumbService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(Subject_1_1) {
+      Subject_1 = Subject_1_1;
+    }],
+    execute: function() {
+      HeaderBreadcrumbService = (function() {
+        function HeaderBreadcrumbService() {
+          this.breadcrumbSource = new Subject_1.Subject();
+          this.breadcrumbClearSource = new Subject_1.Subject();
+          this.breadcrumbs$ = this.breadcrumbSource.asObservable();
+          this.breadcrumbClear$ = this.breadcrumbClearSource.asObservable();
+        }
+        HeaderBreadcrumbService.prototype.showBreadcrumb = function(breadcrumb) {
+          this.breadcrumbSource.next(breadcrumb);
+        };
+        HeaderBreadcrumbService.prototype.clearBreadcrumbs = function() {
+          this.breadcrumbClearSource.next(true);
+        };
+        HeaderBreadcrumbService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], HeaderBreadcrumbService);
+        return HeaderBreadcrumbService;
+      }());
+      exports_1("HeaderBreadcrumbService", HeaderBreadcrumbService);
+    }
+  };
+});
+
+$__System.register("38", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var ObjectDetailService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      ObjectDetailService = (function(_super) {
+        __extends(ObjectDetailService, _super);
+        function ObjectDetailService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        ObjectDetailService.prototype.getObjectDetail = function(objectID, objectType) {
+          var _this = this;
+          return this.http.get("api/" + objectType + "/" + objectID + "/detail").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ObjectDetailService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ObjectDetailService);
+        return ObjectDetailService;
+      }(base_service_1.BaseService));
+      exports_1("ObjectDetailService", ObjectDetailService);
+    }
+  };
+});
+
+$__System.register("23", ["5"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1;
+  var PageHeader;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }],
+    execute: function() {
+      PageHeader = (function() {
+        function PageHeader() {}
+        PageHeader = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], PageHeader);
+        return PageHeader;
+      }());
+      exports_1("PageHeader", PageHeader);
+    }
+  };
+});
+
+$__System.register("4f", ["5", "33", "26", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
       http_1,
       form_model_1,
-      form_message_part_1,
-      primeng_1;
-  var DeleteForm;
+      index_1,
+      base_service_1;
+  var ResponsibilityService;
   return {
     setters: [function(core_1_1) {
       core_1 = core_1_1;
@@ -41878,124 +36041,6594 @@ $__System.register("27", ["5", "33", "26", "21", "e"], function(exports_1, conte
       http_1 = http_1_1;
     }, function(form_model_1_1) {
       form_model_1 = form_model_1_1;
-    }, function(form_message_part_1_1) {
-      form_message_part_1 = form_message_part_1_1;
-    }, function(primeng_1_1) {
-      primeng_1 = primeng_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
     }],
     execute: function() {
-      DeleteForm = (function() {
-        function DeleteForm(http) {
-          this.method = 'post';
-          this.onDeleteComplete = new core_1.EventEmitter();
-          this.onDeleteSuccess = new core_1.EventEmitter();
-          this.onDeleteFail = new core_1.EventEmitter();
-          this.onCancel = new core_1.EventEmitter();
-          this.message = new form_model_1.FormMessage();
-          this.isLoading = false;
+      ResponsibilityService = (function(_super) {
+        __extends(ResponsibilityService, _super);
+        function ResponsibilityService(http, messagesService) {
+          _super.call(this, messagesService);
           this.http = http;
         }
-        DeleteForm.prototype.delete = function() {
+        ResponsibilityService.prototype.getResponsibilityDetail = function(objectID, objectType, showHidden) {
           var _this = this;
-          if (this.isLoading)
-            return;
+          if (showHidden === void 0) {
+            showHidden = true;
+          }
+          return this.http.get("api/" + objectType + "/" + objectID + "/ownership?showHidden=" + showHidden).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            r.forEach(function(i) {
+              return i.ID = i.ResponsibilityID;
+            });
+            return r;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityService.prototype.getResponsibilityItemEditor = function(objectID, objectType, responsibilityID) {
+          var _this = this;
+          return this.http.get("form/Responsibility?responsibilityID=" + responsibilityID + "&id=" + objectID + "&type=" + objectType).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(model) {
+            form_model_1.FormHelper.mapSelectItems(model.resources);
+            form_model_1.FormHelper.mapSelectItems(model.responsibilityTypes);
+            form_model_1.FormHelper.mapSelectItems(model.contexts);
+            if (model.responsibility.ResponsibleObjectType)
+              model.selectedResource = model.responsibility.ResponsibleObjectType + '|' + model.responsibility.ResponsibleObjectID;
+            else
+              model.selectedResource = model.resources[0].value;
+            if (model.responsibility.ResponsibilityTypeID)
+              model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
+            else
+              model.selectedResponsibilityType = model.responsibilityTypes[0].value;
+            model.selectedContexts = model.contexts.filter(function(c) {
+              return c.Selected;
+            }).map(function(c) {
+              return c.value;
+            });
+            return model;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ResponsibilityService.prototype.postResponsibility = function(responsibility) {
+          var _this = this;
           var headers = new http_1.Headers();
           headers.append('Content-Type', 'application/json');
-          this.isLoading = true;
-          switch (this.method.toLowerCase()) {
-            case 'callback':
-              this.callback(this.itemId);
-              this.isLoading = false;
-              break;
-            case 'post':
-              this.http.post(this.uri, JSON.stringify(this.model), {headers: headers}).map(function(data) {
-                return data.json();
-              }).subscribe(function(data) {
-                var r = new form_model_1.JsonResult(data);
-                if (r.isError) {
-                  _this.message.Error(r.message);
-                  _this.onDeleteFail.emit({message: _this.message});
-                } else if (r.isSuccess) {
-                  _this.message.Success(r.message);
-                  _this.onDeleteSuccess.emit({message: _this.message});
-                } else {
-                  _this.message.Info(r.message);
-                }
-                _this.onDeleteComplete.emit({message: _this.message});
-                _this.isLoading = false;
-              });
-              break;
-            case 'put':
-              this.http.put(this.uri, JSON.stringify(this.model), {headers: headers}).map(function(data) {
-                return data.json();
-              }).subscribe(function(data) {
-                var r = new form_model_1.JsonResult(data);
-                if (r.isError) {
-                  _this.message.Error(r.message);
-                  _this.onDeleteFail.emit({message: _this.message});
-                } else if (r.isSuccess) {
-                  _this.message.Success(r.message);
-                  _this.onDeleteSuccess.emit({message: _this.message});
-                } else {
-                  _this.message.Info(r.message);
-                }
-                _this.onDeleteComplete.emit({message: _this.message});
-                _this.isLoading = false;
-              });
-              break;
-            case 'delete':
-              if (this.model)
-                console.log('WARN: model passed to delete-generic will be ignored with DELETE method.');
-              this.http.delete(this.uri).map(function(data) {
-                return data.json();
-              }).subscribe(function(data) {
-                var r = new form_model_1.JsonResult(data);
-                if (r.isError) {
-                  _this.message.Error(r.message);
-                  _this.onDeleteFail.emit({message: _this.message});
-                } else if (r.isSuccess) {
-                  _this.message.Success(r.message);
-                  _this.onDeleteSuccess.emit({message: _this.message});
-                } else {
-                  _this.message.Info(r.message);
-                }
-                _this.onDeleteComplete.emit({message: _this.message});
-                _this.isLoading = false;
-              });
-              break;
-            default:
-              console.log('method ' + this.method + ' not implemented');
-              this.isLoading = false;
-              break;
-          }
+          return this.http.post('form/responsibility', JSON.stringify(responsibility), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
         };
-        DeleteForm.prototype.cancel = function() {
-          this.onCancel.emit(null);
-        };
-        __decorate([core_1.Input(), __metadata('design:type', Object)], DeleteForm.prototype, "model", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "uri", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "method", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', String)], DeleteForm.prototype, "prompt", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', Function)], DeleteForm.prototype, "callback", void 0);
-        __decorate([core_1.Input(), __metadata('design:type', Number)], DeleteForm.prototype, "itemId", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteComplete", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteSuccess", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onDeleteFail", void 0);
-        __decorate([core_1.Output(), __metadata('design:type', Object)], DeleteForm.prototype, "onCancel", void 0);
-        DeleteForm = __decorate([core_1.Component({
-          selector: 'delete-form',
-          templateUrl: 'scripts/app/components/forms/delete.form.html',
-          viewProviders: [http_1.HTTP_PROVIDERS],
-          directives: [form_message_part_1.FormMessagePart, primeng_1.Button]
-        }), __metadata('design:paramtypes', [http_1.Http])], DeleteForm);
-        return DeleteForm;
-      }());
-      exports_1("DeleteForm", DeleteForm);
+        ResponsibilityService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ResponsibilityService);
+        return ResponsibilityService;
+      }(base_service_1.BaseService));
+      exports_1("ResponsibilityService", ResponsibilityService);
     }
   };
 });
 
-$__System.register("c4", ["5", "e", "57", "f", "25", "48", "27"], function(exports_1, context_1) {
+$__System.register("2b", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var CompanySettingsService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      CompanySettingsService = (function(_super) {
+        __extends(CompanySettingsService, _super);
+        function CompanySettingsService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        CompanySettingsService.prototype.getSettings = function() {
+          var _this = this;
+          return this.http.get('/form/CompanySettings').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        CompanySettingsService.prototype.putSettings = function(companySettings) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        CompanySettingsService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], CompanySettingsService);
+        return CompanySettingsService;
+      }(base_service_1.BaseService));
+      exports_1("CompanySettingsService", CompanySettingsService);
+    }
+  };
+});
+
+$__System.register("45", ["5", "33", "34", "17", "aa"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      base_service_1,
+      messages_service_1;
+  var TemplatesService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }, function(messages_service_1_1) {
+      messages_service_1 = messages_service_1_1;
+    }, function(_1) {}],
+    execute: function() {
+      TemplatesService = (function(_super) {
+        __extends(TemplatesService, _super);
+        function TemplatesService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+          this.templatesUrl = 'api/templates/tooltip';
+        }
+        TemplatesService.prototype.getTemplates = function() {
+          var _this = this;
+          return this.http.get(this.templatesUrl).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TemplatesService.prototype.getTemplate = function(id) {
+          return this.getTemplates().then(function(templates) {
+            return templates.filter(function(template) {
+              return template.ID === id;
+            })[0];
+          });
+        };
+        TemplatesService.prototype.deleteTemplateById = function(id) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/templates/tooltip/" + id;
+          return this.http.delete(url, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TemplatesService.prototype.putTemplate = function(template) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/EditTooltipTemplateRaw";
+          return this.http.put(url, JSON.stringify(template), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TemplatesService.prototype.postTemplate = function(template) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/AddTooltipTemplateRaw";
+          return this.http.post(url, JSON.stringify(template), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TemplatesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, messages_service_1.MessagesService])], TemplatesService);
+        return TemplatesService;
+      }(base_service_1.BaseService));
+      exports_1("TemplatesService", TemplatesService);
+    }
+  };
+});
+
+$__System.register("26", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var BaseEditorModel,
+      SelectItem,
+      FormHelper,
+      MessageType,
+      FormMessage,
+      JsonResult,
+      FormMode;
+  return {
+    setters: [],
+    execute: function() {
+      BaseEditorModel = (function() {
+        function BaseEditorModel() {}
+        return BaseEditorModel;
+      }());
+      exports_1("BaseEditorModel", BaseEditorModel);
+      SelectItem = (function() {
+        function SelectItem() {}
+        return SelectItem;
+      }());
+      exports_1("SelectItem", SelectItem);
+      (function(FormHelper) {
+        function mapSelectItems(s) {
+          s.forEach(function(s) {
+            s.value = s.Value;
+            s.label = s.Text;
+          });
+        }
+        FormHelper.mapSelectItems = mapSelectItems;
+      })(FormHelper = FormHelper || (FormHelper = {}));
+      exports_1("FormHelper", FormHelper);
+      (function(MessageType) {
+        MessageType[MessageType["Error"] = 0] = "Error";
+        MessageType[MessageType["Success"] = 1] = "Success";
+        MessageType[MessageType["Info"] = 2] = "Info";
+        MessageType[MessageType["Warning"] = 3] = "Warning";
+      })(MessageType || (MessageType = {}));
+      exports_1("MessageType", MessageType);
+      FormMessage = (function() {
+        function FormMessage() {
+          this.Visible = true;
+        }
+        FormMessage.prototype.Success = function(msg) {
+          this.MessageType = MessageType.Success;
+          this.Message = msg;
+        };
+        FormMessage.prototype.Info = function(msg) {
+          this.MessageType = MessageType.Info;
+          this.Message = msg;
+        };
+        FormMessage.prototype.Error = function(msg) {
+          this.MessageType = MessageType.Error;
+          this.Message = msg;
+        };
+        FormMessage.prototype.Warning = function(msg) {
+          this.MessageType = MessageType.Warning;
+          this.Message = msg;
+        };
+        Object.defineProperty(FormMessage.prototype, "isError", {
+          get: function() {
+            return this.MessageType == MessageType.Error;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        Object.defineProperty(FormMessage.prototype, "isSuccess", {
+          get: function() {
+            return this.MessageType == MessageType.Success;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        Object.defineProperty(FormMessage.prototype, "isInfo", {
+          get: function() {
+            return this.MessageType == MessageType.Info;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        Object.defineProperty(FormMessage.prototype, "isWarning", {
+          get: function() {
+            return this.MessageType == MessageType.Warning;
+          },
+          enumerable: true,
+          configurable: true
+        });
+        return FormMessage;
+      }());
+      exports_1("FormMessage", FormMessage);
+      JsonResult = (function() {
+        function JsonResult(data) {
+          this.type = data.type || null;
+          this.title = data.title || null;
+          this.message = data.message || null;
+          this.action = data.action || null;
+          this.id = data.id || null;
+          this.statusCode = data.statusCode || null;
+          this.context = data.context || null;
+          this.customdata = data.customdata || null;
+        }
+        Object.defineProperty(JsonResult.prototype, "isError", {
+          get: function() {
+            return ((this.type || '').toLowerCase().trim() == 'error');
+          },
+          enumerable: true,
+          configurable: true
+        });
+        Object.defineProperty(JsonResult.prototype, "isSuccess", {
+          get: function() {
+            return ((this.type || '').toLowerCase().trim() == 'confirm' || (this.type || '').toLowerCase().trim() == 'success');
+          },
+          enumerable: true,
+          configurable: true
+        });
+        return JsonResult;
+      }());
+      exports_1("JsonResult", JsonResult);
+      (function(FormMode) {
+        FormMode[FormMode["Default"] = 1] = "Default";
+        FormMode[FormMode["Editing"] = 2] = "Editing";
+        FormMode[FormMode["Adding"] = 3] = "Adding";
+        FormMode[FormMode["Deleting"] = 4] = "Deleting";
+      })(FormMode || (FormMode = {}));
+      exports_1("FormMode", FormMode);
+    }
+  };
+});
+
+$__System.register("3b", ["5", "33", "26", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      form_model_1,
+      index_1,
+      base_service_1;
+  var WorkflowService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(form_model_1_1) {
+      form_model_1 = form_model_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      WorkflowService = (function(_super) {
+        __extends(WorkflowService, _super);
+        function WorkflowService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        WorkflowService.prototype.getWorkflows = function() {
+          var _this = this;
+          return this.http.get('/api/workflows/relations').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService.prototype.getWorkflow = function(id, workflowType) {
+          var _this = this;
+          return this.http.get("form/WorkflowAllocation?id=" + id + "&workflowType=" + workflowType).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService.prototype.postWorkflow = function(workflow) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          return this.http.post('form/WorkflowAllocation', JSON.stringify(workflow), {headers: headers}).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService.prototype.deleteWorkflow = function(id) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          return this.http.delete("/form/DeleteWorkflowAllocationByID?id=" + id, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService.prototype.getResponsibilityTypeSelectList = function(id, type) {
+          var _this = this;
+          return this.http.get("/workflow/WorkflowResponsibilityTypeOptions?type=" + type + "&id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            form_model_1.FormHelper.mapSelectItems(r);
+            return r;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService.prototype.getParentTypeSelectList = function(id, type, workflowType) {
+          var _this = this;
+          return this.http.get("/workflow/WorkflowParentTypeOptions?workflowType=" + workflowType + "&type=" + type + "&id=" + id).toPromise().then(function(response) {
+            return response.json();
+          }).then(function(r) {
+            form_model_1.FormHelper.mapSelectItems(r);
+            return r;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        WorkflowService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], WorkflowService);
+        return WorkflowService;
+      }(base_service_1.BaseService));
+      exports_1("WorkflowService", WorkflowService);
+    }
+  };
+});
+
+$__System.register("bc", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var TypeaheadSearchService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      TypeaheadSearchService = (function(_super) {
+        __extends(TypeaheadSearchService, _super);
+        function TypeaheadSearchService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        TypeaheadSearchService.prototype.getResults = function(size, term) {
+          var _this = this;
+          return this.http.get("search/typeahead?q=" + term + "&num=" + size + "&t=").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TypeaheadSearchService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], TypeaheadSearchService);
+        return TypeaheadSearchService;
+      }(base_service_1.BaseService));
+      exports_1("TypeaheadSearchService", TypeaheadSearchService);
+    }
+  };
+});
+
+$__System.register("bd", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var TaxonomiesService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      TaxonomiesService = (function(_super) {
+        __extends(TaxonomiesService, _super);
+        function TaxonomiesService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        TaxonomiesService.prototype.getTaxonomies = function() {
+          var _this = this;
+          return this.http.get('/api/catalogs').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.getTaxonomy = function(id) {
+          var _this = this;
+          return this.http.get("/api/catalogs/" + id).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.getTaxonomyLevels = function(taxonomy) {
+          var _this = this;
+          return this.http.get("/api/TaxonomyType/" + taxonomy.ID + "/levels").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.saveTaxonomyLevel = function(level) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/AddTaxonomyTypeLevelRaw";
+          return this.http.post(url, JSON.stringify(level), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.editTaxonomyLevel = function(level) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/EditTaxonomyTypeLevelRaw";
+          return this.http.put(url, JSON.stringify(level), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.deleteTaxonomyLevel = function(taxonomyTypeId, taxonomyLevelId) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/TaxonomyType/" + taxonomyTypeId + "/levels/" + taxonomyLevelId;
+          return this.http.delete(url, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.getTaxonomyClassifications = function() {
+          var _this = this;
+          return this.http.get('/api/TaxonomyClassifications').toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService.prototype.saveTaxonomy = function(taxonomy) {
+          if (taxonomy.ID == undefined || !taxonomy.ID) {
+            return this.post(taxonomy);
+          }
+          return this.put(taxonomy);
+        };
+        TaxonomiesService.prototype.updateTaxonomyWithId = function(taxonomy, result) {
+          taxonomy.ID = Number(result.id);
+          return taxonomy;
+        };
+        TaxonomiesService.prototype.post = function(taxonomy) {
+          var headers = new http_1.Headers({'Content-Type': 'application/json'});
+          return this.http.post("form/AddTaxonomyTypeRaw", JSON.stringify(taxonomy), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(this.handleError);
+        };
+        TaxonomiesService.prototype.put = function(taxonomy) {
+          var headers = new http_1.Headers({'Content-Type': 'application/json'});
+          var url = "form/EditTaxonomyTypeRaw/" + taxonomy.ID;
+          return this.http.put(url, JSON.stringify(taxonomy), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(this.handleError);
+        };
+        TaxonomiesService.prototype.deleteTaxonomy = function(taxonomyId) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/catalogs/" + taxonomyId;
+          return this.http.delete(url, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        TaxonomiesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], TaxonomiesService);
+        return TaxonomiesService;
+      }(base_service_1.BaseService));
+      exports_1("TaxonomiesService", TaxonomiesService);
+    }
+  };
+});
+
+$__System.register("be", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var ObjectStyleService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      ObjectStyleService = (function(_super) {
+        __extends(ObjectStyleService, _super);
+        function ObjectStyleService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        ObjectStyleService.prototype.getObjectStyle = function(objectID, objectType) {
+          var _this = this;
+          return this.http.get("api/" + objectType + "/" + objectID + "/style").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        ObjectStyleService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], ObjectStyleService);
+        return ObjectStyleService;
+      }(base_service_1.BaseService));
+      exports_1("ObjectStyleService", ObjectStyleService);
+    }
+  };
+});
+
+$__System.register("bf", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var LookupService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      LookupService = (function(_super) {
+        __extends(LookupService, _super);
+        function LookupService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        LookupService.prototype.getLookups = function() {
+          var _this = this;
+          return this.http.get('resources/_Lookups').toPromise().then(function(response) {
+            return response.json().results;
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        LookupService.prototype.deleteLookup = function(lookupId) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          var url = "form/LookupType/" + lookupId;
+          return this.http.delete(url, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        LookupService.prototype.saveLookup = function(lookup) {
+          if (lookup.ID == undefined || !lookup.ID) {
+            return this.post(lookup);
+          }
+          return this.put(lookup);
+        };
+        LookupService.prototype.post = function(lookup) {
+          var headers = new http_1.Headers({'Content-Type': 'application/json'});
+          return this.http.post("form/AddLookupTypeRaw", JSON.stringify(lookup), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(this.handleError);
+        };
+        LookupService.prototype.put = function(lookup) {
+          var headers = new http_1.Headers({'Content-Type': 'application/json'});
+          var url = "form/EditLookupTypeRaw/" + lookup.ID;
+          return this.http.put(url, JSON.stringify(lookup), {headers: headers}).toPromise().then(function(res) {
+            return res.json();
+          }).catch(this.handleError);
+        };
+        LookupService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], LookupService);
+        return LookupService;
+      }(base_service_1.BaseService));
+      exports_1("LookupService", LookupService);
+    }
+  };
+});
+
+$__System.register("c0", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var GridDefinitionService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      GridDefinitionService = (function(_super) {
+        __extends(GridDefinitionService, _super);
+        function GridDefinitionService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        GridDefinitionService.prototype.getGridDefinition = function(objectID, objectType) {
+          var _this = this;
+          return this.http.get("api/" + objectType + "/" + objectID + "/grid/definition").toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        GridDefinitionService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], GridDefinitionService);
+        return GridDefinitionService;
+      }(base_service_1.BaseService));
+      exports_1("GridDefinitionService", GridDefinitionService);
+    }
+  };
+});
+
+$__System.register("c1", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var SiteMessage;
+  return {
+    setters: [],
+    execute: function() {
+      SiteMessage = (function() {
+        function SiteMessage(summary, detail) {
+          this.summary = summary;
+          this.detail = detail;
+        }
+        return SiteMessage;
+      }());
+      exports_1("SiteMessage", SiteMessage);
+    }
+  };
+});
+
+$__System.register("17", ["5", "7", "c1"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      Subject_1,
+      site_message_model_1;
+  var MessagesService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(Subject_1_1) {
+      Subject_1 = Subject_1_1;
+    }, function(site_message_model_1_1) {
+      site_message_model_1 = site_message_model_1_1;
+    }],
+    execute: function() {
+      MessagesService = (function() {
+        function MessagesService() {
+          this.errorMessageSource = new Subject_1.Subject();
+          this.infoMessageSource = new Subject_1.Subject();
+          this.errorMessage$ = this.errorMessageSource.asObservable();
+          this.infoMessage$ = this.infoMessageSource.asObservable();
+        }
+        MessagesService.prototype.showError = function(summary, detail) {
+          this.errorMessageSource.next(new site_message_model_1.SiteMessage(summary, detail));
+        };
+        MessagesService.prototype.showInfoMessage = function(summary, detail) {
+          this.infoMessageSource.next(new site_message_model_1.SiteMessage(summary, detail));
+        };
+        MessagesService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [])], MessagesService);
+        return MessagesService;
+      }());
+      exports_1("MessagesService", MessagesService);
+    }
+  };
+});
+
+$__System.register("34", ["5", "aa", "17"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      messages_service_1;
+  var BaseService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(_1) {}, function(messages_service_1_1) {
+      messages_service_1 = messages_service_1_1;
+    }],
+    execute: function() {
+      BaseService = (function() {
+        function BaseService(messages) {
+          this.messages = messages;
+        }
+        BaseService.prototype.handleError = function(error) {
+          console.error('An error occurred', error);
+          this.messages.showError('Error', error.toString());
+          return Promise.reject(error.message || error);
+        };
+        BaseService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [messages_service_1.MessagesService])], BaseService);
+        return BaseService;
+      }());
+      exports_1("BaseService", BaseService);
+    }
+  };
+});
+
+$__System.register("c2", ["5", "33", "f", "34"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var __extends = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  var __metadata = (this && this.__metadata) || function(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(k, v);
+  };
+  var core_1,
+      http_1,
+      index_1,
+      base_service_1;
+  var UriBasedService;
+  return {
+    setters: [function(core_1_1) {
+      core_1 = core_1_1;
+    }, function(http_1_1) {
+      http_1 = http_1_1;
+    }, function(index_1_1) {
+      index_1 = index_1_1;
+    }, function(base_service_1_1) {
+      base_service_1 = base_service_1_1;
+    }],
+    execute: function() {
+      UriBasedService = (function(_super) {
+        __extends(UriBasedService, _super);
+        function UriBasedService(http, messagesService) {
+          _super.call(this, messagesService);
+          this.http = http;
+        }
+        UriBasedService.prototype.getItems = function(uri) {
+          var _this = this;
+          return this.http.get(uri).toPromise().then(function(response) {
+            return response.json();
+          }).catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        UriBasedService.prototype.deleteItem = function(uri, id) {
+          var _this = this;
+          var headers = new http_1.Headers();
+          headers.append('Content-Type', 'application/json');
+          return this.http.delete("" + uri + id, headers).toPromise().catch(function(err) {
+            return _this.handleError(err);
+          });
+        };
+        UriBasedService = __decorate([core_1.Injectable(), __metadata('design:paramtypes', [http_1.Http, index_1.MessagesService])], UriBasedService);
+        return UriBasedService;
+      }(base_service_1.BaseService));
+      exports_1("UriBasedService", UriBasedService);
+    }
+  };
+});
+
+$__System.register("f", ["17", "40", "4c", "2f", "57", "20", "12", "c", "38", "23", "4f", "2b", "45", "3b", "bc", "bd", "be", "bf", "c0", "c2"], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  function exportStar_1(m) {
+    var exports = {};
+    for (var n in m) {
+      if (n !== "default")
+        exports[n] = m[n];
+    }
+    exports_1(exports);
+  }
+  return {
+    setters: [function(messages_service_1_1) {
+      exportStar_1(messages_service_1_1);
+    }, function(artifact_type_service_1_1) {
+      exportStar_1(artifact_type_service_1_1);
+    }, function(claims_service_1_1) {
+      exportStar_1(claims_service_1_1);
+    }, function(domain_service_1_1) {
+      exportStar_1(domain_service_1_1);
+    }, function(fields_service_1_1) {
+      exportStar_1(fields_service_1_1);
+    }, function(responsibility_type_service_1_1) {
+      exportStar_1(responsibility_type_service_1_1);
+    }, function(header_actions_service_1_1) {
+      exportStar_1(header_actions_service_1_1);
+    }, function(header_breadcrumb_service_1_1) {
+      exportStar_1(header_breadcrumb_service_1_1);
+    }, function(object_detail_service_1_1) {
+      exportStar_1(object_detail_service_1_1);
+    }, function(page_header_service_1_1) {
+      exportStar_1(page_header_service_1_1);
+    }, function(responsibility_service_1_1) {
+      exportStar_1(responsibility_service_1_1);
+    }, function(settings_service_1_1) {
+      exportStar_1(settings_service_1_1);
+    }, function(templates_service_1_1) {
+      exportStar_1(templates_service_1_1);
+    }, function(workflow_service_1_1) {
+      exportStar_1(workflow_service_1_1);
+    }, function(typeahead_search_service_1_1) {
+      exportStar_1(typeahead_search_service_1_1);
+    }, function(taxonomies_service_1_1) {
+      exportStar_1(taxonomies_service_1_1);
+    }, function(object_style_service_1_1) {
+      exportStar_1(object_style_service_1_1);
+    }, function(lookup_service_1_1) {
+      exportStar_1(lookup_service_1_1);
+    }, function(grid_definition_service_1_1) {
+      exportStar_1(grid_definition_service_1_1);
+    }, function(uri_based_service_1_1) {
+      exportStar_1(uri_based_service_1_1);
+    }],
+    execute: function() {}
+  };
+});
+
+$__System.register("c3", [], function(exports_1, context_1) {
+  "use strict";
+  var __moduleName = context_1 && context_1.id;
+  var Lookup,
+      LookupItem;
+  return {
+    setters: [],
+    execute: function() {
+      Lookup = (function() {
+        function Lookup() {}
+        return Lookup;
+      }());
+      exports_1("Lookup", Lookup);
+      LookupItem = (function() {
+        function LookupItem() {}
+        return LookupItem;
+      }());
+      exports_1("LookupItem", LookupItem);
+    }
+  };
+});
+
+(function() {
+var define = $__System.amdDefine;
+;
+(function() {
+  var undefined;
+  var VERSION = '4.13.1';
+  var LARGE_ARRAY_SIZE = 200;
+  var FUNC_ERROR_TEXT = 'Expected a function';
+  var HASH_UNDEFINED = '__lodash_hash_undefined__';
+  var PLACEHOLDER = '__lodash_placeholder__';
+  var BIND_FLAG = 1,
+      BIND_KEY_FLAG = 2,
+      CURRY_BOUND_FLAG = 4,
+      CURRY_FLAG = 8,
+      CURRY_RIGHT_FLAG = 16,
+      PARTIAL_FLAG = 32,
+      PARTIAL_RIGHT_FLAG = 64,
+      ARY_FLAG = 128,
+      REARG_FLAG = 256,
+      FLIP_FLAG = 512;
+  var UNORDERED_COMPARE_FLAG = 1,
+      PARTIAL_COMPARE_FLAG = 2;
+  var DEFAULT_TRUNC_LENGTH = 30,
+      DEFAULT_TRUNC_OMISSION = '...';
+  var HOT_COUNT = 150,
+      HOT_SPAN = 16;
+  var LAZY_FILTER_FLAG = 1,
+      LAZY_MAP_FLAG = 2,
+      LAZY_WHILE_FLAG = 3;
+  var INFINITY = 1 / 0,
+      MAX_SAFE_INTEGER = 9007199254740991,
+      MAX_INTEGER = 1.7976931348623157e+308,
+      NAN = 0 / 0;
+  var MAX_ARRAY_LENGTH = 4294967295,
+      MAX_ARRAY_INDEX = MAX_ARRAY_LENGTH - 1,
+      HALF_MAX_ARRAY_LENGTH = MAX_ARRAY_LENGTH >>> 1;
+  var argsTag = '[object Arguments]',
+      arrayTag = '[object Array]',
+      boolTag = '[object Boolean]',
+      dateTag = '[object Date]',
+      errorTag = '[object Error]',
+      funcTag = '[object Function]',
+      genTag = '[object GeneratorFunction]',
+      mapTag = '[object Map]',
+      numberTag = '[object Number]',
+      objectTag = '[object Object]',
+      promiseTag = '[object Promise]',
+      regexpTag = '[object RegExp]',
+      setTag = '[object Set]',
+      stringTag = '[object String]',
+      symbolTag = '[object Symbol]',
+      weakMapTag = '[object WeakMap]',
+      weakSetTag = '[object WeakSet]';
+  var arrayBufferTag = '[object ArrayBuffer]',
+      dataViewTag = '[object DataView]',
+      float32Tag = '[object Float32Array]',
+      float64Tag = '[object Float64Array]',
+      int8Tag = '[object Int8Array]',
+      int16Tag = '[object Int16Array]',
+      int32Tag = '[object Int32Array]',
+      uint8Tag = '[object Uint8Array]',
+      uint8ClampedTag = '[object Uint8ClampedArray]',
+      uint16Tag = '[object Uint16Array]',
+      uint32Tag = '[object Uint32Array]';
+  var reEmptyStringLeading = /\b__p \+= '';/g,
+      reEmptyStringMiddle = /\b(__p \+=) '' \+/g,
+      reEmptyStringTrailing = /(__e\(.*?\)|\b__t\)) \+\n'';/g;
+  var reEscapedHtml = /&(?:amp|lt|gt|quot|#39|#96);/g,
+      reUnescapedHtml = /[&<>"'`]/g,
+      reHasEscapedHtml = RegExp(reEscapedHtml.source),
+      reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+  var reEscape = /<%-([\s\S]+?)%>/g,
+      reEvaluate = /<%([\s\S]+?)%>/g,
+      reInterpolate = /<%=([\s\S]+?)%>/g;
+  var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+      reIsPlainProp = /^\w*$/,
+      rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(\.|\[\])(?:\4|$))/g;
+  var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
+      reHasRegExpChar = RegExp(reRegExpChar.source);
+  var reTrim = /^\s+|\s+$/g,
+      reTrimStart = /^\s+/,
+      reTrimEnd = /\s+$/;
+  var reBasicWord = /[a-zA-Z0-9]+/g;
+  var reEscapeChar = /\\(\\)?/g;
+  var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
+  var reFlags = /\w*$/;
+  var reHasHexPrefix = /^0x/i;
+  var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+  var reIsBinary = /^0b[01]+$/i;
+  var reIsHostCtor = /^\[object .+?Constructor\]$/;
+  var reIsOctal = /^0o[0-7]+$/i;
+  var reIsUint = /^(?:0|[1-9]\d*)$/;
+  var reLatin1 = /[\xc0-\xd6\xd8-\xde\xdf-\xf6\xf8-\xff]/g;
+  var reNoMatch = /($^)/;
+  var reUnescapedString = /['\n\r\u2028\u2029\\]/g;
+  var rsAstralRange = '\\ud800-\\udfff',
+      rsComboMarksRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
+      rsComboSymbolsRange = '\\u20d0-\\u20f0',
+      rsDingbatRange = '\\u2700-\\u27bf',
+      rsLowerRange = 'a-z\\xdf-\\xf6\\xf8-\\xff',
+      rsMathOpRange = '\\xac\\xb1\\xd7\\xf7',
+      rsNonCharRange = '\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf',
+      rsPunctuationRange = '\\u2000-\\u206f',
+      rsSpaceRange = ' \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000',
+      rsUpperRange = 'A-Z\\xc0-\\xd6\\xd8-\\xde',
+      rsVarRange = '\\ufe0e\\ufe0f',
+      rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
+  var rsApos = "['\u2019]",
+      rsAstral = '[' + rsAstralRange + ']',
+      rsBreak = '[' + rsBreakRange + ']',
+      rsCombo = '[' + rsComboMarksRange + rsComboSymbolsRange + ']',
+      rsDigits = '\\d+',
+      rsDingbat = '[' + rsDingbatRange + ']',
+      rsLower = '[' + rsLowerRange + ']',
+      rsMisc = '[^' + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + ']',
+      rsFitz = '\\ud83c[\\udffb-\\udfff]',
+      rsModifier = '(?:' + rsCombo + '|' + rsFitz + ')',
+      rsNonAstral = '[^' + rsAstralRange + ']',
+      rsRegional = '(?:\\ud83c[\\udde6-\\uddff]){2}',
+      rsSurrPair = '[\\ud800-\\udbff][\\udc00-\\udfff]',
+      rsUpper = '[' + rsUpperRange + ']',
+      rsZWJ = '\\u200d';
+  var rsLowerMisc = '(?:' + rsLower + '|' + rsMisc + ')',
+      rsUpperMisc = '(?:' + rsUpper + '|' + rsMisc + ')',
+      rsOptLowerContr = '(?:' + rsApos + '(?:d|ll|m|re|s|t|ve))?',
+      rsOptUpperContr = '(?:' + rsApos + '(?:D|LL|M|RE|S|T|VE))?',
+      reOptMod = rsModifier + '?',
+      rsOptVar = '[' + rsVarRange + ']?',
+      rsOptJoin = '(?:' + rsZWJ + '(?:' + [rsNonAstral, rsRegional, rsSurrPair].join('|') + ')' + rsOptVar + reOptMod + ')*',
+      rsSeq = rsOptVar + reOptMod + rsOptJoin,
+      rsEmoji = '(?:' + [rsDingbat, rsRegional, rsSurrPair].join('|') + ')' + rsSeq,
+      rsSymbol = '(?:' + [rsNonAstral + rsCombo + '?', rsCombo, rsRegional, rsSurrPair, rsAstral].join('|') + ')';
+  var reApos = RegExp(rsApos, 'g');
+  var reComboMark = RegExp(rsCombo, 'g');
+  var reComplexSymbol = RegExp(rsFitz + '(?=' + rsFitz + ')|' + rsSymbol + rsSeq, 'g');
+  var reComplexWord = RegExp([rsUpper + '?' + rsLower + '+' + rsOptLowerContr + '(?=' + [rsBreak, rsUpper, '$'].join('|') + ')', rsUpperMisc + '+' + rsOptUpperContr + '(?=' + [rsBreak, rsUpper + rsLowerMisc, '$'].join('|') + ')', rsUpper + '?' + rsLowerMisc + '+' + rsOptLowerContr, rsUpper + '+' + rsOptUpperContr, rsDigits, rsEmoji].join('|'), 'g');
+  var reHasComplexSymbol = RegExp('[' + rsZWJ + rsAstralRange + rsComboMarksRange + rsComboSymbolsRange + rsVarRange + ']');
+  var reHasComplexWord = /[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
+  var contextProps = ['Array', 'Buffer', 'DataView', 'Date', 'Error', 'Float32Array', 'Float64Array', 'Function', 'Int8Array', 'Int16Array', 'Int32Array', 'Map', 'Math', 'Object', 'Promise', 'Reflect', 'RegExp', 'Set', 'String', 'Symbol', 'TypeError', 'Uint8Array', 'Uint8ClampedArray', 'Uint16Array', 'Uint32Array', 'WeakMap', '_', 'isFinite', 'parseInt', 'setTimeout'];
+  var templateCounter = -1;
+  var typedArrayTags = {};
+  typedArrayTags[float32Tag] = typedArrayTags[float64Tag] = typedArrayTags[int8Tag] = typedArrayTags[int16Tag] = typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] = typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] = typedArrayTags[uint32Tag] = true;
+  typedArrayTags[argsTag] = typedArrayTags[arrayTag] = typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] = typedArrayTags[dataViewTag] = typedArrayTags[dateTag] = typedArrayTags[errorTag] = typedArrayTags[funcTag] = typedArrayTags[mapTag] = typedArrayTags[numberTag] = typedArrayTags[objectTag] = typedArrayTags[regexpTag] = typedArrayTags[setTag] = typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+  var cloneableTags = {};
+  cloneableTags[argsTag] = cloneableTags[arrayTag] = cloneableTags[arrayBufferTag] = cloneableTags[dataViewTag] = cloneableTags[boolTag] = cloneableTags[dateTag] = cloneableTags[float32Tag] = cloneableTags[float64Tag] = cloneableTags[int8Tag] = cloneableTags[int16Tag] = cloneableTags[int32Tag] = cloneableTags[mapTag] = cloneableTags[numberTag] = cloneableTags[objectTag] = cloneableTags[regexpTag] = cloneableTags[setTag] = cloneableTags[stringTag] = cloneableTags[symbolTag] = cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] = cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
+  cloneableTags[errorTag] = cloneableTags[funcTag] = cloneableTags[weakMapTag] = false;
+  var deburredLetters = {
+    '\xc0': 'A',
+    '\xc1': 'A',
+    '\xc2': 'A',
+    '\xc3': 'A',
+    '\xc4': 'A',
+    '\xc5': 'A',
+    '\xe0': 'a',
+    '\xe1': 'a',
+    '\xe2': 'a',
+    '\xe3': 'a',
+    '\xe4': 'a',
+    '\xe5': 'a',
+    '\xc7': 'C',
+    '\xe7': 'c',
+    '\xd0': 'D',
+    '\xf0': 'd',
+    '\xc8': 'E',
+    '\xc9': 'E',
+    '\xca': 'E',
+    '\xcb': 'E',
+    '\xe8': 'e',
+    '\xe9': 'e',
+    '\xea': 'e',
+    '\xeb': 'e',
+    '\xcC': 'I',
+    '\xcd': 'I',
+    '\xce': 'I',
+    '\xcf': 'I',
+    '\xeC': 'i',
+    '\xed': 'i',
+    '\xee': 'i',
+    '\xef': 'i',
+    '\xd1': 'N',
+    '\xf1': 'n',
+    '\xd2': 'O',
+    '\xd3': 'O',
+    '\xd4': 'O',
+    '\xd5': 'O',
+    '\xd6': 'O',
+    '\xd8': 'O',
+    '\xf2': 'o',
+    '\xf3': 'o',
+    '\xf4': 'o',
+    '\xf5': 'o',
+    '\xf6': 'o',
+    '\xf8': 'o',
+    '\xd9': 'U',
+    '\xda': 'U',
+    '\xdb': 'U',
+    '\xdc': 'U',
+    '\xf9': 'u',
+    '\xfa': 'u',
+    '\xfb': 'u',
+    '\xfc': 'u',
+    '\xdd': 'Y',
+    '\xfd': 'y',
+    '\xff': 'y',
+    '\xc6': 'Ae',
+    '\xe6': 'ae',
+    '\xde': 'Th',
+    '\xfe': 'th',
+    '\xdf': 'ss'
+  };
+  var htmlEscapes = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '`': '&#96;'
+  };
+  var htmlUnescapes = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&#96;': '`'
+  };
+  var stringEscapes = {
+    '\\': '\\',
+    "'": "'",
+    '\n': 'n',
+    '\r': 'r',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+  };
+  var freeParseFloat = parseFloat,
+      freeParseInt = parseInt;
+  var freeExports = typeof exports == 'object' && exports;
+  var freeModule = freeExports && typeof module == 'object' && module;
+  var moduleExports = freeModule && freeModule.exports === freeExports;
+  var freeGlobal = checkGlobal(typeof global == 'object' && global);
+  var freeSelf = checkGlobal(typeof self == 'object' && self);
+  var thisGlobal = checkGlobal(typeof this == 'object' && this);
+  var root = freeGlobal || freeSelf || thisGlobal || Function('return this')();
+  function addMapEntry(map, pair) {
+    map.set(pair[0], pair[1]);
+    return map;
+  }
+  function addSetEntry(set, value) {
+    set.add(value);
+    return set;
+  }
+  function apply(func, thisArg, args) {
+    var length = args.length;
+    switch (length) {
+      case 0:
+        return func.call(thisArg);
+      case 1:
+        return func.call(thisArg, args[0]);
+      case 2:
+        return func.call(thisArg, args[0], args[1]);
+      case 3:
+        return func.call(thisArg, args[0], args[1], args[2]);
+    }
+    return func.apply(thisArg, args);
+  }
+  function arrayAggregator(array, setter, iteratee, accumulator) {
+    var index = -1,
+        length = array ? array.length : 0;
+    while (++index < length) {
+      var value = array[index];
+      setter(accumulator, value, iteratee(value), array);
+    }
+    return accumulator;
+  }
+  function arrayEach(array, iteratee) {
+    var index = -1,
+        length = array ? array.length : 0;
+    while (++index < length) {
+      if (iteratee(array[index], index, array) === false) {
+        break;
+      }
+    }
+    return array;
+  }
+  function arrayEachRight(array, iteratee) {
+    var length = array ? array.length : 0;
+    while (length--) {
+      if (iteratee(array[length], length, array) === false) {
+        break;
+      }
+    }
+    return array;
+  }
+  function arrayEvery(array, predicate) {
+    var index = -1,
+        length = array ? array.length : 0;
+    while (++index < length) {
+      if (!predicate(array[index], index, array)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  function arrayFilter(array, predicate) {
+    var index = -1,
+        length = array ? array.length : 0,
+        resIndex = 0,
+        result = [];
+    while (++index < length) {
+      var value = array[index];
+      if (predicate(value, index, array)) {
+        result[resIndex++] = value;
+      }
+    }
+    return result;
+  }
+  function arrayIncludes(array, value) {
+    var length = array ? array.length : 0;
+    return !!length && baseIndexOf(array, value, 0) > -1;
+  }
+  function arrayIncludesWith(array, value, comparator) {
+    var index = -1,
+        length = array ? array.length : 0;
+    while (++index < length) {
+      if (comparator(value, array[index])) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function arrayMap(array, iteratee) {
+    var index = -1,
+        length = array ? array.length : 0,
+        result = Array(length);
+    while (++index < length) {
+      result[index] = iteratee(array[index], index, array);
+    }
+    return result;
+  }
+  function arrayPush(array, values) {
+    var index = -1,
+        length = values.length,
+        offset = array.length;
+    while (++index < length) {
+      array[offset + index] = values[index];
+    }
+    return array;
+  }
+  function arrayReduce(array, iteratee, accumulator, initAccum) {
+    var index = -1,
+        length = array ? array.length : 0;
+    if (initAccum && length) {
+      accumulator = array[++index];
+    }
+    while (++index < length) {
+      accumulator = iteratee(accumulator, array[index], index, array);
+    }
+    return accumulator;
+  }
+  function arrayReduceRight(array, iteratee, accumulator, initAccum) {
+    var length = array ? array.length : 0;
+    if (initAccum && length) {
+      accumulator = array[--length];
+    }
+    while (length--) {
+      accumulator = iteratee(accumulator, array[length], length, array);
+    }
+    return accumulator;
+  }
+  function arraySome(array, predicate) {
+    var index = -1,
+        length = array ? array.length : 0;
+    while (++index < length) {
+      if (predicate(array[index], index, array)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function baseFindKey(collection, predicate, eachFunc) {
+    var result;
+    eachFunc(collection, function(value, key, collection) {
+      if (predicate(value, key, collection)) {
+        result = key;
+        return false;
+      }
+    });
+    return result;
+  }
+  function baseFindIndex(array, predicate, fromIndex, fromRight) {
+    var length = array.length,
+        index = fromIndex + (fromRight ? 1 : -1);
+    while ((fromRight ? index-- : ++index < length)) {
+      if (predicate(array[index], index, array)) {
+        return index;
+      }
+    }
+    return -1;
+  }
+  function baseIndexOf(array, value, fromIndex) {
+    if (value !== value) {
+      return indexOfNaN(array, fromIndex);
+    }
+    var index = fromIndex - 1,
+        length = array.length;
+    while (++index < length) {
+      if (array[index] === value) {
+        return index;
+      }
+    }
+    return -1;
+  }
+  function baseIndexOfWith(array, value, fromIndex, comparator) {
+    var index = fromIndex - 1,
+        length = array.length;
+    while (++index < length) {
+      if (comparator(array[index], value)) {
+        return index;
+      }
+    }
+    return -1;
+  }
+  function baseMean(array, iteratee) {
+    var length = array ? array.length : 0;
+    return length ? (baseSum(array, iteratee) / length) : NAN;
+  }
+  function baseReduce(collection, iteratee, accumulator, initAccum, eachFunc) {
+    eachFunc(collection, function(value, index, collection) {
+      accumulator = initAccum ? (initAccum = false, value) : iteratee(accumulator, value, index, collection);
+    });
+    return accumulator;
+  }
+  function baseSortBy(array, comparer) {
+    var length = array.length;
+    array.sort(comparer);
+    while (length--) {
+      array[length] = array[length].value;
+    }
+    return array;
+  }
+  function baseSum(array, iteratee) {
+    var result,
+        index = -1,
+        length = array.length;
+    while (++index < length) {
+      var current = iteratee(array[index]);
+      if (current !== undefined) {
+        result = result === undefined ? current : (result + current);
+      }
+    }
+    return result;
+  }
+  function baseTimes(n, iteratee) {
+    var index = -1,
+        result = Array(n);
+    while (++index < n) {
+      result[index] = iteratee(index);
+    }
+    return result;
+  }
+  function baseToPairs(object, props) {
+    return arrayMap(props, function(key) {
+      return [key, object[key]];
+    });
+  }
+  function baseUnary(func) {
+    return function(value) {
+      return func(value);
+    };
+  }
+  function baseValues(object, props) {
+    return arrayMap(props, function(key) {
+      return object[key];
+    });
+  }
+  function cacheHas(cache, key) {
+    return cache.has(key);
+  }
+  function charsStartIndex(strSymbols, chrSymbols) {
+    var index = -1,
+        length = strSymbols.length;
+    while (++index < length && baseIndexOf(chrSymbols, strSymbols[index], 0) > -1) {}
+    return index;
+  }
+  function charsEndIndex(strSymbols, chrSymbols) {
+    var index = strSymbols.length;
+    while (index-- && baseIndexOf(chrSymbols, strSymbols[index], 0) > -1) {}
+    return index;
+  }
+  function checkGlobal(value) {
+    return (value && value.Object === Object) ? value : null;
+  }
+  function countHolders(array, placeholder) {
+    var length = array.length,
+        result = 0;
+    while (length--) {
+      if (array[length] === placeholder) {
+        result++;
+      }
+    }
+    return result;
+  }
+  function deburrLetter(letter) {
+    return deburredLetters[letter];
+  }
+  function escapeHtmlChar(chr) {
+    return htmlEscapes[chr];
+  }
+  function escapeStringChar(chr) {
+    return '\\' + stringEscapes[chr];
+  }
+  function getValue(object, key) {
+    return object == null ? undefined : object[key];
+  }
+  function indexOfNaN(array, fromIndex, fromRight) {
+    var length = array.length,
+        index = fromIndex + (fromRight ? 1 : -1);
+    while ((fromRight ? index-- : ++index < length)) {
+      var other = array[index];
+      if (other !== other) {
+        return index;
+      }
+    }
+    return -1;
+  }
+  function isHostObject(value) {
+    var result = false;
+    if (value != null && typeof value.toString != 'function') {
+      try {
+        result = !!(value + '');
+      } catch (e) {}
+    }
+    return result;
+  }
+  function iteratorToArray(iterator) {
+    var data,
+        result = [];
+    while (!(data = iterator.next()).done) {
+      result.push(data.value);
+    }
+    return result;
+  }
+  function mapToArray(map) {
+    var index = -1,
+        result = Array(map.size);
+    map.forEach(function(value, key) {
+      result[++index] = [key, value];
+    });
+    return result;
+  }
+  function replaceHolders(array, placeholder) {
+    var index = -1,
+        length = array.length,
+        resIndex = 0,
+        result = [];
+    while (++index < length) {
+      var value = array[index];
+      if (value === placeholder || value === PLACEHOLDER) {
+        array[index] = PLACEHOLDER;
+        result[resIndex++] = index;
+      }
+    }
+    return result;
+  }
+  function setToArray(set) {
+    var index = -1,
+        result = Array(set.size);
+    set.forEach(function(value) {
+      result[++index] = value;
+    });
+    return result;
+  }
+  function setToPairs(set) {
+    var index = -1,
+        result = Array(set.size);
+    set.forEach(function(value) {
+      result[++index] = [value, value];
+    });
+    return result;
+  }
+  function stringSize(string) {
+    if (!(string && reHasComplexSymbol.test(string))) {
+      return string.length;
+    }
+    var result = reComplexSymbol.lastIndex = 0;
+    while (reComplexSymbol.test(string)) {
+      result++;
+    }
+    return result;
+  }
+  function stringToArray(string) {
+    return string.match(reComplexSymbol);
+  }
+  function unescapeHtmlChar(chr) {
+    return htmlUnescapes[chr];
+  }
+  function runInContext(context) {
+    context = context ? _.defaults({}, context, _.pick(root, contextProps)) : root;
+    var Date = context.Date,
+        Error = context.Error,
+        Math = context.Math,
+        RegExp = context.RegExp,
+        TypeError = context.TypeError;
+    var arrayProto = context.Array.prototype,
+        objectProto = context.Object.prototype,
+        stringProto = context.String.prototype;
+    var coreJsData = context['__core-js_shared__'];
+    var maskSrcKey = (function() {
+      var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+      return uid ? ('Symbol(src)_1.' + uid) : '';
+    }());
+    var funcToString = context.Function.prototype.toString;
+    var hasOwnProperty = objectProto.hasOwnProperty;
+    var idCounter = 0;
+    var objectCtorString = funcToString.call(Object);
+    var objectToString = objectProto.toString;
+    var oldDash = root._;
+    var reIsNative = RegExp('^' + funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&').replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
+    var Buffer = moduleExports ? context.Buffer : undefined,
+        Reflect = context.Reflect,
+        Symbol = context.Symbol,
+        Uint8Array = context.Uint8Array,
+        enumerate = Reflect ? Reflect.enumerate : undefined,
+        getOwnPropertySymbols = Object.getOwnPropertySymbols,
+        iteratorSymbol = typeof(iteratorSymbol = Symbol && Symbol.iterator) == 'symbol' ? iteratorSymbol : undefined,
+        objectCreate = Object.create,
+        propertyIsEnumerable = objectProto.propertyIsEnumerable,
+        splice = arrayProto.splice;
+    var setTimeout = function(func, wait) {
+      return context.setTimeout.call(root, func, wait);
+    };
+    var nativeCeil = Math.ceil,
+        nativeFloor = Math.floor,
+        nativeGetPrototype = Object.getPrototypeOf,
+        nativeIsFinite = context.isFinite,
+        nativeJoin = arrayProto.join,
+        nativeKeys = Object.keys,
+        nativeMax = Math.max,
+        nativeMin = Math.min,
+        nativeParseInt = context.parseInt,
+        nativeRandom = Math.random,
+        nativeReplace = stringProto.replace,
+        nativeReverse = arrayProto.reverse,
+        nativeSplit = stringProto.split;
+    var DataView = getNative(context, 'DataView'),
+        Map = getNative(context, 'Map'),
+        Promise = getNative(context, 'Promise'),
+        Set = getNative(context, 'Set'),
+        WeakMap = getNative(context, 'WeakMap'),
+        nativeCreate = getNative(Object, 'create');
+    var metaMap = WeakMap && new WeakMap;
+    var nonEnumShadows = !propertyIsEnumerable.call({'valueOf': 1}, 'valueOf');
+    var realNames = {};
+    var dataViewCtorString = toSource(DataView),
+        mapCtorString = toSource(Map),
+        promiseCtorString = toSource(Promise),
+        setCtorString = toSource(Set),
+        weakMapCtorString = toSource(WeakMap);
+    var symbolProto = Symbol ? Symbol.prototype : undefined,
+        symbolValueOf = symbolProto ? symbolProto.valueOf : undefined,
+        symbolToString = symbolProto ? symbolProto.toString : undefined;
+    function lodash(value) {
+      if (isObjectLike(value) && !isArray(value) && !(value instanceof LazyWrapper)) {
+        if (value instanceof LodashWrapper) {
+          return value;
+        }
+        if (hasOwnProperty.call(value, '__wrapped__')) {
+          return wrapperClone(value);
+        }
+      }
+      return new LodashWrapper(value);
+    }
+    function baseLodash() {}
+    function LodashWrapper(value, chainAll) {
+      this.__wrapped__ = value;
+      this.__actions__ = [];
+      this.__chain__ = !!chainAll;
+      this.__index__ = 0;
+      this.__values__ = undefined;
+    }
+    lodash.templateSettings = {
+      'escape': reEscape,
+      'evaluate': reEvaluate,
+      'interpolate': reInterpolate,
+      'variable': '',
+      'imports': {'_': lodash}
+    };
+    lodash.prototype = baseLodash.prototype;
+    lodash.prototype.constructor = lodash;
+    LodashWrapper.prototype = baseCreate(baseLodash.prototype);
+    LodashWrapper.prototype.constructor = LodashWrapper;
+    function LazyWrapper(value) {
+      this.__wrapped__ = value;
+      this.__actions__ = [];
+      this.__dir__ = 1;
+      this.__filtered__ = false;
+      this.__iteratees__ = [];
+      this.__takeCount__ = MAX_ARRAY_LENGTH;
+      this.__views__ = [];
+    }
+    function lazyClone() {
+      var result = new LazyWrapper(this.__wrapped__);
+      result.__actions__ = copyArray(this.__actions__);
+      result.__dir__ = this.__dir__;
+      result.__filtered__ = this.__filtered__;
+      result.__iteratees__ = copyArray(this.__iteratees__);
+      result.__takeCount__ = this.__takeCount__;
+      result.__views__ = copyArray(this.__views__);
+      return result;
+    }
+    function lazyReverse() {
+      if (this.__filtered__) {
+        var result = new LazyWrapper(this);
+        result.__dir__ = -1;
+        result.__filtered__ = true;
+      } else {
+        result = this.clone();
+        result.__dir__ *= -1;
+      }
+      return result;
+    }
+    function lazyValue() {
+      var array = this.__wrapped__.value(),
+          dir = this.__dir__,
+          isArr = isArray(array),
+          isRight = dir < 0,
+          arrLength = isArr ? array.length : 0,
+          view = getView(0, arrLength, this.__views__),
+          start = view.start,
+          end = view.end,
+          length = end - start,
+          index = isRight ? end : (start - 1),
+          iteratees = this.__iteratees__,
+          iterLength = iteratees.length,
+          resIndex = 0,
+          takeCount = nativeMin(length, this.__takeCount__);
+      if (!isArr || arrLength < LARGE_ARRAY_SIZE || (arrLength == length && takeCount == length)) {
+        return baseWrapperValue(array, this.__actions__);
+      }
+      var result = [];
+      outer: while (length-- && resIndex < takeCount) {
+        index += dir;
+        var iterIndex = -1,
+            value = array[index];
+        while (++iterIndex < iterLength) {
+          var data = iteratees[iterIndex],
+              iteratee = data.iteratee,
+              type = data.type,
+              computed = iteratee(value);
+          if (type == LAZY_MAP_FLAG) {
+            value = computed;
+          } else if (!computed) {
+            if (type == LAZY_FILTER_FLAG) {
+              continue outer;
+            } else {
+              break outer;
+            }
+          }
+        }
+        result[resIndex++] = value;
+      }
+      return result;
+    }
+    LazyWrapper.prototype = baseCreate(baseLodash.prototype);
+    LazyWrapper.prototype.constructor = LazyWrapper;
+    function Hash(entries) {
+      var index = -1,
+          length = entries ? entries.length : 0;
+      this.clear();
+      while (++index < length) {
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+      }
+    }
+    function hashClear() {
+      this.__data__ = nativeCreate ? nativeCreate(null) : {};
+    }
+    function hashDelete(key) {
+      return this.has(key) && delete this.__data__[key];
+    }
+    function hashGet(key) {
+      var data = this.__data__;
+      if (nativeCreate) {
+        var result = data[key];
+        return result === HASH_UNDEFINED ? undefined : result;
+      }
+      return hasOwnProperty.call(data, key) ? data[key] : undefined;
+    }
+    function hashHas(key) {
+      var data = this.__data__;
+      return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
+    }
+    function hashSet(key, value) {
+      var data = this.__data__;
+      data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+      return this;
+    }
+    Hash.prototype.clear = hashClear;
+    Hash.prototype['delete'] = hashDelete;
+    Hash.prototype.get = hashGet;
+    Hash.prototype.has = hashHas;
+    Hash.prototype.set = hashSet;
+    function ListCache(entries) {
+      var index = -1,
+          length = entries ? entries.length : 0;
+      this.clear();
+      while (++index < length) {
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+      }
+    }
+    function listCacheClear() {
+      this.__data__ = [];
+    }
+    function listCacheDelete(key) {
+      var data = this.__data__,
+          index = assocIndexOf(data, key);
+      if (index < 0) {
+        return false;
+      }
+      var lastIndex = data.length - 1;
+      if (index == lastIndex) {
+        data.pop();
+      } else {
+        splice.call(data, index, 1);
+      }
+      return true;
+    }
+    function listCacheGet(key) {
+      var data = this.__data__,
+          index = assocIndexOf(data, key);
+      return index < 0 ? undefined : data[index][1];
+    }
+    function listCacheHas(key) {
+      return assocIndexOf(this.__data__, key) > -1;
+    }
+    function listCacheSet(key, value) {
+      var data = this.__data__,
+          index = assocIndexOf(data, key);
+      if (index < 0) {
+        data.push([key, value]);
+      } else {
+        data[index][1] = value;
+      }
+      return this;
+    }
+    ListCache.prototype.clear = listCacheClear;
+    ListCache.prototype['delete'] = listCacheDelete;
+    ListCache.prototype.get = listCacheGet;
+    ListCache.prototype.has = listCacheHas;
+    ListCache.prototype.set = listCacheSet;
+    function MapCache(entries) {
+      var index = -1,
+          length = entries ? entries.length : 0;
+      this.clear();
+      while (++index < length) {
+        var entry = entries[index];
+        this.set(entry[0], entry[1]);
+      }
+    }
+    function mapCacheClear() {
+      this.__data__ = {
+        'hash': new Hash,
+        'map': new (Map || ListCache),
+        'string': new Hash
+      };
+    }
+    function mapCacheDelete(key) {
+      return getMapData(this, key)['delete'](key);
+    }
+    function mapCacheGet(key) {
+      return getMapData(this, key).get(key);
+    }
+    function mapCacheHas(key) {
+      return getMapData(this, key).has(key);
+    }
+    function mapCacheSet(key, value) {
+      getMapData(this, key).set(key, value);
+      return this;
+    }
+    MapCache.prototype.clear = mapCacheClear;
+    MapCache.prototype['delete'] = mapCacheDelete;
+    MapCache.prototype.get = mapCacheGet;
+    MapCache.prototype.has = mapCacheHas;
+    MapCache.prototype.set = mapCacheSet;
+    function SetCache(values) {
+      var index = -1,
+          length = values ? values.length : 0;
+      this.__data__ = new MapCache;
+      while (++index < length) {
+        this.add(values[index]);
+      }
+    }
+    function setCacheAdd(value) {
+      this.__data__.set(value, HASH_UNDEFINED);
+      return this;
+    }
+    function setCacheHas(value) {
+      return this.__data__.has(value);
+    }
+    SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
+    SetCache.prototype.has = setCacheHas;
+    function Stack(entries) {
+      this.__data__ = new ListCache(entries);
+    }
+    function stackClear() {
+      this.__data__ = new ListCache;
+    }
+    function stackDelete(key) {
+      return this.__data__['delete'](key);
+    }
+    function stackGet(key) {
+      return this.__data__.get(key);
+    }
+    function stackHas(key) {
+      return this.__data__.has(key);
+    }
+    function stackSet(key, value) {
+      var cache = this.__data__;
+      if (cache instanceof ListCache && cache.__data__.length == LARGE_ARRAY_SIZE) {
+        cache = this.__data__ = new MapCache(cache.__data__);
+      }
+      cache.set(key, value);
+      return this;
+    }
+    Stack.prototype.clear = stackClear;
+    Stack.prototype['delete'] = stackDelete;
+    Stack.prototype.get = stackGet;
+    Stack.prototype.has = stackHas;
+    Stack.prototype.set = stackSet;
+    function assignInDefaults(objValue, srcValue, key, object) {
+      if (objValue === undefined || (eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key))) {
+        return srcValue;
+      }
+      return objValue;
+    }
+    function assignMergeValue(object, key, value) {
+      if ((value !== undefined && !eq(object[key], value)) || (typeof key == 'number' && value === undefined && !(key in object))) {
+        object[key] = value;
+      }
+    }
+    function assignValue(object, key, value) {
+      var objValue = object[key];
+      if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) || (value === undefined && !(key in object))) {
+        object[key] = value;
+      }
+    }
+    function assocIndexOf(array, key) {
+      var length = array.length;
+      while (length--) {
+        if (eq(array[length][0], key)) {
+          return length;
+        }
+      }
+      return -1;
+    }
+    function baseAggregator(collection, setter, iteratee, accumulator) {
+      baseEach(collection, function(value, key, collection) {
+        setter(accumulator, value, iteratee(value), collection);
+      });
+      return accumulator;
+    }
+    function baseAssign(object, source) {
+      return object && copyObject(source, keys(source), object);
+    }
+    function baseAt(object, paths) {
+      var index = -1,
+          isNil = object == null,
+          length = paths.length,
+          result = Array(length);
+      while (++index < length) {
+        result[index] = isNil ? undefined : get(object, paths[index]);
+      }
+      return result;
+    }
+    function baseClamp(number, lower, upper) {
+      if (number === number) {
+        if (upper !== undefined) {
+          number = number <= upper ? number : upper;
+        }
+        if (lower !== undefined) {
+          number = number >= lower ? number : lower;
+        }
+      }
+      return number;
+    }
+    function baseClone(value, isDeep, isFull, customizer, key, object, stack) {
+      var result;
+      if (customizer) {
+        result = object ? customizer(value, key, object, stack) : customizer(value);
+      }
+      if (result !== undefined) {
+        return result;
+      }
+      if (!isObject(value)) {
+        return value;
+      }
+      var isArr = isArray(value);
+      if (isArr) {
+        result = initCloneArray(value);
+        if (!isDeep) {
+          return copyArray(value, result);
+        }
+      } else {
+        var tag = getTag(value),
+            isFunc = tag == funcTag || tag == genTag;
+        if (isBuffer(value)) {
+          return cloneBuffer(value, isDeep);
+        }
+        if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
+          if (isHostObject(value)) {
+            return object ? value : {};
+          }
+          result = initCloneObject(isFunc ? {} : value);
+          if (!isDeep) {
+            return copySymbols(value, baseAssign(result, value));
+          }
+        } else {
+          if (!cloneableTags[tag]) {
+            return object ? value : {};
+          }
+          result = initCloneByTag(value, tag, baseClone, isDeep);
+        }
+      }
+      stack || (stack = new Stack);
+      var stacked = stack.get(value);
+      if (stacked) {
+        return stacked;
+      }
+      stack.set(value, result);
+      if (!isArr) {
+        var props = isFull ? getAllKeys(value) : keys(value);
+      }
+      arrayEach(props || value, function(subValue, key) {
+        if (props) {
+          key = subValue;
+          subValue = value[key];
+        }
+        assignValue(result, key, baseClone(subValue, isDeep, isFull, customizer, key, value, stack));
+      });
+      return result;
+    }
+    function baseConforms(source) {
+      var props = keys(source),
+          length = props.length;
+      return function(object) {
+        if (object == null) {
+          return !length;
+        }
+        var index = length;
+        while (index--) {
+          var key = props[index],
+              predicate = source[key],
+              value = object[key];
+          if ((value === undefined && !(key in Object(object))) || !predicate(value)) {
+            return false;
+          }
+        }
+        return true;
+      };
+    }
+    function baseCreate(proto) {
+      return isObject(proto) ? objectCreate(proto) : {};
+    }
+    function baseDelay(func, wait, args) {
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      return setTimeout(function() {
+        func.apply(undefined, args);
+      }, wait);
+    }
+    function baseDifference(array, values, iteratee, comparator) {
+      var index = -1,
+          includes = arrayIncludes,
+          isCommon = true,
+          length = array.length,
+          result = [],
+          valuesLength = values.length;
+      if (!length) {
+        return result;
+      }
+      if (iteratee) {
+        values = arrayMap(values, baseUnary(iteratee));
+      }
+      if (comparator) {
+        includes = arrayIncludesWith;
+        isCommon = false;
+      } else if (values.length >= LARGE_ARRAY_SIZE) {
+        includes = cacheHas;
+        isCommon = false;
+        values = new SetCache(values);
+      }
+      outer: while (++index < length) {
+        var value = array[index],
+            computed = iteratee ? iteratee(value) : value;
+        value = (comparator || value !== 0) ? value : 0;
+        if (isCommon && computed === computed) {
+          var valuesIndex = valuesLength;
+          while (valuesIndex--) {
+            if (values[valuesIndex] === computed) {
+              continue outer;
+            }
+          }
+          result.push(value);
+        } else if (!includes(values, computed, comparator)) {
+          result.push(value);
+        }
+      }
+      return result;
+    }
+    var baseEach = createBaseEach(baseForOwn);
+    var baseEachRight = createBaseEach(baseForOwnRight, true);
+    function baseEvery(collection, predicate) {
+      var result = true;
+      baseEach(collection, function(value, index, collection) {
+        result = !!predicate(value, index, collection);
+        return result;
+      });
+      return result;
+    }
+    function baseExtremum(array, iteratee, comparator) {
+      var index = -1,
+          length = array.length;
+      while (++index < length) {
+        var value = array[index],
+            current = iteratee(value);
+        if (current != null && (computed === undefined ? (current === current && !isSymbol(current)) : comparator(current, computed))) {
+          var computed = current,
+              result = value;
+        }
+      }
+      return result;
+    }
+    function baseFill(array, value, start, end) {
+      var length = array.length;
+      start = toInteger(start);
+      if (start < 0) {
+        start = -start > length ? 0 : (length + start);
+      }
+      end = (end === undefined || end > length) ? length : toInteger(end);
+      if (end < 0) {
+        end += length;
+      }
+      end = start > end ? 0 : toLength(end);
+      while (start < end) {
+        array[start++] = value;
+      }
+      return array;
+    }
+    function baseFilter(collection, predicate) {
+      var result = [];
+      baseEach(collection, function(value, index, collection) {
+        if (predicate(value, index, collection)) {
+          result.push(value);
+        }
+      });
+      return result;
+    }
+    function baseFlatten(array, depth, predicate, isStrict, result) {
+      var index = -1,
+          length = array.length;
+      predicate || (predicate = isFlattenable);
+      result || (result = []);
+      while (++index < length) {
+        var value = array[index];
+        if (depth > 0 && predicate(value)) {
+          if (depth > 1) {
+            baseFlatten(value, depth - 1, predicate, isStrict, result);
+          } else {
+            arrayPush(result, value);
+          }
+        } else if (!isStrict) {
+          result[result.length] = value;
+        }
+      }
+      return result;
+    }
+    var baseFor = createBaseFor();
+    var baseForRight = createBaseFor(true);
+    function baseForOwn(object, iteratee) {
+      return object && baseFor(object, iteratee, keys);
+    }
+    function baseForOwnRight(object, iteratee) {
+      return object && baseForRight(object, iteratee, keys);
+    }
+    function baseFunctions(object, props) {
+      return arrayFilter(props, function(key) {
+        return isFunction(object[key]);
+      });
+    }
+    function baseGet(object, path) {
+      path = isKey(path, object) ? [path] : castPath(path);
+      var index = 0,
+          length = path.length;
+      while (object != null && index < length) {
+        object = object[toKey(path[index++])];
+      }
+      return (index && index == length) ? object : undefined;
+    }
+    function baseGetAllKeys(object, keysFunc, symbolsFunc) {
+      var result = keysFunc(object);
+      return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
+    }
+    function baseGt(value, other) {
+      return value > other;
+    }
+    function baseHas(object, key) {
+      return object != null && (hasOwnProperty.call(object, key) || (typeof object == 'object' && key in object && getPrototype(object) === null));
+    }
+    function baseHasIn(object, key) {
+      return object != null && key in Object(object);
+    }
+    function baseInRange(number, start, end) {
+      return number >= nativeMin(start, end) && number < nativeMax(start, end);
+    }
+    function baseIntersection(arrays, iteratee, comparator) {
+      var includes = comparator ? arrayIncludesWith : arrayIncludes,
+          length = arrays[0].length,
+          othLength = arrays.length,
+          othIndex = othLength,
+          caches = Array(othLength),
+          maxLength = Infinity,
+          result = [];
+      while (othIndex--) {
+        var array = arrays[othIndex];
+        if (othIndex && iteratee) {
+          array = arrayMap(array, baseUnary(iteratee));
+        }
+        maxLength = nativeMin(array.length, maxLength);
+        caches[othIndex] = !comparator && (iteratee || (length >= 120 && array.length >= 120)) ? new SetCache(othIndex && array) : undefined;
+      }
+      array = arrays[0];
+      var index = -1,
+          seen = caches[0];
+      outer: while (++index < length && result.length < maxLength) {
+        var value = array[index],
+            computed = iteratee ? iteratee(value) : value;
+        value = (comparator || value !== 0) ? value : 0;
+        if (!(seen ? cacheHas(seen, computed) : includes(result, computed, comparator))) {
+          othIndex = othLength;
+          while (--othIndex) {
+            var cache = caches[othIndex];
+            if (!(cache ? cacheHas(cache, computed) : includes(arrays[othIndex], computed, comparator))) {
+              continue outer;
+            }
+          }
+          if (seen) {
+            seen.push(computed);
+          }
+          result.push(value);
+        }
+      }
+      return result;
+    }
+    function baseInverter(object, setter, iteratee, accumulator) {
+      baseForOwn(object, function(value, key, object) {
+        setter(accumulator, iteratee(value), key, object);
+      });
+      return accumulator;
+    }
+    function baseInvoke(object, path, args) {
+      if (!isKey(path, object)) {
+        path = castPath(path);
+        object = parent(object, path);
+        path = last(path);
+      }
+      var func = object == null ? object : object[toKey(path)];
+      return func == null ? undefined : apply(func, object, args);
+    }
+    function baseIsEqual(value, other, customizer, bitmask, stack) {
+      if (value === other) {
+        return true;
+      }
+      if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
+        return value !== value && other !== other;
+      }
+      return baseIsEqualDeep(value, other, baseIsEqual, customizer, bitmask, stack);
+    }
+    function baseIsEqualDeep(object, other, equalFunc, customizer, bitmask, stack) {
+      var objIsArr = isArray(object),
+          othIsArr = isArray(other),
+          objTag = arrayTag,
+          othTag = arrayTag;
+      if (!objIsArr) {
+        objTag = getTag(object);
+        objTag = objTag == argsTag ? objectTag : objTag;
+      }
+      if (!othIsArr) {
+        othTag = getTag(other);
+        othTag = othTag == argsTag ? objectTag : othTag;
+      }
+      var objIsObj = objTag == objectTag && !isHostObject(object),
+          othIsObj = othTag == objectTag && !isHostObject(other),
+          isSameTag = objTag == othTag;
+      if (isSameTag && !objIsObj) {
+        stack || (stack = new Stack);
+        return (objIsArr || isTypedArray(object)) ? equalArrays(object, other, equalFunc, customizer, bitmask, stack) : equalByTag(object, other, objTag, equalFunc, customizer, bitmask, stack);
+      }
+      if (!(bitmask & PARTIAL_COMPARE_FLAG)) {
+        var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+            othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+        if (objIsWrapped || othIsWrapped) {
+          var objUnwrapped = objIsWrapped ? object.value() : object,
+              othUnwrapped = othIsWrapped ? other.value() : other;
+          stack || (stack = new Stack);
+          return equalFunc(objUnwrapped, othUnwrapped, customizer, bitmask, stack);
+        }
+      }
+      if (!isSameTag) {
+        return false;
+      }
+      stack || (stack = new Stack);
+      return equalObjects(object, other, equalFunc, customizer, bitmask, stack);
+    }
+    function baseIsMatch(object, source, matchData, customizer) {
+      var index = matchData.length,
+          length = index,
+          noCustomizer = !customizer;
+      if (object == null) {
+        return !length;
+      }
+      object = Object(object);
+      while (index--) {
+        var data = matchData[index];
+        if ((noCustomizer && data[2]) ? data[1] !== object[data[0]] : !(data[0] in object)) {
+          return false;
+        }
+      }
+      while (++index < length) {
+        data = matchData[index];
+        var key = data[0],
+            objValue = object[key],
+            srcValue = data[1];
+        if (noCustomizer && data[2]) {
+          if (objValue === undefined && !(key in object)) {
+            return false;
+          }
+        } else {
+          var stack = new Stack;
+          if (customizer) {
+            var result = customizer(objValue, srcValue, key, object, source, stack);
+          }
+          if (!(result === undefined ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack) : result)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    function baseIsNative(value) {
+      if (!isObject(value) || isMasked(value)) {
+        return false;
+      }
+      var pattern = (isFunction(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
+      return pattern.test(toSource(value));
+    }
+    function baseIteratee(value) {
+      if (typeof value == 'function') {
+        return value;
+      }
+      if (value == null) {
+        return identity;
+      }
+      if (typeof value == 'object') {
+        return isArray(value) ? baseMatchesProperty(value[0], value[1]) : baseMatches(value);
+      }
+      return property(value);
+    }
+    function baseKeys(object) {
+      return nativeKeys(Object(object));
+    }
+    function baseKeysIn(object) {
+      object = object == null ? object : Object(object);
+      var result = [];
+      for (var key in object) {
+        result.push(key);
+      }
+      return result;
+    }
+    if (enumerate && !propertyIsEnumerable.call({'valueOf': 1}, 'valueOf')) {
+      baseKeysIn = function(object) {
+        return iteratorToArray(enumerate(object));
+      };
+    }
+    function baseLt(value, other) {
+      return value < other;
+    }
+    function baseMap(collection, iteratee) {
+      var index = -1,
+          result = isArrayLike(collection) ? Array(collection.length) : [];
+      baseEach(collection, function(value, key, collection) {
+        result[++index] = iteratee(value, key, collection);
+      });
+      return result;
+    }
+    function baseMatches(source) {
+      var matchData = getMatchData(source);
+      if (matchData.length == 1 && matchData[0][2]) {
+        return matchesStrictComparable(matchData[0][0], matchData[0][1]);
+      }
+      return function(object) {
+        return object === source || baseIsMatch(object, source, matchData);
+      };
+    }
+    function baseMatchesProperty(path, srcValue) {
+      if (isKey(path) && isStrictComparable(srcValue)) {
+        return matchesStrictComparable(toKey(path), srcValue);
+      }
+      return function(object) {
+        var objValue = get(object, path);
+        return (objValue === undefined && objValue === srcValue) ? hasIn(object, path) : baseIsEqual(srcValue, objValue, undefined, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG);
+      };
+    }
+    function baseMerge(object, source, srcIndex, customizer, stack) {
+      if (object === source) {
+        return;
+      }
+      if (!(isArray(source) || isTypedArray(source))) {
+        var props = keysIn(source);
+      }
+      arrayEach(props || source, function(srcValue, key) {
+        if (props) {
+          key = srcValue;
+          srcValue = source[key];
+        }
+        if (isObject(srcValue)) {
+          stack || (stack = new Stack);
+          baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
+        } else {
+          var newValue = customizer ? customizer(object[key], srcValue, (key + ''), object, source, stack) : undefined;
+          if (newValue === undefined) {
+            newValue = srcValue;
+          }
+          assignMergeValue(object, key, newValue);
+        }
+      });
+    }
+    function baseMergeDeep(object, source, key, srcIndex, mergeFunc, customizer, stack) {
+      var objValue = object[key],
+          srcValue = source[key],
+          stacked = stack.get(srcValue);
+      if (stacked) {
+        assignMergeValue(object, key, stacked);
+        return;
+      }
+      var newValue = customizer ? customizer(objValue, srcValue, (key + ''), object, source, stack) : undefined;
+      var isCommon = newValue === undefined;
+      if (isCommon) {
+        newValue = srcValue;
+        if (isArray(srcValue) || isTypedArray(srcValue)) {
+          if (isArray(objValue)) {
+            newValue = objValue;
+          } else if (isArrayLikeObject(objValue)) {
+            newValue = copyArray(objValue);
+          } else {
+            isCommon = false;
+            newValue = baseClone(srcValue, true);
+          }
+        } else if (isPlainObject(srcValue) || isArguments(srcValue)) {
+          if (isArguments(objValue)) {
+            newValue = toPlainObject(objValue);
+          } else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
+            isCommon = false;
+            newValue = baseClone(srcValue, true);
+          } else {
+            newValue = objValue;
+          }
+        } else {
+          isCommon = false;
+        }
+      }
+      stack.set(srcValue, newValue);
+      if (isCommon) {
+        mergeFunc(newValue, srcValue, srcIndex, customizer, stack);
+      }
+      stack['delete'](srcValue);
+      assignMergeValue(object, key, newValue);
+    }
+    function baseNth(array, n) {
+      var length = array.length;
+      if (!length) {
+        return;
+      }
+      n += n < 0 ? length : 0;
+      return isIndex(n, length) ? array[n] : undefined;
+    }
+    function baseOrderBy(collection, iteratees, orders) {
+      var index = -1;
+      iteratees = arrayMap(iteratees.length ? iteratees : [identity], baseUnary(getIteratee()));
+      var result = baseMap(collection, function(value, key, collection) {
+        var criteria = arrayMap(iteratees, function(iteratee) {
+          return iteratee(value);
+        });
+        return {
+          'criteria': criteria,
+          'index': ++index,
+          'value': value
+        };
+      });
+      return baseSortBy(result, function(object, other) {
+        return compareMultiple(object, other, orders);
+      });
+    }
+    function basePick(object, props) {
+      object = Object(object);
+      return arrayReduce(props, function(result, key) {
+        if (key in object) {
+          result[key] = object[key];
+        }
+        return result;
+      }, {});
+    }
+    function basePickBy(object, predicate) {
+      var index = -1,
+          props = getAllKeysIn(object),
+          length = props.length,
+          result = {};
+      while (++index < length) {
+        var key = props[index],
+            value = object[key];
+        if (predicate(value, key)) {
+          result[key] = value;
+        }
+      }
+      return result;
+    }
+    function baseProperty(key) {
+      return function(object) {
+        return object == null ? undefined : object[key];
+      };
+    }
+    function basePropertyDeep(path) {
+      return function(object) {
+        return baseGet(object, path);
+      };
+    }
+    function basePullAll(array, values, iteratee, comparator) {
+      var indexOf = comparator ? baseIndexOfWith : baseIndexOf,
+          index = -1,
+          length = values.length,
+          seen = array;
+      if (array === values) {
+        values = copyArray(values);
+      }
+      if (iteratee) {
+        seen = arrayMap(array, baseUnary(iteratee));
+      }
+      while (++index < length) {
+        var fromIndex = 0,
+            value = values[index],
+            computed = iteratee ? iteratee(value) : value;
+        while ((fromIndex = indexOf(seen, computed, fromIndex, comparator)) > -1) {
+          if (seen !== array) {
+            splice.call(seen, fromIndex, 1);
+          }
+          splice.call(array, fromIndex, 1);
+        }
+      }
+      return array;
+    }
+    function basePullAt(array, indexes) {
+      var length = array ? indexes.length : 0,
+          lastIndex = length - 1;
+      while (length--) {
+        var index = indexes[length];
+        if (length == lastIndex || index !== previous) {
+          var previous = index;
+          if (isIndex(index)) {
+            splice.call(array, index, 1);
+          } else if (!isKey(index, array)) {
+            var path = castPath(index),
+                object = parent(array, path);
+            if (object != null) {
+              delete object[toKey(last(path))];
+            }
+          } else {
+            delete array[toKey(index)];
+          }
+        }
+      }
+      return array;
+    }
+    function baseRandom(lower, upper) {
+      return lower + nativeFloor(nativeRandom() * (upper - lower + 1));
+    }
+    function baseRange(start, end, step, fromRight) {
+      var index = -1,
+          length = nativeMax(nativeCeil((end - start) / (step || 1)), 0),
+          result = Array(length);
+      while (length--) {
+        result[fromRight ? length : ++index] = start;
+        start += step;
+      }
+      return result;
+    }
+    function baseRepeat(string, n) {
+      var result = '';
+      if (!string || n < 1 || n > MAX_SAFE_INTEGER) {
+        return result;
+      }
+      do {
+        if (n % 2) {
+          result += string;
+        }
+        n = nativeFloor(n / 2);
+        if (n) {
+          string += string;
+        }
+      } while (n);
+      return result;
+    }
+    function baseSet(object, path, value, customizer) {
+      path = isKey(path, object) ? [path] : castPath(path);
+      var index = -1,
+          length = path.length,
+          lastIndex = length - 1,
+          nested = object;
+      while (nested != null && ++index < length) {
+        var key = toKey(path[index]);
+        if (isObject(nested)) {
+          var newValue = value;
+          if (index != lastIndex) {
+            var objValue = nested[key];
+            newValue = customizer ? customizer(objValue, key, nested) : undefined;
+            if (newValue === undefined) {
+              newValue = objValue == null ? (isIndex(path[index + 1]) ? [] : {}) : objValue;
+            }
+          }
+          assignValue(nested, key, newValue);
+        }
+        nested = nested[key];
+      }
+      return object;
+    }
+    var baseSetData = !metaMap ? identity : function(func, data) {
+      metaMap.set(func, data);
+      return func;
+    };
+    function baseSlice(array, start, end) {
+      var index = -1,
+          length = array.length;
+      if (start < 0) {
+        start = -start > length ? 0 : (length + start);
+      }
+      end = end > length ? length : end;
+      if (end < 0) {
+        end += length;
+      }
+      length = start > end ? 0 : ((end - start) >>> 0);
+      start >>>= 0;
+      var result = Array(length);
+      while (++index < length) {
+        result[index] = array[index + start];
+      }
+      return result;
+    }
+    function baseSome(collection, predicate) {
+      var result;
+      baseEach(collection, function(value, index, collection) {
+        result = predicate(value, index, collection);
+        return !result;
+      });
+      return !!result;
+    }
+    function baseSortedIndex(array, value, retHighest) {
+      var low = 0,
+          high = array ? array.length : low;
+      if (typeof value == 'number' && value === value && high <= HALF_MAX_ARRAY_LENGTH) {
+        while (low < high) {
+          var mid = (low + high) >>> 1,
+              computed = array[mid];
+          if (computed !== null && !isSymbol(computed) && (retHighest ? (computed <= value) : (computed < value))) {
+            low = mid + 1;
+          } else {
+            high = mid;
+          }
+        }
+        return high;
+      }
+      return baseSortedIndexBy(array, value, identity, retHighest);
+    }
+    function baseSortedIndexBy(array, value, iteratee, retHighest) {
+      value = iteratee(value);
+      var low = 0,
+          high = array ? array.length : 0,
+          valIsNaN = value !== value,
+          valIsNull = value === null,
+          valIsSymbol = isSymbol(value),
+          valIsUndefined = value === undefined;
+      while (low < high) {
+        var mid = nativeFloor((low + high) / 2),
+            computed = iteratee(array[mid]),
+            othIsDefined = computed !== undefined,
+            othIsNull = computed === null,
+            othIsReflexive = computed === computed,
+            othIsSymbol = isSymbol(computed);
+        if (valIsNaN) {
+          var setLow = retHighest || othIsReflexive;
+        } else if (valIsUndefined) {
+          setLow = othIsReflexive && (retHighest || othIsDefined);
+        } else if (valIsNull) {
+          setLow = othIsReflexive && othIsDefined && (retHighest || !othIsNull);
+        } else if (valIsSymbol) {
+          setLow = othIsReflexive && othIsDefined && !othIsNull && (retHighest || !othIsSymbol);
+        } else if (othIsNull || othIsSymbol) {
+          setLow = false;
+        } else {
+          setLow = retHighest ? (computed <= value) : (computed < value);
+        }
+        if (setLow) {
+          low = mid + 1;
+        } else {
+          high = mid;
+        }
+      }
+      return nativeMin(high, MAX_ARRAY_INDEX);
+    }
+    function baseSortedUniq(array, iteratee) {
+      var index = -1,
+          length = array.length,
+          resIndex = 0,
+          result = [];
+      while (++index < length) {
+        var value = array[index],
+            computed = iteratee ? iteratee(value) : value;
+        if (!index || !eq(computed, seen)) {
+          var seen = computed;
+          result[resIndex++] = value === 0 ? 0 : value;
+        }
+      }
+      return result;
+    }
+    function baseToNumber(value) {
+      if (typeof value == 'number') {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return NAN;
+      }
+      return +value;
+    }
+    function baseToString(value) {
+      if (typeof value == 'string') {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return symbolToString ? symbolToString.call(value) : '';
+      }
+      var result = (value + '');
+      return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+    }
+    function baseUniq(array, iteratee, comparator) {
+      var index = -1,
+          includes = arrayIncludes,
+          length = array.length,
+          isCommon = true,
+          result = [],
+          seen = result;
+      if (comparator) {
+        isCommon = false;
+        includes = arrayIncludesWith;
+      } else if (length >= LARGE_ARRAY_SIZE) {
+        var set = iteratee ? null : createSet(array);
+        if (set) {
+          return setToArray(set);
+        }
+        isCommon = false;
+        includes = cacheHas;
+        seen = new SetCache;
+      } else {
+        seen = iteratee ? [] : result;
+      }
+      outer: while (++index < length) {
+        var value = array[index],
+            computed = iteratee ? iteratee(value) : value;
+        value = (comparator || value !== 0) ? value : 0;
+        if (isCommon && computed === computed) {
+          var seenIndex = seen.length;
+          while (seenIndex--) {
+            if (seen[seenIndex] === computed) {
+              continue outer;
+            }
+          }
+          if (iteratee) {
+            seen.push(computed);
+          }
+          result.push(value);
+        } else if (!includes(seen, computed, comparator)) {
+          if (seen !== result) {
+            seen.push(computed);
+          }
+          result.push(value);
+        }
+      }
+      return result;
+    }
+    function baseUnset(object, path) {
+      path = isKey(path, object) ? [path] : castPath(path);
+      object = parent(object, path);
+      var key = toKey(last(path));
+      return !(object != null && baseHas(object, key)) || delete object[key];
+    }
+    function baseUpdate(object, path, updater, customizer) {
+      return baseSet(object, path, updater(baseGet(object, path)), customizer);
+    }
+    function baseWhile(array, predicate, isDrop, fromRight) {
+      var length = array.length,
+          index = fromRight ? length : -1;
+      while ((fromRight ? index-- : ++index < length) && predicate(array[index], index, array)) {}
+      return isDrop ? baseSlice(array, (fromRight ? 0 : index), (fromRight ? index + 1 : length)) : baseSlice(array, (fromRight ? index + 1 : 0), (fromRight ? length : index));
+    }
+    function baseWrapperValue(value, actions) {
+      var result = value;
+      if (result instanceof LazyWrapper) {
+        result = result.value();
+      }
+      return arrayReduce(actions, function(result, action) {
+        return action.func.apply(action.thisArg, arrayPush([result], action.args));
+      }, result);
+    }
+    function baseXor(arrays, iteratee, comparator) {
+      var index = -1,
+          length = arrays.length;
+      while (++index < length) {
+        var result = result ? arrayPush(baseDifference(result, arrays[index], iteratee, comparator), baseDifference(arrays[index], result, iteratee, comparator)) : arrays[index];
+      }
+      return (result && result.length) ? baseUniq(result, iteratee, comparator) : [];
+    }
+    function baseZipObject(props, values, assignFunc) {
+      var index = -1,
+          length = props.length,
+          valsLength = values.length,
+          result = {};
+      while (++index < length) {
+        var value = index < valsLength ? values[index] : undefined;
+        assignFunc(result, props[index], value);
+      }
+      return result;
+    }
+    function castArrayLikeObject(value) {
+      return isArrayLikeObject(value) ? value : [];
+    }
+    function castFunction(value) {
+      return typeof value == 'function' ? value : identity;
+    }
+    function castPath(value) {
+      return isArray(value) ? value : stringToPath(value);
+    }
+    function castSlice(array, start, end) {
+      var length = array.length;
+      end = end === undefined ? length : end;
+      return (!start && end >= length) ? array : baseSlice(array, start, end);
+    }
+    function cloneBuffer(buffer, isDeep) {
+      if (isDeep) {
+        return buffer.slice();
+      }
+      var result = new buffer.constructor(buffer.length);
+      buffer.copy(result);
+      return result;
+    }
+    function cloneArrayBuffer(arrayBuffer) {
+      var result = new arrayBuffer.constructor(arrayBuffer.byteLength);
+      new Uint8Array(result).set(new Uint8Array(arrayBuffer));
+      return result;
+    }
+    function cloneDataView(dataView, isDeep) {
+      var buffer = isDeep ? cloneArrayBuffer(dataView.buffer) : dataView.buffer;
+      return new dataView.constructor(buffer, dataView.byteOffset, dataView.byteLength);
+    }
+    function cloneMap(map, isDeep, cloneFunc) {
+      var array = isDeep ? cloneFunc(mapToArray(map), true) : mapToArray(map);
+      return arrayReduce(array, addMapEntry, new map.constructor);
+    }
+    function cloneRegExp(regexp) {
+      var result = new regexp.constructor(regexp.source, reFlags.exec(regexp));
+      result.lastIndex = regexp.lastIndex;
+      return result;
+    }
+    function cloneSet(set, isDeep, cloneFunc) {
+      var array = isDeep ? cloneFunc(setToArray(set), true) : setToArray(set);
+      return arrayReduce(array, addSetEntry, new set.constructor);
+    }
+    function cloneSymbol(symbol) {
+      return symbolValueOf ? Object(symbolValueOf.call(symbol)) : {};
+    }
+    function cloneTypedArray(typedArray, isDeep) {
+      var buffer = isDeep ? cloneArrayBuffer(typedArray.buffer) : typedArray.buffer;
+      return new typedArray.constructor(buffer, typedArray.byteOffset, typedArray.length);
+    }
+    function compareAscending(value, other) {
+      if (value !== other) {
+        var valIsDefined = value !== undefined,
+            valIsNull = value === null,
+            valIsReflexive = value === value,
+            valIsSymbol = isSymbol(value);
+        var othIsDefined = other !== undefined,
+            othIsNull = other === null,
+            othIsReflexive = other === other,
+            othIsSymbol = isSymbol(other);
+        if ((!othIsNull && !othIsSymbol && !valIsSymbol && value > other) || (valIsSymbol && othIsDefined && othIsReflexive && !othIsNull && !othIsSymbol) || (valIsNull && othIsDefined && othIsReflexive) || (!valIsDefined && othIsReflexive) || !valIsReflexive) {
+          return 1;
+        }
+        if ((!valIsNull && !valIsSymbol && !othIsSymbol && value < other) || (othIsSymbol && valIsDefined && valIsReflexive && !valIsNull && !valIsSymbol) || (othIsNull && valIsDefined && valIsReflexive) || (!othIsDefined && valIsReflexive) || !othIsReflexive) {
+          return -1;
+        }
+      }
+      return 0;
+    }
+    function compareMultiple(object, other, orders) {
+      var index = -1,
+          objCriteria = object.criteria,
+          othCriteria = other.criteria,
+          length = objCriteria.length,
+          ordersLength = orders.length;
+      while (++index < length) {
+        var result = compareAscending(objCriteria[index], othCriteria[index]);
+        if (result) {
+          if (index >= ordersLength) {
+            return result;
+          }
+          var order = orders[index];
+          return result * (order == 'desc' ? -1 : 1);
+        }
+      }
+      return object.index - other.index;
+    }
+    function composeArgs(args, partials, holders, isCurried) {
+      var argsIndex = -1,
+          argsLength = args.length,
+          holdersLength = holders.length,
+          leftIndex = -1,
+          leftLength = partials.length,
+          rangeLength = nativeMax(argsLength - holdersLength, 0),
+          result = Array(leftLength + rangeLength),
+          isUncurried = !isCurried;
+      while (++leftIndex < leftLength) {
+        result[leftIndex] = partials[leftIndex];
+      }
+      while (++argsIndex < holdersLength) {
+        if (isUncurried || argsIndex < argsLength) {
+          result[holders[argsIndex]] = args[argsIndex];
+        }
+      }
+      while (rangeLength--) {
+        result[leftIndex++] = args[argsIndex++];
+      }
+      return result;
+    }
+    function composeArgsRight(args, partials, holders, isCurried) {
+      var argsIndex = -1,
+          argsLength = args.length,
+          holdersIndex = -1,
+          holdersLength = holders.length,
+          rightIndex = -1,
+          rightLength = partials.length,
+          rangeLength = nativeMax(argsLength - holdersLength, 0),
+          result = Array(rangeLength + rightLength),
+          isUncurried = !isCurried;
+      while (++argsIndex < rangeLength) {
+        result[argsIndex] = args[argsIndex];
+      }
+      var offset = argsIndex;
+      while (++rightIndex < rightLength) {
+        result[offset + rightIndex] = partials[rightIndex];
+      }
+      while (++holdersIndex < holdersLength) {
+        if (isUncurried || argsIndex < argsLength) {
+          result[offset + holders[holdersIndex]] = args[argsIndex++];
+        }
+      }
+      return result;
+    }
+    function copyArray(source, array) {
+      var index = -1,
+          length = source.length;
+      array || (array = Array(length));
+      while (++index < length) {
+        array[index] = source[index];
+      }
+      return array;
+    }
+    function copyObject(source, props, object, customizer) {
+      object || (object = {});
+      var index = -1,
+          length = props.length;
+      while (++index < length) {
+        var key = props[index];
+        var newValue = customizer ? customizer(object[key], source[key], key, object, source) : source[key];
+        assignValue(object, key, newValue);
+      }
+      return object;
+    }
+    function copySymbols(source, object) {
+      return copyObject(source, getSymbols(source), object);
+    }
+    function createAggregator(setter, initializer) {
+      return function(collection, iteratee) {
+        var func = isArray(collection) ? arrayAggregator : baseAggregator,
+            accumulator = initializer ? initializer() : {};
+        return func(collection, setter, getIteratee(iteratee), accumulator);
+      };
+    }
+    function createAssigner(assigner) {
+      return rest(function(object, sources) {
+        var index = -1,
+            length = sources.length,
+            customizer = length > 1 ? sources[length - 1] : undefined,
+            guard = length > 2 ? sources[2] : undefined;
+        customizer = (assigner.length > 3 && typeof customizer == 'function') ? (length--, customizer) : undefined;
+        if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+          customizer = length < 3 ? undefined : customizer;
+          length = 1;
+        }
+        object = Object(object);
+        while (++index < length) {
+          var source = sources[index];
+          if (source) {
+            assigner(object, source, index, customizer);
+          }
+        }
+        return object;
+      });
+    }
+    function createBaseEach(eachFunc, fromRight) {
+      return function(collection, iteratee) {
+        if (collection == null) {
+          return collection;
+        }
+        if (!isArrayLike(collection)) {
+          return eachFunc(collection, iteratee);
+        }
+        var length = collection.length,
+            index = fromRight ? length : -1,
+            iterable = Object(collection);
+        while ((fromRight ? index-- : ++index < length)) {
+          if (iteratee(iterable[index], index, iterable) === false) {
+            break;
+          }
+        }
+        return collection;
+      };
+    }
+    function createBaseFor(fromRight) {
+      return function(object, iteratee, keysFunc) {
+        var index = -1,
+            iterable = Object(object),
+            props = keysFunc(object),
+            length = props.length;
+        while (length--) {
+          var key = props[fromRight ? length : ++index];
+          if (iteratee(iterable[key], key, iterable) === false) {
+            break;
+          }
+        }
+        return object;
+      };
+    }
+    function createBaseWrapper(func, bitmask, thisArg) {
+      var isBind = bitmask & BIND_FLAG,
+          Ctor = createCtorWrapper(func);
+      function wrapper() {
+        var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
+        return fn.apply(isBind ? thisArg : this, arguments);
+      }
+      return wrapper;
+    }
+    function createCaseFirst(methodName) {
+      return function(string) {
+        string = toString(string);
+        var strSymbols = reHasComplexSymbol.test(string) ? stringToArray(string) : undefined;
+        var chr = strSymbols ? strSymbols[0] : string.charAt(0);
+        var trailing = strSymbols ? castSlice(strSymbols, 1).join('') : string.slice(1);
+        return chr[methodName]() + trailing;
+      };
+    }
+    function createCompounder(callback) {
+      return function(string) {
+        return arrayReduce(words(deburr(string).replace(reApos, '')), callback, '');
+      };
+    }
+    function createCtorWrapper(Ctor) {
+      return function() {
+        var args = arguments;
+        switch (args.length) {
+          case 0:
+            return new Ctor;
+          case 1:
+            return new Ctor(args[0]);
+          case 2:
+            return new Ctor(args[0], args[1]);
+          case 3:
+            return new Ctor(args[0], args[1], args[2]);
+          case 4:
+            return new Ctor(args[0], args[1], args[2], args[3]);
+          case 5:
+            return new Ctor(args[0], args[1], args[2], args[3], args[4]);
+          case 6:
+            return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5]);
+          case 7:
+            return new Ctor(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        }
+        var thisBinding = baseCreate(Ctor.prototype),
+            result = Ctor.apply(thisBinding, args);
+        return isObject(result) ? result : thisBinding;
+      };
+    }
+    function createCurryWrapper(func, bitmask, arity) {
+      var Ctor = createCtorWrapper(func);
+      function wrapper() {
+        var length = arguments.length,
+            args = Array(length),
+            index = length,
+            placeholder = getHolder(wrapper);
+        while (index--) {
+          args[index] = arguments[index];
+        }
+        var holders = (length < 3 && args[0] !== placeholder && args[length - 1] !== placeholder) ? [] : replaceHolders(args, placeholder);
+        length -= holders.length;
+        if (length < arity) {
+          return createRecurryWrapper(func, bitmask, createHybridWrapper, wrapper.placeholder, undefined, args, holders, undefined, undefined, arity - length);
+        }
+        var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
+        return apply(fn, this, args);
+      }
+      return wrapper;
+    }
+    function createFind(findIndexFunc) {
+      return function(collection, predicate, fromIndex) {
+        var iterable = Object(collection);
+        predicate = getIteratee(predicate, 3);
+        if (!isArrayLike(collection)) {
+          var props = keys(collection);
+        }
+        var index = findIndexFunc(props || collection, function(value, key) {
+          if (props) {
+            key = value;
+            value = iterable[key];
+          }
+          return predicate(value, key, iterable);
+        }, fromIndex);
+        return index > -1 ? collection[props ? props[index] : index] : undefined;
+      };
+    }
+    function createFlow(fromRight) {
+      return rest(function(funcs) {
+        funcs = baseFlatten(funcs, 1);
+        var length = funcs.length,
+            index = length,
+            prereq = LodashWrapper.prototype.thru;
+        if (fromRight) {
+          funcs.reverse();
+        }
+        while (index--) {
+          var func = funcs[index];
+          if (typeof func != 'function') {
+            throw new TypeError(FUNC_ERROR_TEXT);
+          }
+          if (prereq && !wrapper && getFuncName(func) == 'wrapper') {
+            var wrapper = new LodashWrapper([], true);
+          }
+        }
+        index = wrapper ? index : length;
+        while (++index < length) {
+          func = funcs[index];
+          var funcName = getFuncName(func),
+              data = funcName == 'wrapper' ? getData(func) : undefined;
+          if (data && isLaziable(data[0]) && data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) && !data[4].length && data[9] == 1) {
+            wrapper = wrapper[getFuncName(data[0])].apply(wrapper, data[3]);
+          } else {
+            wrapper = (func.length == 1 && isLaziable(func)) ? wrapper[funcName]() : wrapper.thru(func);
+          }
+        }
+        return function() {
+          var args = arguments,
+              value = args[0];
+          if (wrapper && args.length == 1 && isArray(value) && value.length >= LARGE_ARRAY_SIZE) {
+            return wrapper.plant(value).value();
+          }
+          var index = 0,
+              result = length ? funcs[index].apply(this, args) : value;
+          while (++index < length) {
+            result = funcs[index].call(this, result);
+          }
+          return result;
+        };
+      });
+    }
+    function createHybridWrapper(func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity) {
+      var isAry = bitmask & ARY_FLAG,
+          isBind = bitmask & BIND_FLAG,
+          isBindKey = bitmask & BIND_KEY_FLAG,
+          isCurried = bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG),
+          isFlip = bitmask & FLIP_FLAG,
+          Ctor = isBindKey ? undefined : createCtorWrapper(func);
+      function wrapper() {
+        var length = arguments.length,
+            args = Array(length),
+            index = length;
+        while (index--) {
+          args[index] = arguments[index];
+        }
+        if (isCurried) {
+          var placeholder = getHolder(wrapper),
+              holdersCount = countHolders(args, placeholder);
+        }
+        if (partials) {
+          args = composeArgs(args, partials, holders, isCurried);
+        }
+        if (partialsRight) {
+          args = composeArgsRight(args, partialsRight, holdersRight, isCurried);
+        }
+        length -= holdersCount;
+        if (isCurried && length < arity) {
+          var newHolders = replaceHolders(args, placeholder);
+          return createRecurryWrapper(func, bitmask, createHybridWrapper, wrapper.placeholder, thisArg, args, newHolders, argPos, ary, arity - length);
+        }
+        var thisBinding = isBind ? thisArg : this,
+            fn = isBindKey ? thisBinding[func] : func;
+        length = args.length;
+        if (argPos) {
+          args = reorder(args, argPos);
+        } else if (isFlip && length > 1) {
+          args.reverse();
+        }
+        if (isAry && ary < length) {
+          args.length = ary;
+        }
+        if (this && this !== root && this instanceof wrapper) {
+          fn = Ctor || createCtorWrapper(fn);
+        }
+        return fn.apply(thisBinding, args);
+      }
+      return wrapper;
+    }
+    function createInverter(setter, toIteratee) {
+      return function(object, iteratee) {
+        return baseInverter(object, setter, toIteratee(iteratee), {});
+      };
+    }
+    function createMathOperation(operator) {
+      return function(value, other) {
+        var result;
+        if (value === undefined && other === undefined) {
+          return 0;
+        }
+        if (value !== undefined) {
+          result = value;
+        }
+        if (other !== undefined) {
+          if (result === undefined) {
+            return other;
+          }
+          if (typeof value == 'string' || typeof other == 'string') {
+            value = baseToString(value);
+            other = baseToString(other);
+          } else {
+            value = baseToNumber(value);
+            other = baseToNumber(other);
+          }
+          result = operator(value, other);
+        }
+        return result;
+      };
+    }
+    function createOver(arrayFunc) {
+      return rest(function(iteratees) {
+        iteratees = (iteratees.length == 1 && isArray(iteratees[0])) ? arrayMap(iteratees[0], baseUnary(getIteratee())) : arrayMap(baseFlatten(iteratees, 1, isFlattenableIteratee), baseUnary(getIteratee()));
+        return rest(function(args) {
+          var thisArg = this;
+          return arrayFunc(iteratees, function(iteratee) {
+            return apply(iteratee, thisArg, args);
+          });
+        });
+      });
+    }
+    function createPadding(length, chars) {
+      chars = chars === undefined ? ' ' : baseToString(chars);
+      var charsLength = chars.length;
+      if (charsLength < 2) {
+        return charsLength ? baseRepeat(chars, length) : chars;
+      }
+      var result = baseRepeat(chars, nativeCeil(length / stringSize(chars)));
+      return reHasComplexSymbol.test(chars) ? castSlice(stringToArray(result), 0, length).join('') : result.slice(0, length);
+    }
+    function createPartialWrapper(func, bitmask, thisArg, partials) {
+      var isBind = bitmask & BIND_FLAG,
+          Ctor = createCtorWrapper(func);
+      function wrapper() {
+        var argsIndex = -1,
+            argsLength = arguments.length,
+            leftIndex = -1,
+            leftLength = partials.length,
+            args = Array(leftLength + argsLength),
+            fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
+        while (++leftIndex < leftLength) {
+          args[leftIndex] = partials[leftIndex];
+        }
+        while (argsLength--) {
+          args[leftIndex++] = arguments[++argsIndex];
+        }
+        return apply(fn, isBind ? thisArg : this, args);
+      }
+      return wrapper;
+    }
+    function createRange(fromRight) {
+      return function(start, end, step) {
+        if (step && typeof step != 'number' && isIterateeCall(start, end, step)) {
+          end = step = undefined;
+        }
+        start = toNumber(start);
+        start = start === start ? start : 0;
+        if (end === undefined) {
+          end = start;
+          start = 0;
+        } else {
+          end = toNumber(end) || 0;
+        }
+        step = step === undefined ? (start < end ? 1 : -1) : (toNumber(step) || 0);
+        return baseRange(start, end, step, fromRight);
+      };
+    }
+    function createRelationalOperation(operator) {
+      return function(value, other) {
+        if (!(typeof value == 'string' && typeof other == 'string')) {
+          value = toNumber(value);
+          other = toNumber(other);
+        }
+        return operator(value, other);
+      };
+    }
+    function createRecurryWrapper(func, bitmask, wrapFunc, placeholder, thisArg, partials, holders, argPos, ary, arity) {
+      var isCurry = bitmask & CURRY_FLAG,
+          newHolders = isCurry ? holders : undefined,
+          newHoldersRight = isCurry ? undefined : holders,
+          newPartials = isCurry ? partials : undefined,
+          newPartialsRight = isCurry ? undefined : partials;
+      bitmask |= (isCurry ? PARTIAL_FLAG : PARTIAL_RIGHT_FLAG);
+      bitmask &= ~(isCurry ? PARTIAL_RIGHT_FLAG : PARTIAL_FLAG);
+      if (!(bitmask & CURRY_BOUND_FLAG)) {
+        bitmask &= ~(BIND_FLAG | BIND_KEY_FLAG);
+      }
+      var newData = [func, bitmask, thisArg, newPartials, newHolders, newPartialsRight, newHoldersRight, argPos, ary, arity];
+      var result = wrapFunc.apply(undefined, newData);
+      if (isLaziable(func)) {
+        setData(result, newData);
+      }
+      result.placeholder = placeholder;
+      return result;
+    }
+    function createRound(methodName) {
+      var func = Math[methodName];
+      return function(number, precision) {
+        number = toNumber(number);
+        precision = nativeMin(toInteger(precision), 292);
+        if (precision) {
+          var pair = (toString(number) + 'e').split('e'),
+              value = func(pair[0] + 'e' + (+pair[1] + precision));
+          pair = (toString(value) + 'e').split('e');
+          return +(pair[0] + 'e' + (+pair[1] - precision));
+        }
+        return func(number);
+      };
+    }
+    var createSet = !(Set && (1 / setToArray(new Set([, -0]))[1]) == INFINITY) ? noop : function(values) {
+      return new Set(values);
+    };
+    function createToPairs(keysFunc) {
+      return function(object) {
+        var tag = getTag(object);
+        if (tag == mapTag) {
+          return mapToArray(object);
+        }
+        if (tag == setTag) {
+          return setToPairs(object);
+        }
+        return baseToPairs(object, keysFunc(object));
+      };
+    }
+    function createWrapper(func, bitmask, thisArg, partials, holders, argPos, ary, arity) {
+      var isBindKey = bitmask & BIND_KEY_FLAG;
+      if (!isBindKey && typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      var length = partials ? partials.length : 0;
+      if (!length) {
+        bitmask &= ~(PARTIAL_FLAG | PARTIAL_RIGHT_FLAG);
+        partials = holders = undefined;
+      }
+      ary = ary === undefined ? ary : nativeMax(toInteger(ary), 0);
+      arity = arity === undefined ? arity : toInteger(arity);
+      length -= holders ? holders.length : 0;
+      if (bitmask & PARTIAL_RIGHT_FLAG) {
+        var partialsRight = partials,
+            holdersRight = holders;
+        partials = holders = undefined;
+      }
+      var data = isBindKey ? undefined : getData(func);
+      var newData = [func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity];
+      if (data) {
+        mergeData(newData, data);
+      }
+      func = newData[0];
+      bitmask = newData[1];
+      thisArg = newData[2];
+      partials = newData[3];
+      holders = newData[4];
+      arity = newData[9] = newData[9] == null ? (isBindKey ? 0 : func.length) : nativeMax(newData[9] - length, 0);
+      if (!arity && bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG)) {
+        bitmask &= ~(CURRY_FLAG | CURRY_RIGHT_FLAG);
+      }
+      if (!bitmask || bitmask == BIND_FLAG) {
+        var result = createBaseWrapper(func, bitmask, thisArg);
+      } else if (bitmask == CURRY_FLAG || bitmask == CURRY_RIGHT_FLAG) {
+        result = createCurryWrapper(func, bitmask, arity);
+      } else if ((bitmask == PARTIAL_FLAG || bitmask == (BIND_FLAG | PARTIAL_FLAG)) && !holders.length) {
+        result = createPartialWrapper(func, bitmask, thisArg, partials);
+      } else {
+        result = createHybridWrapper.apply(undefined, newData);
+      }
+      var setter = data ? baseSetData : setData;
+      return setter(result, newData);
+    }
+    function equalArrays(array, other, equalFunc, customizer, bitmask, stack) {
+      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
+          arrLength = array.length,
+          othLength = other.length;
+      if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
+        return false;
+      }
+      var stacked = stack.get(array);
+      if (stacked) {
+        return stacked == other;
+      }
+      var index = -1,
+          result = true,
+          seen = (bitmask & UNORDERED_COMPARE_FLAG) ? new SetCache : undefined;
+      stack.set(array, other);
+      while (++index < arrLength) {
+        var arrValue = array[index],
+            othValue = other[index];
+        if (customizer) {
+          var compared = isPartial ? customizer(othValue, arrValue, index, other, array, stack) : customizer(arrValue, othValue, index, array, other, stack);
+        }
+        if (compared !== undefined) {
+          if (compared) {
+            continue;
+          }
+          result = false;
+          break;
+        }
+        if (seen) {
+          if (!arraySome(other, function(othValue, othIndex) {
+            if (!seen.has(othIndex) && (arrValue === othValue || equalFunc(arrValue, othValue, customizer, bitmask, stack))) {
+              return seen.add(othIndex);
+            }
+          })) {
+            result = false;
+            break;
+          }
+        } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, customizer, bitmask, stack))) {
+          result = false;
+          break;
+        }
+      }
+      stack['delete'](array);
+      return result;
+    }
+    function equalByTag(object, other, tag, equalFunc, customizer, bitmask, stack) {
+      switch (tag) {
+        case dataViewTag:
+          if ((object.byteLength != other.byteLength) || (object.byteOffset != other.byteOffset)) {
+            return false;
+          }
+          object = object.buffer;
+          other = other.buffer;
+        case arrayBufferTag:
+          if ((object.byteLength != other.byteLength) || !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
+            return false;
+          }
+          return true;
+        case boolTag:
+        case dateTag:
+          return +object == +other;
+        case errorTag:
+          return object.name == other.name && object.message == other.message;
+        case numberTag:
+          return (object != +object) ? other != +other : object == +other;
+        case regexpTag:
+        case stringTag:
+          return object == (other + '');
+        case mapTag:
+          var convert = mapToArray;
+        case setTag:
+          var isPartial = bitmask & PARTIAL_COMPARE_FLAG;
+          convert || (convert = setToArray);
+          if (object.size != other.size && !isPartial) {
+            return false;
+          }
+          var stacked = stack.get(object);
+          if (stacked) {
+            return stacked == other;
+          }
+          bitmask |= UNORDERED_COMPARE_FLAG;
+          stack.set(object, other);
+          return equalArrays(convert(object), convert(other), equalFunc, customizer, bitmask, stack);
+        case symbolTag:
+          if (symbolValueOf) {
+            return symbolValueOf.call(object) == symbolValueOf.call(other);
+          }
+      }
+      return false;
+    }
+    function equalObjects(object, other, equalFunc, customizer, bitmask, stack) {
+      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
+          objProps = keys(object),
+          objLength = objProps.length,
+          othProps = keys(other),
+          othLength = othProps.length;
+      if (objLength != othLength && !isPartial) {
+        return false;
+      }
+      var index = objLength;
+      while (index--) {
+        var key = objProps[index];
+        if (!(isPartial ? key in other : baseHas(other, key))) {
+          return false;
+        }
+      }
+      var stacked = stack.get(object);
+      if (stacked) {
+        return stacked == other;
+      }
+      var result = true;
+      stack.set(object, other);
+      var skipCtor = isPartial;
+      while (++index < objLength) {
+        key = objProps[index];
+        var objValue = object[key],
+            othValue = other[key];
+        if (customizer) {
+          var compared = isPartial ? customizer(othValue, objValue, key, other, object, stack) : customizer(objValue, othValue, key, object, other, stack);
+        }
+        if (!(compared === undefined ? (objValue === othValue || equalFunc(objValue, othValue, customizer, bitmask, stack)) : compared)) {
+          result = false;
+          break;
+        }
+        skipCtor || (skipCtor = key == 'constructor');
+      }
+      if (result && !skipCtor) {
+        var objCtor = object.constructor,
+            othCtor = other.constructor;
+        if (objCtor != othCtor && ('constructor' in object && 'constructor' in other) && !(typeof objCtor == 'function' && objCtor instanceof objCtor && typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+          result = false;
+        }
+      }
+      stack['delete'](object);
+      return result;
+    }
+    function getAllKeys(object) {
+      return baseGetAllKeys(object, keys, getSymbols);
+    }
+    function getAllKeysIn(object) {
+      return baseGetAllKeys(object, keysIn, getSymbolsIn);
+    }
+    var getData = !metaMap ? noop : function(func) {
+      return metaMap.get(func);
+    };
+    function getFuncName(func) {
+      var result = (func.name + ''),
+          array = realNames[result],
+          length = hasOwnProperty.call(realNames, result) ? array.length : 0;
+      while (length--) {
+        var data = array[length],
+            otherFunc = data.func;
+        if (otherFunc == null || otherFunc == func) {
+          return data.name;
+        }
+      }
+      return result;
+    }
+    function getHolder(func) {
+      var object = hasOwnProperty.call(lodash, 'placeholder') ? lodash : func;
+      return object.placeholder;
+    }
+    function getIteratee() {
+      var result = lodash.iteratee || iteratee;
+      result = result === iteratee ? baseIteratee : result;
+      return arguments.length ? result(arguments[0], arguments[1]) : result;
+    }
+    var getLength = baseProperty('length');
+    function getMapData(map, key) {
+      var data = map.__data__;
+      return isKeyable(key) ? data[typeof key == 'string' ? 'string' : 'hash'] : data.map;
+    }
+    function getMatchData(object) {
+      var result = keys(object),
+          length = result.length;
+      while (length--) {
+        var key = result[length],
+            value = object[key];
+        result[length] = [key, value, isStrictComparable(value)];
+      }
+      return result;
+    }
+    function getNative(object, key) {
+      var value = getValue(object, key);
+      return baseIsNative(value) ? value : undefined;
+    }
+    function getPrototype(value) {
+      return nativeGetPrototype(Object(value));
+    }
+    function getSymbols(object) {
+      return getOwnPropertySymbols(Object(object));
+    }
+    if (!getOwnPropertySymbols) {
+      getSymbols = stubArray;
+    }
+    var getSymbolsIn = !getOwnPropertySymbols ? getSymbols : function(object) {
+      var result = [];
+      while (object) {
+        arrayPush(result, getSymbols(object));
+        object = getPrototype(object);
+      }
+      return result;
+    };
+    function getTag(value) {
+      return objectToString.call(value);
+    }
+    if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) || (Map && getTag(new Map) != mapTag) || (Promise && getTag(Promise.resolve()) != promiseTag) || (Set && getTag(new Set) != setTag) || (WeakMap && getTag(new WeakMap) != weakMapTag)) {
+      getTag = function(value) {
+        var result = objectToString.call(value),
+            Ctor = result == objectTag ? value.constructor : undefined,
+            ctorString = Ctor ? toSource(Ctor) : undefined;
+        if (ctorString) {
+          switch (ctorString) {
+            case dataViewCtorString:
+              return dataViewTag;
+            case mapCtorString:
+              return mapTag;
+            case promiseCtorString:
+              return promiseTag;
+            case setCtorString:
+              return setTag;
+            case weakMapCtorString:
+              return weakMapTag;
+          }
+        }
+        return result;
+      };
+    }
+    function getView(start, end, transforms) {
+      var index = -1,
+          length = transforms.length;
+      while (++index < length) {
+        var data = transforms[index],
+            size = data.size;
+        switch (data.type) {
+          case 'drop':
+            start += size;
+            break;
+          case 'dropRight':
+            end -= size;
+            break;
+          case 'take':
+            end = nativeMin(end, start + size);
+            break;
+          case 'takeRight':
+            start = nativeMax(start, end - size);
+            break;
+        }
+      }
+      return {
+        'start': start,
+        'end': end
+      };
+    }
+    function hasPath(object, path, hasFunc) {
+      path = isKey(path, object) ? [path] : castPath(path);
+      var result,
+          index = -1,
+          length = path.length;
+      while (++index < length) {
+        var key = toKey(path[index]);
+        if (!(result = object != null && hasFunc(object, key))) {
+          break;
+        }
+        object = object[key];
+      }
+      if (result) {
+        return result;
+      }
+      var length = object ? object.length : 0;
+      return !!length && isLength(length) && isIndex(key, length) && (isArray(object) || isString(object) || isArguments(object));
+    }
+    function initCloneArray(array) {
+      var length = array.length,
+          result = array.constructor(length);
+      if (length && typeof array[0] == 'string' && hasOwnProperty.call(array, 'index')) {
+        result.index = array.index;
+        result.input = array.input;
+      }
+      return result;
+    }
+    function initCloneObject(object) {
+      return (typeof object.constructor == 'function' && !isPrototype(object)) ? baseCreate(getPrototype(object)) : {};
+    }
+    function initCloneByTag(object, tag, cloneFunc, isDeep) {
+      var Ctor = object.constructor;
+      switch (tag) {
+        case arrayBufferTag:
+          return cloneArrayBuffer(object);
+        case boolTag:
+        case dateTag:
+          return new Ctor(+object);
+        case dataViewTag:
+          return cloneDataView(object, isDeep);
+        case float32Tag:
+        case float64Tag:
+        case int8Tag:
+        case int16Tag:
+        case int32Tag:
+        case uint8Tag:
+        case uint8ClampedTag:
+        case uint16Tag:
+        case uint32Tag:
+          return cloneTypedArray(object, isDeep);
+        case mapTag:
+          return cloneMap(object, isDeep, cloneFunc);
+        case numberTag:
+        case stringTag:
+          return new Ctor(object);
+        case regexpTag:
+          return cloneRegExp(object);
+        case setTag:
+          return cloneSet(object, isDeep, cloneFunc);
+        case symbolTag:
+          return cloneSymbol(object);
+      }
+    }
+    function indexKeys(object) {
+      var length = object ? object.length : undefined;
+      if (isLength(length) && (isArray(object) || isString(object) || isArguments(object))) {
+        return baseTimes(length, String);
+      }
+      return null;
+    }
+    function isFlattenable(value) {
+      return isArray(value) || isArguments(value);
+    }
+    function isFlattenableIteratee(value) {
+      return isArray(value) && !(value.length == 2 && !isFunction(value[0]));
+    }
+    function isIndex(value, length) {
+      length = length == null ? MAX_SAFE_INTEGER : length;
+      return !!length && (typeof value == 'number' || reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
+    }
+    function isIterateeCall(value, index, object) {
+      if (!isObject(object)) {
+        return false;
+      }
+      var type = typeof index;
+      if (type == 'number' ? (isArrayLike(object) && isIndex(index, object.length)) : (type == 'string' && index in object)) {
+        return eq(object[index], value);
+      }
+      return false;
+    }
+    function isKey(value, object) {
+      if (isArray(value)) {
+        return false;
+      }
+      var type = typeof value;
+      if (type == 'number' || type == 'symbol' || type == 'boolean' || value == null || isSymbol(value)) {
+        return true;
+      }
+      return reIsPlainProp.test(value) || !reIsDeepProp.test(value) || (object != null && value in Object(object));
+    }
+    function isKeyable(value) {
+      var type = typeof value;
+      return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean') ? (value !== '__proto__') : (value === null);
+    }
+    function isLaziable(func) {
+      var funcName = getFuncName(func),
+          other = lodash[funcName];
+      if (typeof other != 'function' || !(funcName in LazyWrapper.prototype)) {
+        return false;
+      }
+      if (func === other) {
+        return true;
+      }
+      var data = getData(other);
+      return !!data && func === data[0];
+    }
+    function isMasked(func) {
+      return !!maskSrcKey && (maskSrcKey in func);
+    }
+    var isMaskable = coreJsData ? isFunction : stubFalse;
+    function isPrototype(value) {
+      var Ctor = value && value.constructor,
+          proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
+      return value === proto;
+    }
+    function isStrictComparable(value) {
+      return value === value && !isObject(value);
+    }
+    function matchesStrictComparable(key, srcValue) {
+      return function(object) {
+        if (object == null) {
+          return false;
+        }
+        return object[key] === srcValue && (srcValue !== undefined || (key in Object(object)));
+      };
+    }
+    function mergeData(data, source) {
+      var bitmask = data[1],
+          srcBitmask = source[1],
+          newBitmask = bitmask | srcBitmask,
+          isCommon = newBitmask < (BIND_FLAG | BIND_KEY_FLAG | ARY_FLAG);
+      var isCombo = ((srcBitmask == ARY_FLAG) && (bitmask == CURRY_FLAG)) || ((srcBitmask == ARY_FLAG) && (bitmask == REARG_FLAG) && (data[7].length <= source[8])) || ((srcBitmask == (ARY_FLAG | REARG_FLAG)) && (source[7].length <= source[8]) && (bitmask == CURRY_FLAG));
+      if (!(isCommon || isCombo)) {
+        return data;
+      }
+      if (srcBitmask & BIND_FLAG) {
+        data[2] = source[2];
+        newBitmask |= bitmask & BIND_FLAG ? 0 : CURRY_BOUND_FLAG;
+      }
+      var value = source[3];
+      if (value) {
+        var partials = data[3];
+        data[3] = partials ? composeArgs(partials, value, source[4]) : value;
+        data[4] = partials ? replaceHolders(data[3], PLACEHOLDER) : source[4];
+      }
+      value = source[5];
+      if (value) {
+        partials = data[5];
+        data[5] = partials ? composeArgsRight(partials, value, source[6]) : value;
+        data[6] = partials ? replaceHolders(data[5], PLACEHOLDER) : source[6];
+      }
+      value = source[7];
+      if (value) {
+        data[7] = value;
+      }
+      if (srcBitmask & ARY_FLAG) {
+        data[8] = data[8] == null ? source[8] : nativeMin(data[8], source[8]);
+      }
+      if (data[9] == null) {
+        data[9] = source[9];
+      }
+      data[0] = source[0];
+      data[1] = newBitmask;
+      return data;
+    }
+    function mergeDefaults(objValue, srcValue, key, object, source, stack) {
+      if (isObject(objValue) && isObject(srcValue)) {
+        baseMerge(objValue, srcValue, undefined, mergeDefaults, stack.set(srcValue, objValue));
+      }
+      return objValue;
+    }
+    function parent(object, path) {
+      return path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+    }
+    function reorder(array, indexes) {
+      var arrLength = array.length,
+          length = nativeMin(indexes.length, arrLength),
+          oldArray = copyArray(array);
+      while (length--) {
+        var index = indexes[length];
+        array[length] = isIndex(index, arrLength) ? oldArray[index] : undefined;
+      }
+      return array;
+    }
+    var setData = (function() {
+      var count = 0,
+          lastCalled = 0;
+      return function(key, value) {
+        var stamp = now(),
+            remaining = HOT_SPAN - (stamp - lastCalled);
+        lastCalled = stamp;
+        if (remaining > 0) {
+          if (++count >= HOT_COUNT) {
+            return key;
+          }
+        } else {
+          count = 0;
+        }
+        return baseSetData(key, value);
+      };
+    }());
+    var stringToPath = memoize(function(string) {
+      var result = [];
+      toString(string).replace(rePropName, function(match, number, quote, string) {
+        result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
+      });
+      return result;
+    });
+    function toKey(value) {
+      if (typeof value == 'string' || isSymbol(value)) {
+        return value;
+      }
+      var result = (value + '');
+      return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+    }
+    function toSource(func) {
+      if (func != null) {
+        try {
+          return funcToString.call(func);
+        } catch (e) {}
+        try {
+          return (func + '');
+        } catch (e) {}
+      }
+      return '';
+    }
+    function wrapperClone(wrapper) {
+      if (wrapper instanceof LazyWrapper) {
+        return wrapper.clone();
+      }
+      var result = new LodashWrapper(wrapper.__wrapped__, wrapper.__chain__);
+      result.__actions__ = copyArray(wrapper.__actions__);
+      result.__index__ = wrapper.__index__;
+      result.__values__ = wrapper.__values__;
+      return result;
+    }
+    function chunk(array, size, guard) {
+      if ((guard ? isIterateeCall(array, size, guard) : size === undefined)) {
+        size = 1;
+      } else {
+        size = nativeMax(toInteger(size), 0);
+      }
+      var length = array ? array.length : 0;
+      if (!length || size < 1) {
+        return [];
+      }
+      var index = 0,
+          resIndex = 0,
+          result = Array(nativeCeil(length / size));
+      while (index < length) {
+        result[resIndex++] = baseSlice(array, index, (index += size));
+      }
+      return result;
+    }
+    function compact(array) {
+      var index = -1,
+          length = array ? array.length : 0,
+          resIndex = 0,
+          result = [];
+      while (++index < length) {
+        var value = array[index];
+        if (value) {
+          result[resIndex++] = value;
+        }
+      }
+      return result;
+    }
+    function concat() {
+      var length = arguments.length,
+          args = Array(length ? length - 1 : 0),
+          array = arguments[0],
+          index = length;
+      while (index--) {
+        args[index - 1] = arguments[index];
+      }
+      return length ? arrayPush(isArray(array) ? copyArray(array) : [array], baseFlatten(args, 1)) : [];
+    }
+    var difference = rest(function(array, values) {
+      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true)) : [];
+    });
+    var differenceBy = rest(function(array, values) {
+      var iteratee = last(values);
+      if (isArrayLikeObject(iteratee)) {
+        iteratee = undefined;
+      }
+      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true), getIteratee(iteratee)) : [];
+    });
+    var differenceWith = rest(function(array, values) {
+      var comparator = last(values);
+      if (isArrayLikeObject(comparator)) {
+        comparator = undefined;
+      }
+      return isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, 1, isArrayLikeObject, true), undefined, comparator) : [];
+    });
+    function drop(array, n, guard) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      n = (guard || n === undefined) ? 1 : toInteger(n);
+      return baseSlice(array, n < 0 ? 0 : n, length);
+    }
+    function dropRight(array, n, guard) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      n = (guard || n === undefined) ? 1 : toInteger(n);
+      n = length - n;
+      return baseSlice(array, 0, n < 0 ? 0 : n);
+    }
+    function dropRightWhile(array, predicate) {
+      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), true, true) : [];
+    }
+    function dropWhile(array, predicate) {
+      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), true) : [];
+    }
+    function fill(array, value, start, end) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      if (start && typeof start != 'number' && isIterateeCall(array, value, start)) {
+        start = 0;
+        end = length;
+      }
+      return baseFill(array, value, start, end);
+    }
+    function findIndex(array, predicate, fromIndex) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return -1;
+      }
+      var index = fromIndex == null ? 0 : toInteger(fromIndex);
+      if (index < 0) {
+        index = nativeMax(length + index, 0);
+      }
+      return baseFindIndex(array, getIteratee(predicate, 3), index);
+    }
+    function findLastIndex(array, predicate, fromIndex) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return -1;
+      }
+      var index = length - 1;
+      if (fromIndex !== undefined) {
+        index = toInteger(fromIndex);
+        index = fromIndex < 0 ? nativeMax(length + index, 0) : nativeMin(index, length - 1);
+      }
+      return baseFindIndex(array, getIteratee(predicate, 3), index, true);
+    }
+    function flatten(array) {
+      var length = array ? array.length : 0;
+      return length ? baseFlatten(array, 1) : [];
+    }
+    function flattenDeep(array) {
+      var length = array ? array.length : 0;
+      return length ? baseFlatten(array, INFINITY) : [];
+    }
+    function flattenDepth(array, depth) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      depth = depth === undefined ? 1 : toInteger(depth);
+      return baseFlatten(array, depth);
+    }
+    function fromPairs(pairs) {
+      var index = -1,
+          length = pairs ? pairs.length : 0,
+          result = {};
+      while (++index < length) {
+        var pair = pairs[index];
+        result[pair[0]] = pair[1];
+      }
+      return result;
+    }
+    function head(array) {
+      return (array && array.length) ? array[0] : undefined;
+    }
+    function indexOf(array, value, fromIndex) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return -1;
+      }
+      var index = fromIndex == null ? 0 : toInteger(fromIndex);
+      if (index < 0) {
+        index = nativeMax(length + index, 0);
+      }
+      return baseIndexOf(array, value, index);
+    }
+    function initial(array) {
+      return dropRight(array, 1);
+    }
+    var intersection = rest(function(arrays) {
+      var mapped = arrayMap(arrays, castArrayLikeObject);
+      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped) : [];
+    });
+    var intersectionBy = rest(function(arrays) {
+      var iteratee = last(arrays),
+          mapped = arrayMap(arrays, castArrayLikeObject);
+      if (iteratee === last(mapped)) {
+        iteratee = undefined;
+      } else {
+        mapped.pop();
+      }
+      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped, getIteratee(iteratee)) : [];
+    });
+    var intersectionWith = rest(function(arrays) {
+      var comparator = last(arrays),
+          mapped = arrayMap(arrays, castArrayLikeObject);
+      if (comparator === last(mapped)) {
+        comparator = undefined;
+      } else {
+        mapped.pop();
+      }
+      return (mapped.length && mapped[0] === arrays[0]) ? baseIntersection(mapped, undefined, comparator) : [];
+    });
+    function join(array, separator) {
+      return array ? nativeJoin.call(array, separator) : '';
+    }
+    function last(array) {
+      var length = array ? array.length : 0;
+      return length ? array[length - 1] : undefined;
+    }
+    function lastIndexOf(array, value, fromIndex) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return -1;
+      }
+      var index = length;
+      if (fromIndex !== undefined) {
+        index = toInteger(fromIndex);
+        index = (index < 0 ? nativeMax(length + index, 0) : nativeMin(index, length - 1)) + 1;
+      }
+      if (value !== value) {
+        return indexOfNaN(array, index - 1, true);
+      }
+      while (index--) {
+        if (array[index] === value) {
+          return index;
+        }
+      }
+      return -1;
+    }
+    function nth(array, n) {
+      return (array && array.length) ? baseNth(array, toInteger(n)) : undefined;
+    }
+    var pull = rest(pullAll);
+    function pullAll(array, values) {
+      return (array && array.length && values && values.length) ? basePullAll(array, values) : array;
+    }
+    function pullAllBy(array, values, iteratee) {
+      return (array && array.length && values && values.length) ? basePullAll(array, values, getIteratee(iteratee)) : array;
+    }
+    function pullAllWith(array, values, comparator) {
+      return (array && array.length && values && values.length) ? basePullAll(array, values, undefined, comparator) : array;
+    }
+    var pullAt = rest(function(array, indexes) {
+      indexes = baseFlatten(indexes, 1);
+      var length = array ? array.length : 0,
+          result = baseAt(array, indexes);
+      basePullAt(array, arrayMap(indexes, function(index) {
+        return isIndex(index, length) ? +index : index;
+      }).sort(compareAscending));
+      return result;
+    });
+    function remove(array, predicate) {
+      var result = [];
+      if (!(array && array.length)) {
+        return result;
+      }
+      var index = -1,
+          indexes = [],
+          length = array.length;
+      predicate = getIteratee(predicate, 3);
+      while (++index < length) {
+        var value = array[index];
+        if (predicate(value, index, array)) {
+          result.push(value);
+          indexes.push(index);
+        }
+      }
+      basePullAt(array, indexes);
+      return result;
+    }
+    function reverse(array) {
+      return array ? nativeReverse.call(array) : array;
+    }
+    function slice(array, start, end) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      if (end && typeof end != 'number' && isIterateeCall(array, start, end)) {
+        start = 0;
+        end = length;
+      } else {
+        start = start == null ? 0 : toInteger(start);
+        end = end === undefined ? length : toInteger(end);
+      }
+      return baseSlice(array, start, end);
+    }
+    function sortedIndex(array, value) {
+      return baseSortedIndex(array, value);
+    }
+    function sortedIndexBy(array, value, iteratee) {
+      return baseSortedIndexBy(array, value, getIteratee(iteratee));
+    }
+    function sortedIndexOf(array, value) {
+      var length = array ? array.length : 0;
+      if (length) {
+        var index = baseSortedIndex(array, value);
+        if (index < length && eq(array[index], value)) {
+          return index;
+        }
+      }
+      return -1;
+    }
+    function sortedLastIndex(array, value) {
+      return baseSortedIndex(array, value, true);
+    }
+    function sortedLastIndexBy(array, value, iteratee) {
+      return baseSortedIndexBy(array, value, getIteratee(iteratee), true);
+    }
+    function sortedLastIndexOf(array, value) {
+      var length = array ? array.length : 0;
+      if (length) {
+        var index = baseSortedIndex(array, value, true) - 1;
+        if (eq(array[index], value)) {
+          return index;
+        }
+      }
+      return -1;
+    }
+    function sortedUniq(array) {
+      return (array && array.length) ? baseSortedUniq(array) : [];
+    }
+    function sortedUniqBy(array, iteratee) {
+      return (array && array.length) ? baseSortedUniq(array, getIteratee(iteratee)) : [];
+    }
+    function tail(array) {
+      return drop(array, 1);
+    }
+    function take(array, n, guard) {
+      if (!(array && array.length)) {
+        return [];
+      }
+      n = (guard || n === undefined) ? 1 : toInteger(n);
+      return baseSlice(array, 0, n < 0 ? 0 : n);
+    }
+    function takeRight(array, n, guard) {
+      var length = array ? array.length : 0;
+      if (!length) {
+        return [];
+      }
+      n = (guard || n === undefined) ? 1 : toInteger(n);
+      n = length - n;
+      return baseSlice(array, n < 0 ? 0 : n, length);
+    }
+    function takeRightWhile(array, predicate) {
+      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3), false, true) : [];
+    }
+    function takeWhile(array, predicate) {
+      return (array && array.length) ? baseWhile(array, getIteratee(predicate, 3)) : [];
+    }
+    var union = rest(function(arrays) {
+      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true));
+    });
+    var unionBy = rest(function(arrays) {
+      var iteratee = last(arrays);
+      if (isArrayLikeObject(iteratee)) {
+        iteratee = undefined;
+      }
+      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true), getIteratee(iteratee));
+    });
+    var unionWith = rest(function(arrays) {
+      var comparator = last(arrays);
+      if (isArrayLikeObject(comparator)) {
+        comparator = undefined;
+      }
+      return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true), undefined, comparator);
+    });
+    function uniq(array) {
+      return (array && array.length) ? baseUniq(array) : [];
+    }
+    function uniqBy(array, iteratee) {
+      return (array && array.length) ? baseUniq(array, getIteratee(iteratee)) : [];
+    }
+    function uniqWith(array, comparator) {
+      return (array && array.length) ? baseUniq(array, undefined, comparator) : [];
+    }
+    function unzip(array) {
+      if (!(array && array.length)) {
+        return [];
+      }
+      var length = 0;
+      array = arrayFilter(array, function(group) {
+        if (isArrayLikeObject(group)) {
+          length = nativeMax(group.length, length);
+          return true;
+        }
+      });
+      return baseTimes(length, function(index) {
+        return arrayMap(array, baseProperty(index));
+      });
+    }
+    function unzipWith(array, iteratee) {
+      if (!(array && array.length)) {
+        return [];
+      }
+      var result = unzip(array);
+      if (iteratee == null) {
+        return result;
+      }
+      return arrayMap(result, function(group) {
+        return apply(iteratee, undefined, group);
+      });
+    }
+    var without = rest(function(array, values) {
+      return isArrayLikeObject(array) ? baseDifference(array, values) : [];
+    });
+    var xor = rest(function(arrays) {
+      return baseXor(arrayFilter(arrays, isArrayLikeObject));
+    });
+    var xorBy = rest(function(arrays) {
+      var iteratee = last(arrays);
+      if (isArrayLikeObject(iteratee)) {
+        iteratee = undefined;
+      }
+      return baseXor(arrayFilter(arrays, isArrayLikeObject), getIteratee(iteratee));
+    });
+    var xorWith = rest(function(arrays) {
+      var comparator = last(arrays);
+      if (isArrayLikeObject(comparator)) {
+        comparator = undefined;
+      }
+      return baseXor(arrayFilter(arrays, isArrayLikeObject), undefined, comparator);
+    });
+    var zip = rest(unzip);
+    function zipObject(props, values) {
+      return baseZipObject(props || [], values || [], assignValue);
+    }
+    function zipObjectDeep(props, values) {
+      return baseZipObject(props || [], values || [], baseSet);
+    }
+    var zipWith = rest(function(arrays) {
+      var length = arrays.length,
+          iteratee = length > 1 ? arrays[length - 1] : undefined;
+      iteratee = typeof iteratee == 'function' ? (arrays.pop(), iteratee) : undefined;
+      return unzipWith(arrays, iteratee);
+    });
+    function chain(value) {
+      var result = lodash(value);
+      result.__chain__ = true;
+      return result;
+    }
+    function tap(value, interceptor) {
+      interceptor(value);
+      return value;
+    }
+    function thru(value, interceptor) {
+      return interceptor(value);
+    }
+    var wrapperAt = rest(function(paths) {
+      paths = baseFlatten(paths, 1);
+      var length = paths.length,
+          start = length ? paths[0] : 0,
+          value = this.__wrapped__,
+          interceptor = function(object) {
+            return baseAt(object, paths);
+          };
+      if (length > 1 || this.__actions__.length || !(value instanceof LazyWrapper) || !isIndex(start)) {
+        return this.thru(interceptor);
+      }
+      value = value.slice(start, +start + (length ? 1 : 0));
+      value.__actions__.push({
+        'func': thru,
+        'args': [interceptor],
+        'thisArg': undefined
+      });
+      return new LodashWrapper(value, this.__chain__).thru(function(array) {
+        if (length && !array.length) {
+          array.push(undefined);
+        }
+        return array;
+      });
+    });
+    function wrapperChain() {
+      return chain(this);
+    }
+    function wrapperCommit() {
+      return new LodashWrapper(this.value(), this.__chain__);
+    }
+    function wrapperNext() {
+      if (this.__values__ === undefined) {
+        this.__values__ = toArray(this.value());
+      }
+      var done = this.__index__ >= this.__values__.length,
+          value = done ? undefined : this.__values__[this.__index__++];
+      return {
+        'done': done,
+        'value': value
+      };
+    }
+    function wrapperToIterator() {
+      return this;
+    }
+    function wrapperPlant(value) {
+      var result,
+          parent = this;
+      while (parent instanceof baseLodash) {
+        var clone = wrapperClone(parent);
+        clone.__index__ = 0;
+        clone.__values__ = undefined;
+        if (result) {
+          previous.__wrapped__ = clone;
+        } else {
+          result = clone;
+        }
+        var previous = clone;
+        parent = parent.__wrapped__;
+      }
+      previous.__wrapped__ = value;
+      return result;
+    }
+    function wrapperReverse() {
+      var value = this.__wrapped__;
+      if (value instanceof LazyWrapper) {
+        var wrapped = value;
+        if (this.__actions__.length) {
+          wrapped = new LazyWrapper(this);
+        }
+        wrapped = wrapped.reverse();
+        wrapped.__actions__.push({
+          'func': thru,
+          'args': [reverse],
+          'thisArg': undefined
+        });
+        return new LodashWrapper(wrapped, this.__chain__);
+      }
+      return this.thru(reverse);
+    }
+    function wrapperValue() {
+      return baseWrapperValue(this.__wrapped__, this.__actions__);
+    }
+    var countBy = createAggregator(function(result, value, key) {
+      hasOwnProperty.call(result, key) ? ++result[key] : (result[key] = 1);
+    });
+    function every(collection, predicate, guard) {
+      var func = isArray(collection) ? arrayEvery : baseEvery;
+      if (guard && isIterateeCall(collection, predicate, guard)) {
+        predicate = undefined;
+      }
+      return func(collection, getIteratee(predicate, 3));
+    }
+    function filter(collection, predicate) {
+      var func = isArray(collection) ? arrayFilter : baseFilter;
+      return func(collection, getIteratee(predicate, 3));
+    }
+    var find = createFind(findIndex);
+    var findLast = createFind(findLastIndex);
+    function flatMap(collection, iteratee) {
+      return baseFlatten(map(collection, iteratee), 1);
+    }
+    function flatMapDeep(collection, iteratee) {
+      return baseFlatten(map(collection, iteratee), INFINITY);
+    }
+    function flatMapDepth(collection, iteratee, depth) {
+      depth = depth === undefined ? 1 : toInteger(depth);
+      return baseFlatten(map(collection, iteratee), depth);
+    }
+    function forEach(collection, iteratee) {
+      var func = isArray(collection) ? arrayEach : baseEach;
+      return func(collection, getIteratee(iteratee, 3));
+    }
+    function forEachRight(collection, iteratee) {
+      var func = isArray(collection) ? arrayEachRight : baseEachRight;
+      return func(collection, getIteratee(iteratee, 3));
+    }
+    var groupBy = createAggregator(function(result, value, key) {
+      if (hasOwnProperty.call(result, key)) {
+        result[key].push(value);
+      } else {
+        result[key] = [value];
+      }
+    });
+    function includes(collection, value, fromIndex, guard) {
+      collection = isArrayLike(collection) ? collection : values(collection);
+      fromIndex = (fromIndex && !guard) ? toInteger(fromIndex) : 0;
+      var length = collection.length;
+      if (fromIndex < 0) {
+        fromIndex = nativeMax(length + fromIndex, 0);
+      }
+      return isString(collection) ? (fromIndex <= length && collection.indexOf(value, fromIndex) > -1) : (!!length && baseIndexOf(collection, value, fromIndex) > -1);
+    }
+    var invokeMap = rest(function(collection, path, args) {
+      var index = -1,
+          isFunc = typeof path == 'function',
+          isProp = isKey(path),
+          result = isArrayLike(collection) ? Array(collection.length) : [];
+      baseEach(collection, function(value) {
+        var func = isFunc ? path : ((isProp && value != null) ? value[path] : undefined);
+        result[++index] = func ? apply(func, value, args) : baseInvoke(value, path, args);
+      });
+      return result;
+    });
+    var keyBy = createAggregator(function(result, value, key) {
+      result[key] = value;
+    });
+    function map(collection, iteratee) {
+      var func = isArray(collection) ? arrayMap : baseMap;
+      return func(collection, getIteratee(iteratee, 3));
+    }
+    function orderBy(collection, iteratees, orders, guard) {
+      if (collection == null) {
+        return [];
+      }
+      if (!isArray(iteratees)) {
+        iteratees = iteratees == null ? [] : [iteratees];
+      }
+      orders = guard ? undefined : orders;
+      if (!isArray(orders)) {
+        orders = orders == null ? [] : [orders];
+      }
+      return baseOrderBy(collection, iteratees, orders);
+    }
+    var partition = createAggregator(function(result, value, key) {
+      result[key ? 0 : 1].push(value);
+    }, function() {
+      return [[], []];
+    });
+    function reduce(collection, iteratee, accumulator) {
+      var func = isArray(collection) ? arrayReduce : baseReduce,
+          initAccum = arguments.length < 3;
+      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEach);
+    }
+    function reduceRight(collection, iteratee, accumulator) {
+      var func = isArray(collection) ? arrayReduceRight : baseReduce,
+          initAccum = arguments.length < 3;
+      return func(collection, getIteratee(iteratee, 4), accumulator, initAccum, baseEachRight);
+    }
+    function reject(collection, predicate) {
+      var func = isArray(collection) ? arrayFilter : baseFilter;
+      predicate = getIteratee(predicate, 3);
+      return func(collection, function(value, index, collection) {
+        return !predicate(value, index, collection);
+      });
+    }
+    function sample(collection) {
+      var array = isArrayLike(collection) ? collection : values(collection),
+          length = array.length;
+      return length > 0 ? array[baseRandom(0, length - 1)] : undefined;
+    }
+    function sampleSize(collection, n, guard) {
+      var index = -1,
+          result = toArray(collection),
+          length = result.length,
+          lastIndex = length - 1;
+      if ((guard ? isIterateeCall(collection, n, guard) : n === undefined)) {
+        n = 1;
+      } else {
+        n = baseClamp(toInteger(n), 0, length);
+      }
+      while (++index < n) {
+        var rand = baseRandom(index, lastIndex),
+            value = result[rand];
+        result[rand] = result[index];
+        result[index] = value;
+      }
+      result.length = n;
+      return result;
+    }
+    function shuffle(collection) {
+      return sampleSize(collection, MAX_ARRAY_LENGTH);
+    }
+    function size(collection) {
+      if (collection == null) {
+        return 0;
+      }
+      if (isArrayLike(collection)) {
+        var result = collection.length;
+        return (result && isString(collection)) ? stringSize(collection) : result;
+      }
+      if (isObjectLike(collection)) {
+        var tag = getTag(collection);
+        if (tag == mapTag || tag == setTag) {
+          return collection.size;
+        }
+      }
+      return keys(collection).length;
+    }
+    function some(collection, predicate, guard) {
+      var func = isArray(collection) ? arraySome : baseSome;
+      if (guard && isIterateeCall(collection, predicate, guard)) {
+        predicate = undefined;
+      }
+      return func(collection, getIteratee(predicate, 3));
+    }
+    var sortBy = rest(function(collection, iteratees) {
+      if (collection == null) {
+        return [];
+      }
+      var length = iteratees.length;
+      if (length > 1 && isIterateeCall(collection, iteratees[0], iteratees[1])) {
+        iteratees = [];
+      } else if (length > 2 && isIterateeCall(iteratees[0], iteratees[1], iteratees[2])) {
+        iteratees = [iteratees[0]];
+      }
+      iteratees = (iteratees.length == 1 && isArray(iteratees[0])) ? iteratees[0] : baseFlatten(iteratees, 1, isFlattenableIteratee);
+      return baseOrderBy(collection, iteratees, []);
+    });
+    function now() {
+      return Date.now();
+    }
+    function after(n, func) {
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      n = toInteger(n);
+      return function() {
+        if (--n < 1) {
+          return func.apply(this, arguments);
+        }
+      };
+    }
+    function ary(func, n, guard) {
+      n = guard ? undefined : n;
+      n = (func && n == null) ? func.length : n;
+      return createWrapper(func, ARY_FLAG, undefined, undefined, undefined, undefined, n);
+    }
+    function before(n, func) {
+      var result;
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      n = toInteger(n);
+      return function() {
+        if (--n > 0) {
+          result = func.apply(this, arguments);
+        }
+        if (n <= 1) {
+          func = undefined;
+        }
+        return result;
+      };
+    }
+    var bind = rest(function(func, thisArg, partials) {
+      var bitmask = BIND_FLAG;
+      if (partials.length) {
+        var holders = replaceHolders(partials, getHolder(bind));
+        bitmask |= PARTIAL_FLAG;
+      }
+      return createWrapper(func, bitmask, thisArg, partials, holders);
+    });
+    var bindKey = rest(function(object, key, partials) {
+      var bitmask = BIND_FLAG | BIND_KEY_FLAG;
+      if (partials.length) {
+        var holders = replaceHolders(partials, getHolder(bindKey));
+        bitmask |= PARTIAL_FLAG;
+      }
+      return createWrapper(key, bitmask, object, partials, holders);
+    });
+    function curry(func, arity, guard) {
+      arity = guard ? undefined : arity;
+      var result = createWrapper(func, CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
+      result.placeholder = curry.placeholder;
+      return result;
+    }
+    function curryRight(func, arity, guard) {
+      arity = guard ? undefined : arity;
+      var result = createWrapper(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
+      result.placeholder = curryRight.placeholder;
+      return result;
+    }
+    function debounce(func, wait, options) {
+      var lastArgs,
+          lastThis,
+          maxWait,
+          result,
+          timerId,
+          lastCallTime,
+          lastInvokeTime = 0,
+          leading = false,
+          maxing = false,
+          trailing = true;
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      wait = toNumber(wait) || 0;
+      if (isObject(options)) {
+        leading = !!options.leading;
+        maxing = 'maxWait' in options;
+        maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+        trailing = 'trailing' in options ? !!options.trailing : trailing;
+      }
+      function invokeFunc(time) {
+        var args = lastArgs,
+            thisArg = lastThis;
+        lastArgs = lastThis = undefined;
+        lastInvokeTime = time;
+        result = func.apply(thisArg, args);
+        return result;
+      }
+      function leadingEdge(time) {
+        lastInvokeTime = time;
+        timerId = setTimeout(timerExpired, wait);
+        return leading ? invokeFunc(time) : result;
+      }
+      function remainingWait(time) {
+        var timeSinceLastCall = time - lastCallTime,
+            timeSinceLastInvoke = time - lastInvokeTime,
+            result = wait - timeSinceLastCall;
+        return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
+      }
+      function shouldInvoke(time) {
+        var timeSinceLastCall = time - lastCallTime,
+            timeSinceLastInvoke = time - lastInvokeTime;
+        return (lastCallTime === undefined || (timeSinceLastCall >= wait) || (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+      }
+      function timerExpired() {
+        var time = now();
+        if (shouldInvoke(time)) {
+          return trailingEdge(time);
+        }
+        timerId = setTimeout(timerExpired, remainingWait(time));
+      }
+      function trailingEdge(time) {
+        timerId = undefined;
+        if (trailing && lastArgs) {
+          return invokeFunc(time);
+        }
+        lastArgs = lastThis = undefined;
+        return result;
+      }
+      function cancel() {
+        lastInvokeTime = 0;
+        lastArgs = lastCallTime = lastThis = timerId = undefined;
+      }
+      function flush() {
+        return timerId === undefined ? result : trailingEdge(now());
+      }
+      function debounced() {
+        var time = now(),
+            isInvoking = shouldInvoke(time);
+        lastArgs = arguments;
+        lastThis = this;
+        lastCallTime = time;
+        if (isInvoking) {
+          if (timerId === undefined) {
+            return leadingEdge(lastCallTime);
+          }
+          if (maxing) {
+            timerId = setTimeout(timerExpired, wait);
+            return invokeFunc(lastCallTime);
+          }
+        }
+        if (timerId === undefined) {
+          timerId = setTimeout(timerExpired, wait);
+        }
+        return result;
+      }
+      debounced.cancel = cancel;
+      debounced.flush = flush;
+      return debounced;
+    }
+    var defer = rest(function(func, args) {
+      return baseDelay(func, 1, args);
+    });
+    var delay = rest(function(func, wait, args) {
+      return baseDelay(func, toNumber(wait) || 0, args);
+    });
+    function flip(func) {
+      return createWrapper(func, FLIP_FLAG);
+    }
+    function memoize(func, resolver) {
+      if (typeof func != 'function' || (resolver && typeof resolver != 'function')) {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      var memoized = function() {
+        var args = arguments,
+            key = resolver ? resolver.apply(this, args) : args[0],
+            cache = memoized.cache;
+        if (cache.has(key)) {
+          return cache.get(key);
+        }
+        var result = func.apply(this, args);
+        memoized.cache = cache.set(key, result);
+        return result;
+      };
+      memoized.cache = new (memoize.Cache || MapCache);
+      return memoized;
+    }
+    memoize.Cache = MapCache;
+    function negate(predicate) {
+      if (typeof predicate != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      return function() {
+        return !predicate.apply(this, arguments);
+      };
+    }
+    function once(func) {
+      return before(2, func);
+    }
+    var overArgs = rest(function(func, transforms) {
+      transforms = (transforms.length == 1 && isArray(transforms[0])) ? arrayMap(transforms[0], baseUnary(getIteratee())) : arrayMap(baseFlatten(transforms, 1, isFlattenableIteratee), baseUnary(getIteratee()));
+      var funcsLength = transforms.length;
+      return rest(function(args) {
+        var index = -1,
+            length = nativeMin(args.length, funcsLength);
+        while (++index < length) {
+          args[index] = transforms[index].call(this, args[index]);
+        }
+        return apply(func, this, args);
+      });
+    });
+    var partial = rest(function(func, partials) {
+      var holders = replaceHolders(partials, getHolder(partial));
+      return createWrapper(func, PARTIAL_FLAG, undefined, partials, holders);
+    });
+    var partialRight = rest(function(func, partials) {
+      var holders = replaceHolders(partials, getHolder(partialRight));
+      return createWrapper(func, PARTIAL_RIGHT_FLAG, undefined, partials, holders);
+    });
+    var rearg = rest(function(func, indexes) {
+      return createWrapper(func, REARG_FLAG, undefined, undefined, undefined, baseFlatten(indexes, 1));
+    });
+    function rest(func, start) {
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      start = nativeMax(start === undefined ? (func.length - 1) : toInteger(start), 0);
+      return function() {
+        var args = arguments,
+            index = -1,
+            length = nativeMax(args.length - start, 0),
+            array = Array(length);
+        while (++index < length) {
+          array[index] = args[start + index];
+        }
+        switch (start) {
+          case 0:
+            return func.call(this, array);
+          case 1:
+            return func.call(this, args[0], array);
+          case 2:
+            return func.call(this, args[0], args[1], array);
+        }
+        var otherArgs = Array(start + 1);
+        index = -1;
+        while (++index < start) {
+          otherArgs[index] = args[index];
+        }
+        otherArgs[start] = array;
+        return apply(func, this, otherArgs);
+      };
+    }
+    function spread(func, start) {
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      start = start === undefined ? 0 : nativeMax(toInteger(start), 0);
+      return rest(function(args) {
+        var array = args[start],
+            otherArgs = castSlice(args, 0, start);
+        if (array) {
+          arrayPush(otherArgs, array);
+        }
+        return apply(func, this, otherArgs);
+      });
+    }
+    function throttle(func, wait, options) {
+      var leading = true,
+          trailing = true;
+      if (typeof func != 'function') {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      if (isObject(options)) {
+        leading = 'leading' in options ? !!options.leading : leading;
+        trailing = 'trailing' in options ? !!options.trailing : trailing;
+      }
+      return debounce(func, wait, {
+        'leading': leading,
+        'maxWait': wait,
+        'trailing': trailing
+      });
+    }
+    function unary(func) {
+      return ary(func, 1);
+    }
+    function wrap(value, wrapper) {
+      wrapper = wrapper == null ? identity : wrapper;
+      return partial(wrapper, value);
+    }
+    function castArray() {
+      if (!arguments.length) {
+        return [];
+      }
+      var value = arguments[0];
+      return isArray(value) ? value : [value];
+    }
+    function clone(value) {
+      return baseClone(value, false, true);
+    }
+    function cloneWith(value, customizer) {
+      return baseClone(value, false, true, customizer);
+    }
+    function cloneDeep(value) {
+      return baseClone(value, true, true);
+    }
+    function cloneDeepWith(value, customizer) {
+      return baseClone(value, true, true, customizer);
+    }
+    function eq(value, other) {
+      return value === other || (value !== value && other !== other);
+    }
+    var gt = createRelationalOperation(baseGt);
+    var gte = createRelationalOperation(function(value, other) {
+      return value >= other;
+    });
+    function isArguments(value) {
+      return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') && (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
+    }
+    var isArray = Array.isArray;
+    function isArrayBuffer(value) {
+      return isObjectLike(value) && objectToString.call(value) == arrayBufferTag;
+    }
+    function isArrayLike(value) {
+      return value != null && isLength(getLength(value)) && !isFunction(value);
+    }
+    function isArrayLikeObject(value) {
+      return isObjectLike(value) && isArrayLike(value);
+    }
+    function isBoolean(value) {
+      return value === true || value === false || (isObjectLike(value) && objectToString.call(value) == boolTag);
+    }
+    var isBuffer = !Buffer ? stubFalse : function(value) {
+      return value instanceof Buffer;
+    };
+    function isDate(value) {
+      return isObjectLike(value) && objectToString.call(value) == dateTag;
+    }
+    function isElement(value) {
+      return !!value && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
+    }
+    function isEmpty(value) {
+      if (isArrayLike(value) && (isArray(value) || isString(value) || isFunction(value.splice) || isArguments(value) || isBuffer(value))) {
+        return !value.length;
+      }
+      if (isObjectLike(value)) {
+        var tag = getTag(value);
+        if (tag == mapTag || tag == setTag) {
+          return !value.size;
+        }
+      }
+      for (var key in value) {
+        if (hasOwnProperty.call(value, key)) {
+          return false;
+        }
+      }
+      return !(nonEnumShadows && keys(value).length);
+    }
+    function isEqual(value, other) {
+      return baseIsEqual(value, other);
+    }
+    function isEqualWith(value, other, customizer) {
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      var result = customizer ? customizer(value, other) : undefined;
+      return result === undefined ? baseIsEqual(value, other, customizer) : !!result;
+    }
+    function isError(value) {
+      if (!isObjectLike(value)) {
+        return false;
+      }
+      return (objectToString.call(value) == errorTag) || (typeof value.message == 'string' && typeof value.name == 'string');
+    }
+    function isFinite(value) {
+      return typeof value == 'number' && nativeIsFinite(value);
+    }
+    function isFunction(value) {
+      var tag = isObject(value) ? objectToString.call(value) : '';
+      return tag == funcTag || tag == genTag;
+    }
+    function isInteger(value) {
+      return typeof value == 'number' && value == toInteger(value);
+    }
+    function isLength(value) {
+      return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+    }
+    function isObject(value) {
+      var type = typeof value;
+      return !!value && (type == 'object' || type == 'function');
+    }
+    function isObjectLike(value) {
+      return !!value && typeof value == 'object';
+    }
+    function isMap(value) {
+      return isObjectLike(value) && getTag(value) == mapTag;
+    }
+    function isMatch(object, source) {
+      return object === source || baseIsMatch(object, source, getMatchData(source));
+    }
+    function isMatchWith(object, source, customizer) {
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      return baseIsMatch(object, source, getMatchData(source), customizer);
+    }
+    function isNaN(value) {
+      return isNumber(value) && value != +value;
+    }
+    function isNative(value) {
+      if (isMaskable(value)) {
+        throw new Error('This method is not supported with `core-js`. Try https://github.com/es-shims.');
+      }
+      return baseIsNative(value);
+    }
+    function isNull(value) {
+      return value === null;
+    }
+    function isNil(value) {
+      return value == null;
+    }
+    function isNumber(value) {
+      return typeof value == 'number' || (isObjectLike(value) && objectToString.call(value) == numberTag);
+    }
+    function isPlainObject(value) {
+      if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
+        return false;
+      }
+      var proto = getPrototype(value);
+      if (proto === null) {
+        return true;
+      }
+      var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
+      return (typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
+    }
+    function isRegExp(value) {
+      return isObject(value) && objectToString.call(value) == regexpTag;
+    }
+    function isSafeInteger(value) {
+      return isInteger(value) && value >= -MAX_SAFE_INTEGER && value <= MAX_SAFE_INTEGER;
+    }
+    function isSet(value) {
+      return isObjectLike(value) && getTag(value) == setTag;
+    }
+    function isString(value) {
+      return typeof value == 'string' || (!isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag);
+    }
+    function isSymbol(value) {
+      return typeof value == 'symbol' || (isObjectLike(value) && objectToString.call(value) == symbolTag);
+    }
+    function isTypedArray(value) {
+      return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objectToString.call(value)];
+    }
+    function isUndefined(value) {
+      return value === undefined;
+    }
+    function isWeakMap(value) {
+      return isObjectLike(value) && getTag(value) == weakMapTag;
+    }
+    function isWeakSet(value) {
+      return isObjectLike(value) && objectToString.call(value) == weakSetTag;
+    }
+    var lt = createRelationalOperation(baseLt);
+    var lte = createRelationalOperation(function(value, other) {
+      return value <= other;
+    });
+    function toArray(value) {
+      if (!value) {
+        return [];
+      }
+      if (isArrayLike(value)) {
+        return isString(value) ? stringToArray(value) : copyArray(value);
+      }
+      if (iteratorSymbol && value[iteratorSymbol]) {
+        return iteratorToArray(value[iteratorSymbol]());
+      }
+      var tag = getTag(value),
+          func = tag == mapTag ? mapToArray : (tag == setTag ? setToArray : values);
+      return func(value);
+    }
+    function toFinite(value) {
+      if (!value) {
+        return value === 0 ? value : 0;
+      }
+      value = toNumber(value);
+      if (value === INFINITY || value === -INFINITY) {
+        var sign = (value < 0 ? -1 : 1);
+        return sign * MAX_INTEGER;
+      }
+      return value === value ? value : 0;
+    }
+    function toInteger(value) {
+      var result = toFinite(value),
+          remainder = result % 1;
+      return result === result ? (remainder ? result - remainder : result) : 0;
+    }
+    function toLength(value) {
+      return value ? baseClamp(toInteger(value), 0, MAX_ARRAY_LENGTH) : 0;
+    }
+    function toNumber(value) {
+      if (typeof value == 'number') {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return NAN;
+      }
+      if (isObject(value)) {
+        var other = isFunction(value.valueOf) ? value.valueOf() : value;
+        value = isObject(other) ? (other + '') : other;
+      }
+      if (typeof value != 'string') {
+        return value === 0 ? value : +value;
+      }
+      value = value.replace(reTrim, '');
+      var isBinary = reIsBinary.test(value);
+      return (isBinary || reIsOctal.test(value)) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : (reIsBadHex.test(value) ? NAN : +value);
+    }
+    function toPlainObject(value) {
+      return copyObject(value, keysIn(value));
+    }
+    function toSafeInteger(value) {
+      return baseClamp(toInteger(value), -MAX_SAFE_INTEGER, MAX_SAFE_INTEGER);
+    }
+    function toString(value) {
+      return value == null ? '' : baseToString(value);
+    }
+    var assign = createAssigner(function(object, source) {
+      if (nonEnumShadows || isPrototype(source) || isArrayLike(source)) {
+        copyObject(source, keys(source), object);
+        return;
+      }
+      for (var key in source) {
+        if (hasOwnProperty.call(source, key)) {
+          assignValue(object, key, source[key]);
+        }
+      }
+    });
+    var assignIn = createAssigner(function(object, source) {
+      if (nonEnumShadows || isPrototype(source) || isArrayLike(source)) {
+        copyObject(source, keysIn(source), object);
+        return;
+      }
+      for (var key in source) {
+        assignValue(object, key, source[key]);
+      }
+    });
+    var assignInWith = createAssigner(function(object, source, srcIndex, customizer) {
+      copyObject(source, keysIn(source), object, customizer);
+    });
+    var assignWith = createAssigner(function(object, source, srcIndex, customizer) {
+      copyObject(source, keys(source), object, customizer);
+    });
+    var at = rest(function(object, paths) {
+      return baseAt(object, baseFlatten(paths, 1));
+    });
+    function create(prototype, properties) {
+      var result = baseCreate(prototype);
+      return properties ? baseAssign(result, properties) : result;
+    }
+    var defaults = rest(function(args) {
+      args.push(undefined, assignInDefaults);
+      return apply(assignInWith, undefined, args);
+    });
+    var defaultsDeep = rest(function(args) {
+      args.push(undefined, mergeDefaults);
+      return apply(mergeWith, undefined, args);
+    });
+    function findKey(object, predicate) {
+      return baseFindKey(object, getIteratee(predicate, 3), baseForOwn);
+    }
+    function findLastKey(object, predicate) {
+      return baseFindKey(object, getIteratee(predicate, 3), baseForOwnRight);
+    }
+    function forIn(object, iteratee) {
+      return object == null ? object : baseFor(object, getIteratee(iteratee, 3), keysIn);
+    }
+    function forInRight(object, iteratee) {
+      return object == null ? object : baseForRight(object, getIteratee(iteratee, 3), keysIn);
+    }
+    function forOwn(object, iteratee) {
+      return object && baseForOwn(object, getIteratee(iteratee, 3));
+    }
+    function forOwnRight(object, iteratee) {
+      return object && baseForOwnRight(object, getIteratee(iteratee, 3));
+    }
+    function functions(object) {
+      return object == null ? [] : baseFunctions(object, keys(object));
+    }
+    function functionsIn(object) {
+      return object == null ? [] : baseFunctions(object, keysIn(object));
+    }
+    function get(object, path, defaultValue) {
+      var result = object == null ? undefined : baseGet(object, path);
+      return result === undefined ? defaultValue : result;
+    }
+    function has(object, path) {
+      return object != null && hasPath(object, path, baseHas);
+    }
+    function hasIn(object, path) {
+      return object != null && hasPath(object, path, baseHasIn);
+    }
+    var invert = createInverter(function(result, value, key) {
+      result[value] = key;
+    }, constant(identity));
+    var invertBy = createInverter(function(result, value, key) {
+      if (hasOwnProperty.call(result, value)) {
+        result[value].push(key);
+      } else {
+        result[value] = [key];
+      }
+    }, getIteratee);
+    var invoke = rest(baseInvoke);
+    function keys(object) {
+      var isProto = isPrototype(object);
+      if (!(isProto || isArrayLike(object))) {
+        return baseKeys(object);
+      }
+      var indexes = indexKeys(object),
+          skipIndexes = !!indexes,
+          result = indexes || [],
+          length = result.length;
+      for (var key in object) {
+        if (baseHas(object, key) && !(skipIndexes && (key == 'length' || isIndex(key, length))) && !(isProto && key == 'constructor')) {
+          result.push(key);
+        }
+      }
+      return result;
+    }
+    function keysIn(object) {
+      var index = -1,
+          isProto = isPrototype(object),
+          props = baseKeysIn(object),
+          propsLength = props.length,
+          indexes = indexKeys(object),
+          skipIndexes = !!indexes,
+          result = indexes || [],
+          length = result.length;
+      while (++index < propsLength) {
+        var key = props[index];
+        if (!(skipIndexes && (key == 'length' || isIndex(key, length))) && !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+          result.push(key);
+        }
+      }
+      return result;
+    }
+    function mapKeys(object, iteratee) {
+      var result = {};
+      iteratee = getIteratee(iteratee, 3);
+      baseForOwn(object, function(value, key, object) {
+        result[iteratee(value, key, object)] = value;
+      });
+      return result;
+    }
+    function mapValues(object, iteratee) {
+      var result = {};
+      iteratee = getIteratee(iteratee, 3);
+      baseForOwn(object, function(value, key, object) {
+        result[key] = iteratee(value, key, object);
+      });
+      return result;
+    }
+    var merge = createAssigner(function(object, source, srcIndex) {
+      baseMerge(object, source, srcIndex);
+    });
+    var mergeWith = createAssigner(function(object, source, srcIndex, customizer) {
+      baseMerge(object, source, srcIndex, customizer);
+    });
+    var omit = rest(function(object, props) {
+      if (object == null) {
+        return {};
+      }
+      props = arrayMap(baseFlatten(props, 1), toKey);
+      return basePick(object, baseDifference(getAllKeysIn(object), props));
+    });
+    function omitBy(object, predicate) {
+      predicate = getIteratee(predicate);
+      return basePickBy(object, function(value, key) {
+        return !predicate(value, key);
+      });
+    }
+    var pick = rest(function(object, props) {
+      return object == null ? {} : basePick(object, arrayMap(baseFlatten(props, 1), toKey));
+    });
+    function pickBy(object, predicate) {
+      return object == null ? {} : basePickBy(object, getIteratee(predicate));
+    }
+    function result(object, path, defaultValue) {
+      path = isKey(path, object) ? [path] : castPath(path);
+      var index = -1,
+          length = path.length;
+      if (!length) {
+        object = undefined;
+        length = 1;
+      }
+      while (++index < length) {
+        var value = object == null ? undefined : object[toKey(path[index])];
+        if (value === undefined) {
+          index = length;
+          value = defaultValue;
+        }
+        object = isFunction(value) ? value.call(object) : value;
+      }
+      return object;
+    }
+    function set(object, path, value) {
+      return object == null ? object : baseSet(object, path, value);
+    }
+    function setWith(object, path, value, customizer) {
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      return object == null ? object : baseSet(object, path, value, customizer);
+    }
+    var toPairs = createToPairs(keys);
+    var toPairsIn = createToPairs(keysIn);
+    function transform(object, iteratee, accumulator) {
+      var isArr = isArray(object) || isTypedArray(object);
+      iteratee = getIteratee(iteratee, 4);
+      if (accumulator == null) {
+        if (isArr || isObject(object)) {
+          var Ctor = object.constructor;
+          if (isArr) {
+            accumulator = isArray(object) ? new Ctor : [];
+          } else {
+            accumulator = isFunction(Ctor) ? baseCreate(getPrototype(object)) : {};
+          }
+        } else {
+          accumulator = {};
+        }
+      }
+      (isArr ? arrayEach : baseForOwn)(object, function(value, index, object) {
+        return iteratee(accumulator, value, index, object);
+      });
+      return accumulator;
+    }
+    function unset(object, path) {
+      return object == null ? true : baseUnset(object, path);
+    }
+    function update(object, path, updater) {
+      return object == null ? object : baseUpdate(object, path, castFunction(updater));
+    }
+    function updateWith(object, path, updater, customizer) {
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      return object == null ? object : baseUpdate(object, path, castFunction(updater), customizer);
+    }
+    function values(object) {
+      return object ? baseValues(object, keys(object)) : [];
+    }
+    function valuesIn(object) {
+      return object == null ? [] : baseValues(object, keysIn(object));
+    }
+    function clamp(number, lower, upper) {
+      if (upper === undefined) {
+        upper = lower;
+        lower = undefined;
+      }
+      if (upper !== undefined) {
+        upper = toNumber(upper);
+        upper = upper === upper ? upper : 0;
+      }
+      if (lower !== undefined) {
+        lower = toNumber(lower);
+        lower = lower === lower ? lower : 0;
+      }
+      return baseClamp(toNumber(number), lower, upper);
+    }
+    function inRange(number, start, end) {
+      start = toNumber(start) || 0;
+      if (end === undefined) {
+        end = start;
+        start = 0;
+      } else {
+        end = toNumber(end) || 0;
+      }
+      number = toNumber(number);
+      return baseInRange(number, start, end);
+    }
+    function random(lower, upper, floating) {
+      if (floating && typeof floating != 'boolean' && isIterateeCall(lower, upper, floating)) {
+        upper = floating = undefined;
+      }
+      if (floating === undefined) {
+        if (typeof upper == 'boolean') {
+          floating = upper;
+          upper = undefined;
+        } else if (typeof lower == 'boolean') {
+          floating = lower;
+          lower = undefined;
+        }
+      }
+      if (lower === undefined && upper === undefined) {
+        lower = 0;
+        upper = 1;
+      } else {
+        lower = toNumber(lower) || 0;
+        if (upper === undefined) {
+          upper = lower;
+          lower = 0;
+        } else {
+          upper = toNumber(upper) || 0;
+        }
+      }
+      if (lower > upper) {
+        var temp = lower;
+        lower = upper;
+        upper = temp;
+      }
+      if (floating || lower % 1 || upper % 1) {
+        var rand = nativeRandom();
+        return nativeMin(lower + (rand * (upper - lower + freeParseFloat('1e-' + ((rand + '').length - 1)))), upper);
+      }
+      return baseRandom(lower, upper);
+    }
+    var camelCase = createCompounder(function(result, word, index) {
+      word = word.toLowerCase();
+      return result + (index ? capitalize(word) : word);
+    });
+    function capitalize(string) {
+      return upperFirst(toString(string).toLowerCase());
+    }
+    function deburr(string) {
+      string = toString(string);
+      return string && string.replace(reLatin1, deburrLetter).replace(reComboMark, '');
+    }
+    function endsWith(string, target, position) {
+      string = toString(string);
+      target = baseToString(target);
+      var length = string.length;
+      position = position === undefined ? length : baseClamp(toInteger(position), 0, length);
+      position -= target.length;
+      return position >= 0 && string.indexOf(target, position) == position;
+    }
+    function escape(string) {
+      string = toString(string);
+      return (string && reHasUnescapedHtml.test(string)) ? string.replace(reUnescapedHtml, escapeHtmlChar) : string;
+    }
+    function escapeRegExp(string) {
+      string = toString(string);
+      return (string && reHasRegExpChar.test(string)) ? string.replace(reRegExpChar, '\\$&') : string;
+    }
+    var kebabCase = createCompounder(function(result, word, index) {
+      return result + (index ? '-' : '') + word.toLowerCase();
+    });
+    var lowerCase = createCompounder(function(result, word, index) {
+      return result + (index ? ' ' : '') + word.toLowerCase();
+    });
+    var lowerFirst = createCaseFirst('toLowerCase');
+    function pad(string, length, chars) {
+      string = toString(string);
+      length = toInteger(length);
+      var strLength = length ? stringSize(string) : 0;
+      if (!length || strLength >= length) {
+        return string;
+      }
+      var mid = (length - strLength) / 2;
+      return (createPadding(nativeFloor(mid), chars) + string + createPadding(nativeCeil(mid), chars));
+    }
+    function padEnd(string, length, chars) {
+      string = toString(string);
+      length = toInteger(length);
+      var strLength = length ? stringSize(string) : 0;
+      return (length && strLength < length) ? (string + createPadding(length - strLength, chars)) : string;
+    }
+    function padStart(string, length, chars) {
+      string = toString(string);
+      length = toInteger(length);
+      var strLength = length ? stringSize(string) : 0;
+      return (length && strLength < length) ? (createPadding(length - strLength, chars) + string) : string;
+    }
+    function parseInt(string, radix, guard) {
+      if (guard || radix == null) {
+        radix = 0;
+      } else if (radix) {
+        radix = +radix;
+      }
+      string = toString(string).replace(reTrim, '');
+      return nativeParseInt(string, radix || (reHasHexPrefix.test(string) ? 16 : 10));
+    }
+    function repeat(string, n, guard) {
+      if ((guard ? isIterateeCall(string, n, guard) : n === undefined)) {
+        n = 1;
+      } else {
+        n = toInteger(n);
+      }
+      return baseRepeat(toString(string), n);
+    }
+    function replace() {
+      var args = arguments,
+          string = toString(args[0]);
+      return args.length < 3 ? string : nativeReplace.call(string, args[1], args[2]);
+    }
+    var snakeCase = createCompounder(function(result, word, index) {
+      return result + (index ? '_' : '') + word.toLowerCase();
+    });
+    function split(string, separator, limit) {
+      if (limit && typeof limit != 'number' && isIterateeCall(string, separator, limit)) {
+        separator = limit = undefined;
+      }
+      limit = limit === undefined ? MAX_ARRAY_LENGTH : limit >>> 0;
+      if (!limit) {
+        return [];
+      }
+      string = toString(string);
+      if (string && (typeof separator == 'string' || (separator != null && !isRegExp(separator)))) {
+        separator = baseToString(separator);
+        if (separator == '' && reHasComplexSymbol.test(string)) {
+          return castSlice(stringToArray(string), 0, limit);
+        }
+      }
+      return nativeSplit.call(string, separator, limit);
+    }
+    var startCase = createCompounder(function(result, word, index) {
+      return result + (index ? ' ' : '') + upperFirst(word);
+    });
+    function startsWith(string, target, position) {
+      string = toString(string);
+      position = baseClamp(toInteger(position), 0, string.length);
+      return string.lastIndexOf(baseToString(target), position) == position;
+    }
+    function template(string, options, guard) {
+      var settings = lodash.templateSettings;
+      if (guard && isIterateeCall(string, options, guard)) {
+        options = undefined;
+      }
+      string = toString(string);
+      options = assignInWith({}, options, settings, assignInDefaults);
+      var imports = assignInWith({}, options.imports, settings.imports, assignInDefaults),
+          importsKeys = keys(imports),
+          importsValues = baseValues(imports, importsKeys);
+      var isEscaping,
+          isEvaluating,
+          index = 0,
+          interpolate = options.interpolate || reNoMatch,
+          source = "__p += '";
+      var reDelimiters = RegExp((options.escape || reNoMatch).source + '|' + interpolate.source + '|' + (interpolate === reInterpolate ? reEsTemplate : reNoMatch).source + '|' + (options.evaluate || reNoMatch).source + '|$', 'g');
+      var sourceURL = '//# sourceURL=' + ('sourceURL' in options ? options.sourceURL : ('lodash.templateSources[' + (++templateCounter) + ']')) + '\n';
+      string.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
+        interpolateValue || (interpolateValue = esTemplateValue);
+        source += string.slice(index, offset).replace(reUnescapedString, escapeStringChar);
+        if (escapeValue) {
+          isEscaping = true;
+          source += "' +\n__e(" + escapeValue + ") +\n'";
+        }
+        if (evaluateValue) {
+          isEvaluating = true;
+          source += "';\n" + evaluateValue + ";\n__p += '";
+        }
+        if (interpolateValue) {
+          source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
+        }
+        index = offset + match.length;
+        return match;
+      });
+      source += "';\n";
+      var variable = options.variable;
+      if (!variable) {
+        source = 'with (obj) {\n' + source + '\n}\n';
+      }
+      source = (isEvaluating ? source.replace(reEmptyStringLeading, '') : source).replace(reEmptyStringMiddle, '$1').replace(reEmptyStringTrailing, '$1;');
+      source = 'function(' + (variable || 'obj') + ') {\n' + (variable ? '' : 'obj || (obj = {});\n') + "var __t, __p = ''" + (isEscaping ? ', __e = _.escape' : '') + (isEvaluating ? ', __j = Array.prototype.join;\n' + "function print() { __p += __j.call(arguments, '') }\n" : ';\n') + source + 'return __p\n}';
+      var result = attempt(function() {
+        return Function(importsKeys, sourceURL + 'return ' + source).apply(undefined, importsValues);
+      });
+      result.source = source;
+      if (isError(result)) {
+        throw result;
+      }
+      return result;
+    }
+    function toLower(value) {
+      return toString(value).toLowerCase();
+    }
+    function toUpper(value) {
+      return toString(value).toUpperCase();
+    }
+    function trim(string, chars, guard) {
+      string = toString(string);
+      if (string && (guard || chars === undefined)) {
+        return string.replace(reTrim, '');
+      }
+      if (!string || !(chars = baseToString(chars))) {
+        return string;
+      }
+      var strSymbols = stringToArray(string),
+          chrSymbols = stringToArray(chars),
+          start = charsStartIndex(strSymbols, chrSymbols),
+          end = charsEndIndex(strSymbols, chrSymbols) + 1;
+      return castSlice(strSymbols, start, end).join('');
+    }
+    function trimEnd(string, chars, guard) {
+      string = toString(string);
+      if (string && (guard || chars === undefined)) {
+        return string.replace(reTrimEnd, '');
+      }
+      if (!string || !(chars = baseToString(chars))) {
+        return string;
+      }
+      var strSymbols = stringToArray(string),
+          end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
+      return castSlice(strSymbols, 0, end).join('');
+    }
+    function trimStart(string, chars, guard) {
+      string = toString(string);
+      if (string && (guard || chars === undefined)) {
+        return string.replace(reTrimStart, '');
+      }
+      if (!string || !(chars = baseToString(chars))) {
+        return string;
+      }
+      var strSymbols = stringToArray(string),
+          start = charsStartIndex(strSymbols, stringToArray(chars));
+      return castSlice(strSymbols, start).join('');
+    }
+    function truncate(string, options) {
+      var length = DEFAULT_TRUNC_LENGTH,
+          omission = DEFAULT_TRUNC_OMISSION;
+      if (isObject(options)) {
+        var separator = 'separator' in options ? options.separator : separator;
+        length = 'length' in options ? toInteger(options.length) : length;
+        omission = 'omission' in options ? baseToString(options.omission) : omission;
+      }
+      string = toString(string);
+      var strLength = string.length;
+      if (reHasComplexSymbol.test(string)) {
+        var strSymbols = stringToArray(string);
+        strLength = strSymbols.length;
+      }
+      if (length >= strLength) {
+        return string;
+      }
+      var end = length - stringSize(omission);
+      if (end < 1) {
+        return omission;
+      }
+      var result = strSymbols ? castSlice(strSymbols, 0, end).join('') : string.slice(0, end);
+      if (separator === undefined) {
+        return result + omission;
+      }
+      if (strSymbols) {
+        end += (result.length - end);
+      }
+      if (isRegExp(separator)) {
+        if (string.slice(end).search(separator)) {
+          var match,
+              substring = result;
+          if (!separator.global) {
+            separator = RegExp(separator.source, toString(reFlags.exec(separator)) + 'g');
+          }
+          separator.lastIndex = 0;
+          while ((match = separator.exec(substring))) {
+            var newEnd = match.index;
+          }
+          result = result.slice(0, newEnd === undefined ? end : newEnd);
+        }
+      } else if (string.indexOf(baseToString(separator), end) != end) {
+        var index = result.lastIndexOf(separator);
+        if (index > -1) {
+          result = result.slice(0, index);
+        }
+      }
+      return result + omission;
+    }
+    function unescape(string) {
+      string = toString(string);
+      return (string && reHasEscapedHtml.test(string)) ? string.replace(reEscapedHtml, unescapeHtmlChar) : string;
+    }
+    var upperCase = createCompounder(function(result, word, index) {
+      return result + (index ? ' ' : '') + word.toUpperCase();
+    });
+    var upperFirst = createCaseFirst('toUpperCase');
+    function words(string, pattern, guard) {
+      string = toString(string);
+      pattern = guard ? undefined : pattern;
+      if (pattern === undefined) {
+        pattern = reHasComplexWord.test(string) ? reComplexWord : reBasicWord;
+      }
+      return string.match(pattern) || [];
+    }
+    var attempt = rest(function(func, args) {
+      try {
+        return apply(func, undefined, args);
+      } catch (e) {
+        return isError(e) ? e : new Error(e);
+      }
+    });
+    var bindAll = rest(function(object, methodNames) {
+      arrayEach(baseFlatten(methodNames, 1), function(key) {
+        key = toKey(key);
+        object[key] = bind(object[key], object);
+      });
+      return object;
+    });
+    function cond(pairs) {
+      var length = pairs ? pairs.length : 0,
+          toIteratee = getIteratee();
+      pairs = !length ? [] : arrayMap(pairs, function(pair) {
+        if (typeof pair[1] != 'function') {
+          throw new TypeError(FUNC_ERROR_TEXT);
+        }
+        return [toIteratee(pair[0]), pair[1]];
+      });
+      return rest(function(args) {
+        var index = -1;
+        while (++index < length) {
+          var pair = pairs[index];
+          if (apply(pair[0], this, args)) {
+            return apply(pair[1], this, args);
+          }
+        }
+      });
+    }
+    function conforms(source) {
+      return baseConforms(baseClone(source, true));
+    }
+    function constant(value) {
+      return function() {
+        return value;
+      };
+    }
+    var flow = createFlow();
+    var flowRight = createFlow(true);
+    function identity(value) {
+      return value;
+    }
+    function iteratee(func) {
+      return baseIteratee(typeof func == 'function' ? func : baseClone(func, true));
+    }
+    function matches(source) {
+      return baseMatches(baseClone(source, true));
+    }
+    function matchesProperty(path, srcValue) {
+      return baseMatchesProperty(path, baseClone(srcValue, true));
+    }
+    var method = rest(function(path, args) {
+      return function(object) {
+        return baseInvoke(object, path, args);
+      };
+    });
+    var methodOf = rest(function(object, args) {
+      return function(path) {
+        return baseInvoke(object, path, args);
+      };
+    });
+    function mixin(object, source, options) {
+      var props = keys(source),
+          methodNames = baseFunctions(source, props);
+      if (options == null && !(isObject(source) && (methodNames.length || !props.length))) {
+        options = source;
+        source = object;
+        object = this;
+        methodNames = baseFunctions(source, keys(source));
+      }
+      var chain = !(isObject(options) && 'chain' in options) || !!options.chain,
+          isFunc = isFunction(object);
+      arrayEach(methodNames, function(methodName) {
+        var func = source[methodName];
+        object[methodName] = func;
+        if (isFunc) {
+          object.prototype[methodName] = function() {
+            var chainAll = this.__chain__;
+            if (chain || chainAll) {
+              var result = object(this.__wrapped__),
+                  actions = result.__actions__ = copyArray(this.__actions__);
+              actions.push({
+                'func': func,
+                'args': arguments,
+                'thisArg': object
+              });
+              result.__chain__ = chainAll;
+              return result;
+            }
+            return func.apply(object, arrayPush([this.value()], arguments));
+          };
+        }
+      });
+      return object;
+    }
+    function noConflict() {
+      if (root._ === this) {
+        root._ = oldDash;
+      }
+      return this;
+    }
+    function noop() {}
+    function nthArg(n) {
+      n = toInteger(n);
+      return rest(function(args) {
+        return baseNth(args, n);
+      });
+    }
+    var over = createOver(arrayMap);
+    var overEvery = createOver(arrayEvery);
+    var overSome = createOver(arraySome);
+    function property(path) {
+      return isKey(path) ? baseProperty(toKey(path)) : basePropertyDeep(path);
+    }
+    function propertyOf(object) {
+      return function(path) {
+        return object == null ? undefined : baseGet(object, path);
+      };
+    }
+    var range = createRange();
+    var rangeRight = createRange(true);
+    function stubArray() {
+      return [];
+    }
+    function stubFalse() {
+      return false;
+    }
+    function stubObject() {
+      return {};
+    }
+    function stubString() {
+      return '';
+    }
+    function stubTrue() {
+      return true;
+    }
+    function times(n, iteratee) {
+      n = toInteger(n);
+      if (n < 1 || n > MAX_SAFE_INTEGER) {
+        return [];
+      }
+      var index = MAX_ARRAY_LENGTH,
+          length = nativeMin(n, MAX_ARRAY_LENGTH);
+      iteratee = getIteratee(iteratee);
+      n -= MAX_ARRAY_LENGTH;
+      var result = baseTimes(length, iteratee);
+      while (++index < n) {
+        iteratee(index);
+      }
+      return result;
+    }
+    function toPath(value) {
+      if (isArray(value)) {
+        return arrayMap(value, toKey);
+      }
+      return isSymbol(value) ? [value] : copyArray(stringToPath(value));
+    }
+    function uniqueId(prefix) {
+      var id = ++idCounter;
+      return toString(prefix) + id;
+    }
+    var add = createMathOperation(function(augend, addend) {
+      return augend + addend;
+    });
+    var ceil = createRound('ceil');
+    var divide = createMathOperation(function(dividend, divisor) {
+      return dividend / divisor;
+    });
+    var floor = createRound('floor');
+    function max(array) {
+      return (array && array.length) ? baseExtremum(array, identity, baseGt) : undefined;
+    }
+    function maxBy(array, iteratee) {
+      return (array && array.length) ? baseExtremum(array, getIteratee(iteratee), baseGt) : undefined;
+    }
+    function mean(array) {
+      return baseMean(array, identity);
+    }
+    function meanBy(array, iteratee) {
+      return baseMean(array, getIteratee(iteratee));
+    }
+    function min(array) {
+      return (array && array.length) ? baseExtremum(array, identity, baseLt) : undefined;
+    }
+    function minBy(array, iteratee) {
+      return (array && array.length) ? baseExtremum(array, getIteratee(iteratee), baseLt) : undefined;
+    }
+    var multiply = createMathOperation(function(multiplier, multiplicand) {
+      return multiplier * multiplicand;
+    });
+    var round = createRound('round');
+    var subtract = createMathOperation(function(minuend, subtrahend) {
+      return minuend - subtrahend;
+    });
+    function sum(array) {
+      return (array && array.length) ? baseSum(array, identity) : 0;
+    }
+    function sumBy(array, iteratee) {
+      return (array && array.length) ? baseSum(array, getIteratee(iteratee)) : 0;
+    }
+    lodash.after = after;
+    lodash.ary = ary;
+    lodash.assign = assign;
+    lodash.assignIn = assignIn;
+    lodash.assignInWith = assignInWith;
+    lodash.assignWith = assignWith;
+    lodash.at = at;
+    lodash.before = before;
+    lodash.bind = bind;
+    lodash.bindAll = bindAll;
+    lodash.bindKey = bindKey;
+    lodash.castArray = castArray;
+    lodash.chain = chain;
+    lodash.chunk = chunk;
+    lodash.compact = compact;
+    lodash.concat = concat;
+    lodash.cond = cond;
+    lodash.conforms = conforms;
+    lodash.constant = constant;
+    lodash.countBy = countBy;
+    lodash.create = create;
+    lodash.curry = curry;
+    lodash.curryRight = curryRight;
+    lodash.debounce = debounce;
+    lodash.defaults = defaults;
+    lodash.defaultsDeep = defaultsDeep;
+    lodash.defer = defer;
+    lodash.delay = delay;
+    lodash.difference = difference;
+    lodash.differenceBy = differenceBy;
+    lodash.differenceWith = differenceWith;
+    lodash.drop = drop;
+    lodash.dropRight = dropRight;
+    lodash.dropRightWhile = dropRightWhile;
+    lodash.dropWhile = dropWhile;
+    lodash.fill = fill;
+    lodash.filter = filter;
+    lodash.flatMap = flatMap;
+    lodash.flatMapDeep = flatMapDeep;
+    lodash.flatMapDepth = flatMapDepth;
+    lodash.flatten = flatten;
+    lodash.flattenDeep = flattenDeep;
+    lodash.flattenDepth = flattenDepth;
+    lodash.flip = flip;
+    lodash.flow = flow;
+    lodash.flowRight = flowRight;
+    lodash.fromPairs = fromPairs;
+    lodash.functions = functions;
+    lodash.functionsIn = functionsIn;
+    lodash.groupBy = groupBy;
+    lodash.initial = initial;
+    lodash.intersection = intersection;
+    lodash.intersectionBy = intersectionBy;
+    lodash.intersectionWith = intersectionWith;
+    lodash.invert = invert;
+    lodash.invertBy = invertBy;
+    lodash.invokeMap = invokeMap;
+    lodash.iteratee = iteratee;
+    lodash.keyBy = keyBy;
+    lodash.keys = keys;
+    lodash.keysIn = keysIn;
+    lodash.map = map;
+    lodash.mapKeys = mapKeys;
+    lodash.mapValues = mapValues;
+    lodash.matches = matches;
+    lodash.matchesProperty = matchesProperty;
+    lodash.memoize = memoize;
+    lodash.merge = merge;
+    lodash.mergeWith = mergeWith;
+    lodash.method = method;
+    lodash.methodOf = methodOf;
+    lodash.mixin = mixin;
+    lodash.negate = negate;
+    lodash.nthArg = nthArg;
+    lodash.omit = omit;
+    lodash.omitBy = omitBy;
+    lodash.once = once;
+    lodash.orderBy = orderBy;
+    lodash.over = over;
+    lodash.overArgs = overArgs;
+    lodash.overEvery = overEvery;
+    lodash.overSome = overSome;
+    lodash.partial = partial;
+    lodash.partialRight = partialRight;
+    lodash.partition = partition;
+    lodash.pick = pick;
+    lodash.pickBy = pickBy;
+    lodash.property = property;
+    lodash.propertyOf = propertyOf;
+    lodash.pull = pull;
+    lodash.pullAll = pullAll;
+    lodash.pullAllBy = pullAllBy;
+    lodash.pullAllWith = pullAllWith;
+    lodash.pullAt = pullAt;
+    lodash.range = range;
+    lodash.rangeRight = rangeRight;
+    lodash.rearg = rearg;
+    lodash.reject = reject;
+    lodash.remove = remove;
+    lodash.rest = rest;
+    lodash.reverse = reverse;
+    lodash.sampleSize = sampleSize;
+    lodash.set = set;
+    lodash.setWith = setWith;
+    lodash.shuffle = shuffle;
+    lodash.slice = slice;
+    lodash.sortBy = sortBy;
+    lodash.sortedUniq = sortedUniq;
+    lodash.sortedUniqBy = sortedUniqBy;
+    lodash.split = split;
+    lodash.spread = spread;
+    lodash.tail = tail;
+    lodash.take = take;
+    lodash.takeRight = takeRight;
+    lodash.takeRightWhile = takeRightWhile;
+    lodash.takeWhile = takeWhile;
+    lodash.tap = tap;
+    lodash.throttle = throttle;
+    lodash.thru = thru;
+    lodash.toArray = toArray;
+    lodash.toPairs = toPairs;
+    lodash.toPairsIn = toPairsIn;
+    lodash.toPath = toPath;
+    lodash.toPlainObject = toPlainObject;
+    lodash.transform = transform;
+    lodash.unary = unary;
+    lodash.union = union;
+    lodash.unionBy = unionBy;
+    lodash.unionWith = unionWith;
+    lodash.uniq = uniq;
+    lodash.uniqBy = uniqBy;
+    lodash.uniqWith = uniqWith;
+    lodash.unset = unset;
+    lodash.unzip = unzip;
+    lodash.unzipWith = unzipWith;
+    lodash.update = update;
+    lodash.updateWith = updateWith;
+    lodash.values = values;
+    lodash.valuesIn = valuesIn;
+    lodash.without = without;
+    lodash.words = words;
+    lodash.wrap = wrap;
+    lodash.xor = xor;
+    lodash.xorBy = xorBy;
+    lodash.xorWith = xorWith;
+    lodash.zip = zip;
+    lodash.zipObject = zipObject;
+    lodash.zipObjectDeep = zipObjectDeep;
+    lodash.zipWith = zipWith;
+    lodash.entries = toPairs;
+    lodash.entriesIn = toPairsIn;
+    lodash.extend = assignIn;
+    lodash.extendWith = assignInWith;
+    mixin(lodash, lodash);
+    lodash.add = add;
+    lodash.attempt = attempt;
+    lodash.camelCase = camelCase;
+    lodash.capitalize = capitalize;
+    lodash.ceil = ceil;
+    lodash.clamp = clamp;
+    lodash.clone = clone;
+    lodash.cloneDeep = cloneDeep;
+    lodash.cloneDeepWith = cloneDeepWith;
+    lodash.cloneWith = cloneWith;
+    lodash.deburr = deburr;
+    lodash.divide = divide;
+    lodash.endsWith = endsWith;
+    lodash.eq = eq;
+    lodash.escape = escape;
+    lodash.escapeRegExp = escapeRegExp;
+    lodash.every = every;
+    lodash.find = find;
+    lodash.findIndex = findIndex;
+    lodash.findKey = findKey;
+    lodash.findLast = findLast;
+    lodash.findLastIndex = findLastIndex;
+    lodash.findLastKey = findLastKey;
+    lodash.floor = floor;
+    lodash.forEach = forEach;
+    lodash.forEachRight = forEachRight;
+    lodash.forIn = forIn;
+    lodash.forInRight = forInRight;
+    lodash.forOwn = forOwn;
+    lodash.forOwnRight = forOwnRight;
+    lodash.get = get;
+    lodash.gt = gt;
+    lodash.gte = gte;
+    lodash.has = has;
+    lodash.hasIn = hasIn;
+    lodash.head = head;
+    lodash.identity = identity;
+    lodash.includes = includes;
+    lodash.indexOf = indexOf;
+    lodash.inRange = inRange;
+    lodash.invoke = invoke;
+    lodash.isArguments = isArguments;
+    lodash.isArray = isArray;
+    lodash.isArrayBuffer = isArrayBuffer;
+    lodash.isArrayLike = isArrayLike;
+    lodash.isArrayLikeObject = isArrayLikeObject;
+    lodash.isBoolean = isBoolean;
+    lodash.isBuffer = isBuffer;
+    lodash.isDate = isDate;
+    lodash.isElement = isElement;
+    lodash.isEmpty = isEmpty;
+    lodash.isEqual = isEqual;
+    lodash.isEqualWith = isEqualWith;
+    lodash.isError = isError;
+    lodash.isFinite = isFinite;
+    lodash.isFunction = isFunction;
+    lodash.isInteger = isInteger;
+    lodash.isLength = isLength;
+    lodash.isMap = isMap;
+    lodash.isMatch = isMatch;
+    lodash.isMatchWith = isMatchWith;
+    lodash.isNaN = isNaN;
+    lodash.isNative = isNative;
+    lodash.isNil = isNil;
+    lodash.isNull = isNull;
+    lodash.isNumber = isNumber;
+    lodash.isObject = isObject;
+    lodash.isObjectLike = isObjectLike;
+    lodash.isPlainObject = isPlainObject;
+    lodash.isRegExp = isRegExp;
+    lodash.isSafeInteger = isSafeInteger;
+    lodash.isSet = isSet;
+    lodash.isString = isString;
+    lodash.isSymbol = isSymbol;
+    lodash.isTypedArray = isTypedArray;
+    lodash.isUndefined = isUndefined;
+    lodash.isWeakMap = isWeakMap;
+    lodash.isWeakSet = isWeakSet;
+    lodash.join = join;
+    lodash.kebabCase = kebabCase;
+    lodash.last = last;
+    lodash.lastIndexOf = lastIndexOf;
+    lodash.lowerCase = lowerCase;
+    lodash.lowerFirst = lowerFirst;
+    lodash.lt = lt;
+    lodash.lte = lte;
+    lodash.max = max;
+    lodash.maxBy = maxBy;
+    lodash.mean = mean;
+    lodash.meanBy = meanBy;
+    lodash.min = min;
+    lodash.minBy = minBy;
+    lodash.stubArray = stubArray;
+    lodash.stubFalse = stubFalse;
+    lodash.stubObject = stubObject;
+    lodash.stubString = stubString;
+    lodash.stubTrue = stubTrue;
+    lodash.multiply = multiply;
+    lodash.nth = nth;
+    lodash.noConflict = noConflict;
+    lodash.noop = noop;
+    lodash.now = now;
+    lodash.pad = pad;
+    lodash.padEnd = padEnd;
+    lodash.padStart = padStart;
+    lodash.parseInt = parseInt;
+    lodash.random = random;
+    lodash.reduce = reduce;
+    lodash.reduceRight = reduceRight;
+    lodash.repeat = repeat;
+    lodash.replace = replace;
+    lodash.result = result;
+    lodash.round = round;
+    lodash.runInContext = runInContext;
+    lodash.sample = sample;
+    lodash.size = size;
+    lodash.snakeCase = snakeCase;
+    lodash.some = some;
+    lodash.sortedIndex = sortedIndex;
+    lodash.sortedIndexBy = sortedIndexBy;
+    lodash.sortedIndexOf = sortedIndexOf;
+    lodash.sortedLastIndex = sortedLastIndex;
+    lodash.sortedLastIndexBy = sortedLastIndexBy;
+    lodash.sortedLastIndexOf = sortedLastIndexOf;
+    lodash.startCase = startCase;
+    lodash.startsWith = startsWith;
+    lodash.subtract = subtract;
+    lodash.sum = sum;
+    lodash.sumBy = sumBy;
+    lodash.template = template;
+    lodash.times = times;
+    lodash.toFinite = toFinite;
+    lodash.toInteger = toInteger;
+    lodash.toLength = toLength;
+    lodash.toLower = toLower;
+    lodash.toNumber = toNumber;
+    lodash.toSafeInteger = toSafeInteger;
+    lodash.toString = toString;
+    lodash.toUpper = toUpper;
+    lodash.trim = trim;
+    lodash.trimEnd = trimEnd;
+    lodash.trimStart = trimStart;
+    lodash.truncate = truncate;
+    lodash.unescape = unescape;
+    lodash.uniqueId = uniqueId;
+    lodash.upperCase = upperCase;
+    lodash.upperFirst = upperFirst;
+    lodash.each = forEach;
+    lodash.eachRight = forEachRight;
+    lodash.first = head;
+    mixin(lodash, (function() {
+      var source = {};
+      baseForOwn(lodash, function(func, methodName) {
+        if (!hasOwnProperty.call(lodash.prototype, methodName)) {
+          source[methodName] = func;
+        }
+      });
+      return source;
+    }()), {'chain': false});
+    lodash.VERSION = VERSION;
+    arrayEach(['bind', 'bindKey', 'curry', 'curryRight', 'partial', 'partialRight'], function(methodName) {
+      lodash[methodName].placeholder = lodash;
+    });
+    arrayEach(['drop', 'take'], function(methodName, index) {
+      LazyWrapper.prototype[methodName] = function(n) {
+        var filtered = this.__filtered__;
+        if (filtered && !index) {
+          return new LazyWrapper(this);
+        }
+        n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
+        var result = this.clone();
+        if (filtered) {
+          result.__takeCount__ = nativeMin(n, result.__takeCount__);
+        } else {
+          result.__views__.push({
+            'size': nativeMin(n, MAX_ARRAY_LENGTH),
+            'type': methodName + (result.__dir__ < 0 ? 'Right' : '')
+          });
+        }
+        return result;
+      };
+      LazyWrapper.prototype[methodName + 'Right'] = function(n) {
+        return this.reverse()[methodName](n).reverse();
+      };
+    });
+    arrayEach(['filter', 'map', 'takeWhile'], function(methodName, index) {
+      var type = index + 1,
+          isFilter = type == LAZY_FILTER_FLAG || type == LAZY_WHILE_FLAG;
+      LazyWrapper.prototype[methodName] = function(iteratee) {
+        var result = this.clone();
+        result.__iteratees__.push({
+          'iteratee': getIteratee(iteratee, 3),
+          'type': type
+        });
+        result.__filtered__ = result.__filtered__ || isFilter;
+        return result;
+      };
+    });
+    arrayEach(['head', 'last'], function(methodName, index) {
+      var takeName = 'take' + (index ? 'Right' : '');
+      LazyWrapper.prototype[methodName] = function() {
+        return this[takeName](1).value()[0];
+      };
+    });
+    arrayEach(['initial', 'tail'], function(methodName, index) {
+      var dropName = 'drop' + (index ? '' : 'Right');
+      LazyWrapper.prototype[methodName] = function() {
+        return this.__filtered__ ? new LazyWrapper(this) : this[dropName](1);
+      };
+    });
+    LazyWrapper.prototype.compact = function() {
+      return this.filter(identity);
+    };
+    LazyWrapper.prototype.find = function(predicate) {
+      return this.filter(predicate).head();
+    };
+    LazyWrapper.prototype.findLast = function(predicate) {
+      return this.reverse().find(predicate);
+    };
+    LazyWrapper.prototype.invokeMap = rest(function(path, args) {
+      if (typeof path == 'function') {
+        return new LazyWrapper(this);
+      }
+      return this.map(function(value) {
+        return baseInvoke(value, path, args);
+      });
+    });
+    LazyWrapper.prototype.reject = function(predicate) {
+      predicate = getIteratee(predicate, 3);
+      return this.filter(function(value) {
+        return !predicate(value);
+      });
+    };
+    LazyWrapper.prototype.slice = function(start, end) {
+      start = toInteger(start);
+      var result = this;
+      if (result.__filtered__ && (start > 0 || end < 0)) {
+        return new LazyWrapper(result);
+      }
+      if (start < 0) {
+        result = result.takeRight(-start);
+      } else if (start) {
+        result = result.drop(start);
+      }
+      if (end !== undefined) {
+        end = toInteger(end);
+        result = end < 0 ? result.dropRight(-end) : result.take(end - start);
+      }
+      return result;
+    };
+    LazyWrapper.prototype.takeRightWhile = function(predicate) {
+      return this.reverse().takeWhile(predicate).reverse();
+    };
+    LazyWrapper.prototype.toArray = function() {
+      return this.take(MAX_ARRAY_LENGTH);
+    };
+    baseForOwn(LazyWrapper.prototype, function(func, methodName) {
+      var checkIteratee = /^(?:filter|find|map|reject)|While$/.test(methodName),
+          isTaker = /^(?:head|last)$/.test(methodName),
+          lodashFunc = lodash[isTaker ? ('take' + (methodName == 'last' ? 'Right' : '')) : methodName],
+          retUnwrapped = isTaker || /^find/.test(methodName);
+      if (!lodashFunc) {
+        return;
+      }
+      lodash.prototype[methodName] = function() {
+        var value = this.__wrapped__,
+            args = isTaker ? [1] : arguments,
+            isLazy = value instanceof LazyWrapper,
+            iteratee = args[0],
+            useLazy = isLazy || isArray(value);
+        var interceptor = function(value) {
+          var result = lodashFunc.apply(lodash, arrayPush([value], args));
+          return (isTaker && chainAll) ? result[0] : result;
+        };
+        if (useLazy && checkIteratee && typeof iteratee == 'function' && iteratee.length != 1) {
+          isLazy = useLazy = false;
+        }
+        var chainAll = this.__chain__,
+            isHybrid = !!this.__actions__.length,
+            isUnwrapped = retUnwrapped && !chainAll,
+            onlyLazy = isLazy && !isHybrid;
+        if (!retUnwrapped && useLazy) {
+          value = onlyLazy ? value : new LazyWrapper(this);
+          var result = func.apply(value, args);
+          result.__actions__.push({
+            'func': thru,
+            'args': [interceptor],
+            'thisArg': undefined
+          });
+          return new LodashWrapper(result, chainAll);
+        }
+        if (isUnwrapped && onlyLazy) {
+          return func.apply(this, args);
+        }
+        result = this.thru(interceptor);
+        return isUnwrapped ? (isTaker ? result.value()[0] : result.value()) : result;
+      };
+    });
+    arrayEach(['pop', 'push', 'shift', 'sort', 'splice', 'unshift'], function(methodName) {
+      var func = arrayProto[methodName],
+          chainName = /^(?:push|sort|unshift)$/.test(methodName) ? 'tap' : 'thru',
+          retUnwrapped = /^(?:pop|shift)$/.test(methodName);
+      lodash.prototype[methodName] = function() {
+        var args = arguments;
+        if (retUnwrapped && !this.__chain__) {
+          var value = this.value();
+          return func.apply(isArray(value) ? value : [], args);
+        }
+        return this[chainName](function(value) {
+          return func.apply(isArray(value) ? value : [], args);
+        });
+      };
+    });
+    baseForOwn(LazyWrapper.prototype, function(func, methodName) {
+      var lodashFunc = lodash[methodName];
+      if (lodashFunc) {
+        var key = (lodashFunc.name + ''),
+            names = realNames[key] || (realNames[key] = []);
+        names.push({
+          'name': methodName,
+          'func': lodashFunc
+        });
+      }
+    });
+    realNames[createHybridWrapper(undefined, BIND_KEY_FLAG).name] = [{
+      'name': 'wrapper',
+      'func': undefined
+    }];
+    LazyWrapper.prototype.clone = lazyClone;
+    LazyWrapper.prototype.reverse = lazyReverse;
+    LazyWrapper.prototype.value = lazyValue;
+    lodash.prototype.at = wrapperAt;
+    lodash.prototype.chain = wrapperChain;
+    lodash.prototype.commit = wrapperCommit;
+    lodash.prototype.next = wrapperNext;
+    lodash.prototype.plant = wrapperPlant;
+    lodash.prototype.reverse = wrapperReverse;
+    lodash.prototype.toJSON = lodash.prototype.valueOf = lodash.prototype.value = wrapperValue;
+    if (iteratorSymbol) {
+      lodash.prototype[iteratorSymbol] = wrapperToIterator;
+    }
+    return lodash;
+  }
+  var _ = runInContext();
+  (freeSelf || {})._ = _;
+  if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
+    define("36", [], function() {
+      return _;
+    });
+  } else if (freeModule) {
+    (freeModule.exports = _)._ = _;
+    freeExports._ = _;
+  } else {
+    root._ = _;
+  }
+}.call(this));
+
+})();
+$__System.register("c4", ["5", "e", "f", "c3", "36"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __decorate = (this && this.__decorate) || function(decorators, target, key, desc) {
@@ -42016,80 +42649,62 @@ $__System.register("c4", ["5", "e", "57", "f", "25", "48", "27"], function(expor
   };
   var core_1,
       primeng_1,
-      lookup_model_1,
       index_1,
-      tile_actions_component_1,
-      admin_taxonomy_level_editor_component_1,
-      delete_form_1;
-  var LookupItemsTile;
+      lookup_model_1,
+      lodash_1;
+  var AdminLookupTypeEditorComponent;
   return {
     setters: [function(core_1_1) {
       core_1 = core_1_1;
     }, function(primeng_1_1) {
       primeng_1 = primeng_1_1;
-    }, function(lookup_model_1_1) {
-      lookup_model_1 = lookup_model_1_1;
     }, function(index_1_1) {
       index_1 = index_1_1;
-    }, function(tile_actions_component_1_1) {
-      tile_actions_component_1 = tile_actions_component_1_1;
-    }, function(admin_taxonomy_level_editor_component_1_1) {
-      admin_taxonomy_level_editor_component_1 = admin_taxonomy_level_editor_component_1_1;
-    }, function(delete_form_1_1) {
-      delete_form_1 = delete_form_1_1;
+    }, function(lookup_model_1_1) {
+      lookup_model_1 = lookup_model_1_1;
+    }, function(lodash_1_1) {
+      lodash_1 = lodash_1_1;
     }],
     execute: function() {
-      LookupItemsTile = (function() {
-        function LookupItemsTile(lookupService, gridDefinitionService) {
+      AdminLookupTypeEditorComponent = (function() {
+        function AdminLookupTypeEditorComponent(lookupService) {
           this.lookupService = lookupService;
-          this.gridDefinitionService = gridDefinitionService;
-          this.lookup = null;
-          this.items = [];
-          this.columns = [];
-          this.showEditor = false;
-          this.showDelete = false;
-          this.isLoading = false;
-          this.selectedItem = null;
-          this.theDeleteCallback = this.deleteItem.bind(this);
+          this.closeClick = new core_1.EventEmitter();
+          this.saveClick = new core_1.EventEmitter();
+          this.action = "Edit";
         }
-        LookupItemsTile.prototype.ngOnChanges = function(changes) {
-          if (this.lookup != null)
-            this.load();
+        AdminLookupTypeEditorComponent.prototype.ngOnInit = function() {
+          if (this.lookup != undefined)
+            this.editedLookup = lodash_1.default.cloneDeep(this.lookup);
+          else {
+            this.editedLookup = new lookup_model_1.Lookup();
+            this.action = "New";
+          }
         };
-        LookupItemsTile.prototype.load = function() {
-          this.getFieldsDefinition();
-          this.getLookupItems();
-        };
-        LookupItemsTile.prototype.getFieldsDefinition = function() {
-          var _this = this;
-          this.gridDefinitionService.getGridDefinition(this.lookup.ID, "LookupType").then(function(result) {
-            _this.columns = result.Columns;
+        AdminLookupTypeEditorComponent.prototype.update = function() {
+          this.saveClick.emit({
+            lookup: this.editedLookup,
+            action: this.lookup == null ? "new" : "edit"
           });
         };
-        LookupItemsTile.prototype.getLookupItems = function() {
-          var _this = this;
-          this.isLoading = true;
-          this.lookupService.getLookupItems(this.lookup).then(function(result) {
-            _this.items = result;
-            _this.isLoading = false;
-          });
-        };
-        LookupItemsTile.prototype.deleteItem = function(itemId) {};
-        __decorate([core_1.Input(), __metadata('design:type', lookup_model_1.Lookup)], LookupItemsTile.prototype, "lookup", void 0);
-        LookupItemsTile = __decorate([core_1.Component({
-          selector: 'd3s-lookup-items-tile',
-          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, delete_form_1.DeleteForm, admin_taxonomy_level_editor_component_1.AdminTaxonomyLevelEditorComponent],
-          providers: [index_1.LookupService, index_1.GridDefinitionService],
-          template: "\n               <header *ngIf=\"!showEditor && !showDelete\">Items\n                <d3s-tile-actions [hasAdd]=\"true\" [addTitle]=\"'Add lookup item'\" (addClick)=\"add()\"></d3s-tile-actions>                            \n               </header>\n                <div *ngIf=\"isLoading\" style=\"width:100%; text-align:center;\">\n                    <div style=\"padding:10px;\"><i class=\"fa fa-spinner fa-spin fa-2x\"></i></div>\n                </div>\n               <p-dataTable *ngIf=\"!isLoading && !showDelete && !showEditor\" [value]=\"items\" selectionMode=\"single\" [rows]=\"10\" [paginator]=\"true\" [pageLinks]=\"3\" expandableRows=\"true\" (onRowDblclick)=\"showEditor=true\" [(selection)]=\"selectedItem\" >                                                                       \n                    <p-column *ngFor=\"let column of columns\" [field]=\"column.datafield\" [header]=\"column.text\" [sortable]=\"true\" [filter]=\"true\"></p-column>\n                    <p-column [style]=\"{width:'40px'}\">\n                            <template let-template=\"rowData\">\n                                <div class=\"RowTools\">\n                                    <a style=\"cursor:pointer;\" (click)=\"showEditor=true\"><i class=\"fa fa-pencil\"></i></a>                                        \n                                </div>\n                            </template>\n                    </p-column>                            \n                    <p-column  [style]=\"{width:'40px'}\">\n                            <template let-template=\"rowData\">\n                                <div class=\"RowTools\">                                \n                                    <a style=\"cursor:pointer;\" (click)=\"showDelete=true\"><i class=\"fa fa-trash-o\"></i></a>                                    \n                                </div>\n                            </template>\n                    </p-column>                            \n                </p-dataTable>      \n                <delete-form *ngIf=\"showDelete\"\n                    [callback]=\"theDeleteCallback\"\n                    [itemId]=\"selectedLevel?.Level\"\n                    [method]=\"'callback'\"\n                    [prompt]=\"'Are you sure you want to delete the level [' + [selectedLevel?.Name] + ']?'\"                                         \n                    (onCancel)=\"showDelete=false;\"\n                ></delete-form> \n                <d3s-admin-model-level-editor *ngIf=\"showEditor\" [taxonomyLevel]=\"selectedLevel\" [taxonomy]=\"taxonomy\" (closeClick)=\"closeEditor()\" (saveClick)=\"saveLevel($event)\"></d3s-admin-model-level-editor>                                           \n                "
-        }), __metadata('design:paramtypes', [index_1.LookupService, index_1.GridDefinitionService])], LookupItemsTile);
-        return LookupItemsTile;
+        __decorate([core_1.Input(), __metadata('design:type', lookup_model_1.Lookup)], AdminLookupTypeEditorComponent.prototype, "lookup", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminLookupTypeEditorComponent.prototype, "closeClick", void 0);
+        __decorate([core_1.Output(), __metadata('design:type', Object)], AdminLookupTypeEditorComponent.prototype, "saveClick", void 0);
+        AdminLookupTypeEditorComponent = __decorate([core_1.Component({
+          selector: 'd3s-admin-lookup-type-editor',
+          template: " \n                <header>{{action}} Lookup</header>\n                <div class=\"row\">\n                    <div class=\"col l6 s12\">\n                        <div class=\"FieldName\">Name</div>\n                        <div><input type=\"text\" pInputText [(ngModel)]=\"editedLookup.Name\" style=\"width: 100%;\" /></div>\n                    </div>                    \n                    <div class=\"col s12\">&nbsp;</div>\n                    <div class=\"col s12\">\n                        <button pButton type=\"button\" (click)=\"update()\" label=\"Save\" style=\"width: '150px';\"></button>\n                        <button pButton type=\"button\" (click)=\"closeClick.emit();\" label=\"Close\" style=\"width: '150px';\"></button>\n                    </div>                    \n                </div>\n                ",
+          providers: [index_1.LookupService],
+          directives: [primeng_1.Button, primeng_1.Editor, primeng_1.InputText]
+        }), __metadata('design:paramtypes', [index_1.LookupService])], AdminLookupTypeEditorComponent);
+        return AdminLookupTypeEditorComponent;
       }());
-      exports_1("LookupItemsTile", LookupItemsTile);
+      exports_1("AdminLookupTypeEditorComponent", AdminLookupTypeEditorComponent);
+      ;
     }
   };
 });
 
-$__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "c4"], function(exports_1, context_1) {
+$__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "58", "c4"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var __extends = (this && this.__extends) || function(d, b) {
@@ -42124,7 +42739,8 @@ $__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "c4"], function
       tile_actions_component_1,
       delete_form_1,
       field_definition_tile_1,
-      lookup_items_tile_1;
+      dynamic_grid_component_1,
+      admin_lookup_type_editor_component_1;
   var AdminLookupsComponent;
   return {
     setters: [function(core_1_1) {
@@ -42141,8 +42757,10 @@ $__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "c4"], function
       delete_form_1 = delete_form_1_1;
     }, function(field_definition_tile_1_1) {
       field_definition_tile_1 = field_definition_tile_1_1;
-    }, function(lookup_items_tile_1_1) {
-      lookup_items_tile_1 = lookup_items_tile_1_1;
+    }, function(dynamic_grid_component_1_1) {
+      dynamic_grid_component_1 = dynamic_grid_component_1_1;
+    }, function(admin_lookup_type_editor_component_1_1) {
+      admin_lookup_type_editor_component_1 = admin_lookup_type_editor_component_1_1;
     }],
     execute: function() {
       AdminLookupsComponent = (function(_super) {
@@ -42175,12 +42793,52 @@ $__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "c4"], function
         AdminLookupsComponent.prototype.deleteLookup = function(id) {
           this.lookupService.deleteLookup(id);
           this.showDelete = false;
+          this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+          this.lookups.splice(this.findLookupIndex(id), 1);
+        };
+        AdminLookupsComponent.prototype.lookupUri = function() {
+          if (this.selectedLookup == null)
+            return "";
+          return "resources/lookups/" + this.selectedLookup.ID + "/items.json";
+        };
+        AdminLookupsComponent.prototype.add = function() {
+          this.showEditor = true;
+          this.selectedLookup = null;
+        };
+        AdminLookupsComponent.prototype.closeEditor = function() {
+          this.showEditor = false;
+          if (this.selectedLookup == null) {
+            this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+          }
+        };
+        AdminLookupsComponent.prototype.saveLookup = function(event) {
+          var _this = this;
+          this.lookupService.saveLookup(event.lookup).then(function(result) {
+            if (event.lookup.ID == undefined) {
+              event.lookup.ID = Number(result.id);
+              _this.lookups[_this.lookups.length] = event.lookup;
+            } else {
+              _this.lookups[_this.findLookupIndex(event.lookup.ID)] = event.lookup;
+            }
+            _this.selectedLookup = event.lookup;
+            _this.showEditor = false;
+          });
+        };
+        AdminLookupsComponent.prototype.findLookupIndex = function(id) {
+          var index = -1;
+          for (var _i = 0,
+              _a = this.lookups; _i < _a.length; _i++) {
+            var lookup = _a[_i];
+            index++;
+            if (lookup.ID == id)
+              return index;
+          }
         };
         AdminLookupsComponent = __decorate([core_1.Component({
           selector: 'd3s-admin-lookups-component',
-          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, field_definition_tile_1.FieldDefinitionTile, delete_form_1.DeleteForm, lookup_items_tile_1.LookupItemsTile],
+          directives: [primeng_1.DataTable, primeng_1.Column, tile_actions_component_1.TileActionsComponent, field_definition_tile_1.FieldDefinitionTile, delete_form_1.DeleteForm, dynamic_grid_component_1.DynamicGridComponent, admin_lookup_type_editor_component_1.AdminLookupTypeEditorComponent],
           providers: [index_1.LookupService],
-          template: "<div class=\"row\">\n                    <div class=\"col l4 s12\">                    \n                        <div class=\"tile tile-detail\">\n                            <header *ngIf=\"!showEditor && !showDelete\">Lookup Types\n                                <d3s-tile-actions [hasAdd]=\"true\" [addTitle]=\"'Add Lookup'\" (addClick)=\"add()\"></d3s-tile-actions>                            \n                            </header>\n                            <p-dataTable *ngIf=\"!showEditor && !showDelete\" [value]=\"lookups\" selectionMode=\"single\" [rows]=\"20\" [paginator]=\"true\" [pageLinks]=\"3\" expandableRows=\"true\" [(selection)]=\"selectedLookup\"  (onRowDblclick)=\"showEditor=true;\" >                                                        \n                                <p-column field=\"ID\" header=\"ID\" [sortable]=\"true\" [filter]=\"true\"></p-column>                                                            \n                                <p-column field=\"Name\" header=\"Name\" [sortable]=\"true\" [filter]=\"true\"></p-column>                            \n                                <p-column [style]=\"{width:'40px'}\">\n                                    <template let-template=\"rowData\">\n                                        <div class=\"RowTools\">\n                                            <a style=\"cursor:pointer;\" (click)=\"showEditor=true\"><i class=\"fa fa-pencil\"></i></a>                                        \n                                        </div>\n                                    </template>\n                                </p-column>                            \n                                <p-column  [style]=\"{width:'40px'}\">\n                                    <template let-template=\"rowData\">\n                                        <div class=\"RowTools\">                                \n                                            <a style=\"cursor:pointer;\" (click)=\"showDelete=true\"><i class=\"fa fa-trash-o\"></i></a>                                    \n                                        </div>\n                                    </template>\n                                </p-column>                            \n                            </p-dataTable>   \n                            <delete-form *ngIf=\"showDelete\"\n                                [callback]=\"theDeleteCallback\"\n                                [itemId]=\"selectedLookup?.ID\"\n                                [method]=\"'callback'\"\n                                [prompt]=\"'Are you sure you want to delete the lookup [' + [selectedLookup?.Name] + ']?'\"                                         \n                                (onCancel)=\"showDelete=false;\"\n                            ></delete-form>                         \n                        </div>\n                    </div>                    \n                    <div class=\"col l8 s12\">\n                        <div class=\"row\">\n                            <div class=\"col s12\">\n                                <div class=\"tile tile-detail\">                                              \n                                    <d3s-field-definition-tile [objectType]=\"'LookupType'\" [objectID]=\"selectedLookup?.ID\" ></d3s-field-definition-tile>\n                                </div>\n                            </div>\n                        </div>\n                        <div class=\"row\">\n                            <div class=\"col s12\">\n                                <div class=\"tile tile-detail\">                                              \n                                    <d3s-lookup-items-tile [lookup]=\"selectedLookup\" ></d3s-lookup-items-tile>\n                                </div>\n                            </div>\n                        </div>\n                    <div>\n                </div>  \n                "
+          template: "<div class=\"row\">\n                    <div class=\"col l4 s12\">                    \n                        <div class=\"tile tile-detail\">\n                            <header *ngIf=\"!showEditor && !showDelete\">Lookup Types\n                                <d3s-tile-actions [hasAdd]=\"true\" [addTitle]=\"'Add Lookup'\" (addClick)=\"add()\"></d3s-tile-actions>                            \n                            </header>                            \n                            <p-dataTable *ngIf=\"!showEditor && !showDelete\" [value]=\"lookups\" selectionMode=\"single\" [rows]=\"20\" [paginator]=\"true\" [pageLinks]=\"3\" expandableRows=\"true\" [(selection)]=\"selectedLookup\"  (onRowDblclick)=\"selectedLookup=$event.data;showEditor=true;\" >                                                        \n                                <p-column field=\"ID\" header=\"ID\" [sortable]=\"true\" [filter]=\"true\"></p-column>                                                            \n                                <p-column field=\"Name\" header=\"Name\" [sortable]=\"true\" [filter]=\"true\"></p-column>                            \n                                <p-column [style]=\"{width:'40px'}\">\n                                    <template let-lookup=\"rowData\">\n                                        <div class=\"RowTools\">\n                                            <a style=\"cursor:pointer;\" (click)=\"selectedLookup=lookup;showEditor=true\"><i class=\"fa fa-pencil\"></i></a>                                        \n                                        </div>\n                                    </template>\n                                </p-column>                            \n                                <p-column  [style]=\"{width:'40px'}\">\n                                    <template let-lookup=\"rowData\">\n                                        <div class=\"RowTools\">                                \n                                            <a style=\"cursor:pointer;\" (click)=\"selectedLookup=lookup;showDelete=true\"><i class=\"fa fa-trash-o\"></i></a>                                    \n                                        </div>\n                                    </template>\n                                </p-column>                            \n                            </p-dataTable>   \n                            <delete-form *ngIf=\"showDelete\"\n                                [callback]=\"theDeleteCallback\"\n                                [itemId]=\"selectedLookup?.ID\"\n                                [method]=\"'callback'\"\n                                [prompt]=\"'Are you sure you want to delete the lookup [' + [selectedLookup?.Name] + ']?'\"                                         \n                                (onCancel)=\"showDelete=false;\"\n                            ></delete-form>  \n                            <d3s-admin-lookup-type-editor *ngIf=\"showEditor\" [lookup]=\"selectedLookup\" (saveClick)=\"saveLookup($event)\" (closeClick)=\"closeEditor()\"></d3s-admin-lookup-type-editor>                       \n                        </div>\n                    </div>                    \n                    <div class=\"col l8 s12\">\n                        <div class=\"row\">\n                            <div class=\"col s12\">\n                                <div class=\"tile tile-detail\">                                              \n                                    <d3s-field-definition-tile [objectType]=\"'LookupType'\" [objectID]=\"selectedLookup?.ID\" ></d3s-field-definition-tile>\n                                </div>\n                            </div>\n                        </div>\n                        <div class=\"row\">\n                            <div class=\"col s12\">\n                                <div class=\"tile tile-detail\">           \n                                    <d3s-dynamic-grid [title]=\"'Items'\" [objectType]=\"'LookupType'\" [objectID]=\"selectedLookup?.ID\" [dataUri]=\"lookupUri()\" [deleteUri]=\"'form/DeleteLookupByIdRaw?id='\"></d3s-dynamic-grid>                                                                       \n                                </div>\n                            </div>\n                        </div>\n                    <div>\n                </div>  \n                "
         }), __metadata('design:paramtypes', [index_1.LookupService, index_1.MessagesService, index_1.HeaderBreadcrumbService, index_1.PageHeader])], AdminLookupsComponent);
         return AdminLookupsComponent;
       }(admin_base_component_1.AdminBaseComponent));
@@ -42189,7 +42847,7 @@ $__System.register("c5", ["5", "e", "f", "28", "25", "27", "2d", "c4"], function
   };
 });
 
-$__System.register("1b", ["22", "2a", "2c", "35", "3c", "40", "45", "51", "52", "c5"], function(exports_1, context_1) {
+$__System.register("1b", ["22", "2a", "2c", "37", "3d", "41", "46", "52", "53", "c5"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   function exportStar_1(m) {
@@ -42322,7 +42980,7 @@ $__System.register("c7", ["1a"], function(exports_1, context_1) {
     }],
     execute: function() {
       exports_1("HomeRoutes", HomeRoutes = [{
-        path: '/a',
+        path: 'a/',
         component: home_component_1.HomeComponent
       }]);
     }
@@ -61095,7 +61753,7 @@ $__System.registerDynamic("df", ["a", "dd", "e0", "d8", "d9"], true, function($_
   return module.exports;
 });
 
-$__System.registerDynamic("af", ["df"], true, function($__require, exports, module) {
+$__System.registerDynamic("ab", ["df"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -61106,14 +61764,14 @@ $__System.registerDynamic("af", ["df"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("e1", ["a", "af"], true, function($__require, exports, module) {
+$__System.registerDynamic("e1", ["a", "ab"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var forkJoin_1 = $__require('af');
+  var forkJoin_1 = $__require('ab');
   Observable_1.Observable.forkJoin = forkJoin_1.forkJoin;
   return module.exports;
 });
@@ -61514,7 +62172,7 @@ $__System.registerDynamic("ef", ["e9"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("b7", ["a", "ef"], true, function($__require, exports, module) {
+$__System.registerDynamic("b0", ["a", "ef"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -61841,7 +62499,7 @@ $__System.registerDynamic("8", ["e3", "a"], true, function($__require, exports, 
   return module.exports;
 });
 
-$__System.registerDynamic("b0", ["8"], true, function($__require, exports, module) {
+$__System.registerDynamic("ac", ["8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -61852,14 +62510,14 @@ $__System.registerDynamic("b0", ["8"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("f7", ["a", "b0"], true, function($__require, exports, module) {
+$__System.registerDynamic("f7", ["a", "ac"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var fromPromise_1 = $__require('b0');
+  var fromPromise_1 = $__require('ac');
   Observable_1.Observable.fromPromise = fromPromise_1.fromPromise;
   return module.exports;
 });
@@ -62052,7 +62710,7 @@ $__System.registerDynamic("105", ["a", "104"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("a6", ["ec"], true, function($__require, exports, module) {
+$__System.registerDynamic("a0", ["ec"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -62063,14 +62721,14 @@ $__System.registerDynamic("a6", ["ec"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("106", ["a", "a6"], true, function($__require, exports, module) {
+$__System.registerDynamic("106", ["a", "a0"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var of_1 = $__require('a6');
+  var of_1 = $__require('a0');
   Observable_1.Observable.of = of_1.of;
   return module.exports;
 });
@@ -63193,7 +63851,7 @@ $__System.registerDynamic("126", ["a", "d3"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("b3", ["a", "d5"], true, function($__require, exports, module) {
+$__System.registerDynamic("127", ["a", "d5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63205,13 +63863,13 @@ $__System.registerDynamic("b3", ["a", "d5"], true, function($__require, exports,
   return module.exports;
 });
 
-$__System.registerDynamic("127", ["128"], true, function($__require, exports, module) {
+$__System.registerDynamic("128", ["129"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var mergeAll_1 = $__require('128');
+  var mergeAll_1 = $__require('129');
   function concatAll() {
     return this.lift(new mergeAll_1.MergeAllOperator(1));
   }
@@ -63219,25 +63877,25 @@ $__System.registerDynamic("127", ["128"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("129", ["a", "127"], true, function($__require, exports, module) {
+$__System.registerDynamic("12a", ["a", "128"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var concatAll_1 = $__require('127');
+  var concatAll_1 = $__require('128');
   Observable_1.Observable.prototype.concatAll = concatAll_1.concatAll;
   return module.exports;
 });
 
-$__System.registerDynamic("12a", ["12b"], true, function($__require, exports, module) {
+$__System.registerDynamic("12b", ["12c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var mergeMap_1 = $__require('12b');
+  var mergeMap_1 = $__require('12c');
   function concatMap(project, resultSelector) {
     return this.lift(new mergeMap_1.MergeMapOperator(project, resultSelector, 1));
   }
@@ -63245,25 +63903,25 @@ $__System.registerDynamic("12a", ["12b"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("b4", ["a", "12a"], true, function($__require, exports, module) {
+$__System.registerDynamic("12d", ["a", "12b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var concatMap_1 = $__require('12a');
+  var concatMap_1 = $__require('12b');
   Observable_1.Observable.prototype.concatMap = concatMap_1.concatMap;
   return module.exports;
 });
 
-$__System.registerDynamic("12c", ["12d"], true, function($__require, exports, module) {
+$__System.registerDynamic("12e", ["12f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var mergeMapTo_1 = $__require('12d');
+  var mergeMapTo_1 = $__require('12f');
   function concatMapTo(innerObservable, resultSelector) {
     return this.lift(new mergeMapTo_1.MergeMapToOperator(innerObservable, resultSelector, 1));
   }
@@ -63271,19 +63929,19 @@ $__System.registerDynamic("12c", ["12d"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("12e", ["a", "12c"], true, function($__require, exports, module) {
+$__System.registerDynamic("130", ["a", "12e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var concatMapTo_1 = $__require('12c');
+  var concatMapTo_1 = $__require('12e');
   Observable_1.Observable.prototype.concatMapTo = concatMapTo_1.concatMapTo;
   return module.exports;
 });
 
-$__System.registerDynamic("12f", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("131", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63350,19 +64008,19 @@ $__System.registerDynamic("12f", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("130", ["a", "12f"], true, function($__require, exports, module) {
+$__System.registerDynamic("132", ["a", "131"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var count_1 = $__require('12f');
+  var count_1 = $__require('131');
   Observable_1.Observable.prototype.count = count_1.count;
   return module.exports;
 });
 
-$__System.registerDynamic("131", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("133", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63402,19 +64060,19 @@ $__System.registerDynamic("131", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("132", ["a", "131"], true, function($__require, exports, module) {
+$__System.registerDynamic("134", ["a", "133"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var dematerialize_1 = $__require('131');
+  var dematerialize_1 = $__require('133');
   Observable_1.Observable.prototype.dematerialize = dematerialize_1.dematerialize;
   return module.exports;
 });
 
-$__System.registerDynamic("133", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("135", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63504,19 +64162,19 @@ $__System.registerDynamic("133", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("134", ["a", "133"], true, function($__require, exports, module) {
+$__System.registerDynamic("136", ["a", "135"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var debounce_1 = $__require('133');
+  var debounce_1 = $__require('135');
   Observable_1.Observable.prototype.debounce = debounce_1.debounce;
   return module.exports;
 });
 
-$__System.registerDynamic("135", ["117", "fa"], true, function($__require, exports, module) {
+$__System.registerDynamic("137", ["117", "fa"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63594,19 +64252,19 @@ $__System.registerDynamic("135", ["117", "fa"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("136", ["a", "135"], true, function($__require, exports, module) {
+$__System.registerDynamic("138", ["a", "137"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var debounceTime_1 = $__require('135');
+  var debounceTime_1 = $__require('137');
   Observable_1.Observable.prototype.debounceTime = debounceTime_1.debounceTime;
   return module.exports;
 });
 
-$__System.registerDynamic("137", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("139", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63660,19 +64318,19 @@ $__System.registerDynamic("137", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("138", ["a", "137"], true, function($__require, exports, module) {
+$__System.registerDynamic("13a", ["a", "139"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var defaultIfEmpty_1 = $__require('137');
+  var defaultIfEmpty_1 = $__require('139');
   Observable_1.Observable.prototype.defaultIfEmpty = defaultIfEmpty_1.defaultIfEmpty;
   return module.exports;
 });
 
-$__System.registerDynamic("139", ["fa", "10e", "117", "13a"], true, function($__require, exports, module) {
+$__System.registerDynamic("13b", ["fa", "10e", "117", "13c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63690,7 +64348,7 @@ $__System.registerDynamic("139", ["fa", "10e", "117", "13a"], true, function($__
   var async_1 = $__require('fa');
   var isDate_1 = $__require('10e');
   var Subscriber_1 = $__require('117');
-  var Notification_1 = $__require('13a');
+  var Notification_1 = $__require('13c');
   function delay(delay, scheduler) {
     if (scheduler === void 0) {
       scheduler = async_1.async;
@@ -63777,19 +64435,19 @@ $__System.registerDynamic("139", ["fa", "10e", "117", "13a"], true, function($__
   return module.exports;
 });
 
-$__System.registerDynamic("13b", ["a", "139"], true, function($__require, exports, module) {
+$__System.registerDynamic("13d", ["a", "13b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var delay_1 = $__require('139');
+  var delay_1 = $__require('13b');
   Observable_1.Observable.prototype.delay = delay_1.delay;
   return module.exports;
 });
 
-$__System.registerDynamic("13c", ["117", "a", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("13e", ["117", "a", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -63928,19 +64586,19 @@ $__System.registerDynamic("13c", ["117", "a", "d9", "d8"], true, function($__req
   return module.exports;
 });
 
-$__System.registerDynamic("13d", ["a", "13c"], true, function($__require, exports, module) {
+$__System.registerDynamic("13f", ["a", "13e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var delayWhen_1 = $__require('13c');
+  var delayWhen_1 = $__require('13e');
   Observable_1.Observable.prototype.delayWhen = delayWhen_1.delayWhen;
   return module.exports;
 });
 
-$__System.registerDynamic("13e", ["117", "ca", "cb"], true, function($__require, exports, module) {
+$__System.registerDynamic("140", ["117", "ca", "cb"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64013,19 +64671,19 @@ $__System.registerDynamic("13e", ["117", "ca", "cb"], true, function($__require,
   return module.exports;
 });
 
-$__System.registerDynamic("13f", ["a", "13e"], true, function($__require, exports, module) {
+$__System.registerDynamic("141", ["a", "140"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var distinctUntilChanged_1 = $__require('13e');
+  var distinctUntilChanged_1 = $__require('140');
   Observable_1.Observable.prototype.distinctUntilChanged = distinctUntilChanged_1.distinctUntilChanged;
   return module.exports;
 });
 
-$__System.registerDynamic("140", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("142", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64097,19 +64755,19 @@ $__System.registerDynamic("140", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("141", ["a", "140"], true, function($__require, exports, module) {
+$__System.registerDynamic("143", ["a", "142"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var do_1 = $__require('140');
+  var do_1 = $__require('142');
   Observable_1.Observable.prototype.do = do_1._do;
   return module.exports;
 });
 
-$__System.registerDynamic("142", ["ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("144", ["ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64229,31 +64887,31 @@ $__System.registerDynamic("142", ["ca", "cb", "d9", "d8"], true, function($__req
   return module.exports;
 });
 
-$__System.registerDynamic("143", ["a", "142"], true, function($__require, exports, module) {
+$__System.registerDynamic("145", ["a", "144"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var expand_1 = $__require('142');
+  var expand_1 = $__require('144');
   Observable_1.Observable.prototype.expand = expand_1.expand;
   return module.exports;
 });
 
-$__System.registerDynamic("144", ["a", "145"], true, function($__require, exports, module) {
+$__System.registerDynamic("146", ["a", "147"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var filter_1 = $__require('145');
+  var filter_1 = $__require('147');
   Observable_1.Observable.prototype.filter = filter_1.filter;
   return module.exports;
 });
 
-$__System.registerDynamic("146", ["117", "f1"], true, function($__require, exports, module) {
+$__System.registerDynamic("148", ["117", "f1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64294,19 +64952,19 @@ $__System.registerDynamic("146", ["117", "f1"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("147", ["a", "146"], true, function($__require, exports, module) {
+$__System.registerDynamic("149", ["a", "148"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var finally_1 = $__require('146');
+  var finally_1 = $__require('148');
   Observable_1.Observable.prototype.finally = finally_1._finally;
   return module.exports;
 });
 
-$__System.registerDynamic("148", ["117", "149"], true, function($__require, exports, module) {
+$__System.registerDynamic("14a", ["117", "14b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64322,7 +64980,7 @@ $__System.registerDynamic("148", ["117", "149"], true, function($__require, expo
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var EmptyError_1 = $__require('149');
+  var EmptyError_1 = $__require('14b');
   function first(predicate, resultSelector, defaultValue) {
     return this.lift(new FirstOperator(predicate, resultSelector, defaultValue, this));
   }
@@ -64407,19 +65065,19 @@ $__System.registerDynamic("148", ["117", "149"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("14a", ["a", "148"], true, function($__require, exports, module) {
+$__System.registerDynamic("14c", ["a", "14a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var first_1 = $__require('148');
+  var first_1 = $__require('14a');
   Observable_1.Observable.prototype.first = first_1.first;
   return module.exports;
 });
 
-$__System.registerDynamic("14b", [], true, function($__require, exports, module) {
+$__System.registerDynamic("14d", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64472,21 +65130,21 @@ $__System.registerDynamic("14b", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("14c", ["e3", "14b"], true, function($__require, exports, module) {
+$__System.registerDynamic("14e", ["e3", "14d"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var root_1 = $__require('e3');
-  var MapPolyfill_1 = $__require('14b');
+  var MapPolyfill_1 = $__require('14d');
   exports.Map = root_1.root.Map || (function() {
     return MapPolyfill_1.MapPolyfill;
   })();
   return module.exports;
 });
 
-$__System.registerDynamic("14d", [], true, function($__require, exports, module) {
+$__System.registerDynamic("14f", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64524,7 +65182,7 @@ $__System.registerDynamic("14d", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("14e", ["117", "f1", "a", "7", "14c", "14d"], true, function($__require, exports, module) {
+$__System.registerDynamic("150", ["117", "f1", "a", "7", "14e", "14f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64543,8 +65201,8 @@ $__System.registerDynamic("14e", ["117", "f1", "a", "7", "14c", "14d"], true, fu
   var Subscription_1 = $__require('f1');
   var Observable_1 = $__require('a');
   var Subject_1 = $__require('7');
-  var Map_1 = $__require('14c');
-  var FastMap_1 = $__require('14d');
+  var Map_1 = $__require('14e');
+  var FastMap_1 = $__require('14f');
   function groupBy(keySelector, elementSelector, durationSelector) {
     return this.lift(new GroupByOperator(this, keySelector, elementSelector, durationSelector));
   }
@@ -64739,14 +65397,14 @@ $__System.registerDynamic("14e", ["117", "f1", "a", "7", "14c", "14d"], true, fu
   return module.exports;
 });
 
-$__System.registerDynamic("14f", ["a", "14e"], true, function($__require, exports, module) {
+$__System.registerDynamic("151", ["a", "150"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var groupBy_1 = $__require('14e');
+  var groupBy_1 = $__require('150');
   Observable_1.Observable.prototype.groupBy = groupBy_1.groupBy;
   return module.exports;
 });
@@ -64762,7 +65420,7 @@ $__System.registerDynamic("103", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("150", ["117", "103"], true, function($__require, exports, module) {
+$__System.registerDynamic("152", ["117", "103"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64804,19 +65462,19 @@ $__System.registerDynamic("150", ["117", "103"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("151", ["a", "150"], true, function($__require, exports, module) {
+$__System.registerDynamic("153", ["a", "152"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var ignoreElements_1 = $__require('150');
+  var ignoreElements_1 = $__require('152');
   Observable_1.Observable.prototype.ignoreElements = ignoreElements_1.ignoreElements;
   return module.exports;
 });
 
-$__System.registerDynamic("152", ["ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("154", ["ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64894,19 +65552,19 @@ $__System.registerDynamic("152", ["ca", "cb", "d9", "d8"], true, function($__req
   return module.exports;
 });
 
-$__System.registerDynamic("153", ["a", "152"], true, function($__require, exports, module) {
+$__System.registerDynamic("155", ["a", "154"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var audit_1 = $__require('152');
+  var audit_1 = $__require('154');
   Observable_1.Observable.prototype.audit = audit_1.audit;
   return module.exports;
 });
 
-$__System.registerDynamic("154", ["fa", "117"], true, function($__require, exports, module) {
+$__System.registerDynamic("156", ["fa", "117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -64979,19 +65637,19 @@ $__System.registerDynamic("154", ["fa", "117"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("155", ["a", "154"], true, function($__require, exports, module) {
+$__System.registerDynamic("157", ["a", "156"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var auditTime_1 = $__require('154');
+  var auditTime_1 = $__require('156');
   Observable_1.Observable.prototype.auditTime = auditTime_1.auditTime;
   return module.exports;
 });
 
-$__System.registerDynamic("156", ["117", "149"], true, function($__require, exports, module) {
+$__System.registerDynamic("158", ["117", "14b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65007,7 +65665,7 @@ $__System.registerDynamic("156", ["117", "149"], true, function($__require, expo
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var EmptyError_1 = $__require('149');
+  var EmptyError_1 = $__require('14b');
   function last(predicate, resultSelector, defaultValue) {
     return this.lift(new LastOperator(predicate, resultSelector, defaultValue, this));
   }
@@ -65094,19 +65752,19 @@ $__System.registerDynamic("156", ["117", "149"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("157", ["a", "156"], true, function($__require, exports, module) {
+$__System.registerDynamic("159", ["a", "158"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var last_1 = $__require('156');
+  var last_1 = $__require('158');
   Observable_1.Observable.prototype.last = last_1.last;
   return module.exports;
 });
 
-$__System.registerDynamic("158", [], true, function($__require, exports, module) {
+$__System.registerDynamic("15a", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65119,20 +65777,20 @@ $__System.registerDynamic("158", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("159", ["a", "158"], true, function($__require, exports, module) {
+$__System.registerDynamic("15b", ["a", "15a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var let_1 = $__require('158');
+  var let_1 = $__require('15a');
   Observable_1.Observable.prototype.let = let_1.letProto;
   Observable_1.Observable.prototype.letBind = let_1.letProto;
   return module.exports;
 });
 
-$__System.registerDynamic("15a", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("15c", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65198,31 +65856,31 @@ $__System.registerDynamic("15a", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("b5", ["a", "15a"], true, function($__require, exports, module) {
+$__System.registerDynamic("af", ["a", "15c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var every_1 = $__require('15a');
+  var every_1 = $__require('15c');
   Observable_1.Observable.prototype.every = every_1.every;
   return module.exports;
 });
 
-$__System.registerDynamic("ae", ["a", "15b"], true, function($__require, exports, module) {
+$__System.registerDynamic("a9", ["a", "15d"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var map_1 = $__require('15b');
+  var map_1 = $__require('15d');
   Observable_1.Observable.prototype.map = map_1.map;
   return module.exports;
 });
 
-$__System.registerDynamic("15c", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("15e", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65265,19 +65923,19 @@ $__System.registerDynamic("15c", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("15d", ["a", "15c"], true, function($__require, exports, module) {
+$__System.registerDynamic("15f", ["a", "15e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var mapTo_1 = $__require('15c');
+  var mapTo_1 = $__require('15e');
   Observable_1.Observable.prototype.mapTo = mapTo_1.mapTo;
   return module.exports;
 });
 
-$__System.registerDynamic("15e", ["117", "13a"], true, function($__require, exports, module) {
+$__System.registerDynamic("160", ["117", "13c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65293,7 +65951,7 @@ $__System.registerDynamic("15e", ["117", "13a"], true, function($__require, expo
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var Notification_1 = $__require('13a');
+  var Notification_1 = $__require('13c');
   function materialize() {
     return this.lift(new MaterializeOperator());
   }
@@ -65328,26 +65986,26 @@ $__System.registerDynamic("15e", ["117", "13a"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("15f", ["a", "15e"], true, function($__require, exports, module) {
+$__System.registerDynamic("161", ["a", "160"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var materialize_1 = $__require('15e');
+  var materialize_1 = $__require('160');
   Observable_1.Observable.prototype.materialize = materialize_1.materialize;
   return module.exports;
 });
 
-$__System.registerDynamic("fe", ["ec", "128", "eb"], true, function($__require, exports, module) {
+$__System.registerDynamic("fe", ["ec", "129", "eb"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var ArrayObservable_1 = $__require('ec');
-  var mergeAll_1 = $__require('128');
+  var mergeAll_1 = $__require('129');
   var isScheduler_1 = $__require('eb');
   function merge() {
     var observables = [];
@@ -65383,7 +66041,7 @@ $__System.registerDynamic("fe", ["ec", "128", "eb"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("160", ["a", "fe"], true, function($__require, exports, module) {
+$__System.registerDynamic("162", ["a", "fe"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65395,19 +66053,19 @@ $__System.registerDynamic("160", ["a", "fe"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("b6", ["a", "128"], true, function($__require, exports, module) {
+$__System.registerDynamic("ae", ["a", "129"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var mergeAll_1 = $__require('128');
+  var mergeAll_1 = $__require('129');
   Observable_1.Observable.prototype.mergeAll = mergeAll_1.mergeAll;
   return module.exports;
 });
 
-$__System.registerDynamic("12b", ["d8", "d9"], true, function($__require, exports, module) {
+$__System.registerDynamic("12c", ["d8", "d9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65526,20 +66184,20 @@ $__System.registerDynamic("12b", ["d8", "d9"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("b2", ["a", "12b"], true, function($__require, exports, module) {
+$__System.registerDynamic("ad", ["a", "12c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var mergeMap_1 = $__require('12b');
+  var mergeMap_1 = $__require('12c');
   Observable_1.Observable.prototype.mergeMap = mergeMap_1.mergeMap;
   Observable_1.Observable.prototype.flatMap = mergeMap_1.mergeMap;
   return module.exports;
 });
 
-$__System.registerDynamic("12d", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("12f", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65660,32 +66318,32 @@ $__System.registerDynamic("12d", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("161", ["a", "12d"], true, function($__require, exports, module) {
+$__System.registerDynamic("163", ["a", "12f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var mergeMapTo_1 = $__require('12d');
+  var mergeMapTo_1 = $__require('12f');
   Observable_1.Observable.prototype.flatMapTo = mergeMapTo_1.mergeMapTo;
   Observable_1.Observable.prototype.mergeMapTo = mergeMapTo_1.mergeMapTo;
   return module.exports;
 });
 
-$__System.registerDynamic("162", ["a", "163"], true, function($__require, exports, module) {
+$__System.registerDynamic("164", ["a", "165"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var multicast_1 = $__require('163');
+  var multicast_1 = $__require('165');
   Observable_1.Observable.prototype.multicast = multicast_1.multicast;
   return module.exports;
 });
 
-$__System.registerDynamic("164", ["a", "ee"], true, function($__require, exports, module) {
+$__System.registerDynamic("166", ["a", "ee"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65697,7 +66355,7 @@ $__System.registerDynamic("164", ["a", "ee"], true, function($__require, exports
   return module.exports;
 });
 
-$__System.registerDynamic("165", [], true, function($__require, exports, module) {
+$__System.registerDynamic("167", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65715,7 +66373,7 @@ $__System.registerDynamic("165", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("145", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("147", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65771,14 +66429,14 @@ $__System.registerDynamic("145", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("166", ["165", "145"], true, function($__require, exports, module) {
+$__System.registerDynamic("168", ["167", "147"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var not_1 = $__require('165');
-  var filter_1 = $__require('145');
+  var not_1 = $__require('167');
+  var filter_1 = $__require('147');
   function partition(predicate, thisArg) {
     return [filter_1.filter.call(this, predicate), filter_1.filter.call(this, not_1.not(predicate, thisArg))];
   }
@@ -65786,19 +66444,19 @@ $__System.registerDynamic("166", ["165", "145"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("167", ["a", "166"], true, function($__require, exports, module) {
+$__System.registerDynamic("169", ["a", "168"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var partition_1 = $__require('166');
+  var partition_1 = $__require('168');
   Observable_1.Observable.prototype.partition = partition_1.partition;
   return module.exports;
 });
 
-$__System.registerDynamic("15b", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("15d", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65854,13 +66512,13 @@ $__System.registerDynamic("15b", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("168", ["15b"], true, function($__require, exports, module) {
+$__System.registerDynamic("16a", ["15d"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var map_1 = $__require('15b');
+  var map_1 = $__require('15d');
   function pluck() {
     var properties = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -65891,33 +66549,6 @@ $__System.registerDynamic("168", ["15b"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("169", ["a", "168"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var Observable_1 = $__require('a');
-  var pluck_1 = $__require('168');
-  Observable_1.Observable.prototype.pluck = pluck_1.pluck;
-  return module.exports;
-});
-
-$__System.registerDynamic("16a", ["7", "163"], true, function($__require, exports, module) {
-  "use strict";
-  ;
-  var define,
-      global = this,
-      GLOBAL = this;
-  var Subject_1 = $__require('7');
-  var multicast_1 = $__require('163');
-  function publish() {
-    return multicast_1.multicast.call(this, new Subject_1.Subject());
-  }
-  exports.publish = publish;
-  return module.exports;
-});
-
 $__System.registerDynamic("16b", ["a", "16a"], true, function($__require, exports, module) {
   "use strict";
   ;
@@ -65925,23 +66556,23 @@ $__System.registerDynamic("16b", ["a", "16a"], true, function($__require, export
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var publish_1 = $__require('16a');
-  Observable_1.Observable.prototype.publish = publish_1.publish;
+  var pluck_1 = $__require('16a');
+  Observable_1.Observable.prototype.pluck = pluck_1.pluck;
   return module.exports;
 });
 
-$__System.registerDynamic("16c", ["a8", "163"], true, function($__require, exports, module) {
+$__System.registerDynamic("16c", ["7", "165"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var BehaviorSubject_1 = $__require('a8');
-  var multicast_1 = $__require('163');
-  function publishBehavior(value) {
-    return multicast_1.multicast.call(this, new BehaviorSubject_1.BehaviorSubject(value));
+  var Subject_1 = $__require('7');
+  var multicast_1 = $__require('165');
+  function publish() {
+    return multicast_1.multicast.call(this, new Subject_1.Subject());
   }
-  exports.publishBehavior = publishBehavior;
+  exports.publish = publish;
   return module.exports;
 });
 
@@ -65952,19 +66583,46 @@ $__System.registerDynamic("16d", ["a", "16c"], true, function($__require, export
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var publishBehavior_1 = $__require('16c');
-  Observable_1.Observable.prototype.publishBehavior = publishBehavior_1.publishBehavior;
+  var publish_1 = $__require('16c');
+  Observable_1.Observable.prototype.publish = publish_1.publish;
   return module.exports;
 });
 
-$__System.registerDynamic("120", ["16e", "163"], true, function($__require, exports, module) {
+$__System.registerDynamic("16e", ["a4", "165"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var ReplaySubject_1 = $__require('16e');
-  var multicast_1 = $__require('163');
+  var BehaviorSubject_1 = $__require('a4');
+  var multicast_1 = $__require('165');
+  function publishBehavior(value) {
+    return multicast_1.multicast.call(this, new BehaviorSubject_1.BehaviorSubject(value));
+  }
+  exports.publishBehavior = publishBehavior;
+  return module.exports;
+});
+
+$__System.registerDynamic("16f", ["a", "16e"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var Observable_1 = $__require('a');
+  var publishBehavior_1 = $__require('16e');
+  Observable_1.Observable.prototype.publishBehavior = publishBehavior_1.publishBehavior;
+  return module.exports;
+});
+
+$__System.registerDynamic("120", ["170", "165"], true, function($__require, exports, module) {
+  "use strict";
+  ;
+  var define,
+      global = this,
+      GLOBAL = this;
+  var ReplaySubject_1 = $__require('170');
+  var multicast_1 = $__require('165');
   function publishReplay(bufferSize, windowTime, scheduler) {
     if (bufferSize === void 0) {
       bufferSize = Number.POSITIVE_INFINITY;
@@ -65978,7 +66636,7 @@ $__System.registerDynamic("120", ["16e", "163"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("16f", ["a", "120"], true, function($__require, exports, module) {
+$__System.registerDynamic("171", ["a", "120"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -65990,14 +66648,14 @@ $__System.registerDynamic("16f", ["a", "120"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("170", ["cc", "163"], true, function($__require, exports, module) {
+$__System.registerDynamic("172", ["cc", "165"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var AsyncSubject_1 = $__require('cc');
-  var multicast_1 = $__require('163');
+  var multicast_1 = $__require('165');
   function publishLast() {
     return multicast_1.multicast.call(this, new AsyncSubject_1.AsyncSubject());
   }
@@ -66005,14 +66663,14 @@ $__System.registerDynamic("170", ["cc", "163"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("171", ["a", "170"], true, function($__require, exports, module) {
+$__System.registerDynamic("173", ["a", "172"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var publishLast_1 = $__require('170');
+  var publishLast_1 = $__require('172');
   Observable_1.Observable.prototype.publishLast = publishLast_1.publishLast;
   return module.exports;
 });
@@ -66117,7 +66775,7 @@ $__System.registerDynamic("101", ["e0", "ec", "d9", "d8"], true, function($__req
   return module.exports;
 });
 
-$__System.registerDynamic("172", ["a", "101"], true, function($__require, exports, module) {
+$__System.registerDynamic("174", ["a", "101"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66129,7 +66787,7 @@ $__System.registerDynamic("172", ["a", "101"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("173", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("175", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66199,19 +66857,19 @@ $__System.registerDynamic("173", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("174", ["a", "173"], true, function($__require, exports, module) {
+$__System.registerDynamic("176", ["a", "175"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var reduce_1 = $__require('173');
+  var reduce_1 = $__require('175');
   Observable_1.Observable.prototype.reduce = reduce_1.reduce;
   return module.exports;
 });
 
-$__System.registerDynamic("175", ["117", "dd"], true, function($__require, exports, module) {
+$__System.registerDynamic("177", ["117", "dd"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66279,19 +66937,19 @@ $__System.registerDynamic("175", ["117", "dd"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("176", ["a", "175"], true, function($__require, exports, module) {
+$__System.registerDynamic("178", ["a", "177"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var repeat_1 = $__require('175');
+  var repeat_1 = $__require('177');
   Observable_1.Observable.prototype.repeat = repeat_1.repeat;
   return module.exports;
 });
 
-$__System.registerDynamic("177", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("179", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66352,19 +67010,19 @@ $__System.registerDynamic("177", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("178", ["a", "177"], true, function($__require, exports, module) {
+$__System.registerDynamic("17a", ["a", "179"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var retry_1 = $__require('177');
+  var retry_1 = $__require('179');
   Observable_1.Observable.prototype.retry = retry_1.retry;
   return module.exports;
 });
 
-$__System.registerDynamic("179", ["7", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("17b", ["7", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66464,19 +67122,19 @@ $__System.registerDynamic("179", ["7", "ca", "cb", "d9", "d8"], true, function($
   return module.exports;
 });
 
-$__System.registerDynamic("17a", ["a", "179"], true, function($__require, exports, module) {
+$__System.registerDynamic("17c", ["a", "17b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var retryWhen_1 = $__require('179');
+  var retryWhen_1 = $__require('17b');
   Observable_1.Observable.prototype.retryWhen = retryWhen_1.retryWhen;
   return module.exports;
 });
 
-$__System.registerDynamic("17b", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("17d", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66534,19 +67192,19 @@ $__System.registerDynamic("17b", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("17c", ["a", "17b"], true, function($__require, exports, module) {
+$__System.registerDynamic("17e", ["a", "17d"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var sample_1 = $__require('17b');
+  var sample_1 = $__require('17d');
   Observable_1.Observable.prototype.sample = sample_1.sample;
   return module.exports;
 });
 
-$__System.registerDynamic("17d", ["117", "fa"], true, function($__require, exports, module) {
+$__System.registerDynamic("17f", ["117", "fa"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66613,19 +67271,19 @@ $__System.registerDynamic("17d", ["117", "fa"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("17e", ["a", "17d"], true, function($__require, exports, module) {
+$__System.registerDynamic("180", ["a", "17f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var sampleTime_1 = $__require('17d');
+  var sampleTime_1 = $__require('17f');
   Observable_1.Observable.prototype.sampleTime = sampleTime_1.sampleTime;
   return module.exports;
 });
 
-$__System.registerDynamic("17f", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("181", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66699,25 +67357,25 @@ $__System.registerDynamic("17f", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("b1", ["a", "17f"], true, function($__require, exports, module) {
+$__System.registerDynamic("182", ["a", "181"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var scan_1 = $__require('17f');
+  var scan_1 = $__require('181');
   Observable_1.Observable.prototype.scan = scan_1.scan;
   return module.exports;
 });
 
-$__System.registerDynamic("163", ["180"], true, function($__require, exports, module) {
+$__System.registerDynamic("165", ["183"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var ConnectableObservable_1 = $__require('180');
+  var ConnectableObservable_1 = $__require('183');
   function multicast(subjectOrSubjectFactory) {
     var subjectFactory;
     if (typeof subjectOrSubjectFactory === 'function') {
@@ -66733,13 +67391,13 @@ $__System.registerDynamic("163", ["180"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("181", ["163", "7"], true, function($__require, exports, module) {
+$__System.registerDynamic("184", ["165", "7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var multicast_1 = $__require('163');
+  var multicast_1 = $__require('165');
   var Subject_1 = $__require('7');
   function shareSubjectFactory() {
     return new Subject_1.Subject();
@@ -66752,19 +67410,19 @@ $__System.registerDynamic("181", ["163", "7"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("182", ["a", "181"], true, function($__require, exports, module) {
+$__System.registerDynamic("185", ["a", "184"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var share_1 = $__require('181');
+  var share_1 = $__require('184');
   Observable_1.Observable.prototype.share = share_1.share;
   return module.exports;
 });
 
-$__System.registerDynamic("183", ["117", "149"], true, function($__require, exports, module) {
+$__System.registerDynamic("186", ["117", "14b"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66780,7 +67438,7 @@ $__System.registerDynamic("183", ["117", "149"], true, function($__require, expo
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var EmptyError_1 = $__require('149');
+  var EmptyError_1 = $__require('14b');
   function single(predicate) {
     return this.lift(new SingleOperator(predicate, this));
   }
@@ -66845,19 +67503,19 @@ $__System.registerDynamic("183", ["117", "149"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("184", ["a", "183"], true, function($__require, exports, module) {
+$__System.registerDynamic("187", ["a", "186"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var single_1 = $__require('183');
+  var single_1 = $__require('186');
   Observable_1.Observable.prototype.single = single_1.single;
   return module.exports;
 });
 
-$__System.registerDynamic("185", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("188", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66903,19 +67561,19 @@ $__System.registerDynamic("185", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("186", ["a", "185"], true, function($__require, exports, module) {
+$__System.registerDynamic("189", ["a", "188"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var skip_1 = $__require('185');
+  var skip_1 = $__require('188');
   Observable_1.Observable.prototype.skip = skip_1.skip;
   return module.exports;
 });
 
-$__System.registerDynamic("187", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("18a", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -66979,19 +67637,19 @@ $__System.registerDynamic("187", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("188", ["a", "187"], true, function($__require, exports, module) {
+$__System.registerDynamic("18b", ["a", "18a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var skipUntil_1 = $__require('187');
+  var skipUntil_1 = $__require('18a');
   Observable_1.Observable.prototype.skipUntil = skipUntil_1.skipUntil;
   return module.exports;
 });
 
-$__System.registerDynamic("189", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("18c", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67050,19 +67708,19 @@ $__System.registerDynamic("189", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("18a", ["a", "189"], true, function($__require, exports, module) {
+$__System.registerDynamic("18d", ["a", "18c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var skipWhile_1 = $__require('189');
+  var skipWhile_1 = $__require('18c');
   Observable_1.Observable.prototype.skipWhile = skipWhile_1.skipWhile;
   return module.exports;
 });
 
-$__System.registerDynamic("128", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("129", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67135,7 +67793,7 @@ $__System.registerDynamic("128", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("d5", ["eb", "ec", "128"], true, function($__require, exports, module) {
+$__System.registerDynamic("d5", ["eb", "ec", "129"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67143,7 +67801,7 @@ $__System.registerDynamic("d5", ["eb", "ec", "128"], true, function($__require, 
       GLOBAL = this;
   var isScheduler_1 = $__require('eb');
   var ArrayObservable_1 = $__require('ec');
-  var mergeAll_1 = $__require('128');
+  var mergeAll_1 = $__require('129');
   function concat() {
     var observables = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -67168,7 +67826,7 @@ $__System.registerDynamic("d5", ["eb", "ec", "128"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("18b", ["ec", "e8", "dd", "d5", "eb"], true, function($__require, exports, module) {
+$__System.registerDynamic("18e", ["ec", "e8", "dd", "d5", "eb"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67203,14 +67861,14 @@ $__System.registerDynamic("18b", ["ec", "e8", "dd", "d5", "eb"], true, function(
   return module.exports;
 });
 
-$__System.registerDynamic("18c", ["a", "18b"], true, function($__require, exports, module) {
+$__System.registerDynamic("18f", ["a", "18e"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var startWith_1 = $__require('18b');
+  var startWith_1 = $__require('18e');
   Observable_1.Observable.prototype.startWith = startWith_1.startWith;
   return module.exports;
 });
@@ -67230,7 +67888,7 @@ $__System.registerDynamic("f9", ["e0"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("18d", ["a", "18e", "f9"], true, function($__require, exports, module) {
+$__System.registerDynamic("190", ["a", "191", "f9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67246,7 +67904,7 @@ $__System.registerDynamic("18d", ["a", "18e", "f9"], true, function($__require, 
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Observable_1 = $__require('a');
-  var asap_1 = $__require('18e');
+  var asap_1 = $__require('191');
   var isNumeric_1 = $__require('f9');
   var SubscribeOnObservable = (function(_super) {
     __extends(SubscribeOnObservable, _super);
@@ -67297,13 +67955,13 @@ $__System.registerDynamic("18d", ["a", "18e", "f9"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("18f", ["18d"], true, function($__require, exports, module) {
+$__System.registerDynamic("192", ["190"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var SubscribeOnObservable_1 = $__require('18d');
+  var SubscribeOnObservable_1 = $__require('190');
   function subscribeOn(scheduler, delay) {
     if (delay === void 0) {
       delay = 0;
@@ -67314,19 +67972,19 @@ $__System.registerDynamic("18f", ["18d"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("190", ["a", "18f"], true, function($__require, exports, module) {
+$__System.registerDynamic("193", ["a", "192"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var subscribeOn_1 = $__require('18f');
+  var subscribeOn_1 = $__require('192');
   Observable_1.Observable.prototype.subscribeOn = subscribeOn_1.subscribeOn;
   return module.exports;
 });
 
-$__System.registerDynamic("191", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("194", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67397,19 +68055,19 @@ $__System.registerDynamic("191", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("192", ["a", "191"], true, function($__require, exports, module) {
+$__System.registerDynamic("195", ["a", "194"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var switch_1 = $__require('191');
+  var switch_1 = $__require('194');
   Observable_1.Observable.prototype.switch = switch_1._switch;
   return module.exports;
 });
 
-$__System.registerDynamic("193", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("196", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67504,19 +68162,19 @@ $__System.registerDynamic("193", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("194", ["a", "193"], true, function($__require, exports, module) {
+$__System.registerDynamic("197", ["a", "196"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var switchMap_1 = $__require('193');
+  var switchMap_1 = $__require('196');
   Observable_1.Observable.prototype.switchMap = switchMap_1.switchMap;
   return module.exports;
 });
 
-$__System.registerDynamic("195", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("198", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67606,19 +68264,19 @@ $__System.registerDynamic("195", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("196", ["a", "195"], true, function($__require, exports, module) {
+$__System.registerDynamic("199", ["a", "198"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var switchMapTo_1 = $__require('195');
+  var switchMapTo_1 = $__require('198');
   Observable_1.Observable.prototype.switchMapTo = switchMapTo_1.switchMapTo;
   return module.exports;
 });
 
-$__System.registerDynamic("197", ["117", "198", "dd"], true, function($__require, exports, module) {
+$__System.registerDynamic("19a", ["117", "19b", "dd"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67634,7 +68292,7 @@ $__System.registerDynamic("197", ["117", "198", "dd"], true, function($__require
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var ArgumentOutOfRangeError_1 = $__require('198');
+  var ArgumentOutOfRangeError_1 = $__require('19b');
   var EmptyObservable_1 = $__require('dd');
   function take(total) {
     if (total === 0) {
@@ -67678,19 +68336,19 @@ $__System.registerDynamic("197", ["117", "198", "dd"], true, function($__require
   return module.exports;
 });
 
-$__System.registerDynamic("199", ["a", "197"], true, function($__require, exports, module) {
+$__System.registerDynamic("19c", ["a", "19a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var take_1 = $__require('197');
+  var take_1 = $__require('19a');
   Observable_1.Observable.prototype.take = take_1.take;
   return module.exports;
 });
 
-$__System.registerDynamic("19a", ["117", "198", "dd"], true, function($__require, exports, module) {
+$__System.registerDynamic("19d", ["117", "19b", "dd"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67706,7 +68364,7 @@ $__System.registerDynamic("19a", ["117", "198", "dd"], true, function($__require
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var ArgumentOutOfRangeError_1 = $__require('198');
+  var ArgumentOutOfRangeError_1 = $__require('19b');
   var EmptyObservable_1 = $__require('dd');
   function takeLast(total) {
     if (total === 0) {
@@ -67765,19 +68423,19 @@ $__System.registerDynamic("19a", ["117", "198", "dd"], true, function($__require
   return module.exports;
 });
 
-$__System.registerDynamic("19b", ["a", "19a"], true, function($__require, exports, module) {
+$__System.registerDynamic("19e", ["a", "19d"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var takeLast_1 = $__require('19a');
+  var takeLast_1 = $__require('19d');
   Observable_1.Observable.prototype.takeLast = takeLast_1.takeLast;
   return module.exports;
 });
 
-$__System.registerDynamic("19c", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("19f", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67823,19 +68481,19 @@ $__System.registerDynamic("19c", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("19d", ["a", "19c"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a0", ["a", "19f"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var takeUntil_1 = $__require('19c');
+  var takeUntil_1 = $__require('19f');
   Observable_1.Observable.prototype.takeUntil = takeUntil_1.takeUntil;
   return module.exports;
 });
 
-$__System.registerDynamic("19e", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a1", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67895,19 +68553,19 @@ $__System.registerDynamic("19e", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("19f", ["a", "19e"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a2", ["a", "1a1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var takeWhile_1 = $__require('19e');
+  var takeWhile_1 = $__require('1a1');
   Observable_1.Observable.prototype.takeWhile = takeWhile_1.takeWhile;
   return module.exports;
 });
 
-$__System.registerDynamic("1a0", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a3", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -67982,19 +68640,19 @@ $__System.registerDynamic("1a0", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("1a1", ["a", "1a0"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a4", ["a", "1a3"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var throttle_1 = $__require('1a0');
+  var throttle_1 = $__require('1a3');
   Observable_1.Observable.prototype.throttle = throttle_1.throttle;
   return module.exports;
 });
 
-$__System.registerDynamic("1a2", ["117", "fa"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a5", ["117", "fa"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68058,19 +68716,19 @@ $__System.registerDynamic("1a2", ["117", "fa"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("1a3", ["a", "1a2"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a6", ["a", "1a5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var throttleTime_1 = $__require('1a2');
+  var throttleTime_1 = $__require('1a5');
   Observable_1.Observable.prototype.throttleTime = throttleTime_1.throttleTime;
   return module.exports;
 });
 
-$__System.registerDynamic("1a4", ["fa", "10e", "117"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a7", ["fa", "10e", "117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68177,14 +68835,14 @@ $__System.registerDynamic("1a4", ["fa", "10e", "117"], true, function($__require
   return module.exports;
 });
 
-$__System.registerDynamic("1a5", ["a", "1a4"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a8", ["a", "1a7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var timeout_1 = $__require('1a4');
+  var timeout_1 = $__require('1a7');
   Observable_1.Observable.prototype.timeout = timeout_1.timeout;
   return module.exports;
 });
@@ -68202,7 +68860,7 @@ $__System.registerDynamic("10e", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("1a6", ["fa", "10e", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1a9", ["fa", "10e", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68315,19 +68973,19 @@ $__System.registerDynamic("1a6", ["fa", "10e", "d9", "d8"], true, function($__re
   return module.exports;
 });
 
-$__System.registerDynamic("1a7", ["a", "1a6"], true, function($__require, exports, module) {
+$__System.registerDynamic("1aa", ["a", "1a9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var timeoutWith_1 = $__require('1a6');
+  var timeoutWith_1 = $__require('1a9');
   Observable_1.Observable.prototype.timeoutWith = timeoutWith_1.timeoutWith;
   return module.exports;
 });
 
-$__System.registerDynamic("1a8", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ab", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68372,14 +69030,14 @@ $__System.registerDynamic("1a8", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("1a9", ["a", "1a8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ac", ["a", "1ab"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var toArray_1 = $__require('1a8');
+  var toArray_1 = $__require('1ab');
   Observable_1.Observable.prototype.toArray = toArray_1.toArray;
   return module.exports;
 });
@@ -68418,7 +69076,7 @@ $__System.registerDynamic("9", ["e3"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("58", ["a", "9"], true, function($__require, exports, module) {
+$__System.registerDynamic("aa", ["a", "9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68430,7 +69088,7 @@ $__System.registerDynamic("58", ["a", "9"], true, function($__require, exports, 
   return module.exports;
 });
 
-$__System.registerDynamic("1aa", ["7", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ad", ["7", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68505,19 +69163,19 @@ $__System.registerDynamic("1aa", ["7", "d9", "d8"], true, function($__require, e
   return module.exports;
 });
 
-$__System.registerDynamic("1ab", ["a", "1aa"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ae", ["a", "1ad"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var window_1 = $__require('1aa');
+  var window_1 = $__require('1ad');
   Observable_1.Observable.prototype.window = window_1.window;
   return module.exports;
 });
 
-$__System.registerDynamic("1ac", ["117", "7"], true, function($__require, exports, module) {
+$__System.registerDynamic("1af", ["117", "7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68603,19 +69261,19 @@ $__System.registerDynamic("1ac", ["117", "7"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("1ad", ["a", "1ac"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b0", ["a", "1af"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var windowCount_1 = $__require('1ac');
+  var windowCount_1 = $__require('1af');
   Observable_1.Observable.prototype.windowCount = windowCount_1.windowCount;
   return module.exports;
 });
 
-$__System.registerDynamic("1ae", ["117", "7", "fa"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b1", ["117", "7", "fa"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68772,19 +69430,19 @@ $__System.registerDynamic("1ae", ["117", "7", "fa"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("1af", ["a", "1ae"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b2", ["a", "1b1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var windowTime_1 = $__require('1ae');
+  var windowTime_1 = $__require('1b1');
   Observable_1.Observable.prototype.windowTime = windowTime_1.windowTime;
   return module.exports;
 });
 
-$__System.registerDynamic("1b0", ["7", "f1", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b3", ["7", "f1", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -68930,19 +69588,19 @@ $__System.registerDynamic("1b0", ["7", "f1", "ca", "cb", "d9", "d8"], true, func
   return module.exports;
 });
 
-$__System.registerDynamic("1b1", ["a", "1b0"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b4", ["a", "1b3"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var windowToggle_1 = $__require('1b0');
+  var windowToggle_1 = $__require('1b3');
   Observable_1.Observable.prototype.windowToggle = windowToggle_1.windowToggle;
   return module.exports;
 });
 
-$__System.registerDynamic("1b2", ["7", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b5", ["7", "ca", "cb", "d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69039,19 +69697,19 @@ $__System.registerDynamic("1b2", ["7", "ca", "cb", "d9", "d8"], true, function($
   return module.exports;
 });
 
-$__System.registerDynamic("1b3", ["a", "1b2"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b6", ["a", "1b5"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var windowWhen_1 = $__require('1b2');
+  var windowWhen_1 = $__require('1b5');
   Observable_1.Observable.prototype.windowWhen = windowWhen_1.windowWhen;
   return module.exports;
 });
 
-$__System.registerDynamic("1b4", ["d9", "d8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b7", ["d9", "d8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69144,19 +69802,19 @@ $__System.registerDynamic("1b4", ["d9", "d8"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("1b5", ["a", "1b4"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b8", ["a", "1b7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var withLatestFrom_1 = $__require('1b4');
+  var withLatestFrom_1 = $__require('1b7');
   Observable_1.Observable.prototype.withLatestFrom = withLatestFrom_1.withLatestFrom;
   return module.exports;
 });
 
-$__System.registerDynamic("1b6", ["a", "112"], true, function($__require, exports, module) {
+$__System.registerDynamic("1b9", ["a", "112"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69431,7 +70089,7 @@ $__System.registerDynamic("ea", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("1b7", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ba", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69473,7 +70131,7 @@ $__System.registerDynamic("1b7", ["117"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("d8", ["e3", "e0", "ea", "a", "e6", "ed", "1b7"], true, function($__require, exports, module) {
+$__System.registerDynamic("d8", ["e3", "e0", "ea", "a", "e6", "ed", "1ba"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69485,7 +70143,7 @@ $__System.registerDynamic("d8", ["e3", "e0", "ea", "a", "e6", "ed", "1b7"], true
   var Observable_1 = $__require('a');
   var iterator_1 = $__require('e6');
   var observable_1 = $__require('ed');
-  var InnerSubscriber_1 = $__require('1b7');
+  var InnerSubscriber_1 = $__require('1ba');
   function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
     var destination = new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex);
     if (destination.isUnsubscribed) {
@@ -69786,7 +70444,7 @@ $__System.registerDynamic("112", ["ec", "e0", "117", "d9", "d8", "e6"], true, fu
   return module.exports;
 });
 
-$__System.registerDynamic("1b8", ["112"], true, function($__require, exports, module) {
+$__System.registerDynamic("1bb", ["112"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69800,19 +70458,19 @@ $__System.registerDynamic("1b8", ["112"], true, function($__require, exports, mo
   return module.exports;
 });
 
-$__System.registerDynamic("1b9", ["a", "1b8"], true, function($__require, exports, module) {
+$__System.registerDynamic("1bc", ["a", "1bb"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Observable_1 = $__require('a');
-  var zipAll_1 = $__require('1b8');
+  var zipAll_1 = $__require('1bb');
   Observable_1.Observable.prototype.zipAll = zipAll_1.zipAll;
   return module.exports;
 });
 
-$__System.registerDynamic("1ba", ["117"], true, function($__require, exports, module) {
+$__System.registerDynamic("1bd", ["117"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69888,7 +70546,7 @@ $__System.registerDynamic("cc", ["7"], true, function($__require, exports, modul
   return module.exports;
 });
 
-$__System.registerDynamic("ee", ["117", "13a"], true, function($__require, exports, module) {
+$__System.registerDynamic("ee", ["117", "13c"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69904,7 +70562,7 @@ $__System.registerDynamic("ee", ["117", "13a"], true, function($__require, expor
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subscriber_1 = $__require('117');
-  var Notification_1 = $__require('13a');
+  var Notification_1 = $__require('13c');
   function observeOn(scheduler, delay) {
     if (delay === void 0) {
       delay = 0;
@@ -69967,7 +70625,7 @@ $__System.registerDynamic("ee", ["117", "13a"], true, function($__require, expor
   return module.exports;
 });
 
-$__System.registerDynamic("16e", ["7", "1bb", "ee"], true, function($__require, exports, module) {
+$__System.registerDynamic("170", ["7", "1be", "ee"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -69983,7 +70641,7 @@ $__System.registerDynamic("16e", ["7", "1bb", "ee"], true, function($__require, 
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subject_1 = $__require('7');
-  var queue_1 = $__require('1bb');
+  var queue_1 = $__require('1be');
   var observeOn_1 = $__require('ee');
   var ReplaySubject = (function(_super) {
     __extends(ReplaySubject, _super);
@@ -70055,7 +70713,7 @@ $__System.registerDynamic("16e", ["7", "1bb", "ee"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("1bc", ["f1"], true, function($__require, exports, module) {
+$__System.registerDynamic("1bf", ["f1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70101,7 +70759,7 @@ $__System.registerDynamic("1bc", ["f1"], true, function($__require, exports, mod
   return module.exports;
 });
 
-$__System.registerDynamic("7", ["a", "117", "f1", "1bc", "1bd", "1be", "1bf"], true, function($__require, exports, module) {
+$__System.registerDynamic("7", ["a", "117", "f1", "1bf", "1c0", "1c1", "1c2"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70119,10 +70777,10 @@ $__System.registerDynamic("7", ["a", "117", "f1", "1bc", "1bd", "1be", "1bf"], t
   var Observable_1 = $__require('a');
   var Subscriber_1 = $__require('117');
   var Subscription_1 = $__require('f1');
-  var SubjectSubscription_1 = $__require('1bc');
-  var rxSubscriber_1 = $__require('1bd');
-  var throwError_1 = $__require('1be');
-  var ObjectUnsubscribedError_1 = $__require('1bf');
+  var SubjectSubscription_1 = $__require('1bf');
+  var rxSubscriber_1 = $__require('1c0');
+  var throwError_1 = $__require('1c1');
+  var ObjectUnsubscribedError_1 = $__require('1c2');
   var Subject = (function(_super) {
     __extends(Subject, _super);
     function Subject(destination, source) {
@@ -70299,7 +70957,7 @@ $__System.registerDynamic("7", ["a", "117", "f1", "1bc", "1bd", "1be", "1bf"], t
   return module.exports;
 });
 
-$__System.registerDynamic("1be", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1c1", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70312,7 +70970,7 @@ $__System.registerDynamic("1be", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("a8", ["7", "1be", "1bf"], true, function($__require, exports, module) {
+$__System.registerDynamic("a4", ["7", "1c1", "1c2"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70328,8 +70986,8 @@ $__System.registerDynamic("a8", ["7", "1be", "1bf"], true, function($__require, 
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var Subject_1 = $__require('7');
-  var throwError_1 = $__require('1be');
-  var ObjectUnsubscribedError_1 = $__require('1bf');
+  var throwError_1 = $__require('1c1');
+  var ObjectUnsubscribedError_1 = $__require('1c2');
   var BehaviorSubject = (function(_super) {
     __extends(BehaviorSubject, _super);
     function BehaviorSubject(_value) {
@@ -70372,7 +71030,7 @@ $__System.registerDynamic("a8", ["7", "1be", "1bf"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("180", ["a", "117", "f1"], true, function($__require, exports, module) {
+$__System.registerDynamic("183", ["a", "117", "f1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70511,7 +71169,7 @@ $__System.registerDynamic("180", ["a", "117", "f1"], true, function($__require, 
   return module.exports;
 });
 
-$__System.registerDynamic("1c0", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1c3", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70528,7 +71186,7 @@ $__System.registerDynamic("1c0", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("117", ["e5", "f1", "1bd", "1c0"], true, function($__require, exports, module) {
+$__System.registerDynamic("117", ["e5", "f1", "1c0", "1c3"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70545,8 +71203,8 @@ $__System.registerDynamic("117", ["e5", "f1", "1bd", "1c0"], true, function($__r
   };
   var isFunction_1 = $__require('e5');
   var Subscription_1 = $__require('f1');
-  var rxSubscriber_1 = $__require('1bd');
-  var Observer_1 = $__require('1c0');
+  var rxSubscriber_1 = $__require('1c0');
+  var Observer_1 = $__require('1c3');
   var Subscriber = (function(_super) {
     __extends(Subscriber, _super);
     function Subscriber(destinationOrNext, error, complete) {
@@ -70726,14 +71384,14 @@ $__System.registerDynamic("117", ["e5", "f1", "1bd", "1c0"], true, function($__r
   return module.exports;
 });
 
-$__System.registerDynamic("1c1", ["117", "1bd"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c4", ["117", "1c0"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
   var Subscriber_1 = $__require('117');
-  var rxSubscriber_1 = $__require('1bd');
+  var rxSubscriber_1 = $__require('1c0');
   function toSubscriber(nextOrObserver, error, complete) {
     if (nextOrObserver && typeof nextOrObserver === 'object') {
       if (nextOrObserver instanceof Subscriber_1.Subscriber) {
@@ -70748,7 +71406,7 @@ $__System.registerDynamic("1c1", ["117", "1bd"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("a", ["e3", "ed", "1c1"], true, function($__require, exports, module) {
+$__System.registerDynamic("a", ["e3", "ed", "1c4"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70756,7 +71414,7 @@ $__System.registerDynamic("a", ["e3", "ed", "1c1"], true, function($__require, e
       GLOBAL = this;
   var root_1 = $__require('e3');
   var observable_1 = $__require('ed');
-  var toSubscriber_1 = $__require('1c1');
+  var toSubscriber_1 = $__require('1c4');
   var Observable = (function() {
     function Observable(subscribe) {
       this._isScalar = false;
@@ -70824,7 +71482,7 @@ $__System.registerDynamic("a", ["e3", "ed", "1c1"], true, function($__require, e
   return module.exports;
 });
 
-$__System.registerDynamic("13a", ["a"], true, function($__require, exports, module) {
+$__System.registerDynamic("13c", ["a"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70897,7 +71555,7 @@ $__System.registerDynamic("13a", ["a"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("149", [], true, function($__require, exports, module) {
+$__System.registerDynamic("14b", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70924,7 +71582,7 @@ $__System.registerDynamic("149", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("198", [], true, function($__require, exports, module) {
+$__System.registerDynamic("19b", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70951,7 +71609,7 @@ $__System.registerDynamic("198", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("1bf", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1c2", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -70978,7 +71636,7 @@ $__System.registerDynamic("1bf", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("1c2", ["e3"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c5", ["e3"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71168,7 +71826,7 @@ $__System.registerDynamic("1c2", ["e3"], true, function($__require, exports, mod
   return module.exports;
 });
 
-$__System.registerDynamic("1c3", ["1c2", "1c4"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c6", ["1c5", "1c7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71183,8 +71841,8 @@ $__System.registerDynamic("1c3", ["1c2", "1c4"], true, function($__require, expo
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var Immediate_1 = $__require('1c2');
-  var FutureAction_1 = $__require('1c4');
+  var Immediate_1 = $__require('1c5');
+  var FutureAction_1 = $__require('1c7');
   var AsapAction = (function(_super) {
     __extends(AsapAction, _super);
     function AsapAction() {
@@ -71228,7 +71886,7 @@ $__System.registerDynamic("1c3", ["1c2", "1c4"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("1c5", ["1c3", "1c6"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c8", ["1c6", "1c9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71243,8 +71901,8 @@ $__System.registerDynamic("1c5", ["1c3", "1c6"], true, function($__require, expo
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var AsapAction_1 = $__require('1c3');
-  var QueueScheduler_1 = $__require('1c6');
+  var AsapAction_1 = $__require('1c6');
+  var QueueScheduler_1 = $__require('1c9');
   var AsapScheduler = (function(_super) {
     __extends(AsapScheduler, _super);
     function AsapScheduler() {
@@ -71259,18 +71917,18 @@ $__System.registerDynamic("1c5", ["1c3", "1c6"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("18e", ["1c5"], true, function($__require, exports, module) {
+$__System.registerDynamic("191", ["1c8"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var AsapScheduler_1 = $__require('1c5');
+  var AsapScheduler_1 = $__require('1c8');
   exports.asap = new AsapScheduler_1.AsapScheduler();
   return module.exports;
 });
 
-$__System.registerDynamic("1c7", ["1c4", "1c6"], true, function($__require, exports, module) {
+$__System.registerDynamic("1ca", ["1c7", "1c9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71285,8 +71943,8 @@ $__System.registerDynamic("1c7", ["1c4", "1c6"], true, function($__require, expo
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var FutureAction_1 = $__require('1c4');
-  var QueueScheduler_1 = $__require('1c6');
+  var FutureAction_1 = $__require('1c7');
+  var QueueScheduler_1 = $__require('1c9');
   var AsyncScheduler = (function(_super) {
     __extends(AsyncScheduler, _super);
     function AsyncScheduler() {
@@ -71301,18 +71959,18 @@ $__System.registerDynamic("1c7", ["1c4", "1c6"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("fa", ["1c7"], true, function($__require, exports, module) {
+$__System.registerDynamic("fa", ["1ca"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var AsyncScheduler_1 = $__require('1c7');
+  var AsyncScheduler_1 = $__require('1ca');
   exports.async = new AsyncScheduler_1.AsyncScheduler();
   return module.exports;
 });
 
-$__System.registerDynamic("1c8", ["1c4"], true, function($__require, exports, module) {
+$__System.registerDynamic("1cb", ["1c7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71327,7 +71985,7 @@ $__System.registerDynamic("1c8", ["1c4"], true, function($__require, exports, mo
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  var FutureAction_1 = $__require('1c4');
+  var FutureAction_1 = $__require('1c7');
   var QueueAction = (function(_super) {
     __extends(QueueAction, _super);
     function QueueAction() {
@@ -71426,7 +72084,7 @@ $__System.registerDynamic("cb", [], true, function($__require, exports, module) 
   return module.exports;
 });
 
-$__System.registerDynamic("1c9", [], true, function($__require, exports, module) {
+$__System.registerDynamic("1cc", [], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71457,7 +72115,7 @@ $__System.registerDynamic("1c9", [], true, function($__require, exports, module)
   return module.exports;
 });
 
-$__System.registerDynamic("f1", ["e0", "e4", "e5", "ca", "cb", "1c9"], true, function($__require, exports, module) {
+$__System.registerDynamic("f1", ["e0", "e4", "e5", "ca", "cb", "1cc"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71468,7 +72126,7 @@ $__System.registerDynamic("f1", ["e0", "e4", "e5", "ca", "cb", "1c9"], true, fun
   var isFunction_1 = $__require('e5');
   var tryCatch_1 = $__require('ca');
   var errorObject_1 = $__require('cb');
-  var UnsubscriptionError_1 = $__require('1c9');
+  var UnsubscriptionError_1 = $__require('1cc');
   var Subscription = (function() {
     function Subscription(unsubscribe) {
       this.isUnsubscribed = false;
@@ -71562,7 +72220,7 @@ $__System.registerDynamic("f1", ["e0", "e4", "e5", "ca", "cb", "1c9"], true, fun
   return module.exports;
 });
 
-$__System.registerDynamic("1c4", ["e3", "f1"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c7", ["e3", "f1"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71662,14 +72320,14 @@ $__System.registerDynamic("1c4", ["e3", "f1"], true, function($__require, export
   return module.exports;
 });
 
-$__System.registerDynamic("1c6", ["1c8", "1c4"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c9", ["1cb", "1c7"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var QueueAction_1 = $__require('1c8');
-  var FutureAction_1 = $__require('1c4');
+  var QueueAction_1 = $__require('1cb');
+  var FutureAction_1 = $__require('1c7');
   var QueueScheduler = (function() {
     function QueueScheduler() {
       this.active = false;
@@ -71712,18 +72370,18 @@ $__System.registerDynamic("1c6", ["1c8", "1c4"], true, function($__require, expo
   return module.exports;
 });
 
-$__System.registerDynamic("1bb", ["1c6"], true, function($__require, exports, module) {
+$__System.registerDynamic("1be", ["1c9"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
       global = this,
       GLOBAL = this;
-  var QueueScheduler_1 = $__require('1c6');
+  var QueueScheduler_1 = $__require('1c9');
   exports.queue = new QueueScheduler_1.QueueScheduler();
   return module.exports;
 });
 
-$__System.registerDynamic("1bd", ["e3"], true, function($__require, exports, module) {
+$__System.registerDynamic("1c0", ["e3"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71817,7 +72475,7 @@ $__System.registerDynamic("e6", ["e3"], true, function($__require, exports, modu
   return module.exports;
 });
 
-$__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "e1", "b7", "f3", "f6", "f7", "fc", "ff", "100", "105", "106", "109", "10c", "110", "113", "115", "118", "11a", "11c", "11e", "121", "123", "125", "126", "b3", "129", "b4", "12e", "130", "132", "134", "136", "138", "13b", "13d", "13f", "141", "143", "144", "147", "14a", "14f", "151", "153", "155", "157", "159", "b5", "ae", "15d", "15f", "160", "b6", "b2", "161", "162", "164", "167", "169", "16b", "16d", "16f", "171", "172", "174", "176", "178", "17a", "17c", "17e", "b1", "182", "184", "186", "188", "18a", "18c", "190", "192", "194", "196", "199", "19b", "19d", "19f", "1a1", "1a3", "1a5", "1a7", "1a9", "58", "1ab", "1ad", "1af", "1b1", "1b3", "1b5", "1b6", "1b9", "1ba", "f1", "117", "cc", "16e", "a8", "180", "13a", "149", "198", "1bf", "1c9", "18e", "fa", "1bb", "1bd", "ed", "e6"], true, function($__require, exports, module) {
+$__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "e1", "b0", "f3", "f6", "f7", "fc", "ff", "100", "105", "106", "109", "10c", "110", "113", "115", "118", "11a", "11c", "11e", "121", "123", "125", "126", "127", "12a", "12d", "130", "132", "134", "136", "138", "13a", "13d", "13f", "141", "143", "145", "146", "149", "14c", "151", "153", "155", "157", "159", "15b", "af", "a9", "15f", "161", "162", "ae", "ad", "163", "164", "166", "169", "16b", "16d", "16f", "171", "173", "174", "176", "178", "17a", "17c", "17e", "180", "182", "185", "187", "189", "18b", "18d", "18f", "193", "195", "197", "199", "19c", "19e", "1a0", "1a2", "1a4", "1a6", "1a8", "1aa", "1ac", "aa", "1ae", "1b0", "1b2", "1b4", "1b6", "1b8", "1b9", "1bc", "1bd", "f1", "117", "cc", "170", "a4", "183", "13c", "14b", "19b", "1c2", "1cc", "191", "fa", "1be", "1c0", "ed", "e6"], true, function($__require, exports, module) {
   "use strict";
   ;
   var define,
@@ -71834,7 +72492,7 @@ $__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "
   $__require('db');
   $__require('de');
   $__require('e1');
-  $__require('b7');
+  $__require('b0');
   $__require('f3');
   $__require('f6');
   $__require('f7');
@@ -71856,82 +72514,82 @@ $__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "
   $__require('123');
   $__require('125');
   $__require('126');
-  $__require('b3');
-  $__require('129');
-  $__require('b4');
-  $__require('12e');
+  $__require('127');
+  $__require('12a');
+  $__require('12d');
   $__require('130');
   $__require('132');
   $__require('134');
   $__require('136');
   $__require('138');
-  $__require('13b');
+  $__require('13a');
   $__require('13d');
   $__require('13f');
   $__require('141');
   $__require('143');
-  $__require('144');
-  $__require('147');
-  $__require('14a');
-  $__require('14f');
+  $__require('145');
+  $__require('146');
+  $__require('149');
+  $__require('14c');
   $__require('151');
   $__require('153');
   $__require('155');
   $__require('157');
   $__require('159');
-  $__require('b5');
-  $__require('ae');
-  $__require('15d');
+  $__require('15b');
+  $__require('af');
+  $__require('a9');
   $__require('15f');
-  $__require('160');
-  $__require('b6');
-  $__require('b2');
   $__require('161');
   $__require('162');
+  $__require('ae');
+  $__require('ad');
+  $__require('163');
   $__require('164');
-  $__require('167');
+  $__require('166');
   $__require('169');
   $__require('16b');
   $__require('16d');
   $__require('16f');
   $__require('171');
-  $__require('172');
+  $__require('173');
   $__require('174');
   $__require('176');
   $__require('178');
   $__require('17a');
   $__require('17c');
   $__require('17e');
-  $__require('b1');
+  $__require('180');
   $__require('182');
-  $__require('184');
-  $__require('186');
-  $__require('188');
-  $__require('18a');
-  $__require('18c');
-  $__require('190');
-  $__require('192');
-  $__require('194');
-  $__require('196');
+  $__require('185');
+  $__require('187');
+  $__require('189');
+  $__require('18b');
+  $__require('18d');
+  $__require('18f');
+  $__require('193');
+  $__require('195');
+  $__require('197');
   $__require('199');
-  $__require('19b');
-  $__require('19d');
-  $__require('19f');
-  $__require('1a1');
-  $__require('1a3');
-  $__require('1a5');
-  $__require('1a7');
-  $__require('1a9');
-  $__require('58');
-  $__require('1ab');
-  $__require('1ad');
-  $__require('1af');
-  $__require('1b1');
-  $__require('1b3');
-  $__require('1b5');
+  $__require('19c');
+  $__require('19e');
+  $__require('1a0');
+  $__require('1a2');
+  $__require('1a4');
+  $__require('1a6');
+  $__require('1a8');
+  $__require('1aa');
+  $__require('1ac');
+  $__require('aa');
+  $__require('1ae');
+  $__require('1b0');
+  $__require('1b2');
+  $__require('1b4');
   $__require('1b6');
+  $__require('1b8');
   $__require('1b9');
-  var Operator_1 = $__require('1ba');
+  $__require('1bc');
+  var Operator_1 = $__require('1bd');
   exports.Operator = Operator_1.Operator;
   var Subscription_1 = $__require('f1');
   exports.Subscription = Subscription_1.Subscription;
@@ -71939,26 +72597,26 @@ $__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "
   exports.Subscriber = Subscriber_1.Subscriber;
   var AsyncSubject_1 = $__require('cc');
   exports.AsyncSubject = AsyncSubject_1.AsyncSubject;
-  var ReplaySubject_1 = $__require('16e');
+  var ReplaySubject_1 = $__require('170');
   exports.ReplaySubject = ReplaySubject_1.ReplaySubject;
-  var BehaviorSubject_1 = $__require('a8');
+  var BehaviorSubject_1 = $__require('a4');
   exports.BehaviorSubject = BehaviorSubject_1.BehaviorSubject;
-  var ConnectableObservable_1 = $__require('180');
+  var ConnectableObservable_1 = $__require('183');
   exports.ConnectableObservable = ConnectableObservable_1.ConnectableObservable;
-  var Notification_1 = $__require('13a');
+  var Notification_1 = $__require('13c');
   exports.Notification = Notification_1.Notification;
-  var EmptyError_1 = $__require('149');
+  var EmptyError_1 = $__require('14b');
   exports.EmptyError = EmptyError_1.EmptyError;
-  var ArgumentOutOfRangeError_1 = $__require('198');
+  var ArgumentOutOfRangeError_1 = $__require('19b');
   exports.ArgumentOutOfRangeError = ArgumentOutOfRangeError_1.ArgumentOutOfRangeError;
-  var ObjectUnsubscribedError_1 = $__require('1bf');
+  var ObjectUnsubscribedError_1 = $__require('1c2');
   exports.ObjectUnsubscribedError = ObjectUnsubscribedError_1.ObjectUnsubscribedError;
-  var UnsubscriptionError_1 = $__require('1c9');
+  var UnsubscriptionError_1 = $__require('1cc');
   exports.UnsubscriptionError = UnsubscriptionError_1.UnsubscriptionError;
-  var asap_1 = $__require('18e');
+  var asap_1 = $__require('191');
   var async_1 = $__require('fa');
-  var queue_1 = $__require('1bb');
-  var rxSubscriber_1 = $__require('1bd');
+  var queue_1 = $__require('1be');
+  var rxSubscriber_1 = $__require('1c0');
   var observable_1 = $__require('ed');
   var iterator_1 = $__require('e6');
   var Scheduler = {
@@ -71976,7 +72634,7 @@ $__System.registerDynamic("1d", ["7", "a", "ce", "d1", "d2", "d6", "db", "de", "
   return module.exports;
 });
 
-$__System.register("1", ["2", "66", "1c", "c8", "33", "1d"], function(exports_1, context_1) {
+$__System.register("1", ["2", "60", "1c", "c8", "33", "1d"], function(exports_1, context_1) {
   "use strict";
   var __moduleName = context_1 && context_1.id;
   var platform_browser_dynamic_1,

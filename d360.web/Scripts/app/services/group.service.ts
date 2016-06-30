@@ -4,6 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { IGroupService, GroupSearchResultModel, GroupResourceInfo, Group, GroupEditorModel, ResourceGroup } from '../models/group.model';
+import { JsonResult } from '../models/form.model';
 
 @Injectable()
 export class GroupService extends BaseService implements IGroupService {
@@ -31,11 +32,47 @@ export class GroupService extends BaseService implements IGroupService {
             .catch(err => this.handleError(err)); 
     }
 
-    putGroup(group: Group): Promise<any> {
+    putGroup(group: Group): Promise<JsonResult> {
         return this.http.put('form/Group', group)
             .toPromise()
+            .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
     }
-    
+
+    postGroup(group: Group): Promise<JsonResult> {
+        return this.http.post('form/Group', group)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteGroup(id: number): Promise<JsonResult> {
+        return this.http.delete(`form/DeleteGroupByID?id=${id}`)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postResourceGroup(resourceGroup: ResourceGroup): Promise<JsonResult> {
+        return this.http.post('form/ResourceGroup', resourceGroup)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteResourceGroup(groupID: number, resourceID: number): Promise<JsonResult> {
+        return this.http.delete(`form/ResourceGroup?groupID=${groupID}&resourceID=${resourceID}`)
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getGroupUserList(id: number): Promise<any> {
+        return this.http.get(`form/GetGroupUserList?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }
 

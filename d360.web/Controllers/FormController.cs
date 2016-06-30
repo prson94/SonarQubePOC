@@ -8985,6 +8985,40 @@ order by  D.TextPath
             }
         }
 
+        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup")]
+        public JsonResult PostResourceGroup(ResourceGroup model)
+        {
+            try
+            {
+                Company.Add(model);
+                return jsonSuccess("User successfully assigned.", model.ResourceID.ToString(), null, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetGroupUserList(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
+            if (!Company.Any<Group>(i => i.ID == id)) return jsonException("No group exists for the specified ID.", HttpStatusCode.NotFound);
+
+            var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
+            var resList = GetCompanyResources()
+                .Where(i => !currentGroupUsers.Contains(i.ResourceID))
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName }).ToList().Select(i => new SelectListItem { Text = string.Format("{0}, {1}", i.LastName, i.FirstName), Value = i.ID.ToString() }).ToList();
+            //resList.Insert(0, new SelectListItem { Text = "Please select", Value = "" });
+
+            return Json(new { resourceList = resList }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Group : Delete User
@@ -9025,6 +9059,29 @@ order by  D.TextPath
                 var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
 
                 return jsonSuccess("User successfully removed from group.", resourceID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup")]
+        public JsonResult DeleteResourceGroup(int groupID, int resourceID)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Delete, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var rg = Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
+
+                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), null, "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9084,6 +9141,13 @@ order by  D.TextPath
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteGroupByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteGroup(form);
+        }
         #endregion
 
         #region Group : Edit
@@ -9152,7 +9216,41 @@ order by  D.TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-    
+
+
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group")]
+        public JsonResult PostGroup(Group model)
+        {
+            try
+            {
+                Company.Add(model);
+
+                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID, IsOwner = true });
+                try
+                {
+                    if (model.SecondaryOwnerResourceID.HasValue)
+                    {
+                        if (!model.PrimaryOwnerResourceID.Equals(model.SecondaryOwnerResourceID))
+                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                    }
+                }
+                catch
+                {
+                }
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group")]
         public JsonResult PutGroup(Group model)
         {

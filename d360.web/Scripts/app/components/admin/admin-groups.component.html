@@ -19,16 +19,21 @@
     </div>
     <div class="col l9 m8 s12" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-group-members-tile [id]="selectedRow?.ID"></d3s-group-members-tile>
+            <d3s-group-members-tile [item]="selectedRow"></d3s-group-members-tile>
         </div>
         <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
-            adding
+            <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel();" (onSuccess)="formMode = FormMode.Default; load();"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail">
-            <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="formMode = FormMode.Default;"></d3s-group-form>
+            <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel();" (onSuccess)="formMode = FormMode.Default; load();"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            deleting {{selectedRow.ID}}
+            <delete-form [uri]="'/form/DeleteGroupByID?id=' + selectedRow.ID"
+                         [method]="'delete'"
+                         [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
+                         (onDeleteSuccess)="confirmDelete()"
+                         (onCancel)="cancel();">
+            </delete-form>
         </div>
     </div>
 </div>

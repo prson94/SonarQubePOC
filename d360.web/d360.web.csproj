@@ -1410,7 +1410,6 @@
     <TypeScriptCompile Include="Scripts\app\models\domain.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\governance.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\grid-definition.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\jsonresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
@@ -1430,7 +1429,6 @@
     <TypeScriptCompile Include="Scripts\app\services\claims.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\domain.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\governance.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />

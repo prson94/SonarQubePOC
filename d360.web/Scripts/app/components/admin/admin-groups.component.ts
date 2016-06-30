@@ -11,14 +11,15 @@ import { GroupMembersTile } from '../tiles/group-members.tile';
 import { GroupService } from '../../services/group.service';
 import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../models/group.model';
 import { GroupForm } from '../forms/group.form';
+import { DeleteForm } from '../forms/delete.form';
 import { FormMode } from '../../models/form.model';
 
 
 @Component({
     selector: 'd3s-admin-groups',
-    directives: [DataTable, Column, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, GroupMembersTile, GroupForm ],
+    directives: [DataTable, Column, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, GroupMembersTile, GroupForm, DeleteForm ],
     providers: [ GroupService ],
-    templateUrl: 'scripts/app/components/admin/admin-groups.component.html' 
+    templateUrl: 'scripts/app/components/admin/admin-groups.component.html'  
 })
 
 export class AdminGroupsComponent extends AdminBaseComponent {
@@ -62,6 +63,9 @@ export class AdminGroupsComponent extends AdminBaseComponent {
 
     }
 
+    cancel() {
+        this.formMode = FormMode.Default;
+    }
     delete(id: number) {
         this.selectedRow = this.groupItems.find(i => i.ID == id);
         this.formMode = FormMode.Deleting;

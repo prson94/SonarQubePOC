@@ -1,8 +1,15 @@
-﻿import { SelectItem } from '../models/form.model';
+﻿import { SelectItem, JsonResult } from '../models/form.model';
 
 export interface IGroupService {
-    getGroupList(): Promise<GroupSearchResultModel[]>;
-    getGroupResourceList(id: number): Promise<GroupResourceInfo[]>;
+    getGroupList(): Promise<GroupSearchResultModel[]>; 
+    getGroupResourceList(id: number): Promise<GroupResourceInfo[]>; 
+    getGroup(id: number): Promise<GroupEditorModel>; 
+    putGroup(group: Group): Promise<JsonResult>; 
+    postGroup(group: Group): Promise<JsonResult>;
+    deleteGroup(id: number): Promise<JsonResult>;
+    postResourceGroup(resourceGroup: ResourceGroup): Promise<JsonResult>;
+    deleteResourceGroup(groupID: number, resourceID: number): Promise<JsonResult>;
+    getGroupUserList(id: number): Promise<JsonResult>;
 }
 
 

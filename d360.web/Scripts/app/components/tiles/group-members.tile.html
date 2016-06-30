@@ -1,4 +1,4 @@
-﻿<div>
+﻿<div *ngIf="item && item?.ID">
     <div>
         <header>
             {{title}}
@@ -6,8 +6,8 @@
         </header>
     </div>
     <div [ngSwitch]="formMode">
-        <div *ngSwitchDefault >
-            <p-dataTable [value]="groupItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+        <div *ngSwitchDefault>
+            <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" (onRowSelect)="select($event)">
                 <p-column field="LastName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
                 <p-column field="FirstName" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
                 <p-column field="Owner?" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
@@ -22,10 +22,30 @@
             </p-dataTable>
         </div>
         <div *ngSwitchCase="FormMode.Adding">
-            adding
+            <div class="row">
+                <div class="col s12">
+                    Add a user to {{item.Name}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;"></div>
+                    <p-dropdown [options]="resourceList" [(ngModel)]="selectedResource" [style]="{'width' : '98%'}"></p-dropdown>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <button pButton label="Add" (click)="save();"></button><button pButton label="Cancel" (click)="cancel();"></button>
+                </div>
+            </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            deleting
+            <delete-form [uri]="'/form/ResourceGroup?groupID=' + selectedRow.GroupID + '&resourceID=' + selectedRow.ResourceID"
+                         [method]="'delete'"
+                         [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + item.Name + '?'"
+                         (onDeleteSuccess)="confirmDelete()"
+                         (onCancel)="cancel();">
+            </delete-form>
         </div>
     </div>
 </div>
