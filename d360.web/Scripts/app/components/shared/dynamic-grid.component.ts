@@ -1,68 +1,114 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
+import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService} from '../../services/index';
+import { MessagesService, GridDefinitionService, UriBasedService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
+import {DeleteForm} from '../forms/delete.form';
 
 
 @Component({
     selector: 'd3s-dynamic-grid',
-    directives: [DataTable, Column, TileActionsComponent],
-    providers: [GridDefinitionService],
-    template: `               
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="showEditor=true" [(selection)]="selectedItem" >                                                                       
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm],
+    providers: [GridDefinitionService, UriBasedService],
+    template: ` 
+                <header *ngIf="!showEditor && !showDelete">{{title}}
+                    <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add lookup item'" (addClick)="add()"></d3s-tile-actions>                            
+                </header>           
+                <div *ngIf="isLoading" style="width:100%; text-align:center;">
+                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>           
+               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true" [sortable]="true"></p-column>
                     <p-column [style]="{width:'40px'}">
                             <template let-template="rowData">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
                             <template let-template="rowData">
                                 <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                    <a style="cursor:pointer;" (click)="showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>
                     </p-column>                            
-                </p-dataTable>                      
+                </p-dataTable>   
+                <delete-form *ngIf="showDelete"
+                    [callback]="theDeleteCallback"
+                    [itemId]="selected?.ID"
+                    [method]="'callback'"
+                    [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                    (onCancel)="showDelete=false;"
+                ></delete-form>                                    
                 `
 })
 
-export class LookupItemsTile implements OnChanges {
+export class DynamicGridComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
+    @Input() dataUri: string;
+    @Input() deleteUri: string;
+    @Input() title: string = "Items";
+    
     error: any;
     items: any[] = [];
-    columns: GridColumn[] = [];    
+    columns: GridColumn[] = [];   
+
+    showDelete: boolean = false;
+    showEditor: boolean = false;
     isLoading: boolean = false;
-    selectedItem: any = null;
+    
+    selected: any = null;
+
+    theDeleteCallback: Function;
     
 
-    constructor(private gridDefinitionService: GridDefinitionService) {
-        
+    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService) {
+        this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        //if (this.lookup != null) this.load();
+        if (this.objectID != null && this.objectType != null) this.load();
     }
-
+    
     load() {
         this.getFieldsDefinition();        
+        this.getData();
     }
 
-    getFieldsDefinition() {
-        this.isLoading = true;
+    deleteItem(id: number) {
+        this.uriBasedService.deleteItem(this.deleteUri, id);   
+        this.showDelete = false;
+        if (this.items.length > 0) this.items.splice(this.findItemIndex(id), 1);
+    }
+
+    getFieldsDefinition() {        
         this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
             .then(result => {
-                this.columns = result.Columns;
-                this.isLoading = false;
+                this.columns = result.Columns;                
             });
     }    
-    
+
+    getData() {    
+        this.isLoading = true;
+        this.uriBasedService.getItems(this.dataUri)
+            .then(result => {
+                this.items = result;                
+                this.isLoading = false;
+                if (this.items.length > 0) this.selected = this.items[0];
+            });
+    }  
+
+    findItemIndex(id: number) {
+        var index: number = -1;
+        for (var item of this.items) {
+            index++;
+            if (item.ID == id) return index;
+        }
+    }
 }
 
 

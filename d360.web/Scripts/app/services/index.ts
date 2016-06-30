@@ -17,6 +17,7 @@ import { TaxonomiesService } from './taxonomies.service';
 import { ObjectStyleService } from './object-style.service';
 import { LookupService } from './lookup.service';
 import { GridDefinitionService } from './grid-definition.service';
+import { UriBasedService } from './uri-based.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -37,3 +38,4 @@ export * from './taxonomies.service';
 export * from './object-style.service';
 export * from './lookup.service';
 export * from './grid-definition.service';
+export * from './uri-based.service';

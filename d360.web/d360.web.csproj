@@ -1392,7 +1392,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\lookup-items.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
@@ -1452,6 +1451,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
   </ItemGroup>

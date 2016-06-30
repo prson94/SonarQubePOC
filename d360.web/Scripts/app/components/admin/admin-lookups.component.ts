@@ -7,19 +7,19 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
 import {Lookup} from '../../models/lookup.model';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
-import { LookupItemsTile } from '../tiles/lookup-items.tile';
+import { DynamicGridComponent } from '../shared/dynamic-grid.component';
 
 
 @Component({
     selector: 'd3s-admin-lookups-component',
-    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, LookupItemsTile],
+    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent],
     providers: [LookupService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Lookup Types
                                 <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Lookup'" (addClick)="add()"></d3s-tile-actions>                            
-                            </header>
+                            </header>                            
                             <p-dataTable *ngIf="!showEditor && !showDelete" [value]="lookups" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedLookup"  (onRowDblclick)="showEditor=true;" >                                                        
                                 <p-column field="ID" header="ID" [sortable]="true" [filter]="true"></p-column>                                                            
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
@@ -57,8 +57,8 @@ import { LookupItemsTile } from '../tiles/lookup-items.tile';
                         </div>
                         <div class="row">
                             <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-lookup-items-tile [lookup]="selectedLookup" ></d3s-lookup-items-tile>
+                                <div class="tile tile-detail">           
+                                    <d3s-dynamic-grid [title]="'Items'" [objectType]="'LookupType'" [objectID]="selectedLookup?.ID" [dataUri]="lookupUri()" [deleteUri]="'form/DeleteLookupByIdRaw?id='"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
@@ -100,5 +100,11 @@ export class AdminLookupsComponent extends AdminBaseComponent {
         this.lookupService.deleteLookup(id);
         this.showDelete = false;
     }
+
+    lookupUri() {
+        if (this.selectedLookup == null) return "";
+
+        return `resources/lookups/${this.selectedLookup.ID}/items.json`;
+    }    
     
 }

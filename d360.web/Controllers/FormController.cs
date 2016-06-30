@@ -10007,6 +10007,14 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             }
         }
 
+        [HttpDelete]
+        public ActionResult DeleteLookupByIdRaw(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteLookup(form);
+        }
+
         public ActionResult DeleteLookup(int id)
         {
             var a = Company.GetById<Lookup>(id);
