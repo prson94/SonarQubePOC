@@ -328,6 +328,8 @@ namespace d360.web.Controllers
                     return Lookup_AddFields(objectID.GetValueOrDefault());
                 case "RULEDIMENSION":
                     return RuleDimension_AddFields();
+                case "RULETYPE":
+                    return Rule_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }

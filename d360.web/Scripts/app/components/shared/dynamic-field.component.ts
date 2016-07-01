@@ -13,13 +13,17 @@ import {Button, Editor, InputText, Dropdown, SelectItem} from 'primeng/primeng';
                         <div class="FieldName">{{field.FieldName}}</div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >                    
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value" [id]="field.FieldName"></p-editor>                        
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value" [id]="field.FieldName"></p-editor>                                                                                                             
+                        <select [id]="field.FieldName" [formControlName]="field.FieldName" *ngSwitchCase="'Lookup'" [(ngModel)]="field.Value" style="height:auto;">
+                            <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                        </select>
+
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div> 
                   
                 </div>
                 `,
-    directives: [REACTIVE_FORM_DIRECTIVES, Button, Editor]
+    directives: [REACTIVE_FORM_DIRECTIVES, Button, Editor, Dropdown]
 })
 export class DynamicFieldComponent {
     @Input() field: EditorField;

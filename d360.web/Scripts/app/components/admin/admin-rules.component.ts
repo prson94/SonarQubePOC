@@ -7,7 +7,8 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { ClaimsTile } from '../tiles/claims.tile';
 import { RuleDimensionsTile } from '../tiles/rule-dimensions.tile';
-import { RuleType, RuleDimension } from '../../models/rule.model';
+import { RuleType } from '../../models/rule.model';
+import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 
 @Component({
@@ -17,15 +18,13 @@ import { RuleType, RuleDimension } from '../../models/rule.model';
     template: `<div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor">Rule Types
-                                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Rule'" (addClick)="add()"></d3s-tile-actions>                            
-                            </header>  
+                            <header *ngIf="!showEditor">Rule Types</header>  
                             <div *ngIf="isLoading">
                                 <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                             </div>                          
                             <p-dataTable *ngIf="!isLoading && !showEditor" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
-                            </p-dataTable>                               
+                            </p-dataTable>                                
                         </div>
                     </div>                    
                     <div class="col l8 s12">
@@ -80,5 +79,6 @@ export class AdminRulesComponent extends AdminBaseComponent {
                 this.isLoading = false;
                 if (this.ruleTypes.length > 0) this.selected = this.ruleTypes[0];
             });
-    }    
+    }  
+    
 }

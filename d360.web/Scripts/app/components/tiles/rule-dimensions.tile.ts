@@ -116,7 +116,7 @@ export class RuleDimensionsTile {
                 else {
                     this.dimensions[this.findDimensionIndex(event.item.ID)] = event.item;
                 }
-                this.selected = event.lookup;
+                this.selected = event.item;
                 this.showEditor = false;
             });
     }
