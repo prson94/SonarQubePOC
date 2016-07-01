@@ -17,4 +17,11 @@ export class RulesService extends BaseService {
             .then(response => <RuleType[]>response.json().ruleTypes)
             .catch(err => this.handleError(err));
     }
+
+    getRuleDimensions(): Promise<RuleDimension[]> {
+        return this.http.get('api/ruledimensions')
+            .toPromise()
+            .then(response => <RuleDimension[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

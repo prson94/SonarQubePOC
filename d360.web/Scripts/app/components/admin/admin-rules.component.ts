@@ -6,12 +6,13 @@ import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { ClaimsTile } from '../tiles/claims.tile';
+import { RuleDimensionsTile } from '../tiles/rule-dimensions.tile';
 import { RuleType, RuleDimension } from '../../models/rule.model';
 
 
 @Component({
     selector: 'd3s-admin-rules-component',
-    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile ],
+    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile, RuleDimensionsTile ],
     providers: [RulesService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -28,6 +29,13 @@ import { RuleType, RuleDimension } from '../../models/rule.model';
                         </div>
                     </div>                    
                     <div class="col l8 s12">
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-rule-dimensions-tile></d3s-rule-dimensions-tile>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

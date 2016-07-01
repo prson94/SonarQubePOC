@@ -60,7 +60,6 @@ export class AdminPoliciesComponent extends AdminBaseComponent {
     }
 
     ngOnInit() {
-
         this.getPolicyTypes();
     }
 

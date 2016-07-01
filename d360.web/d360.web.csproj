@@ -1401,6 +1401,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\rule-dimensions.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />

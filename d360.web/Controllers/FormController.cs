@@ -313,17 +313,21 @@ namespace d360.web.Controllers
             {
                 case "LOOKUPTYPE":
                     return Lookup_EditFields(ID);
+                case "RULEDIMENSION":
+                    return RuleDimension_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID:int}")]
-        public JsonResult DynamicEditorAddFields(string objectType, int objectID)
+        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}")]
+        public JsonResult DynamicEditorAddFields(string objectType, int? objectID)
         {
             switch ((objectType ?? "").ToUpper())
             {
                 case "LOOKUPTYPE":
-                    return Lookup_AddFields(objectID);
+                    return Lookup_AddFields(objectID.GetValueOrDefault());
+                case "RULEDIMENSION":
+                    return RuleDimension_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }

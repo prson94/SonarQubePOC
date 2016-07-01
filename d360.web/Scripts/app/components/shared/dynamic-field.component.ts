@@ -9,16 +9,17 @@ import {Button, Editor, InputText, Dropdown, SelectItem} from 'primeng/primeng';
 
                 <div [formGroup]="form">    
                    <input *ngIf="field.FieldType=='Hidden'" [(ngModel)]="field.Value"  [formControlName]="field.FieldName" [id]="field.FieldName" [type]="'hidden'" />              
-                  <div [ngSwitch]="field.FieldType" class="col s12" >
-                    <div class="FieldName">{{field.Name}}</div>
-                    <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;"
+                  <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
+                        <div class="FieldName">{{field.FieldName}}</div>
+                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >                    
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value" [id]="field.FieldName"></p-editor>                        
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div> 
                   
                 </div>
                 `,
-    directives: [REACTIVE_FORM_DIRECTIVES]
+    directives: [REACTIVE_FORM_DIRECTIVES, Button, Editor]
 })
 export class DynamicFieldComponent {
     @Input() field: EditorField;
