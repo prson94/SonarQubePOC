@@ -8,6 +8,9 @@ import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminLookupsComponent } from './admin-lookups.component';
 import { AdminRulesComponent } from './admin-rules.component';
+import { AdminPoliciesComponent } from './admin-policies.component';
+import { AdminAttributesComponent } from './admin-attributes.component';
+import { AdminRelationshipsComponent } from './admin-relationships.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -22,3 +25,6 @@ export * from './admin-taxonomies.component';
 export * from './admin.component';
 export * from './admin-lookups.component';
 export * from './admin-rules.component';
+export * from './admin-policies.component';
+export * from './admin-attributes.component';
+export * from './admin-relationships.component';

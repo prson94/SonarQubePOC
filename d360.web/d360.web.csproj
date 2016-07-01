@@ -1357,12 +1357,15 @@
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookup-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookups.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-policies.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
@@ -1418,6 +1421,7 @@
     <TypeScriptCompile Include="Scripts\app\models\jsonresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\group.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\policy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rule.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
@@ -1437,6 +1441,7 @@
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\policies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
