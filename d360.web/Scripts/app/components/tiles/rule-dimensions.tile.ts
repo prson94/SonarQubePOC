@@ -82,7 +82,7 @@ export class RuleDimensionsTile {
     }
 
     deleteDimension(id: number) {
-       // this.taxonomiesService.deleteTaxonomyLevel(this.taxonomy.ID, id);
+        this.rulesService.deleteDimension(id);
         this.showDelete = false;
         this.dimensions.splice(this.findDimensionIndex(id), 1);
     }
@@ -107,23 +107,18 @@ export class RuleDimensionsTile {
     }
 
     saveDimension(event) {
-       /* if (event.action == "new") {
-            this.taxonomiesService.saveTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showEditor = false;
-                    this.levels[this.levels.length] = event.level;
-                    this.selectedLevel = event.level;
-                });
-        }
-        else {
-            this.taxonomiesService.editTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showEditor = false;
-                    this.levels[this.findDimensionIndex(event.level.Level)] = event.level;
-                    this.selectedLevel = event.level;
-                });
-
-        }*/
+        this.rulesService.saveDimension(event.item)
+            .then(result => {
+                if (event.item.ID == undefined) {
+                    event.item.ID = Number(result.id);
+                    this.dimensions[this.dimensions.length] = event.item;
+                }
+                else {
+                    this.dimensions[this.findDimensionIndex(event.item.ID)] = event.item;
+                }
+                this.selected = event.lookup;
+                this.showEditor = false;
+            });
     }
 }
 

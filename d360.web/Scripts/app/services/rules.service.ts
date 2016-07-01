@@ -24,4 +24,45 @@ export class RulesService extends BaseService {
             .then(response => <RuleDimension[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    deleteDimension(id: number) {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        let url = `form/dynamicedit/delete/ruledimension/${id}`;
+
+        return this.http
+            .delete(url, headers)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
+    saveDimension(ruleDimension: RuleDimension): Promise<JsonResult> {
+        if (ruleDimension.ID == undefined || !ruleDimension.ID) {
+            return this.post(ruleDimension);
+        }
+        return this.put(ruleDimension);  
+    }
+
+    private post(ruleDimension: RuleDimension): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
+        });
+        return this.http
+            .post("form/dynamicedit/create/ruledimension", 'json=' +JSON.stringify(ruleDimension), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+
+    private put(ruleDimension: RuleDimension): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
+        });        
+        return this.http
+            .put("form/dynamicedit/edit/ruledimension", 'json='+JSON.stringify(ruleDimension), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
 }

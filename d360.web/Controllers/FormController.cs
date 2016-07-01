@@ -346,14 +346,29 @@ namespace d360.web.Controllers
             switch ((objectType ?? "" ).ToUpper())
             {
                 case "LOOKUP":
-                    return EditLookup(form);                    
-                default:
-                    break;
+                    return EditLookup(form);                
+                case "RULEDIMENSION":
+                    return EditRuleDimension(form);                
             }
 
             throw new Exception("Invalid / unsupported edit type");
         }
-        
+
+        [HttpDelete, Route("dynamicedit/delete/{objectType}/{objectID:int}"), ValidateInput(false)]
+        public JsonResult DynamicDelete(string objectType, int objectID)
+        {            
+            FormCollection form = new FormCollection();
+            form.Add("ID", objectID.ToString());
+
+            switch ((objectType ?? "").ToUpper())
+            {                
+                case "RULEDIMENSION":
+                    return DeleteRuleDimension(form);
+            }
+
+            throw new Exception("Invalid / unsupported edit type");
+        }
+
         [HttpPost, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
         public JsonResult DynamicCreate(string objectType, string json)
         {
@@ -369,8 +384,8 @@ namespace d360.web.Controllers
             {
                 case "LOOKUP":
                     return AddLookup(form);
-                default:
-                    break;
+                case "RULEDIMENSION":
+                    return AddRuleDimension(form);                
             }
 
             throw new Exception("Invalid / unsupported create type");
