@@ -1,4 +1,4 @@
-﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent, AdminLookupsComponent } from './index'
+﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent, AdminLookupsComponent, AdminRulesComponent } from './index'
 
 export const AdminRoutes = [
     {
@@ -14,7 +14,8 @@ export const AdminRoutes = [
             { path: 'artifacts', component: AdminArtifactsComponent },
             { path: 'templates', component: AdminTemplatesComponent },
             { path: 'taxonomies', component: AdminTaxonomiesComponent },
-            { path: 'lookups', component: AdminLookupsComponent }
+            { path: 'lookups', component: AdminLookupsComponent },
+            { path: 'rules', component: AdminRulesComponent }
         ]
     }
 ];

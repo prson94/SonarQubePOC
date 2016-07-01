@@ -21,7 +21,10 @@ import {DeleteForm} from '../forms/delete.form';
                             <header *ngIf="!showEditor">Models
                                 <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Model'" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
-                            <p-dataTable *ngIf="!showEditor && !showDelete" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  (onRowDblclick)="showEditor=true;" >                                                        
+                            <div *ngIf="isLoading">
+                                <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                            </div>                         
+                            <p-dataTable *ngIf="!showEditor && !showDelete && !isLoading" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  (onRowDblclick)="showEditor=true;" >                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true"></p-column>                            
@@ -78,10 +81,17 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
         this.theDeleteCallback = this.deleteTaxonomy.bind(this);        
     }
 
-    getTaxonomies() {        
+    getTaxonomies() {
+        this.isLoading = true;     
         this.taxonomiesService
             .getTaxonomies()
-            .then(taxonomies => { this.taxonomies = taxonomies; if (this.taxonomies.length && this.taxonomies.length > 0) { this.selectedTaxonomy = this.taxonomies[0]; } })
+            .then(taxonomies => {
+                this.taxonomies = taxonomies;
+                if (this.taxonomies.length && this.taxonomies.length > 0) {
+                    this.selectedTaxonomy = this.taxonomies[0];
+                }
+                this.isLoading = false;
+            })
             .catch(error => this.error = error); // TODO: Display error message
     }
 

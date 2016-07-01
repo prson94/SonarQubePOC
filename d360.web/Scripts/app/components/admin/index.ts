@@ -6,7 +6,8 @@ import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminLookupsComponent} from './admin-lookups.component';
+import { AdminLookupsComponent } from './admin-lookups.component';
+import { AdminRulesComponent } from './admin-rules.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -20,3 +21,4 @@ export * from './admin-templates.component';
 export * from './admin-taxonomies.component';
 export * from './admin.component';
 export * from './admin-lookups.component';
+export * from './admin-rules.component';
