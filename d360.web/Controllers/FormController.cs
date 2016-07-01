@@ -317,6 +317,8 @@ namespace d360.web.Controllers
                     return RuleDimension_EditFields(ID);
                 case "POLICYTYPE":
                     return PolicyType_EditFields(ID);
+                case "PREDICATE":
+                    return Predicate_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -334,6 +336,8 @@ namespace d360.web.Controllers
                     return Rule_AddFields();
                 case "POLICYTYPE":
                     return PolicyType_AddFields();
+                case "PREDICATE":
+                    return Predicate_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -356,7 +360,9 @@ namespace d360.web.Controllers
                 case "RULEDIMENSION":
                     return EditRuleDimension(form);
                 case "POLICYTYPE":
-                    return EditPolicyType(form);             
+                    return EditPolicyType(form);    
+                case "PREDICATE":
+                    return EditPredicate(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -374,6 +380,8 @@ namespace d360.web.Controllers
                     return DeleteRuleDimension(form);
                 case "POLICYTYPE":
                     return DeletePolicyType(form);
+                case "PREDICATE":
+                    return DeletePredicate(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -397,7 +405,9 @@ namespace d360.web.Controllers
                 case "RULEDIMENSION":
                     return AddRuleDimension(form);
                 case "POLICYTYPE":
-                    return AddPolicyType(form);          
+                    return AddPolicyType(form);
+                case "PREDICATE":
+                    return AddPredicate(form);          
             }
 
             throw new Exception("Invalid / unsupported create type");

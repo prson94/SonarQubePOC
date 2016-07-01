@@ -4,10 +4,12 @@ import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { PredicatesTile } from '../tiles/predicates.tile';
+import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    directives: [DataTable, Column, TileActionsComponent],
+    directives: [DataTable, Column, TileActionsComponent, PredicatesTile, FieldDefinitionTile],
     template: `<div class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
@@ -17,12 +19,21 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
                         </div>
                     </div>                    
                     <div class="col l6 s12">
-                        <div class="tile tile-detail">
-                            <header>Predicates
-                                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Predicate'" (addClick)="add()"></d3s-tile-actions>                            
-                            </header>                                                                          
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-predicates-tile></d3s-predicates-tile>
+                                </div>
+                            </div>
                         </div>
-                    <div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-field-definition-tile [objectType]="'IntersectType'" [objectID]="selected?.ID" ></d3s-field-definition-tile>
+                                </div>
+                            </div>
+                        </div>
+                    <div>                    
                 </div>  
                 `
 })

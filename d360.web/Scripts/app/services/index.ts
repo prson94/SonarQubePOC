@@ -21,6 +21,7 @@ import { UriBasedService } from './uri-based.service';
 import { EditorDefinitionService } from './editor-definition.service';
 import { RulesService } from './rules.service';
 import { PoliciesService } from './policies.service';
+import { PredicatesService } from './predicates.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -45,3 +46,4 @@ export * from './uri-based.service';
 export * from './editor-definition.service';
 export * from './rules.service';
 export * from './policies.service';
+export * from './predicates.service';

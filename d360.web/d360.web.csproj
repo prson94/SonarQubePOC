@@ -1401,6 +1401,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\rule-dimensions.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
@@ -1423,6 +1424,7 @@
     <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\group.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\policy.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\predicate.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rule.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
@@ -1443,6 +1445,7 @@
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\policies.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\predicates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
