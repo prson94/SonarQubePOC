@@ -3,7 +3,7 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
-import {UriBasedService, EditorDefinitionService} from '../../services/index';
+import {EditorDefinitionService} from '../../services/index';
 import {EditorField} from '../../models/editor-field.model';
 import {DynamicFieldComponent} from './dynamic-field.component';
 
@@ -26,7 +26,7 @@ import _ from 'lodash';
                     </form>                    
                 </div>
                 `,
-    providers: [UriBasedService, EditorDefinitionService],
+    providers: [EditorDefinitionService],
     directives: [Button, Editor, InputText, REACTIVE_FORM_DIRECTIVES, DynamicFieldComponent]
 })
 
@@ -35,6 +35,8 @@ export class DynamicEditorComponent {
     @Input() title: string;
     @Input() objectID: number;
     @Input() objectType: string;
+    @Input() createUri: string;
+    @Input() editUri: string;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -46,7 +48,7 @@ export class DynamicEditorComponent {
 
     editedItem: any;
 
-    constructor(private uriBasedService: UriBasedService, private editorDefinitionService: EditorDefinitionService) { }
+    constructor(private editorDefinitionService: EditorDefinitionService) { }
 
     ngOnInit() {
         if (this.selection != undefined)
@@ -78,5 +80,6 @@ export class DynamicEditorComponent {
     onSubmit() {
         //save the item back to the save or edit url
         console.log(JSON.stringify(this.form.value));
+        this.saveClick.emit({ item: this.form.value, action: this.selection == null ? "new" : "edit" });        
     }
 };

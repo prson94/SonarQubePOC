@@ -15,21 +15,21 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add lookup item'" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" [addTitle]="'Add ' + title" (addClick)="add()"></d3s-tile-actions>                            
                 </header>           
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
                <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true" [sortable]="true"></p-column>
-                    <p-column [style]="{width:'40px'}">
+                    <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                             <template let-item="rowData">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                     </p-column>                            
-                    <p-column  [style]="{width:'40px'}">
+                    <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
                             <template let-item="rowData">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -53,7 +53,13 @@ export class DynamicGridComponent implements OnChanges {
     @Input() objectID: number;
     @Input() dataUri: string;
     @Input() deleteUri: string;
+    @Input() createUri: string;
+    @Input() editUri: string;
     @Input() title: string = "Items";
+
+    @Input() showEditButton: boolean = true;
+    @Input() showDeleteButton: boolean = true;
+    @Input() showAddButton: boolean = true;
     
     error: any;
     items: any[] = [];
@@ -101,6 +107,7 @@ export class DynamicGridComponent implements OnChanges {
                 this.items = result;                
                 this.isLoading = false;
                 if (this.items.length > 0) this.selected = this.items[0];
+                console.log(this.items);
             });
     }  
 
@@ -122,7 +129,23 @@ export class DynamicGridComponent implements OnChanges {
     }
 
     saveItem(event) {
-
+        this.isLoading = true;
+        this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
+            .then(result => {                
+                /*if (event.item.ID == undefined) {
+                    event.item.ID = Number(result.id);
+                    this.items[this.items.length] = event.item;                    
+                }
+                else {
+                    var index = this.findItemIndex(event.item.ID);                    
+                    if (index >= 0)
+                        this.items[index] = event.item;
+                }
+                console.log(event.item);*/
+                //reload grid for now as the name / id of the field differs in display mode / edit mode
+                this.getData();                
+                this.showEditor = false;
+            });
     }
 }
 

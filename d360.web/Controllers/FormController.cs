@@ -205,7 +205,7 @@ namespace d360.web.Controllers
                 })
                 .ToList();
         }
-
+        
         #endregion
 
         #region Json Message Handling
@@ -326,6 +326,50 @@ namespace d360.web.Controllers
                     return Lookup_AddFields(objectID);
             }
             throw new Exception("Invalid or non implemented editor type");
+        }
+
+        [HttpPut, Route("dynamicedit/edit/{objectType}"), ValidateInput(false)]
+        public JsonResult DynamicEdit(string objectType, string json)
+        {
+            JObject jsonObject = JObject.Parse(json);
+            FormCollection form = new FormCollection();
+
+            foreach (var item in jsonObject)
+            {
+                form.Add(item.Key, item.Value.ToString());
+            }
+
+            switch ((objectType ?? "" ).ToUpper())
+            {
+                case "LOOKUP":
+                    return EditLookup(form);                    
+                default:
+                    break;
+            }
+
+            throw new Exception("Invalid / unsupported edit type");
+        }
+        
+        [HttpPost, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
+        public JsonResult DynamicCreate(string objectType, string json)
+        {
+            JObject jsonObject = JObject.Parse(json);
+            FormCollection form = new FormCollection();
+
+            foreach (var item in jsonObject)
+            {
+                form.Add(item.Key, item.Value.ToString());
+            }
+
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "LOOKUP":
+                    return AddLookup(form);
+                default:
+                    break;
+            }
+
+            throw new Exception("Invalid / unsupported create type");
         }
 
         #endregion
@@ -10125,6 +10169,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         #endregion
 
         #region Form Get/Post
+        
 
         public ActionResult AddLookup(int id)
         {
@@ -10231,6 +10276,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+   
 
         public ActionResult EditLookup(int id)
         {
