@@ -22,6 +22,7 @@ import { EditorDefinitionService } from './editor-definition.service';
 import { RulesService } from './rules.service';
 import { PoliciesService } from './policies.service';
 import { PredicatesService } from './predicates.service';
+import { RelationshipsService } from './relationships.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -47,3 +48,4 @@ export * from './editor-definition.service';
 export * from './rules.service';
 export * from './policies.service';
 export * from './predicates.service';
+export * from './relationships.service';
