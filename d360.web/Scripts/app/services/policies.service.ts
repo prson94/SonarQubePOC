@@ -17,4 +17,15 @@ export class PoliciesService extends BaseService {
             .then(response => <PolicyType[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    deletePolicy(id: number) {
+        return this.deleteDynamic(this.http, 'policytype', id);
+    }
+    
+    saveDimension(policyType: PolicyType): Promise<JsonResult> {
+        if (policyType.ID == undefined || !policyType.ID) {
+            return this.postDynamic(this.http, 'policytype', policyType);
+        }
+        return this.putDynamic(this.http, 'policytype', policyType);
+    }
 }

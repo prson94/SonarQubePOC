@@ -315,6 +315,8 @@ namespace d360.web.Controllers
                     return Lookup_EditFields(ID);
                 case "RULEDIMENSION":
                     return RuleDimension_EditFields(ID);
+                case "POLICYTYPE":
+                    return PolicyType_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -330,6 +332,8 @@ namespace d360.web.Controllers
                     return RuleDimension_AddFields();
                 case "RULETYPE":
                     return Rule_AddFields();
+                case "POLICYTYPE":
+                    return PolicyType_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -350,7 +354,9 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return EditLookup(form);                
                 case "RULEDIMENSION":
-                    return EditRuleDimension(form);                
+                    return EditRuleDimension(form);
+                case "POLICYTYPE":
+                    return EditPolicyType(form);             
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -366,6 +372,8 @@ namespace d360.web.Controllers
             {                
                 case "RULEDIMENSION":
                     return DeleteRuleDimension(form);
+                case "POLICYTYPE":
+                    return DeletePolicyType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -387,7 +395,9 @@ namespace d360.web.Controllers
                 case "LOOKUP":
                     return AddLookup(form);
                 case "RULEDIMENSION":
-                    return AddRuleDimension(form);                
+                    return AddRuleDimension(form);
+                case "POLICYTYPE":
+                    return AddPolicyType(form);          
             }
 
             throw new Exception("Invalid / unsupported create type");
