@@ -7,10 +7,10 @@ import { ROUTER_DIRECTIVES } from '@angular/router';
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     template: `
                 <div [class.router-link-active]="item.active">
-                    <a *ngIf="item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + (item.icon || 'minus')"></i> {{item.name}}</a>
-                    <span *ngIf="!item.route" style="cursor: pointer;" class="nav-item inactive"><i [class]="'fa fa-' + (item.icon || 'minus')"></i> {{item.name}}</span>
+                    <a *ngIf="item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i>- {{item.name}}</a>
+                    <span *ngIf="!item.route" style="cursor: pointer;" class="nav-item inactive" (click)="item.expanded = !item.expanded"><i [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>&nbsp;&nbsp;{{item.name}}</span>
                 </div>
-                <ul *ngIf="item.subItems && item.subItems.length > 0" style="padding-left:15px; font-size:small">
+                <ul *ngIf="item.subItems && item.subItems.length > 0" [hidden]="!item.expanded" style="padding-left:15px; font-size:small">
                     <li *ngFor="let sub of item.subItems" style="font-size:small;">
                         <d3s-navbar-item [item]="sub" [class.router-link-active]="sub.active"></d3s-navbar-item> 
                     </li>
@@ -35,4 +35,5 @@ export class NavBarItem {
     expanded = false;
     active = false;
     subItems: NavBarItem[];
+    parent: NavBarItem;
 }

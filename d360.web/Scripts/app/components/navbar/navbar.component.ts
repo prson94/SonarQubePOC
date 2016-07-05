@@ -2,6 +2,7 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 import {  NavBarItem, NavBarItemComponent } from '../navbar/navbar-item.component';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-navbar', 
@@ -44,19 +45,19 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         // these are ordered by alpha a-Z...
         // meta model sub
-        let metaModel = this.addSubItem(admin, 'MetaModel', ' ', null);
-        this.addSubItem(metaModel, 'Artifacts', null, '/a/admin/artifacts');
-        this.addSubItem(metaModel, 'Attributes', null, '/a/admin/attributes');
-        this.addSubItem(metaModel, 'Lookups', null, '/a/admin/lookups');
-        this.addSubItem(metaModel, 'Models', null, '/a/admin/taxonomies');
-        this.addSubItem(metaModel, 'Policies', null, '/a/admin/policies');
-        this.addSubItem(metaModel, 'Relationships', null, '/a/admin/relationships');
-        this.addSubItem(metaModel, 'Rules', null, '/a/admin/rules');
+        let metaModel = this.addSubItem(admin, 'MetaModel', null, null);
+        this.addSubItem(metaModel, 'Artifacts', null, 'a/admin/artifacts');
+        this.addSubItem(metaModel, 'Attributes', null, 'a/admin/attributes');
+        this.addSubItem(metaModel, 'Lookups', null, 'a/admin/lookups');
+        this.addSubItem(metaModel, 'Models', null, 'a/admin/taxonomies');
+        this.addSubItem(metaModel, 'Policies', null, 'a/admin/policies');
+        this.addSubItem(metaModel, 'Relationships', null, 'a/admin/relationships');
+        this.addSubItem(metaModel, 'Rules', null, 'a/admin/rules');
 
         this.addSubItem(admin, 'Reference Types', null, 'a/admin/domain');        
 
         //security sub menu
-        let security = this.addSubItem(admin, 'Security', ' ', null);
+        let security = this.addSubItem(admin, 'Security', null, null);
         this.addSubItem(security, 'Groups', null, 'a/admin/groups');
         this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
 
@@ -71,9 +72,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.currentRoute = e.url; 
-                let i = this.activateRoute(this.currentRoute);
-                //console.log(i);
+                this.currentRoute = _.trimStart(e.url, '/'); 
+                let item = this.activateRoute(this.currentRoute);
+                this.expandRoute(item);
+                //console.log(item);
             }
         });
     }
@@ -83,6 +85,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     }
 
     addNavItem(name: string, icon: string, route: string): NavBarItem {
+        route = _.trimStart(route, '/');
         let i = new NavBarItem();
         i.name = name;
         i.icon = icon;
@@ -92,6 +95,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     }
 
     addSubItem(item: NavBarItem, name: string, icon: string, route: string): NavBarItem {
+        route = _.trimStart(route, '/');
         let i = new NavBarItem();
         if (!item.subItems) {
             item.subItems = new Array<NavBarItem>();
@@ -99,6 +103,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         i.name = name;
         i.icon = icon;
         i.route = route;
+        i.parent = item;
         item.subItems.push(i);
         return i;
     }
@@ -118,6 +123,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
             if (r) return r;
         }
         return null;
+    }
+
+    expandRoute(i: NavBarItem): void {
+        i.expanded = true;
+        if (i.parent)
+            this.expandRoute(i.parent);
     }
 
     activateRoute(route: string, itms: NavBarItem[] = null): NavBarItem {
