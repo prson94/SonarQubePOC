@@ -1,0 +1,131 @@
+﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
+
+import { Input, Component, EventEmitter, Output } from '@angular/core';
+import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
+import {Button, Editor, InputText, Dropdown, SelectItem, Spinner} from 'primeng/primeng';
+import { StatisticService} from '../../services/index';
+import { StatisticType, StatisticCheckTypes} from '../../models/statistic.model';
+import { AdminStatisticCheckTypeInput} from './admin-statistic-checktype-input';
+import _ from 'lodash';
+
+@Component({
+    selector: 'd3s-admin-statistic-editor',
+    template: ` 
+                <header>{{action}} Model</header>
+                <div class="row">
+                    <form (ngSubmit)="onSubmit()" #statisticEditorForm="ngForm">                        
+                        <div class="col s12">
+                            <div class="FieldName">Name</div>
+                            <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedStatistic.Name" #name="ngModel"></div>                            
+                            <div [hidden]="name.valid || name.pristine">Name is required</div>
+                        </div>                        
+                        <div class="col s12">
+                            <div class="FieldName">Type to assign analytic to</div>
+                            <div><p-dropdown required name="object" (onChange)="objectChanged($event);" [options]="sourceTypes" [(ngModel)]="editedStatistic.ObjectCombined" [style]="{width:'100%'}"  #object="ngModel"></p-dropdown></div>
+                            <div [hidden]="object.valid || object.pristine">Object is required</div>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="FieldName">Part of Scoring?</div>
+                            <div><input required name="partOfScore" type="checkbox" [(ngModel)]="editedStatistic.PartOfScore"></div>                            
+                        </div>                                        
+                        <div class="col l6 s12" *ngIf="editedStatistic.PartOfScore">
+                            <div class="FieldName">Score</div>
+                            <div><p-spinner required name="score" [id]="'Score'" size="30" [(ngModel)]="editedStatistic.Score" [min]="0" [max]="1000" #score="ngModel"></p-spinner></div>
+                            <div [hidden]="score.valid || score.pristine">Score is required</div>
+                        </div>                                        
+                        <div class="col s12">
+                            <div class="FieldName">Check Type</div>
+                            <div><p-dropdown required name="CheckType" [id]="'CheckType'" [options]="checkTypes" [(ngModel)]="editedStatistic.CheckType" #checkType="ngModel" [style]="{width:'100%'}"></p-dropdown></div>
+                            <div [hidden]="checkType.valid || checkType.pristine">Check Type is required</div>
+                        </div>
+                        <div class="col l12 s12">
+                            <d3s-admin-statistic-checktype-input [object]="editedStatistic.Object" [objectID]="editedStatistic.ObjectID" [checkType]="editedStatistic.CheckType"></d3s-admin-statistic-checktype-input>
+                        </div>                  
+                        
+                        <div class="col l12 s12">
+                            <div class="FieldName">Description</div>
+                            <div><p-editor name="Description" [style]="{'height':'150px'}" [(ngModel)]="editedStatistic.Description"></p-editor></div>                            
+                        </div>                        
+                        <div class="col s12">&nbsp;</div>
+                        <div class="col s12">
+                            <button pButton type="submit" [disabled]="!statisticEditorForm.form.valid" style="width: '150px';" label="Save"></button>                            
+                            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
+                        </div>                    
+                    </form>                           
+                </div>
+                `,
+    providers: [StatisticService],
+    directives: [Button, Editor, InputText, Dropdown, Spinner, REACTIVE_FORM_DIRECTIVES, AdminStatisticCheckTypeInput]
+})
+
+export class AdminStatisticEditor {
+    @Input() statistic: StatisticType;
+    @Output() closeClick = new EventEmitter();
+    @Output() saveClick = new EventEmitter();
+    action: string = "Edit";
+    error: any;
+    editedStatistic: StatisticType;
+    checkTypes: SelectItem[] = [];
+    sourceTypes: SelectItem[] = [];
+    
+    
+
+    constructor(private statisticService: StatisticService) {   }
+
+    ngOnInit() {
+        console.log(this.statistic);
+        if (this.statistic != undefined)
+            this.editedStatistic = _.cloneDeep(this.statistic);
+        else {
+            this.editedStatistic = new StatisticType();
+            this.action = "New";
+        }
+        this.editedStatistic.CheckType = null;
+        this.getCheckTypes();
+        this.getObjectOptions();        
+    }
+
+    getObjectOptions() {
+        this.statisticService
+            .getStatisticObjects()
+            .then(sources => {
+                this.sourceTypes = [];
+                for (let source of sources) {
+                    this.sourceTypes.push({
+                        label: source.title, value: source.value
+                    });
+                }
+                this.editedStatistic.ObjectCombined = this.editedStatistic.Object + '|' + this.editedStatistic.ObjectID.toString();
+            })
+            .catch(error => this.error = error);
+    }
+    
+    getCheckTypes() {
+        this.statisticService
+            .getStatisticCheckTypes()
+            .then(checktypes => {
+                this.checkTypes = [];
+                
+                for (let checktype of checktypes) {                    
+                    this.checkTypes.push({
+                        label: checktype.title, value: Number(checktype.value)
+                    });
+                }
+                this.editedStatistic.CheckType = this.statistic.CheckType;
+            })
+            .catch(error => this.error = error);
+    }
+
+    objectChanged(event) {
+        var info = event.value.split("|");
+        if (info.length < 2) return;
+        this.editedStatistic.Object = info[0];
+        this.editedStatistic.ObjectID = Number(info[1]);
+        console.log(info);
+    }
+
+    onSubmit() {
+        //save the item back to the save or edit url        
+        this.saveClick.emit({ statistic: this.editedStatistic, action: this.statistic == null ? "new" : "edit" });
+    }      
+};

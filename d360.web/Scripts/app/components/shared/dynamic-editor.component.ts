@@ -91,11 +91,7 @@ export class DynamicEditorComponent {
                 this.form = this.editorDefinitionService.toFormGroup(this.fields);
             });
     }   
-
-    update() {
-        this.saveClick.emit({ lookup: this.editedItem, action: this.selection == null ? "new" : "edit" });
-    }
-
+    
     onSubmit() {
         let action = (this.selection == null ? "new" : "edit");
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {

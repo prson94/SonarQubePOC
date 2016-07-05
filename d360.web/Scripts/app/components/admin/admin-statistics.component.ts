@@ -5,13 +5,14 @@ import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService 
 import { AdminBaseComponent } from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { StatisticType } from '../../models/statistic.model';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { AdminStatisticEditor } from './admin-statistics-editor.component';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { DeleteForm } from '../forms/delete.form';
 
 
 @Component({
-    selector: 'd3s-admin-analytics-component',
-    directives: [DataTable, Column, TileActionsComponent, ObjectDetailTile],
+    selector: 'd3s-admin-statistics-component',
+    directives: [DataTable, Column, TileActionsComponent, ObjectDetailTile, AdminStatisticEditor, DeleteForm],
     providers: [StatisticService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -41,7 +42,7 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
                                     </template>
                                 </p-column>    
                             </p-dataTable>      
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'StatisticType'" [title]="'Analytic Type'" [selection]="selected" (saveClick)="saveAnalyticType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                            <d3s-admin-statistic-editor *ngIf="showEditor" [statistic]="selected" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>     
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -64,7 +65,7 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
                 `
 })
 
-export class AdminAnalyticsComponent extends AdminBaseComponent {
+export class AdminStatisticsComponent extends AdminBaseComponent {
     statistics: StatisticType[] = [];
     selected: StatisticType;
     showEditor: boolean = false;
@@ -76,14 +77,14 @@ export class AdminAnalyticsComponent extends AdminBaseComponent {
         this.areaDescription = "Create various types of measurements on items throughout the system, including analytics that factor into scores.";
         this.areaName = "Analytic Types";
         this.setCommonItems();
-        this.theDeleteCallback = this.deleteAnalyticType.bind(this);
+        this.theDeleteCallback = this.deleteStatisticType.bind(this);
     }
 
     ngOnInit() {
-        this.getAnalytics();
+        this.getStatistics();
     }
 
-    getAnalytics() {
+    getStatistics() {
         this.isLoading = true;
         this.statisticService.getStatistics()
             .then(result => {
@@ -93,7 +94,7 @@ export class AdminAnalyticsComponent extends AdminBaseComponent {
             });
     }
 
-    findAnalyticTypeIndex(id: number) {
+    findStatisticTypeIndex(id: number) {
         var index: number = -1;
         for (var analytic of this.statistics) {
             index++;
@@ -101,14 +102,14 @@ export class AdminAnalyticsComponent extends AdminBaseComponent {
         }
     }
 
-    deleteAnalyticType(id: number) {
+    deleteStatisticType(id: number) {
         this.statisticService.deleteStatistic(id);
         this.showDelete = false;
         this.selected = this.statistics.length > 0 ? this.statistics[0] : null;
-        this.statistics.splice(this.findAnalyticTypeIndex(id), 1);
+        this.statistics.splice(this.findStatisticTypeIndex(id), 1);
     }
 
-    savePolicyType(event) {
+    saveStatisticType(event) {
         this.statisticService.saveStatistic(event.item)
             .then(result => {
                 if (event.item.ID == undefined) {
@@ -116,7 +117,7 @@ export class AdminAnalyticsComponent extends AdminBaseComponent {
                     this.statistics[this.statistics.length] = event.item;
                 }
                 else {
-                    this.statistics[this.findAnalyticTypeIndex(event.item.ID)] = event.item;
+                    this.statistics[this.findStatisticTypeIndex(event.item.ID)] = event.item;
                 }
                 this.selected = event.item;
                 this.showEditor = false;

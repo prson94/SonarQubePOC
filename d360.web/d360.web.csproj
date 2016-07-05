@@ -1356,7 +1356,9 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-analytics.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
