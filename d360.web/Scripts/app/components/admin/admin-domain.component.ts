@@ -1,5 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone } from '@angular/core';
+import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { PageHeader } from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
@@ -10,11 +11,27 @@ import { DomainType, IDomainService } from '../../models/domain.model';
 import { DomainService } from '../../services/domain.service';
 import { DataTable, Column } from 'primeng/primeng';
 import { AdminBaseComponent} from './admin-base.component';
+import { FormMode } from '../../models/form.model';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { DeleteForm } from '../forms/delete.form';
 
 @Component({
     selector: 'admin-domain',
     providers: [DomainService],
-    directives: [ObjectDetailTile, FieldDefinitionTile, PeopleResponsibilitiesTile, DataTable, Column],
+    directives: [
+        ObjectDetailTile,
+        FieldDefinitionTile,
+        PeopleResponsibilitiesTile,
+        DataTable,
+        Column,
+        NgSwitch,
+        NgSwitchCase,
+        NgSwitchDefault,
+        TileActionsComponent,
+        DynamicEditorComponent,
+        DeleteForm
+    ],
     templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
 })
 
@@ -22,7 +39,9 @@ export class AdminDomainComponent extends AdminBaseComponent {
     domainTypes = new Array<DomainType>(); 
     objectType = 'DomainType';
     selectedRow: DomainType;
-    
+    formMode: FormMode = FormMode.Default;
+    FormMode = FormMode;
+    newRow: DomainType = new DomainType();
 
     constructor(private domainService: DomainService, pageHeader: PageHeader, headerBreadcrumbService : HeaderBreadcrumbService) {        
         super(headerBreadcrumbService, pageHeader);

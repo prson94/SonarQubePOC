@@ -27,7 +27,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <button pButton (click)="cancel()" label="Cancel"></button> <button pButton [disabled]="isSaving" (click)="save()" label="Save"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+            <button pButton [disabled]="isSaving" (click)="save()" label="Save"></button> <button pButton (click)="cancel()" label="Cancel"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
         </div>
     </div>
 </div>

@@ -3,7 +3,7 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
-import { EditorDefinitionService } from '../../services/index';
+import { EditorDefinitionService, UriBasedService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
 import {DynamicFieldComponent} from './dynamic-field.component';
 
@@ -29,7 +29,7 @@ import _ from 'lodash';
                     </form>                    
                 </div>
                 `,
-    providers: [EditorDefinitionService],
+    providers: [EditorDefinitionService, UriBasedService],
     directives: [Button, Editor, InputText, REACTIVE_FORM_DIRECTIVES, DynamicFieldComponent]
 })
 
@@ -53,7 +53,7 @@ export class DynamicEditorComponent {
 
     editedItem: any;
 
-    constructor(private editorDefinitionService: EditorDefinitionService) { }
+    constructor(private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) { }
 
     ngOnInit() {
         if (this.selection != undefined)
@@ -97,8 +97,15 @@ export class DynamicEditorComponent {
     }
 
     onSubmit() {
-        //save the item back to the save or edit url
-        console.log(JSON.stringify(this.form.value));
-        this.saveClick.emit({ item: this.form.value, action: this.selection == null ? "new" : "edit" });        
+        let action = (this.selection == null ? "new" : "edit");
+        if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
+            this.uriBasedService.saveItem(this.createUri, this.editUri, this.form.value)
+                .then(result => {
+                    this.saveClick.emit({ item: result, action: action});    
+                });
+        } else {
+            //console.log(JSON.stringify(this.form.value));
+            this.saveClick.emit({ item: this.form.value, action: action });     
+        }
     }
 };

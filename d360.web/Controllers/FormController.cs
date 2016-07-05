@@ -321,6 +321,8 @@ namespace d360.web.Controllers
                     return Predicate_EditFields(ID);
                 case "RESOURCETYPE":
                     return Resource_EditFields(ID);
+                case "DOMAINTYPE":
+                    return DomainType_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -342,6 +344,8 @@ namespace d360.web.Controllers
                     return Predicate_AddFields();
                 case "RESOURCETYPE":
                     return Resource_AddFields(objectID.GetValueOrDefault());
+                case "DOMAINTYPE":
+                    return DomainType_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -371,6 +375,8 @@ namespace d360.web.Controllers
                     return EditResource(form);
                 case "STATISTICTYPE":
                     return EditStatisticType(form);
+                case "DOMAINTYPE":
+                    return EditDomainType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -422,6 +428,8 @@ namespace d360.web.Controllers
                     return AddResource(form);                             
                 case "STATISTICTYPE":
                     return AddStatisticType(form);
+                case "DOMAINTYPE":
+                    return AddDomainType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -3034,6 +3042,13 @@ namespace d360.web.Controllers
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteDomainByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteDomain(form);
+        }
         public ActionResult EditDomain(int id)
         {
             var a = Company.GetById<Domain>(id);
@@ -3852,6 +3867,14 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteDomainTypeByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteDomainType(form);
         }
 
         [Route("domains/{id:int}/edit")]
