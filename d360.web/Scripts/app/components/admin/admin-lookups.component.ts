@@ -63,7 +63,7 @@ import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.compo
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid [title]="'Items'" [objectType]="'LookupType'" [objectID]="selectedLookup?.ID" [createUri]="'form/dynamicedit/create/lookup/'" [editUri]="'form/dynamicedit/edit/lookup/'" [dataUri]="lookupUri()" [deleteUri]="'form/DeleteLookupByIdRaw?id='"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid [title]="'Items'" [itemName]="'Lookup'" [objectType]="'LookupType'" [objectID]="selectedLookup?.ID" [createUri]="'form/dynamicedit/create/lookup/'" [editUri]="'form/dynamicedit/edit/lookup/'" [dataUri]="lookupUri()" [deleteUri]="'form/DeleteLookupByIdRaw?id='"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>

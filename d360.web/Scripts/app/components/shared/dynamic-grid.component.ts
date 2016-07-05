@@ -37,7 +37,7 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
                             </template>
                     </p-column>                            
                 </p-dataTable>   
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="'Lookup Item'" [selection]="selected" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
@@ -50,12 +50,14 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
 
 export class DynamicGridComponent implements OnChanges {
     @Input() objectType: string;
+    @Input() rowID: string = 'ID';
     @Input() objectID: number;
     @Input() dataUri: string;
     @Input() deleteUri: string;
     @Input() createUri: string;
     @Input() editUri: string;
     @Input() title: string = "Items";
+    @Input() itemName: string = "";
 
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;

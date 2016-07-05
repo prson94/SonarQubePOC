@@ -319,6 +319,8 @@ namespace d360.web.Controllers
                     return PolicyType_EditFields(ID);
                 case "PREDICATE":
                     return Predicate_EditFields(ID);
+                case "RESOURCETYPE":
+                    return Resource_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -338,6 +340,8 @@ namespace d360.web.Controllers
                     return PolicyType_AddFields();
                 case "PREDICATE":
                     return Predicate_AddFields();
+                case "RESOURCETYPE":
+                    return Resource_AddFields(objectID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -363,6 +367,8 @@ namespace d360.web.Controllers
                     return EditPolicyType(form);    
                 case "PREDICATE":
                     return EditPredicate(form);
+                case "RESOURCE":
+                    return EditResource(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -407,7 +413,9 @@ namespace d360.web.Controllers
                 case "POLICYTYPE":
                     return AddPolicyType(form);
                 case "PREDICATE":
-                    return AddPredicate(form);          
+                    return AddPredicate(form);
+                case "RESOURCE":
+                    return AddResource(form);         
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -15233,6 +15241,13 @@ order by	D.Name, I.Name";
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteResourceByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteResource(form);
+        }
 
         [Route("resources/{typeID:int}/{id:int}/edit")]
         public ActionResult EditResource(int typeID, int id)

@@ -3,8 +3,8 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
-import {EditorDefinitionService} from '../../services/index';
-import {EditorField} from '../../models/editor-field.model';
+import { EditorDefinitionService } from '../../services/index';
+import { EditorField } from '../../models/editor-field.model';
 import {DynamicFieldComponent} from './dynamic-field.component';
 
 import _ from 'lodash';
@@ -32,6 +32,7 @@ import _ from 'lodash';
 
 export class DynamicEditorComponent {
     @Input() selection: any;
+    @Input() rowID: string = 'ID';
     @Input() title: string;
     @Input() objectID: number;
     @Input() objectType: string;
@@ -65,7 +66,8 @@ export class DynamicEditorComponent {
     }
 
     getDefinition() {
-        this.editorDefinitionService.getEditorDefinition(this.selection? this.selection.ID:null, this.objectID, this.objectType)
+        let id = (this.selection ? this.selection[this.rowID] : null);
+        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType)
             .then(result => {
                 this.fields = result;
                 console.log(this.fields);
@@ -83,3 +85,4 @@ export class DynamicEditorComponent {
         this.saveClick.emit({ item: this.form.value, action: this.selection == null ? "new" : "edit" });        
     }
 };
+

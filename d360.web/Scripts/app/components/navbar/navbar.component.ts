@@ -68,6 +68,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         let security = this.addSubItem(admin, 'Security', null, null);
         this.addSubItem(security, 'Groups', null, 'a/admin/groups');
         this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
+        this.addSubItem(security, 'Users', null, 'a/admin/resources');
 
         this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
         this.addSubItem(admin, 'Templates', null, 'a/admin/templates');

@@ -1,0 +1,19 @@
+﻿<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <d3s-dynamic-grid [title]="'Users'" [objectType]="objectType" [objectID]="objectID" 
+                              [rowID]="'ResourceID'"
+                              [itemName]="'Resource'"
+                              [createUri]="'form/dynamicedit/create/resource/'" 
+                              [editUri]="'form/dynamicedit/edit/resource/'" 
+                              [dataUri]="resourceUri()" 
+                              [deleteUri]="'form/DeleteResourceByID?id='"></d3s-dynamic-grid>                                                                       
+        </div>
+    </div>
+
+    <div class="col s12">
+        <div id="FieldsTile" class="tile tile-detail">
+            <d3s-field-definition-tile [objectType]="objectType" [objectID]="objectID"></d3s-field-definition-tile>
+        </div>
+    </div>
+</div>

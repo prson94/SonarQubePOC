@@ -903,6 +903,7 @@
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
+    <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
     <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
     <Content Include="Scripts\app\components\forms\field-type.form.html" />
     <Content Include="Scripts\app\components\forms\group.form.html" />
@@ -1368,6 +1369,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-policies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />

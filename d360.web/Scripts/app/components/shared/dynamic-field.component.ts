@@ -8,7 +8,7 @@ import {Button, Editor, InputText, Dropdown, SelectItem, InputMask} from 'primen
     template: ` <div [formGroup]="form">    
                    <input *ngIf="field.FieldType=='Hidden'" [(ngModel)]="field.Value"  [formControlName]="field.FieldName" [id]="field.FieldName" [type]="'hidden'" />              
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
-                        <div class="FieldName">{{field.FieldName}}</div>
+                        <div class="FieldName">{{field.Name}}</div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >                    
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value" [id]="field.FieldName"></p-editor>                                                                                                             
@@ -19,6 +19,8 @@ import {Button, Editor, InputText, Dropdown, SelectItem, InputMask} from 'primen
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >   
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >   
+                        <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" [(ngModel)]="field.Value" style="width: 100%;" />
+                        <input *ngSwitchCase="'Boolean'" type="checkbox" [(ngModel)]="field.Value" [formControlName]="field.FieldName" />
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div>                   
                 </div>
@@ -28,5 +30,5 @@ import {Button, Editor, InputText, Dropdown, SelectItem, InputMask} from 'primen
 export class DynamicFieldComponent {
     @Input() field: EditorField;
     @Input() form: FormGroup;
-    get isValid() { return (this.field.Required && this.field.Value && this.field.Value.length > 0) || !this.field.Required; }
+    get isValid() { return (this.field.Required && this.field.Value && this.field.Value.length > 0) || !this.field.Required || this.field.FieldType == 'Boolean'; }
 }
