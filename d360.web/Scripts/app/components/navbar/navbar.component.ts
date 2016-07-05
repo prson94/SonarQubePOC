@@ -44,6 +44,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
         let admin = this.addNavItem('Administration', 'book', null);
 
         // these are ordered by alpha a-Z...
+
+        let integrationModel = this.addSubItem(admin, 'Integration', null, null);
+        this.addSubItem(integrationModel, 'API', null, null, '/swagger/ui/index');
+
         // meta model sub
         let metaModel = this.addSubItem(admin, 'MetaModel', null, null);
         this.addSubItem(metaModel, 'Artifacts', null, 'a/admin/artifacts');
@@ -94,7 +98,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         return i;
     }
 
-    addSubItem(item: NavBarItem, name: string, icon: string, route: string): NavBarItem {
+    addSubItem(item: NavBarItem, name: string, icon: string, route: string, url?: string): NavBarItem {
         route = _.trimStart(route, '/');
         let i = new NavBarItem();
         if (!item.subItems) {
@@ -104,6 +108,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         i.icon = icon;
         i.route = route;
         i.parent = item;
+        if (url != null) i.url = url;
         item.subItems.push(i);
         return i;
     }
