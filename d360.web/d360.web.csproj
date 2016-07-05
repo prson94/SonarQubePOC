@@ -1355,10 +1355,12 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-analytics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
@@ -1410,6 +1412,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\analytic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
@@ -1436,6 +1439,7 @@
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />

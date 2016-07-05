@@ -11,6 +11,8 @@ import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminRelationshipsComponent } from './admin-relationships.component';
+import { AdminAnalyticsComponent } from './admin-analytics.component';
+import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -28,3 +30,5 @@ export * from './admin-rules.component';
 export * from './admin-policies.component';
 export * from './admin-attributes.component';
 export * from './admin-relationships.component';
+export * from './admin-analytics.component';
+export * from './admin-dashboards.component';

@@ -58,6 +58,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(metaModel, 'Relationships', null, 'a/admin/relationships');
         this.addSubItem(metaModel, 'Rules', null, 'a/admin/rules');
 
+        let metricsModel = this.addSubItem(admin, 'Metrics', null, null);
+        this.addSubItem(metricsModel, 'Analytics', null, 'a/admin/analytics');
+        this.addSubItem(metricsModel, 'Dashboards', null, 'a/admin/dashboards');
+
         this.addSubItem(admin, 'Reference Types', null, 'a/admin/domain');        
 
         //security sub menu

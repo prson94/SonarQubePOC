@@ -1,4 +1,4 @@
-﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent, AdminLookupsComponent, AdminRulesComponent, AdminPoliciesComponent, AdminAttributesComponent, AdminRelationshipsComponent } from './index'
+﻿import { AdminComponent, AdminSettingsComponent, AdminDomainComponent, AdminGroupsComponent, AdminWorkflowComponent, AdminGovernanceComponent, AdminArtifactsComponent, AdminTemplatesComponent, AdminTaxonomiesComponent, AdminLookupsComponent, AdminRulesComponent, AdminPoliciesComponent, AdminAttributesComponent, AdminRelationshipsComponent, AdminAnalyticsComponent, AdminDashboardsComponent } from './index'
 
 export const AdminRoutes = [
     {
@@ -6,19 +6,21 @@ export const AdminRoutes = [
         component: AdminComponent,
         // index: true,
         children: [
-            { path: 'settings', component: AdminSettingsComponent },
+            { path: 'analytics', component: AdminAnalyticsComponent },
+            { path: 'artifacts', component: AdminArtifactsComponent },
+            { path: 'attributes', component: AdminAttributesComponent },
+            { path: 'dashboards', component: AdminDashboardsComponent },
             { path: 'domain', component: AdminDomainComponent },
             { path: 'groups', component: AdminGroupsComponent },
-            { path: 'workflow', component: AdminWorkflowComponent },
-            { path: 'responsibilities', component: AdminGovernanceComponent },
-            { path: 'artifacts', component: AdminArtifactsComponent },
-            { path: 'templates', component: AdminTemplatesComponent },
-            { path: 'taxonomies', component: AdminTaxonomiesComponent },
             { path: 'lookups', component: AdminLookupsComponent },
-            { path: 'rules', component: AdminRulesComponent },
             { path: 'policies', component: AdminPoliciesComponent },
-            { path: 'attributes', component: AdminAttributesComponent },
-            { path: 'relationships', component: AdminRelationshipsComponent }
+            { path: 'relationships', component: AdminRelationshipsComponent },
+            { path: 'responsibilities', component: AdminGovernanceComponent },
+            { path: 'rules', component: AdminRulesComponent },
+            { path: 'settings', component: AdminSettingsComponent },                        
+            { path: 'taxonomies', component: AdminTaxonomiesComponent },
+            { path: 'templates', component: AdminTemplatesComponent },
+            { path: 'workflow', component: AdminWorkflowComponent }
         ]
     }
 ];
