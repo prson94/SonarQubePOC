@@ -369,6 +369,8 @@ namespace d360.web.Controllers
                     return EditPredicate(form);
                 case "RESOURCE":
                     return EditResource(form);
+                case "STATISTICTYPE":
+                    return EditStatisticType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -388,6 +390,8 @@ namespace d360.web.Controllers
                     return DeletePolicyType(form);
                 case "PREDICATE":
                     return DeletePredicate(form);
+                case "STATISTICTYPE":
+                    return DeleteStatisticType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -415,7 +419,9 @@ namespace d360.web.Controllers
                 case "PREDICATE":
                     return AddPredicate(form);
                 case "RESOURCE":
-                    return AddResource(form);         
+                    return AddResource(form);                             
+                case "STATISTICTYPE":
+                    return AddStatisticType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

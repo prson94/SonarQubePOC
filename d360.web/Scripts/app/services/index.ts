@@ -23,7 +23,7 @@ import { RulesService } from './rules.service';
 import { PoliciesService } from './policies.service';
 import { PredicatesService } from './predicates.service';
 import { RelationshipsService } from './relationships.service';
-import { AnalyticsService} from './analytics.service';
+import { StatisticService } from './statistics.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -50,4 +50,4 @@ export * from './rules.service';
 export * from './policies.service';
 export * from './predicates.service';
 export * from './relationships.service';
-export * from './analytics.service';
+export * from './statistics.service';

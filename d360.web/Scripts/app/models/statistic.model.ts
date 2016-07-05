@@ -1,4 +1,4 @@
-﻿export class Analytic {
+﻿export class StatisticType {
     Object: string;
     ObjectID: number;
     ObjectName: string;
