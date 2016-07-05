@@ -7,4 +7,15 @@
     ReadOnly: boolean;
     Required: boolean;
     Items: string[];
+    Row: number;
+    Column: number;
+}
+
+export class EditorRow {
+    Row: number = 0;
+    Fields: EditorField[] = [];
+
+    getColClass() {
+        return 's' + Math.round(12 / (this.Fields.length || 1));
+    }
 }

@@ -4,7 +4,7 @@ import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
 import { EditorDefinitionService } from '../../services/index';
-import { EditorField } from '../../models/editor-field.model';
+import { EditorField, EditorRow } from '../../models/editor-field.model';
 import {DynamicFieldComponent} from './dynamic-field.component';
 
 import _ from 'lodash';
@@ -16,8 +16,11 @@ import _ from 'lodash';
                 <div class="row">                    
                     <form (ngSubmit)="onSubmit()" [formGroup]="form">
                         
-                        <d3s-dynamic-field *ngFor="let field of fields" [field]="field" [form]="form"></d3s-dynamic-field>
-                        
+                        <div class="row" *ngFor="let row of rows">
+                            <div  *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()">
+                                <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
+                            </div>
+                        </div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
                             <button pButton type="submit" [disabled]="!form.valid" style="width: '150px';" label="Save"></button>                            
@@ -46,6 +49,7 @@ export class DynamicEditorComponent {
 
     action: string = "Edit";
     fields: EditorField[] = [];
+    rows: EditorRow[] = [];
 
     editedItem: any;
 
@@ -70,6 +74,19 @@ export class DynamicEditorComponent {
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType)
             .then(result => {
                 this.fields = result;
+
+                this.fields.forEach(f => {
+                    let r = this.rows.find(r => r.Row == (f.Row||0));
+                    if (r)
+                        r.Fields.push(f);
+                    else {
+                        let n = new EditorRow();
+                        n.Row = f.Row;
+                        n.Fields.push(f);
+                        this.rows.push(n);
+                    }
+                });
+                
                 console.log(this.fields);
                 this.form = this.editorDefinitionService.toFormGroup(this.fields);
             });
@@ -85,4 +102,3 @@ export class DynamicEditorComponent {
         this.saveClick.emit({ item: this.form.value, action: this.selection == null ? "new" : "edit" });        
     }
 };
-
