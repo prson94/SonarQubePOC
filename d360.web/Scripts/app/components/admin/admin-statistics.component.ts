@@ -42,7 +42,7 @@ import { DeleteForm } from '../forms/delete.form';
                                     </template>
                                 </p-column>    
                             </p-dataTable>      
-                            <d3s-admin-statistic-editor *ngIf="showEditor" [statistic]="selected" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>     
+                            <d3s-admin-statistic-editor *ngIf="showEditor" [statisticID]="selected?.ID" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>     
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -110,14 +110,14 @@ export class AdminStatisticsComponent extends AdminBaseComponent {
     }
 
     saveStatisticType(event) {
-        this.statisticService.saveStatistic(event.item)
+        this.statisticService.saveStatistic(event.statistic)
             .then(result => {
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
-                    this.statistics[this.statistics.length] = event.item;
+                if (event.statistic.ID == undefined) {
+                    event.statistic.ID = Number(result.id);
+                    this.statistics[this.statistics.length] = event.statistic;
                 }
                 else {
-                    this.statistics[this.findStatisticTypeIndex(event.item.ID)] = event.item;
+                    this.statistics[this.findStatisticTypeIndex(event.statistic.ID)] = event.statistic;
                 }
                 this.selected = event.item;
                 this.showEditor = false;

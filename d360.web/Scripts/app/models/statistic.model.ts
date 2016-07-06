@@ -24,6 +24,15 @@ export class StatisticType {
     CheckType: StatisticCheckTypes;
     Configuration: string;
     Score: number;
+    CheckObject: string;
+    CheckObjectID: number;
+    CheckObjectCombined: string;
+    PropertyName: string;
+    PropertyValue: string;
+    Threshold: string;
+    ValidField: string;
+    InvalidField: string;
+    CheckObjects: string[];
 }
 
 export class StatisticCheckType {

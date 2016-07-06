@@ -12,7 +12,10 @@ import _ from 'lodash';
     selector: 'd3s-admin-statistic-editor',
     template: ` 
                 <header>{{action}} Model</header>
-                <div class="row">
+                <div *ngIf="isLoading">
+                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+                <div class="row" *ngIf="!isLoading">
                     <form (ngSubmit)="onSubmit()" #statisticEditorForm="ngForm">                        
                         <div class="col s12">
                             <div class="FieldName">Name</div>
@@ -26,11 +29,11 @@ import _ from 'lodash';
                         </div>
                         <div class="col l6 s12">
                             <div class="FieldName">Part of Scoring?</div>
-                            <div><input required name="partOfScore" type="checkbox" [(ngModel)]="editedStatistic.PartOfScore"></div>                            
+                            <div><input name="partOfScore" type="checkbox" [(ngModel)]="editedStatistic.PartOfScore"></div>                            
                         </div>                                        
-                        <div class="col l6 s12" *ngIf="editedStatistic.PartOfScore">
+                        <div class="col l6 s12" *ngIf="editedStatistic?.PartOfScore">
                             <div class="FieldName">Score</div>
-                            <div><p-spinner required name="score" [id]="'Score'" size="30" [(ngModel)]="editedStatistic.Score" [min]="0" [max]="1000" #score="ngModel"></p-spinner></div>
+                            <div><input style="width: 100%;" name="score" [type]="'number'" [(ngModel)]="editedStatistic.Score" #score="ngModel"></div>                            
                             <div [hidden]="score.valid || score.pristine">Score is required</div>
                         </div>                                        
                         <div class="col s12">
@@ -38,13 +41,12 @@ import _ from 'lodash';
                             <div><p-dropdown required name="CheckType" [id]="'CheckType'" [options]="checkTypes" [(ngModel)]="editedStatistic.CheckType" #checkType="ngModel" [style]="{width:'100%'}"></p-dropdown></div>
                             <div [hidden]="checkType.valid || checkType.pristine">Check Type is required</div>
                         </div>
-                        <div class="col l12 s12">
-                            <d3s-admin-statistic-checktype-input [object]="editedStatistic.Object" [objectID]="editedStatistic.ObjectID" [checkType]="editedStatistic.CheckType"></d3s-admin-statistic-checktype-input>
-                        </div>                  
                         
+                        <d3s-admin-statistic-checktype-input [(statistic)]="editedStatistic" [object]="editedStatistic.Object" [objectID]="editedStatistic.ObjectID" [checkType]="editedStatistic.CheckType"></d3s-admin-statistic-checktype-input>
+                                                                  
                         <div class="col l12 s12">
                             <div class="FieldName">Description</div>
-                            <div><p-editor name="Description" [style]="{'height':'150px'}" [(ngModel)]="editedStatistic.Description"></p-editor></div>                            
+                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="editedStatistic?.Description" (ngModelChange)="editedStatistic.Description=$event" ></p-editor></div>                            
                         </div>                        
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
@@ -59,7 +61,7 @@ import _ from 'lodash';
 })
 
 export class AdminStatisticEditor {
-    @Input() statistic: StatisticType;
+    @Input() statisticID: number = 0;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
@@ -67,20 +69,24 @@ export class AdminStatisticEditor {
     editedStatistic: StatisticType;
     checkTypes: SelectItem[] = [];
     sourceTypes: SelectItem[] = [];
-    
+    isLoading: boolean = false;
     
 
     constructor(private statisticService: StatisticService) {   }
 
-    ngOnInit() {
-        console.log(this.statistic);
-        if (this.statistic != undefined)
-            this.editedStatistic = _.cloneDeep(this.statistic);
-        else {
-            this.editedStatistic = new StatisticType();
-            this.action = "New";
+    ngOnInit() {        
+
+        if (this.statisticID > 0) {
+            this.isLoading = true;
+            this.statisticService.getStatistic(this.statisticID).then(result => {                
+                this.editedStatistic = result;                
+                this.isLoading = false;
+            });
         }
-        this.editedStatistic.CheckType = null;
+        else {
+            this.editedStatistic = new StatisticType();           
+            this.action = "New";
+        }        
         this.getCheckTypes();
         this.getObjectOptions();        
     }
@@ -111,7 +117,9 @@ export class AdminStatisticEditor {
                         label: checktype.title, value: Number(checktype.value)
                     });
                 }
-                this.editedStatistic.CheckType = this.statistic.CheckType;
+                var check = this.editedStatistic.CheckType;
+                this.editedStatistic.CheckType = 0;
+                this.editedStatistic.CheckType = check;
             })
             .catch(error => this.error = error);
     }
@@ -120,12 +128,21 @@ export class AdminStatisticEditor {
         var info = event.value.split("|");
         if (info.length < 2) return;
         this.editedStatistic.Object = info[0];
-        this.editedStatistic.ObjectID = Number(info[1]);
-        console.log(info);
+        this.editedStatistic.ObjectID = Number(info[1]);     
+    }
+
+    private GetObjectName(value: string): string {
+        for (var i = 0; i < this.sourceTypes.length; i++) {
+            if (this.sourceTypes[i].value == value) return this.sourceTypes[i].label;
+        }
+        return "";
     }
 
     onSubmit() {
+        //populate objectname        
+        this.editedStatistic.ObjectName = this.GetObjectName(this.editedStatistic.ObjectCombined);
+
         //save the item back to the save or edit url        
-        this.saveClick.emit({ statistic: this.editedStatistic, action: this.statistic == null ? "new" : "edit" });
+        this.saveClick.emit({ statistic: this.editedStatistic, action: this.statisticID > 0 ? "new" : "edit" });
     }      
 };

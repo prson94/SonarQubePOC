@@ -18,6 +18,13 @@ export class StatisticService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getStatistic(id: number): Promise<StatisticType> {
+        return this.http.get(`form/statistictype_formdata?id=${id}`)
+            .toPromise()
+            .then(response => <StatisticType>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     deleteStatistic(id: number) {
         return this.deleteDynamic(this.http, 'statistictype', id);
     }
