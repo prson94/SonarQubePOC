@@ -815,8 +815,8 @@ from	#rules R
 --select @IntersectID
 						if @IntersectID is null
 						begin
-							select	@SubjectType = ObjectType, @SubjectTypeID = ObjectTypeID from ObjectCache where Object = @Subject and ObjectID = @SubjectID
-							select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID from ObjectCache where Object = @Object and ObjectID = @ObjectID
+							select	@SubjectType = ObjectType, @SubjectTypeID = ObjectTypeID from cache.[object] where Object = @Subject and ObjectID = @SubjectID
+							select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID from cache.[object] where Object = @Object and ObjectID = @ObjectID
 
 							select	@SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
 									@ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
@@ -1038,8 +1038,8 @@ from	#rules R
 									@R_ObjectTypeID int = null,
 									@R_ObjectIntersectTypeNodeID int = null
 
-							select	@R_SubjectType = ObjectType, @R_SubjectTypeID = ObjectTypeID from ObjectCache where Object = @R_Subject and ObjectID = @R_SubjectID
-							select	@R_ObjectType = ObjectType, @R_ObjectTypeID = ObjectTypeID from ObjectCache where Object = @R_Object and ObjectID = @R_ObjectID
+							select	@R_SubjectType = ObjectType, @R_SubjectTypeID = ObjectTypeID from cache.[object] where Object = @R_Subject and ObjectID = @R_SubjectID
+							select	@R_ObjectType = ObjectType, @R_ObjectTypeID = ObjectTypeID from cache.[object] where Object = @R_Object and ObjectID = @R_ObjectID
 
 							select	@R_SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
 									@R_ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
