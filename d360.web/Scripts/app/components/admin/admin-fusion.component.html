@@ -1,0 +1,41 @@
+﻿<div class="row">
+    <div class="col s12 m12 l3">
+        <div class="root-tile">
+            <header><div id="ListTools"></div></header>
+            <p-dataTable [value]="fusionTypes" selectionMode="single" (onRowSelect)="select($event);" [rows]="20" [paginator]="true">
+                <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
+                <p-column>
+                    <template let-col let-item="rowData">
+                        <div class="RowTools">
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </template>
+                </p-column>
+            </p-dataTable>
+        </div>
+    </div>
+    <div class="col hide-on-small-and-down m12 l4">
+        <div class="tile tile-detail">
+            <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
+        </div>
+        <div class="tile tile-detail">
+            <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
+        </div>
+    </div>
+    <div class="col s12 m12 l5">
+        <div class="tile tile-detail">
+            <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
+        </div>
+        <div class="tile tile-detail">
+            <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col s12 m12 l9 offset-l3">
+        <div class="tile tile-detail">
+           <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+        </div>
+    </div>
+</div>

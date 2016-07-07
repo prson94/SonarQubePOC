@@ -903,6 +903,7 @@
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
+    <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
     <Content Include="Scripts\app\components\forms\artifact-type.form.html" />
@@ -910,6 +911,8 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
+    <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
@@ -981,6 +984,7 @@
     <Content Include="Scripts\all.min.js">
       <DependentUpon>all.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\app\components\tiles\fusion-configuration.tile.html" />
     <None Include="Scripts\colorpicker-color.js" />
     <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
@@ -1359,6 +1363,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
@@ -1411,6 +1416,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-filters.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
@@ -1423,6 +1431,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
@@ -1453,6 +1462,7 @@
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />

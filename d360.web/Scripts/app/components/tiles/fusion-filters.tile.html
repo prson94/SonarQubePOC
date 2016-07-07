@@ -1,0 +1,24 @@
+﻿<h4>{{title}}</h4>
+<div *ngIf="isLoading">
+    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+</div>
+<div *ngIf="!isLoading" [ngSwitch]="formMode">
+    <div class="form-instructions"></div>
+    <div id="FiltersViewer" class="root-tile">
+        <header>Synchronization Filters</header>
+        <div id="FiltersOverlayGrid"></div>
+        <p-dataTable [value]="fusionFilters" selectionMode="single" (onRowSelect)="selectedFusionFilter = $event.data;">
+            <p-column field="Name" header="Name"></p-column>
+            <p-column field="Filter" header="Filter"></p-column>
+            <p-column>
+                <template let-item="rowData">
+                    <div class="RowTools">
+                        <a (click)="formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </template>
+            </p-column>
+        </p-dataTable>
+    </div>
+    <div id="FiltersEditor"></div>
+</div>

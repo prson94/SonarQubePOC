@@ -1,4 +1,5 @@
 ﻿import { EventEmitter } from '@angular/core';
+import { TreeNode } from 'primeng/primeng';
 
 export class BaseEditorModel {
     FormUri: string;
@@ -33,8 +34,31 @@ export module FormHelper {
             }
             reader.readAsDataURL(file);
         }).then(() => {
-            console.log(reader.result);
+            //console.log(reader.result);
             return reader.result;
+        });
+    }
+
+
+     export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
+        var tree = new Array<TreeNode>();
+
+        data.filter(d => d[parentField] == null).forEach(d => {
+            tree.push({ data: d, children: [] });
+        });
+
+        tree.forEach(t => {
+            FormHelper.formTreeR(t, data, idField, parentField);
+        });
+        //console.log(tree);
+        return tree;
+    }
+
+    export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string) {
+        data.filter(d => d[parentField] == node.data[idField]).forEach(d => {
+            let child: TreeNode = { data: d, children: [] };
+            node.children.push(child);
+            FormHelper.formTreeR(child, data, idField, parentField);
         });
     }
 }

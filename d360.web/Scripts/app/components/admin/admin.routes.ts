@@ -6,6 +6,7 @@ export const AdminRoutes = [
         component: admin.AdminComponent,
         // index: true,
         children: [
+            { path: 'fusion', component: admin.AdminFusionComponent},
             { path: 'analytics', component: admin.AdminStatisticsComponent },
             { path: 'artifacts', component: admin.AdminArtifactsComponent },
             { path: 'attributes', component: admin.AdminAttributesComponent },

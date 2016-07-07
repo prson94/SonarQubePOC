@@ -27,6 +27,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
     isLoading = false;
     isLoadingColumns = false;
     isLoadingTypes = false;
+    isSaving = false;
     actions: SelectItem[];
     selectedAction: string;
     types: SelectItem[];
@@ -34,6 +35,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
     notes: string;
     columns: string[];
     file: File;
+    errorMessage = "";
 
 
     constructor(private loadService: LoadService) {
@@ -131,7 +133,8 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
 
     private save(): void {
         let model = new LoadFilePostModel();
-
+        this.errorMessage = "";
+        this.isSaving = true;
         FormHelper.getDataUrl(this.file).then(s => {
             model.File = s;
             model.LoadAction = this.selectedAction;
@@ -140,9 +143,13 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
         })
             .then(() => this.loadService.postLoad(model))
             .then(data => {
-                console.log(model);
-                                console.log(data);
-                this.onSuccess.emit(null);
+                if (data.type == 'error') {
+                    this.onError.emit(null);
+                    this.errorMessage = data.message;
+                } else {
+                    this.onSuccess.emit(null);
+                }
+                this.isSaving = false;
                 this.onComplete.emit(null);
             });
     }

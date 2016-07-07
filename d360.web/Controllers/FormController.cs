@@ -323,7 +323,8 @@ namespace d360.web.Controllers
                     return Resource_EditFields(ID);
                 case "DOMAINTYPE":
                     return DomainType_EditFields(ID);
-
+                case "FUSION":
+                    return Fusion_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -347,6 +348,8 @@ namespace d360.web.Controllers
                     return Resource_AddFields(objectID.GetValueOrDefault());
                 case "DOMAINTYPE":
                     return DomainType_AddFields();
+                case "FUSION":
+                    return Fusion_AddFields(objectID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -378,6 +381,8 @@ namespace d360.web.Controllers
                     return EditStatisticType(form);
                 case "DOMAINTYPE":
                     return EditDomainType(form);
+                case "FUSION":
+                    return EditFusion(form);
                 case "INTERSECTTYPE":
                     return EditIntersectType(form);
                 case "REPORT":
@@ -439,6 +444,8 @@ namespace d360.web.Controllers
                     return AddStatisticType(form);
                 case "DOMAINTYPE":
                     return AddDomainType(form);
+                case "FUSION":
+                    return AddFusion(form);
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
                 case "REPORT":
@@ -5587,6 +5594,14 @@ order by  D.TextPath
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusion(form);
         }
 
         public ActionResult EditFusion(int id)

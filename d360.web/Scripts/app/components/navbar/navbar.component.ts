@@ -46,6 +46,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         let integrationModel = this.addSubItem(admin, 'Integration', null, null);
         this.addSubItem(integrationModel, 'API', null, null, '/swagger/ui/index');
         this.addSubItem(integrationModel, 'Bulk Loader', null, 'a/admin/load');
+        this.addSubItem(integrationModel, 'Fusion', null, 'a/admin/fusion');
 
         // meta model sub
         let metaModel = this.addSubItem(admin, 'MetaModel', null, null);

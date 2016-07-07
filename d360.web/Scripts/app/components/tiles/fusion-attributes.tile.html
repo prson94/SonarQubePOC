@@ -1,0 +1,26 @@
+﻿<header>{{title}}</header>
+<div class="directions">
+    Below is a list of attribute types for {{fusionType?.Name}}.  You can add fields to an attribute type by clicking the add field icon below.
+</div>
+<div class="row">
+    <div class="col s12 m12 l5">
+        <h4>&nbsp;</h4>
+        <div id="FusionAttributeTypes"></div>
+        <p-treeTable [value]="fusionAttributeTypes" selectionMode="single" [(selection)]="selectedRow">
+            <p-column field="Name" header="Name"></p-column>
+            <p-column field="ID" header="ID"></p-column>
+            <p-column>
+                <template let-item="rowData">
+                    <div class="RowTools">
+                        <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                    </div>
+                </template>
+            </p-column>
+        </p-treeTable>
+    </div>
+    <div class="col hide-on-small-and-down m12 l7">
+        <d3s-field-definition-tile [objectType]="'FusionAttributeType'" [objectID]="selectedRow?.data?.ID" [title]="'Fields for ' + selectedRow?.data?.Name"></d3s-field-definition-tile>
+        <div id="FusionAttributeTypeFields"></div>
+    </div>
+</div>
