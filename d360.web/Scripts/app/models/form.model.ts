@@ -22,6 +22,21 @@ export module FormHelper {
     export function mapSelectItems(s: SelectItem[]) {
         s.forEach(s => { s.value = s.Value; s.label = s.Text });
     }
+
+    export function getDataUrl(file: File): Promise<string> {
+        let reader = new FileReader();
+
+        return new Promise<string>((resolve, reject) => {
+
+            reader.onloadend = () => {
+                resolve(reader.result);
+            }
+            reader.readAsDataURL(file);
+        }).then(() => {
+            console.log(reader.result);
+            return reader.result;
+        });
+    }
 }
 
 

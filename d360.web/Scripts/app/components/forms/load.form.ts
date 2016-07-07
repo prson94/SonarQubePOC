@@ -4,7 +4,7 @@ import { NgForm } from '@angular/common';
 import { Button, Editor, Header, InputText, Dropdown, SelectItem } from 'primeng/primeng';
 import { LoadDetail, LoadFilePostModel } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
-import { FormEvents } from '../../models/form.model';
+import { FormEvents, FormHelper } from '../../models/form.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -132,28 +132,20 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
     private save(): void {
         let model = new LoadFilePostModel();
 
-        let reader = new FileReader();
-        let dataUrl = "";
-
-        reader.onloadend = (e: any) => {
-            this.isLoading = false;
-            dataUrl = reader.result;
-        }
-
-        reader.readAsDataURL(this.file);
-
-        model.File = dataUrl;
-        model.LoadAction = this.selectedAction;
-        model.Type = this.selectedType.split('|')[0];
-        model.Notes = this.notes;
-
-        console.log(model);
-        this.loadService.postLoad(model)
+        FormHelper.getDataUrl(this.file).then(s => {
+            model.File = s;
+            model.LoadAction = this.selectedAction;
+            model.Type = this.selectedType.split('|')[0];
+            model.Notes = this.notes;
+        })
+            .then(() => this.loadService.postLoad(model))
             .then(data => {
-                console.log(data);
+                console.log(model);
+                                console.log(data);
                 this.onSuccess.emit(null);
                 this.onComplete.emit(null);
             });
-
     }
+
+
 }
