@@ -1359,6 +1359,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics.component.ts" />
@@ -1423,6 +1424,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />

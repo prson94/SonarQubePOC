@@ -377,6 +377,8 @@ namespace d360.web.Controllers
                     return EditStatisticType(form);
                 case "DOMAINTYPE":
                     return EditDomainType(form);
+                case "INTERSECTTYPE":
+                    return EditIntersectType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -398,6 +400,8 @@ namespace d360.web.Controllers
                     return DeletePredicate(form);
                 case "STATISTICTYPE":
                     return DeleteStatisticType(form);
+                case "INTERSECTTYPE":
+                    return DeleteIntersectType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -430,6 +434,8 @@ namespace d360.web.Controllers
                     return AddStatisticType(form);
                 case "DOMAINTYPE":
                     return AddDomainType(form);
+                case "INTERSECTTYPE":
+                    return AddIntersectType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -8735,6 +8741,19 @@ order by  D.TextPath
                     Company.SaveChanges();
                 }
 
+                if (!string.IsNullOrEmpty(form["Predicates"]))
+                {
+                    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
+                    if (!string.IsNullOrEmpty(vals))
+                    {
+                        var predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                        predicates.ForEach(p => {
+                            Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
+                        });
+                        Company.SaveChanges();
+                    }                    
+                }
+
                 return jsonSuccess(model.Name + " successfully created.", id.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -8869,6 +8888,15 @@ order by  D.TextPath
                 if (!string.IsNullOrEmpty(form["Predicates[]"]))
                 {
                     predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                }
+
+                if (!string.IsNullOrEmpty(form["Predicates"]))
+                {
+                    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
+                    if (!string.IsNullOrEmpty(vals))
+                        predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                    else
+                        predicates = new List<PredicateType>();
                 }
 
                 var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();

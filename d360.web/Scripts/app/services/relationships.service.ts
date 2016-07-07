@@ -3,7 +3,9 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Relationship } from '../models/relationship.model';
+import { Relationship, RelationshipDetail } from '../models/relationship.model';
+import { JsonResult } from '../models/jsonresult.model';
+import { DropdownOption } from '../models/dropdown.model';
 
 @Injectable()
 export class RelationshipsService extends BaseService {
@@ -14,6 +16,51 @@ export class RelationshipsService extends BaseService {
         return this.http.get('relations/_intersectTypes')
             .toPromise()
             .then(response => <Relationship[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelation(id: number): Promise<RelationshipDetail> {
+        return this.http.get(`form/IntersectType_FormData?id=${id}`)
+            .toPromise()
+            .then(response => <RelationshipDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteRelationship(id: number) {
+        return this.deleteDynamic(this.http, 'intersecttype', id);
+    }
+
+    saveRelationship(relationship: RelationshipDetail): Promise<JsonResult> {
+        if (relationship.ID == undefined || !relationship.ID) {
+            return this.postDynamic(this.http, 'intersecttype', relationship);
+        }
+        return this.putDynamic(this.http, 'intersecttype', relationship);
+    }
+
+    getRelationshipPredicates(): Promise<DropdownOption[]> {
+        return this.http.get('form/IntersectType_PredicateOptions')
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getSide1Options(): Promise<DropdownOption[]> {
+        return this.http.get('form/IntersectType_Side1Options')
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getSide2Options(id: number, type: string, selectedId?: number, selectedType?: string): Promise<DropdownOption[]> {
+        let url = `form/IntersectType_Side2Options?id=${id}&type=${type}`;
+        if (selectedId != undefined)
+            url = url += `&side2ID=${selectedId}`;
+        if (selectedType != undefined)
+            url = url += `&side2Type=${selectedType}`;
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
     }
 }
