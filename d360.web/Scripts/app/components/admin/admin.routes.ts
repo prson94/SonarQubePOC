@@ -9,6 +9,7 @@ export const AdminRoutes = [
             { path: 'analytics', component: admin.AdminStatisticsComponent },
             { path: 'artifacts', component: admin.AdminArtifactsComponent },
             { path: 'attributes', component: admin.AdminAttributesComponent },
+            { path: 'load', component: admin.AdminLoadComponent},
             { path: 'dashboards', component: admin.AdminDashboardsComponent },
             { path: 'domain', component: admin.AdminDomainComponent },
             { path: 'groups', component: admin.AdminGroupsComponent },

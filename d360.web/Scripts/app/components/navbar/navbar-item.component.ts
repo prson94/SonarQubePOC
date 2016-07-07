@@ -7,8 +7,8 @@ import { ROUTER_DIRECTIVES } from '@angular/router';
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     template: `
                 <div [class.router-link-active]="item.active">
-                    <a *ngIf="item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i>- {{item.name}}</a>
-                    <a *ngIf="item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + (item.icon || 'minus')"></i> {{item.name}}</a>
+                    <a *ngIf="item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>
+                    <a *ngIf="item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>
                     <span *ngIf="!item.route && !item.url" style="cursor: pointer;" class="nav-item inactive" (click)="item.expanded = !item.expanded"><i [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>&nbsp;&nbsp;{{item.name}}</span>
                 </div>
                 <ul *ngIf="item.subItems && item.subItems.length > 0" [hidden]="!item.expanded" style="padding-left:15px; font-size:small">

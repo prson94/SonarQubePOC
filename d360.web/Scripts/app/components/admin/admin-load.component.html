@@ -1,0 +1,34 @@
+﻿<div class="row">
+    <div class="col s12 m6 l4">
+        <div *ngIf="isLoading">
+            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        </div>
+        <div *ngIf="!isLoading" class="root-tile">
+            <header><d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;"></d3s-tile-actions></header>
+            <p-dataTable [value]="loads" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">
+                <p-column field="Action" header="Action" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
+                <p-column field="ObjectName" header="Target" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '40%' }"></p-column>
+                <p-column field="DateCompleted" header="Date Completed" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }">
+                    <template let-item="rowData">
+                        {{item.DateCompleted | date:'short'}}
+                    </template>
+                </p-column>
+            </p-dataTable>
+        </div>
+    </div>
+    <div class="col s12 m6 l8" [ngSwitch]="formMode">
+        <div *ngSwitchCase="FormMode.Adding">
+            <div class="tile tile-detail">
+                <d3s-load-form (onCancel)="formMode = FormMode.Default;" (onComplete)="formMode = FormMode.Default;" (onSuccess)="load();"></d3s-load-form>
+            </div>
+        </div>
+        <div *ngSwitchDefault>
+            <div class="tile tile-detail">
+                <object-detail [objectType]="'Load'" [objectID]="selectedRow?.ID"></object-detail>
+            </div>
+            <div class="tile tile-detail">
+                <d3s-load-item-tile [id]="selectedRow?.ID"></d3s-load-item-tile>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,159 @@
+﻿///<reference path="../../es6-shim.d.ts"/>
+import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+import { NgForm } from '@angular/common';
+import { Button, Editor, Header, InputText, Dropdown, SelectItem } from 'primeng/primeng';
+import { LoadDetail, LoadFilePostModel } from '../../models/load.model';
+import { LoadService } from '../../services/load.service';
+import { FormEvents } from '../../models/form.model';
+import * as _ from 'lodash';
+
+@Component({
+    selector: 'd3s-load-form',
+    templateUrl: 'scripts/app/components/forms/load.form.html',
+    providers: [LoadService],
+    directives: [Button, Editor, Header, InputText, Dropdown],
+})
+
+export class LoadForm implements OnInit, OnChanges, FormEvents {
+    //@Input() id: number;
+    //@Input() parentID: number;
+    @Input() title: string = "Upload a Spreadsheet Job";
+    @Output() onComplete = new EventEmitter();
+    @Output() onSuccess = new EventEmitter();
+    @Output() onError = new EventEmitter();
+    @Output() onCancel = new EventEmitter();
+    @Output() onLoadComplete = new EventEmitter();
+
+    isLoading = false;
+    isLoadingColumns = false;
+    isLoadingTypes = false;
+    actions: SelectItem[];
+    selectedAction: string;
+    types: SelectItem[];
+    selectedType: string;
+    notes: string;
+    columns: string[];
+    file: File;
+
+
+    constructor(private loadService: LoadService) {
+    }
+
+    ngOnInit() {
+        this.load();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        for (let p in changes) {
+            if (p == 'id') {
+                this.load();
+            }
+        }
+    }
+
+
+    private load(): void {
+        this.actions = this.loadService.getActionOptions();
+        this.selectedAction = '';
+        this.onLoadComplete.emit(null);
+    }
+
+    private loadTypes(): void {
+        this.isLoadingTypes = true;
+        this.selectedType = '';
+        this.loadService.getTypeOptions(this.selectedAction)
+            .then(data => {
+                this.types = data;
+                this.isLoadingTypes = false;
+            });;
+    }
+
+    private loadColumns(): void {
+        let id, type;
+        try {
+            id = parseInt(this.selectedType.split('|')[1]);
+            type = this.selectedType.split('|')[0];
+        } catch (e) {
+            return;
+        }
+        this.isLoadingColumns = true;
+        this.loadService.getExpectedColumns(type, id).then(data => {
+            this.columns = data;
+            this.isLoadingColumns = false;
+        });
+    }
+
+
+    private isRequiredColumn(col: string) {
+        let type = this.selectedType.split('|')[0];
+
+        if (type == null) return true;
+        type = type.toLowerCase();
+        col = col.toLowerCase();
+
+        if (this.selectedAction == 'P' && type == 'artifacttype') {
+            if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) return true;
+            return false; 
+        } 
+        if (this.selectedAction == 'P' && type == 'domain') {
+            if (_.includes(['name', 'code'], col)) return true;
+            return false;
+        }
+        if (this.selectedAction == 'P' && type == 'domaintype') {
+            if (_.includes(['name', 'domain group'], col)) return true;
+            return false;
+        }
+        return true;
+    }
+
+    private showDetail() {
+        return (this.selectedAction && this.selectedAction != '' && this.selectedType && this.selectedType != '');
+    }
+
+    private getTemplateDownloadUri() {
+        let id, type;
+        try {
+            id = parseInt(this.selectedType.split('|')[1]);
+            type = this.selectedType.split('|')[0];
+        } catch (e) {
+            return null;
+        }
+        return `form/Load_ExpectedColumns_ToExcel?id=${id}&type=${type}`;
+    }
+
+    private changeFile(e) {
+        this.file = e.srcElement.files[0];
+    }
+
+    private cancel(): void {
+        this.onCancel.emit(null);
+    }
+
+    private save(): void {
+        let model = new LoadFilePostModel();
+
+        let reader = new FileReader();
+        let dataUrl = "";
+
+        reader.onloadend = (e: any) => {
+            this.isLoading = false;
+            dataUrl = reader.result;
+        }
+
+        reader.readAsDataURL(this.file);
+
+        model.File = dataUrl;
+        model.LoadAction = this.selectedAction;
+        model.Type = this.selectedType.split('|')[0];
+        model.Notes = this.notes;
+
+        console.log(model);
+        this.loadService.postLoad(model)
+            .then(data => {
+                console.log(data);
+                this.onSuccess.emit(null);
+                this.onComplete.emit(null);
+            });
+
+    }
+}

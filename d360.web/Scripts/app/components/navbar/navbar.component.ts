@@ -10,9 +10,6 @@ import * as _ from 'lodash';
     template: `
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
         <li class="logo"></li> 
-        <!-- TODO: hardcoded, remove later -->
-        <li><a href="/"><i class="fa fa-pencil"></i> Legacy site</a></li>
-
         <li *ngFor="let item of items">
             <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
         </li>
@@ -34,6 +31,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.items = new Array<NavBarItem>();
 
+        this.addNavItem('Legacy Site', 'pencil', null, '/');
         this.addNavItem('Glossary', 'book', null);
         this.addNavItem('Models', 'sitemap', null);
         this.addNavItem('Policies', 'university', null);
@@ -47,6 +45,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let integrationModel = this.addSubItem(admin, 'Integration', null, null);
         this.addSubItem(integrationModel, 'API', null, null, '/swagger/ui/index');
+        this.addSubItem(integrationModel, 'Bulk Loader', null, 'a/admin/load');
 
         // meta model sub
         let metaModel = this.addSubItem(admin, 'MetaModel', null, null);
@@ -93,12 +92,13 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
     }
 
-    addNavItem(name: string, icon: string, route: string): NavBarItem {
+    addNavItem(name: string, icon: string, route: string, url?: string): NavBarItem {
         route = _.trimStart(route, '/');
         let i = new NavBarItem();
         i.name = name;
         i.icon = icon;
         i.route = route;
+        if (url != null) i.url = url;
         this.items.push(i);
         return i;
     }

@@ -1,0 +1,19 @@
+﻿<div *ngIf="isLoading">
+    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+</div>
+<div *ngIf="!isLoading">
+    <header>
+        {{title}}
+        <div class="TileTools">
+            <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="load()">
+                <i class="fa fa-refresh" title="Refresh"></i>
+            </a>
+        </div>     
+    </header>
+    <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true">
+        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true"></p-column>
+        <p-column field="RowIndex" header="Row" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+        <p-column field="Status" header="Status" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+        <p-column field="Status Message" header="Message" sortable="true" [filter]="true" filterMatchMode="contains"></p-column>
+    </p-dataTable>
+</div>
