@@ -323,6 +323,7 @@ namespace d360.web.Controllers
                     return Resource_EditFields(ID);
                 case "DOMAINTYPE":
                     return DomainType_EditFields(ID);
+
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -379,6 +380,8 @@ namespace d360.web.Controllers
                     return EditDomainType(form);
                 case "INTERSECTTYPE":
                     return EditIntersectType(form);
+                case "REPORT":
+                    return EditReport(form).Result;
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -402,6 +405,8 @@ namespace d360.web.Controllers
                     return DeleteStatisticType(form);
                 case "INTERSECTTYPE":
                     return DeleteIntersectType(form);
+                case "REPORT":
+                    return DeleteReport(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -436,6 +441,8 @@ namespace d360.web.Controllers
                     return AddDomainType(form);
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
+                case "REPORT":
+                    return AddReport(form).Result;
             }
 
             throw new Exception("Invalid / unsupported create type");
