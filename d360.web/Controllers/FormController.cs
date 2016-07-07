@@ -387,6 +387,8 @@ namespace d360.web.Controllers
                     return EditIntersectType(form);
                 case "REPORT":
                     return EditReport(form).Result;
+                case "REPORTTILE":
+                    return EditReportTile(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -412,6 +414,8 @@ namespace d360.web.Controllers
                     return DeleteIntersectType(form);
                 case "REPORT":
                     return DeleteReport(form);
+                case "REPORTTILE":
+                    return DeleteReportTile(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -450,6 +454,8 @@ namespace d360.web.Controllers
                     return AddIntersectType(form);
                 case "REPORT":
                     return AddReport(form).Result;
+                case "REPORTTILE":
+                    return AddReportTile(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

@@ -4,14 +4,16 @@ import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { Report } from '../../models/report.model';
+import { Report, ReportType } from '../../models/report.model';
 import { DeleteForm } from '../forms/delete.form';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { ReportItemsTile } from '../tiles/report-items.tile';
+import { ReportLayoutTile } from '../tiles/report-layout.tile';
 
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile],
     providers: [ReportsService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -56,6 +58,20 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
                                 </div>
                             </div>
                         </div>                        
+                        <div class="row" *ngIf="isBasicReport(selected)">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-report-item-tile [report]="selected"></d3s-report-item-tile>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" *ngIf="isBasicReport(selected)">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-report-layout-tile [report]="selected"></d3s-report-layout-tile>
+                                </div>
+                            </div>
+                        </div>
                     <div>
                 </div>  
                 `
@@ -85,6 +101,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
         this.reportsService.getReports().then(result => {
             this.isLoading = false;
             this.reports = result;
+            this.selected = (this.reports.length > 0 ? this.reports[0] : null);
         });
     }
 
@@ -130,4 +147,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
         this.selected = null;
     }
 
+    private isBasicReport(report: Report): boolean {        
+        return (report != null && ReportType[report.ReportType] == ReportType.legacy);
+    }
 }
