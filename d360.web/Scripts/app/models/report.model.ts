@@ -8,7 +8,7 @@ export class Report {
     Name: string;
     Description: string;
     ObjectID: number;
-    ObjectType: string;
+    ObjectType: string;    
     PowerBIDatasetID: string;
     PowerBIReportID: string;
     ReportLayoutID: number;

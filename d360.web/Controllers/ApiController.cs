@@ -3317,6 +3317,68 @@ where    A.PolicyTypeID = @id", columns, joins);
             return Company.GetMostActiveUsersReport();
         }
 
+        [Route("reports/layouts")]
+        public IEnumerable<dynamic> GetReportLayouts()
+        {
+            return Company.Query<dynamic>(@"
+                select      cast(ID as varchar(15)) as value,
+                            Name as title
+                from        ReportLayout
+                order by    title
+                ");            
+        }
+
+        [Route("reports/targets")]
+        public IEnumerable<dynamic> GetReportTargetAreas()
+        {
+            var items = Company.Query<dynamic>(@"
+select      *
+from        (
+            select      'Artifact|' + cast(ID as varchar(15)) as value,
+                        'Artifact Instance : ' + Name as title
+            from        ArtifactType
+            union
+            select      'ArtifactType|' + cast(ID as varchar(15)) as value,
+                        'Artifact Type : ' + Name as title
+            from        ArtifactType
+            union
+            select      'Domain|' + cast(ID as varchar(15)) as value,
+                        'Domain Instance : ' + Name as title
+            from        DomainType
+            union
+            select      'DomainType|' + cast(ID as varchar(15)) as value,
+                        'Domain Type : ' + Name as title
+            from        DomainType
+            union
+            select      'Resource|1' as value,
+                        'Resource' as title
+            union
+            select      'Taxonomy|' + cast(ID as varchar(15)) as value,
+                        'Model Instance : ' + Name as title
+            from        TaxonomyType
+            union
+            select      'TaxonomyType|' + cast(ID as varchar(15)) as value,
+                        'Model Type : ' + Name as title
+            from        TaxonomyType
+            union
+            select      'Policy|' + cast(ID as varchar(15)) as value,
+                        'Policy Instance : ' + Name as title
+            from        PolicyType
+            union
+            select      'PolicyType|' + cast(ID as varchar(15)) as value,
+                        'Policy Type : ' + Name as title
+            from        PolicyType
+) O
+order by    title
+
+").ToList();
+
+            items.AddRange(RuleType.Informational.GetRuleTypeEnumList().Select(i => new { title = string.Format("Rule Instance : {0}", i.Name), value = string.Format("Rule|{0}", (int)i.ID) }));
+
+            return items;
+        }
+
+
         #endregion
 
         #region Resources

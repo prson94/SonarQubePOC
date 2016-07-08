@@ -9,11 +9,12 @@ import { DeleteForm } from '../forms/delete.form';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { ReportItemsTile } from '../tiles/report-items.tile';
 import { ReportLayoutTile } from '../tiles/report-layout.tile';
+import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile, AdminDashboardsEditor],
     providers: [ReportsService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -47,7 +48,8 @@ import { ReportLayoutTile } from '../tiles/report-layout.tile';
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the dashboard [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>                               
+                            ></delete-form>   
+                            <d3s-admin-dashboards-editor *ngIf="showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
                         </div>
                     </div>                                        
                     <div class="col l8 s12">
@@ -121,16 +123,22 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
     }
 
     saveReport(event) {
-        this.reportsService.saveReport(event.item)
+        this.reportsService.saveReport(event.report)
             .then(result => {
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
-                    this.reports[this.reports.length] = event.item;
+                let parts = event.report.ObjectType.split('|');
+                if (parts.length > 0) {
+                    event.report.ObjectType = parts[0];
+                    event.report.ObjectID = Number(parts[1]);
+                }
+                if (event.report.ID == undefined) {
+                    event.report.ID = Number(result.id);
+                    this.reports[this.reports.length] = event.report;
                 }
                 else {
-                    this.reports[this.findReportIndex(event.item.ID)] = event.item;
+                    this.reports[this.findReportIndex(event.report.ID)] = event.report;
                 }
-                this.selected = event.item;
+                
+                this.selected = event.report;
                 this.showEditor = false;
             });
     }

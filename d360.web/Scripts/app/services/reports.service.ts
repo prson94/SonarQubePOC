@@ -5,6 +5,7 @@ import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { Report, ReportTile, ReportLayout } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { DropdownOption } from '../models/dropdown.model';
 
 @Injectable()
 export class ReportsService extends BaseService {
@@ -22,7 +23,7 @@ export class ReportsService extends BaseService {
         return this.deleteDynamic(this.http, 'report', id);
     }
 
-    saveReport(report: Report): Promise<JsonResult> {
+    saveReport(report: Report, file?: File): Promise<JsonResult> {
         if (report.ID == undefined || !report.ID) {
             return this.postDynamic(this.http, 'report', report);
         }
@@ -41,6 +42,7 @@ export class ReportsService extends BaseService {
     }
 
     saveReportTile(reportTile: ReportTile): Promise<JsonResult> {
+        
         if (reportTile.ID == undefined || !reportTile.ID) {
             return this.postDynamic(this.http, 'reporttile', reportTile);
         }
@@ -54,4 +56,18 @@ export class ReportsService extends BaseService {
             .then(response => <ReportLayout>response.json()[0])
             .catch(err => this.handleError(err));
     }
+
+    getReportTargetTypes(): Promise<DropdownOption[]> {        
+        return this.http.get('api/reports/targets')
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getReportLayouts(): Promise<DropdownOption[]> {
+        return this.http.get('api/reports/layouts')
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
+            .catch(err => this.handleError(err));
+    }    
 }
