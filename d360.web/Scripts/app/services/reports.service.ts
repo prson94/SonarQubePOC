@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Report, ReportTile, ReportLayoutRow } from '../models/report.model';
+import { Report, ReportTile, ReportLayout } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -48,10 +48,10 @@ export class ReportsService extends BaseService {
     }
 
 
-    getReportLayout(report: Report): Promise<ReportLayoutRow[]> {
+    getReportLayout(report: Report): Promise<ReportLayout> {
         return this.http.get(`reports/${report.ID}/layout`)
             .toPromise()
-            .then(response => <ReportLayoutRow[]>response.json())
+            .then(response => <ReportLayout>response.json()[0])
             .catch(err => this.handleError(err));
     }
 }

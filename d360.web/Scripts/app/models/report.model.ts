@@ -51,6 +51,6 @@ export class ReportLayoutCell {
     areas: ReportLayoutArea[];
 }
 
-export class ReportLayoutRow {
+export class ReportLayout {
     cells: ReportLayoutCell[];
 }
