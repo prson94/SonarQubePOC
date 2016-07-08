@@ -18,12 +18,16 @@
 
     //#region Event Subscriptions
     
-    function saveAction(data) {      
+    function saveAction(data) {
+        console.log(data);
         try {
-            switch (data.context) {                
+            switch (data.context) {
+                case "OwnerCertificationWorkflow":
                 case "IssueWorkflow":
+                case "OwnerApprovalWorkflow":
                     switchToViewer();
-                     $(gridControlID).jqxGrid('updatebounddata');
+                    $(gridControlID).jqxGrid('updatebounddata');
+                    return false;                
             }
         } catch (e) {
             logError("YourWorkflowTasks : SaveAction", e);
@@ -60,7 +64,7 @@
     }
 
     amplify.subscribe("PageResized", pageResized);
-    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe("SaveAction", saveAction, 1);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
