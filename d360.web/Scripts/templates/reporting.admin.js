@@ -139,6 +139,7 @@
                             { name: 'ID' },
                             { name: 'Name' },
                             { name: 'ReportType' },
+                            { name: 'PowerBIReportID' }
                         ],
                         id: 'ID'
                     };
@@ -170,10 +171,12 @@
 
                                     tools = [
                                         { icon: 'pencil', urlprefix: '/form/EditReport?id=' + data.ID },
-                                        { icon: 'trash-o', urlprefix: '/form/DeleteReport?id=' + data.ID },
-                                        { icon: 'search', urlprefix: '/reports/PreviewOverlay?id=' + data.ID }
+                                        { icon: 'trash-o', urlprefix: '/form/DeleteReport?id=' + data.ID }                                       
                                     ];
-
+                                    
+                                    if (data.ReportType == 'powerbi') tools.push({ icon: 'search', urlprefix: '/reports/PowerBIOverlay?reportID=' + data.PowerBIReportID });
+                                    else tools.push({ icon: 'search', urlprefix: '/reports/PreviewOverlay?id=' + data.ID });
+                                                                        
                                     return renderToolsHtml(value, tools, contextList.Report);
                                 }
                             }
