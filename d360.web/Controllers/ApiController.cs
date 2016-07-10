@@ -49,11 +49,15 @@ namespace d360.web.Controllers
             var fields = Company.GetFieldRelationsByObject(type, id);
             foreach (var k in fields)
             {
-                list.Add(new DisplayField {
-                    FriendlyName = k.FriendlyName,
-                    Value = k.FormattedValue,
-                    Name = k.Name
-                });
+                if (!string.IsNullOrEmpty(k.Value))
+                {
+                    list.Add(new DisplayField
+                    {
+                        FriendlyName = k.FriendlyName,
+                        Value = k.FormattedValue,
+                        Name = k.Name
+                    });
+                }
             }
         }
 
@@ -92,34 +96,37 @@ namespace d360.web.Controllers
                     var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
                     if (k != null)
                     {
-                        if (k.Type == DataType.FusionLookup.ToString())
+                        if (!string.IsNullOrEmpty(k.Value))
                         {
-                            //look at fusionlookup field and figure out what to show
-                            list.AddRange(RenderFusionLookupField(k));
-                        }
-                        else
-                        {
-                            var ro = new ReadOnlyField
+                            if (k.Type == DataType.FusionLookup.ToString())
                             {
-                                Name = k.FriendlyName,
-                                Value = k.FormattedValue,
-                                FieldDescription = k.DisplayDescription,
-                                FieldName = k.Name
-                            };
-                            if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
-                            {
-                                ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                                ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
-                                ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
-                                ro.TooltipUrl = k.LookupUrl;
+                                //look at fusionlookup field and figure out what to show
+                                list.AddRange(RenderFusionLookupField(k));
                             }
-
-                            list.Add(new DetailReadOnlyRowModel
+                            else
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> { ro },
-                                Category = ft.Category
-                            });
+                                var ro = new ReadOnlyField
+                                {
+                                    Name = k.FriendlyName,
+                                    Value = k.FormattedValue,
+                                    FieldDescription = k.DisplayDescription,
+                                    FieldName = k.Name
+                                };
+                                if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                                {
+                                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+                                    ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
+                                    ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
+                                    ro.TooltipUrl = k.LookupUrl;
+                                }
+
+                                list.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                                    Category = ft.Category
+                                });
+                            }
                         }
                     }
                     else
@@ -129,6 +136,12 @@ namespace d360.web.Controllers
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderRelationLookupField(type.ToString(), id, ft.ID));
+                        }
+                        //Computed field, maybe.
+                        if (ft.Type == DataType.Attribute.ToString())
+                        {
+                            //look at attribute field and figure out what to show
+                            list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
                         }
                     }
                 });
@@ -1080,9 +1093,9 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
                         {
-                            addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                            addItem.Items.Add(new PageActionItem { Context = "emailtemplateform", Icon = "envelope", Title = "Email Template", Uri = "/form/templates/email/add" });
-                            addItem.Items.Add(new PageActionItem { Context = "tooltiptemplateform", Icon = "file-text-o", Title = "Tooltip Template", Uri = "/form/templates/tooltip/add" });
+                            addItem = new PageActionItem { Context = "tooltiptemplateform", Icon = Resources.Actions.Add_Icon, Title = "Tooltip Template", Uri = "/form/templates/tooltip/add" };
+                            //addItem.Items.Add(new PageActionItem { Context = "emailtemplateform", Icon = "envelope", Title = "Email Template", Uri = "/form/templates/email/add" });
+                            //addItem.Items.Add(new PageActionItem { Context = "tooltiptemplateform", Icon = "file-text-o", Title = "Tooltip Template", Uri = "/form/templates/tooltip/add" });
                             list.Add(addItem);
                         }
                     }
@@ -1135,7 +1148,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "bolt", Title = "Ownership Rules", Uri = string.Format("/overlays/FusionConfigurationOwnershipRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //old promotion to be removed
-                            list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+                            //list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //new promotion
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "map", Title = "Fusion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
@@ -2368,6 +2381,34 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #endregion
 
+        #region Attribute Lookup Fields
+
+        private List<DetailReadOnlyRowModel> RenderAttributeField(string type, int id, int fieldTypeID)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+
+            var ft = Company.GetById<FieldType>(fieldTypeID);
+
+            list.Add(new DetailReadOnlyRowModel
+            {
+                columns = 1,
+                FirstColumnFields = new List<ReadOnlyField> {
+                    new ReadOnlyField {
+                        Column = 1,
+                        Name = ft.FriendlyName,
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+
+                    }
+                },
+                Category = ft.Category
+            });
+
+            return list;
+        }
+
+        #endregion
+
         #region Fusion Lookup Fields
 
         private List<DetailReadOnlyRowModel> RenderFusionLookupField(FieldWithRelation k)
@@ -2599,6 +2640,8 @@ from    IntersectNode S
                 var sqlWhere = "";
                 var sqlOrderBy = "";
 
+                var descriptionFieldAlreadyPresent = false;
+
                 var columnPrefix = def.ReferenceType == 1 ? "D" : "D2";
 
                 #region Load Columns/Fields
@@ -2612,6 +2655,14 @@ from    IntersectNode S
                 {
                     gridFields.Add(new GridField { name = "TextPath", type = "string" });
                     columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
+                }
+                if (displayFields.Any(i => i.FieldTypeName == "Description" && i.Show))
+                {
+                    if (!gridFields.Any(i => i.name == "Description") && !columns.Any(i => i.text == "Description"))
+                    {
+                        gridFields.Add(new GridField { name = "Description", type = "string" });
+                        columns.Add(new GridColumn { text = "Description", datafield = "Description", width = "auto" });
+                    }
                 }
                 if (fieldTypeIDs != null)
                 {
@@ -2652,14 +2703,23 @@ from    IntersectNode S
                                     break;
                             }
 
-                            gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
-                            var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
-                            if (!string.IsNullOrEmpty(cellsformat))
+                            if (!gridFields.Any(i => i.name == fieldType.Name) && !columns.Any(i => i.datafield == fieldType.Name))
                             {
-                                gc.cellsformat = cellsformat;
+                                gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
+                                var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
+                                if (!string.IsNullOrEmpty(cellsformat))
+                                {
+                                    gc.cellsformat = cellsformat;
+                                }
+                                columns.Add(gc);
                             }
-                            columns.Add(gc);
+
                             sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+
+                            if (fieldType.Name == "Description")
+                            {
+                                descriptionFieldAlreadyPresent = true;
+                            }
                         }
 
                         if (displayField.FieldTypeName.Contains("Relation."))
@@ -2749,16 +2809,19 @@ from    IntersectNode S
                 if (!string.IsNullOrEmpty(sqlColumnString)) sqlColumnString = "," + sqlColumnString;
                 string sqlJoinString = string.Join(" ", sqlJoins);
 
+                string descriptionColumn = "";
+
                 switch (def.ReferenceType)
                 {
                     case 1: //Self Reference
+                        descriptionColumn = (descriptionFieldAlreadyPresent) ? "" : "D.Description,";
                         sql = $@"
     select  I.ID as IntersectID,
             D.[Object],
 		    D.ObjectID,
             D.ObjectID as ID,
 		    D.Name,
-		    D.[TextPath],
+		    D.[TextPath], {descriptionColumn}
 		    D.Url 
             {sqlColumnString}
     from    [Intersect] I
@@ -2769,13 +2832,14 @@ from    IntersectNode S
             {sqlJoinString}";
                         break;
                     default: //Child Reference
+                        descriptionColumn = (descriptionFieldAlreadyPresent) ? "" : "D2.Description,";
                         sql = $@"
     select  I2.ID as IntersectID,
             D2.[Object],
 		    D2.ObjectID,
             D2.ObjectID as ID,
 		    D2.Name,
-		    D2.[TextPath],
+		    D2.[TextPath], {descriptionColumn}
 		    D2.Url
             {sqlColumnString}
     from    [Intersect] I1
@@ -4475,7 +4539,70 @@ order by    title
                     }
                     lookupType = null;
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.Map:
+                    #region Fields                    
+                    var map = Company.GetById<Map>(id, i => i.MapItems);
+                    if (map != null)
+                    {
+                        model.columns = 1;
+
+                        if (!string.IsNullOrEmpty(map.Transformation))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Transformation", FieldName = "Transformation", Value = map.Transformation }
+                            }
+                            });
+                        }
+
+                        var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
+
+                        var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
+
+                        var sources = "";
+                        var targets = "";
+                        var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
+                        foreach (var mi in map.MapItems)
+                        {
+                            var intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+                            if (intersectDetail != null)
+                            {
+                                var text = $@"<div>
+<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Subject}' data-id='{intersectDetail.SubjectID}' href='{intersectDetail.SubjectUrl}'>{intersectDetail.SubjectName}</a></span> / 
+<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Object}' data-id='{intersectDetail.ObjectID}' href='{intersectDetail.ObjectUrl}'>{intersectDetail.ObjectName}</a></span>
+</div>";
+                                if (mi.IsSource)
+                                    sources += text;
+                                else
+                                    targets += text;
+                            }
+                        }
+                        
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Sources", FieldName = "Sources", Value = sources }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Targets", FieldName = "Targets", Value = targets }
+                            }
+                        });
+                    }
+                    map = null;
+                    break;
+                #endregion
                 case SystemObjects.Policy:
                     #region Fields
                     var policy = Company.GetById<Policy>(id, i => i.Children);

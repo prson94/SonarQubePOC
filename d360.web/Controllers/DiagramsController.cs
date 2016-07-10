@@ -9,6 +9,7 @@ using d360.core.enums;
 using d360.web.Models;
 using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -53,107 +54,19 @@ namespace d360.web.Controllers
 
         #region Lineage Diagram
 
-        //public class LineageModel
-        //{
-        //    public string Key { get; set; }
+        [HttpGet, Route("{type}/{id:int}/lineage")]
+        public JsonNetResult GetLineageByObject(SystemObjects type, int id)
+        {
+            var list = Company.Query<string>(@"exec GetLineage @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
 
-        //    public int ID { get; set; }
-        //    public int MapID { get; set; }
-        //    public int IntersectID { get; set; }
-        //    public int IntersectTypeID { get; set; }
-        //    public int IntersectRoleID { get; set; }
-        //    public string IntersectRole { get; set; }
-        //    public bool IsSource { get; set; }
+            var json = string.Join("", list);
 
-        //    public string Subject { get; set; }
-        //    public int SubjectID { get; set; }
-        //    public string SubjectIconBackColor { get; set; }
-        //    public string SubjectIconForeColor { get; set; }
-        //    public string SubjectName { get; set; }
-
-        //    public string Object { get; set; }
-        //    public int ObjectID { get; set; }
-        //    public string ObjectIconBackColor { get; set; }
-        //    public string ObjectIconForeColor { get; set; }
-        //    public string ObjectName { get; set; }
-
-        //    public int Level { get; set; }
-
-        //    public int RawSourceRuleCount { get; set; } = 0;
-        //    public int SourceRuleCount { get; set; } = 0;
-        //    public int RawMappingRuleCount { get; set; } = 0;
-        //    public int LinkMappingRuleCount { get; set; } = 0;
-        //    public int ChallengeCount { get; set; } = 0;
-        //    public int OpenEventCount { get; set; } = 0;
-        //    public int OpenIssueCount { get; set; } = 0;
-        //    public int RawTransformationCount { get; set; } = 0;
-        //    public int LinkTransformationCount { get; set; } = 0;
-        //}
-
-
-        //[HttpGet, Route("{type}/{id:int}/lineage/{viewID:int}")]
-        //public JsonNetResult GetLineageByObject(SystemObjects type, int id, int viewID)
-        //{
-        //    var list = Company.Query<LineageModel>(@"exec GetLineage @viewID, @type, @id", new { viewID, type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
-
-        //    var model = new DiagramModel();
-
-        //    list.ForEach(i =>
-        //    {
-        //        if (!model.nodes.Any(n => n.key == i.Key))
-        //        {
-        //            model.nodes.Add(new JsonNodeItem
-        //            {
-        //                back = i.SubjectIconBackColor,
-        //                challengeCount = i.ChallengeCount,
-        //                fore = i.SubjectIconForeColor,
-        //                intersectId = i.IntersectID,
-        //                mapId = i.MapID,
-        //                key = i.Key,
-        //                level = i.Level,
-        //                mappingRuleCount = i.RawMappingRuleCount,
-        //                name = i.SubjectName,
-        //                obj = i.Subject,
-        //                objid = i.SubjectID,
-        //                objecttype = i.Subject,
-        //                objecttypeid = i.SubjectID,
-        //                openEventCount = i.OpenEventCount,
-        //                openIssueCount = i.OpenIssueCount,
-        //                sourceRuleCount = i.SourceRuleCount,
-        //                transformationCount = i.RawTransformationCount,
-        //                type = i.Subject
-        //            });
-        //        }
-        //    });
-
-        //    var mapIDs = list.Select(i => i.MapID).Distinct().ToList();
-        //    mapIDs.ForEach(mapID =>
-        //    {
-        //        var sources = list.Where(i => i.MapID == mapID && i.IsSource);
-        //        var targets = list.Where(i => i.MapID == mapID && !i.IsSource);
-        //        foreach (var t in targets)
-        //        {
-        //            model.links.AddRange(
-        //                sources.Select(s => new JsonLinkItem
-        //                {
-        //                    from = s.Key,
-        //                    id = t.ID,
-        //                    text = s.IntersectRole,
-        //                    mappingRuleCount = t.LinkMappingRuleCount,
-        //                    intersectRoleId = s.IntersectRoleID,
-        //                    to = t.Key,
-        //                    transformationCount = t.LinkTransformationCount
-        //                })
-        //            );
-        //        }
-        //    });
-
-        //    return new JsonNetResult
-        //    {
-        //        Data = new { model.nodes, model.links },
-        //        Formatting = Formatting.None
-        //    };
-        //}
+            return new JsonNetResult
+            {
+                Data = JObject.Parse(json),
+                Formatting = Formatting.None
+            };
+        }
 
         #region Old stuff to remove once we switch to new lineage editor
 

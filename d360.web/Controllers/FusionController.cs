@@ -722,6 +722,7 @@ select * from h where ID <> @t order by h.[Level] desc;
 
             #endregion
 
+            sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "ID", FieldName = "A.ID", FieldFriendlyName = "ID" });
             sqlFieldModels.Add(new SqlFieldModel { FieldColumnName = "Name", FieldName = "A.Name", FieldFriendlyName = detail.Name });
 
             #region Dynamic Fields

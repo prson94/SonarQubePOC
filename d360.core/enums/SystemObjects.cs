@@ -131,6 +131,8 @@ namespace d360.core
         RuleDimension = 61,
         [Description("Monitor"), AllowSurvey(false)]
         Monitor = 61,
+        [Description("Map"), AllowSurvey(false)]
+        Map= 62
     }
 
     public class SystemObjectInfo

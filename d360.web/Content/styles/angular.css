@@ -43,14 +43,40 @@ nav.top,
 .side-nav li {
   padding: 0;
 }
-.side-nav li .router-link-active {
-  background: #F8F3EF;
-  color: #383127 !important;
-}
 .side-nav ul,
 .side-nav a {
+  height: auto;
+  line-height: normal;
+}
+d3s-navbar-item > div.router-link-active > a {
+  background-color: #F8F3EF;
+  color: #383127 !important;
+}
+d3s-navbar-item > div .nav-item {
+  height: 25px;
+  line-height: 25px;
+  color: white;
+  padding: 0 15px;
+  display: block;
+  font-size: small;
+  cursor: pointer;
+}
+d3s-navbar-item > div :hover {
+  background-color: #ddd;
+  color: black !important;
+}
+d3s-navbar-item.top > div > span.nav-item {
   height: 35px;
   line-height: 35px;
+  color: white;
+  padding: 0 15px;
+  display: block;
+  font-size: 1rem;
+  cursor: pointer;
+}
+d3s-navbar-item.top > div > span.nav-item:hover {
+  background-color: #ddd;
+  color: black;
 }
 .side-nav.fixed a {
   color: white;
@@ -65,12 +91,6 @@ nav.top,
   font-size: x-small;
   height: 20px;
   line-height: 20px;
-}
-.side-nav ul.sub li.router-link-active {
-  background: #F8F3EF;
-}
-.side-nav ul.sub li.router-link-active a {
-  color: #383127 !important;
 }
 /* end side menu*/
 /* main content*/

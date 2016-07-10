@@ -528,7 +528,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.Type != DataType.RelationLookup.ToString())
+                if (ft.Type != DataType.RelationLookup.ToString()  && ft.Type != DataType.Attribute.ToString())
                 {
                     var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 
@@ -586,7 +586,7 @@ namespace d360.web.Controllers
 
                     if (!string.IsNullOrEmpty(ft.LookupObjectType))
                     {
-                        fld.FieldType = DataType.Lookup.ToString();
+                        //fld.FieldType = DataType.Lookup.ToString();
                         try
                         {
                             fld.Items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)

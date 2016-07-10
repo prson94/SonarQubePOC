@@ -53,12 +53,7 @@
         <div class="col s12" data-bind="visible: ActionAndTypeSelected">
             <div class="row">&nbsp;</div>
             <div class="FieldName">File</div>            
-            @*<div id="BulkLoadFile"></div>*@
-            @*<div data-bind="fileDrag: File">*@
-            <div>
-                <input type="file" data-bind="fileInput: File" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" />
-                @*<input type="file" data-bind="fileInput: File, customFileInput: {}" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />*@
-            </div>
+            <div><input type="file" data-bind="fileInput: File" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" /></div>
         </div>
     </div>
 
@@ -68,7 +63,7 @@
         display: none;
     }
 </style>
-<div class="small-overlay">
+<div class="medium-overlay">
     <div class="ui segment">
         <div id="LoadWrapper" data-bind="template: {name: 'loadTmpl' }"></div>
     </div>
@@ -127,7 +122,8 @@
             { title: 'Promotion', value: 'P' },
             { title: 'Relation', value: 'R' },
             { title: 'Unrelation', value: 'U' },
-            { title: 'Lineage', value: 'L'},
+            { title: 'Lineage', value: 'L' },
+            //{ title: 'Lineage (New)', value: 'N' },
             { title: 'Synonyms', value: 'S' }
         ]);
         self.TypeOptions = ko.observableArray();

@@ -68,6 +68,9 @@
                     case 'RefreshItems':
                         $("#LoadItemsTile").jqxGrid('updatebounddata');
                         break;
+                    case 'ResizeItemGrid':
+                        $("#LoadItemsTile").jqxGrid('autoresizecolumns');
+                        break;
                 }
             } catch (e) { }
         }
@@ -165,6 +168,7 @@
                     //#region LoadItems Grid
 
                     var itemtools = [
+                        { icon: 'arrows-h', action: 'ResizeItemGrid', title: 'Resize columns' },
                         { icon: 'refresh', action: 'RefreshItems', title: 'Refresh this list' }
                     ];
                     TileTools('#ItemTools', itemtools);

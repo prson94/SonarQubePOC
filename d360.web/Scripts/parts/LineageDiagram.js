@@ -1673,13 +1673,13 @@
         } else {
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).show(delay);
+                    //$("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_sourcerule_add).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    //$("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_sourcerule_add).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
@@ -1687,12 +1687,12 @@
                 $("#" + controlID_ribbon_sourcerule_add).hide(delay);
 
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                   // $("#" + controlID_ribbon_sourcemapping).show(delay);
+                    //$("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    //$("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }

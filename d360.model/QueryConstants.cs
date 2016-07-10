@@ -872,7 +872,7 @@ order by	D.ObjectTypeName,
 			D.TextPath";
 
         public static string SynonymsByObjectList = @"
-select	I.IntersectID,
+select	I.ID as IntersectID,
 		IM.ID as IntersectMapID,
 		D.Object,
 		D.ObjectID,
@@ -880,22 +880,23 @@ select	I.IntersectID,
         D.ObjectTypeName,
 		D.Description,
 		D.Url
-from	cache.Relationship I
+from	[Intersect] I
+		inner join IntersectNode SN on SN.IntersectID = I.ID and SN.ObjectType = @type and SN.ObjectID = @id
+		inner join IntersectNode TN on TN.IntersectID = I.ID and TN.ID <> SN.ID 
 		inner join IntersectMap IM on 
 								    (
-										( IM.SubjectIntersectNodeID = I.SourceIntersectNodeID and IM.ObjectIntersectNodeID = I.TargetIntersectNodeID )
-										OR ( IM.SubjectIntersectNodeID = I.TargetIntersectNodeID and IM.ObjectIntersectNodeID = I.SourceIntersectNodeID )
+										( IM.SubjectIntersectNodeID = SN.ID and IM.ObjectIntersectNodeID = TN.ID )
+										OR ( IM.SubjectIntersectNodeID = TN.ID and IM.ObjectIntersectNodeID = SN.ID )
 									)
                                     and IM.Type = 6
 		inner join cache.ObjectDetails D on D.Object = case 
-															when I.SourceObject = @type and I.SourceObjectID = @id then I.TargetObject 
-															else I.SourceObject 
+															when I.Subject = @type and I.SubjectID = @id then I.Object 
+															else I.Subject
 														end
 											and D.ObjectID = case 
-																when I.SourceObject = @type and I.SourceObjectID = @id then I.TargetObjectID 
-																else I.SourceObjectID 
-															 end
-where	I.SourceObject = @type and I.SourceObjectID = @id";
+																when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+																else I.SubjectID 
+															 end";
 
         public static string TaxonomySettingsItem = @"
 select	*

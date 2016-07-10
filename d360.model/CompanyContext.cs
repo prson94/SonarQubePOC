@@ -26,6 +26,8 @@ using d360.workflow;
 using d360.workflow.entities;
 using d360.workflow.models;
 using System.Threading.Tasks;
+using d360.core.entities.Queues;
+using d360.core.queue;
 
 namespace d360.model
 {
@@ -59,8 +61,8 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
-            : base(community.GetCompanyConnectionString())
+        public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
+            : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Community = community;
             Caching = caching;
@@ -93,6 +95,8 @@ namespace d360.model
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
 
         public DbSet<BusinessTransformationRule> BusinessTransformationRules { get; set; }
+
+        public DbSet<BulkLoadQueue> BulkLoadQueues { get; set; }
 
         public DbSet<CacheObject> CacheObjects { get; set; }
 
@@ -378,11 +382,14 @@ namespace d360.model
                     if (existingFieldTypeIDs.Any(i => item.FieldTypeID == i))
                     {
                         Set<Field>().Attach(item);
-                        Entry(item).State = EntityState.Modified;
+                        Entry(item).State = (string.IsNullOrEmpty(item.Value)) ? EntityState.Deleted : EntityState.Modified;
                     }
                     else
                     {
-                        Set<Field>().Add(item);
+                        if (!string.IsNullOrEmpty(item.Value))
+                        {
+                            Set<Field>().Add(item);
+                        }
                     }
                 });
                 try
@@ -482,6 +489,11 @@ begin
   delete RelatedArtifact where GroupID = @tG
  end
 end", new { ss = source, tt = target });
+        }
+
+        public void Enqueue(QueueType type, QueueObject obj)
+        {
+            QueueSource.CreateMessage(type, obj);
         }
 
         public List<AllocationPossibility> GetTypes()
@@ -810,7 +822,7 @@ order by	ColumnIndex", new { id });
                 sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
                 sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
             });
-            sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Not Processed' end as [Status], I.StatusMessage"; 
+            sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage"; 
             sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
             return Query<dynamic>(sql, new { id });
         }

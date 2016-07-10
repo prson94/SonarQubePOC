@@ -5,16 +5,16 @@ using System;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class MapRuleItem : BaseIntObject, IIntObject
+    public class MapRuleItem : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
         public int MapRuleID { get; set; }
 
         [DataMember]
-        public int SourceFusionAttributeID { get; set; }
+        public int FusionAttributeID { get; set; }
 
         [DataMember]
-        public int TargetFusionAttributeID { get; set; }
+        public bool IsSource { get; set; }
 
         [DataMember]
         public DateTime? CreatedOn { get; set; }
@@ -32,9 +32,6 @@ namespace d360.core.entities
         public virtual MapRule MapRule { get; set; }
 
         [IgnoreDataMember]
-        public virtual FusionAttribute SourceFusionAttribute { get; set; }
-
-        [IgnoreDataMember]
-        public virtual FusionAttribute TargetFusionAttribute { get; set; }
+        public virtual FusionAttribute FusionAttribute { get; set; }
     }
 }

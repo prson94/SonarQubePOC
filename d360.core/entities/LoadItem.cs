@@ -17,7 +17,13 @@ namespace d360.core.entities
         public int RowIndex { get; set; }
 
         [DataMember]
-        public string Status { get; set; }
+        public string Object { get; set; }
+
+        [DataMember]
+        public int? ObjectID { get; set; }
+
+        [DataMember]
+        public bool? Status { get; set; }
 
         [DataMember]
         public string StatusMessage { get; set; }

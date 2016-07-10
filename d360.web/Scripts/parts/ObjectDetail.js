@@ -89,6 +89,17 @@
                     }
                 }
 
+                //function relationGridUnsubscribe() {
+                //    $(valueID).off('bindingcomplete', relationGridBindComplete);
+                //    amplify.unsubscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                //    amplify.unsubscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
+                //}
+
+                //function relationGridBindComplete() {
+                //    console.log('auto-resized');
+                //    $(valueID).jqxGrid('autoresizecolumns');
+                //}
+
                 $(valueID).jqxGrid({
                     altrows: true,
                     width: grid_width,
@@ -102,14 +113,21 @@
                     showheader: !f.HideHeader,
                     pageable: !f.HideFooter,
                     columnsresize: true,
+                    autorowheight: true,
                     source: dataAdapter,
                     theme: 'flat',
                     pagermode: 'simple',
-                    columns: cols//,
-                    //ready: function () {
-                    //    $(valueID).jqxGrid('autoresizecolumns');
-                    //}
+                    columns: cols,
+                    ready: function () {
+                        if (cols.length > 3)
+                            $(valueID).jqxGrid('autoresizecolumns');
+                    }
                 });
+
+                //$(valueID).on('bindingcomplete', relationGridBindComplete);
+                //amplify.subscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                //amplify.subscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
+
             });
         }
         else {

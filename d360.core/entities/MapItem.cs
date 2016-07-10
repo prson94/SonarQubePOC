@@ -17,6 +17,9 @@ namespace d360.core.entities
         public bool IsSource { get; set; }
 
         [DataMember]
+        public string DiagramKey { get; set; }
+
+        [DataMember]
         public DateTime? CreatedOn { get; set; }
 
         [DataMember]

@@ -22,13 +22,8 @@ namespace d360.core.entities
 
     public class SourceToTargetSaveModel
     {
-        public string Focal { get; set; }
-        public int FocalID { get; set; }
-        public string Source { get; set; }
-        public int SourceID { get; set; }
-        public string Target { get; set; }
-        public int TargetID { get; set; }
-
+        public int SourceIntersectID { get; set; }
+        public int TargetIntersectID { get; set; }
         public List<SourceTargetRule> Rules { get; set; }
     }
 

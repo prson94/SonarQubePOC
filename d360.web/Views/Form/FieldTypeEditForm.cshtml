@@ -57,12 +57,27 @@
                  searchMode: 'containsignorecase' }"></div>
         </div>
         <div class="col s3 input-field">
-            <input type="checkbox" data-bind="checked: IsListable" />@(Resources.FieldInfo.FilterEnabled_Name)
+            <input type="checkbox" data-bind="disabled: IsCheckboxValid, checked: IsListable" />@(Resources.FieldInfo.FilterEnabled_Name)
             @*<div data-bind="jqxCheckBox: { theme: theme, checked: IsListable }">@(Resources.FieldInfo.FilterEnabled_Name)</div>*@
         </div>
         <div class="col s3 input-field">
-            <input type="checkbox" data-bind="checked: IsRequired" />@(Resources.FieldInfo.Required_Name)
+            <input type="checkbox" data-bind="disabled: IsCheckboxValid, checked: IsRequired" />@(Resources.FieldInfo.Required_Name)
             @*<div data-bind="jqxCheckBox: { theme: theme, checked: IsRequired }">@(Resources.FieldInfo.Required_Name)</div>*@
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: AttributeDataTypeSelected">
+        <div class="col s6">
+            <div id='AttributeTip' class="FieldNameRequired">@(Resources.FieldInfo.ListType_Name)<span class="FieldNameError" data-bind="visible: AttributeInvalid">*</span></div>
+            <div data-bind="attributeFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: false,
+                 selectedIndex: AttributeIndex,
+                 source: AttributeOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
         </div>
     </div>
 
@@ -360,6 +375,14 @@
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('change', function (event) {
                 viewModel.DataType(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.attributeFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Attribute(event.args.item.value);
             });
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
@@ -928,6 +951,9 @@
         self.DisplayDescription = ko.observable(data.DisplayDescription || "");
         self.FormDescription = ko.observable(data.FormDescription || "");
 
+        self.AttributeIndex = ko.observable(data.AttributeIndex || -1);
+        self.Attribute = ko.observable(data.Attribute || '');
+
         self.LookupObjectIndex = ko.observable(data.LookupObjectIndex || -1);
         self.LookupObject = ko.observable(data.LookupObject || '');
         self.LookupDisplayFormat = ko.observable("");
@@ -958,8 +984,16 @@
             return (self.ApiName() === "");
         }, self);
 
+        self.AttributeInvalid = ko.pureComputed(function () {
+            return (self.AttributeIndex() == -1);
+        }, self);
+
         self.DataTypeInvalid = ko.pureComputed(function () {
             return (self.DataType() === "");
+        }, self);
+
+        self.IsCheckboxValid = ko.pureComputed(function(){
+            return (self.DataType() !== "Attribute" && self.DataType() !== "RelationLookup");
         }, self);
 
         self.LookupObjectInvalid = ko.pureComputed(function () {
@@ -981,6 +1015,12 @@
 
             switch(self.DataType())
             {
+                case "Attribute":
+                    if (self.AttributeInvalid() ) {
+                        self.FormInvalid(true);
+                        return;
+                    }
+                    break;
                 case "Lookup":
                     if (self.LookupObjectInvalid() || self.LookupDisplayFormatInvalid() ) {
                         self.FormInvalid(true);
@@ -1018,6 +1058,10 @@
         //#endregion
 
         //#region Computed Properties
+
+        self.AttributeDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "Attribute");
+        }, self);
 
         self.FusionLookupDataTypeSelected = ko.pureComputed(function () {
             return (self.DataType() == "FusionLookup");
@@ -1057,9 +1101,11 @@
 
         //#region List Properties
 
+        self.AttributeOptions = ko.observableArray();   // attributes.
+
         self.DataTypeOptions = ko.observableArray();    // Data Types.
 
-        self.FusionItems = ko.observableArray();  // Target Fusion Look-through references.
+        self.FusionItems = ko.observableArray();        // Target Fusion Look-through references.
         self.FusionAttributeTypeOptions = ko.observableArray();
 
         self.LookupObjectOptions = ko.observableArray();// Lookup lists.
@@ -1152,6 +1198,10 @@
                 function(lookups) {
                     self.DataTypeOptions(lookups.DataTypes);
                     self.PatternOptions(lookups.Patterns);
+
+                    if (lookups.Attributes) {
+                        self.AttributeOptions(lookups.Attributes);
+                    }
                     if (lookups.FusionAttributeTypes) {
                         self.FusionAttributeTypeOptions(lookups.FusionAttributeTypes);
                     }
@@ -1187,16 +1237,34 @@
                                 if (ftData.FieldType.LookupObjectType && ftData.FieldType.LookupObjectID) {
                                     indexToSelect = -1;
                                     var searchString = ftData.FieldType.LookupObjectType + '|' + ftData.FieldType.LookupObjectID;
-                                    $.each(self.LookupObjectOptions(), function (ix, item) {
-                                        if (item.value == searchString) {
-                                            indexToSelect = ix;
+
+                                    if (self.DataType() == "Attribute") {
+
+                                        $.each(self.AttributeOptions(), function (ix, item) {
+                                            if (item.value == searchString) {
+                                                indexToSelect = ix;
+                                            }
+                                        });
+                                        if (indexToSelect > -1) {
+                                            self.AttributeIndex(indexToSelect);
+                                            self.Attribute(searchString);
                                         }
-                                    });
-                                    if (indexToSelect > -1) {
-                                        self.LookupObjectIndex(indexToSelect);
-                                        self.LookupObject(searchString);
-                                        self.LookupDisplayFormat(ftData.FieldType.LookupDisplayFormat);
-                                        loadTokens(ftData.FieldType.LookupObjectType, ftData.FieldType.LookupObjectID);
+
+                                    }
+                                    else {
+
+                                        $.each(self.LookupObjectOptions(), function (ix, item) {
+                                            if (item.value == searchString) {
+                                                indexToSelect = ix;
+                                            }
+                                        });
+                                        if (indexToSelect > -1) {
+                                            self.LookupObjectIndex(indexToSelect);
+                                            self.LookupObject(searchString);
+                                            self.LookupDisplayFormat(ftData.FieldType.LookupDisplayFormat);
+                                            loadTokens(ftData.FieldType.LookupObjectType, ftData.FieldType.LookupObjectID);
+                                        }
+
                                     }
                                 }
 
@@ -1246,6 +1314,7 @@
                         ValidationDescription: self.ValidationDescription(),
                         FriendlyName: self.FriendlyName(),
                         Type: self.DataType(),
+                        AttributeTypeID: null,
                         LookupObjectType: null,
                         LookupObjectID: null,
                         LookupDisplayFormat: null,
@@ -1267,6 +1336,14 @@
                         HideFooter: false
                     }
                 };
+
+                if (self.DataType() === "Attribute") {
+                    var attribute = self.Attribute();
+                    if (attribute !== "") {
+                        postModel.FieldType.LookupObjectType = attribute.split('|')[0];
+                        postModel.FieldType.LookupObjectID = attribute.split('|')[1];
+                    }
+                }
 
                 if (self.DataType() === "Lookup") {
                     var lookupType = self.LookupObject();

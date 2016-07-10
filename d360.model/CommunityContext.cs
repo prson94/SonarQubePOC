@@ -265,11 +265,11 @@ namespace d360.model
             }
         }
 
-        public string GetCompanyConnectionString()
+        public string GetCompanyConnectionString(bool skipCacheCheck = false)
         {
             var cs = "";
 
-            if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID))
+            if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID) && !skipCacheCheck)
             {
                 cs = Caching.GetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID);
                 return cs;

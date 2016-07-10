@@ -93,6 +93,32 @@ namespace d360.web.Models
         public List<ObjectModel> Targets { get; set; }
     }
 
+
+    public class MapRulesModel
+    {
+        public List<MapRuleModel> Rules { get; set; }
+    }
+
+    public class MapRuleModel
+    {
+        public int ID { get; set; }
+        public int SourceIntersectID { get; set; }
+        public string SourceDiagramKey { get; set; }
+        public int TargetIntersectID { get; set; }
+        public string TargetDiagramKey { get; set; }
+        public List<MapRuleItemModel> Sources { get; set; }
+        public List<MapRuleItemModel> Targets { get; set; }
+        public string Transformation { get; set; }
+    }
+
+    public class MapRuleItemModel
+    {
+        public int ID { get; set; }
+        public int IntersectID { get; set; }
+        public int FusionAttributeID { get; set; }
+        public string FusionAttributeTextPath { get; set; }
+    }
+
     public class SourcePostModel
     {
         public SourcePostModel()
@@ -110,9 +136,11 @@ namespace d360.web.Models
     public class SourcePostAddModel
     {
         public int SourceIntersectID { get; set; }
+        public string SourceKey { get; set; }
         public int TargetIntersectID { get; set; }
+        public string TargetKey { get; set; }
         public int IntersectRoleID { get; set; }
-
+        public string Transformation { get; set; }
 
         /// <summary>
         /// The current object that we are creating sources for.
@@ -152,7 +180,7 @@ namespace d360.web.Models
     {
         public int MapID { get; set; }
         public int IntersectRoleID { get; set; }
-
+        public string Transformation { get; set; }
 
 
         public int IntersectMapID { get; set; }

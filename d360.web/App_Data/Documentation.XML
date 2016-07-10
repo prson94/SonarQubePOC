@@ -2689,6 +2689,29 @@
             <param name="id">The Intersect Type's ID</param>
             <returns>A list of name/value pairs.</returns>
         </member>
+        <member name="M:d360.web.Controllers.FormController.MapRule_FindFusion(System.Int32,System.String)">
+            <summary>
+            Gets a list of fusion attributes based on a search string provided 
+            that should match part of the TextPath of the fusoin attribute.
+            </summary>
+            <param name="intersectID">The intersectID we are searching under.</param>
+            <param name="phrase">Part of the text path to search for.</param>
+            <returns>A list of name/value pairs.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.MapRulesByMap(d360.web.Models.SourceTargetIntersectModel)">
+            <summary>
+            Gets a list of map rules based on the currently selected map.
+            </summary>
+            <param name="model">The intersectID we are searching under.</param>
+            <returns>A deep hierarchy of map rules.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.MapRulesByObject(d360.web.Models.SourceTargetIntersectModels)">
+            <summary>
+            Gets a list of map rules based on the currently selected object.
+            </summary>
+            <param name="models">A collection of source/target intersect IDs.</param>
+            <returns>A deep hierarchy of map rules.</returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Lineage_AddItemsToDiagram(d360.web.Models.AddItemsToDiagramModel)">
             <summary>
             Creates relationships for the various objects the user is adding to the diagram.

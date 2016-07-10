@@ -1,25 +1,4 @@
-﻿<script id="businessTransformationEditTmpl" type="text/html">
-    <div style="padding:5px;min-height:300px">
-        <div data-bind="visible: IsLoading" style="padding:30px; text-align:center"><i class="fa fa-3x fa-spinner fa-spin"></i></div>
-        <table data-bind="visible: !IsLoading()">
-            <thead>
-                <tr>
-                    <th style="background-color: #666; color: #fff; width: 35%">&nbsp;Source (<span style="font-weight: 400" data-bind="text: SourceName"></span>)</th>
-                    <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
-
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="2" style="padding:10px; text-align:center;">
-                        <textarea style="width:80%; height:120px" data-bind="value: Transformation"></textarea>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</script>
-<script id="hierarchyRuleContextEditTmpl" type="text/html">
+﻿<script id="hierarchyRuleContextEditTmpl" type="text/html">
     <tr style="margin-bottom: 10px">
         <td style="vertical-align: top">
             <div data-bind="jqxDropDownList: {
@@ -53,7 +32,130 @@
         </td>
     </tr>
 </script>
-<script id="sourceMappingEditTmpl" type="text/html">
+
+
+<script id="MultiMapRulesEditTmpl" type="text/html">
+    <div style="padding:5px">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%">Business Mapping</th>
+                    <th style="min-width: 20px">&nbsp;</th>
+                    <th style="width: 22%">Source</th>
+                    <th style="min-width: 20px">&nbsp;</th>
+                    <th style="width: 22%">Target</th>
+                    <th style="min-width: 20px">&nbsp;</th>
+                    <th style="width: 25%">Transformation</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: MapRules">
+                <tr data-bind="template: {name: 'MultiMapRuleEditTmpl', data: $data }, style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee'), 'vertical-align': 'top'}"></tr>
+                <tr data-bind="fadeVisible: ErrorMessages().length > 0, style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee')}">
+                    <td colspan="7" style="color:maroon;font-size:1em;">
+                        <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
+                            <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr data-bind="style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee')}, visible: CanDelete">
+                    <td colspan="7" style="text-align:right">
+                        <span data-bind="jqxButton: { theme: theme, width: 100}, click: RemoveRule" style="cursor:pointer;"><i class="fa fa-remove" style="color:maroon"></i> Remove Rule</span><div>&nbsp;</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div data-bind="visible: IsLoading" style="text-align:center">
+            <i class="fa fa-2x fa-spinner fa-spin"></i>
+        </div>
+        <div data-bind="visible: (MapRules().length == 0 && !NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+            No map rules defined
+        </div>
+        <div data-bind="visible: (NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+            There are no fusion attributes defined for the source or target selected.
+        </div>
+    </div>
+</script>
+<script id="MultiMapRuleEditTmpl" type="text/html">
+    <td data-bind="visible: !IsLoading()" style="vertical-align:top;">
+        <div data-bind="mapDropdown, jqxDropDownList: { 
+             source: Maps, 
+             theme: theme,
+             selectedIndex: MapSelectedIndex,
+             displayMember: 'DisplayText',
+             valueMember: 'ValueText',
+             autoDropDownHeight: true, 
+             height: field_height, 
+             width: field_width98
+        }"></div>
+    </td>
+    <td style="min-width: 20px">&nbsp;</td>
+    <td data-bind="visible: !IsLoading()" style="vertical-align:top;">
+        <table>
+            <tbody>
+                <!-- ko foreach: Sources -->
+                <tr>
+                    <td data-bind="visible: $parent.CanUpdate">
+                        <input type="text" placeholder="Search by text path" data-bind="mappingRuleItemInput, jqxInput: { value: FusionAttributeTextPath, valueMember: 'value', displayMember: 'label', height: field_height, width: field_width, theme: theme, source: FindTextPaths, disabled: !$parent.HasSourceIntersectID }" />
+                    </td>
+                    <td data-bind="visible: $parent.CanUpdate" style="width: 25px">
+                        <div data-bind="jqxButton: {theme: theme, width: 20, disabled: ($parent.Sources().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
+                    </td>
+                </tr>
+                <tr data-bind="fadeVisible: ErrorMessages().length > 0">
+                    <td colspan="2" style="color:maroon; font-size:1em;">
+                        <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
+                            <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
+                        </ul>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr data-bind="visible: CanUpdate">
+                    <td></td>
+                    <td>
+                        <div data-bind="jqxButton: { theme: theme, width: 20, disabled: !HasSourceIntersectID }, click: AddSource"><i class="fa fa-plus" title="Add source mapping item"></i></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </td>
+    <td style="min-width: 20px">&nbsp;</td>
+    <td data-bind="visible: !IsLoading()" style="vertical-align:top;">
+        <table>
+            <tbody>
+                <!-- ko foreach: Targets -->
+                <tr>
+                    <td data-bind="visible: $parent.CanUpdate" style="width: 100px">
+                        <input type="text" placeholder="Search by text path" data-bind="mappingRuleItemInput, jqxInput: { value: FusionAttributeTextPath, valueMember: 'value', displayMember: 'label', height: field_height, width: field_width, theme: theme, source: FindTextPaths, disabled: !$parent.HasTargetIntersectID }" />
+                    </td>
+                    <td style="width: 25px">
+                        <div data-bind="visible: $parent.CanUpdate, jqxButton: {theme: theme, width: 20, disabled: ($parent.Targets().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
+                    </td>
+                </tr>
+                <tr data-bind="fadeVisible: ErrorMessages().length > 0">
+                    <td colspan="2" style="color:maroon; font-size:1em;">
+                        <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
+                            <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
+                        </ul>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr data-bind="visible: CanUpdate">
+                    <td></td>
+                    <td>
+                        <div data-bind="jqxButton: { theme: theme, width: 20, disabled: !HasTargetIntersectID }, click: AddTarget" style="cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </td>
+    <td style="min-width: 20px">&nbsp;</td>
+    <td data-bind="visible: !IsLoading()" style="vertical-align:top;">
+        <textarea data-bind="value: Transformation, disable: !CanUpdate()" placeholder="Enter transformation rule..." style="background-color:white; min-height: 50px; height: 100%"></textarea>
+    </td>
+</script>
+
+
+<script id="MapRulesEditTmpl" type="text/html">
     <div style="padding:5px">
         <table>
             <thead>
@@ -63,12 +165,10 @@
                     <th style="background-color: #ebebeb; color: #666; width: 35%">&nbsp;Target (<span style="font-weight: 400" data-bind="text: TargetName"></span>)</th>
                     <th style="min-width: 20px">&nbsp;</th>
                     <th>Transformation</th>
-                    <th style="min-width: 20px">&nbsp;</th>
-                    <th>Sequence</th>
                 </tr>
             </thead>
-            <tbody data-bind="foreach: SourceRules">
-                <tr data-bind="template: {name: 'sourceMappingItemTmpl', data: $data }, style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee'), 'vertical-align': 'top'}"></tr>
+            <tbody data-bind="foreach: MapRules">
+                <tr data-bind="template: {name: 'MapRuleEditTmpl', data: $data }, style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee'), 'vertical-align': 'top'}"></tr>
                 <tr data-bind="fadeVisible: ErrorMessages().length > 0, style: {'backgroundColor': ($index()%2 == 0 ? '#fff' : '#eee')}">
                     <td colspan="5" style="color:maroon;font-size:1em;">
                         <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
@@ -86,7 +186,7 @@
         <div data-bind="visible: IsLoading" style="text-align:center">
             <i class="fa fa-2x fa-spinner fa-spin"></i>
         </div>
-        <div data-bind="visible: (SourceRules().length == 0 && !NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
+        <div data-bind="visible: (MapRules().length == 0 && !NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
             No source to target mapping rules defined
         </div>
         <div data-bind="visible: (NoFusionAvailable() && !IsLoading())" style="width:100%;text-align:center;padding:10px;font-size:1.2em;color:#777;">
@@ -94,25 +194,21 @@
         </div>
     </div>
 </script>
-<script id="sourceMappingItemTmpl" type="text/html">
+<script id="MapRuleEditTmpl" type="text/html">
     <td data-bind="visible: !IsLoading()" style="width:30%; vertical-align:top;">
         <table>
             <tbody>
                 <!-- ko foreach: Sources -->
                 <tr>
-                    <td data-bind="visible: $parent.CanUpdate" style="width: 100px">
-                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 98%; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin fa-overlay-five"></i></span>
-                    </td>
-                    <td>
-                        <div data-bind="visible: $parent.CanUpdate, jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: '98%', theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
-                        <div data-bind="visible: !$parent.CanUpdate(), text: SelectedFusionName"></div>
+                    <td data-bind="visible: $parent.CanUpdate">
+                        <input type="text" placeholder="Search by text path" data-bind="mappingRuleItemInput, jqxInput: { value: FusionAttributeTextPath, valueMember: 'value', displayMember: 'label', height: field_height, width: field_width, theme: theme, source: FindTextPaths }" />
                     </td>
                     <td data-bind="visible: $parent.CanUpdate" style="width: 25px">
                         <div data-bind="jqxButton: {theme: theme, width: 20, disabled: ($parent.Sources().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
                     </td>
                 </tr>
                 <tr data-bind="fadeVisible: ErrorMessages().length > 0">
-                    <td colspan="3" style="color:maroon; font-size:1em;">
+                    <td colspan="2" style="color:maroon; font-size:1em;">
                         <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
                             <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
                         </ul>
@@ -120,7 +216,7 @@
                 </tr>
                 <!-- /ko -->
                 <tr data-bind="visible: CanUpdate">
-                    <td colspan="2"></td>
+                    <td></td>
                     <td>
                         <div data-bind="jqxButton: { theme: theme, width: 20 }, click: AddSource"><i class="fa fa-plus" title="Add source mapping item"></i></div>
                     </td>
@@ -135,18 +231,14 @@
                 <!-- ko foreach: Targets -->
                 <tr>
                     <td data-bind="visible: $parent.CanUpdate" style="width: 100px">
-                        <input type="text" placeholder="Search..." data-bind="value: SearchPhrase, valueUpdate: 'keyup'" style="width: 98%; margin-bottom:3px; line-height:1.6" /><span data-bind="visible: IsLoading" style="display:inline;position:relative; top:0; left:-15px; z-index:10;"><i class="fa fa-spinner fa-spin fa-overlay-five"></i></span>
-                    </td>
-                    <td data-bind="visible: $parent.CanUpdate">
-                        <div data-bind="jqxDropDownList: { source: FusionItems, displayMember: 'name', valueMember: 'id', width: '98%', theme: theme, disabled: IsLoading, selectedIndex: SelectedFusionIndex }" style="display:inline-block"></div>
+                        <input type="text" placeholder="Search by text path" data-bind="mappingRuleItemInput, jqxInput: { value: FusionAttributeTextPath, valueMember: 'value', displayMember: 'label', height: field_height, width: field_width, theme: theme, source: FindTextPaths }" />
                     </td>
                     <td style="width: 25px">
-                        <div data-bind="visible: !$parent.CanUpdate(), text: SelectedFusionName"></div>
                         <div data-bind="visible: $parent.CanUpdate, jqxButton: {theme: theme, width: 20, disabled: ($parent.Targets().length == 1) }, click: RemoveItem" style="color:maroon;cursor:pointer;"><i class="fa fa-remove"></i></div>
                     </td>
                 </tr>
                 <tr data-bind="fadeVisible: ErrorMessages().length > 0">
-                    <td colspan="3" style="color:maroon; font-size:1em;">
+                    <td colspan="2" style="color:maroon; font-size:1em;">
                         <ul data-bind="foreach: ErrorMessages" style="padding:0;margin:0;">
                             <li><i class="fa fa-exclamation-circle"></i> <span data-bind="text: $data"></span></li>
                         </ul>
@@ -154,7 +246,7 @@
                 </tr>
                 <!-- /ko -->
                 <tr data-bind="visible: CanUpdate">
-                    <td colspan="2"></td>
+                    <td></td>
                     <td>
                         <div data-bind="jqxButton: { theme: theme, width: 20 }, click: AddTarget" style="cursor:pointer;display:inline-block;"><i class="fa fa-plus"></i></div>
                     </td>
@@ -166,11 +258,8 @@
     <td data-bind="visible: !IsLoading()" style="width:20%; vertical-align:top; padding-top: 2px">
         <textarea data-bind="value: Transformation, disable: !CanUpdate()" placeholder="Enter transformation rule..." style="background-color:white; min-height: 50px; height: 100%"></textarea>
     </td>
-    <td style="min-width: 20px">&nbsp;</td>
-    <td data-bind="visible: !IsLoading()" style="width:10%; vertical-align:top; padding-top: 2px">
-        <input type="text" data-bind="value: Sequence, disable: !CanUpdate()" placeholder="Enter sequence..." style="background-color:white; min-height: 30px; height: 30px" />
-    </td>
 </script>
+
 <script id="hierarchyRuleItemEditTmpl" type="text/html">
     <div class="row">
         <div class="col s3 FieldNameRequired">Order</div>

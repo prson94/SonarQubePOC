@@ -281,6 +281,15 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
+    public class SimpleTypeModel : BaseObject
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public int ID { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
     public class FusionStatisticTileModel : BaseObject
     {
         [DataMember]

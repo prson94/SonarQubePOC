@@ -38,7 +38,9 @@ namespace d360.core
         [Description("Fusion Lookup")]
         FusionLookup,
         [Description("Relation Lookup")]
-        RelationLookup
+        RelationLookup,
+        [Description("Attribute Hierarchy"), ReadOnly(true)]
+        Attribute
     }
 
     public class DataTypeInfo

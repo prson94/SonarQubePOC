@@ -1,52 +1,24 @@
 ﻿<header id="{{control}}_header">Lineage</header>
 <div id="{{control}}_wrapper_fullscreen" style="z-index:99999;background-color:white;">
     <div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:999;top:0;left:0;">
-        <div id="overlayModal" style="background-color:white;border-radius:5px;width:33%;min-width:500px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
+        <div id="overlayModal" style="background-color:white;border-radius:5px;width:40%;min-width:600px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
             <div style="width:100%;text-align:center;">
                 <div id="{{control}}_overlay_relationship"></div><br />
             </div>
-            <table id="{{control}}_overlay_existing" style="margin-top:5px;">
-                <tbody>
-                    <tr>
-                        <td style="width:27px;"></td>
-                        <td>
-                            Predicate:
-                        </td>
-                        <td>
-                            <select id="{{control}}_overlay_predicates" class="select-dropdown browser-default" style="height:100%"></select>
-                            <div id="{{control}}_overlay_roles"></div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <table style="margin-top:5px;">
-                <tbody>
-                    <tr>
-                        <td>
-                            <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
-                        </td>
-                        <td>
-                            <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <!--<div id="{{control}}_popover_add" style="display:none;position:absolute;background-color:white;z-index:10001;width:350px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px 7px;">
-        <div>
-            <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_add').hide(200); return false;"><i class="fa fa-remove"></i></a></div>
-            <div style="padding:10px">
-                <select data-bind="value: NodeType" class="select-dropdown browser-default" id="{{control}}_add_artifact_type" style="height:100%"></select><br />
-                <input id="{{control}}_add_search_text" type="text" style="width:80%;margin-top:10px;line-height:1.5em" />
-                <div id="{{control}}_add_search" style="display:inline-block;">Search</div>
-                <div id="{{control}}_add_search_message" style="display:none;text-align:center;color:maroon;">
-                    No Results
+            <div id="{{control}}_overlay_existing" class="row">
+                <div class="col s3">Role:</div>
+                <div class="col s9"><select id="{{control}}_overlay_predicates" style="height:25px; width: 100%;"></select></div>
+
+                <div class="col s3">Business Transformation:</div>
+                <div class="col s9"><textarea id="{{control}}_overlay_transformation" class="htmlArea"></textarea></div>
+
+                <div class="col s9 offset-s3">
+                    <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
+                    <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
                 </div>
-                <div id="{{control}}_palette" style="height:300px; margin-top:10px;" class="diagram"></div>
             </div>
         </div>
-    </div>-->
+    </div>
     <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px 7px;">
         <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
         <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
@@ -57,11 +29,6 @@
             <i class="fa fa-gear"></i> Diagram Controls
         </div>
         <div style="width: 100%;height:120px" id="{{control}}_ribbon">
-            <!--<ul>
-                <li>
-                    View
-                </li>
-            </ul>-->
             <div>
                 <!-- div ribbon container -->
                 <div>
@@ -89,9 +56,6 @@
                                 </td>
                                 <td colspan="2" style="padding-left:5px;" class="sourcemapping">
                                     Mappings
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="transformation">
-                                    Transformation
                                 </td>
                             </tr>
                             <tr>
@@ -141,8 +105,8 @@
                                 <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
                                 <td style="padding:5px;vertical-align:top;" class="diagramcommands">
                                     <button id="{{control}}_ribbon_sourcerule_add" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
-                                    <button id="{{control}}_ribbon_sourcemapping" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Mapping Rules</button>
-                                    <button id="{{control}}_ribbon_transformation" style="vertical-align: top;"><i class="fa fa-2x fa-random"></i><br />Transformation Rules</button>
+                                    <button id="{{control}}_ribbon_maprule" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
+                                    <button id="{{control}}_ribbon_multimaprule" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
                                 </td>
 
 
@@ -153,14 +117,9 @@
                                 </td>
                                 <td style="width:1px;border-left:1px solid #ccc;" class="sourcemapping"></td>
                                 <td style="padding:5px;vertical-align:top;" class="sourcemapping">
-                                    <button id="{{control}}_ribbon_sourcemapping_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
-                                    <button id="{{control}}_ribbon_sourcemapping_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
-                                    <button id="{{control}}_ribbon_sourcemapping_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
-                                </td>
-                                <td style="width:1px;border-left:1px solid #ccc;" class="transformation"></td>
-                                <td style="padding:5px;vertical-align:top;" class="transformation">
-                                    <button id="{{control}}_ribbon_transformation_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
-                                    <button id="{{control}}_ribbon_transformation_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
+                                    <button id="{{control}}_ribbon_maprule_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
+                                    <button id="{{control}}_ribbon_maprule_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                    <button id="{{control}}_ribbon_maprule_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -174,16 +133,15 @@
             <tr style="vertical-align:top;height:520px">
                 <td style="vertical-align:top">
                     <div id="{{control}}_popover_lineage_editor" style="display:none">
-                        <!--<header>Add Lineage</header>-->
                         <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
                     </div>
-                    <div id="{{control}}_popover_sourcemapping_editor" style="display:none">
+                    <div id="{{control}}_popover_maprule_editor" style="display:none">
                         <header>Manage Mappings</header>
-                        <div id="{{control}}_popover_sourcemapping_editor_body" data-bind="template: {name: 'sourceMappingEditTmpl' }"></div>
+                        <div id="{{control}}_popover_maprule_editor_body" data-bind="template: {name: 'MapRulesEditTmpl' }"></div>
                     </div>
-                    <div id="{{control}}_popover_transformation_editor" style="display:none">
-                        <header>Business Transformation</header>
-                        <div id="{{control}}_popover_transformation_editor_body" data-bind="template: {name: 'businessTransformationEditTmpl' }"></div>
+                    <div id="{{control}}_popover_multimaprule_editor" style="display:none">
+                        <header>Manage Mappings</header>
+                        <div id="{{control}}_popover_multimaprule_editor_body" data-bind="template: {name: 'MultiMapRulesEditTmpl' }"></div>
                     </div>
                     <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
                         <div id="{{control}}_dgm" style="height:400px; overflow: no-display" class="diagram"></div>

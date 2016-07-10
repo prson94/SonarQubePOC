@@ -155,37 +155,29 @@ ko.bindingHandlers.typeFilteredDropdown = {
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
 
-//ko.bindingHandlers.mappingFusionAttributeFilteredDropdown = {
-//    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+ko.bindingHandlers.mapDropdown = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('change', function (event) {
+            var intersectArray = event.args.item.value.split('|');
+            if (intersectArray.length == 4) {
+                viewModel.SourceIntersectID(intersectArray[0]);
+                viewModel.SourceDiagramKey(intersectArray[1]);
+                viewModel.TargetIntersectID(intersectArray[2]);
+                viewModel.TargetDiagramKey(intersectArray[3]);
+            }
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
 
-//        $(element).on('change', function (event) {
-//            var args = event.args;
-//            var value = args.item.value;
-//            viewModel.SelectedFusionName(value);
-//            //var checkedItems = $(element).jqxDropDownList('getCheckedItems');
-//            //if (checkedItems) {
-//            //    viewModel.CheckObjects.removeAll();
-
-//            //    if (checkedItems.length > 0) {
-//            //        $.each(checkedItems, function (cix, ci) {
-//            //            viewModel.CheckObjects.push(ci.value);
-//            //        });
-//            //    }
-//            //}
-//        });
-//    },
-//    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-//        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
-//        //console.log(value);
-//        //if (value) {
-//        //    alert(value);
-//        //    //var item = $(element).jqxDropDownList('getItemByValue', "Bon app");
-//        //    //if (item) {
-//        //    //    $(element).jqxDropDownList('checkItem', item);
-//        //    //}
-//        //}
-//    }
-//};
+ko.bindingHandlers.mappingRuleItemInput = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('select', function () {
+            viewModel.FusionAttributeID($(element).val().value);
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
 
 var fileBindings = {
     customFileInputSystemOptions: {
@@ -449,6 +441,1485 @@ ko.bindingHandlers.customFileInput = {
         }
     }
 };
+
+//#endregion
+
+//#region Technical Mapping (MapRule)
+
+function MultiMapRulesModel(data, permissions) {
+    var self = this;
+
+    //#region Simple Properties
+
+    self.IsInitialLoading = ko.observable(false);
+
+    self.MapRules = ko.observableArray([]);
+
+    self.IsLoading = ko.observable(false);
+
+    self.NoFusionAvailable = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //#endregion
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.AddRule = function () {
+        var addRuleModel = {
+            Maps: data.Maps
+        };
+        if (self.MapRules().length > 0) {
+            var previousMapRule = self.MapRules()[self.MapRules().length - 1];
+            addRuleModel.SourceIntersectID = previousMapRule.TargetIntersectID();
+            addRuleModel.SourceDiagramKey = previousMapRule.TargetDiagramKey();
+            addRuleModel.Sources = previousMapRule.Targets();
+        }
+        self.MapRules.push(new MultiMapRuleModel(addRuleModel, self, permissions));
+    }
+
+    self.LoadRules = function () {
+        self.IsInitialLoading(true);
+        self.IsLoading(true);
+
+        $.ajax({
+            method: 'post',
+            url: 'form/MapRulesByObject',
+            data: { Items: data.Maps}
+        }).done(function (maprules) {
+            self.MapRules(
+                $.map(maprules, function (item) {
+                    item.Maps = data.Maps;
+                    return new MultiMapRuleModel(item, self, permissions);
+                })
+            );
+        }).always(function () {
+            self.IsLoading(false);
+            self.IsInitialLoading(false);
+        });
+    }
+
+    self.SaveRules = function () {
+
+        var deferred = $.Deferred();
+
+        if (self.IsLoading())
+            return;
+        var modelToSave = {};
+        var rules = [];
+        var error = false;
+
+        self.IsLoading(true);
+        for (var i = 0; i < self.MapRules().length; i++) {
+            var rule = self.MapRules()[i];
+
+            rule.ErrorMessages([]);
+            if (rule.Sources().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 source item.');
+                error = true;
+            }
+            if (rule.Targets().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 target item.');
+                error = true;
+            }
+            if (rule.Transformation() == '') {
+                rule.ErrorMessages.push('Please enter a transformation rule.');
+                error = true;
+            }
+
+            var sources = [];
+            var targets = [];
+            for (var j = 0; j < rule.Sources().length; j++) {
+                var source = rule.Sources()[j];
+
+                source.ErrorMessages([]);
+                if (source.FusionAttributeID() <= 0 || !source.FusionAttributeID()) {
+                    source.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                sources.push({
+                    ID: source.ID(),
+                    FusionAttributeID: source.FusionAttributeID(),
+                    IntersectID: source.IntersectID(),
+                    FusionAttributeTextPath: source.FusionAttributeTextPath()
+                });
+            }
+            for (var j = 0; j < rule.Targets().length; j++) {
+                var target = rule.Targets()[j];
+
+                target.ErrorMessages([]);
+                if (target.FusionAttributeID() <= 0 || !target.FusionAttributeID()) {
+                    target.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                targets.push({
+                    ID: target.ID(),
+                    FusionAttributeID: target.FusionAttributeID(),
+                    IntersectID: target.IntersectID(),
+                    FusionAttributeTextPath: target.FusionAttributeTextPath()
+                });
+            }
+            rules.push({
+                ID: rule.ID(),
+                SourceIntersectID: rule.SourceIntersectID(),
+                SourceDiagramKey: rule.SourceDiagramKey(),
+                TargetIntersectID: rule.TargetIntersectID(),
+                TargetDiagramKey: rule.TargetDiagramKey(),
+                Sources: sources,
+                Targets: targets,
+                Transformation: rule.Transformation()
+            });
+        }
+
+        modelToSave = {
+            Rules: rules
+        };
+
+        var count = modelToSave.Rules.length;
+
+        if (error) {
+            self.IsLoading(false);
+        } else {
+            $.ajax({
+                url: '/form/MapRules_Save',
+                method: 'POST',
+                data: modelToSave
+            }).done(function (saveResultData) {
+                if (saveResultData.error) {
+                    //self.SaveMessage(saveResultData.message);
+                    //self.LoadRules();
+                } else {
+                    //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                    amplify.publish("SaveAction", {
+                        context: 'mappingrule',
+                        count: count
+                    });
+                    self.LoadRules();
+                }
+            }).always(function () {
+                self.IsLoading(false);
+                deferred.resolve();
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    self.LoadRules();
+
+    return self;
+}
+
+function MultiMapRuleModel(defaultData, parent, permissions) {
+    var self = this;
+
+    self.ID = ko.observable(defaultData.ID || 0);
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+    self.Transformation = ko.observable(defaultData.Transformation || '');
+
+    self.MapSelectedIndex = ko.observable(-1);
+
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.Maps = ko.observableArray(
+        $.map(defaultData.Maps, function (item) { return new MapSelectionModel(item); })
+        || []
+    );
+    //self.Maps = ko.computed(function () {
+    //    return parent.Maps;
+    //}, self);
+
+    self.SourceIntersectID = ko.observable(defaultData.SourceIntersectID || 0);
+    self.SourceDiagramKey = ko.observable(defaultData.SourceDiagramKey || '');
+    self.TargetIntersectID = ko.observable(defaultData.TargetIntersectID || 0);
+    self.TargetDiagramKey = ko.observable(defaultData.TargetDiagramKey || '');
+
+    self.HasSourceIntersectID = ko.computed(function () {
+        return (self.SourceIntersectID() > 0);
+    }, self);
+
+    self.HasTargetIntersectID = ko.computed(function () {
+        return (self.TargetIntersectID() > 0);
+    }, self);
+
+    self.IsLoading = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //self.Sources.subscribe(function () {
+    //    if (!parent.IsInitialLoading()) {
+    //        var indexStillValid = false;
+    //        for (var i = 0; i < data.Maps().length; i++) {
+    //            if (data.Maps()[i].ValueText().indexOf(self.SourceIntersectID() + '|') > -1) {
+    //                indexStillValid = true;
+    //            }
+    //        }
+
+    //        if (!indexStillValid) {
+    //            self.Sources([]);
+    //        }
+    //    }
+    //}, self);
+
+    self.SourceIntersectID.subscribe(function () {
+        if (!parent.IsInitialLoading()) {
+            var isDifferentIntersect = false;
+            for (var i = 0; i < self.Sources().length; i++) {
+                if (self.Sources()[i].IntersectID() != self.SourceIntersectID()) {
+                    isDifferentIntersect = true;
+                }
+            }
+
+            if (isDifferentIntersect) {
+                var originalLength = self.Sources().length - 1;
+                for (var i = originalLength; i >= 0; i--) {
+                    if (i > 0) {
+                        self.Sources.remove(self.Sources()[i]);
+                    }
+                    else {
+                        self.Sources()[i].IntersectID(self.SourceIntersectID());
+                        self.Sources()[i].FusionAttributeID(null);
+                        self.Sources()[i].FusionAttributeTextPath(null);
+                    }
+                }
+            }
+        }
+    }, self);
+
+    self.TargetIntersectID.subscribe(function () {
+        if (!parent.IsInitialLoading()) {
+            var isDifferentIntersect = false;
+            for (var i = 0; i < self.Targets().length; i++) {
+                if (self.Targets()[i].IntersectID() != self.TargetIntersectID()) {
+                    isDifferentIntersect = true;
+                }
+            }
+
+            if (isDifferentIntersect) {
+                var originalLength = self.Targets().length - 1;
+                for (var i = originalLength; i >= 0; i--) {
+                    if (i > 0) {
+                        self.Targets.remove(self.Targets()[i]);
+                    }
+                    else {
+                        self.Targets()[i].IntersectID(self.TargetIntersectID());
+                        self.Targets()[i].FusionAttributeID(null);
+                        self.Targets()[i].FusionAttributeTextPath(null);
+                    }
+                }
+            }
+        }
+    }, self);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadItems = function () {
+        self.IsLoading(true);
+
+        if (defaultData != null && !$.isEmptyObject(defaultData)) {
+            if (defaultData.Sources != null)
+                for (var i = 0; i < defaultData.Sources.length; i++) {
+                    self.Sources.push(new MapRuleItemModel(defaultData.Sources[i], self, true));
+                }
+            else
+                self.Sources.push(new MapRuleItemModel({
+                    IntersectID: self.SourceIntersectID()
+                }, self, true));
+
+            if (defaultData.Targets != null)
+                for (var i = 0; i < defaultData.Targets.length; i++) {
+                    self.Targets.push(new MapRuleItemModel(defaultData.Targets[i], self, false));
+                }
+            else
+                self.Targets.push(new MapRuleItemModel({
+                    IntersectID: self.TargetIntersectID()
+                }, self, false));
+
+
+            for (var i = 0; i < self.Maps().length; i++) {
+                if (self.Maps()[i].ValueText() == self.SourceIntersectID() + '|' + self.SourceDiagramKey() + '|' + self.TargetIntersectID() + '|' + self.TargetDiagramKey()) {
+                    self.MapSelectedIndex(i);
+                }
+            }
+
+            // Must have two lines below as the two values are reset with selectedIndex logic above, due to a timing issue.
+            self.SourceIntersectID(defaultData.SourceIntersectID);
+            self.TargetIntersectID(defaultData.TargetIntersectID);
+        }
+
+        self.IsLoading(false);
+    }
+    
+    self.AddSource = function () {
+        self.Sources.push(new MapRuleItemModel({
+            IntersectID: self.SourceIntersectID()
+        }, self, true));
+    }
+
+    self.AddTarget = function () {
+        self.Targets.push(new MapRuleItemModel({
+            IntersectID: self.TargetIntersectID()
+        }, self, false));
+    }
+
+    self.RemoveRule = function () {
+        parent.MapRules.remove(self);
+    }
+
+    self.LoadItems();
+
+    return self;
+}
+
+function MapRulesModel(data, permissions) {
+    var self = this;
+
+    //#region Simple Properties
+
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceIntersectID = ko.observable(data.SourceIntersectID);
+    self.SourceDiagramKey = ko.observable(data.SourceDiagramKey || '');
+
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetIntersectID = ko.observable(data.TargetIntersectID);
+    self.TargetDiagramKey = ko.observable(data.TargetDiagramKey || '');
+
+    self.IsInitialLoading = ko.observable(false);
+
+    self.MapRules = ko.observableArray([]);
+    
+    self.IsLoading = ko.observable(false);
+
+    self.NoFusionAvailable = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //#endregion
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadRules = function () {
+        self.IsInitialLoading(true);
+        self.IsLoading(true);
+        $.ajax({
+            method: 'post',
+            url: 'form/MapRulesByMap',
+            data: {
+                SourceIntersectID: self.SourceIntersectID(),
+                SourceDiagramKey: self.SourceDiagramKey(),
+                TargetIntersectID: self.TargetIntersectID(),
+                TargetDiagramKey: self.TargetDiagramKey()
+            }
+        }).done(function (maprules) {
+
+            self.MapRules([]);
+
+            if (maprules.length == 0) {
+                self.NoFusionAvailable(true);
+            }
+            else {
+                for (var i = 0; i < maprules.length; i++) {
+                    maprules[i].SourceIntersectID = self.SourceIntersectID();
+                    maprules[i].TargetIntersectID = self.TargetIntersectID();
+                    self.MapRules.push(new MapRuleModel(maprules[i], self, permissions));
+                }
+            }
+
+        }).always(function () {
+            self.IsLoading(false);
+            self.IsInitialLoading(false);
+        });
+    }
+
+    self.AddRule = function () {
+        var sourceRuleData = {
+            SourceIntersectID: self.SourceIntersectID(),
+            SourceDiagramKey: self.SourceDiagramKey(),
+            TargetIntersectID: self.TargetIntersectID(),
+            TargetDiagramKey: self.TargetDiagramKey()
+        };
+        self.MapRules.push(new MapRuleModel(sourceRuleData, self, permissions));
+    }
+
+    self.SaveRules = function () {
+
+        var deferred = $.Deferred();
+
+        if (self.IsLoading())
+            return;
+        var modelToSave = {};
+        var rules = [];
+        var error = false;
+
+        self.IsLoading(true);
+        for (var i = 0; i < self.MapRules().length; i++) {
+            var rule = self.MapRules()[i];
+
+            rule.ErrorMessages([]);
+            if (rule.Sources().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 source item.');
+                error = true;
+            }
+            if (rule.Targets().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 target item.');
+                error = true;
+            }
+            if (rule.Transformation() == '') {
+                rule.ErrorMessages.push('Please enter a transformation rule.');
+                error = true;
+            }
+
+            var sources = [];
+            var targets = [];
+            for (var j = 0; j < rule.Sources().length; j++) {
+                var source = rule.Sources()[j];
+
+                source.ErrorMessages([]);
+                if (source.FusionAttributeID() <= 0 || !source.FusionAttributeID()) {
+                    source.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                sources.push({
+                    ID: source.ID(),
+                    FusionAttributeID: source.FusionAttributeID(),
+                    IntersectID: source.IntersectID(),
+                    FusionAttributeTextPath: source.FusionAttributeTextPath()
+                });
+            }
+            for (var j = 0; j < rule.Targets().length; j++) {
+                var target = rule.Targets()[j];
+
+                target.ErrorMessages([]);
+                if (target.FusionAttributeID() <= 0 || !target.FusionAttributeID()) {
+                    target.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                targets.push({
+                    ID: target.ID(),
+                    FusionAttributeID: target.FusionAttributeID(),
+                    IntersectID: target.IntersectID(),
+                    FusionAttributeTextPath: target.FusionAttributeTextPath()
+                });
+            }
+            rules.push({
+                ID: rule.ID(),
+                SourceIntersectID: self.SourceIntersectID(),
+                SourceDiagramKey: self.SourceDiagramKey(),
+                TargetIntersectID: self.TargetIntersectID(),
+                TargetDiagramKey: self.TargetDiagramKey(),
+                Sources: sources,
+                Targets: targets,
+                Transformation: rule.Transformation()
+            });
+        }
+
+        modelToSave = {
+            Rules: rules
+        };
+
+        var count = modelToSave.Rules.length;
+
+        if (error) {
+            self.IsLoading(false);
+        } else {
+            $.ajax({
+                url: '/form/MapRules_Save',
+                method: 'POST',
+                data: modelToSave
+            }).done(function (saveResultData) {
+                if (saveResultData == null || saveResultData.error == null || saveResultData.error == true) {
+                    //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
+                    self.LoadRules();
+                } else {
+                    //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                    amplify.publish("SaveAction", {
+                        context: 'mappingrule',
+                        count: count,
+                        fromIntersectId: self.SourceIntersectID(),
+                        toIntersectId: self.TargetIntersectID()
+                    });
+                    self.LoadRules();
+                }
+            }).always(function () {
+                self.IsLoading(false);
+                deferred.resolve();
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    self.LoadRules();
+
+    return self;
+}
+
+function MapRuleModel(defaultData, parent, permissions) {
+    var self = this;
+
+    self.ID = ko.observable(defaultData.ID || 0);
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+    self.Transformation = ko.observable(defaultData.Transformation || '');
+
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.SourceIntersectID = ko.observable(defaultData.SourceIntersectID || 0);
+    self.SourceDiagramKey = ko.observable(defaultData.SourceDiagramKey || '');
+    self.TargetIntersectID = ko.observable(defaultData.TargetIntersectID || 0);
+    self.TargetDiagramKey = ko.observable(defaultData.TargetDiagramKey || '');
+
+    self.IsLoading = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadItems = function () {
+        self.IsLoading(true);
+
+        if (defaultData != null && !$.isEmptyObject(defaultData)) {
+            if (defaultData.Sources != null)
+                for (var i = 0; i < defaultData.Sources.length; i++) {
+                    self.Sources.push(new MapRuleItemModel(defaultData.Sources[i], self, true));
+                }
+            else
+                self.Sources.push(new MapRuleItemModel({
+                    IntersectID: self.SourceIntersectID()
+                }, self, true));
+
+            if (defaultData.Targets != null)
+                for (var i = 0; i < defaultData.Targets.length; i++) {
+                    self.Targets.push(new MapRuleItemModel(defaultData.Targets[i], self, false));
+                }
+            else
+                self.Targets.push(new MapRuleItemModel({
+                    IntersectID: self.TargetIntersectID()
+                }, self, false));
+        }
+
+        self.IsLoading(false);
+    }
+
+    self.AddSource = function () {
+        self.Sources.push(new MapRuleItemModel({
+            IntersectID: self.SourceIntersectID()
+        }, self, true));
+    }
+
+    self.AddTarget = function () {
+        self.Targets.push(new MapRuleItemModel({
+            IntersectID: self.TargetIntersectID()
+        }, self, false));
+    }
+
+    self.RemoveRule = function () {
+        parent.MapRules.remove(self);
+    }
+
+    self.LoadItems();
+
+    return self;
+}
+
+function MapRuleItemModel(data, parent, isSource) {
+    var self = this;
+    self.ID = ko.observable(data.ID || -1);
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.IntersectID = ko.observable(data.IntersectID);
+    self.FusionAttributeTextPath = ko.observable(data.FusionAttributeTextPath || null);
+    self.FusionAttributeID = ko.observable(data.FusionAttributeID || null);
+
+    self.RemoveItem = function () {
+        if (isSource) {
+            if (parent.Sources().length == 1)
+                return;
+            parent.Sources.remove(self);
+        }
+        else {
+            if (parent.Targets().length == 1)
+                return;
+            parent.Targets.remove(self);
+        }
+    }
+
+    self.FindTextPaths = function (query, response) {
+        if (query !== "") {
+            var dataAdapter = new $.jqx.dataAdapter
+            (
+                {
+                    datatype: "json",
+                    datafields:
+                    [
+                        { name: 'Fusion' },
+                        { name: 'FusionAttributeType' },
+                        { name: 'TextPath' },
+                        { name: 'ID' }
+                    ],
+                    url: "/form/MapRule_FindFusion",
+                    data:
+                    {
+                        intersectID: self.IntersectID()
+                    }
+                },
+                {
+                    autoBind: true,
+                    formatData: function (data) {
+                        data.phrase = query;
+                        return data;
+                    },
+                    loadComplete: function (data) {
+                        if (data.length > 0) {
+                            response($.map(data, function (item) {
+                                return {
+                                    label: item.Fusion + '.' + item.FusionAttributeType + '.' + item.TextPath,
+                                    value: item.ID
+                                }
+                            }));
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    return self;
+}
+
+function MapSelectionModel(data) {
+    var self = this;
+
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceIntersectID = ko.observable(data.SourceIntersectID);
+    self.SourceDiagramKey = ko.observable(data.SourceDiagramKey);
+
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetIntersectID = ko.observable(data.TargetIntersectID);
+    self.TargetDiagramKey = ko.observable(data.TargetDiagramKey);
+
+    self.DisplayText = ko.computed(function () {
+        return self.SourceName() + ' -&gt; ' + self.TargetName();
+    }, self);
+
+    self.ValueText = ko.computed(function () {
+        return self.SourceIntersectID() + '|' + self.SourceDiagramKey() + '|' + self.TargetIntersectID() + '|' + self.TargetDiagramKey();
+    }, self);
+
+    return self;
+}
+
+//#endregion
+
+//#region Business Mapping (Map)
+
+function LineagePanelViewModel(data, permissions) {
+    var self = this;
+    self.jqxLoaded = false;
+
+    //#region Observables
+
+    self.InProgress = ko.observable(false);
+    self.IsSaving = ko.observable(false);
+
+    self.Items = ko.observableArray();
+
+    self.IntersectType = ko.observable();
+    self.IntersectTypeOptions = ko.observableArray();
+
+    //if (permissions != null) {
+    //    if (permissions.HasPermission("Relationship", "Create"))
+    //        self.CanAdd(true);
+    //    if (permissions.HasPermission("Relationship", "Update"))
+    //        self.CanUpdate(true);
+    //}
+
+    //#endregion
+
+    //#region Functions
+
+    self.AddItem = function () {
+        if (self.IntersectType() > 0) {
+            var data = {
+                IntersectType: self.IntersectType()
+            }
+            self.Items.push(new LineagePanelViewItemModel(data, permissions));
+        }
+    }
+
+    self.LoadIntersectTypes = function () {
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypes',
+            method: 'GET'
+        }).done(function (data) {
+            self.IntersectTypeOptions(data);
+        }).always(function () {
+            self.InProgress(false);
+            //if (!self.jqxLoaded)
+            //    self.ApplyJqxBindings();
+            //self.AfterLoad();
+        });
+    }
+
+    self.RemoveItem = function () {
+        self.Items.remove(this);
+    }
+
+    self.Save = function () {
+        if (self.Items().length > 0) {
+            var deferred = $.Deferred();
+
+            self.IsSaving(true);
+
+            var items = [];
+
+            for (var i = 0; i < self.Items().length; i++) {
+                var item = self.Items()[i];
+
+                var subject = item.Subject().split('|')
+                var object = item.Object().split('|')
+
+                items.push({
+                    Position: i,
+                    IntersectTypeID: item.IntersectType(),
+                    Subject: subject[0],
+                    SubjectID: subject[1],
+                    Object: object[0],
+                    ObjectID: object[1]
+                });
+            }
+
+            var successfulItems = [];
+
+            if (items.length > 0) {
+                $.ajax({
+                    url: '/form/Lineage_AddItemsToDiagram',
+                    method: 'POST',
+                    data: { Items: items}
+                }).done(function (returnedItems) {
+                    if (returnedItems == null) {
+                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
+                    } else {
+                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
+                            if (returnedItem.ErrorMessage) {
+
+                            }
+                            else {
+                                var model = self.Items()[returnedItem.Position];
+                                model.Intersect(returnedItem.IntersectID);
+                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
+                                returnedItem.Name = model.SubjectName();
+                                successfulItems.push(returnedItem);
+                            }
+                        });
+
+                    }
+                }).always(function () {
+                    self.IsSaving(false);
+                    deferred.resolve(successfulItems);
+                });
+            }
+
+            return deferred.promise();
+        }
+    }
+
+    //self.OnCellValueChange = function () {
+    //    if (self.IsLoadingContexts() == true)
+    //        return;
+    //    if (self.IsItemSelected()) {
+    //        var checkedCtx = [];
+    //        self.SelectedRule().SelectedItem().Contexts([]);
+    //        for (var i = 0; i < self.Contexts().length; i++) {
+    //            if (self.Contexts()[i].Checked == true) {
+    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
+    //            }
+    //        }
+    //    }
+    //}
+
+    //self.ApplyJqxBindings = function () {
+    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+    //    //    self.OnCellValueChange();
+    //    //}).on('bindingcomplete', function () {
+    //    //    //jqx grid is not editable after bind without this
+    //    //    $(this).jqxGrid('refresh');
+    //    //});
+    //    self.jqxLoaded = true;
+    //}
+
+    //self.AfterLoad = function () {
+    //    if (self.SourceRules().length >= 1) {
+    //        self.SelectRule(self.SourceRules()[0]);
+    //        self.SelectedRuleIndex(0);
+    //        self.HasSourcesOrRules(true);
+    //    } else {
+    //        self.HasSourcesOrRules(true);
+    //    }
+    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+    //        self.HasSourcesOrRules(false);
+    //    }
+    //}
+
+    //#endregion
+
+    self.LoadIntersectTypes();
+
+    return self;
+}
+
+function LineagePanelViewItemModel(data, permissions) {
+    var self = this;
+
+    //#region Observables
+
+    self.IntersectType = ko.observable(data.IntersectType);
+    self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
+    
+    self.Subject = ko.observable();
+    self.SubjectName = ko.observable();
+    self.SubjectsLoading = ko.observable(true);
+    self.SubjectOptions = ko.observableArray();
+
+    self.Object = ko.observable();
+    self.ObjectName = ko.observable();
+    self.ObjectsLoading = ko.observable(true);
+    self.ObjectOptions = ko.observableArray();
+
+    //#endregion
+
+    //#region Functions
+
+    self.LoadSubjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.SubjectOptions(data);
+        }).always(function () {
+            self.SubjectsLoading(false);
+        });
+    }
+
+    self.LoadObjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapObjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.ObjectOptions(data);
+        }).always(function () {
+            self.ObjectsLoading(false);
+        });;
+    };
+
+    //#endregion
+
+    self.LoadSubjects();
+    self.LoadObjects();
+
+    return self;
+}
+
+//#endregion
+
+//#region Source Hierarchy Models
+
+function HierarchyRuleContextModel(data, parent) {
+    var self = this;
+    data = data || {};
+
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+
+    if (data.ID != null && data.ID.indexOf('|') > -1) {
+        var obj = data.ID.split('|')[0];
+        var objid = data.ID.split('|')[1];
+        self.Object(obj);
+        self.ObjectID(objid);
+
+    }
+
+    self.ID = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+    self.Checked = ko.observable(data.Checked || false);
+
+    //self.Checked.subscribe(function () {
+    //    console.log('checked sub');
+    //    console.log(ko.toJS(parent));
+    //    console.log(self.Checked());
+    //    if (parent != null && parent.IsItemSelected() == true) {
+    //        if (self.Checked() == true)
+    //            parent.SelectedRule().SelectedItem().Contexts.push(this);
+    //        else
+    //            parent.SelectedRule().SelectedItem().Contexts.remove(this);
+    //    }
+    //});
+
+    self.Category = ko.observable(data.Category || '');
+    self.Type = ko.observable(data.Type || '');
+    self.Name = ko.observable(data.Name || '');
+    
+    return self;
+}
+
+function HierarchyRuleItemModel(data) {
+    var self = this;
+    data = data || {};
+
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
+    self.Name = ko.observable(data.Name || "");
+    self.TypeName = ko.observable(data.TypeName || "");
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || "");
+    self.SortOrder = ko.observable(data.SortOrder || 1);
+    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
+    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
+
+    self.Contexts = ko.observableArray([]);
+
+    self.RuleName = ko.computed(function () {
+        return self.SortOrder() + '. ' + self.Name();
+    });
+    self.ContextCount = ko.computed(function () {
+        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
+    });
+
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+
+    //#endregion
+
+    //load Contexts
+    if (data.Contexts) {
+        $.each(data.Contexts, function (cxIx, cxItem) {
+            cxItem.Checked = true;
+            self.Contexts.push(
+                    new HierarchyRuleContextModel(cxItem, self)
+                );
+        });
+    }
+
+    return self;
+}
+
+function HierarchySourceRuleModel(data, permissions) {
+    var self = this;
+
+    if (data == null) {
+        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
+    }
+    
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable(data.Name || '');
+    self.Target = ko.observable(data.AppliesToObject || '');
+    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || '');
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
+    self.ErrorMessages = ko.observableArray([]);
+    self.SaveMessage = ko.observable('');
+
+    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
+    self.IsTemplate = ko.observable(data.IsTemplate || false);
+    self.IsSaving = ko.observable(false);
+
+    self.Items = ko.observableArray();
+
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+    //#endregion
+    
+    //load Items
+    if (data.Items) {
+        for (var i = 0; i < data.Items.length; i++) {
+            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
+        }
+    }
+
+    //#region Functions
+
+    self.SaveRule = function () {
+        if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
+            return;
+        if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
+            return;
+        self.IsSaving(true);
+        self.ErrorMessages([]);
+        if (self.Items().length < 1)
+            self.ErrorMessages.push('Source rule must have at least 1 source item.');
+        if (self.Name().length < 1)
+            self.ErrorMessages.push('Source rule requires a name.');
+
+        //for (var i = 0; i < self.Items().length; i++) {
+        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
+        //    }
+        //}
+
+        if (self.ErrorMessages().length > 0) {
+            self.IsSaving(false);
+            return;
+        }
+
+        var SourceRule = {
+            ID: self.ID(),
+            Name: self.Name(),
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID(),
+            AppliesToObjectList: "",
+            Items: ko.toJS(self.Items())
+        }
+
+        var action = (self.ID() > 0) ? 'edit' : 'add';
+
+        $.ajax({
+            url: '/form/SourceRules/save',
+            data: SourceRule,
+            method: 'POST'
+        }).always(function (data) {
+            self.IsSaving(false);
+            if (!data.error) {
+                self.ID(data.message);
+                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
+            } else {
+                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
+                console.log(data.message);
+            }        
+        });
+    }
+
+    //#endregion
+
+    return self;
+}
+
+function HierarchyPanelViewModel(data, permissions) {
+    var self = this;
+    self.jqxLoaded = false;
+    //#region Observables
+    //console.log(permissions);
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable('');
+    self.Target = ko.observable(data.target || '');
+    self.TargetID = ko.observable(data.targetID || 0);
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
+    self.NewRule().Name('New Rule');
+    self.NewRule().Object(self.Object());
+    self.NewRule().ObjectID(self.ObjectID());
+    self.NewRule().Target(self.Target());
+    self.NewRule().TargetID(self.TargetID());
+    self.InProgress = ko.observable(false);
+    self.IsGridLoading = ko.observable(false);
+    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
+    self.Mode = ko.observable('add'); 
+
+    self.Contexts = ko.observableArray([]);
+    self.Items = ko.observableArray();
+    self.Sources = ko.observableArray();
+    self.SourceRules = ko.observableArray();
+
+    self.DeleteMessage = ko.observable('');
+    self.IsDeleting = ko.observable(false);
+
+    self.SelectedItemIndex = ko.observable(-1);
+    self.SelectedSourceIndex = ko.observable(-1);
+    self.SelectedRuleIndex = ko.observable(-1);
+   // self.RadioAddChecked = ko.observable(true);
+    //self.RadioEditChecked = ko.observable(false);
+    self.IsLoadingContexts = ko.observable(false);
+    self.HasSourcesOrRules = ko.observable(true);
+
+    self.CanAdd = ko.observable(false);
+    self.CanUpdate = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+
+    }
+
+
+    self.DeleteSourceRule = function () {
+        self.Mode('delete');
+        //console.log('mode delete');
+    }
+
+    self.DeleteConfirm = function () {
+        self.IsDeleting(true);
+        $.ajax({
+            url: '/form/SourceRules/delete?id=' + self.SelectedRule().ID(),
+            method: 'delete'
+        }).done(function (data) {
+            if (!data.error) {
+
+                for (var i = 0; i < self.SelectedRule().Items().length; i++) {
+                    self.Sources.push(self.SelectedRule().Items()[i]);
+                }
+
+                self.SelectedRule().Items.removeAll(self.SelectedRule().Items());
+
+                //self.SelectedItemIndex(-1);
+                self.SourceRules.remove(self.SelectedRule());
+                self.AfterLoad();
+                amplify.publish("SaveAction", { context: 'sourcerule', action: 'delete', object: self.Object(), objectid: self.ObjectID(), count: self.SourceRules().length });
+                self.Mode('add');
+            } else {
+                self.DeleteMessage('An error occurred while attempting to delete the source rule.');
+                console.log(data.message);
+            }
+            
+        }).always(function() {
+            self.IsDeleting(false);
+        });
+
+        //console.log('delete confirm');
+    }
+
+    self.DeleteCancel = function () {
+        self.Mode('add');
+    }
+
+    self.AddSourceRule = function () {
+        var data = {
+            ID: 0,
+            Name: 'New Rule',
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID()
+        }
+
+        var newRule = new HierarchySourceRuleModel(data, permissions);
+
+        self.SelectedRule(newRule);
+        self.SourceRules.push(newRule);
+        self.SelectedRuleIndex(self.SourceRules().length - 1);
+    }
+
+
+    self.SelectedItemIndex.subscribe(function () {
+        if (self.SelectedItemIndex() == -1) {
+            self.IsLoadingContexts(true);
+            return;
+        }
+        self.IsLoadingContexts(false);
+        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        if (self.IsItemSelected())
+            self.CheckUsedContextItems();
+    });
+
+    self.SelectedRuleIndex.subscribe(function () {
+        var rule = self.SourceRules()[self.SelectedRuleIndex()];
+        self.SelectedRule(rule);
+        //self.SelectedItemIndex(-1);
+        self.CheckUsedContextItems();
+    });
+
+    self.IsItemSelected = ko.computed(function () {
+        if (self.SelectedRule() == null)
+            return false;
+        if (self.SelectedRule().SelectedItem() == null)
+            return false;
+        return true;
+    });
+
+    //#endregion
+ 
+    //#region Functions
+
+    self.LoadRules = function () {
+        //console.log('load rules');
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data == [] || data == null || data.length < 1)
+                return;
+            self.SourceRules([]);
+            for (var i = 0; i < data.length; i++) {
+                data[i].SourceRuleID = self.ID();
+                var rule = new HierarchySourceRuleModel(data[i], permissions);
+                self.SourceRules.push(rule);
+                for (var j = 0; j < data[i].Items.length; j++) {
+                    for (var k = 0; k < self.Sources().length; k++) {
+                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
+                            self.Sources.remove(self.Sources()[k]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }).always(function () {
+            //self.SelectRule(self.NewRule());
+            self.InProgress(false);
+            if (!self.jqxLoaded)
+                self.ApplyJqxBindings();
+            self.AfterLoad();
+        });
+    }
+
+    self.LoadSources = function () {
+      //  console.log('load sources');
+        self.InProgress(true);
+
+        $.ajax({
+            url: '/form/SourceRules/sources/' + self.Object() + '/' + self.ObjectID() + '/' + self.Target() + '/' + self.TargetID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data.Contexts)
+                $.each(data.Contexts, function (cxIx, cxItem) {
+                    self.Contexts.push(
+                            new HierarchyRuleContextModel(cxItem, self)
+                        );
+                });
+            $.each(data, function (roIx, roItem) {
+                self.Sources.push(
+                        new HierarchyRuleItemModel(roItem)
+                    );
+            });
+
+        }).always(function () {
+            self.InProgress(false);
+            self.LoadContexts();
+            self.LoadRules();
+        });
+    }
+
+    self.LoadSources();
+
+    self.LoadContexts = function () {
+       // console.log('load contexts');
+        $.ajax({
+            url: '/form/SourceRules/contexts',
+            method: 'GET'
+        }).done(function (data) {
+            if (data == null)
+                return;
+            if (data.count == null || data.items == null)
+                return;
+            if (data.items.length < 1)
+                return;
+            self.Contexts([]);
+            self.Contexts(data.items);
+        });
+    };
+
+    self.AddRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedSourceIndex() == -1)
+            return;
+        self.SelectedRule().Items.push(self.Sources()[self.SelectedSourceIndex()]);
+        self.Sources.remove(self.Sources()[self.SelectedSourceIndex()]);
+        self.SelectedSourceIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    };
+
+    self.RemoveRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1)
+            return;
+        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
+        self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedItemIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    }
+
+    self.MoveRuleItemUp = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() < 1)
+            return;
+        var itemAbove = self.SelectedRule().Items()[self.SelectedItemIndex() - 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemAbove;
+        self.SelectedRule().Items()[self.SelectedItemIndex() - 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() - 1);
+
+    }
+
+    self.MoveRuleItemDown = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1 || self.SelectedItemIndex() == self.SelectedRule().Items().length - 1)
+            return;
+        var itemBelow = self.SelectedRule().Items()[self.SelectedItemIndex() + 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemBelow;
+        self.SelectedRule().Items()[self.SelectedItemIndex() + 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() + 1);
+    }
+
+    self.OnCellValueChange = function () {
+        if (self.IsLoadingContexts() == true)
+            return;
+        if (self.IsItemSelected()) {
+            var checkedCtx = [];
+            self.SelectedRule().SelectedItem().Contexts([]);
+            for (var i = 0; i < self.Contexts().length; i++) {
+                if (self.Contexts()[i].Checked == true) {
+                    var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+                    self.SelectedRule().SelectedItem().Contexts.push(obj);
+                }
+            }
+        }
+    }
+
+    self.ApplyJqxBindings = function () {
+       // console.log('jqx bindings start');
+        $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+            self.OnCellValueChange();
+        }).on('bindingcomplete', function () {
+            //jqx grid is not editable after bind without this
+            $(this).jqxGrid('refresh');
+        });
+        self.jqxLoaded = true;
+       // console.log('jqx bindings end');
+    }
+
+    self.FindItemByOrder = function (order, array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].SortOrder() == order)
+                return array[i];
+        }
+    }
+
+    self.ReorderItems = function (array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i].SortOrder(i + 1);
+        }
+    }
+
+    self.CheckUsedContextItems = function () {
+
+        var isItemSelected = self.IsItemSelected();
+        self.IsGridLoading(true);
+        for (var i = 0; i < self.Contexts().length; i++) {
+            var c = self.Contexts()[i];
+            c.Checked = false;
+            if (!isItemSelected)
+                continue;
+            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
+                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
+                if (rc.ID() == c.ID) {
+                    c.Checked = true;
+                }
+            }
+        }
+        self.IsLoadingContexts(false);
+        self.IsGridLoading(false);
+    }
+
+    self.SelectRule = function (selectedRule) {
+        self.SelectedRule(selectedRule);
+    }
+
+    self.SelectItem = function (selectedItem) {
+        self.SelectedRule().SelectedItem(selectedItem);
+        self.CheckUsedContextItems();
+    }
+
+    self.AfterLoad = function () {
+        if (self.SourceRules().length >= 1) {
+            self.SelectRule(self.SourceRules()[0]);
+            
+            self.SelectedRuleIndex(0);
+            self.HasSourcesOrRules(true);
+        } else {
+            self.HasSourcesOrRules(true);
+        }
+        if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+            self.HasSourcesOrRules(false);
+        }
+    }
+
+    //#endregion
+
+    return self;
+}
 
 //#endregion
 
@@ -1057,7 +2528,6 @@ function CommentItem(data, parent) {//, hub) {
 
 }
 
-
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
     var self = this;
     self.ParentID = ko.observable(parentID);
@@ -1311,1229 +2781,6 @@ function CompanySettingsViewModel(data) {
 
     return self;
 }
-
-
-function BusinessTransformationRuleModel(data, permissions) {
-    var self = this;
-    self.IsLoading = ko.observable(false);
-    self.ID = ko.observable(data.ID || 0);
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.SourceName = ko.observable(data.SourceName);
-    self.SourceTypeName = ko.observable(data.SourceTypeName);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.TargetName = ko.observable(data.TargetName);
-    self.TargetTypeName = ko.observable(data.TargetTypeName);
-    self.Transformation = ko.observable(data.Transformation);
-
-    self.Load = function () {
-        self.IsLoading(true);
-        $.ajax({
-            url: 'form/transformation/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
-        }).done(function (data) {
-            if (data == null || data.rule == null)
-                return;
-            self.ID(data.rule.ID);
-            self.Transformation(data.rule.Transformation);
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.Load();
-
-    self.Save = function () {
-        self.IsLoading(true);
-        var deferred = $.Deferred();
-
-        var data = {
-            ID: self.ID(),
-            FocalObject: self.Object(),
-            FocalObjectID: self.ObjectID(),
-            SourceObject: self.Source(),
-            SourceObjectID: self.SourceID(),
-            TargetObject: self.Target(),
-            TargetObjectID: self.TargetID(),
-            Transformation: self.Transformation()
-        };
-
-
-        $.ajax({
-            url: 'form/transformation/save',
-            data: data,
-            method: 'POST'
-        }).done(function (data) {
-            if (data && data.error == false) {
-                if (self.Transformation() == null || self.Transformation().match(/^\s*$/) != null)
-                    count = 0;
-                else
-                    count = 1;
-                amplify.publish("SaveAction", { context: 'transformationrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
-            }
-        }).always(function () {
-            self.IsLoading(false);
-            deferred.resolve();
-        });
-
-        return deferred.promise();
-    }
-    
-}
-
-
-function SourceToTargetMappingModel(data, permissions) {
-    var self = this;
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.SourceName = ko.observable(data.SourceName);
-    self.SourceTypeName = ko.observable(data.SourceTypeName);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.TargetName = ko.observable(data.TargetName);
-    self.TargetTypeName = ko.observable(data.TargetTypeName);
-    self.SourceRules = ko.observableArray([]);
-    
-    self.IsLoading = ko.observable(false);
-    self.SaveMessage = ko.observable('');
-
-    self.NoFusionAvailable = ko.observable(false);
-
-    self.CanUpdate = ko.observable(false);
-    self.CanDelete = ko.observable(false);
-    self.CanAdd = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-        if (permissions.HasPermission("Relationship", "Delete"))
-            self.CanDelete(true);
-    }
-
-    self.LoadRules = function () {
-        self.IsLoading(true);
-        $.ajax({
-            url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
-        }).done(function (data) {
-
-            self.SourceRules([]);
-
-            if (data == null) {
-                data = {
-                    items: [],
-                    sourceCount: 0,
-                    targetCount: 0
-                };
-            }
-
-            if (data.items.length == 0) {
-                data.Object = self.ObjectID();
-                data.ObjectID = self.ObjectID();
-                data.Source = self.Source();
-                data.SourceID = self.SourceID();
-                data.Target = self.Target();
-                data.TargetID = self.TargetID();
-
-                if (data.sourceCount == 0 || data.targetCount == 0) {
-                    self.NoFusionAvailable(true);
-                    amplify.publish("NoFusionAvailable");
-                }
-            }
-            else {
-                data = data.items;
-
-                for (var i = 0; i < data.length; i++) {
-                    data[i].Object = data[i].FocalObject;
-                    data[i].ObjectID = data[i].FocalObjectID;
-                    data[i].Source = data[i].SourceObject;
-                    data[i].SourceID = data[i].SourceObjectID;
-                    data[i].Target = data[i].TargetObject;
-                    data[i].TargetID = data[i].TargetObjectID;
-
-                    self.SourceRules.push(new SourceToTargetMappingItem(data[i], self, permissions));
-                }
-            }
-
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.LoadRules();
-
-    self.AddSourceRule = function () {
-        data.Sequence = self.SourceRules().length + 1;
-        self.SourceRules.push(new SourceToTargetMappingItem(data, self, permissions));
-    }
-
-    self.SaveRules = function () {
-
-        var deferred = $.Deferred();
-
-        if (self.IsLoading())
-            return;
-        var data = {};
-        var rules = [];
-        var error = false;
-        self.SaveMessage('');
-
-        self.IsLoading(true);
-        for (var i = 0; i < self.SourceRules().length; i++) {
-            var rule = self.SourceRules()[i];
-
-            rule.ErrorMessages([]);
-            if (rule.Sources().length == 0) {
-                rule.ErrorMessages.push('You must add at least 1 source item.');
-                error = true;
-            }
-            if (rule.Targets().length == 0) {
-                rule.ErrorMessages.push('You must add at least 1 target item.');
-                error = true;
-            }
-            if (rule.Transformation() == '') {
-                rule.ErrorMessages.push('Please enter a transformation rule.');
-                error = true;
-            }
-
-            var sources = [];
-            var targets = [];
-            for (var j = 0; j < rule.Sources().length; j++) {
-                var source = rule.Sources()[j];
-
-                source.ErrorMessages([]);
-                if (source.SelectedFusionIndex() == -1) {
-                    source.ErrorMessages.push('Please select an attribute.');
-                    error = true;
-                }
-                if (error)
-                    continue;
-
-                sources.push({
-                    FusionID: source.FusionItems()[source.SelectedFusionIndex()].id
-                });
-            }
-            for (var j = 0; j < rule.Targets().length; j++) {
-                var target = rule.Targets()[j];
-
-                target.ErrorMessages([]);
-                if (target.SelectedFusionIndex() == -1) {
-                    target.ErrorMessages.push('Please select an attribute.');
-                    error = true;
-                }
-                if (error)
-                    continue;
-
-                targets.push({
-                    FusionID: target.FusionItems()[target.SelectedFusionIndex()].id
-                });
-            }
-            rules.push({
-                ID: rule.ID(),
-                sources: sources,
-                targets: targets,
-                Transformation: rule.Transformation(),
-                Sequence: rule.Sequence()
-            });
-        }
-
-
-        data = {
-            focalID: self.ObjectID(),
-            focal: self.Object(),
-            sourceID: self.SourceID(),
-            source: self.Source(),
-            targetID: self.TargetID(),
-            target: self.Target(),
-            rules: rules
-        };
-
-        var count = data.rules.length;
-
-        if (error) {
-            self.IsLoading(false);
-        } else {
-            $.ajax({
-                url: '/form/sourcetarget/save',
-                method: 'POST',
-                data: data
-            }).done(function (data) {
-                if (data == null || data.error == null || data.error == true) {
-                    self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
-                    self.LoadRules();
-                } else {
-                    self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
-                    amplify.publish("SaveAction", { context: 'mappingrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
-                    self.LoadRules();
-                }
-            }).always(function () {
-                self.IsLoading(false);
-                deferred.resolve();
-            });
-        }
-
-        return deferred.promise();
-    }
-
-    return self;
-}
-
-function SourceToTargetMappingItem(data, parent, permissions) {
-    var self = this;
-    self.ID = ko.observable(data.ID || 0);
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.Sources = ko.observableArray([]);
-    self.Targets = ko.observableArray([]);
-    self.Transformation = ko.observable(data.Transformation || '');
-    self.Sequence = ko.observable(data.Sequence || 1);
-    self.Keywords = ko.observableArray([]);
-    self.ErrorMessages = ko.observableArray([]);
-
-    self.IsLoading = ko.observable(false);
-
-    self.CanUpdate = ko.observable(false);
-    self.CanDelete = ko.observable(false);
-    self.CanAdd = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-        if (permissions.HasPermission("Relationship", "Delete"))
-            self.CanDelete(true);
-    }
-
-    self.LoadItems = function () {
-        self.IsLoading(true);
-        self.LoadData();
-        self.IsLoading(false);
-    }
-
-    self.LoadData = function () {
-        if (data != null && !$.isEmptyObject(data)) {
-            if (data.Sources != null)
-                for (var i = 0; i < data.Sources.length; i++) {
-                    self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
-                }
-            else
-                self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
-            if (data.Targets != null)
-                for (var i = 0; i < data.Targets.length; i++) {
-                    self.Targets.push(new SourceToTargetMappingSourceItem(data.Targets[i], self, false));
-                }
-            else
-                self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
-        }
-    }
-
-    self.LoadItems();
-    
-    self.AddSource = function () {
-        self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
-    }
-
-    self.AddTarget = function () {
-        self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
-    }
-
-    self.RemoveRule = function () {
-        parent.SourceRules.remove(self);
-    }
-
-    return self;
-}
-
-function SourceToTargetMappingSourceItem(data, parent, isSource) {
-    var self = this;
-    self.Name = ko.observable(data.Name || '');
-    self.ID = ko.observable(data.ID || -1);
-    self.FusionItems = ko.observableArray([]);
-    self.SelectedFusionIndex = ko.observable(-1);
-    self.SelectedFusionName = ko.observable('');
-    self.ErrorMessages = ko.observableArray([]);
-    self.IsLoading = ko.observable(false);
-
-    self.RemoveItem = function () {
-        if (isSource) {
-            if (parent.Sources().length == 1)
-                return;
-            parent.Sources.remove(self);
-        }
-        else {
-            if (parent.Targets().length == 1)
-                return;
-            parent.Targets.remove(self);
-        }
-    }
-
-    self.SearchPhrase = ko.observable('');
-    self.AppliedSearch = ko.computed(self.SearchPhrase).extend({ throttle: 500 });
-
-    self.SearchResults = ko.observableArray([]);
-    self.AppliedSearch.subscribe(function () {
-        if (self.AppliedSearch() == '')
-            return;
-
-        console.log(self.AppliedSearch());
-        self.LoadFusionItems();
-
-    });
-  
-    self.FusionSearch = function (searchString) {
-        self.SearchPhrase(searchString);
-    }
-
-    self.LoadFusionItems = function () {
-        self.IsLoading(true);
-        var obj = (isSource ? parent.Source() : parent.Target());
-        var objid = (isSource ? parent.SourceID() : parent.TargetID());
-
-        $.ajax({
-            url: 'form/sourcetarget/fusion',
-            data : {
-                type: obj,
-                id: objid,
-                phrase: self.AppliedSearch()
-            },
-            async: true
-        }).done(function (data) {
-            self.FusionItems([]);
-            $.each(data, function (i, val) {
-                self.FusionItems.push(val);
-            })
-        }).always(function () {
-            self.IsLoading(false);
-            self.LoadFusionData();
-        });
-    };
-
-
-
-    self.SelectedFusionIndex.subscribe(function () {
-        if (self.SelectedFusionIndex() == -1)
-            return;
-        self.SearchPhrase('');
-        self.SelectedFusionName(self.FusionItems()[self.SelectedFusionIndex()].name);
-        parent.Keywords.remove(self.SelectedFusionName());
-        parent.Keywords.push(self.SelectedFusionName());
-    })
-    
-
-    if (data != null && !$.isEmptyObject(data)) {
-        if (data.FusionID != null) {
-            self.FusionItems.push({ id: data.FusionID, name: data.Name });
-            self.SelectedFusionIndex(0);
-        }
-    } else {
-        self.IsLoading(true);
-        var obj = (isSource ? parent.Source() : parent.Target());
-        var objid = (isSource ? parent.SourceID() : parent.TargetID());
-
-        $.ajax({
-            url: 'form/sourcetarget/fusion',
-            data: {
-                type: obj,
-                id: objid,
-                phrase: '',
-                getDefault: true
-            },
-            async: true
-        }).done(function (data) {
-            self.FusionItems([]);
-            $.each(data, function (i, val) {
-                self.FusionItems.push(val);
-            });
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.LoadFusionData = function () {
-        if (data != null && !$.isEmptyObject(data)) {
-            if (data.FusionID != null) {
-                var items = self.FusionItems();
-                for (var i = 0; i < items.length; i++) {
-                    if (items[i].id == data.FusionID) {
-                        self.SelectedFusionIndex(i);
-                        break;
-                    }
-                }
-                data = null;
-            }
-        }
-    }
-
-    return self;
-}
-
-
-function HierarchyRuleContextModel(data, parent) {
-    var self = this;
-    data = data || {};
-
-    self.Object = ko.observable(data.Object || "");
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-
-    if (data.ID != null && data.ID.indexOf('|') > -1) {
-        var obj = data.ID.split('|')[0];
-        var objid = data.ID.split('|')[1];
-        self.Object(obj);
-        self.ObjectID(objid);
-
-    }
-
-    self.ID = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-    self.Checked = ko.observable(data.Checked || false);
-
-    //self.Checked.subscribe(function () {
-    //    console.log('checked sub');
-    //    console.log(ko.toJS(parent));
-    //    console.log(self.Checked());
-    //    if (parent != null && parent.IsItemSelected() == true) {
-    //        if (self.Checked() == true)
-    //            parent.SelectedRule().SelectedItem().Contexts.push(this);
-    //        else
-    //            parent.SelectedRule().SelectedItem().Contexts.remove(this);
-    //    }
-    //});
-
-    self.Category = ko.observable(data.Category || '');
-    self.Type = ko.observable(data.Type || '');
-    self.Name = ko.observable(data.Name || '');
-    
-    return self;
-}
-
-function HierarchyRuleItemModel(data) {
-    var self = this;
-    data = data || {};
-
-    //#region Observables
-
-    self.ID = ko.observable(data.ID || 0);
-    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
-    self.Name = ko.observable(data.Name || "");
-    self.TypeName = ko.observable(data.TypeName || "");
-    self.Object = ko.observable(data.Object || "");
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || "");
-    self.SortOrder = ko.observable(data.SortOrder || 1);
-    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
-    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
-
-    self.Contexts = ko.observableArray([]);
-
-    self.RuleName = ko.computed(function () {
-        return self.SortOrder() + '. ' + self.Name();
-    });
-    self.ContextCount = ko.computed(function () {
-        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
-    });
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-
-    //#endregion
-
-    //load Contexts
-    if (data.Contexts) {
-        $.each(data.Contexts, function (cxIx, cxItem) {
-            cxItem.Checked = true;
-            self.Contexts.push(
-                    new HierarchyRuleContextModel(cxItem, self)
-                );
-        });
-    }
-
-    return self;
-}
-
-function HierarchySourceRuleModel(data, permissions) {
-    var self = this;
-
-    if (data == null) {
-        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
-    }
-    
-    //#region Observables
-
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable(data.Name || '');
-    self.Target = ko.observable(data.AppliesToObject || '');
-    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
-    self.Object = ko.observable(data.Object || '');
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || '');
-    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
-    self.ErrorMessages = ko.observableArray([]);
-    self.SaveMessage = ko.observable('');
-
-    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
-    self.IsTemplate = ko.observable(data.IsTemplate || false);
-    self.IsSaving = ko.observable(false);
-
-    self.Items = ko.observableArray();
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-    //#endregion
-    
-    //load Items
-    if (data.Items) {
-        for (var i = 0; i < data.Items.length; i++) {
-            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
-        }
-    }
-
-    //#region Functions
-
-    self.SaveRule = function () {
-        if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
-            return;
-        if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
-            return;
-        self.IsSaving(true);
-        self.ErrorMessages([]);
-        if (self.Items().length < 1)
-            self.ErrorMessages.push('Source rule must have at least 1 source item.');
-        if (self.Name().length < 1)
-            self.ErrorMessages.push('Source rule requires a name.');
-
-        //for (var i = 0; i < self.Items().length; i++) {
-        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-        //    }
-        //}
-
-        if (self.ErrorMessages().length > 0) {
-            self.IsSaving(false);
-            return;
-        }
-
-        var SourceRule = {
-            ID: self.ID(),
-            Name: self.Name(),
-            Object: self.Object(),
-            ObjectID: self.ObjectID(),
-            AppliesToObject: self.Target(),
-            AppliesToObjectID: self.TargetID(),
-            AppliesToObjectList: "",
-            Items: ko.toJS(self.Items())
-        }
-
-        var action = (self.ID() > 0) ? 'edit' : 'add';
-
-        $.ajax({
-            url: '/form/SourceRules/save',
-            data: SourceRule,
-            method: 'POST'
-        }).always(function (data) {
-            self.IsSaving(false);
-            if (!data.error) {
-                self.ID(data.message);
-                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
-                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
-            } else {
-                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
-                console.log(data.message);
-            }        
-        });
-    }
-
-    //#endregion
-
-    return self;
-}
-
-function HierarchyPanelViewModel(data, permissions) {
-    var self = this;
-    self.jqxLoaded = false;
-    //#region Observables
-    //console.log(permissions);
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable('');
-    self.Target = ko.observable(data.target || '');
-    self.TargetID = ko.observable(data.targetID || 0);
-    self.Object = ko.observable(data.object || '');
-    self.ObjectID = ko.observable(data.objectID || 0);
-    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.NewRule().Name('New Rule');
-    self.NewRule().Object(self.Object());
-    self.NewRule().ObjectID(self.ObjectID());
-    self.NewRule().Target(self.Target());
-    self.NewRule().TargetID(self.TargetID());
-    self.InProgress = ko.observable(false);
-    self.IsGridLoading = ko.observable(false);
-    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.Mode = ko.observable('add'); 
-
-    self.Contexts = ko.observableArray([]);
-    self.Items = ko.observableArray();
-    self.Sources = ko.observableArray();
-    self.SourceRules = ko.observableArray();
-
-    self.DeleteMessage = ko.observable('');
-    self.IsDeleting = ko.observable(false);
-
-    self.SelectedItemIndex = ko.observable(-1);
-    self.SelectedSourceIndex = ko.observable(-1);
-    self.SelectedRuleIndex = ko.observable(-1);
-   // self.RadioAddChecked = ko.observable(true);
-    //self.RadioEditChecked = ko.observable(false);
-    self.IsLoadingContexts = ko.observable(false);
-    self.HasSourcesOrRules = ko.observable(true);
-
-    self.CanAdd = ko.observable(false);
-    self.CanUpdate = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-
-    }
-
-
-    self.DeleteSourceRule = function () {
-        self.Mode('delete');
-        //console.log('mode delete');
-    }
-
-    self.DeleteConfirm = function () {
-        self.IsDeleting(true);
-        $.ajax({
-            url: '/form/SourceRules/delete?id=' + self.SelectedRule().ID(),
-            method: 'delete'
-        }).done(function (data) {
-            if (!data.error) {
-
-                for (var i = 0; i < self.SelectedRule().Items().length; i++) {
-                    self.Sources.push(self.SelectedRule().Items()[i]);
-                }
-
-                self.SelectedRule().Items.removeAll(self.SelectedRule().Items());
-
-                //self.SelectedItemIndex(-1);
-                self.SourceRules.remove(self.SelectedRule());
-                self.AfterLoad();
-                amplify.publish("SaveAction", { context: 'sourcerule', action: 'delete', object: self.Object(), objectid: self.ObjectID(), count: self.SourceRules().length });
-                self.Mode('add');
-            } else {
-                self.DeleteMessage('An error occurred while attempting to delete the source rule.');
-                console.log(data.message);
-            }
-            
-        }).always(function() {
-            self.IsDeleting(false);
-        });
-
-        //console.log('delete confirm');
-    }
-
-    self.DeleteCancel = function () {
-        self.Mode('add');
-    }
-
-    self.AddSourceRule = function () {
-        var data = {
-            ID: 0,
-            Name: 'New Rule',
-            Object: self.Object(),
-            ObjectID: self.ObjectID(),
-            AppliesToObject: self.Target(),
-            AppliesToObjectID: self.TargetID()
-        }
-
-        var newRule = new HierarchySourceRuleModel(data, permissions);
-
-        self.SelectedRule(newRule);
-        self.SourceRules.push(newRule);
-        self.SelectedRuleIndex(self.SourceRules().length - 1);
-    }
-
-
-    self.SelectedItemIndex.subscribe(function () {
-        if (self.SelectedItemIndex() == -1) {
-            self.IsLoadingContexts(true);
-            return;
-        }
-        self.IsLoadingContexts(false);
-        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        if (self.IsItemSelected())
-            self.CheckUsedContextItems();
-    });
-
-    self.SelectedRuleIndex.subscribe(function () {
-        var rule = self.SourceRules()[self.SelectedRuleIndex()];
-        self.SelectedRule(rule);
-        //self.SelectedItemIndex(-1);
-        self.CheckUsedContextItems();
-    });
-
-    self.IsItemSelected = ko.computed(function () {
-        if (self.SelectedRule() == null)
-            return false;
-        if (self.SelectedRule().SelectedItem() == null)
-            return false;
-        return true;
-    });
-
-    //#endregion
- 
-    //#region Functions
-
-    self.LoadRules = function () {
-        //console.log('load rules');
-        self.InProgress(true);
-        $.ajax({
-            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
-            method: 'GET'
-        }).done(function (data) {
-            if (data == [] || data == null || data.length < 1)
-                return;
-            self.SourceRules([]);
-            for (var i = 0; i < data.length; i++) {
-                data[i].SourceRuleID = self.ID();
-                var rule = new HierarchySourceRuleModel(data[i], permissions);
-                self.SourceRules.push(rule);
-                for (var j = 0; j < data[i].Items.length; j++) {
-                    for (var k = 0; k < self.Sources().length; k++) {
-                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
-                            self.Sources.remove(self.Sources()[k]);
-                            break;
-                        }
-                    }
-                }
-            }
-        }).always(function () {
-            //self.SelectRule(self.NewRule());
-            self.InProgress(false);
-            if (!self.jqxLoaded)
-                self.ApplyJqxBindings();
-            self.AfterLoad();
-        });
-    }
-
-    self.LoadSources = function () {
-      //  console.log('load sources');
-        self.InProgress(true);
-
-        $.ajax({
-            url: '/form/SourceRules/sources/' + self.Object() + '/' + self.ObjectID() + '/' + self.Target() + '/' + self.TargetID(),
-            method: 'GET'
-        }).done(function (data) {
-            if (data.Contexts)
-                $.each(data.Contexts, function (cxIx, cxItem) {
-                    self.Contexts.push(
-                            new HierarchyRuleContextModel(cxItem, self)
-                        );
-                });
-            $.each(data, function (roIx, roItem) {
-                self.Sources.push(
-                        new HierarchyRuleItemModel(roItem)
-                    );
-            });
-
-        }).always(function () {
-            self.InProgress(false);
-            self.LoadContexts();
-            self.LoadRules();
-        });
-    }
-
-    self.LoadSources();
-
-    self.LoadContexts = function () {
-       // console.log('load contexts');
-        $.ajax({
-            url: '/form/SourceRules/contexts',
-            method: 'GET'
-        }).done(function (data) {
-            if (data == null)
-                return;
-            if (data.count == null || data.items == null)
-                return;
-            if (data.items.length < 1)
-                return;
-            self.Contexts([]);
-            self.Contexts(data.items);
-        });
-    };
-
-    self.AddRuleItem = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedSourceIndex() == -1)
-            return;
-        self.SelectedRule().Items.push(self.Sources()[self.SelectedSourceIndex()]);
-        self.Sources.remove(self.Sources()[self.SelectedSourceIndex()]);
-        self.SelectedSourceIndex(-1);
-        self.ReorderItems(self.SelectedRule().Items());
-    };
-
-    self.RemoveRuleItem = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() == -1)
-            return;
-        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
-        self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        self.SelectedItemIndex(-1);
-        self.ReorderItems(self.SelectedRule().Items());
-    }
-
-    self.MoveRuleItemUp = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() < 1)
-            return;
-        var itemAbove = self.SelectedRule().Items()[self.SelectedItemIndex() - 1];
-        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
-
-        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemAbove;
-        self.SelectedRule().Items()[self.SelectedItemIndex() - 1] = itemSelected;
-
-        self.ReorderItems(self.SelectedRule().Items());
-        self.SelectedItemIndex(self.SelectedItemIndex() - 1);
-
-    }
-
-    self.MoveRuleItemDown = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() == -1 || self.SelectedItemIndex() == self.SelectedRule().Items().length - 1)
-            return;
-        var itemBelow = self.SelectedRule().Items()[self.SelectedItemIndex() + 1];
-        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
-
-        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemBelow;
-        self.SelectedRule().Items()[self.SelectedItemIndex() + 1] = itemSelected;
-
-        self.ReorderItems(self.SelectedRule().Items());
-        self.SelectedItemIndex(self.SelectedItemIndex() + 1);
-    }
-
-    self.OnCellValueChange = function () {
-        if (self.IsLoadingContexts() == true)
-            return;
-        if (self.IsItemSelected()) {
-            var checkedCtx = [];
-            self.SelectedRule().SelectedItem().Contexts([]);
-            for (var i = 0; i < self.Contexts().length; i++) {
-                if (self.Contexts()[i].Checked == true) {
-                    var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
-                    self.SelectedRule().SelectedItem().Contexts.push(obj);
-                }
-            }
-        }
-    }
-
-    self.ApplyJqxBindings = function () {
-       // console.log('jqx bindings start');
-        $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
-            self.OnCellValueChange();
-        }).on('bindingcomplete', function () {
-            //jqx grid is not editable after bind without this
-            $(this).jqxGrid('refresh');
-        });
-        self.jqxLoaded = true;
-       // console.log('jqx bindings end');
-    }
-
-    self.FindItemByOrder = function (order, array) {
-        for (var i = 0; i < array.length; i++) {
-            if (array[i].SortOrder() == order)
-                return array[i];
-        }
-    }
-
-    self.ReorderItems = function (array) {
-        for (var i = 0; i < array.length; i++) {
-            array[i].SortOrder(i + 1);
-        }
-    }
-
-    self.CheckUsedContextItems = function () {
-
-        var isItemSelected = self.IsItemSelected();
-        self.IsGridLoading(true);
-        for (var i = 0; i < self.Contexts().length; i++) {
-            var c = self.Contexts()[i];
-            c.Checked = false;
-            if (!isItemSelected)
-                continue;
-            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
-                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
-                if (rc.ID() == c.ID) {
-                    c.Checked = true;
-                }
-            }
-        }
-        self.IsLoadingContexts(false);
-        self.IsGridLoading(false);
-    }
-
-    self.SelectRule = function (selectedRule) {
-        self.SelectedRule(selectedRule);
-    }
-
-    self.SelectItem = function (selectedItem) {
-        self.SelectedRule().SelectedItem(selectedItem);
-        self.CheckUsedContextItems();
-    }
-
-    self.AfterLoad = function () {
-        if (self.SourceRules().length >= 1) {
-            self.SelectRule(self.SourceRules()[0]);
-            
-            self.SelectedRuleIndex(0);
-            self.HasSourcesOrRules(true);
-        } else {
-            self.HasSourcesOrRules(true);
-        }
-        if (self.Sources().length < 1 && self.SourceRules().length < 1) {
-            self.HasSourcesOrRules(false);
-        }
-    }
-
-    //#endregion
-
-    return self;
-}
-
-
-function LineagePanelViewModel(data, permissions) {
-    var self = this;
-    self.jqxLoaded = false;
-
-    //#region Observables
-
-    self.InProgress = ko.observable(false);
-    self.IsSaving = ko.observable(false);
-
-    self.Items = ko.observableArray();
-
-    self.IntersectType = ko.observable();
-    self.IntersectTypeOptions = ko.observableArray();
-
-    //if (permissions != null) {
-    //    if (permissions.HasPermission("Relationship", "Create"))
-    //        self.CanAdd(true);
-    //    if (permissions.HasPermission("Relationship", "Update"))
-    //        self.CanUpdate(true);
-    //}
-
-    //#endregion
-
-    //#region Functions
-
-    self.AddItem = function () {
-        if (self.IntersectType() > 0) {
-            var data = {
-                IntersectType: self.IntersectType()
-            }
-            self.Items.push(new LineagePanelViewItemModel(data, permissions));
-        }
-    }
-
-    self.LoadIntersectTypes = function () {
-        self.InProgress(true);
-        $.ajax({
-            url: '/form/Lineage_IntersectTypes',
-            method: 'GET'
-        }).done(function (data) {
-            self.IntersectTypeOptions(data);
-        }).always(function () {
-            self.InProgress(false);
-            //if (!self.jqxLoaded)
-            //    self.ApplyJqxBindings();
-            //self.AfterLoad();
-        });
-    }
-
-    self.RemoveItem = function () {
-        self.Items.remove(this);
-    }
-
-    self.Save = function () {
-        if (self.Items().length > 0) {
-            var deferred = $.Deferred();
-
-            self.IsSaving(true);
-
-            var items = [];
-
-            for (var i = 0; i < self.Items().length; i++) {
-                var item = self.Items()[i];
-
-                var subject = item.Subject().split('|')
-                var object = item.Object().split('|')
-
-                items.push({
-                    Position: i,
-                    IntersectTypeID: item.IntersectType(),
-                    Subject: subject[0],
-                    SubjectID: subject[1],
-                    Object: object[0],
-                    ObjectID: object[1]
-                });
-            }
-
-            var successfulItems = [];
-
-            if (items.length > 0) {
-                $.ajax({
-                    url: '/form/Lineage_AddItemsToDiagram',
-                    method: 'POST',
-                    data: { Items: items}
-                }).done(function (returnedItems) {
-                    if (returnedItems == null) {
-                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
-                    } else {
-                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
-                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
-                            if (returnedItem.ErrorMessage) {
-
-                            }
-                            else {
-                                var model = self.Items()[returnedItem.Position];
-                                model.Intersect(returnedItem.IntersectID);
-                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
-                                returnedItem.Name = model.SubjectName();
-                                successfulItems.push(returnedItem);
-                            }
-                        });
-
-                    }
-                }).always(function () {
-                    self.IsSaving(false);
-                    deferred.resolve(successfulItems);
-                });
-            }
-
-            return deferred.promise();
-        }
-    }
-
-    //self.OnCellValueChange = function () {
-    //    if (self.IsLoadingContexts() == true)
-    //        return;
-    //    if (self.IsItemSelected()) {
-    //        var checkedCtx = [];
-    //        self.SelectedRule().SelectedItem().Contexts([]);
-    //        for (var i = 0; i < self.Contexts().length; i++) {
-    //            if (self.Contexts()[i].Checked == true) {
-    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
-    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
-    //            }
-    //        }
-    //    }
-    //}
-
-    //self.ApplyJqxBindings = function () {
-    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
-    //    //    self.OnCellValueChange();
-    //    //}).on('bindingcomplete', function () {
-    //    //    //jqx grid is not editable after bind without this
-    //    //    $(this).jqxGrid('refresh');
-    //    //});
-    //    self.jqxLoaded = true;
-    //}
-
-    //self.AfterLoad = function () {
-    //    if (self.SourceRules().length >= 1) {
-    //        self.SelectRule(self.SourceRules()[0]);
-    //        self.SelectedRuleIndex(0);
-    //        self.HasSourcesOrRules(true);
-    //    } else {
-    //        self.HasSourcesOrRules(true);
-    //    }
-    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
-    //        self.HasSourcesOrRules(false);
-    //    }
-    //}
-
-    //#endregion
-
-    self.LoadIntersectTypes();
-
-    return self;
-}
-
-function LineagePanelViewItemModel(data, permissions) {
-    var self = this;
-
-    //#region Observables
-
-    self.IntersectType = ko.observable(data.IntersectType);
-    self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
-    
-    self.Subject = ko.observable();
-    self.SubjectName = ko.observable();
-    self.SubjectsLoading = ko.observable(true);
-    self.SubjectOptions = ko.observableArray();
-
-    self.Object = ko.observable();
-    self.ObjectName = ko.observable();
-    self.ObjectsLoading = ko.observable(true);
-    self.ObjectOptions = ko.observableArray();
-
-    //#endregion
-
-    //#region Functions
-
-    self.LoadSubjects = function () {
-        $.ajax({
-            url: '/form/Lineage_MapSubjects',
-            data: { id: self.IntersectType() },
-            method: 'GET'
-        }).done(function (data) {
-            self.SubjectOptions(data);
-        }).always(function () {
-            self.SubjectsLoading(false);
-        });
-    }
-
-    self.LoadObjects = function () {
-        $.ajax({
-            url: '/form/Lineage_MapObjects',
-            data: { id: self.IntersectType() },
-            method: 'GET'
-        }).done(function (data) {
-            self.ObjectOptions(data);
-        }).always(function () {
-            self.ObjectsLoading(false);
-        });;
-    };
-
-    //#endregion
-
-    self.LoadSubjects();
-    self.LoadObjects();
-
-    return self;
-}
-
 
 function Statistic(data) {
     var self = this;

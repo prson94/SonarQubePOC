@@ -45,6 +45,15 @@ namespace d360.core.entities
         [DataMember]
         public string SubjectTypeName { get; set; }
 
+        [DataMember]
+        public string SubjectIconBackColor { get; set; }
+
+        [DataMember]
+        public string SubjectIconForeColor { get; set; }
+
+        [DataMember]
+        public string SubjectIconText { get; set; }
+
 
 
         [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
@@ -68,6 +77,14 @@ namespace d360.core.entities
         [DataMember]
         public string ObjectTypeName { get; set; }
 
+        [DataMember]
+        public string ObjectIconBackColor { get; set; }
+
+        [DataMember]
+        public string ObjectIconForeColor { get; set; }
+
+        [DataMember]
+        public string ObjectIconText { get; set; }
 
 
         [DataMember]

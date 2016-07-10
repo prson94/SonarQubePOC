@@ -24,6 +24,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using d360.extensions.powerbi;
 using System.Web;
+using d360.core.queue;
 
 namespace d360.web.Controllers
 {
@@ -222,6 +223,17 @@ namespace d360.web.Controllers
             //Response.StatusCode = (int)statusCode;
             //Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
             return Json(new { type = "error", title = title, message = message }, JsonRequestBehavior.AllowGet);
+        }
+
+        JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
+        {
+            //Response.StatusCode = (int)statusCode;
+            //Response.StatusDescription = message.Replace("\n", "  ").Replace("\r", " ");
+            return new JsonNetResult
+            {
+                Data = new { type = "error", title = title, message = message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         JsonResult jsonSuccess(string message, string id, string context, string action, HttpStatusCode statusCode, dynamic customdata)
@@ -4364,8 +4376,8 @@ namespace d360.web.Controllers
                     }
                     break;
                 case 3: //Child Reference
-                    break;
                     qry = Company.Filter<FusionAttributeType>(i => i.ParentID == s);
+                    break;
                 case 4: //Relationship Reference
                     var relations = Company.Query<int>(@"select TargetObjectID from utility.RelationshipTypes where SourceObjectType  = 'FusionAttributeType' and SourceObjectID = @id and TargetObjectType = 'FusionAttributeType'", new { id = s }).ToList();
                     qry = Company.Filter<FusionAttributeType>(i => relations.Contains(i.ID));
@@ -4511,6 +4523,8 @@ order by  D.TextPath
             var list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
             list.Add("TextPath", 0);
+            if (!list.ContainsKey("Description"))
+                list.Add("Description", 0);
 
             var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID).Select(i => new { i.ID, i.Name }).ToList();
             relList.ForEach(r =>
@@ -4686,7 +4700,7 @@ order by  D.TextPath
             //#endregion
 
             //var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
-
+            var attributes = Company.Filter<AttributeType>(x => !x.ParentID.HasValue).OrderBy(x => x.Name).ToList().Select(i => new { title = i.Name, value = $"AttributeType|{i.ID}" });
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
 
@@ -4729,6 +4743,7 @@ order by  D.TextPath
             {
                 Data = new
                 {
+                    Attributes = attributes,
                     DataTypes = dataTypeOptions,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
                     IntersectTypes = intersectTypes,
@@ -9635,6 +9650,316 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        /// <summary>
+        /// Gets a list of fusion attributes based on a search string provided 
+        /// that should match part of the TextPath of the fusoin attribute.
+        /// </summary>
+        /// <param name="intersectID">The intersectID we are searching under.</param>
+        /// <param name="phrase">Part of the text path to search for.</param>
+        /// <returns>A list of name/value pairs.</returns>
+        public JsonNetResult MapRule_FindFusion(int intersectID, string phrase)
+        {
+            var intersect = Company.Filter<IntersectDetail>(i => i.ID == intersectID).FirstOrDefault();
+            if (intersect == null)
+                return new JsonNetResult { Data = new { message = "Intersect not found." } };
+
+            phrase = $"%{phrase}%";
+
+            var list = Company.Query<dynamic>(@"
+select  A.ID,
+        A.TextPath,
+        T.TextPath as FusionAttributeType,
+        F.Name as Fusion
+from    FusionAttribute A
+        inner join GetFusionAttributesByOwningArtifact(@SubjectID) O on O.ID = A.FusionID 
+        and A.TextPath like @phrase
+        inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
+        inner join Fusion F on F.ID = A.FusionID
+order by A.TextPath", new { phrase, SubjectID = intersect.SubjectID });
+
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        /// <summary>
+        /// Gets a list of map rules based on the currently selected map.
+        /// </summary>
+        /// <param name="model">The intersectID we are searching under.</param>
+        /// <returns>A deep hierarchy of map rules.</returns>
+        [HttpPost]
+        public JsonNetResult MapRulesByMap(SourceTargetIntersectModel model)
+        {
+            var list = Company.Query<string>(@"
+select	MR.ID,
+		(
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 1
+			for json path
+		) as Sources,
+		(
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPAth as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 0
+			for json path
+		) as Targets,
+		MR.Transformation
+from	MapRule MR
+		inner join MapRuleMap MRM on MRM.MapRuleID = MR.ID
+		inner join Map M on M.ID = MRM.MapID
+		inner join MapItem SMI on SMI.MapID = M.ID and SMI.IntersectID = @s and SMI.DiagramKey = @sd
+		inner join MapItem TMI on TMI.MapID = M.ID and TMI.IntersectID = @t and TMI.DiagramKey = @td
+for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, t = model.TargetIntersectID, td = model.TargetDiagramKey });
+
+            var json = string.Join("", list);
+
+            return new JsonNetResult
+            {
+                Data = JArray.Parse(json),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Gets a list of map rules based on the currently selected object.
+        /// </summary>
+        /// <param name="models">A collection of source/target intersect IDs.</param>
+        /// <returns>A deep hierarchy of map rules.</returns>
+        [HttpPost]
+        public JsonNetResult MapRulesByObject(SourceTargetIntersectModels models)
+        {
+            if (models == null)
+                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
+
+            if (models.Items.Count <= 0)
+                jsonNetException("No valid models present.", HttpStatusCode.BadRequest);
+
+            var modelsSql = "";
+
+            models.Items.ForEach(m =>
+            {
+                modelsSql += (string.IsNullOrEmpty(modelsSql)) ? "" : " union ";
+                modelsSql += $"select {m.SourceIntersectID} as SourceIntersectID, '{m.SourceDiagramKey}' as SourceDiagramKey, {m.TargetIntersectID} as TargetIntersectID, '{m.TargetDiagramKey}' as TargetDiagramKey";
+            });
+
+            var list = Company.Query<string>($@"
+select	MR.ID,
+        O.SourceIntersectID,
+        O.SourceDiagramKey,
+        O.TargetIntersectID,
+		O.TargetDiagramKey,
+        (
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 1
+			for json path
+		) as Sources,
+		(
+			select	I.ID,
+					I.FusionAttributeID,
+					A.TextPath as FusionAttributeTextPath
+			from	MapRuleItem I
+					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 0
+			for json path
+		) as Targets,
+		MR.Transformation
+from	MapRule MR
+		inner join MapRuleMap MRM on MRM.MapRuleID = MR.ID
+		inner join Map M on M.ID = MRM.MapID
+		inner join MapItem SMI on SMI.MapID = M.ID and SMI.IsSource = 1
+		inner join MapItem TMI on TMI.MapID = M.ID and TMI.IsSource = 0
+        inner join ({modelsSql}) O on O.SourceIntersectID = SMI.IntersectID and O.SourceDiagramKey = SMI.DiagramKey and O.TargetIntersectID = TMI.IntersectID and O.TargetDiagramKey = TMI.DiagramKey
+for json path");
+
+            var json = string.Join("", list);
+
+            return new JsonNetResult
+            {
+                Data = JArray.Parse(json),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [ValidateHttpAntiForgeryToken, HttpPost]
+        public JsonNetResult MapRules_Save(MapRulesModel model)
+        {
+            if (model.Rules == null)
+                return jsonNetException("No rules specified", HttpStatusCode.BadRequest);
+
+            var message = "";
+
+            bool canCreate = true;// Company.HasPermission(obj, model.FocalID, Claim.Create);
+            bool canUpdate = true;//Company.HasPermission(obj, model.FocalID, Claim.Update);
+            bool canDelete = true;//Company.HasPermission(obj, model.FocalID, Claim.Delete);
+
+            model.Rules.ForEach(viewRule =>
+            {
+                var map = Company.Filter<Map>(i =>
+                    i.MapItems.Any(mi => mi.IntersectID == viewRule.SourceIntersectID && mi.DiagramKey == viewRule.SourceDiagramKey && mi.IsSource) &&
+                    i.MapItems.Any(mi => mi.IntersectID == viewRule.TargetIntersectID && mi.DiagramKey == viewRule.TargetDiagramKey && !mi.IsSource),
+                    i => i.MapItems
+                    ).FirstOrDefault();
+
+                if (map == null)
+                {
+                    message += "No valid map found for the provided source and target.";
+                }
+                else
+                {
+                    if (viewRule.ID == 0 && !canCreate)
+                    {
+                        message += $"[{DateTime.Now}] You do not have permission to create mapping rules on this item.\n";
+                    }
+                    else if (viewRule.ID != 0 && !canUpdate)
+                    {
+                        message += $"[{DateTime.Now}] You do not have permission to update mapping rules on this item.\n";
+                    }
+                    else
+                    {
+                        MapRule mapRule = null;
+
+                        if (viewRule.ID > 0)
+                        {
+                            mapRule = Company.GetById<MapRule>(viewRule.ID, i => i.MapRuleItems);
+                        }
+                        else
+                        {
+                            mapRule = new MapRule
+                            {
+                                Name = $"Some rule {Guid.NewGuid()}",
+                                MapRuleItems = new List<MapRuleItem>()
+                            };
+                        }
+
+                        if (mapRule != null)
+                        {
+                            mapRule.Transformation = viewRule.Transformation;
+
+                            #region Process Sources
+
+                            viewRule.Sources.ForEach(s =>
+                            {
+                                if (s.ID > 0)
+                                {
+                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.ID == s.ID);
+                                    if (existingMapRuleItem != null)
+                                    {
+                                        // Check to ensure that there is a fusion attribute with an actual ID present.
+                                        if (s.FusionAttributeID > 0)
+                                        {
+                                            existingMapRuleItem.FusionAttributeID = s.FusionAttributeID;
+                                        }
+                                        else
+                                        {
+                                            message += " No valid fusion attribute assigned.";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        message += $" No existing map rule item found with the ID of {s.ID}.";
+                                    }
+                                }
+                                else
+                                {
+                                    //This is a new source map rule item.
+                                    mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = s.FusionAttributeID, IsSource = true });
+                                }
+                            });
+
+                            #endregion
+
+                            #region Process Targets
+
+                            viewRule.Targets.ForEach(t =>
+                            {
+                                if (t.ID > 0)
+                                {
+                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.ID == t.ID);
+                                    if (existingMapRuleItem != null)
+                                    {
+                                        // Check to ensure that there is a fusion attribute with an actual ID present.
+                                        if (t.FusionAttributeID > 0)
+                                        {
+                                            existingMapRuleItem.FusionAttributeID = t.FusionAttributeID;
+                                        }
+                                        else
+                                        {
+                                            message += " No valid fusion attribute assigned.";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        message += $" No existing map rule item found with the ID of {t.ID}.";
+                                    }
+                                }
+                                else
+                                {
+                                    //This is a new source map rule item.
+                                    mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = t.FusionAttributeID, IsSource = false });
+                                }
+                            });
+
+                            #endregion
+
+                            #region Now check for any sources that have been deleted.
+
+                            var mapItemsToDelete = new List<int>();
+                            foreach (var existingMapRuleItem in mapRule.MapRuleItems)
+                            {
+                                if (
+                                    !viewRule.Sources.Any(i => i.ID == existingMapRuleItem.ID) &&
+                                    !viewRule.Targets.Any(i => i.ID == existingMapRuleItem.ID) &&
+                                    existingMapRuleItem.ID > 0
+                                )
+                                {
+                                    mapItemsToDelete.Add(existingMapRuleItem.ID);
+                                }
+                            }
+
+                            #endregion
+
+                            try
+                            {
+                                Company.SaveOrUpdate<MapRule>(mapRule);
+
+                                map.MapRules.Add(mapRule);
+                                Company.SaveChanges();
+
+                                if (canDelete)
+                                {
+                                    mapItemsToDelete.ForEach(id =>
+                                    {
+                                        var existingMapRuleItem = mapRule.MapRuleItems.Single(i => i.ID == id);
+                                        Company.Delete<MapRuleItem>(existingMapRuleItem);
+                                    });
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
+                            }
+
+                        }
+                        else
+                        {
+                            message += $" The map rule with ID {viewRule.ID} could not be found.";
+                        }
+                    }
+                }
+            });
+
+            return new JsonNetResult
+            {
+                Data = new { message, error = !string.IsNullOrEmpty(message) },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         #endregion
 
         /// <summary>
@@ -9695,25 +10020,18 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
                     }
                     else
                     {
-                        if (model.SourceIntersectID == model.TargetIntersectID)
+                        var role = Company.GetById<IntersectRole>(model.IntersectRoleID);
+                        if (role == null)
                         {
-                            message += $"A source may not map to itself directly.";
+                            message += $"The role you provided is invalid.";
                         }
                         else
                         {
-                            var role = Company.GetById<IntersectRole>(model.IntersectRoleID);
-                            if (role == null)
-                            {
-                                message += $"The role you provided is invalid.";
-                            }
-                            else
-                            {
-                                var newMap = new Map { Name = $"Map between {model.SourceIntersectID} and {model.TargetIntersectID}", IntersectRoleID = model.IntersectRoleID, Transformation = "" };
-                                newMap.MapItems = new List<MapItem>();
-                                newMap.MapItems.Add(new MapItem { IsSource = true, IntersectID = model.SourceIntersectID });
-                                newMap.MapItems.Add(new MapItem { IsSource = false, IntersectID = model.TargetIntersectID });
-                                Company.Add<Map>(newMap);
-                            }
+                            var newMap = new Map { Name = $"Map between {model.SourceIntersectID} and {model.TargetIntersectID}", IntersectRoleID = model.IntersectRoleID, Transformation = model.Transformation };
+                            newMap.MapItems = new List<MapItem>();
+                            newMap.MapItems.Add(new MapItem { IsSource = true, IntersectID = model.SourceIntersectID, DiagramKey = model.SourceKey });
+                            newMap.MapItems.Add(new MapItem { IsSource = false, IntersectID = model.TargetIntersectID, DiagramKey = model.TargetKey });
+                            Company.Add<Map>(newMap);
                         }
                     }
                 }
@@ -9767,6 +10085,7 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
                     else
                     {
                         o.IntersectRoleID = model.IntersectRoleID;
+                        o.Transformation = model.Transformation;
                         Company.Update(o);
                     }
                 }
@@ -9881,21 +10200,47 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
                     fieldTypeNames.Add("Focal point object type name");
                     fieldTypeNames.Add("Focal point subject area");
                     fieldTypeNames.Add("Focal point");
+
                     fieldTypeNames.Add("Source object type");
                     fieldTypeNames.Add("Source object type name");
                     fieldTypeNames.Add("Source object subject area");
                     fieldTypeNames.Add("Source object");
+
                     fieldTypeNames.Add("Target object type");
                     fieldTypeNames.Add("Target object type name");
                     fieldTypeNames.Add("Target object subject area");
                     fieldTypeNames.Add("Target object");
+
                     fieldTypeNames.Add("Predicate");
+                    break;
+                case "NewLineage":
+                    fieldTypeNames.Add("Source subject type");
+                    fieldTypeNames.Add("Source subject type name");
+                    fieldTypeNames.Add("Source subject subject area");
+                    fieldTypeNames.Add("Source subject");
+                    fieldTypeNames.Add("Source object type");
+                    fieldTypeNames.Add("Source object type name");
+                    fieldTypeNames.Add("Source object subject area");
+                    fieldTypeNames.Add("Source object");
+
+                    fieldTypeNames.Add("Target subject type");
+                    fieldTypeNames.Add("Target subject type name");
+                    fieldTypeNames.Add("Target subject subject area");
+                    fieldTypeNames.Add("Target subject");
+                    fieldTypeNames.Add("Target object type");
+                    fieldTypeNames.Add("Target object type name");
+                    fieldTypeNames.Add("Target object subject area");
+                    fieldTypeNames.Add("Target object");
+
+                    fieldTypeNames.Add("Transformation");
+                    fieldTypeNames.Add("Role");
                     break;
                 case "Synonym":
                     fieldTypeNames.Add("Source object type");
                     fieldTypeNames.Add("Source object type name");
                     fieldTypeNames.Add("Source object subject area");
                     fieldTypeNames.Add("Source object");
+
                     fieldTypeNames.Add("Target object type");
                     fieldTypeNames.Add("Target object type name");
                     fieldTypeNames.Add("Target object subject area");
@@ -9936,6 +10281,9 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     #endregion
                 case "L":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
+                    break;
+                case "N":   // Lineage
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "NewLineage|-1" } };
                     break;
                 case "S":   // Synonym
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Synonym|-1" } };
@@ -10019,6 +10367,19 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         document.AddDataValidation(dv);
                     }
                 }
+                else if (type == "NewLineage" && lowerColName == "role")
+                {
+                    var items = Company.Table<IntersectRole>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
                 else if (type == "Lineage" && lowerColName == "predicate")
                 {
                     var items = Company.Filter<Predicate>(x => x.Type == PredicateType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
@@ -10033,6 +10394,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     }
                 }                
                 else if (
+                    (type == "NewLineage" && (lowerColName == "source subject type" || lowerColName == "source object type" || lowerColName == "target subject type" || lowerColName == "target object type")) ||
                     (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type")) ||
                     (type == "Synonym" && (lowerColName == "source object type" || lowerColName == "target object type"))
                     )
@@ -10045,6 +10407,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     document.AddDataValidation(dv);
                 }
                 else if (
+                    (type == "NewLineage" && (lowerColName == "source subject subject area" || lowerColName == "source object subject area" || lowerColName == "target subject subject area" || lowerColName == "target object subject area")) ||
                     (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") ) ||
                     (type == "Synonym" && (lowerColName == "source object subject area" || lowerColName == "target object subject area"))
                     )
@@ -10230,6 +10593,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (success)
                 {
                     Company.Add<Load>(load);
+                    Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
@@ -17141,284 +17505,6 @@ order by	D.Name, I.Name";
             return new JsonNetResult
             {
                 Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        public JsonNetResult GetDefaultFusionItems(string type, int id)
-        {
-            return null;
-        }
-
-        [ValidateHttpAntiForgeryToken, HttpPost, Route("sourcetarget/save")]
-        public JsonNetResult Save(SourceToTargetSaveModel model)
-        {
-            if (model.Rules == null)
-                model.Rules = new List<SourceTargetRule>();
-
-            var error = false;
-            var message = "";
-
-            SystemObjects obj = SystemObjects.Artifact;
-            try
-            {
-                obj = (SystemObjects)Enum.Parse(typeof(SystemObjects), model.Focal);
-            }
-            catch
-            {
-                error = true;
-                message += $"[{DateTime.Now}] An error occurred while trying to determine the focal object type.\n";
-                return new JsonNetResult
-                {
-                    Data = new { error, message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-
-
-            bool canCreate = Company.HasPermission(obj, model.FocalID, Claim.Create);
-            bool canUpdate = Company.HasPermission(obj, model.FocalID, Claim.Update);
-            bool canDelete = Company.HasPermission(obj, model.FocalID, Claim.Delete);
-
-            foreach (SourceTargetRule rule in model.Rules)
-            {
-                rule.FocalObject = model.Focal;
-                rule.FocalObjectID = model.FocalID;
-                rule.SourceObject = model.Source;
-                rule.SourceObjectID = model.SourceID;
-                rule.TargetObject = model.Target;
-                rule.TargetObjectID = model.TargetID;
-
-                if (rule.ID == 0 && !canCreate)
-                {
-                    message += $"[{DateTime.Now}] You do not have permission to create mapping rules on this item.\n";
-                    continue;
-                }
-                else if (rule.ID != 0 && !canUpdate)
-                {
-                    message += $"[{DateTime.Now}] You do not have permission to update mapping rules on this item.\n";
-                    continue;
-                }
-
-                try
-                {
-                    Company.SaveOrUpdate(rule);
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while attempting to save the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-                    continue;
-                }
-
-                if (rule.Sources == null)
-                    rule.Sources = new List<SourceTargetItem>();
-                if (rule.Targets == null)
-                    rule.Targets = new List<SourceTargetItem>();
-
-                if (rule.Sources.Count == 0)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] The source rule requires at least 1 source item.\n";
-                    continue;
-                }
-                if (rule.Targets.Count == 0)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] The source rule requires at least 1 target item.\n";
-                    continue;
-                }
-
-                var intersectSql = @"select distinct n.intersectid from intersectnode n
-                            join intersectnode n2 on n2.intersectid = n.intersectid
-                            where n.objecttype = 'FusionAttribute' and n2.objecttype = 'FusionAttribute'
-                            and(n.objectid = @sourceId and n2.objectid = @targetId) or(n2.objectid = @sourceId and n.objectid = @targetId)";
-
-                List<IntersectMap> intersectMaps = new List<IntersectMap>();
-
-                foreach (SourceTargetItem source in rule.Sources)
-                {
-                    foreach (SourceTargetItem target in rule.Targets)
-                    {
-
-                        var intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
-
-                        if (intersectId < 1)
-                        {
-                            Company.AddIntersect(SystemObjects.FusionAttribute, source.FusionID, SystemObjects.FusionAttribute, target.FusionID, IntersectClassification.Normal, null, null);
-                            intersectId = Company.Query<int>(intersectSql, new { sourceId = source.FusionID, targetId = target.FusionID }).FirstOrDefault();
-                        }
-
-                        var intersectNodeSub = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == source.FusionID).FirstOrDefault();
-                        var intersectNodeObj = Company.Filter<IntersectNode>(i => i.IntersectID == intersectId && i.ObjectID == target.FusionID).FirstOrDefault();
-                        var intersectMap = Company.Filter<IntersectMap>(m => m.SubjectIntersectNodeID == intersectNodeSub.ID && m.ObjectIntersectNodeID == intersectNodeObj.ID && m.Type == PredicateType.SourceToTarget).FirstOrDefault();
-
-                        if (intersectMap == null || intersectMap.ID < 1)
-                        {
-                            var newMap = new IntersectMap();
-                            newMap.SubjectIntersectNodeID = intersectNodeSub.ID;
-                            newMap.ObjectIntersectNodeID = intersectNodeObj.ID;
-                            newMap.Type = PredicateType.SourceToTarget;
-                            newMap.PredicateID = 1;
-                            Company.Set<IntersectMap>().Add(newMap);
-                            intersectMap = newMap;
-                        }
-                        try
-                        {
-                            Company.SaveChanges();
-                        }
-                        catch (Exception ex)
-                        {
-                            error = true;
-                            message += $"[{DateTime.Now}] An error occurred while saving the intersect map record: {ex.Message}\n{ex.StackTrace}\n\n";
-                        }
-
-                        intersectMaps.Add(intersectMap);
-                    }
-                }
-
-                foreach (IntersectMap map in intersectMaps)
-                {
-                    var mapRule = Company.Filter<IntersectMapSourceTargetRule>(r => r.IntersectMapID == map.ID && r.RuleID == rule.ID).FirstOrDefault();
-                    if (mapRule == null || mapRule.ID == 0)
-                    {
-                        mapRule = new IntersectMapSourceTargetRule();
-                        mapRule.IntersectMapID = map.ID;
-                        mapRule.RuleID = rule.ID;
-                        //Company.Add(mapRule);
-                    }
-                    try
-                    {
-                        Company.SaveOrUpdate(mapRule);
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while saving the source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
-                    }
-                }
-
-                #region Join Records
-
-                foreach (IntersectMapSourceTargetRule mapRule in Company.Filter<IntersectMapSourceTargetRule>(r => r.RuleID == rule.ID).ToList())
-                {
-                    if (intersectMaps.Count(m => m.ID == mapRule.IntersectMapID) != 0)
-                        continue;
-                    try
-                    {
-                        Company.Delete(mapRule);
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while removing a source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
-                        continue;
-                    }
-
-                    var intersectMap = Company.GetById<IntersectMap>(mapRule.IntersectMapID);
-                    try
-                    {
-                        Company.Delete(intersectMap);
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
-                    }
-
-                }
-
-                #endregion
-
-                #region SAVE
-
-                try
-                {
-                    Company.SaveChanges();
-
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while saving rule changes: {ex.Message}\n{ex.StackTrace}\n\n";
-                    continue;
-                }
-
-                #endregion
-
-            }
-
-            var rules = Company.Filter<SourceTargetRule>(r => r.FocalObject == model.Focal && r.FocalObjectID == model.FocalID
-            && r.SourceObject == model.Source && r.SourceObjectID == model.SourceID
-            && r.TargetObject == model.Target && r.TargetObjectID == model.TargetID).ToList();
-
-            foreach (SourceTargetRule rule in rules)
-            {
-                if (model.Rules.Count(r => r.ID == rule.ID) > 0)
-                    continue;
-
-                var intersectMapSourceTargetRules = Company.Filter<IntersectMapSourceTargetRule>(r => r.RuleID == rule.ID).ToList();
-                var intersectMaps = new List<IntersectMap>();
-                if (canDelete)
-                    intersectMapSourceTargetRules.ForEach(r =>
-                {
-                    try
-                    {
-                        Company.Delete(r);
-                        Company.SaveChanges();
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while removing a source rule map: {ex.Message}\n{ex.StackTrace}\n\n";
-                        return;
-                    }
-                    var intersectMap = Company.GetById<IntersectMap>(r.IntersectMapID);
-                    try
-                    {
-                        Company.Delete(intersectMap);
-                        Company.SaveChanges();
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while removing an intersect map: {ex.Message}\n{ex.StackTrace}\n\n";
-                    }
-                });
-
-                if (!canDelete)
-                {
-                    message += $"[{DateTime.Now}] You do not have permission to delete mapping rules on this item.\n";
-                    continue;
-                }
-
-                try
-                {
-                    Company.Delete(rule);
-                    Company.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while removing a source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-                }
-            }
-
-
-            try
-            {
-                Company.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                error = true;
-                message += $"[{DateTime.Now}] An error occurred while saving the source rules: {ex.Message}\n{ex.StackTrace}\n\n";
-            }
-
-
-            return new JsonNetResult
-            {
-                Data = new { error, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

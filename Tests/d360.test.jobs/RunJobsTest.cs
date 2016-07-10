@@ -26,8 +26,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 6; //10
-            var fusionTypeID = 13;
+            var companyID = 23; //10
+            var fusionTypeID = 20;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -123,8 +123,8 @@ END",
             var sec = new UriSecurityContextProvider() { CompanyID = companyID, ResourceID = 1 };
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), sec);
 
-            var bytes = File.ReadAllBytes("NM-DEV.cer");//("SecAuth3Pubcert.cer");
-            var dc = new DomainCertificate { Name = "Northwestern Mutual Certificate", File = bytes };
+            var bytes = File.ReadAllBytes("NM-New.cer");//("SecAuth3Pubcert.cer");
+            var dc = new DomainCertificate { Name = "Northwestern Mutual Certificate - 2016", File = bytes };
             community.Add<DomainCertificate>(dc);
         }
 

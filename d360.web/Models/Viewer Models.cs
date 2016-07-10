@@ -519,6 +519,19 @@ namespace d360.web.Models
         public string value { get; set; }
     }
 
+    public class SourceTargetIntersectModels
+    {
+        public List<SourceTargetIntersectModel> Items { get; set; }
+    }
+
+    public class SourceTargetIntersectModel
+    {
+        public int SourceIntersectID { get; set; }
+        public string SourceDiagramKey { get; set; }
+        public int TargetIntersectID { get; set; }
+        public string TargetDiagramKey { get; set; }
+    }
+
     public class OptionsToRelateDbModel
     {
         public int IntersectTypeID { get; set; }

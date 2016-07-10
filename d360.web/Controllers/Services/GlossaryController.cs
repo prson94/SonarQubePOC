@@ -11,6 +11,7 @@ using d360.core.exceptions;
 using d360.core.enums;
 using System.Collections;
 using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers.Services
 {
@@ -55,6 +56,9 @@ namespace d360.web.Controllers.Services
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
             var relationDefinitions = Company.Filter<FieldTypeRelationLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeRelationLookupDisplayFields).ToList();
 
+            //var relationships = new List<Intersect>();
+            //var relationshipFields = new List<FieldWithRelation>();
+
             foreach (var f in fields)
             {
                 var name = f.Name.Replace("'", "''").Replace("--", "");
@@ -69,8 +73,6 @@ namespace d360.web.Controllers.Services
                         var rd = relationDefinitions.SingleOrDefault(i => i.FieldTypeID == f.ID);
                         if (rd != null)
                         {
-                            //var columnPrefix = rd.ReferenceType == 1 ? "D" : "D2";
-
                             if (rd.FieldTypeRelationLookupDisplayFields != null)
                             {
                                 var where = string.Empty;
@@ -161,6 +163,11 @@ namespace d360.web.Controllers.Services
                                     columns += string.Join(", ", columnSql);
                                     if (rd.ReferenceType == 1)
                                     {
+//                                        relationships.AddRange(Company.Query<Intersect>($@"
+//select  I.* 
+//from    [Intersect] I 
+//        inner join "));
+
                                         // self reference
                                         columns += $@" from [Intersect] I_{rd.ID} 
  inner join [cache].[ObjectDetails] D_{rd.ID} on D_{rd.ID}.[Object] = case when I_{rd.ID}.Subject = 'Artifact' and I_{rd.ID}.SubjectID = A.ID then I_{rd.ID}.Object else I_{rd.ID}.Subject end 
@@ -207,8 +214,8 @@ namespace d360.web.Controllers.Services
                         }
                         break;
                     default:
-                        columns += $"{name}_T.FormattedValue as [{name}], ";
-                        joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = 'Artifact' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID}";
+                        columns += $"T{f.ID}.FormattedValue as [{name}], ";
+                        joins += $" left join FieldWithRelation T{f.ID} on T{f.ID}.ObjectType = 'Artifact' and T{f.ID}.ObjectID = A.ID and T{f.ID}.FieldTypeID = {f.ID}";
                         break;
                 }
             }
@@ -219,29 +226,69 @@ namespace d360.web.Controllers.Services
 select	A.ID,
 		A.Name,
 		A.Description,
-        --A.ParentID,
-		--P.Name as Parent,
-        --dbo.GenerateObjectUrl('Artifact', P.ArtifactTypeID, P.ID) as ParentUrl,
 		A.Status,
         A.DateLastCertified,
         {columns}
 		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
 from	Artifact A 
-        --left join Artifact P on P.ID = A.ParentID 
         {joins}
 where   A.ArtifactTypeID = @id 
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
 
-            var jsonResult = new StringBuilder();
-            jsonResults.ForEach(j => {
-                jsonResult.Append(j);
-            });
+            var json = string.Join("", jsonResults);
+            var arr = JArray.Parse(json);
+
+            var attributes = Company.Query<AttributeDetail>($@"
+select  A.* 
+from    AttributeDetail A 
+        inner join Artifact AR on A.ObjectType = 'Artifact' and AR.ID = A.ObjectID and AR.ArtifactTypeID = {id}").ToList();
+
+            var attributeFields = Company.Query<FieldWithRelation>($@"
+select  F.* 
+from    FieldWithRelation F
+        inner join Attribute A on F.ObjectType = 'Attribute' and F.ObjectID = A.ID
+        inner join Artifact AR on A.ObjectType = 'Artifact' and AR.ID = A.ObjectID and AR.ArtifactTypeID = {id}").ToList();
+
+            foreach (JObject o in arr)
+            {
+                var artifactID = o.GetValue("ID").Value<int>();
+                var children = GetAttributesProperty(attributes.Where(i => i.ObjectID == artifactID).ToList(), attributeFields, null);
+                if (children != null)
+                    o.Add("Attributes", children);
+            }
 
             var response = this.Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StringContent(jsonResult.ToString(), Encoding.UTF8, "application/json");
+            response.Content = new StringContent(
+                arr.ToString(Newtonsoft.Json.Formatting.None), 
+                Encoding.UTF8, 
+                "application/json");
             return response;
+        }
+
+        JArray GetAttributesProperty(List<AttributeDetail> attributes, List<FieldWithRelation> attributeFields, int? parentAttributeID)
+        {
+            JArray attributeArray = null;
+            foreach (var att in attributes.Where(i => i.ParentID == parentAttributeID))
+            {
+                if (attributeArray == null)
+                    attributeArray = new JArray();
+
+                var attributeObject = new JObject();
+                attributeObject.Add(new JProperty("ID", att.ID));
+                attributeObject.Add(new JProperty("Type", att.Name));
+                foreach (var field in attributeFields.Where(i => i.ObjectID == att.ID).OrderBy(i => i.Name))
+                {
+                    attributeObject.Add(new JProperty(field.Name, field.FormattedValue));
+                }
+                var children = GetAttributesProperty(attributes, attributeFields, att.ID);
+                if (children != null)
+                    attributeObject.Add("Attributes", children);
+
+                attributeArray.Add(attributeObject);
+            }
+            return attributeArray;
         }
 
         /// <summary>

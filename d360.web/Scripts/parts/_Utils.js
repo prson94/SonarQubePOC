@@ -120,7 +120,7 @@ function TileTools(toolsControlID, tools) {
     }
 
     $.each(tools, function () {
-        var tool = $("<a class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
+        var tool = $("<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
         if (this.action) {
             tool.data('action', this.action);
             tool.on('click', internalToolClick);

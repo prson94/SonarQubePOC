@@ -43264,37 +43264,29 @@ ko.bindingHandlers.typeFilteredDropdown = {
     update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
 };
 
-//ko.bindingHandlers.mappingFusionAttributeFilteredDropdown = {
-//    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+ko.bindingHandlers.mapDropdown = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('change', function (event) {
+            var intersectArray = event.args.item.value.split('|');
+            if (intersectArray.length == 4) {
+                viewModel.SourceIntersectID(intersectArray[0]);
+                viewModel.SourceDiagramKey(intersectArray[1]);
+                viewModel.TargetIntersectID(intersectArray[2]);
+                viewModel.TargetDiagramKey(intersectArray[3]);
+            }
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
 
-//        $(element).on('change', function (event) {
-//            var args = event.args;
-//            var value = args.item.value;
-//            viewModel.SelectedFusionName(value);
-//            //var checkedItems = $(element).jqxDropDownList('getCheckedItems');
-//            //if (checkedItems) {
-//            //    viewModel.CheckObjects.removeAll();
-
-//            //    if (checkedItems.length > 0) {
-//            //        $.each(checkedItems, function (cix, ci) {
-//            //            viewModel.CheckObjects.push(ci.value);
-//            //        });
-//            //    }
-//            //}
-//        });
-//    },
-//    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-//        //var value = ko.utils.unwrapObservable(valueAccessor()) || '';
-//        //console.log(value);
-//        //if (value) {
-//        //    alert(value);
-//        //    //var item = $(element).jqxDropDownList('getItemByValue', "Bon app");
-//        //    //if (item) {
-//        //    //    $(element).jqxDropDownList('checkItem', item);
-//        //    //}
-//        //}
-//    }
-//};
+ko.bindingHandlers.mappingRuleItemInput = {
+    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+        $(element).on('select', function () {
+            viewModel.FusionAttributeID($(element).val().value);
+        });
+    },
+    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+};
 
 var fileBindings = {
     customFileInputSystemOptions: {
@@ -43558,6 +43550,1485 @@ ko.bindingHandlers.customFileInput = {
         }
     }
 };
+
+//#endregion
+
+//#region Technical Mapping (MapRule)
+
+function MultiMapRulesModel(data, permissions) {
+    var self = this;
+
+    //#region Simple Properties
+
+    self.IsInitialLoading = ko.observable(false);
+
+    self.MapRules = ko.observableArray([]);
+
+    self.IsLoading = ko.observable(false);
+
+    self.NoFusionAvailable = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //#endregion
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.AddRule = function () {
+        var addRuleModel = {
+            Maps: data.Maps
+        };
+        if (self.MapRules().length > 0) {
+            var previousMapRule = self.MapRules()[self.MapRules().length - 1];
+            addRuleModel.SourceIntersectID = previousMapRule.TargetIntersectID();
+            addRuleModel.SourceDiagramKey = previousMapRule.TargetDiagramKey();
+            addRuleModel.Sources = previousMapRule.Targets();
+        }
+        self.MapRules.push(new MultiMapRuleModel(addRuleModel, self, permissions));
+    }
+
+    self.LoadRules = function () {
+        self.IsInitialLoading(true);
+        self.IsLoading(true);
+
+        $.ajax({
+            method: 'post',
+            url: 'form/MapRulesByObject',
+            data: { Items: data.Maps}
+        }).done(function (maprules) {
+            self.MapRules(
+                $.map(maprules, function (item) {
+                    item.Maps = data.Maps;
+                    return new MultiMapRuleModel(item, self, permissions);
+                })
+            );
+        }).always(function () {
+            self.IsLoading(false);
+            self.IsInitialLoading(false);
+        });
+    }
+
+    self.SaveRules = function () {
+
+        var deferred = $.Deferred();
+
+        if (self.IsLoading())
+            return;
+        var modelToSave = {};
+        var rules = [];
+        var error = false;
+
+        self.IsLoading(true);
+        for (var i = 0; i < self.MapRules().length; i++) {
+            var rule = self.MapRules()[i];
+
+            rule.ErrorMessages([]);
+            if (rule.Sources().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 source item.');
+                error = true;
+            }
+            if (rule.Targets().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 target item.');
+                error = true;
+            }
+            if (rule.Transformation() == '') {
+                rule.ErrorMessages.push('Please enter a transformation rule.');
+                error = true;
+            }
+
+            var sources = [];
+            var targets = [];
+            for (var j = 0; j < rule.Sources().length; j++) {
+                var source = rule.Sources()[j];
+
+                source.ErrorMessages([]);
+                if (source.FusionAttributeID() <= 0 || !source.FusionAttributeID()) {
+                    source.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                sources.push({
+                    ID: source.ID(),
+                    FusionAttributeID: source.FusionAttributeID(),
+                    IntersectID: source.IntersectID(),
+                    FusionAttributeTextPath: source.FusionAttributeTextPath()
+                });
+            }
+            for (var j = 0; j < rule.Targets().length; j++) {
+                var target = rule.Targets()[j];
+
+                target.ErrorMessages([]);
+                if (target.FusionAttributeID() <= 0 || !target.FusionAttributeID()) {
+                    target.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                targets.push({
+                    ID: target.ID(),
+                    FusionAttributeID: target.FusionAttributeID(),
+                    IntersectID: target.IntersectID(),
+                    FusionAttributeTextPath: target.FusionAttributeTextPath()
+                });
+            }
+            rules.push({
+                ID: rule.ID(),
+                SourceIntersectID: rule.SourceIntersectID(),
+                SourceDiagramKey: rule.SourceDiagramKey(),
+                TargetIntersectID: rule.TargetIntersectID(),
+                TargetDiagramKey: rule.TargetDiagramKey(),
+                Sources: sources,
+                Targets: targets,
+                Transformation: rule.Transformation()
+            });
+        }
+
+        modelToSave = {
+            Rules: rules
+        };
+
+        var count = modelToSave.Rules.length;
+
+        if (error) {
+            self.IsLoading(false);
+        } else {
+            $.ajax({
+                url: '/form/MapRules_Save',
+                method: 'POST',
+                data: modelToSave
+            }).done(function (saveResultData) {
+                if (saveResultData.error) {
+                    //self.SaveMessage(saveResultData.message);
+                    //self.LoadRules();
+                } else {
+                    //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                    amplify.publish("SaveAction", {
+                        context: 'mappingrule',
+                        count: count
+                    });
+                    self.LoadRules();
+                }
+            }).always(function () {
+                self.IsLoading(false);
+                deferred.resolve();
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    self.LoadRules();
+
+    return self;
+}
+
+function MultiMapRuleModel(defaultData, parent, permissions) {
+    var self = this;
+
+    self.ID = ko.observable(defaultData.ID || 0);
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+    self.Transformation = ko.observable(defaultData.Transformation || '');
+
+    self.MapSelectedIndex = ko.observable(-1);
+
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.Maps = ko.observableArray(
+        $.map(defaultData.Maps, function (item) { return new MapSelectionModel(item); })
+        || []
+    );
+    //self.Maps = ko.computed(function () {
+    //    return parent.Maps;
+    //}, self);
+
+    self.SourceIntersectID = ko.observable(defaultData.SourceIntersectID || 0);
+    self.SourceDiagramKey = ko.observable(defaultData.SourceDiagramKey || '');
+    self.TargetIntersectID = ko.observable(defaultData.TargetIntersectID || 0);
+    self.TargetDiagramKey = ko.observable(defaultData.TargetDiagramKey || '');
+
+    self.HasSourceIntersectID = ko.computed(function () {
+        return (self.SourceIntersectID() > 0);
+    }, self);
+
+    self.HasTargetIntersectID = ko.computed(function () {
+        return (self.TargetIntersectID() > 0);
+    }, self);
+
+    self.IsLoading = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //self.Sources.subscribe(function () {
+    //    if (!parent.IsInitialLoading()) {
+    //        var indexStillValid = false;
+    //        for (var i = 0; i < data.Maps().length; i++) {
+    //            if (data.Maps()[i].ValueText().indexOf(self.SourceIntersectID() + '|') > -1) {
+    //                indexStillValid = true;
+    //            }
+    //        }
+
+    //        if (!indexStillValid) {
+    //            self.Sources([]);
+    //        }
+    //    }
+    //}, self);
+
+    self.SourceIntersectID.subscribe(function () {
+        if (!parent.IsInitialLoading()) {
+            var isDifferentIntersect = false;
+            for (var i = 0; i < self.Sources().length; i++) {
+                if (self.Sources()[i].IntersectID() != self.SourceIntersectID()) {
+                    isDifferentIntersect = true;
+                }
+            }
+
+            if (isDifferentIntersect) {
+                var originalLength = self.Sources().length - 1;
+                for (var i = originalLength; i >= 0; i--) {
+                    if (i > 0) {
+                        self.Sources.remove(self.Sources()[i]);
+                    }
+                    else {
+                        self.Sources()[i].IntersectID(self.SourceIntersectID());
+                        self.Sources()[i].FusionAttributeID(null);
+                        self.Sources()[i].FusionAttributeTextPath(null);
+                    }
+                }
+            }
+        }
+    }, self);
+
+    self.TargetIntersectID.subscribe(function () {
+        if (!parent.IsInitialLoading()) {
+            var isDifferentIntersect = false;
+            for (var i = 0; i < self.Targets().length; i++) {
+                if (self.Targets()[i].IntersectID() != self.TargetIntersectID()) {
+                    isDifferentIntersect = true;
+                }
+            }
+
+            if (isDifferentIntersect) {
+                var originalLength = self.Targets().length - 1;
+                for (var i = originalLength; i >= 0; i--) {
+                    if (i > 0) {
+                        self.Targets.remove(self.Targets()[i]);
+                    }
+                    else {
+                        self.Targets()[i].IntersectID(self.TargetIntersectID());
+                        self.Targets()[i].FusionAttributeID(null);
+                        self.Targets()[i].FusionAttributeTextPath(null);
+                    }
+                }
+            }
+        }
+    }, self);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadItems = function () {
+        self.IsLoading(true);
+
+        if (defaultData != null && !$.isEmptyObject(defaultData)) {
+            if (defaultData.Sources != null)
+                for (var i = 0; i < defaultData.Sources.length; i++) {
+                    self.Sources.push(new MapRuleItemModel(defaultData.Sources[i], self, true));
+                }
+            else
+                self.Sources.push(new MapRuleItemModel({
+                    IntersectID: self.SourceIntersectID()
+                }, self, true));
+
+            if (defaultData.Targets != null)
+                for (var i = 0; i < defaultData.Targets.length; i++) {
+                    self.Targets.push(new MapRuleItemModel(defaultData.Targets[i], self, false));
+                }
+            else
+                self.Targets.push(new MapRuleItemModel({
+                    IntersectID: self.TargetIntersectID()
+                }, self, false));
+
+
+            for (var i = 0; i < self.Maps().length; i++) {
+                if (self.Maps()[i].ValueText() == self.SourceIntersectID() + '|' + self.SourceDiagramKey() + '|' + self.TargetIntersectID() + '|' + self.TargetDiagramKey()) {
+                    self.MapSelectedIndex(i);
+                }
+            }
+
+            // Must have two lines below as the two values are reset with selectedIndex logic above, due to a timing issue.
+            self.SourceIntersectID(defaultData.SourceIntersectID);
+            self.TargetIntersectID(defaultData.TargetIntersectID);
+        }
+
+        self.IsLoading(false);
+    }
+    
+    self.AddSource = function () {
+        self.Sources.push(new MapRuleItemModel({
+            IntersectID: self.SourceIntersectID()
+        }, self, true));
+    }
+
+    self.AddTarget = function () {
+        self.Targets.push(new MapRuleItemModel({
+            IntersectID: self.TargetIntersectID()
+        }, self, false));
+    }
+
+    self.RemoveRule = function () {
+        parent.MapRules.remove(self);
+    }
+
+    self.LoadItems();
+
+    return self;
+}
+
+function MapRulesModel(data, permissions) {
+    var self = this;
+
+    //#region Simple Properties
+
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceIntersectID = ko.observable(data.SourceIntersectID);
+    self.SourceDiagramKey = ko.observable(data.SourceDiagramKey || '');
+
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetIntersectID = ko.observable(data.TargetIntersectID);
+    self.TargetDiagramKey = ko.observable(data.TargetDiagramKey || '');
+
+    self.IsInitialLoading = ko.observable(false);
+
+    self.MapRules = ko.observableArray([]);
+    
+    self.IsLoading = ko.observable(false);
+
+    self.NoFusionAvailable = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    //#endregion
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadRules = function () {
+        self.IsInitialLoading(true);
+        self.IsLoading(true);
+        $.ajax({
+            method: 'post',
+            url: 'form/MapRulesByMap',
+            data: {
+                SourceIntersectID: self.SourceIntersectID(),
+                SourceDiagramKey: self.SourceDiagramKey(),
+                TargetIntersectID: self.TargetIntersectID(),
+                TargetDiagramKey: self.TargetDiagramKey()
+            }
+        }).done(function (maprules) {
+
+            self.MapRules([]);
+
+            if (maprules.length == 0) {
+                self.NoFusionAvailable(true);
+            }
+            else {
+                for (var i = 0; i < maprules.length; i++) {
+                    maprules[i].SourceIntersectID = self.SourceIntersectID();
+                    maprules[i].TargetIntersectID = self.TargetIntersectID();
+                    self.MapRules.push(new MapRuleModel(maprules[i], self, permissions));
+                }
+            }
+
+        }).always(function () {
+            self.IsLoading(false);
+            self.IsInitialLoading(false);
+        });
+    }
+
+    self.AddRule = function () {
+        var sourceRuleData = {
+            SourceIntersectID: self.SourceIntersectID(),
+            SourceDiagramKey: self.SourceDiagramKey(),
+            TargetIntersectID: self.TargetIntersectID(),
+            TargetDiagramKey: self.TargetDiagramKey()
+        };
+        self.MapRules.push(new MapRuleModel(sourceRuleData, self, permissions));
+    }
+
+    self.SaveRules = function () {
+
+        var deferred = $.Deferred();
+
+        if (self.IsLoading())
+            return;
+        var modelToSave = {};
+        var rules = [];
+        var error = false;
+
+        self.IsLoading(true);
+        for (var i = 0; i < self.MapRules().length; i++) {
+            var rule = self.MapRules()[i];
+
+            rule.ErrorMessages([]);
+            if (rule.Sources().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 source item.');
+                error = true;
+            }
+            if (rule.Targets().length == 0) {
+                rule.ErrorMessages.push('You must add at least 1 target item.');
+                error = true;
+            }
+            if (rule.Transformation() == '') {
+                rule.ErrorMessages.push('Please enter a transformation rule.');
+                error = true;
+            }
+
+            var sources = [];
+            var targets = [];
+            for (var j = 0; j < rule.Sources().length; j++) {
+                var source = rule.Sources()[j];
+
+                source.ErrorMessages([]);
+                if (source.FusionAttributeID() <= 0 || !source.FusionAttributeID()) {
+                    source.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                sources.push({
+                    ID: source.ID(),
+                    FusionAttributeID: source.FusionAttributeID(),
+                    IntersectID: source.IntersectID(),
+                    FusionAttributeTextPath: source.FusionAttributeTextPath()
+                });
+            }
+            for (var j = 0; j < rule.Targets().length; j++) {
+                var target = rule.Targets()[j];
+
+                target.ErrorMessages([]);
+                if (target.FusionAttributeID() <= 0 || !target.FusionAttributeID()) {
+                    target.ErrorMessages.push('Please select a valid attribute.');
+                    error = true;
+                }
+                if (error)
+                    continue;
+
+                targets.push({
+                    ID: target.ID(),
+                    FusionAttributeID: target.FusionAttributeID(),
+                    IntersectID: target.IntersectID(),
+                    FusionAttributeTextPath: target.FusionAttributeTextPath()
+                });
+            }
+            rules.push({
+                ID: rule.ID(),
+                SourceIntersectID: self.SourceIntersectID(),
+                SourceDiagramKey: self.SourceDiagramKey(),
+                TargetIntersectID: self.TargetIntersectID(),
+                TargetDiagramKey: self.TargetDiagramKey(),
+                Sources: sources,
+                Targets: targets,
+                Transformation: rule.Transformation()
+            });
+        }
+
+        modelToSave = {
+            Rules: rules
+        };
+
+        var count = modelToSave.Rules.length;
+
+        if (error) {
+            self.IsLoading(false);
+        } else {
+            $.ajax({
+                url: '/form/MapRules_Save',
+                method: 'POST',
+                data: modelToSave
+            }).done(function (saveResultData) {
+                if (saveResultData == null || saveResultData.error == null || saveResultData.error == true) {
+                    //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
+                    self.LoadRules();
+                } else {
+                    //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                    amplify.publish("SaveAction", {
+                        context: 'mappingrule',
+                        count: count,
+                        fromIntersectId: self.SourceIntersectID(),
+                        toIntersectId: self.TargetIntersectID()
+                    });
+                    self.LoadRules();
+                }
+            }).always(function () {
+                self.IsLoading(false);
+                deferred.resolve();
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    self.LoadRules();
+
+    return self;
+}
+
+function MapRuleModel(defaultData, parent, permissions) {
+    var self = this;
+
+    self.ID = ko.observable(defaultData.ID || 0);
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+    self.Transformation = ko.observable(defaultData.Transformation || '');
+
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.SourceIntersectID = ko.observable(defaultData.SourceIntersectID || 0);
+    self.SourceDiagramKey = ko.observable(defaultData.SourceDiagramKey || '');
+    self.TargetIntersectID = ko.observable(defaultData.TargetIntersectID || 0);
+    self.TargetDiagramKey = ko.observable(defaultData.TargetDiagramKey || '');
+
+    self.IsLoading = ko.observable(false);
+
+    self.CanUpdate = ko.observable(false);
+    self.CanDelete = ko.observable(false);
+    self.CanAdd = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+        if (permissions.HasPermission("Relationship", "Delete"))
+            self.CanDelete(true);
+    }
+
+    self.LoadItems = function () {
+        self.IsLoading(true);
+
+        if (defaultData != null && !$.isEmptyObject(defaultData)) {
+            if (defaultData.Sources != null)
+                for (var i = 0; i < defaultData.Sources.length; i++) {
+                    self.Sources.push(new MapRuleItemModel(defaultData.Sources[i], self, true));
+                }
+            else
+                self.Sources.push(new MapRuleItemModel({
+                    IntersectID: self.SourceIntersectID()
+                }, self, true));
+
+            if (defaultData.Targets != null)
+                for (var i = 0; i < defaultData.Targets.length; i++) {
+                    self.Targets.push(new MapRuleItemModel(defaultData.Targets[i], self, false));
+                }
+            else
+                self.Targets.push(new MapRuleItemModel({
+                    IntersectID: self.TargetIntersectID()
+                }, self, false));
+        }
+
+        self.IsLoading(false);
+    }
+
+    self.AddSource = function () {
+        self.Sources.push(new MapRuleItemModel({
+            IntersectID: self.SourceIntersectID()
+        }, self, true));
+    }
+
+    self.AddTarget = function () {
+        self.Targets.push(new MapRuleItemModel({
+            IntersectID: self.TargetIntersectID()
+        }, self, false));
+    }
+
+    self.RemoveRule = function () {
+        parent.MapRules.remove(self);
+    }
+
+    self.LoadItems();
+
+    return self;
+}
+
+function MapRuleItemModel(data, parent, isSource) {
+    var self = this;
+    self.ID = ko.observable(data.ID || -1);
+    self.ErrorMessages = ko.observableArray([]);
+
+    self.IntersectID = ko.observable(data.IntersectID);
+    self.FusionAttributeTextPath = ko.observable(data.FusionAttributeTextPath || null);
+    self.FusionAttributeID = ko.observable(data.FusionAttributeID || null);
+
+    self.RemoveItem = function () {
+        if (isSource) {
+            if (parent.Sources().length == 1)
+                return;
+            parent.Sources.remove(self);
+        }
+        else {
+            if (parent.Targets().length == 1)
+                return;
+            parent.Targets.remove(self);
+        }
+    }
+
+    self.FindTextPaths = function (query, response) {
+        if (query !== "") {
+            var dataAdapter = new $.jqx.dataAdapter
+            (
+                {
+                    datatype: "json",
+                    datafields:
+                    [
+                        { name: 'Fusion' },
+                        { name: 'FusionAttributeType' },
+                        { name: 'TextPath' },
+                        { name: 'ID' }
+                    ],
+                    url: "/form/MapRule_FindFusion",
+                    data:
+                    {
+                        intersectID: self.IntersectID()
+                    }
+                },
+                {
+                    autoBind: true,
+                    formatData: function (data) {
+                        data.phrase = query;
+                        return data;
+                    },
+                    loadComplete: function (data) {
+                        if (data.length > 0) {
+                            response($.map(data, function (item) {
+                                return {
+                                    label: item.Fusion + '.' + item.FusionAttributeType + '.' + item.TextPath,
+                                    value: item.ID
+                                }
+                            }));
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    return self;
+}
+
+function MapSelectionModel(data) {
+    var self = this;
+
+    self.SourceName = ko.observable(data.SourceName);
+    self.SourceIntersectID = ko.observable(data.SourceIntersectID);
+    self.SourceDiagramKey = ko.observable(data.SourceDiagramKey);
+
+    self.TargetName = ko.observable(data.TargetName);
+    self.TargetIntersectID = ko.observable(data.TargetIntersectID);
+    self.TargetDiagramKey = ko.observable(data.TargetDiagramKey);
+
+    self.DisplayText = ko.computed(function () {
+        return self.SourceName() + ' -&gt; ' + self.TargetName();
+    }, self);
+
+    self.ValueText = ko.computed(function () {
+        return self.SourceIntersectID() + '|' + self.SourceDiagramKey() + '|' + self.TargetIntersectID() + '|' + self.TargetDiagramKey();
+    }, self);
+
+    return self;
+}
+
+//#endregion
+
+//#region Business Mapping (Map)
+
+function LineagePanelViewModel(data, permissions) {
+    var self = this;
+    self.jqxLoaded = false;
+
+    //#region Observables
+
+    self.InProgress = ko.observable(false);
+    self.IsSaving = ko.observable(false);
+
+    self.Items = ko.observableArray();
+
+    self.IntersectType = ko.observable();
+    self.IntersectTypeOptions = ko.observableArray();
+
+    //if (permissions != null) {
+    //    if (permissions.HasPermission("Relationship", "Create"))
+    //        self.CanAdd(true);
+    //    if (permissions.HasPermission("Relationship", "Update"))
+    //        self.CanUpdate(true);
+    //}
+
+    //#endregion
+
+    //#region Functions
+
+    self.AddItem = function () {
+        if (self.IntersectType() > 0) {
+            var data = {
+                IntersectType: self.IntersectType()
+            }
+            self.Items.push(new LineagePanelViewItemModel(data, permissions));
+        }
+    }
+
+    self.LoadIntersectTypes = function () {
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypes',
+            method: 'GET'
+        }).done(function (data) {
+            self.IntersectTypeOptions(data);
+        }).always(function () {
+            self.InProgress(false);
+            //if (!self.jqxLoaded)
+            //    self.ApplyJqxBindings();
+            //self.AfterLoad();
+        });
+    }
+
+    self.RemoveItem = function () {
+        self.Items.remove(this);
+    }
+
+    self.Save = function () {
+        if (self.Items().length > 0) {
+            var deferred = $.Deferred();
+
+            self.IsSaving(true);
+
+            var items = [];
+
+            for (var i = 0; i < self.Items().length; i++) {
+                var item = self.Items()[i];
+
+                var subject = item.Subject().split('|')
+                var object = item.Object().split('|')
+
+                items.push({
+                    Position: i,
+                    IntersectTypeID: item.IntersectType(),
+                    Subject: subject[0],
+                    SubjectID: subject[1],
+                    Object: object[0],
+                    ObjectID: object[1]
+                });
+            }
+
+            var successfulItems = [];
+
+            if (items.length > 0) {
+                $.ajax({
+                    url: '/form/Lineage_AddItemsToDiagram',
+                    method: 'POST',
+                    data: { Items: items}
+                }).done(function (returnedItems) {
+                    if (returnedItems == null) {
+                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
+                    } else {
+                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
+                            if (returnedItem.ErrorMessage) {
+
+                            }
+                            else {
+                                var model = self.Items()[returnedItem.Position];
+                                model.Intersect(returnedItem.IntersectID);
+                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
+                                returnedItem.Name = model.SubjectName();
+                                successfulItems.push(returnedItem);
+                            }
+                        });
+
+                    }
+                }).always(function () {
+                    self.IsSaving(false);
+                    deferred.resolve(successfulItems);
+                });
+            }
+
+            return deferred.promise();
+        }
+    }
+
+    //self.OnCellValueChange = function () {
+    //    if (self.IsLoadingContexts() == true)
+    //        return;
+    //    if (self.IsItemSelected()) {
+    //        var checkedCtx = [];
+    //        self.SelectedRule().SelectedItem().Contexts([]);
+    //        for (var i = 0; i < self.Contexts().length; i++) {
+    //            if (self.Contexts()[i].Checked == true) {
+    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
+    //            }
+    //        }
+    //    }
+    //}
+
+    //self.ApplyJqxBindings = function () {
+    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+    //    //    self.OnCellValueChange();
+    //    //}).on('bindingcomplete', function () {
+    //    //    //jqx grid is not editable after bind without this
+    //    //    $(this).jqxGrid('refresh');
+    //    //});
+    //    self.jqxLoaded = true;
+    //}
+
+    //self.AfterLoad = function () {
+    //    if (self.SourceRules().length >= 1) {
+    //        self.SelectRule(self.SourceRules()[0]);
+    //        self.SelectedRuleIndex(0);
+    //        self.HasSourcesOrRules(true);
+    //    } else {
+    //        self.HasSourcesOrRules(true);
+    //    }
+    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+    //        self.HasSourcesOrRules(false);
+    //    }
+    //}
+
+    //#endregion
+
+    self.LoadIntersectTypes();
+
+    return self;
+}
+
+function LineagePanelViewItemModel(data, permissions) {
+    var self = this;
+
+    //#region Observables
+
+    self.IntersectType = ko.observable(data.IntersectType);
+    self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
+    
+    self.Subject = ko.observable();
+    self.SubjectName = ko.observable();
+    self.SubjectsLoading = ko.observable(true);
+    self.SubjectOptions = ko.observableArray();
+
+    self.Object = ko.observable();
+    self.ObjectName = ko.observable();
+    self.ObjectsLoading = ko.observable(true);
+    self.ObjectOptions = ko.observableArray();
+
+    //#endregion
+
+    //#region Functions
+
+    self.LoadSubjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.SubjectOptions(data);
+        }).always(function () {
+            self.SubjectsLoading(false);
+        });
+    }
+
+    self.LoadObjects = function () {
+        $.ajax({
+            url: '/form/Lineage_MapObjects',
+            data: { id: self.IntersectType() },
+            method: 'GET'
+        }).done(function (data) {
+            self.ObjectOptions(data);
+        }).always(function () {
+            self.ObjectsLoading(false);
+        });;
+    };
+
+    //#endregion
+
+    self.LoadSubjects();
+    self.LoadObjects();
+
+    return self;
+}
+
+//#endregion
+
+//#region Source Hierarchy Models
+
+function HierarchyRuleContextModel(data, parent) {
+    var self = this;
+    data = data || {};
+
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+
+    if (data.ID != null && data.ID.indexOf('|') > -1) {
+        var obj = data.ID.split('|')[0];
+        var objid = data.ID.split('|')[1];
+        self.Object(obj);
+        self.ObjectID(objid);
+
+    }
+
+    self.ID = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+    self.Checked = ko.observable(data.Checked || false);
+
+    //self.Checked.subscribe(function () {
+    //    console.log('checked sub');
+    //    console.log(ko.toJS(parent));
+    //    console.log(self.Checked());
+    //    if (parent != null && parent.IsItemSelected() == true) {
+    //        if (self.Checked() == true)
+    //            parent.SelectedRule().SelectedItem().Contexts.push(this);
+    //        else
+    //            parent.SelectedRule().SelectedItem().Contexts.remove(this);
+    //    }
+    //});
+
+    self.Category = ko.observable(data.Category || '');
+    self.Type = ko.observable(data.Type || '');
+    self.Name = ko.observable(data.Name || '');
+    
+    return self;
+}
+
+function HierarchyRuleItemModel(data) {
+    var self = this;
+    data = data || {};
+
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
+    self.Name = ko.observable(data.Name || "");
+    self.TypeName = ko.observable(data.TypeName || "");
+    self.Object = ko.observable(data.Object || "");
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || "");
+    self.SortOrder = ko.observable(data.SortOrder || 1);
+    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
+    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
+
+    self.Contexts = ko.observableArray([]);
+
+    self.RuleName = ko.computed(function () {
+        return self.SortOrder() + '. ' + self.Name();
+    });
+    self.ContextCount = ko.computed(function () {
+        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
+    });
+
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+
+    //#endregion
+
+    //load Contexts
+    if (data.Contexts) {
+        $.each(data.Contexts, function (cxIx, cxItem) {
+            cxItem.Checked = true;
+            self.Contexts.push(
+                    new HierarchyRuleContextModel(cxItem, self)
+                );
+        });
+    }
+
+    return self;
+}
+
+function HierarchySourceRuleModel(data, permissions) {
+    var self = this;
+
+    if (data == null) {
+        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
+    }
+    
+    //#region Observables
+
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable(data.Name || '');
+    self.Target = ko.observable(data.AppliesToObject || '');
+    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.Description = ko.observable(data.Description || '');
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
+    self.ErrorMessages = ko.observableArray([]);
+    self.SaveMessage = ko.observable('');
+
+    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
+    self.IsTemplate = ko.observable(data.IsTemplate || false);
+    self.IsSaving = ko.observable(false);
+
+    self.Items = ko.observableArray();
+
+    self.Value = ko.computed(function () {
+        return self.Object() + '|' + self.ObjectID().toString();
+    });
+
+    //#endregion
+    
+    //load Items
+    if (data.Items) {
+        for (var i = 0; i < data.Items.length; i++) {
+            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
+        }
+    }
+
+    //#region Functions
+
+    self.SaveRule = function () {
+        if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
+            return;
+        if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
+            return;
+        self.IsSaving(true);
+        self.ErrorMessages([]);
+        if (self.Items().length < 1)
+            self.ErrorMessages.push('Source rule must have at least 1 source item.');
+        if (self.Name().length < 1)
+            self.ErrorMessages.push('Source rule requires a name.');
+
+        //for (var i = 0; i < self.Items().length; i++) {
+        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
+        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
+        //    }
+        //}
+
+        if (self.ErrorMessages().length > 0) {
+            self.IsSaving(false);
+            return;
+        }
+
+        var SourceRule = {
+            ID: self.ID(),
+            Name: self.Name(),
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID(),
+            AppliesToObjectList: "",
+            Items: ko.toJS(self.Items())
+        }
+
+        var action = (self.ID() > 0) ? 'edit' : 'add';
+
+        $.ajax({
+            url: '/form/SourceRules/save',
+            data: SourceRule,
+            method: 'POST'
+        }).always(function (data) {
+            self.IsSaving(false);
+            if (!data.error) {
+                self.ID(data.message);
+                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
+                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
+            } else {
+                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
+                console.log(data.message);
+            }        
+        });
+    }
+
+    //#endregion
+
+    return self;
+}
+
+function HierarchyPanelViewModel(data, permissions) {
+    var self = this;
+    self.jqxLoaded = false;
+    //#region Observables
+    //console.log(permissions);
+    self.ID = ko.observable(data.ID || 0);
+    self.Name = ko.observable('');
+    self.Target = ko.observable(data.target || '');
+    self.TargetID = ko.observable(data.targetID || 0);
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
+    self.NewRule().Name('New Rule');
+    self.NewRule().Object(self.Object());
+    self.NewRule().ObjectID(self.ObjectID());
+    self.NewRule().Target(self.Target());
+    self.NewRule().TargetID(self.TargetID());
+    self.InProgress = ko.observable(false);
+    self.IsGridLoading = ko.observable(false);
+    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
+    self.Mode = ko.observable('add'); 
+
+    self.Contexts = ko.observableArray([]);
+    self.Items = ko.observableArray();
+    self.Sources = ko.observableArray();
+    self.SourceRules = ko.observableArray();
+
+    self.DeleteMessage = ko.observable('');
+    self.IsDeleting = ko.observable(false);
+
+    self.SelectedItemIndex = ko.observable(-1);
+    self.SelectedSourceIndex = ko.observable(-1);
+    self.SelectedRuleIndex = ko.observable(-1);
+   // self.RadioAddChecked = ko.observable(true);
+    //self.RadioEditChecked = ko.observable(false);
+    self.IsLoadingContexts = ko.observable(false);
+    self.HasSourcesOrRules = ko.observable(true);
+
+    self.CanAdd = ko.observable(false);
+    self.CanUpdate = ko.observable(false);
+
+    if (permissions != null) {
+        if (permissions.HasPermission("Relationship", "Create"))
+            self.CanAdd(true);
+        if (permissions.HasPermission("Relationship", "Update"))
+            self.CanUpdate(true);
+
+    }
+
+
+    self.DeleteSourceRule = function () {
+        self.Mode('delete');
+        //console.log('mode delete');
+    }
+
+    self.DeleteConfirm = function () {
+        self.IsDeleting(true);
+        $.ajax({
+            url: '/form/SourceRules/delete?id=' + self.SelectedRule().ID(),
+            method: 'delete'
+        }).done(function (data) {
+            if (!data.error) {
+
+                for (var i = 0; i < self.SelectedRule().Items().length; i++) {
+                    self.Sources.push(self.SelectedRule().Items()[i]);
+                }
+
+                self.SelectedRule().Items.removeAll(self.SelectedRule().Items());
+
+                //self.SelectedItemIndex(-1);
+                self.SourceRules.remove(self.SelectedRule());
+                self.AfterLoad();
+                amplify.publish("SaveAction", { context: 'sourcerule', action: 'delete', object: self.Object(), objectid: self.ObjectID(), count: self.SourceRules().length });
+                self.Mode('add');
+            } else {
+                self.DeleteMessage('An error occurred while attempting to delete the source rule.');
+                console.log(data.message);
+            }
+            
+        }).always(function() {
+            self.IsDeleting(false);
+        });
+
+        //console.log('delete confirm');
+    }
+
+    self.DeleteCancel = function () {
+        self.Mode('add');
+    }
+
+    self.AddSourceRule = function () {
+        var data = {
+            ID: 0,
+            Name: 'New Rule',
+            Object: self.Object(),
+            ObjectID: self.ObjectID(),
+            AppliesToObject: self.Target(),
+            AppliesToObjectID: self.TargetID()
+        }
+
+        var newRule = new HierarchySourceRuleModel(data, permissions);
+
+        self.SelectedRule(newRule);
+        self.SourceRules.push(newRule);
+        self.SelectedRuleIndex(self.SourceRules().length - 1);
+    }
+
+
+    self.SelectedItemIndex.subscribe(function () {
+        if (self.SelectedItemIndex() == -1) {
+            self.IsLoadingContexts(true);
+            return;
+        }
+        self.IsLoadingContexts(false);
+        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        if (self.IsItemSelected())
+            self.CheckUsedContextItems();
+    });
+
+    self.SelectedRuleIndex.subscribe(function () {
+        var rule = self.SourceRules()[self.SelectedRuleIndex()];
+        self.SelectedRule(rule);
+        //self.SelectedItemIndex(-1);
+        self.CheckUsedContextItems();
+    });
+
+    self.IsItemSelected = ko.computed(function () {
+        if (self.SelectedRule() == null)
+            return false;
+        if (self.SelectedRule().SelectedItem() == null)
+            return false;
+        return true;
+    });
+
+    //#endregion
+ 
+    //#region Functions
+
+    self.LoadRules = function () {
+        //console.log('load rules');
+        self.InProgress(true);
+        $.ajax({
+            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data == [] || data == null || data.length < 1)
+                return;
+            self.SourceRules([]);
+            for (var i = 0; i < data.length; i++) {
+                data[i].SourceRuleID = self.ID();
+                var rule = new HierarchySourceRuleModel(data[i], permissions);
+                self.SourceRules.push(rule);
+                for (var j = 0; j < data[i].Items.length; j++) {
+                    for (var k = 0; k < self.Sources().length; k++) {
+                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
+                            self.Sources.remove(self.Sources()[k]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }).always(function () {
+            //self.SelectRule(self.NewRule());
+            self.InProgress(false);
+            if (!self.jqxLoaded)
+                self.ApplyJqxBindings();
+            self.AfterLoad();
+        });
+    }
+
+    self.LoadSources = function () {
+      //  console.log('load sources');
+        self.InProgress(true);
+
+        $.ajax({
+            url: '/form/SourceRules/sources/' + self.Object() + '/' + self.ObjectID() + '/' + self.Target() + '/' + self.TargetID(),
+            method: 'GET'
+        }).done(function (data) {
+            if (data.Contexts)
+                $.each(data.Contexts, function (cxIx, cxItem) {
+                    self.Contexts.push(
+                            new HierarchyRuleContextModel(cxItem, self)
+                        );
+                });
+            $.each(data, function (roIx, roItem) {
+                self.Sources.push(
+                        new HierarchyRuleItemModel(roItem)
+                    );
+            });
+
+        }).always(function () {
+            self.InProgress(false);
+            self.LoadContexts();
+            self.LoadRules();
+        });
+    }
+
+    self.LoadSources();
+
+    self.LoadContexts = function () {
+       // console.log('load contexts');
+        $.ajax({
+            url: '/form/SourceRules/contexts',
+            method: 'GET'
+        }).done(function (data) {
+            if (data == null)
+                return;
+            if (data.count == null || data.items == null)
+                return;
+            if (data.items.length < 1)
+                return;
+            self.Contexts([]);
+            self.Contexts(data.items);
+        });
+    };
+
+    self.AddRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedSourceIndex() == -1)
+            return;
+        self.SelectedRule().Items.push(self.Sources()[self.SelectedSourceIndex()]);
+        self.Sources.remove(self.Sources()[self.SelectedSourceIndex()]);
+        self.SelectedSourceIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    };
+
+    self.RemoveRuleItem = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1)
+            return;
+        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
+        self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        self.SelectedItemIndex(-1);
+        self.ReorderItems(self.SelectedRule().Items());
+    }
+
+    self.MoveRuleItemUp = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() < 1)
+            return;
+        var itemAbove = self.SelectedRule().Items()[self.SelectedItemIndex() - 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemAbove;
+        self.SelectedRule().Items()[self.SelectedItemIndex() - 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() - 1);
+
+    }
+
+    self.MoveRuleItemDown = function () {
+        if (!self.CanUpdate())
+            return;
+        if (self.SelectedItemIndex() == -1 || self.SelectedItemIndex() == self.SelectedRule().Items().length - 1)
+            return;
+        var itemBelow = self.SelectedRule().Items()[self.SelectedItemIndex() + 1];
+        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
+
+        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemBelow;
+        self.SelectedRule().Items()[self.SelectedItemIndex() + 1] = itemSelected;
+
+        self.ReorderItems(self.SelectedRule().Items());
+        self.SelectedItemIndex(self.SelectedItemIndex() + 1);
+    }
+
+    self.OnCellValueChange = function () {
+        if (self.IsLoadingContexts() == true)
+            return;
+        if (self.IsItemSelected()) {
+            var checkedCtx = [];
+            self.SelectedRule().SelectedItem().Contexts([]);
+            for (var i = 0; i < self.Contexts().length; i++) {
+                if (self.Contexts()[i].Checked == true) {
+                    var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
+                    self.SelectedRule().SelectedItem().Contexts.push(obj);
+                }
+            }
+        }
+    }
+
+    self.ApplyJqxBindings = function () {
+       // console.log('jqx bindings start');
+        $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
+            self.OnCellValueChange();
+        }).on('bindingcomplete', function () {
+            //jqx grid is not editable after bind without this
+            $(this).jqxGrid('refresh');
+        });
+        self.jqxLoaded = true;
+       // console.log('jqx bindings end');
+    }
+
+    self.FindItemByOrder = function (order, array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].SortOrder() == order)
+                return array[i];
+        }
+    }
+
+    self.ReorderItems = function (array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i].SortOrder(i + 1);
+        }
+    }
+
+    self.CheckUsedContextItems = function () {
+
+        var isItemSelected = self.IsItemSelected();
+        self.IsGridLoading(true);
+        for (var i = 0; i < self.Contexts().length; i++) {
+            var c = self.Contexts()[i];
+            c.Checked = false;
+            if (!isItemSelected)
+                continue;
+            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
+                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
+                if (rc.ID() == c.ID) {
+                    c.Checked = true;
+                }
+            }
+        }
+        self.IsLoadingContexts(false);
+        self.IsGridLoading(false);
+    }
+
+    self.SelectRule = function (selectedRule) {
+        self.SelectedRule(selectedRule);
+    }
+
+    self.SelectItem = function (selectedItem) {
+        self.SelectedRule().SelectedItem(selectedItem);
+        self.CheckUsedContextItems();
+    }
+
+    self.AfterLoad = function () {
+        if (self.SourceRules().length >= 1) {
+            self.SelectRule(self.SourceRules()[0]);
+            
+            self.SelectedRuleIndex(0);
+            self.HasSourcesOrRules(true);
+        } else {
+            self.HasSourcesOrRules(true);
+        }
+        if (self.Sources().length < 1 && self.SourceRules().length < 1) {
+            self.HasSourcesOrRules(false);
+        }
+    }
+
+    //#endregion
+
+    return self;
+}
 
 //#endregion
 
@@ -44166,7 +45637,6 @@ function CommentItem(data, parent) {//, hub) {
 
 }
 
-
 var ChildArtifactsMicroTileItem = function (parentID, name, id, count) {
     var self = this;
     self.ParentID = ko.observable(parentID);
@@ -44420,1183 +45890,6 @@ function CompanySettingsViewModel(data) {
 
     return self;
 }
-
-
-function BusinessTransformationRuleModel(data, permissions) {
-    var self = this;
-    self.IsLoading = ko.observable(false);
-    self.ID = ko.observable(data.ID || 0);
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.SourceName = ko.observable(data.SourceName);
-    self.SourceTypeName = ko.observable(data.SourceTypeName);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.TargetName = ko.observable(data.TargetName);
-    self.TargetTypeName = ko.observable(data.TargetTypeName);
-    self.Transformation = ko.observable(data.Transformation);
-
-    self.Load = function () {
-        self.IsLoading(true);
-        $.ajax({
-            url: 'form/transformation/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
-        }).done(function (data) {
-            if (data == null || data.rule == null)
-                return;
-            self.ID(data.rule.ID);
-            self.Transformation(data.rule.Transformation);
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.Load();
-
-    self.Save = function () {
-        self.IsLoading(true);
-        var deferred = $.Deferred();
-
-        var data = {
-            ID: self.ID(),
-            FocalObject: self.Object(),
-            FocalObjectID: self.ObjectID(),
-            SourceObject: self.Source(),
-            SourceObjectID: self.SourceID(),
-            TargetObject: self.Target(),
-            TargetObjectID: self.TargetID(),
-            Transformation: self.Transformation()
-        };
-
-
-        $.ajax({
-            url: 'form/transformation/save',
-            data: data,
-            method: 'POST'
-        }).done(function (data) {
-            if (data && data.error == false) {
-                if (self.Transformation() == null || self.Transformation().match(/^\s*$/) != null)
-                    count = 0;
-                else
-                    count = 1;
-                amplify.publish("SaveAction", { context: 'transformationrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
-            }
-        }).always(function () {
-            self.IsLoading(false);
-            deferred.resolve();
-        });
-
-        return deferred.promise();
-    }
-    
-}
-
-
-function SourceToTargetMappingModel(data, permissions) {
-    var self = this;
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.SourceName = ko.observable(data.SourceName);
-    self.SourceTypeName = ko.observable(data.SourceTypeName);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.TargetName = ko.observable(data.TargetName);
-    self.TargetTypeName = ko.observable(data.TargetTypeName);
-    self.SourceRules = ko.observableArray([]);
-    
-    self.IsLoading = ko.observable(false);
-    self.SaveMessage = ko.observable('');
-
-    self.NoFusionAvailable = ko.observable(false);
-
-    self.CanUpdate = ko.observable(false);
-    self.CanDelete = ko.observable(false);
-    self.CanAdd = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-        if (permissions.HasPermission("Relationship", "Delete"))
-            self.CanDelete(true);
-    }
-
-    self.LoadRules = function () {
-        self.IsLoading(true);
-        $.ajax({
-            url: 'form/sourcetarget/load/' + self.Object() + '/' + self.ObjectID() + '/' + self.Source() + '/' + self.SourceID() + '/' + self.Target() + '/' + self.TargetID()
-        }).done(function (data) {
-
-            self.SourceRules([]);
-
-            if (data == null) {
-                data = {
-                    items: [],
-                    sourceCount: 0,
-                    targetCount: 0
-                };
-            }
-
-            if (data.items.length == 0) {
-                data.Object = self.ObjectID();
-                data.ObjectID = self.ObjectID();
-                data.Source = self.Source();
-                data.SourceID = self.SourceID();
-                data.Target = self.Target();
-                data.TargetID = self.TargetID();
-
-                if (data.sourceCount == 0 || data.targetCount == 0) {
-                    self.NoFusionAvailable(true);
-                    amplify.publish("NoFusionAvailable");
-                }
-            }
-            else {
-                data = data.items;
-
-                for (var i = 0; i < data.length; i++) {
-                    data[i].Object = data[i].FocalObject;
-                    data[i].ObjectID = data[i].FocalObjectID;
-                    data[i].Source = data[i].SourceObject;
-                    data[i].SourceID = data[i].SourceObjectID;
-                    data[i].Target = data[i].TargetObject;
-                    data[i].TargetID = data[i].TargetObjectID;
-
-                    self.SourceRules.push(new SourceToTargetMappingItem(data[i], self, permissions));
-                }
-            }
-
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.LoadRules();
-
-    self.AddSourceRule = function () {
-        data.Sequence = self.SourceRules().length + 1;
-        self.SourceRules.push(new SourceToTargetMappingItem(data, self, permissions));
-    }
-
-    self.SaveRules = function () {
-
-        var deferred = $.Deferred();
-
-        if (self.IsLoading())
-            return;
-        var data = {};
-        var rules = [];
-        var error = false;
-        self.SaveMessage('');
-
-        self.IsLoading(true);
-        for (var i = 0; i < self.SourceRules().length; i++) {
-            var rule = self.SourceRules()[i];
-
-            rule.ErrorMessages([]);
-            if (rule.Sources().length == 0) {
-                rule.ErrorMessages.push('You must add at least 1 source item.');
-                error = true;
-            }
-            if (rule.Targets().length == 0) {
-                rule.ErrorMessages.push('You must add at least 1 target item.');
-                error = true;
-            }
-            if (rule.Transformation() == '') {
-                rule.ErrorMessages.push('Please enter a transformation rule.');
-                error = true;
-            }
-
-            var sources = [];
-            var targets = [];
-            for (var j = 0; j < rule.Sources().length; j++) {
-                var source = rule.Sources()[j];
-
-                source.ErrorMessages([]);
-                if (source.SelectedFusionIndex() == -1) {
-                    source.ErrorMessages.push('Please select an attribute.');
-                    error = true;
-                }
-                if (error)
-                    continue;
-
-                sources.push({
-                    FusionID: source.FusionItems()[source.SelectedFusionIndex()].id
-                });
-            }
-            for (var j = 0; j < rule.Targets().length; j++) {
-                var target = rule.Targets()[j];
-
-                target.ErrorMessages([]);
-                if (target.SelectedFusionIndex() == -1) {
-                    target.ErrorMessages.push('Please select an attribute.');
-                    error = true;
-                }
-                if (error)
-                    continue;
-
-                targets.push({
-                    FusionID: target.FusionItems()[target.SelectedFusionIndex()].id
-                });
-            }
-            rules.push({
-                ID: rule.ID(),
-                sources: sources,
-                targets: targets,
-                Transformation: rule.Transformation(),
-                Sequence: rule.Sequence()
-            });
-        }
-
-
-        data = {
-            focalID: self.ObjectID(),
-            focal: self.Object(),
-            sourceID: self.SourceID(),
-            source: self.Source(),
-            targetID: self.TargetID(),
-            target: self.Target(),
-            rules: rules
-        };
-
-        var count = data.rules.length;
-
-        if (error) {
-            self.IsLoading(false);
-        } else {
-            $.ajax({
-                url: '/form/sourcetarget/save',
-                method: 'POST',
-                data: data
-            }).done(function (data) {
-                if (data == null || data.error == null || data.error == true) {
-                    self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the source rules.</span>');
-                    self.LoadRules();
-                } else {
-                    self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
-                    amplify.publish("SaveAction", { context: 'mappingrule', count: count, source: self.Source(), sourceID: self.SourceID(), target: self.Target(), targetID: self.TargetID() });
-                    self.LoadRules();
-                }
-            }).always(function () {
-                self.IsLoading(false);
-                deferred.resolve();
-            });
-        }
-
-        return deferred.promise();
-    }
-
-    return self;
-}
-
-function SourceToTargetMappingItem(data, parent, permissions) {
-    var self = this;
-    self.ID = ko.observable(data.ID || 0);
-    self.Object = ko.observable(data.Object);
-    self.ObjectID = ko.observable(data.ObjectID);
-    self.Source = ko.observable(data.Source);
-    self.SourceID = ko.observable(data.SourceID);
-    self.Target = ko.observable(data.Target);
-    self.TargetID = ko.observable(data.TargetID);
-    self.Sources = ko.observableArray([]);
-    self.Targets = ko.observableArray([]);
-    self.Transformation = ko.observable(data.Transformation || '');
-    self.Sequence = ko.observable(data.Sequence || 1);
-    self.Keywords = ko.observableArray([]);
-    self.ErrorMessages = ko.observableArray([]);
-
-    self.IsLoading = ko.observable(false);
-
-    self.CanUpdate = ko.observable(false);
-    self.CanDelete = ko.observable(false);
-    self.CanAdd = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-        if (permissions.HasPermission("Relationship", "Delete"))
-            self.CanDelete(true);
-    }
-
-    self.LoadItems = function () {
-        self.IsLoading(true);
-        self.LoadData();
-        self.IsLoading(false);
-    }
-
-    self.LoadData = function () {
-        if (data != null && !$.isEmptyObject(data)) {
-            if (data.Sources != null)
-                for (var i = 0; i < data.Sources.length; i++) {
-                    self.Sources.push(new SourceToTargetMappingSourceItem(data.Sources[i], self, true));
-                }
-            else
-                self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
-            if (data.Targets != null)
-                for (var i = 0; i < data.Targets.length; i++) {
-                    self.Targets.push(new SourceToTargetMappingSourceItem(data.Targets[i], self, false));
-                }
-            else
-                self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
-        }
-    }
-
-    self.LoadItems();
-    
-    self.AddSource = function () {
-        self.Sources.push(new SourceToTargetMappingSourceItem({}, self, true));
-    }
-
-    self.AddTarget = function () {
-        self.Targets.push(new SourceToTargetMappingSourceItem({}, self, false));
-    }
-
-    self.RemoveRule = function () {
-        parent.SourceRules.remove(self);
-    }
-
-    return self;
-}
-
-function SourceToTargetMappingSourceItem(data, parent, isSource) {
-    var self = this;
-    self.Name = ko.observable(data.Name || '');
-    self.ID = ko.observable(data.ID || -1);
-    self.FusionItems = ko.observableArray([]);
-    self.SelectedFusionIndex = ko.observable(-1);
-    self.SelectedFusionName = ko.observable('');
-    self.ErrorMessages = ko.observableArray([]);
-    self.IsLoading = ko.observable(false);
-
-    self.RemoveItem = function () {
-        if (isSource) {
-            if (parent.Sources().length == 1)
-                return;
-            parent.Sources.remove(self);
-        }
-        else {
-            if (parent.Targets().length == 1)
-                return;
-            parent.Targets.remove(self);
-        }
-    }
-
-    self.SearchPhrase = ko.observable('');
-    self.AppliedSearch = ko.computed(self.SearchPhrase).extend({ throttle: 500 });
-
-    self.SearchResults = ko.observableArray([]);
-    self.AppliedSearch.subscribe(function () {
-        if (self.AppliedSearch() == '')
-            return;
-
-        console.log(self.AppliedSearch());
-        self.LoadFusionItems();
-
-    });
-  
-    self.FusionSearch = function (searchString) {
-        self.SearchPhrase(searchString);
-    }
-
-    self.LoadFusionItems = function () {
-        self.IsLoading(true);
-        var obj = (isSource ? parent.Source() : parent.Target());
-        var objid = (isSource ? parent.SourceID() : parent.TargetID());
-
-        $.ajax({
-            url: 'form/sourcetarget/fusion',
-            data : {
-                type: obj,
-                id: objid,
-                phrase: self.AppliedSearch()
-            },
-            async: true
-        }).done(function (data) {
-            self.FusionItems([]);
-            $.each(data, function (i, val) {
-                self.FusionItems.push(val);
-            })
-        }).always(function () {
-            self.IsLoading(false);
-            self.LoadFusionData();
-        });
-    };
-
-
-
-    self.SelectedFusionIndex.subscribe(function () {
-        if (self.SelectedFusionIndex() == -1)
-            return;
-        self.SearchPhrase('');
-        self.SelectedFusionName(self.FusionItems()[self.SelectedFusionIndex()].name);
-        parent.Keywords.remove(self.SelectedFusionName());
-        parent.Keywords.push(self.SelectedFusionName());
-    })
-    
-
-    if (data != null && !$.isEmptyObject(data)) {
-        if (data.FusionID != null) {
-            self.FusionItems.push({ id: data.FusionID, name: data.Name });
-            self.SelectedFusionIndex(0);
-        }
-    } else {
-        self.IsLoading(true);
-        var obj = (isSource ? parent.Source() : parent.Target());
-        var objid = (isSource ? parent.SourceID() : parent.TargetID());
-
-        $.ajax({
-            url: 'form/sourcetarget/fusion',
-            data: {
-                type: obj,
-                id: objid,
-                phrase: '',
-                getDefault: true
-            },
-            async: true
-        }).done(function (data) {
-            self.FusionItems([]);
-            $.each(data, function (i, val) {
-                self.FusionItems.push(val);
-            });
-        }).always(function () {
-            self.IsLoading(false);
-        });
-    }
-
-    self.LoadFusionData = function () {
-        if (data != null && !$.isEmptyObject(data)) {
-            if (data.FusionID != null) {
-                var items = self.FusionItems();
-                for (var i = 0; i < items.length; i++) {
-                    if (items[i].id == data.FusionID) {
-                        self.SelectedFusionIndex(i);
-                        break;
-                    }
-                }
-                data = null;
-            }
-        }
-    }
-
-    return self;
-}
-
-
-function HierarchyRuleContextModel(data, parent) {
-    var self = this;
-    data = data || {};
-
-    self.Object = ko.observable(data.Object || "");
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-
-    if (data.ID != null && data.ID.indexOf('|') > -1) {
-        var obj = data.ID.split('|')[0];
-        var objid = data.ID.split('|')[1];
-        self.Object(obj);
-        self.ObjectID(objid);
-
-    }
-
-    self.ID = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-    self.Checked = ko.observable(data.Checked || false);
-
-    //self.Checked.subscribe(function () {
-    //    console.log('checked sub');
-    //    console.log(ko.toJS(parent));
-    //    console.log(self.Checked());
-    //    if (parent != null && parent.IsItemSelected() == true) {
-    //        if (self.Checked() == true)
-    //            parent.SelectedRule().SelectedItem().Contexts.push(this);
-    //        else
-    //            parent.SelectedRule().SelectedItem().Contexts.remove(this);
-    //    }
-    //});
-
-    self.Category = ko.observable(data.Category || '');
-    self.Type = ko.observable(data.Type || '');
-    self.Name = ko.observable(data.Name || '');
-    
-    return self;
-}
-
-function HierarchyRuleItemModel(data) {
-    var self = this;
-    data = data || {};
-
-    //#region Observables
-
-    self.ID = ko.observable(data.ID || 0);
-    self.IntersectMapID = ko.observable(data.IntersectMapID || 0);
-    self.Name = ko.observable(data.Name || "");
-    self.TypeName = ko.observable(data.TypeName || "");
-    self.Object = ko.observable(data.Object || "");
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || "");
-    self.SortOrder = ko.observable(data.SortOrder || 1);
-    self.IconForeColor = ko.observable(data.IconForeColor || "#000");
-    self.IconBackColor = ko.observable(data.IconBackColor || "#fff");
-
-    self.Contexts = ko.observableArray([]);
-
-    self.RuleName = ko.computed(function () {
-        return self.SortOrder() + '. ' + self.Name();
-    });
-    self.ContextCount = ko.computed(function () {
-        return (self.Contexts().length == 1) ? self.Contexts().length.toString() + ' context selected' : self.Contexts().length.toString() + ' contexts selected';
-    });
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-
-    //#endregion
-
-    //load Contexts
-    if (data.Contexts) {
-        $.each(data.Contexts, function (cxIx, cxItem) {
-            cxItem.Checked = true;
-            self.Contexts.push(
-                    new HierarchyRuleContextModel(cxItem, self)
-                );
-        });
-    }
-
-    return self;
-}
-
-function HierarchySourceRuleModel(data, permissions) {
-    var self = this;
-
-    if (data == null) {
-        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
-    }
-    
-    //#region Observables
-
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable(data.Name || '');
-    self.Target = ko.observable(data.AppliesToObject || '');
-    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
-    self.Object = ko.observable(data.Object || '');
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || '');
-    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
-    self.ErrorMessages = ko.observableArray([]);
-    self.SaveMessage = ko.observable('');
-
-    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
-    self.IsTemplate = ko.observable(data.IsTemplate || false);
-    self.IsSaving = ko.observable(false);
-
-    self.Items = ko.observableArray();
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
-
-    //#endregion
-    
-    //load Items
-    if (data.Items) {
-        for (var i = 0; i < data.Items.length; i++) {
-            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
-        }
-    }
-
-    //#region Functions
-
-    self.SaveRule = function () {
-        if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
-            return;
-        if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
-            return;
-        self.IsSaving(true);
-        self.ErrorMessages([]);
-        if (self.Items().length < 1)
-            self.ErrorMessages.push('Source rule must have at least 1 source item.');
-        if (self.Name().length < 1)
-            self.ErrorMessages.push('Source rule requires a name.');
-
-        //for (var i = 0; i < self.Items().length; i++) {
-        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-        //    }
-        //}
-
-        if (self.ErrorMessages().length > 0) {
-            self.IsSaving(false);
-            return;
-        }
-
-        var SourceRule = {
-            ID: self.ID(),
-            Name: self.Name(),
-            Object: self.Object(),
-            ObjectID: self.ObjectID(),
-            AppliesToObject: self.Target(),
-            AppliesToObjectID: self.TargetID(),
-            AppliesToObjectList: "",
-            Items: ko.toJS(self.Items())
-        }
-
-        var action = (self.ID() > 0) ? 'edit' : 'add';
-
-        $.ajax({
-            url: '/form/SourceRules/save',
-            data: SourceRule,
-            method: 'POST'
-        }).always(function (data) {
-            self.IsSaving(false);
-            if (!data.error) {
-                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
-                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
-            } else {
-                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
-                console.log(data.message);
-            }        
-        });
-    }
-
-    //#endregion
-
-    return self;
-}
-
-function HierarchyPanelViewModel(data, permissions) {
-    var self = this;
-    self.jqxLoaded = false;
-    //#region Observables
-    //console.log(permissions);
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable('');
-    self.Target = ko.observable(data.target || '');
-    self.TargetID = ko.observable(data.targetID || 0);
-    self.Object = ko.observable(data.object || '');
-    self.ObjectID = ko.observable(data.objectID || 0);
-    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.NewRule().Name('New Rule');
-    self.NewRule().Object(self.Object());
-    self.NewRule().ObjectID(self.ObjectID());
-    self.NewRule().Target(self.Target());
-    self.NewRule().TargetID(self.TargetID());
-    self.InProgress = ko.observable(false);
-    self.IsGridLoading = ko.observable(false);
-    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.Mode = ko.observable('add'); 
-
-    self.Contexts = ko.observableArray([]);
-    self.Items = ko.observableArray();
-    self.Sources = ko.observableArray();
-    self.SourceRules = ko.observableArray();
-
-
-    self.SelectedItemIndex = ko.observable(-1);
-    self.SelectedSourceIndex = ko.observable(-1);
-    self.SelectedRuleIndex = ko.observable(-1);
-   // self.RadioAddChecked = ko.observable(true);
-    //self.RadioEditChecked = ko.observable(false);
-    self.IsLoadingContexts = ko.observable(false);
-    self.HasSourcesOrRules = ko.observable(true);
-
-    self.CanAdd = ko.observable(false);
-    self.CanUpdate = ko.observable(false);
-
-    if (permissions != null) {
-        if (permissions.HasPermission("Relationship", "Create"))
-            self.CanAdd(true);
-        if (permissions.HasPermission("Relationship", "Update"))
-            self.CanUpdate(true);
-
-    }
-
-    self.AddSourceRule = function () {
-        var data = {
-            Name: 'New Rule',
-            Object: self.Object(),
-            ObjectID: self.ObjectID(),
-            AppliesToObject: self.Target(),
-            AppliesToObjectID: self.TargetID()
-        }
-
-        var newRule = new HierarchySourceRuleModel(data, permissions);
-
-        self.SelectedRule(newRule);
-        self.SourceRules.push(newRule);
-        self.SelectedRuleIndex(self.SourceRules().length - 1);
-    }
-
-
-    self.SelectedItemIndex.subscribe(function () {
-        if (self.SelectedItemIndex() == -1) {
-            self.IsLoadingContexts(true);
-            return;
-        }
-        self.IsLoadingContexts(false);
-        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        if (self.IsItemSelected())
-            self.CheckUsedContextItems();
-    });
-
-    self.SelectedRuleIndex.subscribe(function () {
-        var rule = self.SourceRules()[self.SelectedRuleIndex()];
-        self.SelectedRule(rule);
-        self.SelectedItemIndex(-1);
-        self.CheckUsedContextItems();
-    });
-
-    self.IsItemSelected = ko.computed(function () {
-        if (self.SelectedRule() == null)
-            return false;
-        if (self.SelectedRule().SelectedItem() == null)
-            return false;
-        return true;
-    });
-
-    //#endregion
- 
-    //#region Functions
-
-    self.LoadRules = function () {
-        self.InProgress(true);
-        $.ajax({
-            url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
-            method: 'GET'
-        }).done(function (data) {
-            if (data == [] || data == null || data.length < 1)
-                return;
-            self.SourceRules([]);
-            for (var i = 0; i < data.length; i++) {
-                data[i].SourceRuleID = self.ID();
-                var rule = new HierarchySourceRuleModel(data[i], permissions);
-                self.SourceRules.push(rule);
-                for (var j = 0; j < data[i].Items.length; j++) {
-                    for (var k = 0; k < self.Sources().length; k++) {
-                        if (data[i].Items[j].IntersectMapID == self.Sources()[k].IntersectMapID()) {
-                            self.Sources.remove(self.Sources()[k]);
-                            break;
-                        }
-                    }
-                }
-            }
-        }).always(function () {
-            //self.SelectRule(self.NewRule());
-            self.InProgress(false);
-            if (!self.jqxLoaded)
-                self.ApplyJqxBindings();
-            self.AfterLoad();
-        });
-    }
-
-    self.LoadSources = function () {
-        self.InProgress(true);
-
-        $.ajax({
-            url: '/form/SourceRules/sources/' + self.Object() + '/' + self.ObjectID() + '/' + self.Target() + '/' + self.TargetID(),
-            method: 'GET'
-        }).done(function (data) {
-            if (data.Contexts)
-                $.each(data.Contexts, function (cxIx, cxItem) {
-                    self.Contexts.push(
-                            new HierarchyRuleContextModel(cxItem, self)
-                        );
-                });
-            $.each(data, function (roIx, roItem) {
-                self.Sources.push(
-                        new HierarchyRuleItemModel(roItem)
-                    );
-            });
-
-        }).always(function () {
-            self.InProgress(false);
-            self.LoadContexts();
-            self.LoadRules();
-        });
-    }
-
-    self.LoadSources();
-
-    self.LoadContexts = function () {
-        $.ajax({
-            url: '/form/SourceRules/contexts',
-            method: 'GET'
-        }).done(function (data) {
-            if (data == null)
-                return;
-            if (data.count == null || data.items == null)
-                return;
-            if (data.items.length < 1)
-                return;
-            self.Contexts([]);
-            self.Contexts(data.items);
-        });
-    };
-
-    self.AddRuleItem = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedSourceIndex() == -1)
-            return;
-        self.SelectedRule().Items.push(self.Sources()[self.SelectedSourceIndex()]);
-        self.Sources.remove(self.Sources()[self.SelectedSourceIndex()]);
-        self.SelectedSourceIndex(-1);
-        self.ReorderItems(self.SelectedRule().Items());
-    };
-
-    self.RemoveRuleItem = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() == -1)
-            return;
-        console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
-        self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        self.SelectedItemIndex(-1);
-        self.ReorderItems(self.SelectedRule().Items());
-    }
-
-    self.MoveRuleItemUp = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() < 1)
-            return;
-        var itemAbove = self.SelectedRule().Items()[self.SelectedItemIndex() - 1];
-        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
-
-        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemAbove;
-        self.SelectedRule().Items()[self.SelectedItemIndex() - 1] = itemSelected;
-
-        self.ReorderItems(self.SelectedRule().Items());
-        self.SelectedItemIndex(self.SelectedItemIndex() - 1);
-
-    }
-
-    self.MoveRuleItemDown = function () {
-        if (!self.CanUpdate())
-            return;
-        if (self.SelectedItemIndex() == -1 || self.SelectedItemIndex() == self.SelectedRule().Items().length - 1)
-            return;
-        var itemBelow = self.SelectedRule().Items()[self.SelectedItemIndex() + 1];
-        var itemSelected = self.SelectedRule().Items()[self.SelectedItemIndex()];
-
-        self.SelectedRule().Items()[self.SelectedItemIndex()] = itemBelow;
-        self.SelectedRule().Items()[self.SelectedItemIndex() + 1] = itemSelected;
-
-        self.ReorderItems(self.SelectedRule().Items());
-        self.SelectedItemIndex(self.SelectedItemIndex() + 1);
-    }
-
-    self.OnCellValueChange = function () {
-        if (self.IsLoadingContexts() == true)
-            return;
-        if (self.IsItemSelected()) {
-            var checkedCtx = [];
-            self.SelectedRule().SelectedItem().Contexts([]);
-            for (var i = 0; i < self.Contexts().length; i++) {
-                if (self.Contexts()[i].Checked == true) {
-                    var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
-                    self.SelectedRule().SelectedItem().Contexts.push(obj);
-                }
-            }
-        }
-    }
-
-    self.ApplyJqxBindings = function () {
-        $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
-            self.OnCellValueChange();
-        }).on('bindingcomplete', function () {
-            //jqx grid is not editable after bind without this
-            $(this).jqxGrid('refresh');
-        });
-        self.jqxLoaded = true;       
-    }
-
-    self.FindItemByOrder = function (order, array) {
-        for (var i = 0; i < array.length; i++) {
-            if (array[i].SortOrder() == order)
-                return array[i];
-        }
-    }
-
-    self.ReorderItems = function (array) {
-        for (var i = 0; i < array.length; i++) {
-            array[i].SortOrder(i + 1);
-        }
-    }
-
-    self.CheckUsedContextItems = function () {
-
-        var isItemSelected = self.IsItemSelected();
-
-        self.IsGridLoading(true);
-        self.IsLoadingContexts(true);
-
-        for (var i = 0; i < self.Contexts().length; i++) {
-            var c = self.Contexts()[i];
-            c.Checked = false;
-            if (!isItemSelected)
-                continue;
-            for (var j = 0; j < self.SelectedRule().SelectedItem().Contexts().length; j++) {
-                var rc = self.SelectedRule().SelectedItem().Contexts()[j];
-                if (rc.ID() == c.ID) {
-                    c.Checked = true;
-                }
-            }
-        }
-        self.IsLoadingContexts(false);
-        self.IsGridLoading(false);
-
-    }
-
-    self.SelectRule = function (selectedRule) {
-        self.SelectedRule(selectedRule);
-
-    }
-
-    self.SelectItem = function (selectedItem) {
-        self.SelectedRule().SelectedItem(selectedItem);
-        self.CheckUsedContextItems();
-    }
-
-    self.AfterLoad = function () {
-        if (self.SourceRules().length >= 1) {
-            self.SelectRule(self.SourceRules()[0]);
-            self.SelectedRuleIndex(0);
-            self.HasSourcesOrRules(true);
-        } else {
-            self.HasSourcesOrRules(true);
-        }
-        if (self.Sources().length < 1 && self.SourceRules().length < 1) {
-            self.HasSourcesOrRules(false);
-        }
-    }
-
-    //#endregion
-
-    return self;
-}
-
-
-function LineagePanelViewModel(data, permissions) {
-    var self = this;
-    self.jqxLoaded = false;
-
-    //#region Observables
-
-    self.InProgress = ko.observable(false);
-    self.IsSaving = ko.observable(false);
-
-    self.Items = ko.observableArray();
-
-    self.IntersectType = ko.observable();
-    self.IntersectTypeOptions = ko.observableArray();
-
-    //if (permissions != null) {
-    //    if (permissions.HasPermission("Relationship", "Create"))
-    //        self.CanAdd(true);
-    //    if (permissions.HasPermission("Relationship", "Update"))
-    //        self.CanUpdate(true);
-    //}
-
-    //#endregion
-
-    //#region Functions
-
-    self.AddItem = function () {
-        if (self.IntersectType() > 0) {
-            var data = {
-                IntersectType: self.IntersectType()
-            }
-            self.Items.push(new LineagePanelViewItemModel(data, permissions));
-        }
-    }
-
-    self.LoadIntersectTypes = function () {
-        self.InProgress(true);
-        $.ajax({
-            url: '/form/Lineage_IntersectTypes',
-            method: 'GET'
-        }).done(function (data) {
-            self.IntersectTypeOptions(data);
-        }).always(function () {
-            self.InProgress(false);
-            //if (!self.jqxLoaded)
-            //    self.ApplyJqxBindings();
-            //self.AfterLoad();
-        });
-    }
-
-    self.RemoveItem = function () {
-        self.Items.remove(this);
-    }
-
-    self.Save = function () {
-        if (self.Items().length > 0) {
-            var deferred = $.Deferred();
-
-            self.IsSaving(true);
-
-            var items = [];
-
-            for (var i = 0; i < self.Items().length; i++) {
-                var item = self.Items()[i];
-
-                var subject = item.Subject().split('|')
-                var object = item.Object().split('|')
-
-                items.push({
-                    Position: i,
-                    IntersectTypeID: item.IntersectType(),
-                    Subject: subject[0],
-                    SubjectID: subject[1],
-                    Object: object[0],
-                    ObjectID: object[1]
-                });
-            }
-
-            var successfulItems = [];
-
-            if (items.length > 0) {
-                $.ajax({
-                    url: '/form/Lineage_AddItemsToDiagram',
-                    method: 'POST',
-                    data: { Items: items}
-                }).done(function (returnedItems) {
-                    if (returnedItems == null) {
-                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
-                    } else {
-                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
-                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
-                            if (returnedItem.ErrorMessage) {
-
-                            }
-                            else {
-                                var model = self.Items()[returnedItem.Position];
-                                model.Intersect(returnedItem.IntersectID);
-                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
-                                returnedItem.Name = model.SubjectName();
-                                successfulItems.push(returnedItem);
-                            }
-                        });
-
-                    }
-                }).always(function () {
-                    self.IsSaving(false);
-                    deferred.resolve(successfulItems);
-                });
-            }
-
-            return deferred.promise();
-        }
-    }
-
-    //self.OnCellValueChange = function () {
-    //    if (self.IsLoadingContexts() == true)
-    //        return;
-    //    if (self.IsItemSelected()) {
-    //        var checkedCtx = [];
-    //        self.SelectedRule().SelectedItem().Contexts([]);
-    //        for (var i = 0; i < self.Contexts().length; i++) {
-    //            if (self.Contexts()[i].Checked == true) {
-    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
-    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
-    //            }
-    //        }
-    //    }
-    //}
-
-    //self.ApplyJqxBindings = function () {
-    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
-    //    //    self.OnCellValueChange();
-    //    //}).on('bindingcomplete', function () {
-    //    //    //jqx grid is not editable after bind without this
-    //    //    $(this).jqxGrid('refresh');
-    //    //});
-    //    self.jqxLoaded = true;
-    //}
-
-    //self.AfterLoad = function () {
-    //    if (self.SourceRules().length >= 1) {
-    //        self.SelectRule(self.SourceRules()[0]);
-    //        self.SelectedRuleIndex(0);
-    //        self.HasSourcesOrRules(true);
-    //    } else {
-    //        self.HasSourcesOrRules(true);
-    //    }
-    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
-    //        self.HasSourcesOrRules(false);
-    //    }
-    //}
-
-    //#endregion
-
-    self.LoadIntersectTypes();
-
-    return self;
-}
-
-function LineagePanelViewItemModel(data, permissions) {
-    var self = this;
-
-    //#region Observables
-
-    self.IntersectType = ko.observable(data.IntersectType);
-    self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
-    
-    self.Subject = ko.observable();
-    self.SubjectName = ko.observable();
-    self.SubjectsLoading = ko.observable(true);
-    self.SubjectOptions = ko.observableArray();
-
-    self.Object = ko.observable();
-    self.ObjectName = ko.observable();
-    self.ObjectsLoading = ko.observable(true);
-    self.ObjectOptions = ko.observableArray();
-
-    //#endregion
-
-    //#region Functions
-
-    self.LoadSubjects = function () {
-        $.ajax({
-            url: '/form/Lineage_MapSubjects',
-            data: { id: self.IntersectType() },
-            method: 'GET'
-        }).done(function (data) {
-            self.SubjectOptions(data);
-        }).always(function () {
-            self.SubjectsLoading(false);
-        });
-    }
-
-    self.LoadObjects = function () {
-        $.ajax({
-            url: '/form/Lineage_MapObjects',
-            data: { id: self.IntersectType() },
-            method: 'GET'
-        }).done(function (data) {
-            self.ObjectOptions(data);
-        }).always(function () {
-            self.ObjectsLoading(false);
-        });;
-    };
-
-    //#endregion
-
-    self.LoadSubjects();
-    self.LoadObjects();
-
-    return self;
-}
-
 
 function Statistic(data) {
     var self = this;
@@ -49129,6 +49422,13 @@ amplify.subscribe("RelationOverlayRemoved", function () {
         logError("Common.js : RelationOverlayRemoved", e);
     }
 });
+
+var generateRandomLineageKey = function (length) {
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
 
 var removeOverlay = function () {
     amplify.publish(AmplifyActions.OverlayUnsubscribe, {});
@@ -56025,13 +56325,13 @@ function LineageDiagram(controlID, type, id, readonly) {
         } else {
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).show(delay);
+                    //$("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_sourcerule_add).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    //$("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_sourcerule_add).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
@@ -56039,12 +56339,12 @@ function LineageDiagram(controlID, type, id, readonly) {
                 $("#" + controlID_ribbon_sourcerule_add).hide(delay);
 
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                   // $("#" + controlID_ribbon_sourcemapping).show(delay);
+                    //$("#" + controlID_ribbon_transformation).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    //$("#" + controlID_ribbon_sourcemapping).hide(delay);
+                    //$("#" + controlID_ribbon_transformation).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }
@@ -56565,6 +56865,15 @@ function LineageDiagram(controlID, type, id, readonly) {
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", true);
                             }
                         }
+                        if (data.action == 'delete') {
+                            var count = data.count;
+                            var ix = findNodeIndexByObject(data.object, data.objectid);
+                            if (ix > -1) {
+                                var node = myDiagram.model.nodeDataArray[ix];
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "sourceRuleCount", count);
+                                myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", (count > 0));
+                            }
+                        }
                     }
                     refreshControls(selectedData);
                     break;
@@ -56743,7 +57052,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID).html(tmpl({ control: controlID }));
 
     var lineageModel;
-    var sourceToTargetMappingModel;
+    var mapRulesModel;
     var transformationModel;
 
     //#region Control constants
@@ -56779,9 +57088,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_overlay_new = controlID + '_overlay_new';
     var controlID_overlay_relationship = controlID + '_overlay_relationship';
     var controlID_overlay_predicates = controlID + '_overlay_predicates';
+    var controlID_overlay_transformation = controlID + '_overlay_transformation';
     var controlID_overlay_cancel = controlID + '_overlay_cancel';
     var controlID_overlay_add = controlID + '_overlay_add';
-    var controlID_overlay_roles = controlID + '_overlay_roles';
 
     var controlID_ribbon_spacer = controlID + '_ribbon_spacer';
     var controlID_ribbon_content = controlID + '_ribbon_content';
@@ -56808,14 +57117,11 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_ribbon_lineage_cancel = controlID + '_ribbon_lineage_cancel';
     var controlID_ribbon_lineage_save = controlID + '_ribbon_lineage_save';
 
-    var controlID_ribbon_sourcemapping = controlID + '_ribbon_sourcemapping';
-    var controlID_ribbon_sourcemapping_add = controlID + '_ribbon_sourcemapping_add';
-    var controlID_ribbon_sourcemapping_cancel = controlID + '_ribbon_sourcemapping_cancel';
-    var controlID_ribbon_sourcemapping_save = controlID + '_ribbon_sourcemapping_save';
-
-    var controlID_ribbon_transformation = controlID + '_ribbon_transformation';
-    var controlID_ribbon_transformation_save = controlID + '_ribbon_transformation_save';
-    var controlID_ribbon_transformation_cancel = controlID + '_ribbon_transformation_cancel';
+    var controlID_ribbon_multimaprule = controlID + '_ribbon_multimaprule';
+    var controlID_ribbon_maprule = controlID + '_ribbon_maprule';
+    var controlID_ribbon_maprule_add = controlID + '_ribbon_maprule_add';
+    var controlID_ribbon_maprule_cancel = controlID + '_ribbon_maprule_cancel';
+    var controlID_ribbon_maprule_save = controlID + '_ribbon_maprule_save';
 
     var controlID_popover_add = controlID + '_popover_add';
 
@@ -56823,10 +57129,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_popover_lineage_editor_body = controlID_popover_lineage_editor + '_body';
     var controlID_popover_sourcerule_editor = controlID + '_popover_sourcerule_editor';
     var controlID_popover_sourcerule_editor_body = controlID_popover_sourcerule_editor + '_body';
-    var controlID_popover_sourcemapping_editor = controlID + '_popover_sourcemapping_editor';
-    var controlID_popover_sourcemapping_editor_body = controlID_popover_sourcemapping_editor + '_body';
-    var controlID_popover_transformation_editor = controlID + '_popover_transformation_editor';
-    var controlID_popover_transformation_editor_body = controlID_popover_transformation_editor + '_body';
+    var controlID_popover_maprule_editor = controlID + '_popover_maprule_editor';
+    var controlID_popover_maprule_editor_body = controlID_popover_maprule_editor + '_body';
+    var controlID_popover_multimaprule_editor = controlID + '_popover_multimaprule_editor';
+    var controlID_popover_multimaprule_editor_body = controlID_popover_multimaprule_editor + '_body';
 
     var controlID_tabs = controlID + '_tabs';
     var controlID_fusion_tab = controlID + '_fusion_tab';
@@ -56838,7 +57144,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_sourcerules_content = controlID + '_sourcerules_content';
     var controlID_mappingrules_content = controlID + '_mappingrules_content';
     var controlID_responsibilities_content = controlID + '_responsibilities_content';
-    var controlID_transformations_content = controlID + '_transformations_content';
 
     var tabs = {
         "sourcerules": 0,
@@ -56875,23 +57180,17 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID_ribbon_lineage_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_lineage_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
-    $("#" + controlID_ribbon_sourcemapping).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $('#' + controlID_ribbon_sourcemapping_add).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $('#' + controlID_ribbon_sourcemapping_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $('#' + controlID_ribbon_sourcemapping_save).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_maprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $('#' + controlID_ribbon_maprule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_maprule_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_maprule_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
-    $("#" + controlID_ribbon_transformation).jqxButton({ theme: theme, height: "100%", width: 98 }).hide();
-    $('#' + controlID_ribbon_transformation_save).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $('#' + controlID_ribbon_transformation_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('.lineage').hide();
     $('.sourcemapping').hide();
-    $('.transformation').hide();
 
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
-
-    //$("#" + controlID_add_search).jqxButton({ theme: theme, width: "15%" });
-
 
     //#endregion
 
@@ -56948,8 +57247,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         //model.ApplyJqxBindings();
     });
 
-    $("#" + controlID_ribbon_sourcemapping).on('click', function () {
-        //$('#' + controlID_popover_sourcemapping_editor).toggle(200).css('left', $(this).position().left - 500).css('top', $(this).position().top + 150);
+    $("#" + controlID_ribbon_maprule).on('click', function () {
+
         var selected = myDiagram.selection;
         if (selected == null)
             return;
@@ -56957,98 +57256,60 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         if (selected == null)
             return;
 
-        
-        var from = {};
-        var to = {};
+        if (selected.diagramObjectType == 'Link') {
+            var from = myDiagram.model.findNodeDataForKey(selected.from);
+            var to = myDiagram.model.findNodeDataForKey(selected.to);
 
-        if (selected.diagramObjectType == 'Node') {
-            from = {
-                id: selected.id,
-                type: selected.type,
-                name: selected.name,
-                typeName: selected.typeName
+            var data = {
+                SourceName: from.name,
+                SourceIntersectID: selected.fromIntersectId,
+                SourceDiagramKey: selected.from,
+
+                TargetName: to.name,
+                TargetIntersectID: selected.toIntersectId,
+                TargetDiagramKey: selected.to
             };
-            to = from;
-        } else {
-            from = myDiagram.model.findNodeDataForKey(selected.from);
-            to = myDiagram.model.findNodeDataForKey(selected.to);
+
+            $('#' + controlID_wrapper).hide();
+            $('.diagramcommands').hide();
+
+            mapRulesModel = new MapRulesModel(data, permissions);
+            ko.cleanNode($('#' + controlID_popover_maprule_editor_body)[0]);
+            ko.applyBindings(mapRulesModel, $('#' + controlID_popover_maprule_editor_body)[0]);
+
+            $('#' + controlID_popover_maprule_editor).show();
+            $('.sourcemapping').show();
         }
-
-
-        var data = {
-            Source: from.type,
-            SourceID: from.id,
-            SourceName: from.name,
-            SourceTypeName: from.typeName,
-            Target: to.type,
-            TargetID: to.id,
-            TargetName: to.name,
-            TargetTypeName: to.typeName,
-            Object: type,
-            ObjectID: id,
-        };
-
-        $('#' + controlID_wrapper).hide();
-        $('.diagramcommands').hide();
-
-        sourceToTargetMappingModel = new SourceToTargetMappingModel(data, permissions);
-        ko.cleanNode($('#' + controlID_popover_sourcemapping_editor_body)[0]);
-        ko.applyBindings(sourceToTargetMappingModel, $('#' + controlID_popover_sourcemapping_editor_body)[0]);
-
-        $('#' + controlID_popover_sourcemapping_editor).show();
-        $('.sourcemapping').show();
-
     });
 
-    $("#" + controlID_ribbon_transformation).on('click', function () {
-        var selected = myDiagram.selection;
-        if (selected == null)
-            return;
-        var selected = selected.first().data;
-        if (selected == null)
-            return;
+    $("#" + controlID_ribbon_multimaprule).on('click', function () {
 
+        var maps = [];
 
-        var from = {};
-        var to = {};
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            var link = myDiagram.model.linkDataArray[i];
+            var from = myDiagram.model.findNodeDataForKey(link.from);
+            var to = myDiagram.model.findNodeDataForKey(link.to);
+            maps.push({
+                SourceName: from.name,
+                SourceIntersectID: link.fromIntersectId,
+                SourceDiagramKey: link.from,
 
-        if (selected.diagramObjectType == 'Node') {
-            from = {
-                id: selected.id,
-                type: selected.type,
-                name: selected.name,
-                typeName: selected.typeName
-            };
-            to = from;
-        } else {
-            from = myDiagram.model.findNodeDataForKey(selected.from);
-            to = myDiagram.model.findNodeDataForKey(selected.to);
+                TargetName: to.name,
+                TargetIntersectID: link.toIntersectId,
+                TargetDiagramKey: link.to
+            });
         }
-
-
-        var data = {
-            Source: from.type,
-            SourceID: from.id,
-            SourceName: from.name,
-            SourceTypeName: from.typeName,
-            Target: to.type,
-            TargetID: to.id,
-            TargetName: to.name,
-            TargetTypeName: to.typeName,
-            Object: type,
-            ObjectID: id,
-            Transformation: ''
-        };
 
         $('#' + controlID_wrapper).hide();
         $('.diagramcommands').hide();
 
-        transformationModel = new BusinessTransformationRuleModel(data, permissions);
-        ko.cleanNode($('#' + controlID_popover_transformation_editor_body)[0]);
-        ko.applyBindings(transformationModel, $('#' + controlID_popover_transformation_editor_body)[0]);
+        mapRulesModel = new MultiMapRulesModel({ Maps: maps }, permissions);
+        ko.cleanNode($('#' + controlID_popover_multimaprule_editor_body)[0]);
+        ko.applyBindings(mapRulesModel, $('#' + controlID_popover_multimaprule_editor_body)[0]);
 
-        $('#' + controlID_popover_transformation_editor).show();
-        $('.transformation').show();
+        $('#' + controlID_popover_multimaprule_editor).show();
+        $('.sourcemapping').show();
     });
 
     $('#' + controlID_ribbon_lineage_cancel).on('click', function () {
@@ -57064,34 +57325,18 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
                 d.backColor = "#000";
                 d.foreColor = "#fff";
-                d.id = n.Intersect.SubjectID;
+                d.obj = n.Intersect.Subject;
+                d.objid = n.Intersect.SubjectID;
                 d.name = n.Name;
-                d.object = n.Intersect.Subject;
+
                 d.typeName = n.Intersect.SubjectTypeName;
                 d.url = n.Intersect.SubjectUrl;
                 d.template = "Artifact";
-                d.type = n.Intersect.Subject;
                 d.objecttype = n.Intersect.SubjectType;
                 d.objecttypeid = n.Intersect.SubjectTypeID;
-                d.key = n.Intersect.Subject + n.Intersect.SubjectID;
+                d.key = generateRandomLineageKey(25);
                 d.isDeletable = true;
                 d.intersectId = n.IntersectID;
-
-                /*
-                    d.backColor = data[i].backColor;
-                    d.foreColor = data[i].foreColor;
-                    d.id = data[i].id;
-                    d.name = data[i].name;
-                    d.object = data[i].object;
-                    d.typeName = data[i].typeName;
-                    d.url = data[i].url;
-                    d.template = "Artifact";
-                    d.type = data[i].object;
-                    d.objecttype = data[i].objecttype;
-                    d.objecttypeid = data[i].objecttypeid;
-                    d.key = data[i].type + data[i].id.toString();
-                    d.isDeletable = true;
-                 */
 
                 myDiagram.model.addNodeData(d);
             });
@@ -57102,58 +57347,33 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         });
     });
 
-    $('#' + controlID_ribbon_sourcemapping_add).on('click', function () {
-        sourceToTargetMappingModel.AddSourceRule();
+    $('#' + controlID_ribbon_maprule_add).on('click', function () {
+        mapRulesModel.AddRule();
     });
-    $('#' + controlID_ribbon_sourcemapping_cancel).on('click', function () {
+    $('#' + controlID_ribbon_maprule_cancel).on('click', function () {
         $('.sourcemapping').fadeOut();
-        $('#' + controlID_ribbon_sourcemapping_add).show();
-        $('#' + controlID_ribbon_sourcemapping_save).show();
+        $('#' + controlID_ribbon_maprule_add).show();
+        $('#' + controlID_ribbon_maprule_save).show();
         $('.diagramcommands').show();
-        $('#' + controlID_popover_sourcemapping_editor).hide();
+        $('#' + controlID_popover_maprule_editor).hide();
+        $('#' + controlID_popover_multimaprule_editor).hide();
         $('#' + controlID_wrapper).show();
     });
-    $('#' + controlID_ribbon_sourcemapping_save).on('click', function () {
-        sourceToTargetMappingModel.SaveRules().then(function(){
+    $('#' + controlID_ribbon_maprule_save).on('click', function () {
+        mapRulesModel.SaveRules().then(function(){
             $('.sourcemapping').fadeOut();
             $('.diagramcommands').show();
-            $('#' + controlID_popover_sourcemapping_editor).hide();
-            $('#' + controlID_wrapper).show();
-        });
-    });
-
-    $('#' + controlID_ribbon_transformation_cancel).on('click', function () {
-        $('.transformation').fadeOut();
-        $('#' + controlID_ribbon_transformation_save).show();
-        $('.diagramcommands').show();
-        $('#' + controlID_popover_transformation_editor).hide();
-        $('#' + controlID_wrapper).show();
-    });
-    $('#' + controlID_ribbon_transformation_save).on('click', function () {
-        transformationModel.Save().then(function(){
-            $('.transformation').fadeOut();
-            $('.diagramcommands').show();
-            $('#' + controlID_popover_transformation_editor).hide();
+            $('#' + controlID_popover_maprule_editor).hide();
+            $('#' + controlID_popover_multimaprule_editor).hide();
             $('#' + controlID_wrapper).show();
         });
     });
 
     amplify.subscribe("NoFusionAvailable", function () {
-        $('#' + controlID_popover_sourcemapping_editor).height(300);
-        $('#' + controlID_ribbon_sourcemapping_add).hide();
-        $('#' + controlID_ribbon_sourcemapping_save).hide();
+        $('#' + controlID_popover_maprule_editor).height(300);
+        $('#' + controlID_ribbon_maprule_add).hide();
+        $('#' + controlID_ribbon_maprule_save).hide();
     });
-
-    //$('#' + controlID_ribbon).jqxRibbon({
-    //    width: "100%",
-    //    height: 64,
-    //    animationType: "fade",
-    //    selectionMode: "click",
-    //    position: "top",
-    //    theme: theme,
-    //    mode: "default",
-    //    selectedIndex: 0
-    //});
 
     //#region General ribbon commands
 
@@ -57269,16 +57489,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         }
     });
-
-    //$('#' + controlID_add_search).on('click', getObjectsBySearch);
     $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
     $('#' + controlID_overlay_add).on('click', addRelationship);
-    //$('#' + controlID_popover_add).on('keypress', '#' + controlID_add_search_text, function (e) {
-    //    if (e.keyCode == 13) {
-    //        $('#' + controlID_add_search).click();
-    //        return false;
-    //    }
-    //});
 
     //#endregion
 
@@ -57409,13 +57621,16 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     function addRelationship() {
 
         var intersectRoleId = $('#' + controlID_overlay_predicates).val();
+        var transformation = $('#' + controlID_overlay_transformation).redactor('get');
         var text = $('#' + controlID_overlay_predicates).text();
 
-        myDiagram.startTransaction("nameRelationship")
+        myDiagram.startTransaction("nameRelationship");
+
         if (overlayEditLinkKey != null) {
             var link = findLinkDataForKey(overlayEditLinkKey);
             myDiagram.model.setDataProperty(link, 'text', text);
             myDiagram.model.setDataProperty(link, 'intersectRoleId', intersectRoleId);
+            myDiagram.model.setDataProperty(link, 'transformation', transformation);
 
             //get the id if possible (if link is deleted and re-added)
             for (var i = 0; i < initialLinks.length; i++) {
@@ -57434,8 +57649,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             if (newLink.id == null) {
                 for (var i = 0; i < initialLinks.length; i++) {
                     if (initialLinks[i].from == newLink.from && initialLinks[i].to == newLink.to) {
-                        newLink.id = initialLinks[i].id;
-                        newLink.key = initialLinks[i].key;
+                        //newLink.id = initialLinks[i].id;
+                        //newLink.key = initialLinks[i].key;
                     }
                 }
             }
@@ -57443,8 +57658,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             var index = -1;
 
             for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-                if (myDiagram.model.linkDataArray[i].from == newLink.from &&
-                    myDiagram.model.linkDataArray[i].to == newLink.to) {
+                if (myDiagram.model.linkDataArray[i].from == newLink.from && myDiagram.model.linkDataArray[i].to == newLink.to) {
                     myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
                     break;
                 }
@@ -57453,8 +57667,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             myDiagram.model.addLinkData(newLink);
         }
 
-
         myDiagram.commitTransaction("nameRelationship");
+
         $('#' + controlID_overlay).hide();
         newLink = null;
         overlayEditLinkKey = null;
@@ -57542,20 +57756,25 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     function createLinkModel() {
         return {
-            key: null,
             id: null,
+            key: null,
             intersectTypeId: null,
+
             from: null,
+            fromIntersectId: 0,
             fromPortId: "OUT",
+
             to: null,
+            toIntersectId: 0,
             toPortId: "IN",
+
             text: null,
             intersectRoleId: null,
             isDeletable: true,
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
-            transformationCount: 0,
+            transformation: null,
             hasTransformations: false,
             hasProperties: false
         };
@@ -57564,10 +57783,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     function createNodeModel() {
         return {
             key: null,
-            id: null,
-            parentId: null,
+            obj: null,
+            objid: null,
             name: null,
-            type: null,
             typeName: null,
             objecttype: null,
             objecttypeid: null,
@@ -57576,7 +57794,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             isDeletable: true,
             highlightColor: null,
             diagramObjectType: "Node",
-            level: null,
             template: "Artifact",
             mapId: null,
             intersectId: null,
@@ -57591,7 +57808,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             openIssueCount: 0,
             hasOpenIssues: false,
             transformationCount: 0,
-            hasTransformations: false
+            hasTransformations: false,
+            mapItems: null
         };
     };
 
@@ -57604,9 +57822,16 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
     }
 
+    function findLinkByFromToIntersects(from, to) {
+        for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
+            if (myDiagram.model.linkDataArray[i].fromIntersectId == from && myDiagram.model.linkDataArray[i].toIntersectId == to)
+                return myDiagram.model.linkDataArray[i];
+        }
+    }
+
     function findNodeIndexByObject(obj, objid) {
         for (var i = 0; i < myDiagram.model.nodeDataArray.length; i++) {
-            if (myDiagram.model.nodeDataArray[i].type == obj && myDiagram.model.nodeDataArray[i].id == objid)
+            if (myDiagram.model.nodeDataArray[i].obj == obj && myDiagram.model.nodeDataArray[i].objid == objid)
                 return i
         }
         return -1;
@@ -57630,16 +57855,12 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     }
 
     function getImmediateParents(key) {
-        //console.log(key);
         var parents = [];
-        var links = [];
         for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
             if (myDiagram.model.linkDataArray[i].to == key) {
-                //console.log(myDiagram.model.linkDataArray[i]);
                 parents.push(myDiagram.model.findNodeDataForKey(myDiagram.model.linkDataArray[i].from));
             }
         }
-        // console.log(parents);
         return parents;
     }
 
@@ -57742,19 +57963,26 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         //modified
         for (var i = 0; i < nodes.length; i++) {
             for (var j = 0; j < initialNodes.length; j++) {
-                if (initialNodes[j].id == nodes[i].id) {
-
+                //if (initialNodes[j].id == nodes[i].id) {
                     if (initialNodes[j].key === nodes[i].key) {
                         //changes.modified.push(nodes[i]);
                         break;
                     }
-                }
+                //}
             }
         }
 
         //console.log(changes);
         return changes;
 
+    }
+
+    function htmlDecode(s) {
+        return s.replace(/&#39;/g, '\'');
+        //.replace(/&amp;/g, '&')
+          //.replace(/&lt;/g, '<')
+          //.replace(/&gt;/g, '>')
+          //.replace(/&#34;/g, '"');
     }
 
     function initializeDiagram() {
@@ -57787,31 +58015,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         { observed: diagram, contentAlignment: go.Spot.Center });
 
         return ov;
-    }
-
-    //function initializePalette() {
-
-    //    var pl = g(go.Palette, controlID_palette, {
-    //        contentAlignment: go.Spot.TopCenter,
-    //        allowDrop: true,
-    //        initialAutoScale: go.Diagram.Uniform,
-    //        model: new go.GraphLinksModel([
-    //            { template: "Artifact", backColor: 'black', foreColor: 'white', name: '', id: -1, key: -1, typeName: '', type: '', isDeletable: true }
-    //        ])
-    //    });
-
-    //    pl.model.nodeCategoryProperty = 'template';
-    //    pl.model.nodeDataArray = [];
-    //    pl.model.class = 'go.GraphLinksModel';
-    //    pl.layout.spacing = new go.Size(3, 3);
-
-    //    return pl;
-    //}
-
-    function onLayoutCompleted() {
-        //console.log(myDiagram.documentBounds.height);
-        //console.log(myDiagram.viewportBounds.height);
-        //var height = $('#' + controlID_diagram).height($(window).innerHeight());
     }
 
     function makePort(name, leftside) {
@@ -57924,43 +58127,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         myDiagram.nodeTemplateMap.add(obj, node);
     }
 
-    //function makeSearchTemplate() {
-    //    var node = g(go.Node, "Spot",
-    //           {
-    //               mouseEnter: mouseEnter,
-    //               mouseLeave: mouseLeave
-    //           },
-    //       g(go.Panel, "Auto", {
-    //           width: 250,
-    //           height: 22,
-    //           name: "NodePanel"
-    //       },
-    //       g(go.Shape, "RoundedRectangle", {
-    //           stroke: 'transparent',
-    //           strokeWidth: 2,
-    //           spot1: go.Spot.TopLeft,
-    //           spot2: go.Spot.BottomRight,
-    //           name: "NodeShape"
-    //       },
-    //           new go.Binding("fill", "backColor").makeTwoWay()
-    //      ),
-    //       g(go.Panel, "Table",
-    //           g(go.TextBlock, {
-    //               row: 0,
-    //               margin: 3,
-    //               alignment: go.Spot.Top,
-    //               editable: false,
-    //               maxSize: new go.Size(250, 22),
-    //               font: "8pt sans-serif"
-    //           },
-    //               new go.Binding("text", "name").makeTwoWay()
-    //               , new go.Binding("stroke", "foreColor").makeTwoWay()
-    //           ))
-    //       ));
-
-    //    myPalette.nodeTemplateMap.add("Artifact", node);
-    //}
-
     function makeIconPanel(icon, tooltip, binding, fontSize) {
         var iconPanel = g(go.Panel,
          "Auto",
@@ -57993,12 +58159,11 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     }
 
     function markForDeletion(set) {
-        //console.log(set.count);
         myDiagram.startTransaction("markSelection");
 
         //get a deep copy of the set as an array
-        var sel = $.extend(true, [], set.toArray());//JSON.parse(JSON.stringify(set.toArray()));
-        //initialLinks = JSON.parse(JSON.stringify(linkList));
+        var sel = $.extend(true, [], set.toArray());
+
         for (var i = 0; i < sel.length; i++) {
             var obj = sel[i].data;
 
@@ -58022,7 +58187,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 myDiagram.model.removeNodeData(obj);
             } else if (obj.diagramObjectType == 'Link') {
                 myDiagram.model.removeLinkData(obj);
-                //console.log('remove: ' + obj.id);
             }
 
         }
@@ -58056,13 +58220,13 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                  });
                 if (checkModified()) {
                     confirmDialog(message.add(ok).add(cancel), 'Confirm Navigation', 'Okay', function () {
-                        type = obj.type;
-                        id = obj.id;
+                        type = obj.obj;
+                        id = obj.objid;
                         populateDiagram();
                     });
                 } else {
-                    type = obj.type;
-                    id = obj.id;
+                    type = obj.obj;
+                    id = obj.objid;
 
                     populateDiagram();
                     $('#' + controlID_ribbon_remove).hide(200);
@@ -58159,7 +58323,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
 
                 $.ajax({
-                    url: '/resources/' + data.type + '/' + data.id + '/templates/tooltip/Preview',
+                    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
                     async: true
                 }).done(function (data) {
                     $('#' + controlID_info_body).html(data);
@@ -58193,47 +58357,26 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                         tranCount++;
                 }
 
-                if (data.hasTransformations || tranCount > 0) {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
-                    $("#" + controlID_transformations_content).html(defaultTabContent);
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "none");
-                }
-
             } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
                 first = -1;//tabs["fusion"];
 
+                var selectedMapID = data.id;
 
-                var intersectId = 0;
+                $('#' + controlID_info_body).html(data);
+                $("#" + controlID_info).jqxExpander('expand');
 
-                if (from != null && from.mapId == data.key)
-                    intersectId = from.intersectId;
-                if (to != null && to.mapId == data.key)
-                    intersectId = to.intersectId;
+                ObjectDetail(controlID_info_detail, 'Map', selectedMapID, true);
 
-                $.ajax({
-                    url: '/resources/IntersectType/' + data.intersectTypeId + '/templates/tooltip/Preview',
-                    async: true
-                }).done(function (data) {
-                    $('#' + controlID_info_body).html(data);
-                    $("#" + controlID_info).jqxExpander('expand');
-                }).fail(function () {
-                    $('#' + controlID_info_body).html(errorInfo);
-                    $("#" + controlID_info).jqxExpander('collapse');
-                });
-
-                ObjectDetail(controlID_info_detail, 'Intersect', intersectId, true);
-
-                if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
-                    TileTools("#" + controlID_info_detail_edit, [
-                        { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
-                    ]);
-                    $('#' + controlID_info_detail_edit).on('click', function () { if (fullscreen) toggleFullscreen(); })
-                } else {
-                    $("#" + controlID_info_detail_edit).html('');
-                }
+                //if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
+                //    TileTools("#" + controlID_info_detail_edit, [
+                //        { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
+                //    ]);
+                //    $('#' + controlID_info_detail_edit).on('click', function () { if (fullscreen) toggleFullscreen(); })
+                //} else {
+                //    $("#" + controlID_info_detail_edit).html('');
+                //}
 
 
                 $("#" + controlID_info_detail_wrapper).show();
@@ -58262,17 +58405,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     first = tabs["mappingrules"];
                 } else {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
-                }
-
-                if (data.hasTransformations) {
-
-                    if (first == -1)
-                        first = tabs["transformations"];
-
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "block");
-                    $("#" + controlID_transformations_content).html(defaultTabContent);
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["transformations"] + ")").css("display", "none");
                 }
 
                 if (to.hasSourceRules) {
@@ -58314,36 +58446,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         switch(index)
         {
-            case tabs["transformations"]:
-                url = 'form/transformation/load/' + type + '/' + id + '/';
-                if (selectedData.diagramObjectType == 'Node') {
-                    url += selectedData.type + '/' + selectedData.id;
-                } else {
-                    url += from.type + '/' + from.id + '/' + to.type + '/' + to.id;
-                }
-                $.ajax({
-                    url: url
-                }).done(function (data) {
-                    if (data.rules == null && data.rule != null) {
-                        data.rules = [];
-                        data.rules.push(data.rule);
-                    }
-                        
-                    var transformationTemplate = Handlebars.getTemplate('LineageDiagramBusinessTransformations');
-                    $('#' + controlID_transformations_content).html(transformationTemplate(data));
-
-                }).fail(function () {
-                    $('#' + controlID_transformations_content).html(defaultTabContent);
-                });
-
-                break;
             case tabs["fusion"]:
-                url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.type + '&tID=' + selectedData.id;
-                //if (selectedData.diagramObjectType != 'Node') {
-                //    url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + from.type + '&sID=' + from.id + '&t=' + to.type + '&tID=' + to.id;
-                //}
-                //if (technicalRelationsSource.url != null)
-                //    return;
+                url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.obj + '&tID=' + selectedData.objid;
                 try {
                     technicalRelationsSource.url = url;
                     $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
@@ -58356,7 +58460,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     return;
 
                         try {
-                            lineageResponsibilitySource.url = '/api/' + selectedData.type + '/' + selectedData.id + '/ownership?showHidden=false';
+                            lineageResponsibilitySource.url = '/api/' + selectedData.obj + '/' + selectedData.objid + '/ownership?showHidden=false';
                             $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
                         } catch (e) { }
                 break;
@@ -58365,9 +58469,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     return;
                 }
 
-                url = '/api/' + type + '/' + id + '/sources/' + selectedData.type + '/' + selectedData.id + '/rules';
+                url = '/api/' + type + '/' + id + '/sources/' + selectedData.obj + '/' + selectedData.objid + '/rules';
                 if (selectedData.diagramObjectType != 'Node') {
-                    url = '/api/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id + '/rules';
+                    url = '/api/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/rules';
                 }
                 $.ajax({
                     url: url,
@@ -58383,9 +58487,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
                     return;
                 }
-                url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.type + '/' + selectedData.id + '/' + selectedData.type + '/' + selectedData.id;
+                url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
                 if (selectedData.diagramObjectType != 'Node') {
-                    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.type + '/' + from.id + '/' + to.type + '/' + to.id;
+                    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
                 }
 
                 $.ajax({
@@ -58413,19 +58517,19 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
         if (data == null) {
             $("#" + controlID_ribbon_sourcerule_add).hide(delay);
-            $("#" + controlID_ribbon_transformation).hide(delay);
-            $("#" + controlID_ribbon_sourcemapping).hide(delay);
+            $("#" + controlID_ribbon_multimaprule).show(delay);
+            $("#" + controlID_ribbon_maprule).hide(delay);
             $("#" + controlID_ribbon_remove).hide(delay);
         } else {
+            $("#" + controlID_ribbon_multimaprule).hide(delay);
+
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                    //$("#" + controlID_ribbon_maprule).show(delay);
                     $("#" + controlID_ribbon_sourcerule_add).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    //$("#" + controlID_ribbon_maprule).hide(delay);
                     $("#" + controlID_ribbon_sourcerule_add).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
@@ -58433,12 +58537,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 $("#" + controlID_ribbon_sourcerule_add).hide(delay);
 
                 if (!readonly) {
-                    $("#" + controlID_ribbon_sourcemapping).show(delay);
-                    $("#" + controlID_ribbon_transformation).show(delay);
+                    $("#" + controlID_ribbon_maprule).show(delay);
                     $("#" + controlID_ribbon_remove).show(delay);
                 } else {
-                    $("#" + controlID_ribbon_sourcemapping).hide(delay);
-                    $("#" + controlID_ribbon_transformation).hide(delay);
+                    $("#" + controlID_ribbon_maprule).hide(delay);
                     $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }
@@ -58476,6 +58578,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 selectedData = sel[0].data;
             }
         }
+console.log(selectedData);
+
         refreshControls(selectedData);
     }
 
@@ -58499,6 +58603,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         newLink.diagramObjectType = "Link";
         var fromNode = myDiagram.model.findNodeDataForKey(e.subject.data.from);
         var toNode = myDiagram.model.findNodeDataForKey(e.subject.data.to);
+
+        newLink.fromIntersectId = fromNode.intersectId;
+        newLink.toIntersectId = toNode.intersectId;
 
         var results = $.ajax({
             url: '/form/Lineage_IntersectRoles',
@@ -58525,7 +58632,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 $('#' + controlID_overlay).show();
             }
             else {
-                amplify.publish('ShowMessage', { type: 'error', title: 'Not allowed', message: 'No relationship type exists between ' + fromNode.typeName + ' and ' + toNode.typeName + ' that has any lineage predicates assigned.' });
+                amplify.publish('ShowMessage', { type: 'error', title: 'Not allowed', message: 'No roles defined.  Please go to Administration / MetaModel / Relationships to add roles.' });
                 e.diagram.remove(e.subject);
             }
         });
@@ -58559,8 +58666,15 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     + ';">'
                     + toNode.typeName + '</span>');
 
-                $('#' + controlID_overlay_add).show();
                 populateIntersectRoles(data);
+
+                $('#' + controlID_overlay_predicates).val(newLink.intersectRoleId);
+                $('#' + controlID_overlay_add).show();
+                if (newLink.intersectRoleId) {
+                    $('#' + controlID_overlay_add).removeAttr('disabled');
+                }
+                $('#' + controlID_overlay_transformation).val(newLink.transformation);
+
                 $('#' + controlID_overlay).show();
                 return true;
             }
@@ -58574,7 +58688,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     function onChange(e) {
         checkModified();
-
     }
 
     function onDeleting(e) {
@@ -58584,7 +58697,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
         markForDeletion(selection);
         $('#' + controlID_ribbon_expander).jqxExpander('expand');
-        //$('#' + controlID_ribbon).jqxRibbon('selectAt', 1);
     };
 
     function onDeleted(e) {
@@ -58610,26 +58722,26 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             var d = data.nodes[i];
             var model = createNodeModel();
 
-            var isFocalPoint = (d.obj == type && d.objid == id);// && d.level == 0);
+            var isFocalPoint = (d.obj == type && d.objid == id);
 
             if (isFocalPoint) {
-                $('#' + controlID_header).text('Lineage: ' + d.name);
+                $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
             }
 
             model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
             model.key = d.key;
-            model.id = d.objid;
+            model.obj = d.obj;
+            model.objid = d.objid;
             model.objecttype = d.objecttype;
             model.objecttypeid = d.objecttypeid;
             model.type = d.obj;
-            model.level = d.level;
-            model.name = d.name;
-            model.typeName = d.type;
+            model.name = htmlDecode(d.name);
+            model.typeName = d.typeName;
             model.foreColor = d.fore;
             model.backColor = d.back;
             model.diagramObjectType = "Node";
-            model.mapId = d.mapId;
             model.intersectId = d.intersectId;
+
             model.sourceRuleCount = d.sourceRuleCount;
             model.mappingRuleCount = d.mappingRuleCount;
             model.hasSourceRules = (d.sourceRuleCount > 0);
@@ -58641,6 +58753,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             model.openIssueCount = d.openIssueCount;
             model.hasOpenIssues = (d.openIssueCount > 0);
             model.hasTransformations = (d.transformationCount > 0);
+
+            model.mapItems = d.mapItems;
+
             modelList.push(model);
         }
 
@@ -58651,13 +58766,15 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             link.intersectTypeId = d.intersectTypeId;
             link.key = d.id;
             link.from = d.from;
+            link.fromIntersectId = d.fromIntersectId;
             link.to = d.to;
-            link.text = d.text;
+            link.toIntersectId = d.toIntersectId;
+            link.text = d.role;
             link.intersectRoleId = d.intersectRoleId;
             link.diagramObjectType = "Link";
             link.sourceMappingCount = d.mappingRuleCount;
             link.hasMappingRules = (d.mappingRuleCount > 0);
-            link.hasTransformations = (d.transformationCount > 0);
+            link.hasTransformations = (d.transformation);
             link.hasProperties = (link.hasTransformations || link.hasMappingRules);
             linkList.push(link);
         }
@@ -58670,8 +58787,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
 
         //get deep copy of lists
-        initialNodes = $.extend(true, [], modelList);//JSON.parse(JSON.stringify(modelList));
-        initialLinks = $.extend(true, [], linkList); //JSON.parse(JSON.stringify(linkList));
+        initialNodes = $.extend(true, [], modelList);
+        initialLinks = $.extend(true, [], linkList);
 
         refreshControls(null);  //set buttons/expanders to defaults
 
@@ -58681,18 +58798,16 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/diagrams/' + type + '/' + id + '/lineage/1',
+            url: '/diagrams/' + type + '/' + id + '/lineage',
             data: null
         }).done(function (data, status, xhr) {
-            //console.log('populate');
-            //myDiagram = initializeDiagram();
             parseData(data);
             reOrderLayout();
             myDiagram.zoomToFit();
         });
     }
 
-    function populateIntersectRoles(roles) {
+    function populateIntersectRoles(roles, selectedValue) {
         var output = [];
 
         output.push('<option value="0"></option>');
@@ -58713,14 +58828,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         $('#' + controlID_overlay_add).prop('disabled', true);
     }
 
-    function rotateDiagram() {
-        myDiagram.startTransaction("rotate");
-        digraphDirection = (digraphDirection + 90) % 360;
-        myDiagram.layout.direction = digraphDirection;
-        myDiagram.layout.setsPortSpots = true;
-        myDiagram.commitTransaction("rotate");
-    }
-
     function saveChanges() {
 
         if (readonly) return;
@@ -58738,31 +58845,44 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         for (var i = 0; i < nodeChanges.deleted.length; i++) {
             var node = nodeChanges.deleted[i];
-            model.Deletes.push({
-                MapID: node.mapId
+            $.each(node.mapItems, function () {
+                model.Deletes.push({
+                    MapID: this.MapID
+                });
             });
         }
 
+        //#region Link Processing
+
         for (var i = 0; i < linkChanges.added.length; i++) {
             var link = linkChanges.added[i];
-
-            var to = myDiagram.model.findNodeDataForKey(link.to);
-            var from = myDiagram.model.findNodeDataForKey(link.from);
-            var predicate = link.intersectRoleId;
-
             model.Adds.push({
-                SourceIntersectID: from.intersectId,
-                TargetIntersectID: to.intersectId,
-                IntersectRoleID: link.intersectRoleId
+                SourceKey: link.from,
+                SourceIntersectID: link.fromIntersectId,
+                TargetKey: link.to,
+                TargetIntersectID: link.toIntersectId,
+                IntersectRoleID: link.intersectRoleId,
+                Transformation: link.transformation
+            });
+        }
+
+        for (var i = 0; i < linkChanges.deleted.length; i++) {
+            var link = linkChanges.deleted[i];
+            model.Deletes.push({
+                MapID: link.id
             });
         }
 
         for (var i = 0; i < linkChanges.modified.length; i++) {
+            var link = linkChanges.modified[i];
             model.Edits.push({
-                MapID: linkChanges.modified[i].id,
-                IntersectRoleID: linkChanges.modified[i].intersectRoleId
+                MapID: link.id,
+                IntersectRoleID: link.intersectRoleId,
+                Transformation: link.transformation
             });
         }
+
+        //#endregion
 
         $.ajax({
             url: '/form/Lineage_Update',
@@ -58810,7 +58930,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
     myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
     myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
-    myDiagram.addDiagramListener('LayoutCompleted', onLayoutCompleted);
     myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
     myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
     myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
@@ -58842,10 +58961,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         )
     );
 
-    //var myPalette = initializePalette();
-
-    //makeSearchTemplate();
-
     var myOverview = initializeOverview(myDiagram);
 
     populateDiagram();
@@ -58858,27 +58973,18 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         try {
             switch (data.context) {
                 case 'mappingrule':
-                    if (data.source && data.sourceID && data.target && data.targetID && data.count != null) {
-                        var ix = -1;
-                        var obj = null;
-
-                        if (data.source == data.target && data.sourceID == data.targetID) {
-                            var ix = findNodeIndexByObject(data.source, data.sourceID);
-                            if (ix > -1)
-                                obj = myDiagram.model.nodeDataArray[ix];
-                        } else {
-                            var ix = findLinkIndexByObjects(data.source, data.sourceID, data.target, data.targetID);
-                            if (ix > -1)
-                                obj = myDiagram.model.linkDataArray[ix];
-                        }
-                        if (obj != null) {
-                            myDiagram.model.setDataProperty(obj, "sourceMappingCount", data.count);
-                            myDiagram.model.setDataProperty(obj, "hasMappingRules", (data.count > 0 ? true : false));
-                            if (obj.diagramObjectType == 'Link')
-                                myDiagram.model.setDataProperty(obj, "hasProperties", (data.count > 0 ? true : false));
+                    if (data.fromIntersectId && data.toIntersectId && data.count > 0) {
+                        var link = findLinkByFromToIntersects(data.fromIntersectId, data.toIntersectId);
+                        if (link) {
+                            myDiagram.model.setDataProperty(link, "sourceMappingCount", data.count);
+                            myDiagram.model.setDataProperty(link, "hasMappingRules", (data.count > 0));
+                            myDiagram.model.setDataProperty(link, "hasProperties", (data.count > 0));
+                            refreshControls(selectedData);
                         }
                     }
-                    refreshControls(selectedData);
+                    else {
+                        populateDiagram();
+                    }
                     break;
                 case 'sourcerule':
                     if (data.action && data.object && data.objectid) {
@@ -58891,29 +58997,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "sourceRuleCount", count);
                                 myDiagram.model.setDataProperty(myDiagram.model.nodeDataArray[ix], "hasSourceRules", true);
                             }
-                        }
-                    }
-                    refreshControls(selectedData);
-                    break;
-                case 'transformationrule':
-                    if (data.source && data.sourceID && data.target && data.targetID && data.count != null) {
-                        var ix = -1;
-                        var obj = null;
-
-                        if (data.source == data.target && data.sourceID == data.targetID) {
-                            var ix = findNodeIndexByObject(data.source, data.sourceID);
-                            if (ix > -1)
-                                obj = myDiagram.model.nodeDataArray[ix];
-                        } else {
-                            var ix = findLinkIndexByObjects(data.source, data.sourceID, data.target, data.targetID);
-                            if (ix > -1)
-                                obj = myDiagram.model.linkDataArray[ix];
-                        }
-                        if (obj != null) {
-                            myDiagram.model.setDataProperty(obj, "transformationCount", data.count);
-                            myDiagram.model.setDataProperty(obj, "hasTransformations", (data.count > 0 ? true : false));
-                            if (obj.diagramObjectType == 'Link')
-                                myDiagram.model.setDataProperty(obj, "hasProperties", (data.count > 0 ? true : false));
                         }
                     }
                     refreshControls(selectedData);
@@ -59034,6 +59117,17 @@ function ObjectDetail(controlID, type, id, useSmallUI) {
                     }
                 }
 
+                //function relationGridUnsubscribe() {
+                //    $(valueID).off('bindingcomplete', relationGridBindComplete);
+                //    amplify.unsubscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                //    amplify.unsubscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
+                //}
+
+                //function relationGridBindComplete() {
+                //    console.log('auto-resized');
+                //    $(valueID).jqxGrid('autoresizecolumns');
+                //}
+
                 $(valueID).jqxGrid({
                     altrows: true,
                     width: grid_width,
@@ -59047,14 +59141,21 @@ function ObjectDetail(controlID, type, id, useSmallUI) {
                     showheader: !f.HideHeader,
                     pageable: !f.HideFooter,
                     columnsresize: true,
+                    autorowheight: true,
                     source: dataAdapter,
                     theme: 'flat',
                     pagermode: 'simple',
-                    columns: cols//,
-                    //ready: function () {
-                    //    $(valueID).jqxGrid('autoresizecolumns');
-                    //}
+                    columns: cols,
+                    ready: function () {
+                        if (cols.length > 3)
+                            $(valueID).jqxGrid('autoresizecolumns');
+                    }
                 });
+
+                //$(valueID).on('bindingcomplete', relationGridBindComplete);
+                //amplify.subscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                //amplify.subscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
+
             });
         }
         else {
@@ -60731,12 +60832,16 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
 
     //#region Event Subscriptions
     
-    function saveAction(data) {      
+    function saveAction(data) {
+        console.log(data);
         try {
-            switch (data.context) {                
+            switch (data.context) {
+                case "OwnerCertificationWorkflow":
                 case "IssueWorkflow":
+                case "OwnerApprovalWorkflow":
                     switchToViewer();
-                     $(gridControlID).jqxGrid('updatebounddata');
+                    $(gridControlID).jqxGrid('updatebounddata');
+                    return false;                
             }
         } catch (e) {
             logError("YourWorkflowTasks : SaveAction", e);
@@ -60773,7 +60878,7 @@ function YourWorkflowTasks(controlID, givenWorkflowType, givenObjectType, givenO
     }
 
     amplify.subscribe("PageResized", pageResized);
-    amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe("SaveAction", saveAction, 1);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
@@ -61196,7 +61301,7 @@ function TileTools(toolsControlID, tools) {
     }
 
     $.each(tools, function () {
-        var tool = $("<a class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
+        var tool = $("<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
         if (this.action) {
             tool.data('action', this.action);
             tool.on('click', internalToolClick);
@@ -66111,6 +66216,9 @@ function load(app, pageViewModel, templatePath, contextList) {
                     case 'RefreshItems':
                         $("#LoadItemsTile").jqxGrid('updatebounddata');
                         break;
+                    case 'ResizeItemGrid':
+                        $("#LoadItemsTile").jqxGrid('autoresizecolumns');
+                        break;
                 }
             } catch (e) { }
         }
@@ -66208,6 +66316,7 @@ function load(app, pageViewModel, templatePath, contextList) {
                     //#region LoadItems Grid
 
                     var itemtools = [
+                        { icon: 'arrows-h', action: 'ResizeItemGrid', title: 'Resize columns' },
                         { icon: 'refresh', action: 'RefreshItems', title: 'Refresh this list' }
                     ];
                     TileTools('#ItemTools', itemtools);
@@ -67486,6 +67595,7 @@ function reporting_admin(app, pageViewModel, templatePath, contextList) {
                             { name: 'ID' },
                             { name: 'Name' },
                             { name: 'ReportType' },
+                            { name: 'PowerBIReportID' }
                         ],
                         id: 'ID'
                     };
@@ -67517,10 +67627,12 @@ function reporting_admin(app, pageViewModel, templatePath, contextList) {
 
                                     tools = [
                                         { icon: 'pencil', urlprefix: '/form/EditReport?id=' + data.ID },
-                                        { icon: 'trash-o', urlprefix: '/form/DeleteReport?id=' + data.ID },
-                                        { icon: 'search', urlprefix: '/reports/PreviewOverlay?id=' + data.ID }
+                                        { icon: 'trash-o', urlprefix: '/form/DeleteReport?id=' + data.ID }                                       
                                     ];
-
+                                    
+                                    if (data.ReportType == 'powerbi') tools.push({ icon: 'search', urlprefix: '/reports/PowerBIOverlay?reportID=' + data.PowerBIReportID });
+                                    else tools.push({ icon: 'search', urlprefix: '/reports/PreviewOverlay?id=' + data.ID });
+                                                                        
                                     return renderToolsHtml(value, tools, contextList.Report);
                                 }
                             }
