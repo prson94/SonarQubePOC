@@ -25,6 +25,7 @@ import { PredicatesService } from './predicates.service';
 import { RelationshipsService } from './relationships.service';
 import { StatisticService } from './statistics.service';
 import { ReportsService } from './reports.service';
+import { AttributeTypeService } from './attribute-type.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -53,3 +54,4 @@ export * from './predicates.service';
 export * from './relationships.service';
 export * from './statistics.service';
 export * from './reports.service';
+export * from './attribute-type.service';
