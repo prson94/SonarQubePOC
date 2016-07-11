@@ -1363,6 +1363,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-editor.component.ts" />

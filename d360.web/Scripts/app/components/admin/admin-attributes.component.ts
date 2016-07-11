@@ -7,10 +7,11 @@ import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { AttributeType } from '../../models/attribute-type.model';
 import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
 import { DeleteForm } from '../forms/delete.form';
+import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 
 @Component({
     selector: 'd3s-admin-attributes-component',
-    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm],    
+    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, AdminAttributeTypeEditor],    
     providers: [AttributeTypeService],
     template: `<div class="row">
                     <div class="col l4 s12">                    
@@ -28,8 +29,8 @@ import { DeleteForm } from '../forms/delete.form';
                                     <template let-col let-item="rowData">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
-                                            <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>
-                                            <a style="cursor:pointer;" (click)="selected=item.data;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
                                         </div>
                                     </template>
                                 </p-column>
@@ -38,9 +39,10 @@ import { DeleteForm } from '../forms/delete.form';
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.data?.ID"
                                 [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the attribute type [' + [selected?.Name] + ']?'"                                         
+                                [prompt]="'Are you sure you want to delete the attribute type [' + [selected?.data?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>                                               
+                            ></delete-form>   
+                            <d3s-admin-attribute-type-editor *ngIf="showEditor && !isLoading" [parentID]="parentID" [attribute]="selected?.data" (saveClick)="saveAttributeType($event)" (closeClick)="closeEditor()"></d3s-admin-attribute-type-editor>
                         </div>
                     </div>                    
                     <div class="col l8 s12">
@@ -63,6 +65,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
     theDeleteCallback: Function;
+    parentID: number = 0;
 
     constructor(private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
         super(headerBreadcrumbService, pageHeader);
@@ -108,19 +111,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
             this.formTreeR(child, data);
         });
     }
-    
-    findAttributeTypeIndex(attributes: TreeNode[], id: number): TreeNode {
-        for (var i = 0; i < attributes.length; i++) {
-            var n;
-            if (attributes[i].data.ID == id)
-                return attributes[i];
-            if (this.attributes[i].children && attributes[i].children.length > 0) {
-                n = this.findAttributeTypeIndex(attributes[i].children, id);
-            }
-            if (n) return n;
-        }
-        return null;
-    }
+
 
     deleteAttributeType(id: number) {
         this.attributeTypeService.deleteAttributeType(id);
@@ -131,8 +122,9 @@ export class AdminAttributesComponent extends AdminBaseComponent {
 
     saveAttributeType(event) {
         this.isLoading = true;
-        this.attributeTypeService.saveAttributeType(event.relationship)
-            .then(result => {                
+        this.attributeTypeService.saveAttributeType(event.attribute)
+            .then(result => {
+                this.getAttributes();      
                 this.isLoading = false;
                 this.showEditor = false;
             });
@@ -148,5 +140,6 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     add(parentID?: number) {
         this.showEditor = true;
         this.selected = null;
+        this.parentID = parentID;
     }
 }

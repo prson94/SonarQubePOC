@@ -34,18 +34,24 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     constructor(private fieldsService: FieldsService) {
         this.model = new FieldTypeEditorModel();
-        this.model.FieldType = new FieldType();
+        this.model.FieldType = new FieldType(); 
+        this.model.FieldType.Object = this.objectType;
+        this.model.FieldType.ObjectID = this.objectID;       
     }
 
     ngOnInit() {
         this.initialItem = _.cloneDeep(this.model);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         for (let p in changes) {
             if (p == 'id') {
                 this.load();
                 this.initialItem = _.cloneDeep(this.model);
+            }
+            else if (p == 'objectID' && this.model.FieldType != null) {
+                this.model.FieldType.Object = this.objectType;
+                this.model.FieldType.ObjectID = this.objectID;
             }
         }
     }
@@ -251,7 +257,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         //    }
         //}
 
-    
+        
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {

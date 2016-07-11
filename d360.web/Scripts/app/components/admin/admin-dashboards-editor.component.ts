@@ -103,12 +103,7 @@ export class AdminDashboardsEditor {
         this.getReportLayouts();
     }
 
-    onSubmit() {
-        /*if (this.editedReport.ReportType == 'powerbi') {
-            this.getFile(this.file).then(result => {
-                this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit" });
-            });
-        }*/
+    onSubmit() {        
         this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
 
@@ -136,19 +131,5 @@ export class AdminDashboardsEditor {
 
     private changeFile(e) {
         this.file = e.srcElement.files[0];
-    }
-
-    getFile(file:File): Promise<string> {
-        let reader = new FileReader();
-
-        return new Promise<string>((resolve, reject) => {
-
-            reader.onloadend = () => {
-                resolve(reader.result);
-            }
-            reader.readAsDataURL(file);
-        }).then(() => {            
-            return reader.result;
-        });
-    }
+    }    
 };

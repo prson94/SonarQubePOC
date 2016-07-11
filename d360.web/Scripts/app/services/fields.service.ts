@@ -116,7 +116,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     }
 
     postFieldType(model: FieldTypeEditorModel): Promise<any> {
-        return this.http.put('form/AddFieldType', model)
+        return this.http.post('form/AddFieldType', model)
             .toPromise()
             .catch(err => this.handleError(err));
     }

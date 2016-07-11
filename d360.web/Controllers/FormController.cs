@@ -401,6 +401,8 @@ namespace d360.web.Controllers
                     return await EditReport(form);
                 case "REPORTTILE":
                     return EditReportTile(form);
+                case "ATTRIBUTETYPE":
+                    return EditAttributeType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -428,6 +430,8 @@ namespace d360.web.Controllers
                     return DeleteReport(form);
                 case "REPORTTILE":
                     return DeleteReportTile(form);
+                case "ATTRIBUTETYPE":
+                    return DeleteAttributeType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -468,6 +472,8 @@ namespace d360.web.Controllers
                     return await AddReport(form);
                 case "REPORTTILE":
                     return AddReportTile(form);
+                case "ATTRIBUTETYPE":
+                    return AddAttributeType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

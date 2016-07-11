@@ -161,6 +161,34 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("fulltypes")]
+        public JsonNetResult GetFullTypes()
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Table<AttributeType>().OrderBy(i => i.Parent.Name).ThenBy(i => i.Name),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+
+        [Route("categories")]
+        public JsonNetResult GetCategories(int? parentID)
+        {
+            var res = Company.Table<AttributeTypeCategory>().OrderBy(i => i.Name).Select(i => new { title = i.Name, value = i.ID.ToString() }).ToList();
+
+            if (!parentID.HasValue)
+            {
+                res.Insert(0, new { title = "Enterprise-wide", value = "0" });
+            }
+
+            return new JsonNetResult
+            {
+                Data = res,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [Route("types")]
         public JsonNetResult GetTypes()
         {

@@ -5,6 +5,7 @@ import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { AttributeType } from '../models/attribute-type.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { DropdownOption } from '../models/dropdown.model';
 
 @Injectable()
 export class AttributeTypeService extends BaseService {
@@ -12,9 +13,20 @@ export class AttributeTypeService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getAttributes(): Promise<AttributeType[]> {
-        return this.http.get('attributes/types')
+        return this.http.get('attributes/fulltypes')
             .toPromise()
             .then(response => <AttributeType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAttributeCategoryTypes(parentID?: number): Promise<DropdownOption[]> {
+        let url = `attributes/categories`;
+
+        if (parentID != undefined) url = `attributes/categories?parentID={parentID}`;
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
     }
 
