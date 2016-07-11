@@ -25,9 +25,9 @@ export class ReportsService extends BaseService {
 
     saveReport(report: Report, file?: File): Promise<JsonResult> {
         if (report.ID == undefined || !report.ID) {
-            return this.postDynamic(this.http, 'report', report);
+            return this.postDynamic(this.http, 'report', report, file);
         }
-        return this.putDynamic(this.http, 'report', report);
+        return this.putDynamic(this.http, 'report', report, file);
     }
 
     getReportTiles(report: Report): Promise<ReportTile[]> {
@@ -41,12 +41,12 @@ export class ReportsService extends BaseService {
         return this.deleteDynamic(this.http, 'reporttile', id);
     }
 
-    saveReportTile(reportTile: ReportTile): Promise<JsonResult> {
+    saveReportTile(reportTile: ReportTile, powerBIFile?: File): Promise<JsonResult> {
         
         if (reportTile.ID == undefined || !reportTile.ID) {
-            return this.postDynamic(this.http, 'reporttile', reportTile);
+            return this.postDynamic(this.http, 'reporttile', reportTile, powerBIFile);
         }
-        return this.putDynamic(this.http, 'reporttile', reportTile);
+        return this.putDynamic(this.http, 'reporttile', reportTile, powerBIFile);
     }
 
 

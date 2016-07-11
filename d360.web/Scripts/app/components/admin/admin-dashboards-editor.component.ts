@@ -22,7 +22,7 @@ import _ from 'lodash';
                         <div class="col s12">
                             <div class="FieldName">Report Type</div>
                             <div>                                
-                                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" style="height:auto;">
+                                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" style="width:100%;">
                                   <option *ngFor="let p of reportTypes" [value]="p.value">{{p.title}}</option>
                                 </select>
                             </div>       
@@ -36,7 +36,7 @@ import _ from 'lodash';
                         <div class="col s12">
                             <div class="FieldName">Target Type</div>
                             <div>                                
-                                <select required [(ngModel)]="editedReport.ObjectType" name="targetType" #targetType="ngModel" style="height:auto;">
+                                <select required [(ngModel)]="editedReport.ObjectType" name="targetType" #targetType="ngModel" style="width:100%;">
                                   <option *ngFor="let p of targetTypes" [value]="p.value">{{p.title}}</option>
                                 </select>
                             </div>       
@@ -45,7 +45,7 @@ import _ from 'lodash';
                         <div class="col s12" *ngIf="editedReport.ReportType != 'powerbi'">
                             <div class="FieldName">Report Layout</div>
                             <div>                                
-                                <select required [(ngModel)]="editedReport.ReportLayoutID" name="ReportLayout" #reportLayout="ngModel" style="height:auto;">
+                                <select required [(ngModel)]="editedReport.ReportLayoutID" name="ReportLayout" #reportLayout="ngModel" style="width:100%;">
                                   <option *ngFor="let p of reportLayouts" [value]="p.value">{{p.title}}</option>
                                 </select>                                
                             </div>       
@@ -109,7 +109,7 @@ export class AdminDashboardsEditor {
                 this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit" });
             });
         }*/
-        this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit" });
+        this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
 
     getReportTargets() {

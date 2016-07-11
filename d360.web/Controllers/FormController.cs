@@ -367,7 +367,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPut, Route("dynamicedit/edit/{objectType}"), ValidateInput(false)]
-        public JsonResult DynamicEdit(string objectType, string json)
+        public async Task<JsonResult> DynamicEdit(string objectType, string json)
         {
             JObject jsonObject = JObject.Parse(json);
             FormCollection form = new FormCollection();
@@ -398,7 +398,7 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     return EditIntersectType(form);
                 case "REPORT":
-                    return EditReport(form).Result;
+                    return await EditReport(form);
                 case "REPORTTILE":
                     return EditReportTile(form);
             }
@@ -434,7 +434,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPost, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
-        public JsonResult DynamicCreate(string objectType, string json)
+        public async Task<JsonResult> DynamicCreate(string objectType, string json)
         {
             JObject jsonObject = JObject.Parse(json);
             FormCollection form = new FormCollection();
@@ -465,7 +465,7 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
                 case "REPORT":
-                    return AddReport(form).Result;
+                    return await AddReport(form);
                 case "REPORTTILE":
                     return AddReportTile(form);
             }

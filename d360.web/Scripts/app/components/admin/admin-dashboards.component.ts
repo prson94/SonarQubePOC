@@ -49,7 +49,7 @@ import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
                                 [prompt]="'Are you sure you want to delete the dashboard [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
                             ></delete-form>   
-                            <d3s-admin-dashboards-editor *ngIf="showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
+                            <d3s-admin-dashboards-editor *ngIf="!isLoading && showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
                         </div>
                     </div>                                        
                     <div class="col l8 s12">
@@ -123,7 +123,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
     }
 
     saveReport(event) {
-        this.reportsService.saveReport(event.report)
+        this.isLoading = true;   
+        this.reportsService.saveReport(event.report, event.file)
             .then(result => {
                 let parts = event.report.ObjectType.split('|');
                 if (parts.length > 0) {
@@ -139,6 +140,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
                 }
                 
                 this.selected = event.report;
+                this.isLoading = false;
                 this.showEditor = false;
             });
     }
