@@ -26,6 +26,7 @@ export class FieldDefinition {
     IsListable: boolean;
     DisplayDescription: string;
     FormDescription: string;
+    Name: string;
 }
 
 

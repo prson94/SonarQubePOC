@@ -3,7 +3,7 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
-import { AttributeTypeService } from '../../services/index';
+import { AttributeTypeService, FieldsService } from '../../services/index';
 import { AttributeType } from '../../models/attribute-type.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
@@ -19,16 +19,16 @@ import _ from 'lodash';
                 <div class="row" *ngIf="!isLoading">
                     <div class="form-instructions">Add a report to the list of reports, which can then be exposed in other areas of this system.</div>            
                     <form (ngSubmit)="onSubmit()" #attributeForm="ngForm">                                                
-                        <div class="col s12">
+                        <div class="col l8 s12">
                             <div class="FieldName">Name</div>
                             <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedAttribute.Name" #name="ngModel"></div>     
                             <div [hidden]="name.valid || name.pristine">A name is required</div>                                                   
                         </div>   
-                        <div class="col l6 s12">
+                        <div class="col l4 s12">
                             <div class="FieldName">Show Name In Tree</div>
                             <div><input name="showInTree" type="checkbox" [(ngModel)]="editedAttribute.ShowNameInTree" /></div>
                         </div>                                                      
-                        <div *ngIf="!(editedAttribute.ParentID > 0)" class="col l6 s12">
+                        <div *ngIf="!(editedAttribute.ParentID > 0)" class="col s12">
                             <div class="FieldName">Category</div>
                             <div>                                
                                 <select required [(ngModel)]="editedAttribute.AttributeTypeCategoryID" name="category" #category="ngModel" style="width:100%;">
@@ -37,9 +37,18 @@ import _ from 'lodash';
                             </div>       
                             <div [hidden]="category.valid || category.pristine">A category is required</div>                     
                         </div>                           
-                        <div class="col s12">
+                        <div *ngIf="attribute" class="col l6 s12">
                             <div class="FieldName">Text Format</div>
                             <div><input style="width: 100%;" name="textFormat" [type]="'string'" [(ngModel)]="editedAttribute.TextFormatString"></div>                                        
+                        </div>                                                
+                        <div *ngIf="attribute" class="col l6 s12">
+                            <div class="FieldName">Field Tokens</div>
+                            <div>
+                                <select name="fieldTokens" style="width:100%;" (change)="fieldTokenSelect($event.target)">                                    
+                                    <option></option>
+                                  <option *ngFor="let p of fieldTypes" [value]="p.value">{{p.title}}</option>
+                                </select>
+                            </div>
                         </div>                                                
                         <div class="col s12">
                             <div class="FieldName">Description</div>
@@ -53,7 +62,7 @@ import _ from 'lodash';
                     </form>                           
                 </div>
                 `,
-    providers: [AttributeTypeService],
+    providers: [AttributeTypeService, FieldsService],
     directives: [Button, Editor, REACTIVE_FORM_DIRECTIVES]
 })
 
@@ -68,31 +77,44 @@ export class AdminAttributeTypeEditor {
 
     editedAttribute: AttributeType;
     categoryTypes: DropdownOption[] = [];
+    fieldTypes: DropdownOption[] = [];
     
 
-    constructor(private attributeTypeService: AttributeTypeService) {
+    constructor(private attributeTypeService: AttributeTypeService, private fieldsService: FieldsService) {
         
     }
 
-    ngOnInit() {
-        console.log(this.attribute);
+    ngOnInit() {        
         if (this.attribute != undefined) {
             this.editedAttribute = _.cloneDeep(this.attribute);
             if (this.editedAttribute.TextFormatString == null) this.editedAttribute.TextFormatString = "";          
+            this.loadAttributeFields();
         }
         else {
             this.editedAttribute = new AttributeType();
             this.editedAttribute.ParentID = this.parentID;
             this.editedAttribute.ShowNameInTree = true;
             this.editedAttribute.TextFormatString = "";
+            this.editedAttribute.AttributeTypeCategoryID = 0;
             this.action = "Add";
         }
         if (this.editedAttribute.ParentID <= 0 && this.editedAttribute.AttributeTypeCategoryID == null) this.editedAttribute.AttributeTypeCategoryID = 0;
-        this.loadCategoryTypes(this.editedAttribute.ParentID);
+        this.loadCategoryTypes(this.editedAttribute.ParentID);        
     }
 
     onSubmit() {
         this.saveClick.emit({ attribute: this.editedAttribute, action: this.attribute ? "new" : "edit"});
+    }
+
+    private loadAttributeFields() {
+        this.fieldsService.getFields(this.editedAttribute.ID, 'AttributeType')
+            .then(result => {
+                this.fieldTypes = [];
+                for (let field of result) {
+                    this.fieldTypes.push({ title: field.FriendlyName, value: '{' + field.Name + '}' });
+                    console.log(field);
+                }
+            });
     }
 
     private loadCategoryTypes(parentID? : number) {
@@ -102,5 +124,9 @@ export class AdminAttributeTypeEditor {
                 this.categoryTypes = result;
                 this.isLoading = false;
             });
+    }
+
+    private fieldTokenSelect(item) {
+        this.editedAttribute.TextFormatString += item.value;
     }
 };

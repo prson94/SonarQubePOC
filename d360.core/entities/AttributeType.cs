@@ -23,6 +23,7 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
+        [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "TextFormatString_Name", Description = "TextFormatString_Description")]
         public string TextFormatString { get; set; }
 

@@ -12,7 +12,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService);  }
 
     getFields(objectID: number, objectType: string): Promise<FieldDefinition[]> {
-        return this.http.get(`/fields/${objectType}/${objectID}.json`)
+        return this.http.get(`/fields/${objectType}/${objectID}/full`)
             .toPromise()
             .then(response => <FieldDefinition[]>response.json())
             .catch(err => this.handleError(err)); 

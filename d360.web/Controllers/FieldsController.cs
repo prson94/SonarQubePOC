@@ -48,6 +48,32 @@ namespace d360.web.Controllers
                 );
         }
 
+
+        //additoinal details in this one only used by angular 2 right now name is missing in old one.
+        [Route("{type}/{id:int}/full")]
+        public JsonResult _FieldTypesByObjectFull(SystemObjects type, int id)
+        {
+            var list = Company.GetFieldTypeRelationsByObject(type, id).ToList();
+
+            return Json(
+                list.Select(i => new
+                {
+                    i.FriendlyName,
+                    i.Category,
+                    i.DisplayDescription,
+                    i.FormDescription,
+                    i.ID,
+                    i.IsListable,
+                    i.IsRequired,
+                    i.SortOrder,
+                    ObjectType = i.Object,
+                    i.ObjectID,
+                    i.Name
+                }),
+                JsonRequestBehavior.AllowGet
+                );
+        }
+
         #endregion
 
         #region Command
