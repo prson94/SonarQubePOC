@@ -7,15 +7,15 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 
 @Component({
     selector: 'd3s-header-typeahead-search',
-    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}">
-                    <a style="display:table-cell;" (click)="showSearch=!showSearch;"><i class="fa fa-search"></i></a>
+    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" >
+                    <a style="display:table-cell;" (click)="showSearch=!showSearch;" ><i class="fa fa-search"></i></a>
                     <p-autoComplete size="50" 
                             styleClass="searchTypeahead" 
                             scrollHeight="400px" *ngIf="showSearch" 
                             [(ngModel)]="result" 
                             [suggestions]="results" 
                             (completeMethod)="search($event)" 
-                            field="Name" 
+                            field="Name"  
                             placeholder="Search Data3Sixty"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>
@@ -29,6 +29,7 @@ export class HeaderTypeaheadSearchComponent {
 
     result: TypeaheadSearchResult;
     showSearch: boolean = false;
+    hideTimeoutID: number = 0;
 
     results: TypeaheadSearchResult[];
 
@@ -44,5 +45,23 @@ export class HeaderTypeaheadSearchComponent {
         window.location.href = this.result.Url;
         //window.location.hash = this.result.Url;        
     }
+
+    hide() {
+        console.log(3);
+        this.showSearch = false;
+        this.hideTimeoutID = 0;
+    }
+
+    out() {
+        if (this.hideTimeoutID <= 0)
+            this.hideTimeoutID = window.setTimeout(() => this.hide(), 2000);
+    }
+
+    in() {
+        if (this.hideTimeoutID > 0) window.clearTimeout(this.hideTimeoutID);
+        this.showSearch = true;
+    }
+
+    
 }
 
