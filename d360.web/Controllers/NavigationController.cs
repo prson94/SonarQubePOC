@@ -71,20 +71,24 @@ namespace d360.web.Controllers
             {
                 sBuilder.Append(data[i].ToString("x2"));
             }
-
-
+            
             var navigation = new TopNavigation
             {
                 ResourceID = Company.CurrentResourceID,
                 ResourceName = resource.FormatDisplayName(),
                 ResourceImageUrl = string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), 150),
-                ResourceUrl = string.Format("#/resources/{0}", Company.CurrentResourceID),
-            //    LastLoggedInDate = resource.DateLastLoggedIn.HasValue ? resource.DateLastLoggedIn.Value.ToShortDateString() : ""//,
-                //NavigationItems = GetSiteNavigation()
+                ResourceUrl = string.Format("#/resources/{0}", Company.CurrentResourceID),            
             };
-            return PartialView(navigation);
+            return PartialView(navigation);            
+        }
 
-            return PartialView();
+        public JsonNetResult SiteMenu()
+        {
+            return new JsonNetResult
+            {
+                Data = GetSiteNavigation(),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         public List<TopNavigationItem> GetSiteNavigation()

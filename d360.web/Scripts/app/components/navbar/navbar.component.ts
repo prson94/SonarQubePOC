@@ -2,11 +2,14 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 import {  NavBarItem, NavBarItemComponent } from '../navbar/navbar-item.component';
+import { SiteMenuService } from '../../services/index';
+import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-navbar', 
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent], 
+    providers: [SiteMenuService],
     template: `
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
         <li class="logo"></li> 
@@ -22,22 +25,82 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private sub: any;
     private currentRoute = "";
     private navItems: NavBarItem[];
+    private siteMenu : SiteMenu[] = [];
 
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
 
-    constructor(private router: Router) {
+    constructor(private router: Router, private siteMenuService: SiteMenuService) {
     }
 
     ngOnInit() {
-        this.items = new Array<NavBarItem>();
+        this.loadMenu();
 
-        this.addNavItem('Legacy Site', 'pencil', null, '/');
-        this.addNavItem('Glossary', 'book', null);
-        this.addNavItem('Models', 'sitemap', null);
-        this.addNavItem('Policies', 'university', null);
-        this.addNavItem('Fusion', 'database', null);
-        this.addNavItem('Monitor', 'dashboard', null);
-        this.addNavItem('Community', 'group', null);
+        this.sub = this.router.events.subscribe(e => {
+            if (e instanceof NavigationEnd) {
+                this.currentRoute = _.trimStart(e.url, '/');
+                let item = this.activateRoute(this.currentRoute);
+                this.expandRoute(item);                
+            }
+        });
+    }
+
+    loadMenu() {
+        this.siteMenuService.getMenu()
+            .then(result => {
+                this.items = new Array<NavBarItem>();
+                
+                this.siteMenu = result;
+
+                console.log(result);
+                                
+                this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
+                this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
+                                
+                this.addNavItem('Policies', 'university', null);
+                
+                this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
+                this.loadMonitorMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
+                this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
+                this.loadAdminMenu(this.siteMenu.find(i => i.MenuID == '#Admin'));
+            });
+    }
+
+    loadFusionMenu(fusionMenu: SiteMenu) {
+        if (fusionMenu == null || !fusionMenu.ShouldDisplay) return;
+
+        let fusion = this.addNavItem('Fusion', 'database', null);
+    }
+
+    loadGlossaryMenu(glossaryMenu: SiteMenu) {
+        if (glossaryMenu == null ) return;
+
+        let glossary = this.addNavItem('Glossary', 'book', null);
+        
+        this.renderChildItems(glossary, glossaryMenu.NavigationItems);
+    }
+
+    loadCommunityMenu(communityMenu: SiteMenu) {
+        if (communityMenu == null || !communityMenu.ShouldDisplay) return;
+
+        let community = this.addNavItem('Community', 'group', null);
+    }
+
+    loadMonitorMenu(monitorMenu: SiteMenu) {
+        if (monitorMenu == null || !monitorMenu.ShouldDisplay) return;
+
+        let monitor = this.addNavItem('Monitor', 'dashboard', null);
+    }
+
+    loadModelMenu(modelMenus: SiteMenu) {
+        if (modelMenus == null ) return;
+
+        let models = this.addNavItem('Models', 'sitemap', null);
+
+        this.renderChildItems(models, modelMenus.NavigationItems);
+    }
+
+    loadAdminMenu(adminMenu: SiteMenu) {
+        if (adminMenu == null) return;
 
         let admin = this.addNavItem('Administration', 'book', null);
 
@@ -62,7 +125,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(metricsModel, 'Analytics', null, 'a/admin/analytics');
         this.addSubItem(metricsModel, 'Dashboards', null, 'a/admin/dashboards');
 
-        this.addSubItem(admin, 'Reference', null, 'a/admin/domain');        
+        this.addSubItem(admin, 'Reference', null, 'a/admin/domain');
 
         //security sub menu
         let security = this.addSubItem(admin, 'Security', null, null);
@@ -72,21 +135,23 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
         this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
-        this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');
+        this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');        
+    }
 
-        
-        
+    private renderChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {        
+        //add each to the navbar
+        if (siteMenuItems == null || siteMenuItems.length == 0) return;
 
-        
+        for (let item of siteMenuItems) {
+            if (item.Items) {
+                var parent = this.addSubItem(navBar, item.Name, null, null); //menu doesnt yet support link / expand collapse combo
 
-        this.sub = this.router.events.subscribe(e => {
-            if (e instanceof NavigationEnd) {
-                this.currentRoute = _.trimStart(e.url, '/'); 
-                let item = this.activateRoute(this.currentRoute);
-                this.expandRoute(item);
-                //console.log(item);
+                this.renderChildItems(parent, item.Items);
             }
-        });
+            else {
+                this.addSubItem(navBar, item.Name, null, null, item.Url); //legacy items will go to old urls for now
+            }
+        }
     }
 
     ngOnDestroy() {

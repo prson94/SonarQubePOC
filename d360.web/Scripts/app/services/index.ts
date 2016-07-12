@@ -26,6 +26,7 @@ import { RelationshipsService } from './relationships.service';
 import { StatisticService } from './statistics.service';
 import { ReportsService } from './reports.service';
 import { AttributeTypeService } from './attribute-type.service';
+import { SiteMenuService} from './site-menu.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -55,3 +56,4 @@ export * from './relationships.service';
 export * from './statistics.service';
 export * from './reports.service';
 export * from './attribute-type.service';
+export * from './site-menu.service';

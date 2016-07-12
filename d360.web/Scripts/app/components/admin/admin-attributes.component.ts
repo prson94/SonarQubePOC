@@ -100,7 +100,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         tree.forEach(t => {
             this.formTreeR(t, data);
         });
-        console.log(tree);
+        
         return tree;
     }
 
