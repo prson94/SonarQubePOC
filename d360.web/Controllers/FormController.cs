@@ -1894,9 +1894,7 @@ namespace d360.web.Controllers
 
                 if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (model.ParentID.HasValue) id = model.ParentID.Value;
-
+                                
                 Company.Delete("AttributeType", id);//Company.Delete<AttributeType>(model);
 
                 return jsonSuccess(Resources.FormInfo.Delete_AttributeType_Confirmation, id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
