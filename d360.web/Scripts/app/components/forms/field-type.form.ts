@@ -30,6 +30,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     private testPattern: string;
     private testPatternValidationText: string;
+    private syncApiNameWithName: boolean = true;
 
     constructor(private fieldsService: FieldsService) {
         this.model = new FieldTypeEditorModel();
@@ -167,11 +168,15 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
     }
 
+    private updateApiName(event) {
+        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9-_]/g,'');
+    }
+
     private cancel(): void {
         this.onCancel.emit(null);
     }
-
-    private save(): void {
+        
+    private onSubmit(): void {
         
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
@@ -205,6 +210,5 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     this.onComplete.emit({ action: 'add', field: this.model });
                 });
         }
-
     }
 }
