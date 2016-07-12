@@ -14,7 +14,7 @@ import * as _ from 'lodash';
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
         <li class="logo"></li> 
         <li *ngFor="let item of items">
-            <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
+            <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
         </li>
     </ul>
  
@@ -44,6 +44,13 @@ export class NavBarComponent implements OnInit, OnDestroy {
         });
     }
 
+    collapseOtherTopLevelMenus(event) {
+        for (let item of this.items) {
+            if (item.name != event.item.name)
+                item.expanded = false;
+        }
+    }
+
     loadMenu() {
         this.siteMenuService.getMenu()
             .then(result => {
@@ -55,11 +62,9 @@ export class NavBarComponent implements OnInit, OnDestroy {
                                 
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
-                                
-                this.addNavItem('Policies', 'university', null);
-                
+                this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
                 this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
-                this.loadMonitorMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
+                this.loadMonitorMenu();                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
                 this.loadAdminMenu(this.siteMenu.find(i => i.MenuID == '#Admin'));
             });
@@ -85,10 +90,16 @@ export class NavBarComponent implements OnInit, OnDestroy {
         let community = this.addNavItem('Community', 'group', null);
     }
 
-    loadMonitorMenu(monitorMenu: SiteMenu) {
-        if (monitorMenu == null || !monitorMenu.ShouldDisplay) return;
-
+    loadMonitorMenu() {        
         let monitor = this.addNavItem('Monitor', 'dashboard', null);
+    }
+
+    loadPoliciesMenu(policiesMenus: SiteMenu) {
+        if (policiesMenus == null) return;
+
+        let policies = this.addNavItem('Policies', 'university', null);
+
+        this.renderChildItems(policies, policiesMenus.NavigationItems);
     }
 
     loadModelMenu(modelMenus: SiteMenu) {
