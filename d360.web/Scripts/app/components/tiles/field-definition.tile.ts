@@ -62,17 +62,13 @@ export class FieldDefinitionTile implements OnChanges {
         this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
         this.isEditing = true;
         this.isDeleting = false;
-        this.isAdding = false;
-        //this.fieldsService.getFieldTypeEditor(id)
-        //    .then(data => {
-        //        console.log(data);
-        //    });
+        this.isAdding = false;        
     }
 
     add(): void {
-        this.isEditing = false;
-        this.isDeleting = false;
-        this.isAdding = true;
+        this.selectedRow = null;
+        this.isEditing = true;
+        this.isDeleting = false;        
     }
 
     delete(id: number): void {
@@ -80,6 +76,11 @@ export class FieldDefinitionTile implements OnChanges {
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
+    }
+    
+    editComplete(event) {
+        this.isEditing = false;
+        this.load();
     }
 }
 

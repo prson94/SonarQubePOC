@@ -17,9 +17,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
     @Input() id: number;
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() title: string = "Add Field Type";
-    @Output() onComplete = new EventEmitter();
-    @Output() onSuccess = new EventEmitter();
+    @Input() actionName: string = "Add";
+    @Output() onComplete = new EventEmitter();   
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
@@ -60,6 +59,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     private load(): void {
         if (this.id > 0) {
+            this.actionName = 'Edit';
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.id)
                 .then(data => {
@@ -84,6 +84,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 })
                 .then(() => this.isLoading = false);
         } else {
+            this.actionName = 'Add';
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldType();
 
@@ -171,104 +172,37 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     private save(): void {
-
-        //console.log(this.model);
-
-        //convert DisplayFields to objects
-        this.model.FusionItems.forEach(i => {
-            let d: FieldTypeFusionLookupDisplayField[] = [];
-
-            (<string[]>i.DisplayFields).forEach(j => {
-                let k = new FieldTypeFusionLookupDisplayField();
-                try {
-                    k.FieldTypeID = parseInt(j.split('|')[0]);
-                    k.FieldTypeName = j.split('|')[1];
-                } catch(e) {
-                    return;
-                }
-                d.push(k);
-            });
-
-            i.DisplayFields = d;
-
-        });
-
-        //        if (self.RelationItems().length > 0) {
-        //            try {
-        //                var ri = self.RelationItems()[0];
-        //                if (ri.IntersectType() > '') {
-        //                    postModel.RelationItem["ID"] = ri.ID();
-        //                    postModel.RelationItem.IntersectType = ri.IntersectType().split('|')[0];
-        //                    postModel.RelationItem.ReferenceType = ri.ReferenceType();
-        //                    if (ri.ChildIntersectType() > '') {
-        //                        postModel.RelationItem.ChildIntersectType = ri.ChildIntersectType().split('|')[0];
-        //                    }
-        //                    $.each(ri.DisplayFieldOptions(), function (fix, fid) {
-        //                        var values = fid.value().split('|');
-
-        //                        if (fid.Show() || fid.SortOrder() || fid.FilterValue() != '') {
-        //                            postModel.RelationItem.DisplayFields.push({
-        //                                FieldTypeID: values[0],
-        //                                FieldTypeName: values[1],
-        //                                Show: fid.Show(),
-        //                                SortOrder: fid.SortOrder(),
-        //                                FilterValue: fid.FilterValue()
-        //                            });
-        //                        }
-        //                    });
-        //                    postModel.RelationItem.HideHeader = ri.HideHeader();
-        //                    postModel.RelationItem.HideFooter = ri.HideFooter();
-        //                }
-        //            } catch (e) {
-        //                console.log(e);
-        //            }
-        //        }
-
-        //        var uri = '';
-        //        var method = '';
-        //        if (self.ID() > 0) {
-        //            uri = '/form/EditFieldType';
-        //            method = 'PUT';
-        //        }
-        //        else {
-        //            uri = '/form/AddFieldType';
-        //            method = 'POST';
-        //        }
-
-        //        $.ajax(uri, {
-        //            data: postModel,
-        //            dataType: 'json',
-        //            method: method
-        //        }).done(function (data, status, xhr) {
-        //            if (data != null) {
-        //                if (data.type == 'error') {
-        //                    amplify.publish("ShowMessage", { type: "error", title: data.title, message: data.message });
-        //                } else {
-        //                    amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-        //                    amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Field type successfully created.' });
-        //                }
-        //            }
-
-        //        }).fail(function (xhr, status, error) {
-        //            amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
-        //        }).always(function (data, status, error) {
-        //            self.InProgress(false);
-        //        });
-        //    }
-        //}
-
         
+        //convert DisplayFields to objects
+        if (this.model.FusionItems) {
+            this.model.FusionItems.forEach(i => {
+                let d: FieldTypeFusionLookupDisplayField[] = [];
+
+                (<string[]>i.DisplayFields).forEach(j => {
+                    let k = new FieldTypeFusionLookupDisplayField();
+                    try {
+                        k.FieldTypeID = parseInt(j.split('|')[0]);
+                        k.FieldTypeName = j.split('|')[1];
+                    } catch (e) {
+                        return;
+                    }
+                    d.push(k);
+                });
+
+                i.DisplayFields = d;
+
+            });
+        }
+
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
-                    this.onSuccess.emit(null);
-                    this.onComplete.emit(null);
+                    this.onComplete.emit({ action: 'edit', field: this.model });
                 });
         } else {
             this.fieldsService.postFieldType(this.model)
-                .then(r => {
-                    this.onSuccess.emit(null);
-                    this.onComplete.emit(null);
+                .then(r => {                    
+                    this.onComplete.emit({ action: 'add', field: this.model });
                 });
         }
 

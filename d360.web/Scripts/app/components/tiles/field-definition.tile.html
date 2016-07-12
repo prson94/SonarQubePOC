@@ -9,11 +9,8 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="isEditing">
-        <d3s-field-type-form [id]="selectedRow.ID" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false;"></d3s-field-type-form>
-    </div>
-    <div *ngIf="isAdding">
-        <d3s-field-type-form [id]="0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isAdding = false;"></d3s-field-type-form>
-    </div>
+        <d3s-field-type-form [id]="selectedRow != null? selectedRow.ID : 0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false;" (onComplete)="editComplete($event)"></d3s-field-type-form>
+    </div>    
     <div *ngIf="isDeleting">
         <delete-form [uri]="'/form/DeleteFieldTypeByID?id=' + selectedRow.ID"
                      [method]="'delete'"
@@ -22,7 +19,7 @@
                      (onCancel)="isDeleting=false;">
         </delete-form>
     </div>
-    <div *ngIf="!isLoading && !isAdding && !isEditing && !isDeleting">
+    <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
             <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
