@@ -1420,12 +1420,16 @@ namespace d360.fusion
                 {
                     Trace.TraceWarning("FUSION PROCESSING FOUND A NODE MISSING A VALID SOURCE ID.  DATA:[{0}]", string.Join(";", models[i]));
 
+                    models.RemoveAt(i); // remove this item
+
                     continue;
                 }
 
                 if (string.IsNullOrEmpty(sourceID))
                 {
                     Trace.TraceWarning("FUSION PROCESSING FOUND A NODE MISSING A VALID SOURCE ID.  DATA:[{0}]", string.Join(";", models[i]));
+
+                    models.RemoveAt(i); // remove this item
 
                     continue;
                 }
@@ -1447,7 +1451,7 @@ namespace d360.fusion
 
                         models.RemoveAt(i);
                     }
-
+                    
                     existingSourceIDs.Add(sourceID);
 
                     _workArea.InSourceIDList.Add(sourceID);
