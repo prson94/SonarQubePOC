@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component } from '@angular/core';
+import { Component, ElementRef } from '@angular/core';
 import {AutoComplete} from 'primeng/primeng';
 import { TypeaheadSearchService } from '../../services/index';
 import { TypeaheadSearchResult } from '../../models/typeahead-search-result.model';
@@ -7,6 +7,9 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 
 @Component({
     selector: 'd3s-header-typeahead-search',
+    host: {
+        '(document:click)': 'onClick($event)',
+    },
     template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" >
                     <a style="display:table-cell;" (click)="showSearch=!showSearch;" ><i class="fa fa-search"></i></a>
                     <p-autoComplete size="50" 
@@ -25,7 +28,7 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
 })
 
 export class HeaderTypeaheadSearchComponent {
-    constructor(private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
+    constructor(private elementRef: ElementRef, private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
 
     result: TypeaheadSearchResult;
     showSearch: boolean = false;
@@ -62,6 +65,10 @@ export class HeaderTypeaheadSearchComponent {
         this.showSearch = true;
     }
 
-    
+    onClick(event) {
+        if (this.showSearch && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
+            this.showSearch = false;
+        }        
+    }
 }
 
