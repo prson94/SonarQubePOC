@@ -55478,6 +55478,13 @@ function LineageDiagram(controlID, type, id, readonly) {
         return -1;
     }
 
+    function htmlDecode(s) {
+        return s.replace(/&#39;/g, '\'')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&#34;/g, '"');
+    }
 
     function getImmediateParents(key) {
         //console.log(key);
@@ -56529,7 +56536,7 @@ function LineageDiagram(controlID, type, id, readonly) {
             var isFocalPoint = (d.obj == type && d.objid == id);// && d.level == 0);
 
             if (isFocalPoint) {
-                $('#' + controlID_header).text('Lineage: ' + d.name);
+                $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
             }
 
             model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
@@ -56539,7 +56546,7 @@ function LineageDiagram(controlID, type, id, readonly) {
             model.objecttypeid = d.objecttypeid;
             model.type = d.obj;
             model.level = d.level;
-            model.name = d.name;
+            model.name = htmlDecode(d.name);
             model.typeName = d.type;
             model.foreColor = d.fore;
             model.backColor = d.back;
@@ -62012,7 +62019,11 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                             ObjectDetail('DetailTile', type, id);
                             break;
                         case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, id, false);
+                            if (CompanySettings.UseNewRelationships == 'true')
+                                NewLineageDiagram('SourcingTile', type, id, false);
+                            else
+                                LineageDiagram('SourcingTile', type, id, false);
+                            //LineageDiagram('SourcingTile', type, id, false);
                             //NewLineageDiagram('SourcingTile', type, id, false);
                             break;
                         case contextList.Responsibility:                        
@@ -62063,8 +62074,12 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
-                        //NewLineageDiagram('SourcingTile', type, id, false);
-                        LineageDiagram('SourcingTile', type, id, false);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', type, id, false);
+                        else
+                            LineageDiagram('SourcingTile', type, id, false);
+
                         CertificationNotificationTile('CertificationNotification', id);
                         ChallengeNotificationTile('ChallengeNotification', contextList, id);
 
@@ -63946,7 +63961,12 @@ function domains_list(app, pageViewModel, templatePath, contextList) {
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
 
-                        LineageDiagram('SourcingTile', selectedType, id, true);
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', selectedType, id, true);
+                        else
+                            LineageDiagram('SourcingTile', selectedType, id, true);
+
+                        //LineageDiagram('SourcingTile', selectedType, id, true);
 
                         if (json.AllowAttributes) {
                             $('#AttributesTile').show();
@@ -67018,7 +67038,13 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
 
                         PolicyStatusKpi('StatusTile', contextList, permissions, iID);
                         PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
-                        LineageDiagram('SourcingTile', iType, iID, true);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', iType, iID, true);
+                        else
+                            LineageDiagram('SourcingTile', iType, iID, true);
+
+                        //LineageDiagram('SourcingTile', iType, iID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
@@ -67035,7 +67061,13 @@ function policies_list(app, pageViewModel, templatePath, contextList) {
                             RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
                             break;
                         case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, policyID, true);
+
+                            if (CompanySettings.UseNewRelationships == 'true')
+                                NewLineageDiagram('SourcingTile', type, policyID, true);
+                            else
+                                LineageDiagram('SourcingTile', type, policyID, true);
+
+                            //LineageDiagram('SourcingTile', type, policyID, true);
                             break;
                         case contextList.Policy:
                             $("#PolicyGrid").jqxTreeGrid('updateBoundData');
@@ -68238,7 +68270,13 @@ function rules_item(app, pageViewModel, templatePath, contextList) {
                         statisticsTileVm.GetStatistics();
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
-                        LineageDiagram('SourcingTile', type, ruleID, true);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', type, ruleID, true);
+                        else
+                            LineageDiagram('SourcingTile', type, ruleID, true);
+
+                        //LineageDiagram('SourcingTile', type, ruleID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
 
                         EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);

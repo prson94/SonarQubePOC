@@ -54,6 +54,7 @@ namespace d360.web.Controllers.Services
 
             var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id).ToList();
             var fieldTypeIDs = fields.Select(i => i.ID).ToList();
+            var filteredLookupDefinitions = Company.Filter<FieldTypeFilteredLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeFilteredLookupDisplayFields).ToList();
             var relationDefinitions = Company.Filter<FieldTypeRelationLookupDefinition>(i => fieldTypeIDs.Contains(i.FieldTypeID), i => i.FieldTypeRelationLookupDisplayFields).ToList();
 
             //var relationships = new List<Intersect>();
@@ -65,6 +66,104 @@ namespace d360.web.Controllers.Services
 
                 switch (f.Type)
                 {
+                    case "FilteredLookup":
+                        var fld = filteredLookupDefinitions.SingleOrDefault(i => i.FieldTypeID == f.ID);
+                        if (fld != null)
+                        {
+                            if (fld.FieldTypeFilteredLookupDisplayFields != null)
+                            {
+                                var where = string.Empty;
+                                var orderBy = string.Empty;
+
+                                #region Build sub-select
+
+                                if (fld.FieldTypeFilteredLookupDisplayFields.Count > 0)
+                                {
+                                    var columnSql = new List<string>();
+                                    var joinSql = new List<string>();
+
+                                    foreach (var df in fld.FieldTypeFilteredLookupDisplayFields.OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                                    {
+                                        var selectPrefix = $"{name}_{df.FieldTypeID}_FLF_{df.ID}";
+                                        var selectTypePrefix = $"{name}_{df.FieldTypeID}_FLFT_{df.ID}";
+
+                                        columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
+
+                                        //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
+                                        joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
+
+                                        //Build where
+                                        if (df.Filter)
+                                        {
+                                            where += (string.IsNullOrEmpty(where) ? "" : "AND ");
+                                            where += $" {selectPrefix}.Value = A.ID";
+                                        }
+
+                                        #region Build order by
+
+                                        if (df.SortOrder.HasValue)
+                                        {
+                                            orderBy += (string.IsNullOrEmpty(orderBy) ? "" : ", ");
+                                            if (df.FieldTypeID > 0)
+                                            {
+                                                var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                                                if (fieldTypeInfo != null)
+                                                {
+                                                    switch (fieldTypeInfo.Type)
+                                                    {
+                                                        case "Date":
+                                                        case "DateTime":
+                                                            orderBy += $" cast({selectPrefix}.FormattedValue as datetime) asc";
+                                                            break;
+                                                        case "Decimal":
+                                                        case "Number":
+                                                            orderBy += $" cast({selectPrefix}.FormattedValue as decimal) asc";
+                                                            break;
+                                                        default:
+                                                            orderBy += $" {selectPrefix}.FormattedValue asc";
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    orderBy += $" {selectPrefix}.FormattedValue asc";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                orderBy += $" D_{fld.ID}.{df.FieldTypeName} asc";
+                                            }
+                                        }
+
+                                        #endregion
+                                    }
+
+                                    columns += "(select  "; 
+                                    columns += string.Join(", ", columnSql);
+
+                                    columns += $@" from [Lookup] L ";
+
+                                    columns += string.Join(" ", joinSql);
+
+                                    if (!string.IsNullOrEmpty(where))
+                                    {
+                                        where = $" where {where}";
+                                        columns += where;
+                                    }
+
+                                    if (!string.IsNullOrEmpty(orderBy))
+                                    {
+                                        orderBy = $" order by {orderBy}";
+                                        columns += orderBy;
+                                    }
+
+                                    columns += $" for json path) as [{name}], ";
+                                }
+
+                                #endregion Build sub-select
+                            }
+                        }
+                        break;
                     case "FusionLookup":
                         //columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
                         //joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = 'Artifact' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID);
@@ -363,7 +462,7 @@ where A.ArtifactTypeID = @id", columns, joins);
                 item.ArtifactTypeID = id;
 
                 if (model.ContainsKey("Name")) 
-                    item.Description = model["Name"].ToString();
+                    item.Name = model["Name"].ToString();
                 else
                     throw new MissingPropertiesException("Artifact");
 

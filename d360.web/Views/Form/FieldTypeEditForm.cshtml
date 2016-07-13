@@ -216,8 +216,6 @@
                         <td>
                             <input type="checkbox" data-bind="checked: HideHeader" />Hide Header?<br />
                             <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
-                            @*<div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
-                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>*@
                         </td>
                         <td><a class='btn-flat waves-effect red-text' data-bind="click: $parent.deleteFusionItem"><i class='fa fa-trash' title='Remove'></i></a></td>
                     </tr>
@@ -228,35 +226,6 @@
 
     <div class="row" data-bind="visible: RelationLookupDataTypeSelected">
         <div class="col s12" style="margin: 10px 0 10px 0">
-            @*<table class="highlight, striped" cellpadding="5">
-                <thead>
-                    <tr>
-                        <th>Relation</th>
-                        <th>Fields</th>
-                        <th>Table Settings</th>
-                    </tr>
-                </thead>
-                <tbody data-bind="foreach: RelationItems">
-                    <tr>
-                        <td>
-                            <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: IntersectTypeIndex,
-                                 source: IntersectTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
-                        </td>
-                        <td>
-
-                        </td>
-                        <td>
-                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
-                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>*@
             <table cellpadding="5">
                 <thead>
                     <tr>
@@ -322,7 +291,9 @@
                                                  valueMember: 'value' }"></div>
                                             
                                         </td>
-                                        <td><input  data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" /></td>
+                                        <td>
+                                            <input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" />
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -332,6 +303,68 @@
                             <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
                             @*<div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
                             <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>*@
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" data-bind="visible: FilteredLookupDataTypeSelected">
+        <div class="col s12" style="margin: 10px 0 10px 0">
+            <table cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>List</th>
+                        <th>Reference Columns</th>
+                        <th>Table Settings</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: FilteredLookupItems">
+                    <tr>
+                        <td style="vertical-align: top; width: 260px">
+                            <div data-bind="filteredLookupFilteredDropdown, jqxDropDownList: {
+                                 width: 250, dropDownWidth: 350, theme: theme,
+                                 filterable: false,
+                                 selectedIndex: FilteredLookupIndex,
+                                 source: FilteredLookupOptions,
+                                 displayMember: 'title',
+                                 valueMember: 'value' }"></div>
+                        </td>
+                        <td style="vertical-align: top">
+                            <table class="striped highlight">
+                                <thead>
+                                    <th>Name</th>
+                                    <th>Show?</th>
+                                    <th>Sort</th>
+                                    <th>Filter by Current Object?</th>
+                                </thead>
+                                <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
+                                    <tr>
+                                        <td style="width: 30%" data-bind="text: title"></td>
+                                        <td style="width: 20%">
+                                            <input type="checkbox" data-bind="checked: Show" />
+                                        </td>
+                                        <td style="width: 15%">
+                                            <div data-bind="sortOrderDropdown, jqxDropDownList: {
+                                                 width: 75, dropDownWidth: 50, theme: theme,
+                                                 filterable: false,
+                                                 source: SortOrderOptions,
+                                                 selectedIndex: SortOrderIndex,
+                                                 displayMember: 'title',
+                                                 valueMember: 'value' }"></div>
+
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" data-bind="checked: Filter, enable: AllowFilter" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top; width: 125px">
+                            <input type="checkbox" data-bind="checked: HideHeader" />Hide Header?<br />
+                            <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
                         </td>
                     </tr>
                 </tbody>
@@ -459,6 +492,15 @@
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
     };
+    
+    ko.bindingHandlers.filteredLookupFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.FilteredLookup(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
 
     ko.bindingHandlers.relationIntersectTypeFilteredDropdown = {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
@@ -501,6 +543,147 @@
         }
     };
     //#endregion
+
+    function FieldTypeFilteredLookupItemViewModel(data, parent) {
+        var self = this;
+        data = data || {};
+
+        //#region Simple Properties
+
+        self.ID = ko.observable(data.ID);
+
+        self.Object = ko.observable(data.Object);
+        self.ObjectID = ko.observable(data.ObjectID);
+
+        self.FilteredLookupIndex = ko.observable(data.FilteredLookupIndex || -1);
+        self.FilteredLookup = ko.observable(data.Object + '|' + data.ObjectID);
+        self.DisplayFields = ko.observableArray(data.DisplayFields);
+        self.HideHeader = ko.observable(data.HideHeader);
+        self.HideFooter = ko.observable(data.HideFooter);
+
+        //#endregion
+
+        //#region Computed Properties
+
+        //#endregion
+
+        //#region List Properties
+
+        self.FilteredLookupOptions = ko.observableArray(parent.FilteredLookupOptions());
+        self.DisplayFieldOptions = ko.observableArray();
+
+        //#endregion
+
+        //#region Internal Methods
+
+
+        self.isValid = function () {
+            if (self.FilteredLookupIndex() == -1)
+                return false;
+
+            var oneOrMoreFieldsSelected = false;
+            $.each(self.DisplayFieldOptions(), function(fix, fid){                                
+                if (!oneOrMoreFieldsSelected) {
+                    oneOrMoreFieldsSelected = (fid.Show() || fid.SortOrder() || fid.FilterValue() != '');
+                }
+            });
+
+            return (oneOrMoreFieldsSelected);
+        }
+
+        var loadDisplayFields = function(type, id, existingItems) {
+            return $.getJSON(
+                '/form/FieldType_FilteredLookup_DisplayFields',
+                { type: parent.Object(), id: parent.ObjectID(), listType: type, listID: id },
+                function(items) {
+                    if (existingItems) {
+                        $.each(existingItems, function(e_ix, e_item){
+                            $.each(items, function(ix, item) {
+                                if (item.value === e_item.value) {
+                                    //item.checked = true;
+                                    item.Filter = e_item.Filter;
+                                    item.Show = e_item.Show;
+                                    item.SortOrder = e_item.SortOrder;
+                                }
+                            });
+                        });
+                    }
+                    var mappedItems = $.map(items, function (item) { return new FieldTypeFilteredLookupDisplayFieldOptionViewModel(item, items.length); });
+                    self.DisplayFieldOptions(mappedItems);//self.DisplayFieldOptions(items);
+                }
+            );
+        }
+        var setSubscriptions = function(){
+            self.FilteredLookup.subscribe(function (value) {
+                self.DisplayFieldOptions.removeAll();
+                self.DisplayFields.removeAll();
+                if (value) {
+                    var values = value.split('|');
+                    self.Object(values[0]);
+                    self.ObjectID(values[1]);
+                    loadDisplayFields(values[0], values[1]);
+                }
+            });
+        }
+
+        //#endregion
+
+        //#region Initialize before subscribes
+
+        if (self.ID() > 0) {
+            var indexToSelect = -1;
+
+            var fullFilteredLookupValue = "";
+            $.each(self.FilteredLookupOptions(), function (ix, item) {
+                if (item.value == self.FilteredLookup()) {
+                    indexToSelect = ix;
+                    fullFilteredLookupValue = item.value;
+                }
+            });
+            self.FilteredLookupIndex(indexToSelect);
+            var values = fullFilteredLookupValue.split('|');
+            loadDisplayFields(values[0], values[1], self.DisplayFields())
+                .then(function(){
+                    setSubscriptions();
+                });
+        }
+        else {
+            setSubscriptions();
+        }
+
+        //#endregion
+    }
+
+    function FieldTypeFilteredLookupDisplayFieldOptionViewModel(data, fieldCount) {
+        var self = this;
+        data = data || {};
+
+        self.title = ko.observable(data.title);
+        self.value = ko.observable(data.value);
+        
+        self.AllowFilter = ko.observable(data.AllowFilter);
+        self.Filter = ko.observable(data.Filter);
+        self.Show = ko.observable(data.Show);
+
+        self.SortOrder = ko.observable(data.SortOrder);
+        self.SortOrderIndex = ko.observable(0);
+
+        var values = [{value: '', title: ''}];
+        for(var position = 1; position <= fieldCount; position++) {
+            values.push({ value: position, title: position });
+        }
+        self.SortOrderOptions = ko.observableArray(values);
+        
+        var indexToSelect = 0;
+        $.each(self.SortOrderOptions(), function (ix, item) {
+            if (self.SortOrder()) {
+                if (item.value == self.SortOrder()) {
+                    indexToSelect = ix;
+                }            
+            }
+        });
+        self.SortOrderIndex(indexToSelect);
+    }
 
     function FieldTypeFusionItemViewModel(data, parent) {
         var self = this;
@@ -769,7 +952,6 @@
 
         //#region Internal Methods
 
-
         self.isValid = function () {
             if (self.IntersectTypeIndex() == -1)
                 return false;
@@ -795,6 +977,7 @@
                 }
             );
         }
+
         var loadDisplayFields = function(intersectTypeID, type, id, existingItems) {
             return $.getJSON(
                 '/form/FieldType_RelationLookup_DisplayFields',
@@ -817,6 +1000,7 @@
                 }
             );
         }
+        
         var setSubscriptions = function(){
             self.IntersectType.subscribe(function (value) {
                 self.ChildIntersectTypeOptions.removeAll();
@@ -1062,7 +1246,9 @@
         self.AttributeDataTypeSelected = ko.pureComputed(function () {
             return (self.DataType() == "Attribute");
         }, self);
-
+        self.FilteredLookupDataTypeSelected = ko.pureComputed(function () {
+            return (self.DataType() == "FilteredLookup");
+        }, self);
         self.FusionLookupDataTypeSelected = ko.pureComputed(function () {
             return (self.DataType() == "FusionLookup");
         }, self);
@@ -1105,6 +1291,9 @@
 
         self.DataTypeOptions = ko.observableArray();    // Data Types.
 
+        self.FilteredLookupOptions = ko.observableArray();// Target filter Lookup references.
+        self.FilteredLookupItems = ko.observableArray();// Target filter Lookup references.
+
         self.FusionItems = ko.observableArray();        // Target Fusion Look-through references.
         self.FusionAttributeTypeOptions = ko.observableArray();
 
@@ -1117,6 +1306,7 @@
 
         self.TokenOptions = ko.observableArray();
         self.TokenOptionIndex = ko.observable(-1);
+
         //#endregion
 
         //#region Methods
@@ -1167,10 +1357,6 @@
             self.FusionItems.push(new FieldTypeFusionItemViewModel({}, self));
         };
 
-        ////self.addRelationItem = function() {
-        ////    self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
-        ////};
-
         self.cancel = function () {
             amplify.publish("CancelAction", { context: self.Context() });
         };
@@ -1178,10 +1364,6 @@
         self.deleteFusionItem = function () {
             self.FusionItems.remove(this);
         };
-
-        ////self.deleteRelationItem = function () {
-        ////    self.RelationItems.remove(this);
-        ////};
 
         self.loadCurrentType = function () {
 
@@ -1201,6 +1383,9 @@
 
                     if (lookups.Attributes) {
                         self.AttributeOptions(lookups.Attributes);
+                    }
+                    if (lookups.FilteredLookups) {
+                        self.FilteredLookupOptions(lookups.FilteredLookups);
                     }
                     if (lookups.FusionAttributeTypes) {
                         self.FusionAttributeTypeOptions(lookups.FusionAttributeTypes);
@@ -1273,6 +1458,13 @@
                                 self.MaximumLength(ftData.FieldType.MaximumLength);
                                 self.ValidationDescription(ftData.FieldType.ValidationDescription);
 
+                                if (ftData.FilteredLookupItems) {
+                                    var list = $.map(ftData.FilteredLookupItems, function (item) { return new FieldTypeFilteredLookupItemViewModel(item, self); });
+                                    self.FilteredLookupItems(list);
+                                } else {
+                                    self.FilteredLookupItems.push(new FieldTypeFilteredLookupItemViewModel({}, self));
+                                }
+
                                 if (ftData.FusionItems) {
                                     var list = $.map(ftData.FusionItems, function (item) { return new FieldTypeFusionItemViewModel(item, self); });
                                     self.FusionItems(list);
@@ -1290,6 +1482,7 @@
                         });
                     }
                     else {
+                        self.FilteredLookupItems.push(new FieldTypeFilteredLookupItemViewModel({}, self));
                         self.RelationItems.push(new FieldTypeRelationItemViewModel({}, self));
                         setSubscriptions();
                     }
@@ -1326,6 +1519,13 @@
                         IsListable: self.IsListable(),
                         IsRequired: self.IsRequired()
                     },
+                    FilteredLookupItem: {
+                        Object: '',
+                        ObjectID: 0,
+                        DisplayFields: [],
+                        HideHeader: false,
+                        HideFooter: false
+                    },
                     FusionItems: [],
                     RelationItem: {
                         IntersectType: 0,
@@ -1351,6 +1551,35 @@
                         postModel.FieldType.LookupObjectType = lookupType.split('|')[0];
                         postModel.FieldType.LookupObjectID = lookupType.split('|')[1];
                         postModel.FieldType.LookupDisplayFormat = self.LookupDisplayFormat();
+                    }
+                }
+
+                if (self.FilteredLookupItems().length > 0) {
+                    try {
+                        var ri = self.FilteredLookupItems()[0];
+                        if (ri.FilteredLookup() > '') {
+                            postModel.FilteredLookupItem["ID"] = ri.ID();
+                            postModel.FilteredLookupItem.Object = ri.Object();
+                            postModel.FilteredLookupItem.ObjectID = ri.ObjectID();
+                            //postModel.FilteredLookupItem.FilteredLookup = ri.FilteredLookup().split('|')[0];
+                            $.each(ri.DisplayFieldOptions(), function(fix, fid){
+                                var values = fid.value().split('|');
+                                
+                                if (fid.Show() || fid.SortOrder() || fid.Filter()) {
+                                    postModel.FilteredLookupItem.DisplayFields.push({
+                                        FieldTypeID: values[0],
+                                        FieldTypeName: values[1],
+                                        Show: fid.Show(),
+                                        SortOrder: fid.SortOrder(),
+                                        Filter: fid.Filter()
+                                    });                                
+                                }
+                            });
+                            postModel.FilteredLookupItem.HideHeader = ri.HideHeader();
+                            postModel.FilteredLookupItem.HideFooter = ri.HideFooter();
+                        }
+                    } catch (e) {
+                        console.log(e);
                     }
                 }
 

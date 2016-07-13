@@ -405,6 +405,7 @@
     <Compile Include="Controllers\AppsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
+    <Compile Include="Controllers\Services\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\WorkflowController.cs" />
     <Compile Include="Controllers\OfficeAppsController.cs" />

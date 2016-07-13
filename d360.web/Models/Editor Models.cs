@@ -396,6 +396,7 @@ namespace d360.web.Models
         public bool Show { get; set; }
         public int? SortOrder { get; set; }
         public string FilterValue { get; set; }
+        public bool Filter { get; set; }
     }
 
     public class FieldValidity
@@ -407,6 +408,47 @@ namespace d360.web.Models
 
         public bool Valid { get; set; }
         public string Message { get; set; }
+    }
+
+    public class FieldTypeFilteredLookupItemEditorModel
+    {
+        public int ID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+        public bool HideHeader { get; set; }
+        public bool HideFooter { get; set; }
+
+
+        public FieldValidity Validation()
+        {
+            var prefix = "You are missing a";
+            var valid = new FieldValidity();
+            if (string.IsNullOrEmpty(Object) || ObjectID <= 0)
+            {
+                valid.Valid = false;
+                valid.Message = $"{prefix} field.";
+            }
+
+            if (valid.Valid)
+            {
+                if (DisplayFields == null)
+                {
+                    valid.Valid = false;
+                    valid.Message = $"{prefix} reference column.";
+                }
+                else
+                {
+                    if (DisplayFields.Count == 0)
+                    {
+                        valid.Valid = false;
+                        valid.Message = $"{prefix} reference column.";
+                    }
+                }
+            }
+
+            return valid;
+        }
     }
 
     public class FieldTypeFusionItemEditorModel
@@ -530,6 +572,8 @@ namespace d360.web.Models
         public bool FieldIsUsed { get; set; }
 
         public FieldType FieldType { get; set; }
+
+        public FieldTypeFilteredLookupItemEditorModel FilteredLookupItem { get; set; }
 
         public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 

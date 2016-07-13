@@ -95,7 +95,12 @@
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
 
-                        LineageDiagram('SourcingTile', selectedType, id, true);
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', selectedType, id, true);
+                        else
+                            LineageDiagram('SourcingTile', selectedType, id, true);
+
+                        //LineageDiagram('SourcingTile', selectedType, id, true);
 
                         if (json.AllowAttributes) {
                             $('#AttributesTile').show();

@@ -826,6 +826,13 @@
         return -1;
     }
 
+    function htmlDecode(s) {
+        return s.replace(/&#39;/g, '\'')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&#34;/g, '"');
+    }
 
     function getImmediateParents(key) {
         //console.log(key);
@@ -1877,7 +1884,7 @@
             var isFocalPoint = (d.obj == type && d.objid == id);// && d.level == 0);
 
             if (isFocalPoint) {
-                $('#' + controlID_header).text('Lineage: ' + d.name);
+                $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
             }
 
             model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
@@ -1887,7 +1894,7 @@
             model.objecttypeid = d.objecttypeid;
             model.type = d.obj;
             model.level = d.level;
-            model.name = d.name;
+            model.name = htmlDecode(d.name);
             model.typeName = d.type;
             model.foreColor = d.fore;
             model.backColor = d.back;

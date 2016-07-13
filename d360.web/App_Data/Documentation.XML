@@ -2005,6 +2005,71 @@
             <param name="typeID">The ID of the attribute type to get.</param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.Services.ReferenceController">
+            <summary>
+            This services houses all endpoints handling reference lists and items.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.AddItemToList(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Adds an item to a specified reference list.
+            </summary>
+            <param name="typeID">The ID of the reference list.</param>
+            <param name="model">The item to add to the specified list, in the form of name/value pairs.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.AddReferenceList(d360.core.entities.LookupType)">
+            <summary>
+            Adds a reference list.
+            </summary>
+            <param name="list">The list to add, as name/value properties.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.DeleteItemFromList(System.Int32,System.Int32)">
+            <summary>
+            Removes an item from a specified reference list, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the reference list.</param>
+            <param name="id">The ID of the item to remove.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.DeleteReferenceList(System.Int32)">
+            <summary>
+            Removes a reference list, based on its ID.
+            </summary>
+            <param name="id">The ID of the list to remove.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.PutItemInList(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Updates an item in the specified list, based on its ID.
+            </summary>
+            <param name="typeID">The ID of the reference list.</param>
+            <param name="id">The ID of the item to update.</param>
+            <param name="model">The item to update, in name/value pair format.</param>
+            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.PutReferenceList(System.Int32,d360.core.entities.LookupType)">
+            <summary>
+            Updates a list, based on its ID.
+            </summary>
+            <param name="id">The ID of the reference list.</param>
+            <param name="list">The list to update</param>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.GetItemsByList(System.Int32)">
+            <summary>
+            Gets an OData-queryable list of items within a specified reference list.
+            </summary>
+            <param name="typeID">The ID of the reference list.</param>
+            <returns>A list of items.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.ReferenceController.GetReferenceLists">
+            <summary>
+            Gets an OData-queryable list of lists.
+            </summary>
+            <returns>A list of reference lists.</returns>
+        </member>
         <member name="T:d360.web.Controllers.Services.ReportsController">
             <summary>
             Retrieve report tile results.
@@ -2598,6 +2663,16 @@
         <member name="M:d360.web.Controllers.FormController.EventGroup_EditFields(System.Int32)">
             <param name="id">EventGroupID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_FilteredLookup_DisplayFields(System.String,System.Int32,System.String,System.Int32)">
+            <summary>
+            Gets a list of display fields that match a lookup.
+            </summary>
+            <param name="type">The type of object we are adding field type to.</param>
+            <param name="id">The type Id of object we are adding field type to.</param>
+            <param name="listType">The type of list to pull fields for.</param>
+            <param name="listID">The type Id of the list to pull fields for.</param>
+            <returns>A list of relevant fusion attribute types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_FusionLookup_DisplayFields(System.Int32)">
             <summary>
             Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
@@ -2628,9 +2703,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionOwnerRule_DeleteFields(System.Int32)">
             <param name="id">FusionAttributeOwnerRuleID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionPromotionRule_DeleteFields(System.Int32)">
-            <param name="id">FusionAttributePromotionRuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionRule_DeleteFields(System.Int32)">
             <param name="id">FusionAttributePromotionRuleID</param>

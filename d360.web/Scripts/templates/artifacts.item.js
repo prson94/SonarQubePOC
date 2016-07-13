@@ -78,7 +78,11 @@
                             ObjectDetail('DetailTile', type, id);
                             break;
                         case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, id, false);
+                            if (CompanySettings.UseNewRelationships == 'true')
+                                NewLineageDiagram('SourcingTile', type, id, false);
+                            else
+                                LineageDiagram('SourcingTile', type, id, false);
+                            //LineageDiagram('SourcingTile', type, id, false);
                             //NewLineageDiagram('SourcingTile', type, id, false);
                             break;
                         case contextList.Responsibility:                        
@@ -129,8 +133,12 @@
                         ObjectStatisticsTile('MicroWidget1', type, id);
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
-                        //NewLineageDiagram('SourcingTile', type, id, false);
-                        LineageDiagram('SourcingTile', type, id, false);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', type, id, false);
+                        else
+                            LineageDiagram('SourcingTile', type, id, false);
+
                         CertificationNotificationTile('CertificationNotification', id);
                         ChallengeNotificationTile('ChallengeNotification', contextList, id);
 

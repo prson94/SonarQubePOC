@@ -140,6 +140,10 @@ namespace d360.model
 
         public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
+        public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
+
+        public DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
+
         public DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
 
         public DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
@@ -622,20 +626,6 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
             return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
-        //public List<ChildArtifactStatisticsByObject> GetChildArtifactStatisticsByObject(int id)
-        //{
-        //    var list = Database.Connection.Query<ChildArtifactStatisticsByObject>("tile.GetChildArtifactStatisticsByObject @id", new { id = id}).ToList();
-
-        //    var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
-        //    list.ForEach(i =>
-        //    {
-        //        i.Name = pluralize.Pluralize(i.Name);
-        //    });
-
-        //    return list;
-        //}
-
         public List<KeyValuePair<int, string>> GetClassifications()
         {
             var array = (IntersectClassification[])(Enum.GetValues(typeof(IntersectClassification)).Cast<IntersectClassification>());
@@ -643,20 +633,6 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
                 .Select(a => new KeyValuePair<int, string>(Convert.ToInt32(a), a.ToString()))
                 .ToList();
         }
-
-        //public List<CommentDetail> GetCommentDetailsByID(int id)
-        //{
-        //    var comments = Database.Connection.Query<CommentDetail>("EXEC GetCommentDetailByID @id", new { id }).ToList();
-
-        //    foreach (CommentDetail cd in comments)
-        //    {
-        //        cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-        //                && (cd.Comments == null || !cd.Comments.Any())
-        //                && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
-
-        //    }
-        //    return comments;
-        //}
 
         public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
         {
@@ -2444,6 +2420,7 @@ order by Name", new { workflowType, type, id });
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);

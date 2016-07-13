@@ -562,7 +562,7 @@ where   I.FusionAttributePromotionRuleID = @id";
 select	I.ID,
         RS.RuleID,
         I.SourceFieldTypeID,
-        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')') as SourceFieldName,
+        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')', 'Constant: ' + I.ConstantValue) as SourceFieldName,
         I.TargetFieldTypeID,
         coalesce(I.TargetFieldName, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
 from	[fusion].[RuleStepMapping] I
@@ -744,7 +744,7 @@ select	ID,
 		AttributesConsidered,
         NumberOfRules,
         RelationshipsAdded
-from    FusionAttributePromotionLogSummary
+from    fusion.RuleLog
 order by    DateStarted desc";
 
         public static string RelationshipAttributesFieldList = @"

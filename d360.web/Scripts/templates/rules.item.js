@@ -108,7 +108,13 @@
                         statisticsTileVm.GetStatistics();
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
-                        LineageDiagram('SourcingTile', type, ruleID, true);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', type, ruleID, true);
+                        else
+                            LineageDiagram('SourcingTile', type, ruleID, true);
+
+                        //LineageDiagram('SourcingTile', type, ruleID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
 
                         EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);

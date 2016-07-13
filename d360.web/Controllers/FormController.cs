@@ -4344,6 +4344,33 @@ namespace d360.web.Controllers
         #region Supporting Json Feeds
 
         /// <summary>
+        /// Gets a list of display fields that match a lookup.
+        /// </summary>
+        /// <param name="type">The type of object we are adding field type to.</param>
+        /// <param name="id">The type Id of object we are adding field type to.</param>
+        /// <param name="listType">The type of list to pull fields for.</param>
+        /// <param name="listID">The type Id of the list to pull fields for.</param>
+        /// <returns>A list of relevant fusion attribute types.</returns>
+        public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
+        {
+            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
+                .OrderBy(i => i.Name)
+                .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
+                .ToList()
+                .Select(i => new {
+                    title = i.FriendlyName,
+                    value = $"{i.ID}|{i.Name}",
+                    AllowFilter = ($"{i.LookupObjectType}|{i.LookupObjectID}" == $"{type.Replace("Type", "")}|{id}")
+                });
+
+            return new JsonNetResult
+            {
+                Data = list,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
         /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
         /// </summary>
         /// <param name="id">The Source FusionAttributeType ID</param>
@@ -4707,18 +4734,21 @@ order by  D.TextPath
             var attributes = Company.Filter<AttributeType>(x => !x.ParentID.HasValue).OrderBy(x => x.Name).ToList().Select(i => new { title = i.Name, value = $"AttributeType|{i.ID}" });
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
-
-//            lookups.AddRange(Company.Query<KnockoutListItem>(@"
-//select		distinct
-//			'Predicate Relationship :: ' + P.Name as title,
-//            'Predicate|' + cast(P.ID as varchar) as value
-//from		utility.RelationshipTypes T
-//			inner join IntersectTypePredicate J on J.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = @type and T.SourceObjectID = @id
-//			inner join Predicate P on P.Type = J.PredicateType
-//order by	P.Name
-//", new { type, id }));
-
-            //lookups = lookups.OrderBy(i => i.title).ToList();
+            var filteredLookups = Company.Query<KnockoutListItem>($@"
+select	L.Name as title,
+		'Lookup|' + cast(L.ID as varchar) as value
+from	LookupType L
+		cross apply (
+					select	count(1) as [Count]
+					from	FieldType
+					where	Object = 'LookupType' 
+							and ObjectID = L.ID
+							and [Type] = 'Lookup'
+							and LookupObjectType = @type 
+							and LookupObjectID = @id
+					) F
+where	F.[Count] > 0
+order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },
@@ -4749,6 +4779,7 @@ order by  D.TextPath
                 {
                     Attributes = attributes,
                     DataTypes = dataTypeOptions,
+                    FilteredLookups = filteredLookups,
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
                     IntersectTypes = intersectTypes,
                     FusionAttributeTypes = fusionAttributeTypes,
@@ -4761,11 +4792,33 @@ order by  D.TextPath
         public JsonNetResult FieldType_FormData(int id)
         {
             FieldType ft = null;
+            List<dynamic> filteredLookupItems = null;
             List<dynamic> fusionItems = null;
             List<dynamic> relationItems = null;
             if (id > 0)
             {
                 ft = Company.GetById<FieldType>(id, i => i.FieldTypeFusionLookupDefinitions, i => i.FieldTypeRelationLookupDefinitions);
+
+                if (ft.FieldTypeFilteredLookupDefinitions != null)
+                {
+                    if (ft.FieldTypeFilteredLookupDefinitions.Count > 0)
+                    {
+                        filteredLookupItems = new List<dynamic>();
+                        foreach (var i in ft.FieldTypeFilteredLookupDefinitions)
+                        {
+                            filteredLookupItems.Add(new
+                            {
+                                ID = i.ID,
+                                Object = i.Object,
+                                ObjectID = i.ObjectID,
+                                DisplayFields = (i.FieldTypeFilteredLookupDisplayFields != null) ? i.FieldTypeFilteredLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", Filter = df.Filter, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
+                                HideHeader = i.HideHeader,
+                                HideFooter = i.HideFooter
+                            });
+                        }
+                    }
+                }
+
                 if (ft.FieldTypeFusionLookupDefinitions != null)
                 {
                     if (ft.FieldTypeFusionLookupDefinitions.Count > 0)
@@ -4785,6 +4838,7 @@ order by  D.TextPath
                         }
                     }
                 }
+
                 if (ft.FieldTypeRelationLookupDefinitions != null)
                 {
                     if (ft.FieldTypeRelationLookupDefinitions.Count > 0)
@@ -4811,6 +4865,7 @@ order by  D.TextPath
                 Data = new
                 {
                     FieldType = ft,
+                    FilteredLookupItems = filteredLookupItems,
                     FusionItems = fusionItems,
                     RelationItems = relationItems
                 },
@@ -4903,6 +4958,54 @@ order by  D.TextPath
                         if (string.IsNullOrEmpty(model.FieldType.LookupDisplayFormat))
                         {
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
+                        }
+                        break;
+                    #endregion
+                    case "FilteredLookup":
+                        #region
+                        if (model.FilteredLookupItem != null)
+                        {
+                            val = model.FilteredLookupItem.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
+                            var def = new FieldTypeFilteredLookupDefinition
+                            {
+                                //FieldTypeID = model.FieldType.ID,
+                                Object = model.FilteredLookupItem.Object,
+                                ObjectID = model.FilteredLookupItem.ObjectID,
+                                HideHeader = model.FilteredLookupItem.HideHeader,
+                                HideFooter = model.FilteredLookupItem.HideFooter
+                            };
+
+                            if (model.FilteredLookupItem.DisplayFields != null)
+                            {
+                                if (model.FilteredLookupItem.DisplayFields.Count > 0)
+                                {
+                                    def.FieldTypeFilteredLookupDisplayFields = new List<FieldTypeFilteredLookupDisplayField>();
+
+                                    foreach (var df in model.FilteredLookupItem.DisplayFields)
+                                    {
+                                        var ndf = new FieldTypeFilteredLookupDisplayField
+                                        {
+                                            FieldTypeFilteredLookupDefinitionID = def.ID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            FieldTypeID = df.FieldTypeID,
+                                            Filter = df.Filter,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || ndf.Filter || ndf.SortOrder.HasValue)
+                                            def.FieldTypeFilteredLookupDisplayFields.Add(ndf);
+                                    }
+                                }
+                            }
+
+                            model.FieldType.FieldTypeFilteredLookupDefinitions = new List<FieldTypeFilteredLookupDefinition>() { def };
+                            //Company.Add<FieldTypeRelationLookupDefinition>(def);
                         }
                         break;
                     #endregion
@@ -5182,10 +5285,122 @@ order by  D.TextPath
                 bool isNew;
 
                 var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
+                var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var eri = Company.Filter<FieldTypeRelationLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeRelationLookupDisplayFields).FirstOrDefault();
 
                 switch (ft.Type)
                 {
+                    case "FilteredLookup":
+                        #region
+                        isNew = false;
+                        if (model.FilteredLookupItem != null)
+                        {
+                            val = model.FilteredLookupItem.Validation();
+                            if (!val.Valid)
+                            {
+                                throw new ConflictException("Error Occurred!", val.Message);
+                            }
+
+                            var listToRemove = new List<FieldTypeFilteredLookupDisplayField>();
+
+                            if (efli == null)
+                            {
+                                isNew = true;
+                                efli = new FieldTypeFilteredLookupDefinition
+                                {
+                                    FieldTypeID = model.FieldType.ID,
+                                    Object = model.FilteredLookupItem.Object,
+                                    ObjectID = model.FilteredLookupItem.ObjectID,
+                                    HideHeader = model.FilteredLookupItem.HideHeader,
+                                    HideFooter = model.FilteredLookupItem.HideFooter,
+                                    FieldTypeFilteredLookupDisplayFields = new List<FieldTypeFilteredLookupDisplayField>()
+                                };
+                            }
+                            else
+                            {
+                                efli.Object = model.FilteredLookupItem.Object;
+                                efli.ObjectID = model.FilteredLookupItem.ObjectID;
+                                efli.HideHeader = model.FilteredLookupItem.HideHeader;
+                                efli.HideFooter = model.FilteredLookupItem.HideFooter;
+                            }
+
+                            if (model.FilteredLookupItem.DisplayFields != null)
+                            {
+                                // Add those that do not yet exist.
+                                foreach (var df in model.FilteredLookupItem.DisplayFields)
+                                {
+                                    if (!efli.FieldTypeFilteredLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
+                                    {
+                                        var ndf = new FieldTypeFilteredLookupDisplayField
+                                        {
+                                            FieldTypeFilteredLookupDefinitionID = efli.ID,
+                                            FieldTypeID = df.FieldTypeID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            Filter = df.Filter,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || ndf.Filter || ndf.SortOrder.HasValue)
+                                            efli.FieldTypeFilteredLookupDisplayFields.Add(ndf);
+                                    }
+                                    else
+                                    {
+                                        var edf = efli.FieldTypeFilteredLookupDisplayFields.Single(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName);
+
+                                        edf.Filter = df.Filter;
+                                        edf.SortOrder = df.SortOrder;
+                                        edf.Show = df.Show;
+
+                                        if (!edf.Show && !edf.Filter && !edf.SortOrder.HasValue)
+                                            efli.FieldTypeFilteredLookupDisplayFields.Remove(edf);
+                                    }
+                                }
+
+                                // Remove those that no longer exist.
+                                foreach (var edf in efli.FieldTypeFilteredLookupDisplayFields)
+                                {
+                                    if (!model.FilteredLookupItem.DisplayFields.Any(i => i.FieldTypeID == edf.FieldTypeID && i.FieldTypeName == edf.FieldTypeName))
+                                    {
+                                        listToRemove.Add(edf);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (efli.FieldTypeFilteredLookupDisplayFields != null)
+                                {
+                                    listToRemove.AddRange(efli.FieldTypeFilteredLookupDisplayFields);
+                                }
+                            }
+
+                            if (listToRemove.Count > 0)
+                            {
+                                Company.FieldTypeFilteredLookupDisplayFields.RemoveRange(listToRemove);
+                            }
+
+                            listToRemove = null;
+
+                            if (isNew)
+                                Company.Add<FieldTypeFilteredLookupDefinition>(efli);
+                            else
+                                Company.Update<FieldTypeFilteredLookupDefinition>(efli);
+                        }
+                        else
+                        {
+                            if (efli != null)
+                            {
+                                ft.FieldTypeFilteredLookupDefinitions.Remove(efli);
+                            }
+                        }
+
+                        //Clean up previous stuff
+                        if (defs.Count != 0)
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        if (eri != null)
+                            Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
+                        break;
+                    #endregion
                     case "FusionLookup":
                         #region
                         foreach (var fi in model.FusionItems)
@@ -5279,9 +5494,11 @@ order by  D.TextPath
                                 Company.Update<FieldTypeFusionLookupDefinition>(efi);
                         }
 
-                        if (oldType == "RelationLookup" && eri != null)
+                        //Clean up previous stuff
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        if (eri != null)
                             Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
-
                         break;
                     #endregion
                     case "Lookup":
@@ -5293,6 +5510,14 @@ order by  D.TextPath
                         {
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
+
+                        //Clean up previous stuff
+                        if (defs.Count != 0)
+                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        if (eri != null)
+                            Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
                         break;
                     #endregion
                     case "RelationLookup":
@@ -5400,21 +5625,13 @@ order by  D.TextPath
                             }
                         }
 
-                        if (oldType == "FusionLookup" && defs.Count != 0)
-                        {
+                        //Clean up previous stuff
+                        if (efli != null)
+                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+                        if (defs.Count != 0)
                             Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
-                        }
                         break;
                         #endregion
-                }
-
-                //clean up if switching from FusionLookup/RelationLookup to a different type
-                if ((oldType == "FusionLookup" || oldType == "RelationLookup") && (ft.Type != "FusionLookup" && ft.Type != "RelationLookup"))
-                {
-                    if (defs.Count != 0)
-                        Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
-                    if (eri != null)
-                        Company.Set<FieldTypeRelationLookupDefinition>().Remove(eri);
                 }
 
                 Company.Update<FieldType>(ft);
@@ -6176,694 +6393,6 @@ order by  D.TextPath
 
         #endregion
 
-        #region FusionPromotionRule
-
-        #region Field Generation
-
-        /// <param name="id">FusionAttributePromotionRuleID</param>
-        public JsonResult FusionPromotionRule_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<FusionAttributePromotionRule>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotions/add")]
-        public ActionResult AddFusionPromotionRule(int typeID, int fusionID)
-        {
-            //if (!Company.HasPermission(SystemObjects.AttributeType, 0, Claim.Create))
-            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var model = new FusionPromotionRuleEditorModel
-            {
-                FusionID = fusionID,
-                FusionTypeID = typeID,
-                FormUri = "/Form/AddFusionPromotionRule",
-                FormMethod = "POST",
-                FormName = "Add Promotion Rule",
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
-                Rule = new FusionAttributePromotionRule { FusionID = fusionID, Enabled = true }
-            };
-            return PartialView("FusionAttributePromotionRuleEditForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionPromotionRule(FormCollection form)//(FusionPromotionEditListModel model)
-        {
-            try
-            {
-                var promotionObject = form["PrOptionsDropdown"].Split('|');
-                var promotionParent = form["PrOptionsParentDropdown"];
-
-                var item = new FusionAttributePromotionRule
-                {
-                    Enabled = parseBooleanField(form, "Enabled"),
-                    FusionID = parseIntField(form, "FusionID"),
-                    ObjectType = "FusionAttributeType",
-                    ObjectID = parseIntField(form, "FusionAttributeTypeID"),
-                    PromotionObjectType = promotionObject[0],
-                    PromotionObjectID = int.Parse(promotionObject[1])
-                };
-
-                if (!string.IsNullOrEmpty(promotionParent))
-                {
-                    item.PromotionParentObjectType = item.PromotionObjectType.Replace("Type", "");
-                    item.PromotionParentObjectID = int.Parse(promotionParent);
-                }
-
-                Company.Add<FusionAttributePromotionRule>(item);
-
-                return jsonSuccess("Items marked for auto-promotion", "0", ContextList.FusionPromotionRule, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteFusionPromotionRule(int id)
-        {
-            var a = Company.GetById<FusionAttributePromotionRule>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRule,
-                FieldUri = string.Format("/form/FusionPromotionRule_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this promotion rule"),
-                FormUri = "/form/DeleteFusionPromotionRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionPromotionRule(FormCollection form)//(int typeID, int id)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                Company.Delete<FusionAttributePromotionRule>(i => i.ID == id);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult EditFusionPromotionRule(int id)
-        {
-            var a = Company.GetById<FusionAttributePromotionRule>(id, i => i.Fusion);
-            if (a == null) return HttpNotFound();
-
-            int parentTypeID = -1;
-            //get the type id of the parent object if there is one since we do not store it in the table.
-            if (a.PromotionParentObjectID.HasValue)
-            {
-                switch (a.PromotionParentObjectType)
-                {
-                    case "Artifact":
-                        parentTypeID = Company.GetById<Artifact>(a.PromotionParentObjectID.Value).ArtifactTypeID;
-                        break;
-                    case "Taxonomy":
-                        parentTypeID = Company.GetById<Taxonomy>(a.PromotionParentObjectID.Value).TaxonomyTypeID;
-                        break;
-                    case "Domain":
-                        parentTypeID = Company.GetById<Domain>(a.PromotionParentObjectID.Value).DomainTypeID;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            var model = new FusionPromotionRuleEditorModel
-            {
-                FusionID = a.FusionID,
-                FusionTypeID = 0,
-                FormUri = "/Form/EditFusionPromotionRule",
-                FormMethod = "PUT",
-                FormName = "Update Promotion Rule",
-                Rule = a,
-                ParentTypeID = parentTypeID,
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList()
-            };
-
-            return PartialView("FusionAttributePromotionRuleEditForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditFusionPromotionRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("promotion rule");
-
-                var model = Company.GetById<FusionAttributePromotionRule>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("promotion rule");
-
-                var promotionObject = form["PrOptionsDropdown"].Split('|');
-                var promotionParent = form["PrOptionsParentDropdown"];
-
-                model.Enabled = parseBooleanField(form, "Enabled");
-                model.ObjectID = parseIntField(form, "FusionAttributeTypeID");
-                model.PromotionObjectType = promotionObject[0];
-                model.PromotionObjectID = int.Parse(promotionObject[1]);
-
-                if (!string.IsNullOrEmpty(promotionParent))
-                {
-                    model.PromotionParentObjectType = model.PromotionObjectType.Replace("Type", "");
-                    model.PromotionParentObjectID = int.Parse(promotionParent);
-                }
-
-                Company.Update<FusionAttributePromotionRule>(model);
-
-                return jsonSuccess("Promotion rule successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-
-
-        #endregion
-
-        #region FusionPromotionRuleItem
-
-        #region Field Generation
-
-        public JsonResult FusionPromotionRuleItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddFusionAttributePromotionRuleItem(int id)
-        {
-            var rule = Company.GetById<FusionAttributePromotionRule>(id, i => i.Fusion, i => i.FusionAttributePromotionRuleMappings);
-
-            if (rule == null)
-                return jsonException("Rule not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionPromotionRuleItemEditorModel
-            {
-                FormUri = "/Form/AddFusionAttributePromotionRuleItem",
-                FormMethod = "POST",
-                FormName = "Add Promotion Target Item",
-                FusionID = rule.FusionID,
-                TargetFusionAttributeTypeID = rule.ObjectID,
-                Item = new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = id }
-            };
-            return PartialView("FusionAttributePromotionRuleItemEditForm", editorModel);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionAttributePromotionRuleItem(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "FusionAttributePromotionRuleID");
-                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-                if (fusionAttributeIDs.Count == 0)
-                {
-                    Company.Set<FusionAttributePromotionRuleItem>().Add(
-                        new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = ruleID, FusionAttributeID = null }
-                        );
-                }
-                else
-                {
-                    fusionAttributeIDs.ForEach(fa =>
-                    {
-                        int? fusionAttributeID = null;
-                        if (!string.IsNullOrEmpty(fa))
-                        {
-                            fusionAttributeID = int.Parse(fa);
-                        }
-                        Company.Set<FusionAttributePromotionRuleItem>().Add(
-                            new FusionAttributePromotionRuleItem { FusionAttributePromotionRuleID = ruleID, FusionAttributeID = fusionAttributeID }
-                            );
-                    });
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteFusionAttributePromotionRuleItem(int id)
-        {
-            var a = Company.GetById<FusionAttributePromotionRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRuleItem,
-                FieldUri = string.Format("/form/FusionPromotionRuleItem_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
-                FormUri = "/form/DeleteFusionAttributePromotionRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionAttributePromotionRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                Company.Delete<FusionAttributePromotionRuleItem>(i => i.ID == id);
-                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionPromotionRuleMapping
-
-        #region Field Generation
-
-        public JsonResult FusionPromotionRuleMapping_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        List<SelectListItem> loadSourceItemOptions(FusionAttributePromotionRule rule, FusionAttributePromotionRuleMapping existingItem = null)
-        {
-            #region Process Source Field Logic
-
-            var sourceFieldIDs = rule.FusionAttributePromotionRuleMappings.Where(i => i.SourceFieldTypeID > 0).Select(i => i.SourceFieldTypeID).ToList();
-            var sourceFieldNames = rule.FusionAttributePromotionRuleMappings.Where(i => i.SourceFieldTypeID == 0).Select(i => i.SourceFieldName).ToList();
-
-            if (existingItem != null)
-            {
-                if (existingItem.SourceFieldTypeID > 0)
-                {
-                    sourceFieldIDs.Remove(existingItem.SourceFieldTypeID);
-                }
-                else
-                {
-                    sourceFieldNames.Remove(existingItem.SourceFieldName);
-                }
-            }
-
-            var sourceFields = Company.Filter<FieldType>(i => i.Object == rule.ObjectType && i.ObjectID == rule.ObjectID)
-                .OrderBy(i => i.FriendlyName)
-                .ToList()
-                //.Where(i => !sourceFieldIDs.Contains(i.ID))
-                .Select(i => new SelectListItem
-                {
-                    Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
-                    Value = string.Format("{0}|{1}", i.Name, i.ID)
-                })
-                .ToList();
-            //if (!sourceFieldNames.Contains("Name"))
-            sourceFields.Insert(0, new SelectListItem { Text = "Name", Value = "Name|0" });
-
-            #endregion
-
-            var selectedID = "";
-            if (existingItem != null)
-            {
-                if (existingItem.SourceFieldTypeID > 0)
-                {
-                    selectedID = existingItem.SourceFieldTypeID.ToString();
-                }
-                else
-                {
-                    selectedID = existingItem.SourceFieldName;
-                }
-            }
-
-            if (selectedID != null)
-            {
-                sourceFields.ForEach(i =>
-                {
-                    if (!string.IsNullOrEmpty(i.Value))
-                    {
-                        string[] parts = i.Value.Split('|');
-                        i.Selected = parts.Length > 1 && parts[0] == selectedID || parts[1] == selectedID;
-                    }
-                });
-            }
-
-            return sourceFields;
-        }
-
-        List<SelectListItem> loadTargetItemOptions(FusionAttributePromotionRule rule, FusionAttributePromotionRuleMapping existingItem = null)
-        {
-            var targetFields = new List<SelectListItem>();
-
-            #region Process Target Field Logic
-
-            var targetFieldIDs = rule.FusionAttributePromotionRuleMappings.Where(i => i.TargetFieldTypeID > 0).Select(i => i.TargetFieldTypeID).ToList();
-            var targetFieldNames = rule.FusionAttributePromotionRuleMappings.Where(i => i.TargetFieldTypeID == 0).Select(i => i.TargetFieldName).ToList();
-
-            if (existingItem != null)
-            {
-                if (existingItem.TargetFieldTypeID > 0)
-                {
-                    targetFieldIDs.Remove(existingItem.TargetFieldTypeID);
-                }
-                else
-                {
-                    targetFieldNames.Remove(existingItem.TargetFieldName);
-                }
-            }
-
-            var promotionType = rule.PromotionObjectType;
-            switch (promotionType)
-            {
-                case "DomainType":
-                    if (!targetFieldNames.Contains("Name"))
-                        targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
-                    if (rule.PromotionParentObjectType == "Domain")
-                    {
-                        if (!targetFieldNames.Contains("Code"))
-                            targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
-                    }
-                    if (!targetFieldNames.Contains("Description"))
-                        targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
-                    break;
-                case "ArtifactType":
-                case "TaxonomyType":
-                    if (!targetFieldNames.Contains("Name"))
-                        targetFields.Add(new SelectListItem { Text = "Name", Value = "Name|0" });
-                    if (!targetFieldNames.Contains("Description"))
-                        targetFields.Add(new SelectListItem { Text = "Description", Value = "Description|0" });
-                    var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == rule.PromotionObjectID)
-                        .OrderBy(i => i.FriendlyName)
-                        .ToList()
-                        .Where(i => !targetFieldIDs.Contains(i.ID))
-                        .Select(i => new SelectListItem
-                        {
-                            Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
-                            Value = string.Format("{0}|{1}", i.Name, i.ID)
-                        })
-                        .ToList();
-                    targetFields.AddRange(targetDynamicFields);
-                    break;
-            }
-
-            #endregion
-
-            var selectedID = "";
-            if (existingItem != null)
-            {
-                if (existingItem.TargetFieldTypeID > 0)
-                {
-                    selectedID = existingItem.TargetFieldTypeID.ToString();
-                }
-                else
-                {
-                    selectedID = existingItem.TargetFieldName;
-                }
-            }
-
-            targetFields.ForEach(i =>
-            {
-                i.Selected = i.Value.Contains(selectedID);
-            });
-
-            return targetFields;
-        }
-
-        public ActionResult AddFusionAttributePromotionRuleMapping(int id)
-        {
-            var rule = Company.GetById<FusionAttributePromotionRule>(id, i => i.Fusion, i => i.FusionAttributePromotionRuleMappings);
-
-            if (rule == null)
-                return jsonException("Rule not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionPromotionRuleMappingEditorModel
-            {
-                FormUri = "/Form/AddFusionAttributePromotionRuleMapping",
-                FormMethod = "POST",
-                FormName = "Add Promotion Field Mapping",
-                Item = new FusionAttributePromotionRuleMapping { FusionAttributePromotionRuleID = id },
-                SourceFields = loadSourceItemOptions(rule),
-                TargetFields = loadTargetItemOptions(rule)
-            };
-            return PartialView("FusionAttributePromotionRuleMappingEditForm", editorModel);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionAttributePromotionRuleMapping(FormCollection form)
-        {
-            try
-            {
-                var model = new FusionAttributePromotionRuleMapping
-                {
-                    FusionAttributePromotionRuleID = parseIntField(form, "FusionAttributePromotionRuleID")
-                };
-
-                var source = form["Source"].Split('|');
-                var target = form["Target"].Split('|');
-                var constantValue = form["ConstantValue"];
-                var isConstantValue = form["isConstantValue"];
-
-                if (source[1] == "0")
-                {
-                    model.SourceFieldName = source[0];
-                    model.SourceFieldTypeID = 0;
-                }
-                else
-                    model.SourceFieldTypeID = int.Parse(source[1]);
-
-                if (target[1] == "0")
-                {
-                    model.TargetFieldName = target[0];
-                    model.TargetFieldTypeID = 0;
-                }
-                else
-                    model.TargetFieldTypeID = int.Parse(target[1]);
-
-
-                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = constantValue;
-                    model.SourceFieldName = null;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = string.Empty;
-                }
-
-                Company.Add<FusionAttributePromotionRuleMapping>(model);
-
-                return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteFusionAttributePromotionRuleMapping(int id)
-        {
-            var a = Company.GetById<FusionAttributePromotionRuleMapping>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRuleMapping,
-                FieldUri = string.Format("/form/FusionPromotionRuleMapping_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this field mapping"),
-                FormUri = "/form/DeleteFusionAttributePromotionRuleMapping",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionAttributePromotionRuleMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                Company.Delete<FusionAttributePromotionRuleMapping>(i => i.ID == id);
-                return jsonSuccess("Mapping successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult EditFusionAttributePromotionRuleMapping(int id)
-        {
-            var a = Company.GetById<FusionAttributePromotionRuleMapping>(id, i => i.FusionAttributePromotionRule.FusionAttributePromotionRuleMappings);
-            if (a == null) return HttpNotFound();
-
-            var editorModel = new FusionPromotionRuleMappingEditorModel
-            {
-                FormUri = "/Form/EditFusionAttributePromotionRuleMapping",
-                FormMethod = "PUT",
-                FormName = "Update Promotion Field Mapping",
-                Item = a,
-                SourceFields = loadSourceItemOptions(a.FusionAttributePromotionRule, a),
-                TargetFields = loadTargetItemOptions(a.FusionAttributePromotionRule, a)
-            };
-
-            return PartialView("FusionAttributePromotionRuleMappingEditForm", editorModel);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditFusionAttributePromotionRuleMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("field mapping");
-
-                var model = Company.GetById<FusionAttributePromotionRuleMapping>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("field mapping");
-
-                var source = form["Source"].Split('|');
-                var target = form["Target"].Split('|');
-                var constantValue = form["ConstantValue"];
-                var isConstantValue = form["isConstantValue"];
-
-                if (source[1] == "0")
-                {
-                    model.SourceFieldName = source[0];
-                    model.SourceFieldTypeID = 0;
-                }
-                else
-                    model.SourceFieldTypeID = int.Parse(source[1]);
-
-                if (target[1] == "0")
-                {
-                    model.TargetFieldName = target[0];
-                    model.TargetFieldTypeID = 0;
-                }
-                else
-                    model.TargetFieldTypeID = int.Parse(target[1]);
-
-                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = constantValue;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = null;
-                }
-
-                Company.Update<FusionAttributePromotionRuleMapping>(model);
-
-                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region FusionRule
 
 
@@ -7029,6 +6558,149 @@ order by  D.TextPath
 
         #endregion
 
+        #region FusionRuleItem
+
+        #region Field Generation
+
+        public JsonResult FusionRuleItem_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddFusionRuleItem(int id)
+        {
+            var rule = Company.GetById<FusionRule>(id);
+
+            if (rule == null)
+                return jsonException("Rule not found", HttpStatusCode.NotFound);
+
+            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var editorModel = new FusionRuleItemEditorModel
+            {
+                FormUri = "/Form/AddFusionRuleItem",
+                FormMethod = "POST",
+                FormName = "Add Promotion Target Item",
+                FusionID = rule.FusionID,
+                TargetFusionAttributeTypeID = rule.ObjectID,
+                Item = new FusionRuleItem { RuleID = id }
+            };
+            return PartialView("FusionRuleItemEditForm", editorModel);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddFusionRuleItem(FormCollection form)
+        {
+            try
+            {
+                var ruleID = parseIntField(form, "FusionAttributePromotionRuleID");
+                var rule = Company.GetById<FusionRule>(ruleID);
+                if (rule != null)
+                {
+                    rule.UpdatedBy = Company.CurrentResourceID;
+                    rule.UpdatedOn = DateTime.UtcNow;
+                }
+
+                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
+                if (fusionAttributeIDs.Count == 0)
+                {
+                    Company.Set<FusionRuleItem>().Add(
+                        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                        );
+                }
+                else
+                {
+                    fusionAttributeIDs.ForEach(fa =>
+                    {
+                        int? fusionAttributeID = null;
+                        if (!string.IsNullOrEmpty(fa))
+                        {
+                            fusionAttributeID = int.Parse(fa);
+                        }
+                        Company.Set<FusionRuleItem>().Add(
+                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                            );
+                    });
+                }
+                Company.SaveChanges();
+
+                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        public ActionResult DeleteFusionRuleItem(int id)
+        {
+            var a = Company.GetById<FusionRuleItem>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                FormSize = "small",
+                Context = ContextList.FusionPromotionRuleItem,
+                FieldUri = string.Format("/form/FusionRuleItem_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
+                FormUri = "/form/DeleteFusionRuleItem",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                var id = parseIntField(form, "ID");
+                var item = Company.GetById<FusionRuleItem>(id);
+                if (item != null)
+                {
+                    var rule = Company.GetById<FusionRule>(item.RuleID);
+                    if (rule != null)
+                    {
+                        rule.UpdatedBy = Company.CurrentResourceID;
+                        rule.UpdatedOn = DateTime.UtcNow;
+                    }
+                    Company.FusionRuleItem.Remove(item);
+                    Company.SaveChanges();
+                }
+                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region FusionRuleStep
 
         #region Form Get/Post
@@ -7074,6 +6746,11 @@ order by  D.TextPath
                 };
 
                 rule.FusionRuleSteps.Add(item);
+                if (rule != null)
+                {
+                    rule.UpdatedBy = Company.CurrentResourceID;
+                    rule.UpdatedOn = DateTime.UtcNow;
+                }
 
                 AddPromotionStepSettings(item, form);
 
@@ -7376,9 +7053,7 @@ order by  D.TextPath
                 step.Description = parseTextField(form, "Description");
                 step.Step = parseIntField(form, "Step");
                 step.Action = parseTextField(form, "Action");
-
-
-
+                
                 rule.UpdatedBy = Company.CurrentResourceID;
                 rule.UpdatedOn = DateTime.UtcNow;
 
@@ -7440,6 +7115,12 @@ order by  D.TextPath
 
                 Company.ObjectContext.DeleteObject(itemToRemove);
 
+                if (currentRule != null)
+                {
+                    currentRule.UpdatedBy = Company.CurrentResourceID;
+                    currentRule.UpdatedOn = DateTime.UtcNow;
+                }
+
                 Company.SaveChanges();
 
                 //update the step numbers 
@@ -7495,6 +7176,12 @@ order by  D.TextPath
             var currentRule = Company.GetById<FusionRule>(ruleID);
             var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
             int currentStepNumber = itemToMove.Step;
+
+            if (currentRule != null)
+            {
+                currentRule.UpdatedBy = Company.CurrentResourceID;
+                currentRule.UpdatedOn = DateTime.UtcNow;
+            }
 
             if (string.Compare(direction, "UP", true) == 0)
             {
@@ -7737,6 +7424,12 @@ order by  D.TextPath
                         })
                         .ToList();
                     targetFields.AddRange(targetDynamicFields);
+
+                    if (promotionType == "ArtifactType")
+                    {
+                        if (!targetFieldNames.Contains("Subject Area"))
+                            targetFields.Add(new SelectListItem { Text = "Subject Area", Value = "TaxonomyTypeID|0" });
+                    }
                     break;
             }
 
@@ -7833,6 +7526,14 @@ order by  D.TextPath
 
                 Company.Add<FusionRuleStepMapping>(model);
 
+                var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
+                if (ruleStep != null)
+                {
+                    ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                    ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
+                    Company.SaveChanges();
+                }
+
                 return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -7911,7 +7612,7 @@ order by  D.TextPath
             {
                 if (!form.HasKeys()) throw new NoFormDataException("field mapping");
 
-                var model = Company.GetById<FusionRuleStepMapping>(parseIntField(form, "ID"));
+                var model = Company.GetById<FusionRuleStepMapping>(parseIntField(form, "ID"), i => i.FusionRuleStep.FusionRule);
                 if (model == null) throw new NotFoundException("field mapping");
 
                 var source = form["Source"].Split('|');
@@ -7946,135 +7647,12 @@ order by  D.TextPath
                     model.IsConstantValue = false;
                     model.ConstantValue = null;
                 }
+                model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
 
                 Company.Update<FusionRuleStepMapping>(model);
 
                 return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionPromotionRuleItem
-
-        #region Field Generation
-
-        public JsonResult FusionRuleItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddFusionRuleItem(int id)
-        {
-            var rule = Company.GetById<FusionRule>(id);
-
-            if (rule == null)
-                return jsonException("Rule not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleItemEditorModel
-            {
-                FormUri = "/Form/AddFusionRuleItem",
-                FormMethod = "POST",
-                FormName = "Add Promotion Target Item",
-                FusionID = rule.FusionID,
-                TargetFusionAttributeTypeID = rule.ObjectID,
-                Item = new FusionRuleItem { RuleID = id }
-            };
-            return PartialView("FusionRuleItemEditForm", editorModel);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionRuleItem(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "FusionAttributePromotionRuleID");
-                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-                if (fusionAttributeIDs.Count == 0)
-                {
-                    Company.Set<FusionRuleItem>().Add(
-                        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
-                        );
-                }
-                else
-                {
-                    fusionAttributeIDs.ForEach(fa =>
-                    {
-                        int? fusionAttributeID = null;
-                        if (!string.IsNullOrEmpty(fa))
-                        {
-                            fusionAttributeID = int.Parse(fa);
-                        }
-                        Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
-                            );
-                    });
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteFusionRuleItem(int id)
-        {
-            var a = Company.GetById<FusionRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionPromotionRuleItem,
-                FieldUri = string.Format("/form/FusionRuleItem_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
-                FormUri = "/form/DeleteFusionRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                Company.Delete<FusionRuleItem>(i => i.ID == id);
-                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9719,10 +9297,11 @@ from	MapRule MR
 for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, t = model.TargetIntersectID, td = model.TargetDiagramKey });
 
             var json = string.Join("", list);
+            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
 
             return new JsonNetResult
             {
-                Data = JArray.Parse(json),
+                Data = arr,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -9781,10 +9360,11 @@ from	MapRule MR
 for json path");
 
             var json = string.Join("", list);
+            var arr = (string.IsNullOrEmpty(json)) ? new JArray() : JArray.Parse(json);
 
             return new JsonNetResult
             {
-                Data = JArray.Parse(json),
+                Data = arr,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

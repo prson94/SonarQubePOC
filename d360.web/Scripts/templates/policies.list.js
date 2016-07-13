@@ -73,7 +73,13 @@
 
                         PolicyStatusKpi('StatusTile', contextList, permissions, iID);
                         PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
-                        LineageDiagram('SourcingTile', iType, iID, true);
+
+                        if (CompanySettings.UseNewRelationships == 'true')
+                            NewLineageDiagram('SourcingTile', iType, iID, true);
+                        else
+                            LineageDiagram('SourcingTile', iType, iID, true);
+
+                        //LineageDiagram('SourcingTile', iType, iID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
@@ -90,7 +96,13 @@
                             RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
                             break;
                         case contextList.SourceToTarget:
-                            LineageDiagram('SourcingTile', type, policyID, true);
+
+                            if (CompanySettings.UseNewRelationships == 'true')
+                                NewLineageDiagram('SourcingTile', type, policyID, true);
+                            else
+                                LineageDiagram('SourcingTile', type, policyID, true);
+
+                            //LineageDiagram('SourcingTile', type, policyID, true);
                             break;
                         case contextList.Policy:
                             $("#PolicyGrid").jqxTreeGrid('updateBoundData');

@@ -60,10 +60,11 @@ namespace d360.web.Controllers
             var list = Company.Query<string>(@"exec GetLineage @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
 
             var json = string.Join("", list);
+            var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
 
             return new JsonNetResult
             {
-                Data = JObject.Parse(json),
+                Data = obj,
                 Formatting = Formatting.None
             };
         }
