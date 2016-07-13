@@ -2,7 +2,8 @@
 import { Component } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService  } from './services/index';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader  } from './services/index';
+import { PageLinksComponent } from './components/shared/page-links.component';
 
 import 'rxjs/Rx';
 
@@ -13,15 +14,35 @@ import 'rxjs/Rx';
                     <d3s-navbar></d3s-navbar>
                 </header>
                 <main>
-                    <div class="maincontent">                                            
-                       <router-outlet></router-outlet>                                                
+                    <div class="row PageHeader">
+                        <div class="col l7 m7 s12">              
+                            <div class="PageDescription maincontent">{{pageHeader.description}}</div>              
+                        </div>            
+                        <d3s-page-links (onSideBarActivated)="toggleRightSidebar()"></d3s-page-links>
                     </div>
+                    <div class="row">
+                        <div class="col" [ngClass]="{'s12 m10 l11':showRightSideBar}" [ngClass]="{'s12':!showRightSideBar}">
+                            <div class="maincontent">                                            
+                                <router-outlet></router-outlet>                                                
+                            </div>  
+                        </div>
+                        <div *ngIf="showRightSideBar" class="col hide-on-small-only m2 l1">
+                            <d3s-right-sidebar></d3s-right-sidebar>
+                        </div>
+                    </div>                    
                 </main>
                 <d3s-messages></d3s-messages>
               `,
-    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent],
-    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService]
+    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, PageLinksComponent],
+    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader]
 })
 
-export class AppComponent { }
+export class AppComponent {
+    showRightSideBar: boolean = false;
+    constructor(private pageHeader: PageHeader) { }
+
+    toggleRightSidebar() {
+        this.showRightSideBar = !this.showRightSideBar;
+    }
+}
 
