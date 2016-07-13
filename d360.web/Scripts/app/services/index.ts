@@ -27,6 +27,8 @@ import { StatisticService } from './statistics.service';
 import { ReportsService } from './reports.service';
 import { AttributeTypeService } from './attribute-type.service';
 import { SiteMenuService} from './site-menu.service';
+import { RightSidebarService} from './right-sidebar.service';
+import { AuditService} from './audit.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -57,3 +59,5 @@ export * from './statistics.service';
 export * from './reports.service';
 export * from './attribute-type.service';
 export * from './site-menu.service';
+export * from './right-sidebar.service';
+export * from './audit.service';

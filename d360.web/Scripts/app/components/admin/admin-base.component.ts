@@ -3,6 +3,7 @@ import { MessagesService, HeaderBreadcrumbService, PageHeader  } from '../../ser
 
 export class AdminBaseComponent {
     public areaName: string;
+    public areaLink: string = undefined;
     public areaDescription: string = "base";
     public area: string = "Administration";
 
@@ -14,8 +15,8 @@ export class AdminBaseComponent {
 
     setCommonItems() {
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, ""));
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, ""));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
         this.pageHeader.description = this.areaDescription;
     }
 }

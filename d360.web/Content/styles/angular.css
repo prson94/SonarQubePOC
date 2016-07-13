@@ -10,6 +10,9 @@ nav.top {
   height: 40px;
   background-color: #fff;
 }
+nav.top a {
+  color: #383127;
+}
 nav.top ul a {
   color: black;
 }

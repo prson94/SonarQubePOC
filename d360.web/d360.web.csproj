@@ -1414,6 +1414,9 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
@@ -1438,10 +1441,12 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
@@ -1471,9 +1476,11 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />

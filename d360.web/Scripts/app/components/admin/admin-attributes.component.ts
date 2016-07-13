@@ -1,19 +1,23 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, AttributeTypeService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, AttributeTypeService, RightSidebarService  } from '../../services/index';
+import { AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { AttributeType } from '../../models/attribute-type.model';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
 import { DeleteForm } from '../forms/delete.form';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
+import { Subscription }   from 'rxjs/Subscription';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-attributes-component',
-    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, AdminAttributeTypeEditor],    
+    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, AdminAttributeTypeEditor, AuditComponent],    
     providers: [AttributeTypeService],
-    template: `<div class="row">
+    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.data?.ID" [objectName]="selected?.data?.Name" [objectType]="'AttributeType'"></d3s-audit>
+                <div class="row" *ngIf="!isAuditVisible">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!isLoading && !showDelete && !showEditor">Attribute Types
@@ -66,18 +70,37 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     theDeleteCallback: Function;
     parentID: number = 0;
+    subscription: Subscription;
+    isAuditVisible: boolean = false;
 
-    constructor(private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
+    constructor( protected rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
         super(headerBreadcrumbService, pageHeader);
         this.areaDescription = "Here you will find all metadata that can be assigned to various objects and relationships.";
-        this.areaName = "Attribute Groups";
+        this.areaName = "Attribute Groups";        
+        //this.areaLink = window.location.pathname;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
+        this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
+
+        this.subscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
+            item => {
+                this.showOverlay(item);
+            });
     }
 
     ngOnInit() {
 
         this.getAttributes();
+    }
+
+    ngOnDestroy() {        
+        this.rightSidebarService.clearItems();
+        this.subscription.unsubscribe();
+    }
+
+    showOverlay(item) {
+        if (item.tag = 'audit')
+            this.isAuditVisible = !this.isAuditVisible;
     }
 
     getAttributes() {

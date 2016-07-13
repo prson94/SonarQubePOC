@@ -2,13 +2,14 @@
 import { Component } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader  } from './services/index';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService  } from './services/index';
 import { PageLinksComponent } from './components/shared/page-links.component';
+import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 
 import 'rxjs/Rx';
 
 @Component({
-    selector: 'd3s-app',
+    selector: 'd3s-app',    
     template: ` <header>
                     <d3s-header></d3s-header>
                     <d3s-navbar></d3s-navbar>
@@ -25,16 +26,14 @@ import 'rxjs/Rx';
                             <div class="maincontent">                                            
                                 <router-outlet></router-outlet>                                                
                             </div>  
-                        </div>
-                        <div *ngIf="showRightSideBar" class="col hide-on-small-only m2 l1">
-                            <d3s-right-sidebar></d3s-right-sidebar>
-                        </div>
+                        </div>                        
+                        <d3s-right-sidebar [(visible)]="showRightSideBar"></d3s-right-sidebar>                        
                     </div>                    
                 </main>
                 <d3s-messages></d3s-messages>
               `,
-    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, PageLinksComponent],
-    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader]
+    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, PageLinksComponent, RightSidebarComponent],
+    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService]
 })
 
 export class AppComponent {
@@ -44,5 +43,6 @@ export class AppComponent {
     toggleRightSidebar() {
         this.showRightSideBar = !this.showRightSideBar;
     }
+    
 }
 
