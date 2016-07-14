@@ -39,7 +39,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
             if (e instanceof NavigationEnd) {
                 this.currentRoute = _.trimStart(e.url, '/');
                 let item = this.activateRoute(this.currentRoute);
-                this.expandRoute(item);                
+                if(item) this.expandRoute(item);                
             }
         });
     }
@@ -62,7 +62,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
                                 
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
-                this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
+                this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Policy'));                
                 this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
                 this.loadMonitorMenu();                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
@@ -99,7 +99,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let policies = this.addNavItem('Policies', 'university', null);
 
-        this.renderChildItems(policies, policiesMenus.NavigationItems);
+        this.renderLegacyChildItems(policies, policiesMenus.NavigationItems);
     }
 
     loadModelMenu(modelMenus: SiteMenu) {
@@ -107,7 +107,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let models = this.addNavItem('Models', 'sitemap', null);
 
-        this.renderChildItems(models, modelMenus.NavigationItems);
+        this.renderLegacyChildItems(models, modelMenus.NavigationItems);
     }
 
     loadAdminMenu(adminMenu: SiteMenu) {
@@ -149,7 +149,23 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');        
     }
 
-    private renderChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {        
+    private renderLegacyChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {        
+        //add each to the navbar
+        if (siteMenuItems == null || siteMenuItems.length == 0) return;
+
+        for (let item of siteMenuItems) {
+            if (item.Items) {
+                var parent = this.addSubItem(navBar, item.Name, null, null); //menu doesnt yet support link / expand collapse combo
+
+                this.renderLegacyChildItems(parent, item.Items);
+            }
+            else {
+                this.addSubItem(navBar, item.Name, null, null, item.Url); //legacy items will go to old urls for now
+            }
+        }
+    }
+
+    private renderChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {
         //add each to the navbar
         if (siteMenuItems == null || siteMenuItems.length == 0) return;
 
@@ -160,7 +176,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.renderChildItems(parent, item.Items);
             }
             else {
-                this.addSubItem(navBar, item.Name, null, null, item.Url); //legacy items will go to old urls for now
+                this.addSubItem(navBar, item.Name, null, item.Url);
             }
         }
     }

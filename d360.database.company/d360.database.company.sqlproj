@@ -517,6 +517,8 @@
     <None Include="dbo\Views\WorkflowIssue.sql" />
     <None Include="dbo\Views\WorkflowChallenge.sql" />
     <None Include="fusion\Stored Procedures\Rules.sql" />
+    <None Include="dbo\Functions\ArtifactNgSiteNavigation.sql" />
+    <None Include="dbo\Functions\GenerateNgObjectUrl.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

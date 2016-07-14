@@ -86,16 +86,21 @@ namespace d360.web.Controllers
         {
             return new JsonNetResult
             {
-                Data = GetSiteNavigation(),
+                Data = GetSiteNavigation(true),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
 
-        public List<TopNavigationItem> GetSiteNavigation()
+        public List<TopNavigationItem> GetSiteNavigation(bool bNewSite = false)
         {
-            #region Query
+            List<TopNavigationItem> nodes = null;
 
-            var nodes = Company.Query<TopNavigationItem>(string.Format(@"
+            if (!bNewSite)
+            {
+
+                #region Query Old Site
+
+                nodes = Company.Query<TopNavigationItem>(string.Format(@"
 SELECT	'#Home' as MenuID,
 		0 as Feature,
 		NULL AS Items
@@ -391,7 +396,312 @@ SELECT	'#Admin' as MenuID,
 
 	where {0} = 1", (Company.CurrentResourceIsAdmin ? "1" : "0"))).ToList();
 
-            #endregion
+                #endregion
+            }
+            else
+            {
+                #region Query Angular
+
+                nodes = Company.Query<TopNavigationItem>(string.Format(@"
+SELECT	'#Home' as MenuID,
+		0 as Feature,
+		NULL AS Items
+		
+UNION ALL
+
+SELECT	'#Glossary' as MenuID,
+		0 as Feature,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					dbo.ArtifactNgSiteNavigation(id) as items
+			FROM	(
+					SELECT		TOP 1000
+								id,
+								name,
+								dbo.GenerateNgObjectUrl('ArtifactType', ID, 0) As url
+					FROM		ArtifactType 
+					WHERE		ParentID IS NULL
+					ORDER BY	name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+
+UNION ALL
+
+SELECT	'#Models' as MenuID,
+		0 as Feature,
+		(
+		SELECT	name, 
+				'#/catalogs?classification=' + name As url,
+				0 as feature,
+				(
+				SELECT	name, 
+						dbo.GenerateNgObjectUrl('TaxonomyType', ID, 0)  As url,
+						0 as feature
+				FROM	TaxonomyType
+				WHERE	TaxonomyTypeClassID = FT.ID
+				FOR XML PATH('nav'), TYPE
+				) AS items	
+		FROM	(
+                select top 100 percent ID, name from TaxonomyTypeClass C where exists(select 1 from TaxonomyType where TaxonomyTypeClassID = C.ID) order by name
+				) FT
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+
+UNION ALL
+
+		
+SELECT	'#Policy' as MenuID,
+		1 as Feature, 
+		(
+        select  *
+        from    (
+		        SELECT	name, 
+				        '#/' As url,
+				        0 as feature,
+				        (
+				        SELECT	name, 
+						        dbo.GenerateNgObjectUrl('PolicyType', ID, 0)  As url,
+						        0 as feature
+				        FROM	PolicyType
+				        WHERE	PolicyTypeClassID = FT.ID
+				        FOR XML PATH('nav'), TYPE
+				        ) AS items	
+		        FROM	(
+                        select top 100 percent ID, name from PolicyTypeClass C where exists(select 1 from PolicyType where PolicyTypeClassID = C.ID) order by name
+				        ) FT
+				union all
+				SELECT	'Rules' AS name, 
+						'#/rules' AS url, 
+						0 as feature,
+						NULL AS items
+                ) as mo
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+
+UNION ALL
+
+SELECT	'#Domains' as MenuID,
+		0 as Feature,
+		(
+		SELECT	name, 
+				dbo.GenerateNgObjectUrl('DomainType', ID, 0)  As url,
+				0 as feature
+		FROM	DomainType
+		FOR XML PATH('nav'), TYPE				
+		) AS Items
+
+UNION ALL
+
+SELECT	'#Fusion' as MenuID,
+		2 as Feature,
+		(
+		SELECT		name, 
+					dbo.GenerateNgObjectUrl('FusionType', FT.ID, 0)  As url,
+					2 as feature,
+					(
+					SELECT		name, 
+								dbo.GenerateObjectUrl('Fusion', FT.ID, Fusion.ID)  As url,
+								'F' + cast(Fusion.ID as varchar(15)) as menuID,
+								2 as feature
+					FROM		Fusion
+					WHERE		Fusion.FusionTypeID = FT.ID
+					ORDER BY	name
+					FOR XML PATH('nav'), TYPE
+					) AS items	
+		FROM		FusionType FT
+		ORDER BY	name
+		FOR XML PATH('nav'), TYPE
+		) AS Items	
+			
+UNION ALL
+
+SELECT	'#Community' as MenuID, 
+		4 as Feature,
+		(
+        SELECT	'People' AS name, --'#People' as MenuID,
+                '#/groups' AS url, 		        
+                0 as feature,
+		        NULL AS Items
+        FOR XML PATH('nav'), TYPE
+        ) AS Items
+
+UNION ALL
+
+SELECT	'#Admin' as MenuID,
+		0 as Feature,
+		(
+			select	*
+			from	(
+					SELECT	'Security' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Groups' AS name, 
+											'#/groups/administration' AS url, 
+											--'Menu_A_S_G' as menuID,
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Users' AS name, 
+											'#/resources/administration' AS url, 
+											--'Menu_A_S_R' as menuID,
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Responsibilities' AS name, 
+											'#/governance/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                            ) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'MetaModel' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Artifacts' AS name, 
+											'#/artifacts/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Attributes' AS name, 
+											'#/attributes/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Lookups' AS name, 
+											'#/lookups/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Models' AS name, 
+											'#/catalogs/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Policies' AS name, 
+											'#/policies/administration' AS url, 
+											1 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Relationships' AS name, 
+											'#/relations/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+                                    SELECT	'Rules' AS name, 
+											'#/rules/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Metrics' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Analytics' AS name, 
+											'#/analytics/administration' AS url, 
+											5 as feature,
+											NULL AS items
+									union all
+					                SELECT	'Dashboards' AS name, 
+							                '#/reporting/administration' AS url, 
+							                0 as feature,
+							                NULL AS items
+                                    union all
+					                SELECT	'Surveys' AS name, 
+							                '#/surveys/administration' AS url, 
+							                7 as feature,
+							                (
+							                SELECT	'Response Types' AS name, 
+									                '#/surveyresponsetypes/administration' AS url, 
+									                7 as feature,
+									                NULL AS items
+							                FOR XML PATH('nav'), TYPE
+							                ) AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Reference' AS name, 
+							'#/domains/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Workflow' AS name, 
+							'#/workflow/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+                    union all
+
+                    SELECT	'Templates' AS name, 
+							'#/templates/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Integration' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Bulk Loader' AS name, 
+											'#/load' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Fusion' AS name, 
+											'#/fusion/administration' AS url, 
+											2 as feature,
+											NULL AS items
+									union all
+									SELECT	'API' AS name, 
+											'/swagger' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+
+                    union all
+
+                    SELECT	'Settings' AS name, 
+							'#/settings' AS url, 
+							0 as feature,
+							NULL AS items
+            ) bg
+			for xml path('nav'), type
+		) as Items
+
+	where {0} = 1", (Company.CurrentResourceIsAdmin ? "1" : "0"))).ToList();
+
+                #endregion
+            }
+
+            if (nodes == null) return null;
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
 

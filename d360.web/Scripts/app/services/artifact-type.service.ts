@@ -18,6 +18,13 @@ export class ArtifactTypeService extends BaseService {
             .catch(err=>this.handleError(err));
     }
 
+    getArtifactTypeDetails(id: number): Promise<ArtifactType> {
+        return this.http.get(`api/artifacts/${id}`)
+            .toPromise()
+            .then(response => <ArtifactType>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     putArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
         return this.http.put('form/ArtifactType', model)
             .toPromise()

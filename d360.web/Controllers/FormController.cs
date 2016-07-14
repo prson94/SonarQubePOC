@@ -337,6 +337,8 @@ namespace d360.web.Controllers
                     return DomainType_EditFields(ID);
                 case "FUSION":
                     return Fusion_EditFields(ID);
+                case "ARTIFACTTYPE":
+                    return Artifact_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -403,6 +405,8 @@ namespace d360.web.Controllers
                     return EditReportTile(form);
                 case "ATTRIBUTETYPE":
                     return EditAttributeType(form);
+                case "ARTIFACT":
+                    return EditArtifact(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");

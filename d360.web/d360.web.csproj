@@ -1398,6 +1398,12 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
