@@ -1430,6 +1430,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-layout.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\rule-dimensions.tile.ts" />
