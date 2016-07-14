@@ -36,7 +36,7 @@ export class AuditComponent {
 
 
     constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Audit", ""));
+      
     }
 
     ngOnInit() {        
