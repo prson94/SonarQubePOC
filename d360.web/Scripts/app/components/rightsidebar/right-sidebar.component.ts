@@ -61,6 +61,13 @@ export class RightSidebarComponent implements OnChanges {
     }
 
     itemClicked(item) {
+        //look for any other already active items and fire click for them
+        for (let ritem of this.items) {
+            if (ritem.active && ritem.title != item.title) {
+                this.rightSidebarService.itemClicked(ritem);
+                ritem.active = false;                
+            }
+        }
         this.rightSidebarService.itemClicked(item);
     }
 

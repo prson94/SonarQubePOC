@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Output, Input, OnChanges, SimpleChange } from '@angular/core';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 
@@ -12,17 +12,23 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
         color:white;
         font-weight:bold;
         cursor:pointer;
+        margin-bottom:10px;
+    }
+    .active {
+        background-color:#D32F2F;
     }
   `],
-    template: ` <div class="item" (click)="itemClick.emit({item:item})"><i class="fa fa-share-alt" aria-hidden="true"></i> {{item.title}}</div>
+    template: ` <div *ngIf="!item.active" class="item" (click)="item.active=!item.active;itemClick.emit({item:item})"><i class="fa fa-share-alt" aria-hidden="true"></i> {{item.title}}</div>
+                <div *ngIf="item.active" class="item active" (click)="item.active=!item.active;itemClick.emit({item:item})"><i class="fa fa-times" aria-hidden="true"></i> Close</div>
               `    
 })
 
 export class RightSidebarItemComponent {
     @Output() itemClick = new EventEmitter();
     @Input() item: RightSidebarItem;
-
+        
     constructor() {
         
     }
+    
 };

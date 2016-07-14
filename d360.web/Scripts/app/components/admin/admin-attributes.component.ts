@@ -81,6 +81,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         this.setCommonItems();
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
         this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
+        
 
         this.subscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
             item => {
