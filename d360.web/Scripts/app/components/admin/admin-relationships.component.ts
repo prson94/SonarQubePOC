@@ -1,6 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
+import {DataTable, Column, Button} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, RelationshipsService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
@@ -9,12 +9,14 @@ import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { Relationship } from '../../models/relationship.model';
 import { DeleteForm } from '../forms/delete.form';
 import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
+import { RelationshipSearchPipe } from '../../pipes/relationship-search.pipe';
 
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    directives: [DataTable, Column, TileActionsComponent, PredicatesTile, FieldDefinitionTile, DeleteForm, AdminRelationshipsEditor],
+    directives: [DataTable, Column, TileActionsComponent, PredicatesTile, FieldDefinitionTile, DeleteForm, AdminRelationshipsEditor, Button],
     providers: [RelationshipsService],
+    pipes: [RelationshipSearchPipe],
     template: `<div class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
@@ -23,27 +25,37 @@ import { AdminRelationshipsEditor } from './admin-relationships-editor.component
                             </header>    
                             <div *ngIf="isLoading">
                                 <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>                                                                             
-                            <p-dataTable *ngIf="!showEditor && !showDelete && !isLoading" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
-                                <p-column field="Source" header="Side 1 Type" [sortable]="true" [filter]="true"></p-column>                                
-                                <p-column field="SourceName" header="Side 1 Name" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="Target" header="Side 2 Type" [sortable]="true" [filter]="true"></p-column>                                
-                                <p-column field="TargetName" header="Side 2 Name" [sortable]="true" [filter]="true"></p-column>
-                                <p-column [style]="{width:'40px'}">
-                                    <template let-relationship="rowData">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                                <p-column  [style]="{width:'40px'}">
-                                    <template let-relationship="rowData">
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selected=relationship;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </template>
-                                </p-column>    
-                            </p-dataTable>  
+                            </div>    
+                            <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">
+                                <div class="col l10 s12">                                                                         
+                                    <input type="text" [(ngModel)]="searchValue" placeholder="Search Relationships" style="width: 100%;">
+                                </div>
+                                <div class="col l2 s12">                                                                         
+                                    <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
+                                </div>
+                                <div class="col s12">
+                                    <p-dataTable [value]="relationships | relationshipSearch: searchValue" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
+                                        <p-column field="Source" header="Side 1 Type" [sortable]="true"></p-column>                                
+                                        <p-column field="SourceName" header="Side 1 Name" [sortable]="true"></p-column>
+                                        <p-column field="Target" header="Side 2 Type" [sortable]="true"></p-column>                                
+                                        <p-column field="TargetName" header="Side 2 Name" [sortable]="true"></p-column>
+                                        <p-column [style]="{width:'40px'}">
+                                            <template let-relationship="rowData">
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                                </div>
+                                            </template>
+                                        </p-column>                            
+                                        <p-column  [style]="{width:'40px'}">
+                                            <template let-relationship="rowData">
+                                                <div class="RowTools">                                
+                                                    <a style="cursor:pointer;" (click)="selected=relationship;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                                </div>
+                                            </template>
+                                        </p-column>    
+                                    </p-dataTable>  
+                                </div>
+                            </div>
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -82,6 +94,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
     headerRows: any[];
+    searchValue: string = "";
 
     constructor(private relationshipsService: RelationshipsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
         super(headerBreadcrumbService, pageHeader);
