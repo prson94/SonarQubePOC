@@ -27,10 +27,10 @@ import { RelationshipSearchPipe } from '../../pipes/relationship-search.pipe';
                                 <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                             </div>    
                             <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">
-                                <div class="col l10 s12">                                                                         
+                                <div class="col l10 m9 s12">                                                                         
                                     <input type="text" [(ngModel)]="searchValue" placeholder="Search Relationships" style="width: 100%;">
                                 </div>
-                                <div class="col l2 s12">                                                                         
+                                <div class="col l2 m3 s12">                                                                         
                                     <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                                 </div>
                                 <div class="col s12">
