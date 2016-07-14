@@ -17,7 +17,7 @@
                     </template>
                 </p-column>
             </p-treeTable>
-        </div>
+        </div>        
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
@@ -28,7 +28,7 @@
         <div class="tile tile-detail">
             <d3s-artifact-type-form [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()"  (onComplete)="actionComplete()"></d3s-artifact-type-form>
         </div>
-    </div>
+    </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">
             <delete-form [uri]="'/form/ArtifactType?id=' + selectedRow.data.ID"
@@ -48,6 +48,9 @@
         </div>
         <div class="tile tile-detail">
             <d3s-claims-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [readonly]="false"></d3s-claims-tile>
+        </div>
+        <div class="tile tile-detail">
+            <d3s-relationships-tile [showFilter]="false" [filterToName]="selectedRow?.data?.Name"></d3s-relationships-tile>
         </div>
     </div>
 </div>
