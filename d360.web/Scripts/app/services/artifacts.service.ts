@@ -21,6 +21,24 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));        
     }   
 
+    getArtifactsXls(artifactType: ArtifactType) {                
+        window.location.assign(`artifacts/download/excel/${artifactType.ID}.xls`)
+        // triggers popup blocker and corrupts file
+      /*  
+        let headers = new Headers();
+        
+        headers.append('responseType', 'arraybuffer');
+        this.http.get(`artifacts/download/excel/${artifactType.ID}.xls`, headers)
+            .toPromise()
+            .then(res => {
+                var blob = new Blob([res], { type: "application/vnd.ms-excel" });
+                var objectUrl = URL.createObjectURL(blob);
+                window.open(objectUrl);
+            })
+            .catch(err => this.handleError(err));
+        */
+    }
+
     getArtifact(id: number): Promise<Artifact> {
         return this.http.get(`api/artifact/${id}?isNg=true`)
             .toPromise()

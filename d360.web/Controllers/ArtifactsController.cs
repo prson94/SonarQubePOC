@@ -25,6 +25,13 @@ namespace d360.web.Controllers
 
         #region Exports
 
+
+        [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
+        public FileResult ToExcel(int id)
+        {
+            return ToExcel(id, null);
+        }
+
         [Route("{id:int}.xls"), FileDownload, HttpPost]
         public FileResult ToExcel(int id, ArtifactListFilterModel model)//string Name)
         {
@@ -80,7 +87,7 @@ from	Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.Artif
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Filtered {0} List for {1}.xls", type.Name, DateTime.Now.ToShortDateString()));
+            return File(stream.ToArray(), "application/vnd.ms-excel", string.Format("Filtered {0} List for {1}.xlsx", type.Name, DateTime.Now.ToShortDateString()));
         }
 
         #endregion

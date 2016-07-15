@@ -18,7 +18,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
     providers: [GridDefinitionService, UriBasedService, ArtifactService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [addTitle]="'Add ' + artifactType?.Name" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" [addTitle]="'Add ' + artifactType?.Name" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>           
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -147,6 +147,10 @@ export class ArtifactGridComponent implements OnChanges {
     add() {
         this.selected = null;
         this.showEditor = true;
+    }
+
+    export() {
+        this.artifactService.getArtifactsXls(this.artifactType);
     }
 
     saveItem(event) {
