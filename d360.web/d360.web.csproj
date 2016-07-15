@@ -1399,6 +1399,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
@@ -1447,8 +1448,10 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />

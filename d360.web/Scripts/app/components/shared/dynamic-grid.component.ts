@@ -133,17 +133,7 @@ export class DynamicGridComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .then(result => {                
-                /*if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
-                    this.items[this.items.length] = event.item;                    
-                }
-                else {
-                    var index = this.findItemIndex(event.item.ID);                    
-                    if (index >= 0)
-                        this.items[index] = event.item;
-                }
-                console.log(event.item);*/
+            .then(result => {                                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.getData();                
                 this.showEditor = false;

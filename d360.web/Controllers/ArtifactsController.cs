@@ -134,6 +134,14 @@ from	Artifact A
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };        
         }
 
+
+        [HttpGet]
+        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        {
+            return ByType(id, sortDataField, sortOrder, pagenum, pagesize);
+        }
+
+
         [HttpPost]
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
