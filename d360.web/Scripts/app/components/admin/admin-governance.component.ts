@@ -13,6 +13,7 @@ import { FormMode } from '../../models/form.model';
 import { ResponsibilityTypeForm } from '../forms/responsibility-type.form';
 import { DeleteForm } from '../forms/delete.form';
 import { AdminBaseComponent} from './admin-base.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'admin-governance',
@@ -38,8 +39,8 @@ export class AdminGovernanceComponent extends AdminBaseComponent {
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = 'Assign which objects can be owned, and whether groups, users or both may own them. You may also define application and licensing source types.';
         this.areaName = "Responsibility Types";
         this.setCommonItems();

@@ -14,6 +14,7 @@ import { LoadService } from '../../services/load.service';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { LoadItemTile } from '../tiles/load-item.tile';
 import { LoadForm } from '../forms/load.form';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-load',
@@ -40,8 +41,8 @@ export class AdminLoadComponent extends AdminBaseComponent {
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private loadService: LoadService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private loadService: LoadService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "You can bulk load almost any piece of content contained within the Data3Sixty platform.";
         this.areaName = "Bulk Loading";
         this.setCommonItems();

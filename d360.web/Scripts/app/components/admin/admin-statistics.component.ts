@@ -8,6 +8,7 @@ import { StatisticType } from '../../models/statistic.model';
 import { AdminStatisticEditor } from './admin-statistics-editor.component';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { DeleteForm } from '../forms/delete.form';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -72,8 +73,8 @@ export class AdminStatisticsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Create various types of measurements on items throughout the system, including analytics that factor into scores.";
         this.areaName = "Analytic Types";
         this.setCommonItems();

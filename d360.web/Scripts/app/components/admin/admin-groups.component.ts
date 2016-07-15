@@ -13,6 +13,7 @@ import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '
 import { GroupForm } from '../forms/group.form';
 import { DeleteForm } from '../forms/delete.form';
 import { FormMode } from '../../models/form.model';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -29,8 +30,8 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
-    constructor(private groupService: GroupService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private groupService: GroupService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find groups and membership.";
         this.areaName = "Groups";
         this.setCommonItems();

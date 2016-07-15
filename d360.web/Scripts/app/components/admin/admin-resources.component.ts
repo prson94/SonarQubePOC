@@ -11,6 +11,7 @@ import { DeleteForm } from '../forms/delete.form';
 import { FormMode } from '../../models/form.model';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DynamicGridComponent } from '../shared/dynamic-grid.component';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -24,8 +25,8 @@ export class AdminResourcesComponent extends AdminBaseComponent {
     private objectType = 'ResourceType';
     private objectID = 1;
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find all current resources.";
         this.areaName = "Resources";
         this.setCommonItems();

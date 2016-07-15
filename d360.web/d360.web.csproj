@@ -1424,6 +1424,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />

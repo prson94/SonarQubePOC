@@ -15,6 +15,7 @@ import { FormMode } from '../../models/form.model';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { DeleteForm } from '../forms/delete.form';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'admin-domain',
@@ -43,8 +44,8 @@ export class AdminDomainComponent extends AdminBaseComponent {
     FormMode = FormMode;
     newRow: DomainType = new DomainType();
 
-    constructor(private domainService: DomainService, pageHeader: PageHeader, headerBreadcrumbService : HeaderBreadcrumbService) {        
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private domainService: DomainService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type.";
         this.areaName = "Reference Types";
         this.setCommonItems();

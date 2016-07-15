@@ -74,7 +74,7 @@ export class ArtifactGridComponent implements OnChanges {
     sortOrder: SortOrder = SortOrder.None;
 
     error: any;
-    items: any[] = [];
+    items: any[];
     columns: GridColumn[] = [];
 
     showDelete: boolean = false;
@@ -95,7 +95,7 @@ export class ArtifactGridComponent implements OnChanges {
 
     load() {
         this.getFieldsDefinition();
-   //     this.getData();
+        this.getData();
     }
 
     deleteItem(id: number) {
@@ -111,13 +111,11 @@ export class ArtifactGridComponent implements OnChanges {
             });
     }
     
-    getData() {
-        //  this.isLoading = true;
+    getData() {        
         this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder)
             .then(result => {
                 this.items = result.results;
-                this.totalRecords = result.total;
-              //  this.isLoading = false;
+                this.totalRecords = result.total;                
                 if (this.items.length > 0) this.selected = this.items[0];                
             });
     }

@@ -5,7 +5,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
 import { CompanySettingsService } from '../../services/settings.service';
-import {AdminBaseComponent} from './admin-base.component';
+import { AdminBaseComponent } from './admin-base.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'admin-settings',
@@ -21,8 +22,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private companySettingsService: CompanySettingsService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private companySettingsService: CompanySettingsService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Manage system-wide settings for your environment.";
         this.areaName = "Settings";
         this.setCommonItems();

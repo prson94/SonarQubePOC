@@ -10,6 +10,7 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { ReportItemsTile } from '../tiles/report-items.tile';
 import { ReportLayoutTile } from '../tiles/report-layout.tile';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -86,8 +87,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent {
     selected: Report;
     theDeleteCallback: Function;
 
-    constructor(protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Manage your dashboard overlays and tiles.";
         this.areaName = "Dashboards";
         this.setCommonItems();

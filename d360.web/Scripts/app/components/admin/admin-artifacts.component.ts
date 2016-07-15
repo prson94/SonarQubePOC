@@ -13,6 +13,7 @@ import { DeleteForm } from '../forms/delete.form';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { AdminBaseComponent } from './admin-base.component'
 import { RelationshipsTile } from '../tiles/relationships.tile'
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -43,12 +44,11 @@ export class AdminArtifactsComponent extends AdminBaseComponent {
     isDeleting = false;
     ArtifactTypes: TreeNode[];
 
-    constructor( pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService) {        
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
         this.areaName = "Artifacts";
-        this.setCommonItems();
-
+        this.setCommonItems();        
         this.load();
     }
 

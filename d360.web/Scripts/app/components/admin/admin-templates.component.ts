@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { AdminBaseComponent } from './admin-base.component'
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-templates',
@@ -87,8 +88,8 @@ export class AdminTemplatesComponent extends AdminBaseComponent {
     
     public theDeleteCallback: Function;
 
-    constructor(pageHeader: PageHeader, private templateService: TemplatesService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService) {        
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, private templateService: TemplatesService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "All email and tooltip templates for notifications.";
         this.areaName = "Templates";
         this.setCommonItems();

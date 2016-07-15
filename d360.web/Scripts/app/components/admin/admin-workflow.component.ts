@@ -13,6 +13,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { WorkflowService } from '../../services/workflow.service';
 import { AdminBaseComponent} from './admin-base.component';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -35,8 +36,8 @@ export class AdminWorkflowComponent extends AdminBaseComponent {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = 'Manage all workflow settings for types within your environment.';
         this.areaName = "Workflow";
         this.setCommonItems();

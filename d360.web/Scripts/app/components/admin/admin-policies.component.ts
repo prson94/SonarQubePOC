@@ -11,6 +11,7 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { PolicyType } from '../../models/policy.model';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -93,8 +94,8 @@ export class AdminPoliciesComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Organize various sets of policies across your organization.";
         this.areaName = "Policy Types";
         this.setCommonItems();

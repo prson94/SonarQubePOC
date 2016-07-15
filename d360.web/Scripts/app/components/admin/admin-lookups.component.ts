@@ -9,6 +9,7 @@ import {Lookup} from '../../models/lookup.model';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DynamicGridComponent } from '../shared/dynamic-grid.component';
 import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -79,8 +80,8 @@ export class AdminLookupsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);        
+    constructor(private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);        
         this.areaDescription = "Here you will find all general lookups used.";
         this.areaName = "Lookup Types";
         this.setCommonItems();

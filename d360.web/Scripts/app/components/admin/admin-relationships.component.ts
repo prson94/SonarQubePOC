@@ -5,7 +5,8 @@ import {AdminBaseComponent} from './admin-base.component';
 import { PredicatesTile } from '../tiles/predicates.tile';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { Relationship } from '../../models/relationship.model';
-import { RelationshipsTile } from '../tiles/relationships.tile'
+import { RelationshipsTile } from '../tiles/relationships.tile';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
@@ -40,8 +41,8 @@ export class AdminRelationshipsComponent extends AdminBaseComponent {
     
     selected: Relationship;
     
-    constructor(protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Create the possibility of establishing relationships between different objects within the system.";
         this.areaName = "Relationship Types";
         this.setCommonItems();        

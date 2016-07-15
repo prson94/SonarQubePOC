@@ -9,7 +9,7 @@ import { FieldDefinition } from '../../models/fields.model';
 import {AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import {AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import {DeleteForm} from '../forms/delete.form';
-
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-models-component',    
@@ -69,8 +69,8 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     theDeleteCallback: Function;
     
 
-    constructor(pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService) {        
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type.";
         this.areaName = "Models";
         this.setCommonItems();

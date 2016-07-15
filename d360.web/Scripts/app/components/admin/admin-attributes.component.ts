@@ -11,6 +11,7 @@ import { DeleteForm } from '../forms/delete.form';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { Subscription }   from 'rxjs/Subscription';
 import { AuditComponent} from '../shared/audit.component';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-attributes-component',
@@ -73,8 +74,8 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     subscription: Subscription;
     isAuditVisible: boolean = false;
 
-    constructor( protected rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(protected rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find all metadata that can be assigned to various objects and relationships.";
         this.areaName = "Attribute Groups";        
         //this.areaLink = window.location.pathname;

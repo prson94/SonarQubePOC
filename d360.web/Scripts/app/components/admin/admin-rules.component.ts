@@ -9,6 +9,7 @@ import { ClaimsTile } from '../tiles/claims.tile';
 import { RuleDimensionsTile } from '../tiles/rule-dimensions.tile';
 import { RuleType } from '../../models/rule.model';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -59,8 +60,8 @@ export class AdminRulesComponent extends AdminBaseComponent {
     selected: RuleType;
     showEditor: boolean = false;
     
-    constructor(private rulesService: RulesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(private rulesService: RulesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you can configure the properties available to rules, including what dimensions are defined.";
         this.areaName = "Rule Types";
         this.setCommonItems();

@@ -14,7 +14,7 @@ import { FusionType } from '../../models/fusion.model';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FusionAttributesTile } from '../tiles/fusion-attributes.tile';
 import { FusionConfigurationTile } from '../tiles/fusion-configuration.tile';
-
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-fusion',
@@ -39,8 +39,8 @@ export class AdminFusionComponent extends AdminBaseComponent {
     fusionTypes: FusionType[];
     selectedRow: FusionType;
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private fusionService: FusionService) {
-        super(headerBreadcrumbService, pageHeader);
+    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private fusionService: FusionService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find all Fusion sources and synchronization settings.";
         this.areaName = "Fusion Types";
         this.setCommonItems();

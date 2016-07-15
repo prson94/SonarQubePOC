@@ -7,6 +7,7 @@ import { DataTable, Column} from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -34,7 +35,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         private router: Router,
         private artifactTypeService: ArtifactTypeService,        
         pageHeader: PageHeader,
-        headerBreadcrumbService: HeaderBreadcrumbService) {
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private titleService: Title) {
         super(headerBreadcrumbService, pageHeader);                   
     }
 
@@ -48,7 +50,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.artifactType = artifactType;
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));   
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, null));        
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, null));
+                    this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.isLoading = false;
                 });
         });
