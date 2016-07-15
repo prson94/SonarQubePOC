@@ -1,6 +1,6 @@
 ﻿<div class="row">
     <div class="col l3 m4 s12">
-        <div class="root-tile">
+        <div class="tile tile-detail">
             <header><d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
                 <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >

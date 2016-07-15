@@ -14,12 +14,13 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { WorkflowService } from '../../services/workflow.service';
 import { AdminBaseComponent} from './admin-base.component';
 import { Title } from '@angular/platform-browser';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 
 @Component({
     selector: 'admin-workflow',
     providers: [WorkflowService],
-    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl, ActionBar ],
+    directives: [ObjectDetailTile, WorkflowItemForm, DeleteForm, DataTable, Column, Growl, ActionBar, TileActionsComponent ],
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
 })
 

@@ -1,7 +1,7 @@
 ﻿<div class="row">
     <div class="col s12 m5 l4">
-        <div class="root-tile">
-            <header>
+        <div class="tile tile-detail">
+            <header>                
                 <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add definition attribute'" (addClick)="add(0)"></d3s-tile-actions>
             </header>
             <p-treeTable [value]="ArtifactTypes" selectionMode="single" [(selection)]="selectedRow">

@@ -62,9 +62,7 @@
                 <div class="tile tile-detail">
                     <header>
                         IP Restrictions
-                        <div class="TileTools">
-                            <a class="btn btn-floating waves-effect waves-light brown lighten-1" title="Add IP restriction" (click)="addIpRestriction()"><i class="fa fa-plus"></i></a>
-                        </div>
+                        <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add IP restriction'" (addClick)="addIpRestriction()"></d3s-tile-actions>                        
                     </header>
                     <div class="directions">
                         Restrictions will only apply if there are entries present.  If no entries are present, then users will be allowed to access this environment from any IP.

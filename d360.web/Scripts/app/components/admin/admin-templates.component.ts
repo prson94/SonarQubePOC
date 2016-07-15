@@ -15,12 +15,12 @@ import { Title } from '@angular/platform-browser';
                 <div class="row">
                 <div class="col" [ngClass]="{'s8':isDeleting||isEditing||isAdding}" [ngClass]="{'s12':!isDeleting&&!isEditing&&!isAdding}">                    
                    <div class="tile tile-detail">
-                        <header>Tooltip Templates
-                            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Template'" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
-                        </header>
                         <div *ngIf="isLoading" style="width:100%; text-align:center;">
                             <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                         </div>
+                        <header  *ngIf="!isLoading">Tooltip Templates
+                            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Template'" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
+                        </header>                        
                         <p-dataTable *ngIf="!isLoading" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
