@@ -9,9 +9,14 @@ import { Subscription }   from 'rxjs/Subscription';
 @Component({
     selector: 'd3s-header-breadcrumb',
     directives: [ROUTER_DIRECTIVES],
+    styles: [`
+    a.breadcrumb {
+        color:#54a4da;
+    }
+  `],
     template: ` <span class="breadcrumbs">
                  <span *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{active:last}">
-                    <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]">{{ breadcrumb.text }}</a>
+                    <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
                     <span *ngIf="!breadcrumb.hasLink()">{{ breadcrumb.text }}</span> <span *ngIf="!last" class="sep"> :: </span>
                  </span>                
                 </span>
