@@ -1696,7 +1696,7 @@ where   h.ID <> @t order by h.[Level] desc;
         #region Artifacts
 
         [Route("artifact/{id:int}")]
-        public ArtifactModelRequest GetArtifact(int id)
+        public ArtifactModelRequest GetArtifact(int id, bool isNg = false)
         {
             var a = Company.GetById<Artifact>(id, i => i.ArtifactType);
 
@@ -1723,7 +1723,7 @@ where   h.ID <> @t order by h.[Level] desc;
             catch(Exception ex)
             { }
 
-            var breadcrumbItems = Company.Query<dynamic>(QueryConstants.ArtifactBreadcrumbItem, new { id = id }).ToList();
+            var breadcrumbItems = Company.Query<dynamic>((isNg? QueryConstants.ArtifactNgBreadcrumbItem : QueryConstants.ArtifactBreadcrumbItem), new { id = id }).ToList();
             var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var breadcrumbs = new List<BreadcrumbItem>() {

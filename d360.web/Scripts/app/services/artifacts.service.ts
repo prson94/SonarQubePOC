@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Artifacts } from '../models/artifacts.model';
+import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
 
@@ -20,4 +20,11 @@ export class ArtifactService extends BaseService {
             .then(response => <Artifacts>response.json())
             .catch(err => this.handleError(err));        
     }   
+
+    getArtifact(id: number): Promise<Artifact> {
+        return this.http.get(`api/artifact/${id}?isNg=true`)
+            .toPromise()
+            .then(response => <Artifact>response.json())
+            .catch(err => this.handleError(err));        
+    }
 }
