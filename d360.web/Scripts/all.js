@@ -66392,7 +66392,8 @@ function lookups_admin(app, pageViewModel, templatePath, contextList) {
         context.app.swap('');
         context.title(pageViewModel.Title);
 
-        var selectedID = context.params['id'];
+        var selectedID = context.params['typeid'];
+        var selectedItemID = context.params['id'];
         var type = 'LookupType';
 
         pageViewModel.breadcrumbs = [];
@@ -66558,7 +66559,8 @@ function lookups_admin(app, pageViewModel, templatePath, contextList) {
             });
     }
 
-    app.get('#/lookups/administration/:id', routeLookup);
+    app.get('#/lookups/administration/:typeid/:id', routeLookup);
+    app.get('#/lookups/administration/:typeid', routeLookup);
     app.get('#/lookups/administration', routeLookup);
 }
 function monitor_list(app, pageViewModel, templatePath, contextList) {

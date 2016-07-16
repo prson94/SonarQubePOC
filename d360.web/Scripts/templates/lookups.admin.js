@@ -3,7 +3,8 @@
         context.app.swap('');
         context.title(pageViewModel.Title);
 
-        var selectedID = context.params['id'];
+        var selectedID = context.params['typeid'];
+        var selectedItemID = context.params['id'];
         var type = 'LookupType';
 
         pageViewModel.breadcrumbs = [];
@@ -169,6 +170,7 @@
             });
     }
 
-    app.get('#/lookups/administration/:id', routeLookup);
+    app.get('#/lookups/administration/:typeid/:id', routeLookup);
+    app.get('#/lookups/administration/:typeid', routeLookup);
     app.get('#/lookups/administration', routeLookup);
 }

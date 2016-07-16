@@ -2520,7 +2520,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             columns.Add(gc);
                         }
 
-                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
                     }
 
                     sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Lookup' and F{fieldType.ID}.ObjectID = I.ID ");
@@ -2689,7 +2689,7 @@ from    [Lookup] I
                 {
                     gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
                     columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
-                    sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                    sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
                     sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'FusionAttribute' and F{fieldType.ID}.ObjectID = A.ID");
                 }
             }
@@ -2920,7 +2920,7 @@ from    IntersectNode S
                                 columns.Add(gc);
                             }
 
-                            sqlColumns.Add($"F{fieldType.ID}.FormattedValue as {fieldType.Name}");
+                            sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
 
                             if (fieldType.Name == "Description")
                             {
@@ -3002,7 +3002,7 @@ from    IntersectNode S
                     }
                     else
                     {
-                        sqlOrderBy += $" {columnPrefix}.{df.FieldTypeName} asc";
+                        sqlOrderBy += $" {columnPrefix}.[{df.FieldTypeName}] asc";
                     }
                 }
 

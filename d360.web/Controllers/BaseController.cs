@@ -431,7 +431,7 @@ namespace d360.web.Controllers
 
             fields.ForEach(f =>
             {
-                if (f.Type != DataType.RelationLookup.ToString())
+                if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.RelationLookup.ToString())
                 {
                     var patternMessage = "";
 
@@ -528,7 +528,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.Type != DataType.RelationLookup.ToString()  && ft.Type != DataType.Attribute.ToString())
+                if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString() && ft.Type != DataType.Attribute.ToString())
                 {
                     var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 

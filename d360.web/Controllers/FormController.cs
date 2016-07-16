@@ -4358,6 +4358,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
                 .OrderBy(i => i.Name)
                 .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
                 .ToList()
@@ -4381,7 +4382,10 @@ namespace d360.web.Controllers
         /// <returns>A list of relevant fusion attribute types.</returns>
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
+            var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Select(i => new { i.ID, i.Name })
+                .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
             list.Add("TextPath", 0);
 
@@ -4555,13 +4559,18 @@ order by  D.TextPath
 
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
-            var list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.ID);
+            var list = Company.GetFieldTypeRelationsByObject(type, id)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Select(i => new { i.ID, i.Name })
+                .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
             list.Add("TextPath", 0);
             if (!list.ContainsKey("Description"))
                 list.Add("Description", 0);
 
-            var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID).Select(i => new { i.ID, i.Name }).ToList();
+            var relList = Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, intersectTypeID)
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Select(i => new { i.ID, i.Name }).ToList();
             relList.ForEach(r =>
             {
                 list.Add($"Relation.{r.Name}", r.ID);
@@ -4581,7 +4590,10 @@ order by  D.TextPath
 
             if (type != SystemObjects.DomainItem)
             {
-                list = Company.GetFieldTypeRelationsByObject(type, id).Select(i => new { i.ID, i.Name }).ToDictionary(i => i.Name, i => i.Name);
+                list = Company.GetFieldTypeRelationsByObject(type, id)
+                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                    .Select(i => new { i.ID, i.Name })
+                    .ToDictionary(i => i.Name, i => i.Name);
             }
             else
             {
@@ -4620,6 +4632,11 @@ order by  D.TextPath
                 case SystemObjects.RuleType:
                     list.Add("Name", "Name");
                     list.Add("Description", "Description");
+                    break;
+                case SystemObjects.TaxonomyType:
+                    list.Add("Name", "Name");
+                    list.Add("Description", "Description");
+                    list.Add("TextPath", "TextPath");
                     break;
                     //default:
                     //    list.Add("Name", "Name");
@@ -7341,6 +7358,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 .ToList();
             //if (!sourceFieldNames.Contains("Name"))
             sourceFields.Insert(0, new SelectListItem { Text = "Name", Value = "Name|0" });
+            sourceFields.Insert(0, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
 
             #endregion
 

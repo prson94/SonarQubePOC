@@ -88,9 +88,11 @@ namespace d360.web.Controllers.Services
                                         var selectTypePrefix = $"{name}_{df.FieldTypeID}_FLFT_{df.ID}";
 
                                         columnSql.Add($"{selectPrefix}.FormattedValue as [{df.FieldTypeName}]");
+                                        columnSql.Add($"{selectPrefix}.LookupUrl as [{df.FieldTypeName}Uri]");
+                                        
 
                                         //joinSql.Add($"inner join FieldType {selectTypePrefix} on {selectTypePrefix}.ID = {df.FieldTypeID}");
-                                        joinSql.Add($"left join Field {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
+                                        joinSql.Add($"left join FieldWithRelation {selectPrefix} on {selectPrefix}.FieldTypeID = {df.FieldTypeID} and {selectPrefix}.ObjectType = 'Lookup' and {selectPrefix}.ObjectID = L.ID");
 
                                         //Build where
                                         if (df.Filter)
@@ -131,7 +133,7 @@ namespace d360.web.Controllers.Services
                                             }
                                             else
                                             {
-                                                orderBy += $" D_{fld.ID}.{df.FieldTypeName} asc";
+                                                orderBy += $" D_{fld.ID}.[{df.FieldTypeName}] asc";
                                             }
                                         }
 
@@ -211,7 +213,7 @@ namespace d360.web.Controllers.Services
                                         }
                                         else
                                         {
-                                            where += $" D_{rd.ID}.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                                            where += $" D_{rd.ID}.[{df.FieldTypeName}] like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
                                         }
                                     }
 
@@ -252,7 +254,7 @@ namespace d360.web.Controllers.Services
                                         }
                                         else
                                         {
-                                            orderBy += $" D_{rd.ID}.{df.FieldTypeName} asc";
+                                            orderBy += $" D_{rd.ID}.[{df.FieldTypeName}] asc";
                                         }
                                     }
 
