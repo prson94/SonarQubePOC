@@ -171,7 +171,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         for (let item of siteMenuItems) {
             if (item.Items) {
-                var parent = this.addSubItem(navBar, item.Name, null, null); //menu doesnt yet support link / expand collapse combo
+                var parent = this.addSubItem(navBar, item.Name, null, item.Url ? item.Url : null); //menu doesnt yet support link / expand collapse combo
 
                 this.renderChildItems(parent, item.Items);
             }
