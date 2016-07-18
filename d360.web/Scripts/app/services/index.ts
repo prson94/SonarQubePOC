@@ -30,6 +30,7 @@ import { SiteMenuService} from './site-menu.service';
 import { RightSidebarService} from './right-sidebar.service';
 import { AuditService} from './audit.service';
 import { ArtifactService } from './artifacts.service';
+import { DiagnosticService } from './diagnostic.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -63,3 +64,4 @@ export * from './site-menu.service';
 export * from './right-sidebar.service';
 export * from './audit.service';
 export * from './artifacts.service';
+export * from './diagnostic.service';

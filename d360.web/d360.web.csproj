@@ -1405,6 +1405,10 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic-incorrect-textpath.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\diagnostic\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
@@ -1452,6 +1456,7 @@
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
@@ -1489,6 +1494,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />

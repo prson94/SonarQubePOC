@@ -6228,5 +6228,16 @@ order by    title
         }
 
         #endregion
+
+        #region Diagnostics
+
+        [Route("Diagnostic/invalidtextpaths")]
+        public IEnumerable<dynamic> GetInvalidTextpaths()
+        {
+            return Company.Query<dynamic>(QueryConstants.InvalidTextPaths);
+        }
+
+
+        #endregion
     }
 }

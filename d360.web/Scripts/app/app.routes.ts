@@ -3,11 +3,13 @@ import { HomeComponent} from './components/index';
 import { AdminRoutes} from './components/admin/admin.routes';
 import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
+import { DiagnosticRoutes } from './components/diagnostic/diagnostic.routes';
 
 export const routes: RouterConfig = [
     ...AdminRoutes,
     ...HomeRoutes,
-    ...ArtifactRoutes    
+    ...ArtifactRoutes,
+    ...DiagnosticRoutes    
 ];
 
 
