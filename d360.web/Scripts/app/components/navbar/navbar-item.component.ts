@@ -1,9 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 
 @Component({
     selector: 'd3s-navbar-item',
+    host: {
+        '(document:click)': 'onClick($event)',
+    },
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     styles: [`
     a.group {
@@ -35,7 +38,7 @@ export class NavBarItemComponent implements OnInit {
     @Input() item: NavBarItem;
     @Output() onExpanded = new EventEmitter();
 
-    constructor() {
+    constructor(private elementRef: ElementRef) {
     }
 
     ngOnInit() {
@@ -43,6 +46,12 @@ export class NavBarItemComponent implements OnInit {
 
     expandClick(selItem) {
         this.onExpanded.emit({ item: selItem });
+    }
+
+    onClick(event) {
+        if (this.item && this.item.expanded && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
+            this.item.expanded = false;
+        }
     }
 
 }
