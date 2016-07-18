@@ -54,6 +54,7 @@ namespace d360.web.Controllers
             return PartialView(navigation);
         }
 
+        [Authorize]
         public ActionResult HeaderActions()
         {
             var resource = Community.GetById<Resource>(Company.CurrentResourceID);
