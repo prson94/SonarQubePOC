@@ -2,6 +2,7 @@
     Columns: GridColumn[];
     Fields: GridField[];
     FieldsCount: number;
+    FilterColumns: GridFilterColumn[];
     ID: number;
     Title: string;
     Type: string;
@@ -16,4 +17,17 @@ export class GridColumn {
     text: string;
     datafield: string;
     width: string;
+}
+
+export class GridFilterExpression {
+    field: string;
+    condition: string;
+    value: string;
+}
+
+export class GridFilterColumn {
+    text: string;
+    datafield: string;
+    columntype: string;
+    filteritems: string[];
 }

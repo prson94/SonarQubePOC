@@ -2,19 +2,20 @@
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
 import {DataTable, Column, LazyLoadEvent, Button} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
-import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { SortOrder } from '../../models/enums.model';
+import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
 import { Router, ActivatedRoute }       from '@angular/router';
 
 
 @Component({
     selector: 'd3s-artifact-grid',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button, ArtifactColumnFilterComponent],
     providers: [GridDefinitionService, UriBasedService, ArtifactService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
@@ -30,6 +31,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <div *ngIf="showTypeFilter" class="col l2 m3 s12">                                                                         
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                     </div>
+                    <d3s-artifact-column-filter [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="false" [sortable]="true"></p-column>
@@ -88,6 +90,9 @@ export class ArtifactGridComponent implements OnChanges {
     error: any;
     items: any[];
     columns: GridColumn[] = [];
+    fields: GridField[] = [];
+    filtercolumns: GridFilterColumn[] = [];
+    filters: GridFilterExpression[] = [];
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -106,8 +111,13 @@ export class ArtifactGridComponent implements OnChanges {
     }
 
     load() {
-        this.getFieldsDefinition();
-      //  this.getData();
+        this.getFieldsDefinition();      
+    }
+
+    filterGridData(filterData) {
+        this.filters = filterData.filter;
+        this.currentPageNumber = 0;
+        this.getData();
     }
 
     deleteItem(id: number) {
@@ -120,11 +130,12 @@ export class ArtifactGridComponent implements OnChanges {
         this.gridDefinitionService.getGridDefinition(this.artifactType.ID, this.objectType)
             .then(result => {
                 this.columns = result.Columns;
+                this.filtercolumns = result.FilterColumns;
             });
     }
     
     getData() {        
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder)
+        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
@@ -165,6 +176,10 @@ export class ArtifactGridComponent implements OnChanges {
 
     selectArtifact(artifact) {
         this.router.navigateByUrl(`/a/artifact/${this.artifactType.ID}/${artifact.ID}`)
+    }
+
+    simpleSearchChanged(event) {
+        console.log(event);
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {        
