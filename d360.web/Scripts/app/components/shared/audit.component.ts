@@ -3,7 +3,8 @@ import {Component, Input} from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, AuditService  } from '../../services/index';
 import { Audit } from '../../models/audit.model';
-import { DataTable, Column} from 'primeng/primeng';
+import { DataTable, Column, LazyLoadEvent} from 'primeng/primeng';
+import { SortOrder } from '../../models/enums.model';
 
 @Component({
     selector: 'd3s-audit',
@@ -13,15 +14,18 @@ import { DataTable, Column} from 'primeng/primeng';
              <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <span *ngIf="!isLoading">Audit History for {{objectName}}</span>
-               <p-dataTable *ngIf="!isLoading" [value]="audits" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" >                                                                        
-                    <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true"></p-column>                                                            
-                    <p-column field="Date" header="Date" [sortable]="true" [filter]="true"></p-column>
-                    <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
-                    <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
-                    <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
-                    <p-column field="AuditDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
-                </p-dataTable> 
+                
+                <div class="tile tile-detail" *ngIf="!isLoading">   
+                    <header *ngIf="!isLoading">Audit History for {{objectName}}</header>       
+                    <p-dataTable  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
+                        <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true"></p-column>                                                            
+                        <p-column field="Date" header="Date" [sortable]="true" [filter]="true"></p-column>
+                        <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
+                        <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
+                        <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
+                        <p-column field="AuditDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
+                    </p-dataTable> 
+                </div>
         `    
 })
 
@@ -30,9 +34,14 @@ export class AuditComponent {
     @Input() objectType: string;
     @Input() objectName: string;
 
+    totalRecords: number;
+    rowsPerPage: number = 20;
     audits: Audit[] = [];
     isLoading: boolean = false;
     selected: Audit;
+    currentPageNumber: number = 0;
+    sortField: string = undefined;
+    sortOrder: SortOrder = SortOrder.None;
 
 
     constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
@@ -40,15 +49,30 @@ export class AuditComponent {
     }
 
     ngOnInit() {        
-        this.getData();
+     //   this.getData(this.currentPageNumber);
     }
 
     private getData() {
-        this.isLoading = true;
-        this.auditService.getAuditData(this.objectID, this.objectType)
+        //    this.isLoading = true;
+        this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField)
             .then(result => {
-                this.isLoading = false;
-                this.audits = result;
+         //       this.isLoading = false;
+                this.audits = result.results;
+                this.totalRecords = result.total;
             });
-    }    
+    }   
+    
+    private loadAuditsLazy(event: LazyLoadEvent) {
+        //event.first = First row offset
+        //event.rows = Number of rows per page
+        //event.sortField = Field name to sort with
+        //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
+
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.rowsPerPage = event.rows;
+        this.currentPageNumber = event.first / event.rows;
+        this.getData();
+    }
 }

@@ -3,10 +3,7 @@ import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@ang
 import { ROUTER_DIRECTIVES } from '@angular/router';
 
 @Component({
-    selector: 'd3s-navbar-item',
-    host: {
-        '(document:click)': 'onClick($event)',
-    },
+    selector: 'd3s-navbar-item',   
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     styles: [`
     a.group {
@@ -48,11 +45,6 @@ export class NavBarItemComponent implements OnInit {
         this.onExpanded.emit({ item: selItem });
     }
 
-    onClick(event) {
-        if (this.item && this.item.expanded && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
-            this.item.expanded = false;
-        }
-    }
 
 }
 export class NavBarItem {

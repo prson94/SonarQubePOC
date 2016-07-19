@@ -31,7 +31,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                     </div>
                     <div class="col s12">
-                       <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" expandableRows="true" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
+                       <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="false" [sortable]="true"></p-column>
                             <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                                     <template let-item="rowData">
