@@ -16,6 +16,7 @@ import { GridFilterExpression, GridFilterColumn } from '../../models/grid-defini
         }    
         div.buttons {
             padding-left: 10px;
+            padding-bottom: 5px;
         }    
   `],
     template: ` 

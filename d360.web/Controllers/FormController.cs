@@ -337,14 +337,14 @@ namespace d360.web.Controllers
                     return DomainType_EditFields(ID);
                 case "FUSION":
                     return Fusion_EditFields(ID);
-                case "ARTIFACTTYPE":
+                case "ARTIFACT":
                     return Artifact_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}")]
-        public JsonResult DynamicEditorAddFields(string objectType, int? objectID)
+        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}")]
+        public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID)
         {
             switch ((objectType ?? "").ToUpper())
             {
@@ -364,6 +364,8 @@ namespace d360.web.Controllers
                     return DomainType_AddFields();
                 case "FUSION":
                     return Fusion_AddFields(objectID.GetValueOrDefault());
+                case "ARTIFACT":
+                    return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -436,6 +438,8 @@ namespace d360.web.Controllers
                     return DeleteReportTile(form);
                 case "ATTRIBUTETYPE":
                     return DeleteAttributeType(form);
+                case "ARTIFACT":
+                    return DeleteArtifact(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -478,6 +482,8 @@ namespace d360.web.Controllers
                     return AddReportTile(form);
                 case "ATTRIBUTETYPE":
                     return AddAttributeType(form);
+                case "ARTIFACT":
+                    return AddArtifact(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

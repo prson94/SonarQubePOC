@@ -11,11 +11,14 @@ export class EditorDefinitionService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getEditorDefinition(ID: number, objectID: number, objectType: string): Promise<EditorField[]> {
+    getEditorDefinition(ID: number, objectID: number, objectType: string, parentID?: number): Promise<EditorField[]> {
         let uri = "";
 
         if (ID == undefined) {
-            uri = `form/dynamiceditor/new/${objectType}/${objectID}`
+            if (parentID)
+                uri = `form/dynamiceditor/new/${objectType}/${objectID}/${parentID}`;
+            else
+                uri = `form/dynamiceditor/new/${objectType}/${objectID}`
         }
         else {
             uri = `form/dynamiceditor/edit/${objectType}/${ID}`;

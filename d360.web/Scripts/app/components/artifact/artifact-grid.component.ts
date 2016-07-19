@@ -1,9 +1,9 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
+import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
 import {DataTable, Column, LazyLoadEvent, Button} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService} from '../../services/index';
+import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
@@ -16,7 +16,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 @Component({
     selector: 'd3s-artifact-grid',
     directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button, ArtifactColumnFilterComponent],
-    providers: [GridDefinitionService, UriBasedService, ArtifactService],
+    providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
                     <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" [addTitle]="'Add ' + artifactType?.Name" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
@@ -33,8 +33,22 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     </div>
                     <d3s-artifact-column-filter [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
-                       <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
+                       <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="false" [sortable]="true"></p-column>
+                            <p-column [style]="{width:'40px'}">
+                                    <template let-item="rowData">
+                                        <div class="RowTools">
+                                            <i class="fa fa-certificate" [ngStyle]="{'color': certificateColor(item)}"></i>
+                                        </div>
+                                    </template>
+                            </p-column>
+                            <p-column [style]="{width:'40px'}">
+                                    <template let-item="rowData">
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selectArtifact(item)"><i class="fa fa-info"></i></a>
+                                        </div>
+                                    </template>
+                            </p-column>
                             <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                                     <template let-item="rowData">
                                         <div class="RowTools">
@@ -52,7 +66,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" [parentID]="artifactType?.ParentID" [objectType]="'Artifact'" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
@@ -68,13 +82,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 export class ArtifactGridComponent implements OnChanges {    
     @Input() rowID: string = 'ID';
     @Input() artifactType: ArtifactType;
-    
-    @Input() deleteUri: string;
-    @Input() createUri: string;    
-    
-    objectType: string = 'ArtifactType';
-    editUri: string = 'form/dynamicedit/edit/artifact/';
-
+        
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
@@ -102,16 +110,18 @@ export class ArtifactGridComponent implements OnChanges {
 
     theDeleteCallback: Function;
     
-    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+    constructor(private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.artifactType != null) this.load();
+        if (this.artifactType != null) {
+            this.load();
+        }
     }
 
     load() {
-        this.getFieldsDefinition();      
+        this.getFieldsDefinition();              
     }
 
     filterGridData(filterData) {
@@ -121,13 +131,15 @@ export class ArtifactGridComponent implements OnChanges {
     }
 
     deleteItem(id: number) {
-        this.uriBasedService.deleteItem(this.deleteUri, id);
+        this.uriBasedService.deleteItem("form/dynamicedit/delete/artifact/", id);
         this.showDelete = false;
-        if (this.items.length > 0) this.items.splice(this.findItemIndex(id), 1);
+        if (this.items.length > 0) {            
+            this.items.splice(this.findItemIndex(id), 1);
+        }
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, this.objectType)
+        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, 'ArtifactType')
             .then(result => {
                 this.columns = result.Columns;
                 this.filtercolumns = result.FilterColumns;
@@ -141,6 +153,16 @@ export class ArtifactGridComponent implements OnChanges {
                 this.totalRecords = result.total;                
                 if (this.items.length > 0) this.selected = this.items[0];                
             });
+    }
+
+    private certificateColor(item) {        
+        switch (item.Status) {
+            case 'Certified':
+                return '#3f9d40';                
+            case 'Under Review':
+                return '#e2792a';                             
+        }
+        return '#ebebeb';
     }
 
     private findItemIndex(id: number) {
@@ -165,8 +187,8 @@ export class ArtifactGridComponent implements OnChanges {
     }
 
     saveItem(event) {
-        this.isLoading = true;
-        this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
+        this.isLoading = true;        
+        this.uriBasedService.saveItem("form/dynamicedit/create/artifact", "form/dynamicedit/edit/artifact", event.item)
             .then(result => {
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.getData();

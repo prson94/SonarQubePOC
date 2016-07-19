@@ -38,9 +38,11 @@ export class DynamicEditorComponent {
     @Input() rowID: string = 'ID';
     @Input() title: string;
     @Input() objectID: number;
+    @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
     @Input() editUri: string;
+    
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -71,7 +73,7 @@ export class DynamicEditorComponent {
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType)
+        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID)
             .then(result => {
                 this.fields = result;
 

@@ -8,12 +8,22 @@ import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
+import { ArtifactDefnintionComponent } from './artifact-definition.component';
 
 @Component({
     selector: 'd3s-artifact-item',
-    template: ` 
-                <div [innerHTML]="artifact?.Description"></div>
+    template: `  <div class="row">
+                    <div class="col s12">
+                        <div *ngIf="isLoading">
+                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                        </div>
+                        <div class="tile tile-detail" *ngIf="!isLoading">
+                            <d3s-artifact-definition [artifact]="artifact"></d3s-artifact-definition>                                                                                     
+                        </div>
+                    </div>
+                </div>                
                 `,
+    directives: [ArtifactDefnintionComponent],
     providers: [ArtifactService]
 })
 
@@ -32,8 +42,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnInit() {
 
-        this.sub = this.route.params.subscribe(params => {
-            //let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+        this.sub = this.route.params.subscribe(params => {            
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
             this.isLoading = true;
             this.artifactService.getArtifact(artifactId)

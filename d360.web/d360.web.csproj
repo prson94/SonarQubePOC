@@ -1400,6 +1400,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-column-filter.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-definition.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
@@ -1460,6 +1461,7 @@
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
@@ -1498,6 +1500,7 @@
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
