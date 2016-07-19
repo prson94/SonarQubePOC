@@ -5946,6 +5946,17 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonNetResult GetFusionAttributeTypes(int fusionID)
+        {
+            var fusion = Company.GetById<Fusion>(fusionID);
+            var types = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == fusion.FusionTypeID && !i.ParentID.HasValue).OrderBy(i => i.Name).ToList();
+            return new JsonNetResult
+            {
+                Data = types,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         public JsonResult FusionFilter_DeleteFields(int f, int a)
         {
             var list = new List<EditableField>();
@@ -6028,6 +6039,40 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [ActionName("FusionFilter"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostFusionFilter(FusionFilter f)
+        {
+            try
+            {
+             //   if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
+
+               // int f = parseIntField(form, "FusionID");
+                //int a = parseIntField(form, "FusionAttributeTypeID");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, f.FusionID, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var model = new FusionFilter
+                {
+                    FusionID = f.FusionID,
+                    FusionAttributeTypeID = f.FusionAttributeTypeID,
+                    Filter = f.Filter  //parseTextField(form, "FilterValue")
+                };
+
+                Company.Add<FusionFilter>(model);
+                return jsonSuccess("Filter successfully created.", f.FusionAttributeTypeID.ToString(), null, "add", HttpStatusCode.Created, new { Type = "FusionFilter", Context = "FusionFilter" });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         public ActionResult DeleteFusionFilter(int f, int a)
         {
             var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
@@ -6072,6 +6117,16 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFusionFilterByID(int fusionID, int fusionAttributeTypeID)
+        {
+            var form = new FormCollection();
+            form.Add("FusionID", fusionID.ToString());
+            form.Add("FusionAttributeTypeID", fusionAttributeTypeID.ToString());
+
+            return DeleteFusionFilter(form);
+        }
+
         public ActionResult EditFusionFilter(int f, int a)
         {
             var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
@@ -6109,6 +6164,39 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Company.Update<FusionFilter>(o);
 
                 return jsonSuccess("Filter successfully updated.", a.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = form["_context"] });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ActionName("FusionFilter"), HttpPut, ValidateInput(false)]
+        public JsonResult PutFusionFilter(FusionFilter f)
+        {
+            try
+            {
+             //   if (!form.HasKeys()) throw new NoFormDataException("fusion filter");
+
+               // int f = parseIntField(form, "FusionID");
+                //int a = parseIntField(form, "FusionAttributeTypeID");
+
+                var o = Company.Filter<FusionFilter>(i => i.FusionID == f.FusionID && i.FusionAttributeTypeID == f.FusionAttributeTypeID).SingleOrDefault();
+                if (o == null) throw new NotFoundException("fusion filter");
+
+                if (!Company.HasPermission(SystemObjects.Fusion, f.FusionID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                o.Filter = f.Filter; //parseTextField(form, "FilterValue");
+
+                Company.Update<FusionFilter>(o);
+
+                return jsonSuccess("Filter successfully updated.", f.FusionAttributeTypeID.ToString(), null, "edit", HttpStatusCode.OK, new { Type = "FusionFilter", Context = "FusionFilter" });
             }
             catch (BaseException ex)
             {
@@ -7796,6 +7884,40 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
+        {
+            try
+            {
+                if (!Company.HasPermission(SystemObjects.FusionType, 0, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                //   if (!form.HasKeys()) throw new NoFormDataException("fusion type");
+
+                var model = new FusionType
+                {
+                    Description = fusion.Description, //parseTextField(form, "Description"),
+                    Name = fusion.Name //parseTextField(form, "Name", null, true)
+                };
+
+                Company.Add<FusionType>(model);
+
+                if (style != null)
+                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         public ActionResult DeleteFusionType(int id)
         {
             var a = Company.GetById<FusionType>(id);
@@ -7844,6 +7966,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFusionTypeByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusionType(form);
+        }
 
         public ActionResult EditFusionType(int id)
         {
@@ -7895,6 +8024,38 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [ActionName("FusionType"), HttpPut, ValidateInput(false)]
+        public JsonResult PutFusionType(FusionType fusion, ObjectStyle style = null)
+        {
+            try
+            {
+               // if (!form.HasKeys()) throw new NoFormDataException("fusion type");
+
+                var model = Company.GetById<FusionType>(fusion.ID);
+                if (model == null) throw new NotFoundException("fusion type");
+
+                if (!Company.HasPermission(SystemObjects.FusionType, model.ID, Claim.Update, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Description = fusion.Description; // parseTextField(form, "Description");
+                model.Name = fusion.Name;  //parseTextField(form, "Name", null, true);
+
+                Company.Update<FusionType>(model);
+                if (style != null)
+                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
         #endregion
 
         #endregion
@@ -8020,6 +8181,47 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [ActionName("FusionAttributeType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostFusionAttributeType(FusionAttributeType fusion)
+        {
+            try
+            {
+                //if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
+
+                int typeID = fusion.FusionTypeID; // parseIntField(form, "FusionTypeID");
+                int? parentID = fusion.ParentID;
+                //if (form.AllKeys.Contains("ParentID"))
+                //{
+                //    parentID = parseIntField(form, "ParentID");
+                //}
+                var type = Company.GetById<FusionType>(typeID);
+                if (type == null) throw new NotFoundException("fusion type");
+
+                if (!Company.HasPermission(SystemObjects.FusionType, typeID, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var model = new FusionAttributeType
+                {
+                    FusionTypeID = typeID,
+                    ParentID = parentID,
+                    Assignable = true,//bool.Parse(form["Assignable"]),
+                    Name = fusion.Name //parseTextField(form, "Name", null, true)
+                };
+
+                Company.Add<FusionAttributeType>(model);
+                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         public ActionResult DeleteFusionAttributeType(int id)
         {
             var a = Company.GetById<FusionAttributeType>(id);
@@ -8064,6 +8266,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteFusionAttributeTypeByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusionAttributeType(form);
         }
 
         public ActionResult EditFusionAttributeType(int id)
@@ -8112,6 +8322,35 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [ActionName("FusionAttributeType"), HttpPut, ValidateInput(false)]
+        public JsonResult PutFusionAttributeType(FusionAttributeType fusion)
+        {
+            try
+            {
+                //if (!form.HasKeys()) throw new NoFormDataException("fusion attibute type");
+
+                var model = Company.GetById<FusionAttributeType>(fusion.ID);
+                if (model == null) throw new NotFoundException("fusion attibute type");
+
+                if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = fusion.Name;  //parseTextField(form, "Name", null, true);
+
+                Company.Update<FusionAttributeType>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK, new { ParentID = model.ParentID, Type = "FusionAttributeType", Context = "FusionAttributeType", Name = model.Name });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
         #endregion
 
         #endregion

@@ -34,12 +34,12 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
 
                 if (model.responsibility.ResponsibleObjectType)
                     model.selectedResource = model.responsibility.ResponsibleObjectType + '|' + model.responsibility.ResponsibleObjectID;
-                else
+                else if (model.resources && model.resources.length > 0)
                     model.selectedResource = model.resources[0].value;
 
                 if (model.responsibility.ResponsibilityTypeID)
                     model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
-                else
+                else if (model.responsibilityTypes && model.responsibilityTypes.length > 0)
                     model.selectedResponsibilityType = model.responsibilityTypes[0].value;
 
                 model.selectedContexts = model.contexts.filter(c => c.Selected).map(c => c.value);

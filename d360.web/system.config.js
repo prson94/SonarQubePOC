@@ -15,16 +15,7 @@
         'lodash' : { main: 'lodash.js' },
         'rxjs': { main: 'index.js' },
 
-        //'@angular/core': { main: 'index.js' },
-        //'@angular/http': { main: 'index.js' },
-        //'@angular/router-deprecated': { main: 'index.js' },
-        //'@angular/upgrade': { main: 'index.js' },
-        //'@angular/common': { main: 'index.js' },
-        //'@angular/compiler': { main: 'index.js' },
-        '@angular/router': { main: 'index.js' },
-        //'@angular/platform-browser': { main: 'index.js' },
-        //'@angular/platform-browser-dynamic': { main: 'index.js' },
-
+        '@angular/router': { main: '/bundles/router.umd.js', defaultExtension: 'js' },
         '@angular/forms': { main: '/bundles/forms.umd.js', defaultExtension: 'js' },
         '@angular/core': { main: '/bundles/core.umd.js', defaultExtension: 'js' },
         '@angular/http': { main: '/bundles/http.umd.js', defaultExtension: 'js' },
@@ -32,7 +23,6 @@
         '@angular/upgrade': { main: '/bundles/upgrade.umd.js', defaultExtension: 'js' },
         '@angular/common': { main: '/bundles/common.umd.js', defaultExtension: 'js' },
         '@angular/compiler': { main: '/bundles/compiler.umd.js', defaultExtension: 'js' },
-        //'@angular/router': { main: '/bundles/router.umd.js', defaultExtension: 'js' },
         '@angular/platform-browser': { main: '/bundles/platform-browser.umd.js', defaultExtension: 'js' },
         '@angular/platform-browser-dynamic': { main: '/bundles/platform-browser-dynamic.umd.js', defaultExtension: 'js' },
 

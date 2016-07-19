@@ -60,12 +60,12 @@ export class PeopleResponsibilitiesTile implements OnChanges {
     }
 
     edit(id: number): void {
-        this.selectedRow = this.responsibilities.find(r => r.ID == id);
+        //this.selectedRow = this.responsibilities.find(r => r.ID == id);
         this.isEditing = true;
     }
 
     delete(id: number): void {
-        this.selectedRow = this.responsibilities.find(r => r.ID == id);
+        //this.selectedRow = this.responsibilities.find(r => r.ID == id);
         this.isDeleting = true;
     }
 

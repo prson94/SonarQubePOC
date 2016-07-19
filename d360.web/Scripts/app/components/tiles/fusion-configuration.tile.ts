@@ -48,7 +48,7 @@ export class FusionConfigurationTile implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log('ngOnChanges');
+        //console.log('ngOnChanges');
         for (let p in changes) {
             if (p == 'fusionType') {
                 this.load();

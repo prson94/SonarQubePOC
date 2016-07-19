@@ -1,6 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { Column, TreeTable, TreeNode } from 'primeng/primeng';
+import { Column, TreeTable, TreeNode, Button, InputText } from 'primeng/primeng';
 import { FusionAttributeType, FusionType } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';
 import { TileActionsComponent } from './tile-actions.component';
@@ -8,10 +8,11 @@ import { FieldDefinitionTile } from './field-definition.tile';
 import { FieldTypeForm } from '../forms/field-type.form';
 import { DeleteForm } from '../forms/delete.form';
 import { FormMode } from '../../models/form.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-attributes-tile',
-    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile],
+    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, Button, InputText, DeleteForm],
     templateUrl: 'scripts/app/components/tiles/fusion-attributes.tile.html',
     providers: [FusionService]
 })
@@ -27,11 +28,13 @@ export class FusionAttributesTile implements OnChanges {
     fusionAttributeTypes: TreeNode[];
     selectedRow: TreeNode;
 
+    newFusion: FusionAttributeType;
+
     constructor(private fusionService: FusionService) {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log('ngOnChanges');
+        //console.log('ngOnChanges');
         for (let p in changes) {
             if (p == 'fusionType') {
                 this.load();
@@ -57,6 +60,46 @@ export class FusionAttributesTile implements OnChanges {
             });
     }
 
+    edit() {
+        this.newFusion = _.cloneDeep(this.selectedRow.data);
+        this.formMode = FormMode.Editing;
+    }
+
+    add(id: number) {
+        this.newFusion = new FusionAttributeType();
+        this.newFusion.FusionTypeID = this.fusionType.ID;
+        if (id)
+            this.newFusion.ParentID = id;
+        else
+            this.newFusion.ParentID = null;
+
+        this.formMode = FormMode.Adding;
+        //this.newFusion.
+    }
+
+    delete() {
+        this.formMode = FormMode.Deleting;
+    }
+
+    save() {
+        this.isLoading = true;
+
+        if (this.formMode == FormMode.Editing) {
+            this.fusionService.putFusionAttributeType(this.newFusion)
+                .then(data => {
+                    this.isLoading = false;
+                    this.formMode = FormMode.Default;
+                    this.load();
+                });
+        } else if (this.formMode == FormMode.Adding) {
+            this.fusionService.postFusionAttributeType(this.newFusion)
+                .then(data => {
+                    this.isLoading = false;
+                    this.formMode = FormMode.Default;
+                    this.load();
+                });
+        }
+    }
 
 }
 

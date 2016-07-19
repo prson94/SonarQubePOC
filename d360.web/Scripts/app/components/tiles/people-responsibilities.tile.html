@@ -10,7 +10,7 @@
     </div>
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
-            <p-dataTable [value]="responsibilities" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
+            <p-dataTable [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
                 <p-column field="Role" header="Role" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
                 <p-column field="ResponsibleObjectName" header="Resource" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
                 <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
@@ -18,8 +18,8 @@
                 <p-column>
                     <template let-item="rowData">
                         <div class="RowTools">
-                            <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>
                 </p-column>

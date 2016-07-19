@@ -1,41 +1,118 @@
 ﻿<div class="row">
     <div class="col s12 m12 l3">
         <div class="root-tile">
-            <header><div id="ListTools"></div></header>
+            <header>
+                <d3s-tile-actions style="position:relative;top:1px;left:-8px;display:block;" [hasAdd]="true" [addTitle]="'Add fusion type'" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
+            </header>
             <p-dataTable [value]="fusionTypes" selectionMode="single" (onRowSelect)="select($event);" [rows]="20" [paginator]="true">
                 <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
                 <p-column>
                     <template let-col let-item="rowData">
                         <div class="RowTools">
-                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>
                 </p-column>
             </p-dataTable>
         </div>
     </div>
-    <div class="col hide-on-small-and-down m12 l4">
-        <div class="tile tile-detail">
-            <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
+    <div *ngIf="formMode == FormMode.Default">
+        <div class="col hide-on-small-and-down m12 l4">
+            <div class="tile tile-detail">
+                <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
+            </div>
+            <div class="tile tile-detail">
+                <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
+            </div>
         </div>
-        <div class="tile tile-detail">
-            <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
+        <div class="col s12 m12 l5">
+            <div class="tile tile-detail">
+                <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
+            </div>
+            <div class="tile tile-detail">
+                <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12 m12 l9 offset-l3">
+                <div class="tile tile-detail">
+                    <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col s12 m12 l5">
-        <div class="tile tile-detail">
-            <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
-        </div>
-        <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
+    <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
+        <div class="row">
+            <div class="col s9">
+                <div class="tile tile-detail">
+                    <h4 *ngIf="formMode == FormMode.Adding">Add Fusion Type</h4>
+                    <h4 *ngIf="formMode == FormMode.Editing">Edit {{newFusionType.Name}}</h4>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Name</div>
+                            <input pInputText type="text" style="width:98%" [(ngModel)]="newFusionType.Name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">Description</div>
+                            <p-editor [(ngModel)]="newFusionType.Description"></p-editor>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <div class="FieldName">Background Color</div>
+                            <table style="width:100%">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="newFusionStyle.IconBackColor" />
+                                        </td>
+                                        <td>
+                                            <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col s6">
+                            <div class="FieldName">Foreground Color</div>
+                            <table style="width:100%">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="newFusionStyle.IconForeColor" />
+                                        </td>
+                                        <td>
+                                            <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12" style="padding-top:10px;">
+                            <button pButton type="button" label="Save" (click)="save();"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div class="row">
-    <div class="col s12 m12 l9 offset-l3">
-        <div class="tile tile-detail">
-           <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+    <div *ngIf="formMode == FormMode.Deleting">
+        <div class="row">
+            <div class="col s9">
+                <div class="tile tile-detail">
+                    <delete-form [uri]="'/form/DeleteFusionTypeByID?id=' + selectedRow.ID"
+                                 [method]="'delete'"
+                                 [prompt]="'Are you sure you want to delete the ' + selectedRow.Name + ' fusion type?'"
+                                 (onDeleteSuccess)="formMode = FormMode.Default; load();"
+                                 (onCancel)="formMode = FormMode.Default;">
+                    </delete-form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

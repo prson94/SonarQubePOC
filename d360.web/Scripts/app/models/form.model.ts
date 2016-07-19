@@ -20,9 +20,28 @@ export class SelectItem {
 }
 
 export module FormHelper {
+
     export function mapSelectItems(s: SelectItem[]) {
         s.forEach(s => { s.value = s.Value; s.label = s.Text });
     }
+
+    export function getSelectList(items: any[], label: string = 'label', value: string = 'value'): SelectItem[] {
+        let list = new Array<SelectItem>();
+
+        items.forEach(i => {
+            let l = new SelectItem();
+            l.label = i[label];
+            l.Text = i[label];
+            l.Value = i[value];
+            l.value = i[value];
+
+            list.push(l);
+        });
+
+        return list;
+
+    }
+
 
     export function getDataUrl(file: File): Promise<string> {
         let reader = new FileReader();
@@ -38,7 +57,6 @@ export module FormHelper {
             return reader.result;
         });
     }
-
 
      export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
         var tree = new Array<TreeNode>();
@@ -60,7 +78,9 @@ export module FormHelper {
             node.children.push(child);
             FormHelper.formTreeR(child, data, idField, parentField);
         });
-    }
+     }
+
+
 }
 
 

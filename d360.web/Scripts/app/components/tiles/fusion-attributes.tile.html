@@ -1,4 +1,4 @@
-﻿<header>{{title}}</header>
+﻿<header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="add(null);"></d3s-tile-actions></header>
 <div class="directions">
     Below is a list of attribute types for {{fusionType?.Name}}.  You can add fields to an attribute type by clicking the add field icon below.
 </div>
@@ -12,15 +12,43 @@
             <p-column>
                 <template let-item="rowData">
                     <div class="RowTools">
-                        <a (click)="null" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                        <a (click)="null" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        <a (click)="selectedRow = item; add(item.data.ID);" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
                     </div>
                 </template>
             </p-column>
         </p-treeTable>
     </div>
-    <div class="col hide-on-small-and-down m12 l7">
+    <div *ngIf="formMode == FormMode.Default" class="col hide-on-small-and-down m12 l7">
         <d3s-field-definition-tile [objectType]="'FusionAttributeType'" [objectID]="selectedRow?.data?.ID" [title]="'Fields for ' + selectedRow?.data?.Name"></d3s-field-definition-tile>
-        <div id="FusionAttributeTypeFields"></div>
+    </div>
+    <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing" class="col m12 l7">
+        <h4 *ngIf="formMode == FormMode.Adding && !newFusion.ParentID">Add Type</h4>
+        <h4 *ngIf="formMode == FormMode.Adding && newFusion.ParentID">Add Sub Type</h4>
+        <h4 *ngIf="formMode == FormMode.Editing">Edit {{newFusion.Name}}</h4>
+        <div class="row">
+            <div class="col s12">
+                <div class="FieldName">Name</div>
+                <input pInputText type="text" style="width:98%" [(ngModel)]="newFusion.Name" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12" style="padding-top:10px;">
+                <button pButton type="button" label="Save" (click)="save();"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="formMode == FormMode.Deleting"  class="col m12 l7">
+        <div class="row">
+            <div class="col s12">
+                <delete-form [uri]="'form/DeleteFusionAttributeTypeByID?id='+selectedRow.data.ID"
+                             [method]="'delete'"
+                             [prompt]="'Are you sure you want to delete this fusion attribute?'"
+                             (onCancel)="formMode = FormMode.Default;"
+                             (onDeleteComplete)="formMode = FormMode.Default; load();">
+                </delete-form>
+            </div>
+        </div>
     </div>
 </div>
