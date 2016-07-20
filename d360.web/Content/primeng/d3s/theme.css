@@ -314,6 +314,7 @@
     -webkit-border-radius: 0px;
     -moz-border-radius: 0px;
     border-radius: 0px;
+    border-bottom: 3px solid #646464;
 }
 
 .ui-accordion .ui-accordion-header .fa {

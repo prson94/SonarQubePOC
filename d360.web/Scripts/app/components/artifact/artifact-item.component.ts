@@ -3,27 +3,63 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angu
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactService, HeaderBreadcrumbService, PageHeader } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
-import { DataTable, Column} from 'primeng/primeng';
+import { DataTable, Column, Accordion, AccordionTab } from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { ArtifactDefnintionComponent } from './artifact-definition.component';
+import { ObjectDetailTile } from '../tiles/object-detail.tile';
 
 @Component({
     selector: 'd3s-artifact-item',
-    template: `  <div class="row">
+    template: `  <div class="row" *ngIf="isLoading">
                     <div class="col s12">
-                        <div *ngIf="isLoading">
+                        <div>
                             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                         </div>
-                        <div class="tile tile-detail" *ngIf="!isLoading">
-                            <d3s-artifact-definition [artifact]="artifact"></d3s-artifact-definition>                                                                                     
+                    </div>
+                </div>
+                <div *ngIf="!isLoading">
+                    <div class="row">
+                        <div class="col s12">
+                             <div class="tile tile-detail">
+                                <!--governance tile-->  
+                                governance tile                                                                                  
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="tile tile-detail">
+                                <!--<object-detail [objectType]="'Artifact'" [objectID]="artifact?.ID"></object-detail>-->
+                                <p-accordion [multiple]="true">
+                                    <p-accordionTab header="Definition" [selected]="true">
+                                        <d3s-artifact-definition [artifact]="artifact" [showHeader]="false" ></d3s-artifact-definition>  
+                                    </p-accordionTab>
+                                    <p-accordionTab header="Synonyms">
+                                        artifact synonyms
+                                    </p-accordionTab>
+                                    <p-accordionTab header="Attribute">
+                                        artifact attribute
+                                    </p-accordionTab>
+                                    <p-accordionTab header="Structure">
+                                        artifact structure
+                                    </p-accordionTab>
+                                </p-accordion>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="tile tile-detail">
+                                <!-- grid -->
+                            </div>
                         </div>
                     </div>
                 </div>                
                 `,
-    directives: [ArtifactDefnintionComponent],
+    directives: [ArtifactDefnintionComponent, ObjectDetailTile, Accordion, AccordionTab],
     providers: [ArtifactService]
 })
 
