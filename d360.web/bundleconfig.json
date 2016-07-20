@@ -29,6 +29,7 @@
       "Scripts/Common.js",
       "Scripts/d3s.Attributes.js",
       "Scripts/d3s.Editor.js",
+      //"Scripts/d3s.MapItems.js",
       "Scripts/d3s.PageTools.js",
       "Scripts/d3s.SurveyReport.js",
       "Scripts/d3s.RandomSurveyQuestion.js",

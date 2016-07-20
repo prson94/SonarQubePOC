@@ -2623,7 +2623,20 @@ from    [Lookup] I
 
             //load the definition of the field from the [FieldTypeFusionLookupDefinition] table
             int fusionAttributeID = int.Parse(k.Value);
-            var def = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
+            var fa = Company.GetById<FusionAttribute>(fusionAttributeID);
+
+            FieldTypeFusionLookupDefinition def = null;
+
+            if (fa != null)
+            {
+                def = Company.Filter<FieldTypeFusionLookupDefinition>(x => 
+                    x.FieldTypeID == k.FieldTypeID &&
+                    x.SourceFusionAttributeTypeID == fa.FusionAttributeTypeID
+                ).FirstOrDefault();
+            }
+
+            if (def == null)
+                def = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == k.FieldTypeID).FirstOrDefault();
 
             var sql =string.Empty;
 
@@ -2672,12 +2685,12 @@ from    [Lookup] I
 
             #region Load Columns/Fields
 
-            if (displayFields.Any(i => i.FieldTypeName == "Name"))
+            if (displayFields.Any(i => i.FieldTypeName == "Name" && i.Show))
             {
                 gridFields.Add(new GridField { name = "Name", type = "string" });
                 columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
             }
-            if (displayFields.Any(i => i.FieldTypeName == "TextPath"))
+            if (displayFields.Any(i => i.FieldTypeName == "TextPath" && i.Show))
             {
                 gridFields.Add(new GridField { name = "TextPath", type = "string" });
                 columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
@@ -2688,8 +2701,11 @@ from    [Lookup] I
                 foreach (var fieldType in fieldTypeInfo)
                 {
                     gridFields.Add(new GridField { name = fieldType.Name, type = "string" });
-                    columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
-                    sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
+                    if (displayFields.Any(i => i.Show && i.FieldTypeID == fieldType.ID))
+                    {
+                        columns.Add(new GridColumn { text = fieldType.FriendlyName, datafield = fieldType.Name, width = "auto" });
+                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
+                    }
                     sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'FusionAttribute' and F{fieldType.ID}.ObjectID = A.ID");
                 }
             }
@@ -2699,12 +2715,73 @@ from    [Lookup] I
 
             #endregion
 
+            #region Where Clause
+
+            var sqlWhere = "";
+
+            foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+            {
+                sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
+                if (df.FieldTypeID > 0)
+                {
+                    sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                }
+                else
+                {
+                    sqlWhere += $" A.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                }
+            }
+
+            #endregion
+
+            #region OrderBy Clause
+
+            var sqlOrderBy = "";
+
+            foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+            {
+                sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
+                if (df.FieldTypeID > 0)
+                {
+                    var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                    if (fieldTypeInfo != null)
+                    {
+                        switch (fieldTypeInfo.Type)
+                        {
+                            case "Date":
+                            case "DateTime":
+                                sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as datetime) asc";
+                                break;
+                            case "Decimal":
+                            case "Number":
+                                sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as decimal) asc";
+                                break;
+                            default:
+                                sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                    }
+                }
+                else
+                {
+                    sqlOrderBy += $" A.[{df.FieldTypeName}] asc";
+                }
+            }
+
+            #endregion
+
             #region Calculate SQL statement
 
             string sql = string.Empty;
             string sqlColumnString = string.Join(",", sqlColumns);
             if (!string.IsNullOrEmpty(sqlColumnString)) sqlColumnString = "," + sqlColumnString;
             string sqlJoinString = string.Join(" ", sqlJoins);
+
+            bool whereClausePresent = false;
 
             switch (def.ReferenceType)
             {
@@ -2721,6 +2798,8 @@ select  A.ID,
 from    FusionAttribute A
         {sqlJoinString}
 where   A.ID = {sourceFusionAttributeID}";
+
+                    whereClausePresent = true;
                     break;
                 case 2: //Parent Reference
                     sql = $@"
@@ -2751,6 +2830,7 @@ from    FusionAttribute A
 where   A.ParentID = {sourceFusionAttributeID}
         and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
 
+                    whereClausePresent = true;
                     break;
                 default: //Relationship Reference
                     sql = $@"
@@ -2772,6 +2852,18 @@ from    IntersectNode S
 
             #endregion
 
+            if (!string.IsNullOrEmpty(sqlWhere))
+            {
+                sqlWhere = (whereClausePresent ? " and " : " where ") + sqlWhere;
+            }
+            sql += sqlWhere;
+
+            if (!string.IsNullOrEmpty(sqlOrderBy))
+            {
+                sqlOrderBy = " order by " + sqlOrderBy;
+            }
+            sql += sqlOrderBy;
+
             results = Company.Query<dynamic>(sql);
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -2780,6 +2872,123 @@ from    IntersectNode S
                 Columns = columns,
                 Fields = gridFields
             });
+        }
+
+        #endregion
+
+        #region Lineage
+
+        public class MapItemDetail
+        {
+            public int MapID { get; set; }
+            public int SourceID { get; set; }
+            public int TargetID { get; set; }
+
+            public int SourceIntersectID { get; set; }
+
+            public string SourceSubjectName { get; set; }
+            public string SourceSubjectIconHtml { get; set; }
+            public string SourceSubject { get; set; }
+            public int SourceSubjectID { get; set; }
+            public string SourceSubjectUrl { get; set; }
+
+            public string SourceObjectName { get; set; }
+            public string SourceObjectIconHtml { get; set; }
+            public string SourceObject { get; set; }
+            public int SourceObjectID { get; set; }
+            public string SourceObjectUrl { get; set; }
+
+            public int TargetIntersectID { get; set; }
+
+            public string TargetSubjectName { get; set; }
+            public string TargetSubjectIconHtml { get; set; }
+            public string TargetSubject { get; set; }
+            public int TargetSubjectID { get; set; }
+            public string TargetSubjectUrl { get; set; }
+
+            public string TargetObjectName { get; set; }
+            public string TargetObjectIconHtml { get; set; }
+            public string TargetObject { get; set; }
+            public int TargetObjectID { get; set; }
+            public string TargetObjectUrl { get; set; }
+
+            public string Transformation { get; set; }
+        }
+
+        [HttpGet, Route("maps/{id:int}/mapitems")]
+        public HttpResponseMessage MapItems(int id)
+        {
+            var list = new List<MapItemDetail>();
+            var map = Company.GetById<Map>(id, i => i.MapItems);
+            if (map != null)
+            {
+                var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
+
+                var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
+
+                var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
+
+                IntersectDetail intersectDetail = null;
+
+                foreach (var mi in map.MapItems.Where(i => i.IsSource))
+                {
+                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+                    if (intersectDetail != null)
+                    {
+                        list.Add(new MapItemDetail
+                        {
+                            MapID = mi.MapID,
+                            SourceID = mi.ID,
+                            SourceIntersectID = mi.IntersectID,
+
+                            SourceSubject = intersectDetail.Subject,
+                            SourceSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>",
+                            SourceSubjectID = intersectDetail.SubjectID,
+                            SourceSubjectName = intersectDetail.SubjectName,
+                            SourceSubjectUrl = intersectDetail.SubjectUrl,
+
+                            SourceObject = intersectDetail.Object,
+                            SourceObjectIconHtml = $"<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'>{intersectDetail.ObjectIconText}</span>",
+                            SourceObjectID = intersectDetail.ObjectID,
+                            SourceObjectName = intersectDetail.ObjectName,
+                            SourceObjectUrl = intersectDetail.ObjectUrl
+                        });
+                    }
+                }
+
+                foreach (var mi in map.MapItems.Where(i => !i.IsSource))
+                {
+                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+                    if (intersectDetail != null)
+                    {
+                        var first = list.First(i => i.TargetIntersectID == 0);
+                        if (first == null)
+                        {
+                            list.Add(new MapItemDetail { TargetIntersectID = 0 });
+                            first = list.First(i => i.TargetIntersectID == 0);
+                        }
+
+                        first.TargetIntersectID = mi.IntersectID;
+                        first.TargetID = mi.ID;
+                        first.TargetIntersectID = mi.IntersectID;
+
+                        first.TargetSubject = intersectDetail.Subject;
+                        first.TargetSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>";
+                        first.TargetSubjectID = intersectDetail.SubjectID;
+                        first.TargetSubjectName = intersectDetail.SubjectName;
+                        first.TargetSubjectUrl = intersectDetail.SubjectUrl;
+
+                        first.TargetObject = intersectDetail.Object;
+                        first.TargetObjectIconHtml = $"<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'>{intersectDetail.ObjectIconText}</span>";
+                        first.TargetObjectID = intersectDetail.ObjectID;
+                        first.TargetObjectName = intersectDetail.ObjectName;
+                        first.TargetObjectUrl = intersectDetail.ObjectUrl;
+                    }
+                }
+            }
+            map = null;
+
+            return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
         #endregion
@@ -2920,7 +3129,7 @@ from    IntersectNode S
                                 columns.Add(gc);
                             }
 
-                            sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
+                            sqlColumns.Add($"case F{fieldType.ID}.[Type] when 'Lookup' then '<a href=\"' + F{fieldType.ID}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{fieldType.ID}.LookupObjectType + '\" data-id=\"' + cast(F{fieldType.ID}.Value as varchar) + '\">' + F{fieldType.ID}.FormattedValue + '</a>' else F{fieldType.ID}.FormattedValue end as [{fieldType.Name}]");
 
                             if (fieldType.Name == "Description")
                             {
@@ -2933,10 +3142,10 @@ from    IntersectNode S
                             switch (def.ReferenceType)
                             {
                                 case 1: //self reference
-                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I.ID");
+                                    sqlJoins.Add($"left join FieldWithRelation F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I.ID");
                                     break;
                                 default:
-                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I2.ID");
+                                    sqlJoins.Add($"left join FieldWithRelation F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Intersect' and F{fieldType.ID}.ObjectID = I2.ID");
                                     break;
                             }
                         }
@@ -2945,10 +3154,10 @@ from    IntersectNode S
                             switch (def.ReferenceType)
                             {
                                 case 1: //self reference
-                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D.Object and F{fieldType.ID}.ObjectID = D.ObjectID ");
+                                    sqlJoins.Add($"left join FieldWithRelation F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D.Object and F{fieldType.ID}.ObjectID = D.ObjectID ");
                                     break;
                                 default:
-                                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D2.Object and F{fieldType.ID}.ObjectID = D2.ObjectID ");
+                                    sqlJoins.Add($"left join FieldWithRelation F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = D2.Object and F{fieldType.ID}.ObjectID = D2.ObjectID ");
                                     break;
                             }
                         }
@@ -4746,69 +4955,69 @@ order by    title
                     lookupType = null;
                     break;
                 #endregion
-                case SystemObjects.Map:
-                    #region Fields                    
-                    var map = Company.GetById<Map>(id, i => i.MapItems);
-                    if (map != null)
-                    {
-                        model.columns = 1;
+//                case SystemObjects.Map:
+//                    #region Fields                    
+//                    var map = Company.GetById<Map>(id, i => i.MapItems);
+//                    if (map != null)
+//                    {
+//                        model.columns = 1;
 
-                        if (!string.IsNullOrEmpty(map.Transformation))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Transformation", FieldName = "Transformation", Value = map.Transformation }
-                            }
-                            });
-                        }
+//                        if (!string.IsNullOrEmpty(map.Transformation))
+//                        {
+//                            model.rows.Add(new DetailReadOnlyRowModel
+//                            {
+//                                columns = 1,
+//                                FirstColumnFields = new List<ReadOnlyField>
+//                            {
+//                                new ReadOnlyField { Name = "Transformation", FieldName = "Transformation", Value = map.Transformation }
+//                            }
+//                            });
+//                        }
 
-                        var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
+//                        var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
 
-                        var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
+//                        var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
 
-                        var sources = "";
-                        var targets = "";
-                        var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
-                        foreach (var mi in map.MapItems)
-                        {
-                            var intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
-                            if (intersectDetail != null)
-                            {
-                                var text = $@"<div>
-<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Subject}' data-id='{intersectDetail.SubjectID}' href='{intersectDetail.SubjectUrl}'>{intersectDetail.SubjectName}</a></span> / 
-<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Object}' data-id='{intersectDetail.ObjectID}' href='{intersectDetail.ObjectUrl}'>{intersectDetail.ObjectName}</a></span>
-</div>";
-                                if (mi.IsSource)
-                                    sources += text;
-                                else
-                                    targets += text;
-                            }
-                        }
+//                        var sources = "";
+//                        var targets = "";
+//                        var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
+//                        foreach (var mi in map.MapItems)
+//                        {
+//                            var intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+//                            if (intersectDetail != null)
+//                            {
+//                                var text = $@"<div>
+//<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Subject}' data-id='{intersectDetail.SubjectID}' href='{intersectDetail.SubjectUrl}'>{intersectDetail.SubjectName}</a></span> / 
+//<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Object}' data-id='{intersectDetail.ObjectID}' href='{intersectDetail.ObjectUrl}'>{intersectDetail.ObjectName}</a></span>
+//</div>";
+//                                if (mi.IsSource)
+//                                    sources += text;
+//                                else
+//                                    targets += text;
+//                            }
+//                        }
                         
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Sources", FieldName = "Sources", Value = sources }
-                            }
-                        });
+//                        model.rows.Add(new DetailReadOnlyRowModel
+//                        {
+//                            columns = 1,
+//                            FirstColumnFields = new List<ReadOnlyField>
+//                            {
+//                                new ReadOnlyField { Name = "Sources", FieldName = "Sources", Value = sources }
+//                            }
+//                        });
 
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Targets", FieldName = "Targets", Value = targets }
-                            }
-                        });
-                    }
-                    map = null;
-                    break;
-                #endregion
+//                        model.rows.Add(new DetailReadOnlyRowModel
+//                        {
+//                            columns = 1,
+//                            FirstColumnFields = new List<ReadOnlyField>
+//                            {
+//                                new ReadOnlyField { Name = "Targets", FieldName = "Targets", Value = targets }
+//                            }
+//                        });
+//                    }
+//                    map = null;
+//                    break;
+//                #endregion
                 case SystemObjects.Policy:
                     #region Fields
                     var policy = Company.GetById<Policy>(id, i => i.Children);

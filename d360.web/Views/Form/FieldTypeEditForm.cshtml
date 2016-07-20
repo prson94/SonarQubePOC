@@ -174,7 +174,7 @@
                 </thead>
                 <tbody data-bind="foreach: FusionItems">
                     <tr>
-                        <td>
+                        <td style="vertical-align: top">
                             <div data-bind="fusionSourceFusionAttributeTypeFilteredDropdown, jqxDropDownList: {
                                  width: 250, dropDownWidth: 350, theme: theme,
                                  filterable: false,
@@ -183,7 +183,7 @@
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
                         </td>
-                        <td>
+                        <td style="vertical-align: top">
                             <div data-bind="fusionReferenceTypeFilteredDropdown, jqxDropDownList: {
                                  width: 250, dropDownWidth: 350, theme: theme,
                                  filterable: false,
@@ -192,7 +192,7 @@
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
                         </td>
-                        <td>
+                        <td style="vertical-align: top">
                             <div data-bind="fusionTargetFusionAttributeTypeFilteredDropdown, jqxDropDownList: {
                                  width: 250, dropDownWidth: 350, theme: theme,
                                  filterable: false,
@@ -202,18 +202,41 @@
                                  displayMember: 'title',
                                  valueMember: 'value' }"></div>
                         </td>
-                        <td>
-                            <div data-bind="fusionDisplayFieldFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 disabled: DisplayFieldsDisabled,
-                                 source: DisplayFieldOptions,
-                                 selectedIndex: DisplayFieldOptionsIndex,
-                                 checkboxes: true,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
+                        <td style="vertical-align: top;">
+                            <div style="overflow-y: scroll; height:250px;">
+                                <table class="striped highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Show?</th>
+                                            <th>Sort</th>
+                                            <th>Filter</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
+                                        <tr>
+                                            <td style="width: 30%" data-bind="text: title"></td>
+                                            <td style="width: 20%">
+                                                <input type="checkbox" data-bind="checked: Show" />
+                                            </td>
+                                            <td style="width: 15%">
+                                                <div data-bind="sortOrderDropdown, jqxDropDownList: {
+                                                 width: 75, dropDownWidth: 50, theme: theme,
+                                                 filterable: false,
+                                                 source: SortOrderOptions,
+                                                 selectedIndex: SortOrderIndex,
+                                                 displayMember: 'title',
+                                                 valueMember: 'value' }"></div>
+                                            </td>
+                                            <td>
+                                                <input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </td>
-                        <td>
+                        <td style="vertical-align: top">
                             <input type="checkbox" data-bind="checked: HideHeader" />Hide Header?<br />
                             <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
                         </td>
@@ -269,17 +292,18 @@
                         <td style="vertical-align: top">
                             <table class="striped highlight">
                                 <thead>
-                                    <th>Name</th>
-                                    <th>Show?</th>
-                                    <th>Sort</th>
-                                    <th>Filter</th>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Show?</th>
+                                        <th>Sort</th>
+                                        <th>Filter</th>
+                                    </tr>
                                 </thead>
                                 <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
                                     <tr>
                                         <td style="width: 30%" data-bind="text: title"></td>
                                         <td style="width: 20%">
                                             <input type="checkbox" data-bind="checked: Show" />
-                                            @*<div data-bind="jqxCheckBox: { theme: theme, checked: Show }"></div>*@
                                         </td>
                                         <td style="width: 15%">
                                             <div data-bind="sortOrderDropdown, jqxDropDownList: {
@@ -289,7 +313,6 @@
                                                  selectedIndex: SortOrderIndex,
                                                  displayMember: 'title',
                                                  valueMember: 'value' }"></div>
-                                            
                                         </td>
                                         <td>
                                             <input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" />
@@ -301,8 +324,6 @@
                         <td style="vertical-align: top; width: 125px">
                             <input type="checkbox" data-bind="checked: HideHeader" />Hide Header?<br/>
                             <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
-                            @*<div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
-                            <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>*@
                         </td>
                     </tr>
                 </tbody>
@@ -702,7 +723,7 @@
         self.TargetFusionAttributeTypeIndex = ko.observable(data.TargetFusionAttributeTypeIndex || -1);
         self.TargetFusionAttributeType = ko.observable(data.TargetFusionAttributeType);
 
-        self.DisplayFields = ko.observableArray(data.DisplayFields);
+        self.DisplayFields = ko.observableArray(data.DisplayFields || []);
 
         self.HideHeader = ko.observable(data.HideHeader);
         self.HideFooter = ko.observable(data.HideFooter);
@@ -732,33 +753,43 @@
         ]);
         self.TargetFusionAttributeTypeOptions = ko.observableArray();
         self.DisplayFieldOptions = ko.observableArray();
-        self.DisplayFieldOptionsIndex = ko.observable(-1);
+        
         //#endregion
 
         //#region Internal Methods
-
 
         self.isValid = function () {
             if (self.SourceFusionAttributeTypeIndex() == -1)
                 return false;
             if (self.ReferenceTypeIndex() == -1)
                 return false;
-            if (self.DisplayFields().length < 1)
-                return false;
-            return true;
+
+            var oneOrMoreFieldsSelected = false;
+            $.each(self.DisplayFieldOptions(), function(fix, fid){                                
+                if (!oneOrMoreFieldsSelected) {
+                    oneOrMoreFieldsSelected = (fid.Show() || fid.SortOrder() || fid.FilterValue() != '');
+                }
+            });
+
+            return (oneOrMoreFieldsSelected);
         };
+
         var loadDisplayFields = function(id, existingItems) {
             return $.getJSON('/form/FieldType_FusionLookup_DisplayFields', { id: id }, function(items) {
                 if (existingItems) {
                     $.each(existingItems, function(e_ix, e_item){
                         $.each(items, function(ix, item) {
-                            if (item.value === e_item) {
-                                item.checked = true;
+                            if (item.value === e_item.value) {
+                                //item.checked = true;
+                                item.FilterValue = e_item.FilterValue;
+                                item.Show = e_item.Show;
+                                item.SortOrder = e_item.SortOrder;
                             }
                         });
                     });
                 }
-                self.DisplayFieldOptions(items);
+                var mappedItems = $.map(items, function (item) { return new FieldTypeDisplayFieldOptionViewModel(item, items.length); });
+                self.DisplayFieldOptions(mappedItems);
             });
         };
 
@@ -871,7 +902,7 @@
         //#endregion
     }
     
-    function FieldTypeRelationDisplayFieldOptionViewModel(data, fieldCount) {
+    function FieldTypeDisplayFieldOptionViewModel(data, fieldCount) {
         var self = this;
         data = data || {};
 
@@ -995,7 +1026,7 @@
                             });
                         });
                     }
-                    var mappedItems = $.map(items, function (item) { return new FieldTypeRelationDisplayFieldOptionViewModel(item, items.length); });
+                    var mappedItems = $.map(items, function (item) { return new FieldTypeDisplayFieldOptionViewModel(item, items.length); });
                     self.DisplayFieldOptions(mappedItems);//self.DisplayFieldOptions(items);
                 }
             );
@@ -1594,15 +1625,19 @@
                             HideHeader: fusionItem.HideHeader(),
                             HideFooter: fusionItem.HideFooter()
                         };
-                        $.each(fusionItem.DisplayFields(), function(fix, fid){
-                            if (fid > "") {
-                                var values = fid.split('|');
+                        $.each(fusionItem.DisplayFieldOptions(), function(fix, fid){
+                            var values = fid.value().split('|');
+                            if (fid.Show() || fid.SortOrder() || fid.FilterValue() != '') {
                                 fim.DisplayFields.push({
                                     FieldTypeID: values[0],
-                                    FieldTypeName: values[1]
-                                });
+                                    FieldTypeName: values[1],
+                                    Show: fid.Show(),
+                                    SortOrder: fid.SortOrder(),
+                                    FilterValue: fid.FilterValue()
+                                });                                
                             }
                         });
+                        console.log(fim);
                         postModel.FusionItems.push(fim);
                     } catch (e) {
                         console.log(e);

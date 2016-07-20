@@ -916,6 +916,7 @@
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
+    <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />

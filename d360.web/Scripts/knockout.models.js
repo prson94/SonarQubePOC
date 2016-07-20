@@ -1168,12 +1168,15 @@ function LineagePanelViewModel(data, permissions) {
 
     //#region Observables
 
+    self.Object = data.object;
+    self.ObjectID = data.objectID;
+
     self.InProgress = ko.observable(false);
     self.IsSaving = ko.observable(false);
 
     self.Items = ko.observableArray();
 
-    self.IntersectType = ko.observable();
+    //self.IntersectType = ko.observable();
     self.IntersectTypeOptions = ko.observableArray();
 
     //if (permissions != null) {
@@ -1188,12 +1191,12 @@ function LineagePanelViewModel(data, permissions) {
     //#region Functions
 
     self.AddItem = function () {
-        if (self.IntersectType() > 0) {
+        //if (self.IntersectType() > 0) {
             var data = {
-                IntersectType: self.IntersectType()
+                //IntersectType: self.IntersectType()
             }
-            self.Items.push(new LineagePanelViewItemModel(data, permissions));
-        }
+            self.Items.push(new LineagePanelViewItemModel(data, permissions, self));
+        //}
     }
 
     self.LoadIntersectTypes = function () {
@@ -1205,9 +1208,7 @@ function LineagePanelViewModel(data, permissions) {
             self.IntersectTypeOptions(data);
         }).always(function () {
             self.InProgress(false);
-            //if (!self.jqxLoaded)
-            //    self.ApplyJqxBindings();
-            //self.AfterLoad();
+            self.AddItem(); //this adds the first row.
         });
     }
 
@@ -1275,44 +1276,6 @@ function LineagePanelViewModel(data, permissions) {
         }
     }
 
-    //self.OnCellValueChange = function () {
-    //    if (self.IsLoadingContexts() == true)
-    //        return;
-    //    if (self.IsItemSelected()) {
-    //        var checkedCtx = [];
-    //        self.SelectedRule().SelectedItem().Contexts([]);
-    //        for (var i = 0; i < self.Contexts().length; i++) {
-    //            if (self.Contexts()[i].Checked == true) {
-    //                var obj = new HierarchyRuleContextModel(self.Contexts()[i]);
-    //                self.SelectedRule().SelectedItem().Contexts.push(obj);
-    //            }
-    //        }
-    //    }
-    //}
-
-    //self.ApplyJqxBindings = function () {
-    //    //$('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
-    //    //    self.OnCellValueChange();
-    //    //}).on('bindingcomplete', function () {
-    //    //    //jqx grid is not editable after bind without this
-    //    //    $(this).jqxGrid('refresh');
-    //    //});
-    //    self.jqxLoaded = true;
-    //}
-
-    //self.AfterLoad = function () {
-    //    if (self.SourceRules().length >= 1) {
-    //        self.SelectRule(self.SourceRules()[0]);
-    //        self.SelectedRuleIndex(0);
-    //        self.HasSourcesOrRules(true);
-    //    } else {
-    //        self.HasSourcesOrRules(true);
-    //    }
-    //    if (self.Sources().length < 1 && self.SourceRules().length < 1) {
-    //        self.HasSourcesOrRules(false);
-    //    }
-    //}
-
     //#endregion
 
     self.LoadIntersectTypes();
@@ -1320,7 +1283,7 @@ function LineagePanelViewModel(data, permissions) {
     return self;
 }
 
-function LineagePanelViewItemModel(data, permissions) {
+function LineagePanelViewItemModel(data, permissions, parent) {
     var self = this;
 
     //#region Observables
@@ -1328,11 +1291,13 @@ function LineagePanelViewItemModel(data, permissions) {
     self.IntersectType = ko.observable(data.IntersectType);
     self.Intersect = ko.observable(); //Populated after save to diagram action from parent.
     
+    self.SubjectIndex = ko.observable(-1);
     self.Subject = ko.observable();
     self.SubjectName = ko.observable();
     self.SubjectsLoading = ko.observable(true);
     self.SubjectOptions = ko.observableArray();
 
+    self.ObjectIndex = ko.observable(-1);
     self.Object = ko.observable();
     self.ObjectName = ko.observable();
     self.ObjectsLoading = ko.observable(true);
@@ -1349,6 +1314,13 @@ function LineagePanelViewItemModel(data, permissions) {
             method: 'GET'
         }).done(function (data) {
             self.SubjectOptions(data);
+            var ix = -1;
+            $.each(data, function (itemIx, item) {
+                if (item.value == parent.Object + "|" + parent.ObjectID) {
+                    ix = itemIx;
+                }
+            });
+            self.SubjectIndex(ix);
         }).always(function () {
             self.SubjectsLoading(false);
         });
@@ -1361,6 +1333,13 @@ function LineagePanelViewItemModel(data, permissions) {
             method: 'GET'
         }).done(function (data) {
             self.ObjectOptions(data);
+            var ix = -1;
+            $.each(data, function (itemIx, item) {
+                if (item.value == parent.Object + "|" + parent.ObjectID) {
+                    ix = itemIx;
+                }
+            });
+            self.ObjectIndex(ix);
         }).always(function () {
             self.ObjectsLoading(false);
         });;
@@ -1368,8 +1347,10 @@ function LineagePanelViewItemModel(data, permissions) {
 
     //#endregion
 
-    self.LoadSubjects();
-    self.LoadObjects();
+    self.IntersectType.subscribe(function () {
+        self.LoadSubjects();
+        self.LoadObjects();
+    });
 
     return self;
 }

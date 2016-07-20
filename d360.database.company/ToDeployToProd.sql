@@ -55,3 +55,10 @@ ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField] CHECK CONSTRAINT [FK_Fie
 GO
 
 
+alter table [dbo].[FieldTypeFusionLookupDisplayField] add [Show] [bit] NOT NULL constraint DF_FieldTypeFusionLookupDisplayField_Show default(1)
+go
+alter table [dbo].[FieldTypeFusionLookupDisplayField] add [SortOrder] [int] NULL
+go
+alter table [dbo].[FieldTypeFusionLookupDisplayField] add [FilterValue] [nvarchar](250) NULL
+go
+

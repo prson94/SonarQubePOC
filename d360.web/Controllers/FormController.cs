@@ -4858,7 +4858,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                                 SourceFusionAttributeType = i.SourceFusionAttributeTypeID,
                                 ReferenceType = i.ReferenceType,
                                 TargetFusionAttributeType = i.TargetFusionAttributeTypeID,
-                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => $"{df.FieldTypeID}|{df.FieldTypeName}").ToList() : null,
+                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", FilterValue = df.FilterValue, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
                                 HideHeader = i.HideHeader,
                                 HideFooter = i.HideFooter
                             });
@@ -5064,7 +5064,18 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                                     foreach (var df in fi.DisplayFields)
                                     {
-                                        def.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = def.ID, FieldTypeName = df.FieldTypeName, FieldTypeID = df.FieldTypeID });
+                                        var ndf = new FieldTypeFusionLookupDisplayField
+                                        {
+                                            FieldTypeFusionLookupDefinitionID = def.ID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            FieldTypeID = df.FieldTypeID,
+                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
+                                            def.FieldTypeFusionLookupDisplayFields.Add(ndf);
                                     }
                                 }
                             }
@@ -5483,20 +5494,42 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                             if (fi.DisplayFields != null)
                             {
                                 // Add those that do not yet exist.
-                                foreach (var o in fi.DisplayFields)
+                                foreach (var df in fi.DisplayFields)
                                 {
-                                    if (!efi.FieldTypeFusionLookupDisplayFields.Any(i => i.FieldTypeID == o.FieldTypeID && i.FieldTypeName == o.FieldTypeName))
+                                    if (!efi.FieldTypeFusionLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
                                     {
-                                        efi.FieldTypeFusionLookupDisplayFields.Add(new FieldTypeFusionLookupDisplayField { FieldTypeFusionLookupDefinitionID = efi.ID, FieldTypeID = o.FieldTypeID, FieldTypeName = o.FieldTypeName });
+                                        var ndf = new FieldTypeFusionLookupDisplayField
+                                        {
+                                            FieldTypeFusionLookupDefinitionID = efi.ID,
+                                            FieldTypeID = df.FieldTypeID,
+                                            FieldTypeName = df.FieldTypeName,
+                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
+                                            SortOrder = df.SortOrder,
+                                            Show = df.Show
+                                        };
+
+                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
+                                            efi.FieldTypeFusionLookupDisplayFields.Add(ndf);
+                                    }
+                                    else
+                                    {
+                                        var edf = efi.FieldTypeFusionLookupDisplayFields.Single(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName);
+
+                                        edf.FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue;
+                                        edf.SortOrder = df.SortOrder;
+                                        edf.Show = df.Show;
+
+                                        if (!edf.Show && string.IsNullOrEmpty(edf.FilterValue) && !edf.SortOrder.HasValue)
+                                            efi.FieldTypeFusionLookupDisplayFields.Remove(edf);
                                     }
                                 }
 
                                 // Remove those that no longer exist.
-                                foreach (var o in efi.FieldTypeFusionLookupDisplayFields)
+                                foreach (var edf in efi.FieldTypeFusionLookupDisplayFields)
                                 {
-                                    if (!fi.DisplayFields.Any(i => i.FieldTypeID == o.FieldTypeID && i.FieldTypeName == o.FieldTypeName))
+                                    if (!fi.DisplayFields.Any(i => i.FieldTypeID == edf.FieldTypeID && i.FieldTypeName == edf.FieldTypeName))
                                     {
-                                        listToRemove.Add(o);
+                                        listToRemove.Add(edf);
                                     }
                                 }
                             }
@@ -7451,8 +7484,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 })
                 .ToList();
             //if (!sourceFieldNames.Contains("Name"))
-            sourceFields.Insert(0, new SelectListItem { Text = "Name", Value = "Name|0" });
-            sourceFields.Insert(0, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
+            sourceFields.Insert(0, new SelectListItem { Text = "ID", Value = "ID|0" });
+            sourceFields.Insert(1, new SelectListItem { Text = "Name", Value = "Name|0" });
+            sourceFields.Insert(2, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
 
             #endregion
 
@@ -9444,10 +9478,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         /// <returns>A list of relevant fusion attribute types.</returns>
         public JsonNetResult Lineage_IntersectTypes()
         {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
             return new JsonNetResult
             {
                 Data = Company
-                    .Filter<IntersectTypeDetail>(i => i.Subject != "IntersectType" && i.Object != "IntersectType" && i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType")
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) && 
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" && 
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    )
                     .ToList()
                     .Select(i => new { title = $"{i.SubjectName} {i.PredicateName ?? "to"} {i.ObjectName}", value = $"{i.ID}" })
                     .OrderBy(i => i.title),

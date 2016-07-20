@@ -396,7 +396,7 @@ from    FieldWithRelation F
         /// Gets all artifacts based on a given type ID and a set of search criteria that roughly matches the field layout of the type.
         /// </summary>
         /// <returns>A list of artifacts.</returns>
-        [Route("artifacts/{id:int}"), HttpPost]
+        [Route("artifacts/{id:int}/search"), HttpPost]
         public IQueryable<dynamic> GetArtifactsByTypeAndSearchModel(int id, Dictionary<string, string> model)
         {
             var joins = "";

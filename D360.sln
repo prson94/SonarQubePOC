@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Common", "1. Common", "{82A3B52F-C19D-4FA8-8AC5-AF524FF8C173}"
 EndProject
@@ -88,6 +88,8 @@ EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessDatabaseTasks", "d360.worker.ProcessDatabaseTasks\d360.worker.ProcessDatabaseTasks.ccproj", "{854E5857-8BF1-4A14-A3CF-4404E406305C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.ProcessDatabaseTasksWorkerRole", "d360.workers.ProcessDatabaseTasksWorkerRole\d360.workers.ProcessDatabaseTasksWorkerRole.csproj", "{E08D277F-9E95-4842-84D0-511076BA356D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.QualityChecks", "Jobs\d360.jobs.QualityChecks\d360.jobs.QualityChecks.csproj", "{E433760E-2688-4A92-B1B4-42C628C83AC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1017,6 +1019,36 @@ Global
 		{E08D277F-9E95-4842-84D0-511076BA356D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E08D277F-9E95-4842-84D0-511076BA356D}.Release|x86.ActiveCfg = Release|Any CPU
 		{E08D277F-9E95-4842-84D0-511076BA356D}.Release|x86.Build.0 = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|x86.ActiveCfg = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Client Development|x86.Build.0 = Client Development|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Debug|x86.Build.0 = Debug|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|x86.ActiveCfg = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Nightly|x86.Build.0 = Nightly|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|Any CPU.ActiveCfg = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|Any CPU.Build.0 = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|Mixed Platforms.Build.0 = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|x86.ActiveCfg = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Production|x86.Build.0 = Production|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|x86.ActiveCfg = Release|Any CPU
+		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1053,12 +1085,13 @@ Global
 		{E2D62185-65D3-461C-B0E2-479C1D3B8434} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{854E5857-8BF1-4A14-A3CF-4404E406305C} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{E08D277F-9E95-4842-84D0-511076BA356D} = {308C42E3-824D-4028-8C69-60FAD6754839}
+		{E433760E-2688-4A92-B1B4-42C628C83AC7} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 31
+		SccNumberOfProjects = 32
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://data3sixty.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -1182,6 +1215,10 @@ Global
 		SccProjectTopLevelParentUniqueName30 = D360.sln
 		SccProjectName30 = d360.workers.ProcessDatabaseTasksWorkerRole
 		SccLocalPath30 = d360.workers.ProcessDatabaseTasksWorkerRole
+		SccProjectUniqueName31 = Jobs\\d360.jobs.QualityChecks\\d360.jobs.QualityChecks.csproj
+		SccProjectTopLevelParentUniqueName31 = D360.sln
+		SccProjectName31 = Jobs/d360.jobs.QualityChecks
+		SccLocalPath31 = Jobs\\d360.jobs.QualityChecks
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

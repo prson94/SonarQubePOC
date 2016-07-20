@@ -72,6 +72,7 @@
 
     //var controlID_ribbon_lineage = controlID + '_ribbon_lineage';
     var controlID_ribbon_lineage_add = controlID + '_ribbon_lineage_add';
+    var controlID_ribbon_lineage_addItem = controlID + '_ribbon_lineage_addItem';
     var controlID_ribbon_lineage_cancel = controlID + '_ribbon_lineage_cancel';
     var controlID_ribbon_lineage_save = controlID + '_ribbon_lineage_save';
 
@@ -136,6 +137,7 @@
     $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
 
     $('#' + controlID_ribbon_lineage_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_lineage_addItem).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_lineage_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
     $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
@@ -150,6 +152,8 @@
     $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
 
+    //$('#' + controlID_info_detail).MapItems();
+
     //#endregion
 
     //#region Event Handlers
@@ -163,6 +167,8 @@
         //$('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left).css('top', $(this).position().top + 80);
 
         var data = {
+            object: type,
+            objectID: id,
             controlID: controlID
         };
 
@@ -276,6 +282,11 @@
         $('#' + controlID_popover_lineage_editor).hide();
         $('#' + controlID_wrapper).show();
     });
+
+    $('#' + controlID_ribbon_lineage_addItem).on('click', function () {
+        lineageModel.AddItem();
+    });
+
     $('#' + controlID_ribbon_lineage_save).on('click', function () {
         lineageModel.Save().then(function (data) {
             $.each(data, function (ix, n) {
@@ -285,9 +296,9 @@
                 d.foreColor = "#fff";
                 d.obj = n.Intersect.Subject;
                 d.objid = n.Intersect.SubjectID;
-                d.name = n.Name;
+                d.name = htmlDecode(n.Name);
 
-                d.typeName = n.Intersect.SubjectTypeName;
+                d.typeName = htmlDecode(n.Intersect.SubjectTypeName);
                 d.url = n.Intersect.SubjectUrl;
                 d.template = "Artifact";
                 d.objecttype = n.Intersect.SubjectType;
@@ -462,6 +473,128 @@
     var overlayEditLinkKey = null;
     var selection = null;
 
+    //#region MapItems
+
+    var mapItemsSource = {
+        dataType: "json",
+        url: null,
+        dataFields: [
+            { name: 'MapID' },
+            { name: 'SourceID' },
+            { name: 'TargetID' },
+            { name: 'SourceIntersectID' },
+            { name: 'SourceSubjectName' },
+            { name: 'SourceSubjectIconHtml' },
+            { name: 'SourceSubject' },
+            { name: 'SourceSubjectID' },
+            { name: 'SourceSubjectUrl' },
+            { name: 'SourceObjectName' },
+            { name: 'SourceObjectIconHtml' },
+            { name: 'SourceObject' },
+            { name: 'SourceObjectID' },
+            { name: 'SourceObjectUrl' },
+            { name: 'TargetIntersectID' },
+            { name: 'TargetSubjectName' },
+            { name: 'TargetSubjectIconHtml' },
+            { name: 'TargetSubject' },
+            { name: 'TargetSubjectUrl' },
+            { name: 'TargetSubjectID' },
+            { name: 'TargetObjectName' },
+            { name: 'TargetObjectIconHtml' },
+            { name: 'TargetObject' },
+            { name: 'TargetObjectUrl' },
+            { name: 'TargetObjectID' },
+            { name: 'Transformation' }
+        ]
+    };
+
+    var mapItemsAdapter = new $.jqx.dataAdapter(mapItemsSource);
+
+    $('#' + controlID_info_detail).jqxGrid({
+        source: mapItemsAdapter,
+        width: overlay_grid_width,
+        pagesizeoptions: ['5', '10', '20'],
+        pagesize: 5,
+        autoheight: true,
+        autorowheight: true,
+        sortable: true,
+        altrows: true,
+        showfilterrow: true,
+        filterable: true,
+        pageable: false,
+        theme: 'flat',
+        autoshowloadelement: false,
+        selectionmode: 'none',
+        columngroups: [
+            { text: 'Source', align: 'left', name: 'S' },
+            { text: 'Target', align: 'left', name: 'T' }
+        ],
+        columns: [
+            //{ 
+            //  datafield: "SourceSubjectIconHtml", 
+            //  text: "", 
+            //  columngroup: "S", 
+            //  width: "30px" 
+            //},
+            //{
+            //  datafield: "SourceSubjectName", 
+            //  text: "Subject", 
+            //  columngroup: "S", 
+            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+            //      return previewLinkRenderer(data.SourceSubject, data.SourceSubjectID, data.SourceSubjectUrl, data.SourceSubjectName);
+            //  }
+            //},
+            {
+                datafield: "SourceObjectIconHtml",
+                text: "",
+                filterable: false,
+                width: "30px"//,
+                //columngroup: "S"
+            },
+            {
+                datafield: "SourceObjectName",
+                text: "Source",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return previewLinkRenderer(data.SourceObject, data.SourceObjectID, data.SourceObjectUrl, data.SourceObjectName);
+                }//,
+                //columngroup: "S"
+            },
+            //{ 
+            //  datafield: "TargetSubjectIconHtml", 
+            //  text: "", 
+            //  columngroup: "T", 
+            //  width: "30px" 
+            //},
+            //{
+            //  datafield: "TargetSubjectName", 
+            //  text: "Subject", 
+            //  columngroup: "T", 
+            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+            //      return previewLinkRenderer(data.TargetSubject, data.TargetSubjectID, data.TargetSubjectUrl, data.TargetSubjectName);
+            //  }
+            //},
+            {
+                datafield: "TargetObjectIconHtml",
+                text: "",
+                filterable: false,
+                width: "30px"//,
+               // columngroup: "T"
+            },
+            {
+                datafield: "TargetObjectName",
+                text: "Target",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return previewLinkRenderer(data.TargetObject, data.TargetObjectID, data.TargetObjectUrl, data.TargetObjectName);
+                }//,
+                //columngroup: "T"
+            }
+        ]
+    });
+
+    $('#' + controlID_info_detail).on('bindingcomplete', mappingBindingComplete);
+
+    //#endregion
+
     //#region Responsibilities
 
     var lineageResponsibilitySource = {
@@ -633,6 +766,10 @@
 
         resetOverlay();
     };
+
+    function mappingBindingComplete(event) {
+        $('#' + controlID_info_detail).jqxGrid('autoresizecolumns');
+    }
 
     function cancelAddLink() {
         if (newLink != null) {
@@ -1246,11 +1383,13 @@
         var defaultInfo = '<div style="color:#999;height:25px;text-align:center">Nothing selected</div>';
         var errorInfo = '<div style="color:maroon;height:100px;text-align:center">An error occurred</div>';
 
+        $("#" + controlID_info).jqxExpander('expand');
+
         if (data == null) {
-            $("#" + controlID_info).jqxExpander('collapse');
-            $("#" + controlID_info_body).html(defaultInfo);
-            $("#" + controlID_info_detail_wrapper).hide();
-            $("#" + controlID_info_detail).html('');
+            //$("#" + controlID_info).jqxExpander('collapse');
+            //$("#" + controlID_info_body).html(defaultInfo);
+            //$("#" + controlID_info_detail_wrapper).hide();
+            //$("#" + controlID_info_detail).html('');
 
             $('#' + controlID_tabs).hide(delay);
             for (var i = 0; i < tabs.length; i++) {
@@ -1262,34 +1401,36 @@
             if (data.diagramObjectType == 'Node') {
                 first = tabs["responsibilities"];
 
-                $("#" + controlID_info_detail_wrapper).hide();
-                $("#" + controlID_info_detail).html('');
+                //$("#" + controlID_info_detail_wrapper).hide();
+                //$("#" + controlID_info_detail).html('');
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
 
-                
+                try {
+                    technicalRelationsSource.url = null;
+                    $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
+                } catch (e) { }
+                try {
+                    lineageResponsibilitySource.url = null;
+                    $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
+                } catch (e) { }
 
-                    try {
-                        technicalRelationsSource.url = null;
-                        $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
-                    } catch (e) { }
-                    try {
-                        lineageResponsibilitySource.url = null;
-                        $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
-                    } catch (e) { }
+                try {
+                    mapItemsSource.url = null;
+                    $('#' + controlID_info_detail).jqxGrid('updatebounddata');
+                } catch (e) { }
 
-
-                $.ajax({
-                    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
-                    async: true
-                }).done(function (data) {
-                    $('#' + controlID_info_body).html(data);
-                    $("#" + controlID_info).jqxExpander('expand');
-                }).fail(function () {
-                    $('#' + controlID_info_body).html(errorInfo);
-                    $("#" + controlID_info).jqxExpander('collapse');
-                });
+                //$.ajax({
+                //    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                //    async: true
+                //}).done(function (data) {
+                //    $('#' + controlID_info_body).html(data);
+                //    $("#" + controlID_info).jqxExpander('expand');
+                //}).fail(function () {
+                //    $('#' + controlID_info_body).html(errorInfo);
+                //    $("#" + controlID_info).jqxExpander('collapse');
+                //});
 
                 if (data.hasMappingRules) {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
@@ -1322,10 +1463,14 @@
 
                 var selectedMapID = data.id;
 
-                $('#' + controlID_info_body).html(data);
-                $("#" + controlID_info).jqxExpander('expand');
+                //$('#' + controlID_info_body).html(data);
+                //$("#" + controlID_info).jqxExpander('expand');
 
-                ObjectDetail(controlID_info_detail, 'Map', selectedMapID, true);
+                //$('#' + controlID_info_detail).show();
+                //$('#' + controlID_info_detail).hide();
+                //ObjectDetail(controlID_info_detail, 'Map', selectedMapID, true);
+                //$('#' + controlID_info_detail).MapItems('reload', selectedMapID, false, false);
+
 
                 //if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
                 //    TileTools("#" + controlID_info_detail_edit, [
@@ -1352,6 +1497,11 @@
                 try {
                     lineageResponsibilitySource.url = null;
                     $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
+                } catch (e) { }
+
+                try {
+                    mapItemsSource.url = '/api/maps/' + selectedMapID + '/mapitems';
+                    $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
 
                 if (data.hasMappingRules) {
@@ -1536,7 +1686,6 @@
                 selectedData = sel[0].data;
             }
         }
-console.log(selectedData);
 
         refreshControls(selectedData);
     }
@@ -1674,67 +1823,70 @@ console.log(selectedData);
         var modelList = [];
         var linkList = [];
         $('#' + controlID_message).hide();
+        if (data.nodes) {
+            for (var i = 0; i < data.nodes.length; i++) {
 
-        for (var i = 0; i < data.nodes.length; i++) {
+                var d = data.nodes[i];
+                var model = createNodeModel();
 
-            var d = data.nodes[i];
-            var model = createNodeModel();
+                var isFocalPoint = (d.obj == type && d.objid == id);
 
-            var isFocalPoint = (d.obj == type && d.objid == id);
+                if (isFocalPoint) {
+                    $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
+                }
 
-            if (isFocalPoint) {
-                $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
+                model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
+                model.key = d.key;
+                model.obj = d.obj;
+                model.objid = d.objid;
+                model.objecttype = d.objecttype;
+                model.objecttypeid = d.objecttypeid;
+                model.type = d.obj;
+                model.name = htmlDecode(d.name);
+                model.typeName = d.typeName;
+                model.foreColor = d.fore;
+                model.backColor = d.back;
+                model.diagramObjectType = "Node";
+                model.intersectId = d.intersectId;
+
+                model.sourceRuleCount = d.sourceRuleCount;
+                model.mappingRuleCount = d.mappingRuleCount;
+                model.hasSourceRules = (d.sourceRuleCount > 0);
+                model.hasMappingRules = (d.mappingRuleCount > 0);
+                model.challengeCount = d.challengeCount;
+                model.hasChallenges = (d.challengeCount > 0);
+                model.openEventCount = d.openEventCount;
+                model.hasOpenEvents = (d.openEventCount > 0);
+                model.openIssueCount = d.openIssueCount;
+                model.hasOpenIssues = (d.openIssueCount > 0);
+                model.hasTransformations = (d.transformationCount > 0);
+
+                model.mapItems = d.mapItems;
+
+                modelList.push(model);
             }
-
-            model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
-            model.key = d.key;
-            model.obj = d.obj;
-            model.objid = d.objid;
-            model.objecttype = d.objecttype;
-            model.objecttypeid = d.objecttypeid;
-            model.type = d.obj;
-            model.name = htmlDecode(d.name);
-            model.typeName = d.typeName;
-            model.foreColor = d.fore;
-            model.backColor = d.back;
-            model.diagramObjectType = "Node";
-            model.intersectId = d.intersectId;
-
-            model.sourceRuleCount = d.sourceRuleCount;
-            model.mappingRuleCount = d.mappingRuleCount;
-            model.hasSourceRules = (d.sourceRuleCount > 0);
-            model.hasMappingRules = (d.mappingRuleCount > 0);
-            model.challengeCount = d.challengeCount;
-            model.hasChallenges = (d.challengeCount > 0);
-            model.openEventCount = d.openEventCount;
-            model.hasOpenEvents = (d.openEventCount > 0);
-            model.openIssueCount = d.openIssueCount;
-            model.hasOpenIssues = (d.openIssueCount > 0);
-            model.hasTransformations = (d.transformationCount > 0);
-
-            model.mapItems = d.mapItems;
-
-            modelList.push(model);
         }
 
-        for (var i = 0; i < data.links.length; i++) {
-            var d = data.links[i];
-            var link = createLinkModel();
-            link.id = d.id;
-            link.intersectTypeId = d.intersectTypeId;
-            link.key = d.id;
-            link.from = d.from;
-            link.fromIntersectId = d.fromIntersectId;
-            link.to = d.to;
-            link.toIntersectId = d.toIntersectId;
-            link.text = d.role;
-            link.intersectRoleId = d.intersectRoleId;
-            link.diagramObjectType = "Link";
-            link.sourceMappingCount = d.mappingRuleCount;
-            link.hasMappingRules = (d.mappingRuleCount > 0);
-            link.hasTransformations = (d.transformation);
-            link.hasProperties = (link.hasTransformations || link.hasMappingRules);
-            linkList.push(link);
+        if (data.links) {
+            for (var i = 0; i < data.links.length; i++) {
+                var d = data.links[i];
+                var link = createLinkModel();
+                link.id = d.id;
+                link.intersectTypeId = d.intersectTypeId;
+                link.key = d.id;
+                link.from = d.from;
+                link.fromIntersectId = d.fromIntersectId;
+                link.to = d.to;
+                link.toIntersectId = d.toIntersectId;
+                link.text = d.role;
+                link.intersectRoleId = d.intersectRoleId;
+                link.diagramObjectType = "Link";
+                link.sourceMappingCount = d.mappingRuleCount;
+                link.hasMappingRules = (d.mappingRuleCount > 0);
+                link.hasTransformations = (d.transformation);
+                link.hasProperties = (link.hasTransformations || link.hasMappingRules);
+                linkList.push(link);
+            }
         }
 
         for (var i = 0; i < modelList.length; i++) {

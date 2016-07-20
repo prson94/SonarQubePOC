@@ -51,82 +51,89 @@
                 var res = data.Values;
                 var cols = data.Columns;
 
-                var source = {
-                    localdata: res,
-                    datatype: 'json',
-                    datafields: fields
-                };
+                if (res.length > 0) {
+                    var source = {
+                        localdata: res,
+                        datatype: 'json',
+                        datafields: fields
+                    };
 
-                var dataAdapter = new $.jqx.dataAdapter(source);
+                    var dataAdapter = new $.jqx.dataAdapter(source);
 
-                var tooltiprenderer = function (element) {
-                    $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
+                    var tooltiprenderer = function (element) {
+                        $(element).parent().jqxTooltip({ position: 'mouse', content: v.FieldDescription });
+                    }
+
+                    var cn = null;
+                    $.each(cols, function () {
+                        if (this.datafield == "Name") {
+                            cn = this;
+                        }
+                    });
+                    if (cn) {
+                        cn.width = "30%";
+                        cn.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.Name + "</a></div>";
+                        }
+                    }
+
+                    var cp = null;
+                    $.each(cols, function () {
+                        if (this.datafield == "TextPath") {
+                            cp = this;
+                        }
+                    });
+                    if (cp) {
+                        cp.width = "40%";
+                        cp.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
+                            return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.TextPath + "</a></div>";
+                        }
+                    }
+
+                    //function relationGridUnsubscribe() {
+                    //    $(valueID).off('bindingcomplete', relationGridBindComplete);
+                    //    amplify.unsubscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                    //    amplify.unsubscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
+                    //}
+
+                    //function relationGridBindComplete() {
+                    //    console.log('auto-resized');
+                    //    $(valueID).jqxGrid('autoresizecolumns');
+                    //}
+
+                    $(valueID).jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 10,
+                        showemptyrow: false,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: false,
+                        showheader: !f.HideHeader,
+                        pageable: !f.HideFooter,
+                        columnsresize: true,
+                        autorowheight: true,
+                        source: dataAdapter,
+                        theme: 'flat',
+                        pagermode: 'simple',
+                        columns: cols,
+                        ready: function () {
+                            if (cols.length > 3)
+                                $(valueID).jqxGrid('autoresizecolumns');
+                        }
+                    });
+
+                    //$(valueID).on('bindingcomplete', relationGridBindComplete);
+                    //amplify.subscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
+                    //amplify.subscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
                 }
-
-                var cn = null;
-                $.each(cols, function () {
-                    if (this.datafield == "Name") {
-                        cn = this;
-                    }
-                });
-                if (cn) {
-                    cn.width = "30%";
-                    cn.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
-                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.Name + "</a></div>";
-                    }
+                else {
+                    //$(labelID).hide();
+                    $(valueID).closest('div[data-category]').hide();
+                    //$('#' + 'Row' + fix).hide();
                 }
-
-                var cp = null;
-                $.each(cols, function () {
-                    if (this.datafield == "TextPath") {
-                        cp = this;
-                    }
-                });
-                if (cp) {
-                    cp.width = "40%";
-                    cp.cellsRenderer = function (index, datafield, value, defaultvalue, column, data) {
-                        return "<div class='d3s-cell' style='overflow: hidden; text-overflow: ellipsis; padding-bottom: 2px; text-align: left; margin-right: 2px; margin-left: 4px; margin-top: 4px;'><a data-context='Preview' data-type='" + data.Object + "' data-id='" + data.ID + "' href='" + data.Url + "'>" + data.TextPath + "</a></div>";
-                    }
-                }
-
-                //function relationGridUnsubscribe() {
-                //    $(valueID).off('bindingcomplete', relationGridBindComplete);
-                //    amplify.unsubscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
-                //    amplify.unsubscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
-                //}
-
-                //function relationGridBindComplete() {
-                //    console.log('auto-resized');
-                //    $(valueID).jqxGrid('autoresizecolumns');
-                //}
-
-                $(valueID).jqxGrid({
-                    altrows: true,
-                    width: grid_width,
-                    pagesizeoptions: ['10', '20', '50'],
-                    pagesize: 10,
-                    showemptyrow: false,
-                    autoheight: true,
-                    sortable: true,
-                    filterable: true,
-                    showfilterrow: false,
-                    showheader: !f.HideHeader,
-                    pageable: !f.HideFooter,
-                    columnsresize: true,
-                    autorowheight: true,
-                    source: dataAdapter,
-                    theme: 'flat',
-                    pagermode: 'simple',
-                    columns: cols,
-                    ready: function () {
-                        if (cols.length > 3)
-                            $(valueID).jqxGrid('autoresizecolumns');
-                    }
-                });
-
-                //$(valueID).on('bindingcomplete', relationGridBindComplete);
-                //amplify.subscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
-                //amplify.subscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
 
             });
         }

@@ -16,6 +16,15 @@ namespace d360.core.entities
         [DataMember]
         public string FieldTypeName { get; set; }
 
+        [DataMember]
+        public bool Show { get; set; }
+
+        [DataMember]
+        public int? SortOrder { get; set; }
+
+        [DataMember]
+        public string FilterValue { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
         public virtual FieldTypeFusionLookupDefinition FieldTypeFusionLookupDefinition { get; set; }
     }
