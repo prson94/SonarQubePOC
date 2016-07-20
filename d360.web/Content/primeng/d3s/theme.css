@@ -294,10 +294,13 @@
  *
  * http://docs.jquery.com/UI/Accordion#theming
  */
-.ui-accordion .ui-accordion-header a { display: block; font-size: 1em; padding: .5em .5em .5em .7em; font-weight: bold; }
+.ui-accordion .ui-accordion-header a { display: block; font-size: 1.3em; padding: .5em .5em .5em .7em; font-weight: bold; text-transform:uppercase; color:#5c5e60; }
 .ui-accordion .ui-accordion-header {
-	border: 1px solid #d9d9d9;
-	background: #f6f7f9;
+    border-bottom: 2px solid #646464;
+    border-top: 0 none;
+    border-left: 0 none;
+    border-right: 0 none;
+	background: white;
 }
 
 .ui-accordion .ui-accordion-header.ui-state-hover {
@@ -311,6 +314,23 @@
     -webkit-border-radius: 0px;
     -moz-border-radius: 0px;
     border-radius: 0px;
+}
+
+.ui-accordion .ui-accordion-header .fa {
+    position: absolute;
+    right: .5em;
+    left: initial;
+    top: 50%;
+    margin-top: -8px;
+    font-size:1.3em;
+}
+
+/* hack to force different fa icons on accordion header */
+.ui-accordion .ui-accordion-header .fa-caret-right:before {
+    content: "\f078" !important; /* chevron down*/
+}
+.ui-accordion .ui-accordion-header .fa-caret-down:before {
+    content: "" !important;
 }
 
 /* Tabview */
