@@ -454,7 +454,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
             logger.WriteLine("Failed to process load, data=" + queueMessage);
         }
 
-        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload")] string queueMessage, TextWriter logger, CancellationToken token)
+        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload-debug")] string queueMessage, TextWriter logger, CancellationToken token)
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
@@ -493,6 +493,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 {
 
                     var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
+                    company.LoadItems.Add(loadItem);
+//company.Add<LoadItem>(loadItem);
 
                     foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                     {
@@ -503,10 +505,12 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             format.Contains("[$-F400]") || format.Contains("[$-409]"))
                             isDate = true;
 
-                        loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
+                        company.LoadItemColumns.Add(
+                            new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) }
+                        );
+                        //loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
                     }
-
-                    load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
+                    //load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
 
                     rowIndex++;
                 }
