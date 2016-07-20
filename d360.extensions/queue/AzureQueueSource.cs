@@ -29,6 +29,9 @@ namespace d360.extensions.queue
                 case QueueType.BulkLoad:
                     queueName = "d3s-bulkload";
                     break;
+                case QueueType.BulkLoadDev:
+                    queueName = "d3s-bulkload-debug";
+                    break;
                 case QueueType.CommunityAction:
                     queueName = "community-actions";
                     break;

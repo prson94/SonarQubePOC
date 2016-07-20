@@ -3,6 +3,7 @@
     public enum QueueType
     {
         BulkLoad,
+        BulkLoadDev,
         CompanyAction,
         CompanyProcess,
         CommunityAction,

@@ -454,7 +454,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
             logger.WriteLine("Failed to process load, data=" + queueMessage);
         }
 
-        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload-debug")] string queueMessage, TextWriter logger, CancellationToken token)
+        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload")] string queueMessage, TextWriter logger, CancellationToken token)
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
@@ -505,8 +505,19 @@ namespace d360.jobs.queue.ProcessBulkLoad
                             format.Contains("[$-F400]") || format.Contains("[$-409]"))
                             isDate = true;
 
+                        var loadValue = string.Empty;
+
+                        if (isDate)
+                        {
+                            loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
+                        }
+                        else
+                        {
+                            loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+                        }                                                
+
                         company.LoadItemColumns.Add(
-                            new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) }
+                            new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue }
                         );
                         //loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
                     }

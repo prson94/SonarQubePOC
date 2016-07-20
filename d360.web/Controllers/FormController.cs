@@ -10482,6 +10482,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (success)
                 {
                     Company.Add<Load>(load);
+                    // use bulkloaddev queue to debug bulk load web job
+                    //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+
+                    // regular production queue
                     Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
