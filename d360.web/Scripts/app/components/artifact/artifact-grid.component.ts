@@ -7,6 +7,7 @@ import { MessagesService, GridDefinitionService, UriBasedService, ArtifactServic
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { TooltipComponent } from '../shared/tooltip.component';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { SortOrder } from '../../models/enums.model';
 import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
@@ -15,7 +16,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 
 @Component({
     selector: 'd3s-artifact-grid',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button, ArtifactColumnFilterComponent],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button, ArtifactColumnFilterComponent, TooltipComponent],
     providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
@@ -38,14 +39,14 @@ import { Router, ActivatedRoute }       from '@angular/router';
                             <p-column [style]="{width:'40px'}">
                                     <template let-item="rowData">
                                         <div class="RowTools">
-                                            <i class="fa fa-certificate" [ngStyle]="{'color': certificateColor(item)}"></i>
+                                            <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
                                     <template let-item="rowData">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selectArtifact(item)"><i class="fa fa-info"></i></a>
+                                            <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>

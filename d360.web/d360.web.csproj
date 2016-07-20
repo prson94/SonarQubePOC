@@ -1438,6 +1438,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-filters.tile.ts" />
