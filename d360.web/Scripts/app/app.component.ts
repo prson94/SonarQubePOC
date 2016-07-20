@@ -45,6 +45,10 @@ export class AppComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
+        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function     
+    }
+
+    private initializeQtipTooltips() {
         $('body').on('mouseenter', '*[data-type]', function (event) {
             $(this).qtip({
                 content: {
@@ -79,12 +83,10 @@ export class AppComponent implements AfterViewInit {
                 hide: {
                     fixed: true,
                     delay: 250,
-                },
-                //hide: 'mouseout',
+                },                
                 style: {
                     classes: 'qtip-youtube qtip-rounded'
-                }
-                //addTooltip(this);
+                }                
             });
         });
     }
