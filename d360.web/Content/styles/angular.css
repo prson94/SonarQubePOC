@@ -4,6 +4,10 @@
 body {
   background-color: #F8F3EF;
 }
+select,
+input {
+  padding: 5px;
+}
 /* top menu*/
 nav.top {
   line-height: 40px;

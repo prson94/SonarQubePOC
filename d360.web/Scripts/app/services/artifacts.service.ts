@@ -6,14 +6,14 @@ import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression } from '../models/grid-definition.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[]): Promise<Artifacts> {
+    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression ): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `artifacts/ArtifactsByType?id=${artifactType.ID}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
@@ -27,6 +27,9 @@ export class ArtifactService extends BaseService {
             }
         }
 
+        if (relationships != undefined) {
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.objectType}&RelationshipObjectIDs=${relationships.objectIds}`;
+        }
 
         return this.http.get(uri)        
             .toPromise()

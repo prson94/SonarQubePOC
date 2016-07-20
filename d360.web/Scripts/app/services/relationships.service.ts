@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Relationship, RelationshipDetail } from '../models/relationship.model';
+import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 
@@ -23,6 +23,20 @@ export class RelationshipsService extends BaseService {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
             .toPromise()
             .then(response => <RelationshipDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getObjectRelations(objectType: string, objectId: number): Promise<ObjectRelationship[]> {
+        return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
+            .toPromise()
+            .then(response => <ObjectRelationship[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelatedObjects(objectType: string, objectId: number): Promise<RelatedItem[]> {
+        return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}`)
+            .toPromise()
+            .then(response => <RelatedItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 

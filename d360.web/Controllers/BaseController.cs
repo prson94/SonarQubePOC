@@ -892,6 +892,14 @@ namespace d360.web.Controllers
             var RelationshipObjectType = Request.Form.AllKeys.Any(i => i == "RelationshipObjectType") ? Request["RelationshipObjectType"] : "";
             var RelationshipObjectIDs = Request.Form.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(Request["RelationshipObjectIDs"]) : "";
 
+            //check querystring
+            if(string.IsNullOrEmpty(RelationshipObjectIDs))
+            {
+                RelationshipIncludeType = query.AllKeys.Any(i => i == "RelationshipIncludeType") ? query["RelationshipIncludeType"] : "";
+                RelationshipObjectType = query.AllKeys.Any(i => i == "RelationshipObjectType") ? query["RelationshipObjectType"] : "";
+                RelationshipObjectIDs = query.AllKeys.Any(i => i == "RelationshipObjectIDs") ? Server.UrlDecode(query["RelationshipObjectIDs"]) : "";
+            }
+
             if (!string.IsNullOrEmpty(RelationshipObjectIDs))
             {
                 var IDs = RelationshipObjectIDs.Split(',').ToList();

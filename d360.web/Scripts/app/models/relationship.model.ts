@@ -17,3 +17,17 @@ export class RelationshipDetail {
     Side2: string;
     Side2DisplayText: string;
 }
+
+export class ObjectRelationship {
+    IntersectTypeID: number;
+    ParentIntersectID: number;
+    TargetName: string;
+    TargetType: string;
+    TargetTypeID: number;
+}
+
+export class RelatedItem {
+    Name: string;
+    Type: string;
+    ID: number;
+}

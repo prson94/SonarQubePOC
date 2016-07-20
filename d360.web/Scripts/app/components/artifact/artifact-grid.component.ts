@@ -2,7 +2,7 @@
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
 import {DataTable, Column, LazyLoadEvent, Button} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
@@ -32,7 +32,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <div *ngIf="showTypeFilter" class="col l2 m3 s12">                                                                         
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                     </div>
-                    <d3s-artifact-column-filter [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
+                    <d3s-artifact-column-filter [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="false" [sortable]="true"></p-column>
@@ -102,6 +102,7 @@ export class ArtifactGridComponent implements OnChanges {
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
     filters: GridFilterExpression[] = [];
+    relationships: GridRelationshipFilterExpression;
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -126,7 +127,19 @@ export class ArtifactGridComponent implements OnChanges {
     }
 
     filterGridData(filterData) {
-        this.filters = filterData.filter;
+        if (filterData.filter)
+            this.filters = filterData.filter;
+        else {
+            this.filters.splice(0, this.filters.length);
+        }
+
+        if (filterData.relationships) {
+            this.relationships = filterData.relationships;
+        }
+        else {
+            this.relationships = null;
+        }
+
         this.currentPageNumber = 0;
         this.getData();
     }
@@ -148,7 +161,7 @@ export class ArtifactGridComponent implements OnChanges {
     }
     
     getData() {        
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters)
+        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                

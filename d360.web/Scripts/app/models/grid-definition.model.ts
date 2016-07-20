@@ -19,6 +19,17 @@ export class GridColumn {
     width: string;
 }
 
+export class GridRelationshipFilterExpression {
+    includeType: string = "Any";
+    objectType: string;
+    objectIds: string;
+}
+
+export class GridAttributeFilterExpression {
+    attributeType: number;
+    attributeSearchValue: string;
+}
+
 export class GridFilterExpression {
     field: string;
     condition: string;
