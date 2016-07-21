@@ -2,15 +2,16 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
 import { Button, MultiSelect, SelectItem, SelectButton  } from 'primeng/primeng';
-import { ArtifactService, RelationshipsService } from '../../services/index';
+import { ArtifactService, RelationshipsService, AttributeTypeService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { ObjectRelationship, RelatedItem } from '../../models/relationship.model';
+import { AttributeType } from '../../models/attribute-type.model';
 
 @Component({
     selector: 'd3s-artifact-column-filter',
     directives: [Button, MultiSelect, SelectButton],
-    providers: [RelationshipsService],
+    providers: [RelationshipsService, AttributeTypeService],
     styles: [`
         div.filter {
             padding-bottom:5px;
@@ -37,6 +38,8 @@ import { ObjectRelationship, RelatedItem } from '../../models/relationship.model
                         <div class="col s3">
                             <span (click)="addFilter()"><i *ngIf="last" class="fa fa-plus fa-2x" aria-hidden="true"></i></span> <span *ngIf="filters.length > 1" (click)="removeFilter(filter)"><i class="fa fa-minus fa-2x" aria-hidden="true"></i></span>
                         </div>                        
+                    </div>
+                    <div *ngIf="attributeFilter">
                     </div>
                     <div *ngIf="relationshipFilters" class="filter">
                         <div class="col s1 filter center-align FieldName">
@@ -74,6 +77,7 @@ import { ObjectRelationship, RelatedItem } from '../../models/relationship.model
                             <button pButton *ngIf="filters.length || relationshipFilters" type="button" style="width: '150px';" label="Clear all Filters" (click)="clearFilter()"></button>
                             <button pButton *ngIf="!filters.length" type="button" style="width: '150px';" label="Add Filter" (click)="addFilter()"></button>
                             <button pButton *ngIf="!relationshipFilters" type="button" style="width: '150px';" label="Add Relationship Filter" (click)="addRelationshipFilter()"></button>
+                            <button pButton *ngIf="!attributeFilter" [disabled]="!attributeTypes || attributeTypes.length == 0" type="button" style="width: '150px';" label="Add Attribute Filter" (click)="addAttributeFilter()"></button>
                         </div>
                     </div>
                 </form>
@@ -87,14 +91,16 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
 
     filters: GridFilterExpression[] = [];
     relationshipFilters: GridRelationshipFilterExpression = null;
+    attributeFilter: GridAttributeFilterExpression = null;
 
     relationshipTypes: ObjectRelationship[];    
     relationshipValues: SelectItem[] = [];
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     relationItems: string[];
     
+    attributeTypes: AttributeType[];
 
-    constructor(private relationshipsService: RelationshipsService) {        
+    constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService) {        
         
     }
 
@@ -108,7 +114,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.fields != null && this.fields.length > 0) {
-                        
+            this.getAttributes()                        
         }
     }
 
@@ -140,11 +146,22 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
         return undefined;
     }
 
-    private changeFilterField(target,filter) {        
+    private changeFilterField(target, filter) {            
         if (this.selectedFieldType(target.value) == "dropdownlist")
             filter.condition = "EQUAL";
         else
             filter.condition = "CONTAINS";
+
+        //determine the field type
+        let res = this.fields.filter(f => f.datafield == target.value);
+        if (res.length > 0) {
+            if (res[0].hiddenfield)
+                filter.fieldtype = GridFilterFieldType.Hidden;
+            else if (res[0].relatedfield)
+                filter.fieldtype = GridFilterFieldType.Relation;
+            else
+                filter.fieldtype = GridFilterFieldType.Normal;
+        }        
     }
 
     private addFilter() {
@@ -179,6 +196,19 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
         //fetch relationships for this artifacttypeid
         if (!this.relationshipTypes) this.getRelationshipTypes();
         this.relationshipFilters = new GridRelationshipFilterExpression();      
+    }
+
+    private addAttributeFilter() {
+        this.attributeFilter = new GridAttributeFilterExpression();
+    }
+
+    private getAttributes() {
+        if (!this.artifactType || this.artifactType.ID <= 0) return;
+
+        this.attributeTypeService.getAttributeTypesForObject('ArtifactType', this.artifactType.ID)
+            .then(result => {
+                this.attributeTypes = result;
+            });
     }
 
     private removeFilter(filter: GridFilterExpression) {        

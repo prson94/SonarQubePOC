@@ -6,7 +6,7 @@ import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType } from '../models/grid-definition.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -18,11 +18,35 @@ export class ArtifactService extends BaseService {
         let uri = `artifacts/ArtifactsByType?id=${artifactType.ID}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
         if (filters != undefined) {            
+            //regular fields
+            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
             let count = 0;
-            uri += '&filterscount=' +filters.length;
+            uri += '&filterscount=' + normalFilters.length;
 
-            for (let filter of filters) {
+            for (let filter of normalFilters) {
                 uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //related filter fields
+            let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
+            count = 0;
+
+            uri += '&relfilterscount=' + rellFilters.length;
+
+            for (let filter of rellFilters) {
+                uri += `&relfilterdatafield${count}=${filter.field.replace("Field","")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //hiden filter fields
+            let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
+            count = 0;
+
+            uri += '&hidfilterscount=' + hidFilters.length;
+
+            for (let filter of hidFilters) {
+                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${filter.value}`;
                 count++;
             }
         }

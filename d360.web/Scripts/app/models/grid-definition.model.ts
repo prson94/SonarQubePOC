@@ -30,10 +30,17 @@ export class GridAttributeFilterExpression {
     attributeSearchValue: string;
 }
 
+export enum GridFilterFieldType {
+    Normal,
+    Hidden,
+    Relation
+}
+
 export class GridFilterExpression {
     field: string;
     condition: string;
     value: string;
+    fieldtype: GridFilterFieldType;
 }
 
 export class GridFilterColumn {
@@ -41,4 +48,7 @@ export class GridFilterColumn {
     datafield: string;
     columntype: string;
     filteritems: string[];
+    relatedfield: boolean;
+    hiddenfield: boolean;
+    id: string;
 }

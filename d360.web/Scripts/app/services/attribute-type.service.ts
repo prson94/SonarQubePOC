@@ -30,6 +30,13 @@ export class AttributeTypeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getAttributeTypesForObject(objectType: string, objectId: number): Promise<AttributeType[]> {        
+        return this.http.get(`/api/${objectType}/${objectId}`)
+            .toPromise()
+            .then(response => <AttributeType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 
     deleteAttributeType(id: number) {
         return this.deleteDynamic(this.http, 'attributetype', id);
