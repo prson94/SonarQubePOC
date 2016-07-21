@@ -1,0 +1,177 @@
+﻿<div class="large-overlay">
+    <div class="ui segment">        
+        <div class="left form-header-info">
+            <h4>Fusion Technical Mapping</h4>
+        </div>
+        <div class="right">
+            <button type="button" id="CancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Close</button>            
+        </div>
+        <div class="clear"></div>
+        <div class="form-instructions"></div>
+        <div id="HistoryViewer">
+            <div class="row">
+                <div class="col s12">
+                    <div class="root-tile">
+                        <header>        
+                            <!--<div id="Tools" class="TileTools">
+                                <a id="addMapping" style="margin-left: 10px" class="btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-plus" title="Add Mapping"></i></a>
+                            </div>-->
+                        </header>
+                        <div id="TechmappingGrid"></div>
+                    </div>
+                </div>                
+            </div>
+        </div>        
+    </div>
+</div>
+
+
+<script type="text/javascript">    
+    var _context = "FusionTechnicalMapping";
+        
+    function unsubscribe() {
+        
+    }
+        
+    function DeleteRow(event) {
+        var selectedrowindex = $("#TechmappingGrid").jqxGrid('getselectedrowindex');
+        var rowscount = $("#TechmappingGrid").jqxGrid('getdatainformation').rowscount;
+        if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
+            var id = $("#TechmappingGrid").jqxGrid('getrowid', selectedrowindex);
+            var commit = $("#TechmappingGrid").jqxGrid('deleterow', id);
+        }
+    }
+    
+
+    $(function () {
+        $("#addMapping").click(function (event) {
+            var rowdata = {
+                SourceObject: 'Artifact',
+                TargetObject: 'Artifact'
+            }
+            $("#TechmappingGrid").jqxGrid('addrow', null, rowdata, 'top');
+            event.preventDefault();
+        });
+
+        $("#CancelButton").click(function (event) {
+            amplify.publish("CancelAction", { context: _context });
+            event.preventDefault();
+        });
+
+        $("#SaveButton").click(function (event) {
+            amplify.publish("CancelAction", { context: _context });
+            event.preventDefault();
+        });
+
+        $("#DeleteRow").click(function (event) {
+            console.log(event);
+            event.preventDefault();
+        });
+
+        var rowEdit = function (row) {            
+            var datarow = $("#TechmappingGrid").jqxGrid('getrowdata', row);
+            console.log(datarow);
+            var sourceObject = datarow.SourceObject ? datarow.SourceObject : '';
+            var targetObject = datarow.TargetObject ? datarow.TargetObject : '';         
+            if (sourceObject.toLowerCase() != 'artifact' || targetObject.toLowerCase() != 'artifact') return false;
+        }
+        
+
+        var artifactSource =
+            {
+                datatype: "json",
+                url: '/api/fusion/fusionowningartifacts',
+                datafields: [
+                    { name: 'Name', type: 'string' },
+                    { name: 'ID', type: 'number' }
+                ]                
+            };
+        var artifactAdapter = new $.jqx.dataAdapter(artifactSource, {
+            autoBind: true
+        });
+        
+
+        var gridSource =
+        {
+          //  localdata: data,
+            dataType: 'json',
+            url: '/api/fusion/technicalmapping',
+            updaterow: function (rowid, rowdata, commit) {
+                // synchronize with the server - send update command
+                // call commit with parameter true if the synchronization with the server is successful 
+                // and with parameter false if the synchronization failder.
+                commit(true);
+            },
+            datafields:
+            [
+                { name: 'SourceObjectName', type: 'string' },
+                { name: 'SourceObject', type: 'string' },
+                { name: 'SourceObjectID', type: 'number' },
+                { name: 'SourceFusionAttributeTextPath', type: 'string' },
+                { name: 'TargetObjectName', type: 'string' },
+                { name: 'TargetObject', type: 'string' },
+                { name: 'TargetObjectID', type: 'number' },
+                { name: 'TargetFusionAttributeTextPath', type: 'string' },
+                { name: 'MapID', type: 'string' }                
+            ]
+        };
+        var gridDataAdapter = new $.jqx.dataAdapter(gridSource);
+        // initialize jqxGrid
+        $("#TechmappingGrid").jqxGrid(
+        {
+            width: grid_width,
+            source: gridDataAdapter,
+            columnsresize: true,
+            pageable: true,
+            pagerButtonsCount: 10,
+            altRows: true,
+            filterable: true,
+            pagerMode: 'advanced',            
+            filterMode: 'simple',
+         //   editable: true,
+            theme: list_theme,
+            selectionmode: 'singlerow',            
+            columns: [
+              {
+                  text: 'Source Object', columntype: 'combobox', displayfield:'SourceObjectName', datafield: 'SourceObjectID', width: '20%', cellbeginedit: rowEdit,
+                  createeditor: function (row, value, editor) {
+                        editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
+                  }
+              },
+              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '27%' },
+              {
+                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '20%', cellbeginedit: rowEdit,
+                  createeditor: function (row, value, editor) {
+                      editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
+                  }
+              },
+              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '28%' },
+              { text: 'Group Key', datafield: 'MapID', columntype: 'textbox', width: '5%' },
+              /*{
+                  text: '', dataField: '', width: '5%', filterable: false, editable : false,
+                  cellsRenderer: function (row, column, value, data) {
+                      return '<div class="RowTools"><div class="row-icon"><a title="Remove mapping" id="DeleteRow" onclick="DeleteRow(event)"><i class="fa fa-trash-o"></i></a></div></div>';
+                  }
+              }*/
+            ]
+        });
+        // events
+        $("#TechmappingGrid").on('cellbeginedit', function (event) {            
+            //var args = event.args;
+            //var sourceObject = event.args.row.SourceObject ? event.args.row.SourceObject : '';
+            //var targetObject = event.args.row.TargetObject ? event.args.row.TargetObject : '';
+            //console.log('cellbeginedit source object type :' + sourceObject + ' target object type:' + targetObject);
+         //   return false;
+      //      if (sourceObject.toLowerCase() != 'artifact' || targetObject.toLowerCase() != 'artifact') return false;
+            
+            //$("#cellbegineditevent").text("Event Type: cellbeginedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
+        });
+        $("#TechmappingGrid").on('cellendedit', function (event) {
+            var args = event.args;
+            //$("#cellendeditevent").text("Event Type: cellendedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
+        });
+
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

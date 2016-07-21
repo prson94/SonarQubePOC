@@ -1273,6 +1273,7 @@
     <Content Include="typings.json" />
     <Content Include="Views\Navigation\HeaderActions.cshtml" />
     <Content Include="Views\Reports\PowerBIOverlay.cshtml" />
+    <Content Include="Views\Overlays\FusionTechMapping.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

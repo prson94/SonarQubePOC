@@ -1171,7 +1171,11 @@ where   h.ID <> @t order by h.[Level] desc;
                             }
                         }
                     }
-                    list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
+                    else
+                    {
+                        list.Add(new PageActionItem { Context = "TechnicalMapping", Icon = "map", Title = "Technical Mapping", Uri = $"/overlays/fusiontechmapping" });
+                    }
+                    
                     break;
                     #endregion
                 case SystemObjects.FusionAttribute:
@@ -2132,6 +2136,20 @@ where   h.ID <> @t order by h.[Level] desc;
                 default:
                     return null;
             }
+        }
+
+        
+        [Route("fusion/technicalmapping")]
+        public async System.Threading.Tasks.Task<IEnumerable<FusionTechnicalMapppingModel>> GetFusionTechnicalMapping()
+        {
+            return await Company.QueryAsync<FusionTechnicalMapppingModel>("GetFusionTechnicalMapping");
+            
+        }
+
+        [Route("fusion/fusionowningartifacts")]
+        public IEnumerable<Artifact> GetArtifactsOwningFusion()
+        {
+            return Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true);
         }
 
         #region Owner

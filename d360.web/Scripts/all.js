@@ -65150,9 +65150,7 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
             .then(function (content) {
                 context.contentHeader(pageViewModel);
 
-                $('#SideIcons').PageTools();
-                $('#SideIcons').PageTools('clear');
-
+                $('#SideIcons').PageTools({ type: 'Fusion', id: 0 });
 
                 FusionStatisticsTile('FusionStatistics');
 

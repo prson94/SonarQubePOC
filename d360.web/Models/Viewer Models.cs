@@ -746,4 +746,20 @@ namespace d360.web.Models
 
         public string AccessToken { get; set; }
     }
+
+    public class FusionTechnicalMapppingModel
+    {
+        public string Map { get; set; }
+        public int MapID { get; set; }
+        public int SourceFusionAttributeID { get; set; }
+        public string SourceFusionAttributeTextPath { get; set; }
+        public string SourceObjectName { get; set; }
+        public int SourceObjectID { get; set; }
+        public string SourceObject { get; set; }
+        public int TargetFusionAttributeID { get; set; }
+        public string TargetFusionAttributeTextPath { get; set; }
+        public string TargetObjectName { get; set; }
+        public int TargetObjectID { get; set; }
+        public string TargetObject { get; set; }
+    }
 }

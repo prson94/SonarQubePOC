@@ -79,6 +79,11 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        public ActionResult FusionTechMapping()
+        {            
+            return PartialView();
+        }
+        
         [Route("{type}/{id:int}/audit")]
         public ActionResult Audit(SystemObjects type, int id)
         {

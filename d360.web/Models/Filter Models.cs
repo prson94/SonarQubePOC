@@ -81,4 +81,7 @@ namespace d360.web.Models
         public IndexResults Result { get; set; }
         public List<IndexTypeList> Categories { get; set; }        
     }
+
+    
+
 }
