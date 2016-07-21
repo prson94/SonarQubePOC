@@ -28,9 +28,23 @@
 
 <script type="text/javascript">    
     var _context = "FusionTechnicalMapping";
+    var artifactSource;
+    var artifactAdapter;
+    var gridSource;
+    var gridDataAdapter;
         
     function unsubscribe() {
-        
+        artifactSource = null;
+        artifactAdapter = null;
+        gridSource = null;
+        gridDataAdapter = null;
+
+        $('#addMapping').off('click');
+        $('#CancelButton').off('click');
+        $('#SaveButton').off('click');
+        $('#DeleteRow').off('click');
+
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
         
     function DeleteRow(event) {
@@ -77,7 +91,7 @@
         }
         
 
-        var artifactSource =
+        artifactSource =
             {
                 datatype: "json",
                 url: '/api/fusion/fusionowningartifacts',
@@ -86,22 +100,16 @@
                     { name: 'ID', type: 'number' }
                 ]                
             };
-        var artifactAdapter = new $.jqx.dataAdapter(artifactSource, {
+        artifactAdapter = new $.jqx.dataAdapter(artifactSource, {
             autoBind: true
         });
         
 
-        var gridSource =
+        gridSource =
         {
           //  localdata: data,
             dataType: 'json',
-            url: '/api/fusion/technicalmapping',
-            updaterow: function (rowid, rowdata, commit) {
-                // synchronize with the server - send update command
-                // call commit with parameter true if the synchronization with the server is successful 
-                // and with parameter false if the synchronization failder.
-                commit(true);
-            },
+            url: '/api/fusion/technicalmapping',            
             datafields:
             [
                 { name: 'SourceObjectName', type: 'string' },
@@ -112,10 +120,10 @@
                 { name: 'TargetObject', type: 'string' },
                 { name: 'TargetObjectID', type: 'number' },
                 { name: 'TargetFusionAttributeTextPath', type: 'string' },
-                { name: 'MapID', type: 'string' }                
+                { name: 'MapID', type: 'number' }                
             ]
         };
-        var gridDataAdapter = new $.jqx.dataAdapter(gridSource);
+        gridDataAdapter = new $.jqx.dataAdapter(gridSource);
         // initialize jqxGrid
         $("#TechmappingGrid").jqxGrid(
         {
@@ -146,8 +154,8 @@
                   }
               },
               { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '28%' },
-              { text: 'Group Key', datafield: 'MapID', columntype: 'textbox', width: '5%' },
-              /*{
+              { text: 'Group Key', datafield: 'MapID', width: '5%'},
+           /*   {
                   text: '', dataField: '', width: '5%', filterable: false, editable : false,
                   cellsRenderer: function (row, column, value, data) {
                       return '<div class="RowTools"><div class="row-icon"><a title="Remove mapping" id="DeleteRow" onclick="DeleteRow(event)"><i class="fa fa-trash-o"></i></a></div></div>';
@@ -157,17 +165,11 @@
         });
         // events
         $("#TechmappingGrid").on('cellbeginedit', function (event) {            
-            //var args = event.args;
-            //var sourceObject = event.args.row.SourceObject ? event.args.row.SourceObject : '';
-            //var targetObject = event.args.row.TargetObject ? event.args.row.TargetObject : '';
-            //console.log('cellbeginedit source object type :' + sourceObject + ' target object type:' + targetObject);
-         //   return false;
-      //      if (sourceObject.toLowerCase() != 'artifact' || targetObject.toLowerCase() != 'artifact') return false;
-            
+            //var args = event.args;            
             //$("#cellbegineditevent").text("Event Type: cellbeginedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
         });
         $("#TechmappingGrid").on('cellendedit', function (event) {
-            var args = event.args;
+            //var args = event.args;
             //$("#cellendeditevent").text("Event Type: cellendedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
         });
 
