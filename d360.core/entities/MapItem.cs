@@ -11,7 +11,13 @@ namespace d360.core.entities
         public int MapID { get; set; }
 
         [DataMember]
-        public int IntersectID { get; set; }
+        public int? IntersectID { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int? ObjectID { get; set; }
 
         [DataMember]
         public bool IsSource { get; set; }
