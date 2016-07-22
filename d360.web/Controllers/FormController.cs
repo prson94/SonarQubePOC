@@ -5960,6 +5960,20 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        public ActionResult AddTechnicalMapping()
+        {            
+            var model = new EditableForm
+            {
+                Context = ContextList.Fusion,
+                FieldUri = string.Format("/form/FusionTechnicalMapping_AddMapping"),
+                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, ""),
+                FormUri = "/form/AddTechnicalMapping",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
         public ActionResult DeleteTechnicalMapping(int id)
         {
             var a = Company.GetById<MapRuleItem>(id);
@@ -6052,6 +6066,23 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = ID.ToString() });
             
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult FusionTechnicalMapping_AddMapping()
+        {
+            var list = new List<EditableField>();
+
+            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString() });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Key", Name = "Group Key", FieldType = DataType.Number.ToString() });
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 

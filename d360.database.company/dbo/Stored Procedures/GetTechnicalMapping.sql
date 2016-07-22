@@ -8,6 +8,7 @@ BEGIN
     
 select 		
 		mr.id as 'MapID',
+		mr.transformation as 'Transformation',
 		mri.ID as 'MapRuleItemID',
 		mri.SourceFusionAttributeID as 'SourceFusionAttributeID',		
 		faS.TextPath as 'SourceFusionAttributeTextPath',

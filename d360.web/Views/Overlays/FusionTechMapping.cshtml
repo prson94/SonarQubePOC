@@ -12,9 +12,7 @@
                 <div class="col s12">
                     <div class="root-tile">
                         <header>
-                            <!--<div id="Tools" class="TileTools">
-                            <a id="addMapping" style="margin-left: 10px" class="btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-plus" title="Add Mapping"></i></a>
-                        </div>-->
+                            <div id="TechMappingTools" class="TileTools"></div>
                         </header>
                         <div id="TechmappingGrid"></div>
                     </div>
@@ -177,6 +175,7 @@
             url: '/api/fusion/technicalmapping',            
             datafields:
             [
+                { name: 'Transformation', type: 'string' },
                 { name: 'SourceObjectName', type: 'string' },
                 { name: 'SourceObject', type: 'string' },
                 { name: 'SourceObjectID', type: 'number' },                
@@ -201,26 +200,26 @@
             altRows: true,
             filterable: true,
             pagerMode: 'advanced',            
-            filterMode: 'simple',
-         //   editable: true,
+            filterMode: 'simple',         
             theme: list_theme,
             selectionmode: 'singlerow',            
             columns: [
+                { text: 'Transformation', datafield: 'Transformation', columntype: 'textbox', width: '20%' },
+                //{ text: 'Group Key', datafield: 'MapID', width: '5%' },
               {
                   text: 'Source Object', columntype: 'combobox', displayfield:'SourceObjectName', datafield: 'SourceObjectID', width: '20%', cellbeginedit: rowEdit,
                   createeditor: function (row, value, editor) {
                         editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
                   }
               },
-              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '25%' },
+              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '20%' },
               {
-                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '20%', cellbeginedit: rowEdit,
+                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '15%', cellbeginedit: rowEdit,
                   createeditor: function (row, value, editor) {
                       editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
                   }
               },
-              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '25%' },
-              { text: 'Group Key', datafield: 'MapID', width: '5%'},
+              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '20%' },              
               {
                   text: '', dataField: '', width: '5%', filterable: false, editable : false,
                   cellsRenderer: function (index, datafield, value, defaultvalue, column, data){                      
@@ -231,15 +230,10 @@
               }
             ]
         });
-        // events
-        $("#TechmappingGrid").on('cellbeginedit', function (event) {            
-            //var args = event.args;            
-            //$("#cellbegineditevent").text("Event Type: cellbeginedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
-        });
-        $("#TechmappingGrid").on('cellendedit', function (event) {
-            //var args = event.args;
-            //$("#cellendeditevent").text("Event Type: cellendedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
-        });
+    
+        var tools = [{ icon: 'plus', uri: "/form/AddTechnicalMapping", context: _context, title: 'Add technical mapping' }];
+        
+     //   TileTools('#TechMappingTools', tools);
 
         amplify.subscribe('CancelAction', cancelAction, 1);
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
