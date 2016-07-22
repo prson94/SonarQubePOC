@@ -2942,7 +2942,7 @@ from    IntersectNode S
             {
                 var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
 
-                var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
+                var intersectIDs = map.MapItems.Select(i => i.IntersectID.Value).Distinct().ToList();
 
                 var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
 
@@ -2950,14 +2950,14 @@ from    IntersectNode S
 
                 foreach (var mi in map.MapItems.Where(i => i.IsSource))
                 {
-                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID.Value);
                     if (intersectDetail != null)
                     {
                         list.Add(new MapItemDetail
                         {
                             MapID = mi.MapID,
                             SourceID = mi.ID,
-                            SourceIntersectID = mi.IntersectID,
+                            SourceIntersectID = mi.IntersectID.Value,
 
                             SourceSubject = intersectDetail.Subject,
                             SourceSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>",
@@ -2976,7 +2976,7 @@ from    IntersectNode S
 
                 foreach (var mi in map.MapItems.Where(i => !i.IsSource))
                 {
-                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
+                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID.Value);
                     if (intersectDetail != null)
                     {
                         var first = list.First(i => i.TargetIntersectID == 0);
@@ -2986,9 +2986,9 @@ from    IntersectNode S
                             first = list.First(i => i.TargetIntersectID == 0);
                         }
 
-                        first.TargetIntersectID = mi.IntersectID;
+                        first.TargetIntersectID = mi.IntersectID.Value;
                         first.TargetID = mi.ID;
-                        first.TargetIntersectID = mi.IntersectID;
+                        first.TargetIntersectID = mi.IntersectID.Value;
 
                         first.TargetSubject = intersectDetail.Subject;
                         first.TargetSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>";

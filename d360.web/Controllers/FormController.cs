@@ -10028,7 +10028,11 @@ for json path");
                 case "DomainType":
                 case "IntersectType":
                 case "TaxonomyType":
-                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id && i.Type != "FusionLookup" && i.Type != "RelationLookup").OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
+                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id && 
+                        i.Type != "FilteredLookup" && 
+                        i.Type != "FusionLookup" && 
+                        i.Type != "RelationLookup"
+                    ).OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
                     break;
                 default:
                     fieldTypeNames = new List<string>();
@@ -10112,6 +10116,9 @@ for json path");
                     fieldTypeNames.Add("Source object subject area");
                     fieldTypeNames.Add("Source object");
 
+                    fieldTypeNames.Add("Source Fusion Configuration");
+                    fieldTypeNames.Add("Source Fusion Path");
+
                     fieldTypeNames.Add("Target subject type");
                     fieldTypeNames.Add("Target subject type name");
                     fieldTypeNames.Add("Target subject subject area");
@@ -10120,6 +10127,9 @@ for json path");
                     fieldTypeNames.Add("Target object type name");
                     fieldTypeNames.Add("Target object subject area");
                     fieldTypeNames.Add("Target object");
+
+                    fieldTypeNames.Add("Target Fusion Configuration");
+                    fieldTypeNames.Add("Target Fusion Path");
 
                     fieldTypeNames.Add("Transformation");
                     fieldTypeNames.Add("Role");
@@ -10312,6 +10322,19 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         document.AddDataValidation(dv);
                     }
                 }
+                else if ( type == "NewLineage" && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
+                {
+                    var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
                 else if (type == "DomainType" && lowerColName == "domain group")
                 {
                     var items = Company.Filter<DomainGroup>(x => x.DomainTypeID == id).OrderBy(x => x.Name).Select(x => x.Name);
@@ -10347,6 +10370,8 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             else if (type == "Domain" && (columnName != "name" && columnName != "code"))
                 return false;
             else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
+                return false;
+            else if (type == "NewLineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
                 return false;
 
             return true;

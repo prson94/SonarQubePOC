@@ -292,8 +292,8 @@
             $.each(data, function (ix, n) {
                 var d = createNodeModel();
 
-                d.backColor = "#000";
-                d.foreColor = "#fff";
+                d.back = "#000";
+                d.fore = "#fff";
                 d.obj = n.Intersect.Subject;
                 d.objid = n.Intersect.SubjectID;
                 d.name = htmlDecode(n.Name);
@@ -301,10 +301,10 @@
                 d.typeName = htmlDecode(n.Intersect.SubjectTypeName);
                 d.url = n.Intersect.SubjectUrl;
                 d.template = "Artifact";
-                d.objecttype = n.Intersect.SubjectType;
-                d.objecttypeid = n.Intersect.SubjectTypeID;
+                //d.objecttype = n.Intersect.SubjectType;
+                //d.objecttypeid = n.Intersect.SubjectTypeID;
                 d.key = generateRandomLineageKey(25);
-                d.isDeletable = true;
+                //d.isDeletable = true;
                 d.intersectId = n.IntersectID;
 
                 myDiagram.model.addNodeData(d);
@@ -734,7 +734,7 @@
             newLink.intersectRoleId = intersectRoleId;
             newLink.text = text;
             newLink.diagramObjectType = "Link";
-            newLink.isDeletable = true;
+            //newLink.isDeletable = true;
             newLink.id = overlayEditLinkKey;
             newLink.key = overlayEditLinkKey;
             if (newLink.id == null) {
@@ -853,7 +853,7 @@
         return {
             id: null,
             key: null,
-            intersectTypeId: null,
+            //intersectTypeId: null,
 
             from: null,
             fromIntersectId: 0,
@@ -865,13 +865,14 @@
 
             text: null,
             intersectRoleId: null,
-            isDeletable: true,
+            //isDeletable: true,
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
             transformation: null,
             hasTransformations: false,
-            hasProperties: false
+            hasProperties: false,
+            mapItems: null
         };
     };
 
@@ -882,15 +883,14 @@
             objid: null,
             name: null,
             typeName: null,
-            objecttype: null,
-            objecttypeid: null,
-            backColor: null,
-            foreColor: null,
-            isDeletable: true,
+            //objecttype: null,
+            //objecttypeid: null,
+            back: null,
+            fore: null,
+            //isDeletable: true,
             highlightColor: null,
             diagramObjectType: "Node",
             template: "Artifact",
-            mapId: null,
             intersectId: null,
             sourceRuleCount: 0,
             sourceMappingCount: 0,
@@ -1161,7 +1161,7 @@
             spot2: go.Spot.BottomRight,
             name: "NodeShape"
         },
-        new go.Binding("fill", "backColor").makeTwoWay()
+        new go.Binding("fill", "back").makeTwoWay()
        ),
         g(go.Panel,
             go.Panel.Horizontal,
@@ -1187,7 +1187,7 @@
                 font: "bold " + fontSize + "pt sans-serif"
             },
                 new go.Binding("text", "name").makeTwoWay(),
-                new go.Binding("stroke", "foreColor").makeTwoWay()
+                new go.Binding("stroke", "fore").makeTwoWay()
             ),
             g(go.TextBlock, {
                 row: 1,
@@ -1195,7 +1195,7 @@
                 maxSize: new go.Size(180, NaN),
                 font: (fontSize - 2) + "pt sans-serif"
             },
-                new go.Binding("stroke", "foreColor").makeTwoWay(),
+                new go.Binding("stroke", "fore").makeTwoWay(),
                 new go.Binding("text", "typeName").makeTwoWay()
             )//,
             //g(go.TextBlock, {
@@ -1234,7 +1234,7 @@
                      stroke: null,
                      toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: tooltip })))
                  },
-             new go.Binding("fill", "foreColor")),
+             new go.Binding("fill", "fore")),
          g(go.TextBlock,
              {
                  row: 0,
@@ -1245,7 +1245,7 @@
                  text: icon,
                  toolTip: g(go.Adornment, "Auto", g(go.Shape, { fill: "lightyellow" }), g(go.Panel, "Vertical", g(go.TextBlock, { margin: 3, text: tooltip })))
              },
-             new go.Binding("stroke", "backColor")
+             new go.Binding("stroke", "back")
          ),
         new go.Binding("visible", binding)
        );
@@ -1327,10 +1327,10 @@
                     $('#' + controlID_ribbon_remove).hide(200);
                 }
             }
-            else if (obj.diagramObjectType == 'Link' && !readonly) {
-                overlayEditLinkKey = obj.key;
-                showRelationshipOverlay(obj);
-            }
+            //else if (obj.diagramObjectType == 'Link' && !readonly) {
+            //    overlayEditLinkKey = obj.key;
+            //    showRelationshipOverlay(obj);
+            //}
         }
     }
 
@@ -1714,35 +1714,41 @@
         newLink.fromIntersectId = fromNode.intersectId;
         newLink.toIntersectId = toNode.intersectId;
 
-        var results = $.ajax({
-            url: '/form/Lineage_IntersectRoles',
-            data: null
-        }).done(function (data, status, xhr) {
-            if (data.length > 0) {
-                $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (fromNode.foreColor || 'black')
-                    + ';background-color: '
-                    + (fromNode.backColor || 'white')
-                    + ';" >'
-                    + fromNode.typeName
-                    + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (toNode.foreColor || 'black')
-                    + ';background-color: '
-                    + (toNode.backColor || 'white')
-                    + ';">'
-                    + toNode.typeName + '</span>');
+        //var results = $.ajax({
+        //    url: '/form/Lineage_IntersectRoles',
+        //    data: null
+        //}).done(function (data, status, xhr) {
+        //    if (data.length > 0) {
+        //        $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
+        //            + (fromNode.fore || 'black')
+        //            + ';background-color: '
+        //            + (fromNode.back || 'white')
+        //            + ';" >'
+        //            + fromNode.typeName
+        //            + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
+        //            + (toNode.fore || 'black')
+        //            + ';background-color: '
+        //            + (toNode.back || 'white')
+        //            + ';">'
+        //            + toNode.typeName + '</span>');
 
-                $('#' + controlID_overlay_add).show();
+        //        $('#' + controlID_overlay_add).show();
 
-                populateIntersectRoles(data);
+        //        populateIntersectRoles(data);
 
-                $('#' + controlID_overlay).show();
-            }
-            else {
-                amplify.publish('ShowMessage', { type: 'error', title: 'Not allowed', message: 'No roles defined.  Please go to Administration / MetaModel / Relationships to add roles.' });
-                e.diagram.remove(e.subject);
-            }
-        });
+        //        $('#' + controlID_overlay).show();
+        //    }
+        //    else {
+        //        amplify.publish('ShowMessage', { type: 'error', title: 'Not allowed', message: 'No roles defined.  Please go to Administration / MetaModel / Relationships to add roles.' });
+        //        e.diagram.remove(e.subject);
+        //    }
+        //});
+
+        //Four lines below are here b/c section above is commented out.
+        myDiagram.startTransaction("nameRelationship");
+        myDiagram.model.addLinkData(newLink);
+        myDiagram.commitTransaction("nameRelationship");
+        newLink = null;
     }
 
     function showRelationshipOverlay(linkData) {
@@ -1761,15 +1767,15 @@
         }).done(function (data, status, xhr) {
             if (data.length > 0) {
                 $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (fromNode.foreColor || 'black')
+                    + (fromNode.fore || 'black')
                     + ';background-color: '
-                    + (fromNode.backColor || 'white')
+                    + (fromNode.back || 'white')
                     + ';" >'
                     + fromNode.typeName
                     + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (toNode.foreColor || 'black')
+                    + (toNode.fore || 'black')
                     + ';background-color: '
-                    + (toNode.backColor || 'white')
+                    + (toNode.back || 'white')
                     + ';">'
                     + toNode.typeName + '</span>');
 
@@ -1839,13 +1845,13 @@
                 model.key = d.key;
                 model.obj = d.obj;
                 model.objid = d.objid;
-                model.objecttype = d.objecttype;
-                model.objecttypeid = d.objecttypeid;
+                //model.objecttype = d.objecttype;
+                //model.objecttypeid = d.objecttypeid;
                 model.type = d.obj;
                 model.name = htmlDecode(d.name);
                 model.typeName = d.typeName;
-                model.foreColor = d.fore;
-                model.backColor = d.back;
+                model.fore = d.fore;
+                model.back = d.back;
                 model.diagramObjectType = "Node";
                 model.intersectId = d.intersectId;
 
@@ -1872,7 +1878,7 @@
                 var d = data.links[i];
                 var link = createLinkModel();
                 link.id = d.id;
-                link.intersectTypeId = d.intersectTypeId;
+                //link.intersectTypeId = d.intersectTypeId;
                 link.key = d.id;
                 link.from = d.from;
                 link.fromIntersectId = d.fromIntersectId;
@@ -1885,6 +1891,7 @@
                 link.hasMappingRules = (d.mappingRuleCount > 0);
                 link.hasTransformations = (d.transformation);
                 link.hasProperties = (link.hasTransformations || link.hasMappingRules);
+                link.mapItems = d.mapItems;
                 linkList.push(link);
             }
         }
@@ -1908,7 +1915,7 @@
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/diagrams/' + type + '/' + id + '/lineage',
+            url: '/diagrams/' + type + '/' + id + '/lineage/2',
             data: null
         }).done(function (data, status, xhr) {
             parseData(data);

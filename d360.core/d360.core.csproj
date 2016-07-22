@@ -195,7 +195,6 @@
     <Compile Include="entities\CompanyResource.cs" />
     <Compile Include="entities\ResponsibilityTypeRelation.cs" />
     <Compile Include="entities\ResponsibilityContextItem.cs" />
-    <Compile Include="entities\ObjectVersion.cs" />
     <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />

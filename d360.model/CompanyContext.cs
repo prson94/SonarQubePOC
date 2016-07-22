@@ -262,8 +262,6 @@ namespace d360.model
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
 
-        public DbSet<ObjectVersion> ObjectVersions { get; set; }
-
         public DbSet<Policy> Policies { get; set; }
 
         public DbSet<PolicyType> PolicyTypes { get; set; }
@@ -2718,6 +2716,26 @@ order by Name", new { workflowType, type, id });
                             break;
                         case EntityState.Modified:
                             if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ID != o.ID))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Fusion
+                if (entry.Entity is Fusion)
+                {
+                    var o = entry.Entity as Fusion;
+                    var id = o.ID.ToString();
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<Fusion>(i => i.Name == o.Name))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Modified:
+                            if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }

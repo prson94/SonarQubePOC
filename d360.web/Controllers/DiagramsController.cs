@@ -54,10 +54,16 @@ namespace d360.web.Controllers
 
         #region Lineage Diagram
 
-        [HttpGet, Route("{type}/{id:int}/lineage")]
-        public JsonNetResult GetLineageByObject(SystemObjects type, int id)
+        [HttpGet, Route("{type}/{id:int}/lineage/{view:int}")]
+        public JsonNetResult GetLineageByObject(SystemObjects type, int id, int view)
         {
-            var list = Company.Query<string>(@"exec GetLineage @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
+            var list = Company.Query<string>(@"exec GetLineage @type, @id, @view", 
+                new {
+                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+                    id,
+                    view
+                }
+            ).ToList();
 
             var json = string.Join("", list);
             var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);

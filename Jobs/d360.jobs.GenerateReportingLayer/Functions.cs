@@ -359,7 +359,12 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
             try
             {
-                var companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+
+                var companies = GetActiveCompanyIDs();
+
+#if DEBUG
+                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+#endif
 
                 companies.ForEach(companyID =>
                 {
@@ -903,6 +908,108 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
                         #endregion
 
                         #region General Views
+
+                        #region All Artifacts
+
+                        objectName = $"{SCHEMA}.[Glossary_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID,
+		A.ParentID,
+		A.ArtifactTypeID,
+		A.Name,
+		A.Description,
+		A.TextPath,
+		T.Name as ArtifactType
+from	Artifact A
+		inner join ArtifactType T on T.ID = A.ArtifactTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Models
+
+                        objectName = $"{SCHEMA}.[Model_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID,
+		A.ParentID,
+		A.TaxonomyTypeID,
+		A.Name,
+		A.Description,
+		A.TextPath,
+		T.Name as TaxonomyType
+from	Taxonomy A
+		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Policies
+
+                        objectName = $"{SCHEMA}.[Policy_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID,
+		A.ParentID,
+		A.PolicyTypeID,
+		A.Name,
+		A.Description,
+		A.TextPath,
+		T.Name as PolicyType
+from	[Policy] A
+		inner join PolicyType T on T.ID = A.PolicyTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
 
                         prefix = "Global";
 

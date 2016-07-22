@@ -40,7 +40,7 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual Map Map { get; set; }
 
-        [IgnoreDataMember]
-        public virtual Intersect Intersect { get; set; }
+        //[IgnoreDataMember]
+        //public virtual Intersect Intersect { get; set; }
     }
 }

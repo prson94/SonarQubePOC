@@ -540,23 +540,30 @@ namespace d360.jobs.queue.ProcessBulkLoad
                  * Source subject type	
                  * Source subject type name	
                  * Source subject subject area	
-                 *      Source subject	
+                 * Source subject	
                  * 
                  * Source object type	
                  * Source object type name	
                  * Source object subject area	
-                 *      Source object	
+                 * Source object
+                 * 
+                 * Source Fusion Configuration
+                 * Source Fusion Path
                  * 
                  * Target subject type	
                  * Target subject type name	
                  * Target subject subject area	
-                 *      Target subject	
+                 * Target subject	
                  * 
                  * Target object type	
                  * Target object type name	
                  * Target object subject area	
-                 *      Target object	
+                 * Target object
                  * 
+                 * Target Fusion Configuration
+                 * Target Fusion Path
+                 * 
+                 * Transformation
                  * Role
                  */
                 //"Artifact", "Domain", "Policy", "Rule", "Taxonomy"
@@ -581,6 +588,7 @@ union
 select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyType").ToList();
                 var roles = company.Table<IntersectRole>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
                 var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                var fusions = company.Table<Fusion>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
 
                 #endregion
 
@@ -599,6 +607,10 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                     IntersectTypeOption verifiedType = null;
                     SimpleTypeModel verifiedSubjectArea = null;
                     SimpleTypeModel verifiedRole = null;
+
+                    SimpleTypeModel verifiedSourceFusionConfiguration = null;
+
+                    SimpleTypeModel verifiedTargetFusionConfiguration = null;
 
                     #region Look up source subject info
 
@@ -682,13 +694,44 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #endregion
 
+                    #region Lookup up source fusion configuration
+
+                    var sourceFusionConfigurationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
+                    var rawSourceFusionConfigurationColumn = (sourceFusionConfigurationColumn.Value + "").Trim().ToLower();
+                    verifiedSourceFusionConfiguration = fusions.SingleOrDefault(i => i.Name == rawSourceFusionConfigurationColumn);
+
+                    if (verifiedSourceFusionConfiguration != null)
+                    {
+                        sourceFusionConfigurationColumn.LookupObject = "Fusion";
+                        sourceFusionConfigurationColumn.LookupObjectID = verifiedSourceFusionConfiguration.ID;
+                    }
+
+                    #endregion
+
+                    #region Lookup up source fusion attribute
+
+                    if (verifiedSourceFusionConfiguration != null)
+                    {
+                        var sourceFusionAttributeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
+                        var rawSourceFusionAttributeColumn = (sourceFusionAttributeColumn.Value + "").Trim().ToLower();
+                        var verifiedSourceFusionAttribute = company.Filter<FusionAttribute>(i => i.FusionID == verifiedSourceFusionConfiguration.ID && i.TextPath.ToLower() == rawSourceFusionAttributeColumn).FirstOrDefault();
+
+                        if (verifiedSourceFusionAttribute != null)
+                        {
+                            sourceFusionAttributeColumn.LookupObject = "FusionAttribute";
+                            sourceFusionAttributeColumn.LookupObjectID = verifiedSourceFusionAttribute.ID;
+                        }
+                    }
+
+                    #endregion
+
                     #region Look up target subject info
 
                     #region Verify Type
 
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
+                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 11);
                     rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
+                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
                     rawTypeName = typeNameColumn.Value.Trim().ToLower();
                     verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
 
@@ -702,7 +745,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #region Verify Subject Area
 
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 11);
+                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 13);
                     rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
                     verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
                     if (subjectAreaColumn != null)
@@ -715,7 +758,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #region Verify Item
 
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
+                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
                     rawItem = itemColumn.Value.Trim().ToLower();
                     LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
 
@@ -727,9 +770,9 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #region Verify Type
 
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 13);
+                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 15);
                     rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
+                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
                     rawTypeName = typeNameColumn.Value.Trim().ToLower();
                     verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
 
@@ -743,7 +786,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #region Verify Subject Area
 
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 15);
+                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 17);
                     rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
                     verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
                     if (subjectAreaColumn != null)
@@ -756,7 +799,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #region Verify Item
 
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
+                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 18);
                     rawItem = itemColumn.Value.Trim().ToLower();
                     LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
 
@@ -764,16 +807,47 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     #endregion
 
+                    #region Lookup up source fusion configuration
+
+                    var targetFusionConfigurationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 19);
+                    var rawTargetFusionConfigurationColumn = (targetFusionConfigurationColumn.Value + "").Trim().ToLower();
+                    verifiedTargetFusionConfiguration = fusions.SingleOrDefault(i => i.Name == rawTargetFusionConfigurationColumn);
+
+                    if (verifiedTargetFusionConfiguration != null)
+                    {
+                        targetFusionConfigurationColumn.LookupObject = "Fusion";
+                        targetFusionConfigurationColumn.LookupObjectID = verifiedSourceFusionConfiguration.ID;
+                    }
+
+                    #endregion
+
+                    #region Lookup up source fusion attribute
+
+                    if (verifiedTargetFusionConfiguration != null)
+                    {
+                        var targetFusionAttributeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 20);
+                        var rawTargetFusionAttributeColumn = (targetFusionAttributeColumn.Value + "").Trim().ToLower();
+                        var verifiedTargetFusionAttribute = company.Filter<FusionAttribute>(i => i.FusionID == verifiedTargetFusionConfiguration.ID && i.TextPath.ToLower() == rawTargetFusionAttributeColumn).FirstOrDefault();
+
+                        if (verifiedTargetFusionAttribute != null)
+                        {
+                            targetFusionAttributeColumn.LookupObject = "FusionAttribute";
+                            targetFusionAttributeColumn.LookupObjectID = verifiedTargetFusionAttribute.ID;
+                        }
+                    }
+
+                    #endregion
+
                     #region Load transformation
 
-                    var transformationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 17);
+                    var transformationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 21);
                     var rawTransformation = transformationColumn.Value.Trim();
 
                     #endregion
 
                     #region Lookup up role
 
-                    var roleColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 18);
+                    var roleColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 22);
                     var rawRole = roleColumn.Value.Trim().ToLower();
                     verifiedRole = roles.SingleOrDefault(i => i.Name == rawRole);
 
@@ -787,8 +861,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     var sourceSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
                     var sourceObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 8);
-                    var targetSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
-                    var targetObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
+                    var targetSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
+                    var targetObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 18);
 
                     var shouldContinue = true;
 
@@ -820,8 +894,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                         if (map == null)
                         {
                             map = new Map { IntersectRoleID = verifiedRole.ID, Name = $"Map between {source.ID} and {target.ID}", Transformation = rawTransformation, MapItems = new List<MapItem>() };
-                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value S", IntersectID = source.ID, IsSource = true });
-                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value T", IntersectID = target.ID, IsSource = false });
+                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value S", Object = "Intersect", ObjectID = source.ID, IntersectID = source.ID, IsSource = true });
+                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value T", Object = "Intersect", ObjectID = target.ID, IntersectID = target.ID, IsSource = false });
                             company.Add<Map>(map);
 
                             loadItem.Status = true;
@@ -834,6 +908,48 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                             loadItem.Status = true;
                             loadItem.StatusMessage = $"Map updated.";
+                        }
+
+                        //var sourceFusionConfiguration = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
+                        var sourceFusionAttribute = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
+                        //var targetFusionConfiguration = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 19);
+                        var targetFusionAttribute = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 20);
+                        if (
+                            !string.IsNullOrEmpty(sourceFusionAttribute.LookupObject) && sourceFusionAttribute.LookupObjectID.HasValue &&
+                            !string.IsNullOrEmpty(targetFusionAttribute.LookupObject) && targetFusionAttribute.LookupObjectID.HasValue
+                            )
+                        {
+                            var mapRule = company.Filter<MapRule>(i =>
+                                i.MapRuleItems.Any(mi => mi.FusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.IsSource) &&
+                                i.MapRuleItems.Any(mi => mi.FusionAttributeID == targetFusionAttribute.LookupObjectID.Value && !mi.IsSource),
+                                i => i.MapRuleItems
+                                ).FirstOrDefault();
+
+                            if (mapRule == null)
+                            {
+                                mapRule = new MapRule { Name = $"", MapRuleItems = new List<MapRuleItem>() };
+                                mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = source.ID, IsSource = true });
+                                mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = target.ID, IsSource = false });
+                                company.Add<MapRule>(mapRule);
+
+                                loadItem.StatusMessage += $" Technical Map created.";
+                            }
+                            else
+                            {
+                                //map.Transformation = rawTransformation;
+                                //company.Update<MapRule>(mapRule);
+
+                                //loadItem.StatusMessage += $" Technical Map updated.";
+                            }
+
+                            if (map != null && mapRule != null)
+                            {
+                                var joinRecord = company.Query<dynamic>("select * from MapRuleMap where MapRuleID = @r and MapID = @m", new { r = mapRule.ID, m = map.ID }).FirstOrDefault();
+                                if (joinRecord == null)
+                                {
+                                    company.Execute("insert into MapRuleMap values (@r, @m)", new { r = mapRule.ID, m = map.ID });
+                                }
+                            }
                         }
                     }
                 }
