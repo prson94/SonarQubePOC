@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System;
+using System.Collections.Generic;
 
 namespace d360.core.entities
 {
@@ -8,22 +9,10 @@ namespace d360.core.entities
     public class MapItem : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        public int MapID { get; set; }
+        public int SourceIntersectID { get; set; }
 
         [DataMember]
-        public int? IntersectID { get; set; }
-
-        [DataMember]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int? ObjectID { get; set; }
-
-        [DataMember]
-        public bool IsSource { get; set; }
-
-        [DataMember]
-        public string DiagramKey { get; set; }
+        public int TargetIntersectID { get; set; }
 
         [DataMember]
         public DateTime? CreatedOn { get; set; }
@@ -37,10 +26,16 @@ namespace d360.core.entities
         [DataMember]
         public int? UpdatedBy { get; set; }
 
-        [IgnoreDataMember]
-        public virtual Map Map { get; set; }
+        [DataMember]
+        public virtual ICollection<Map> Maps { get; set; }
 
-        //[IgnoreDataMember]
-        //public virtual Intersect Intersect { get; set; }
+        [DataMember]
+        public virtual ICollection<MapRuleItem> MapRuleItems { get; set; }
+
+        [IgnoreDataMember]
+        public virtual Intersect SourceIntersect { get; set; }
+
+        [IgnoreDataMember]
+        public virtual Intersect TargetIntersect { get; set; }
     }
 }

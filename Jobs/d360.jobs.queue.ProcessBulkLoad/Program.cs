@@ -886,16 +886,14 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                     if (shouldContinue)
                     {
                         var map = company.Filter<Map>(i =>
-                            i.MapItems.Any(mi => mi.IntersectID == source.ID && mi.IsSource) &&
-                            i.MapItems.Any(mi => mi.IntersectID == target.ID && !mi.IsSource),
+                            i.MapItems.Any(mi => mi.SourceIntersectID == source.ID && mi.TargetIntersectID == target.ID),
                             i => i.MapItems
                             ).FirstOrDefault();
 
                         if (map == null)
                         {
-                            map = new Map { IntersectRoleID = verifiedRole.ID, Name = $"Map between {source.ID} and {target.ID}", Transformation = rawTransformation, MapItems = new List<MapItem>() };
-                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value S", Object = "Intersect", ObjectID = source.ID, IntersectID = source.ID, IsSource = true });
-                            map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value T", Object = "Intersect", ObjectID = target.ID, IntersectID = target.ID, IsSource = false });
+                            map = new Map { IntersectRoleID = verifiedRole.ID, Transformation = rawTransformation, MapItems = new List<MapItem>() };
+                            map.MapItems.Add(new MapItem { SourceIntersectID = source.ID, TargetIntersectID = target.ID });
                             company.Add<Map>(map);
 
                             loadItem.Status = true;
@@ -920,16 +918,14 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                             )
                         {
                             var mapRule = company.Filter<MapRule>(i =>
-                                i.MapRuleItems.Any(mi => mi.FusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.IsSource) &&
-                                i.MapRuleItems.Any(mi => mi.FusionAttributeID == targetFusionAttribute.LookupObjectID.Value && !mi.IsSource),
+                                i.MapRuleItems.Any(mi => mi.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value),
                                 i => i.MapRuleItems
                                 ).FirstOrDefault();
 
                             if (mapRule == null)
                             {
-                                mapRule = new MapRule { Name = $"", MapRuleItems = new List<MapRuleItem>() };
-                                mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = source.ID, IsSource = true });
-                                mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = target.ID, IsSource = false });
+                                mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
+                                mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = source.ID, TargetFusionAttributeID = target.ID });
                                 company.Add<MapRule>(mapRule);
 
                                 loadItem.StatusMessage += $" Technical Map created.";
@@ -944,10 +940,15 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                             if (map != null && mapRule != null)
                             {
-                                var joinRecord = company.Query<dynamic>("select * from MapRuleMap where MapRuleID = @r and MapID = @m", new { r = mapRule.ID, m = map.ID }).FirstOrDefault();
+                                var mapItem = map.MapItems.Single(i => i.SourceIntersectID == source.ID && i.TargetIntersectID == target.ID);
+                                var mapRuleItem = mapRule.MapRuleItems.Single(i => i.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && i.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value);
+
+                                var joinRecord = company.Query<dynamic>(@"
+select * from MapRuleItemMapItem where MapRuleItemID = @r and MapItemID = @m", 
+new { r = mapRule.ID, m = map.ID }).FirstOrDefault();
                                 if (joinRecord == null)
                                 {
-                                    company.Execute("insert into MapRuleMap values (@r, @m)", new { r = mapRule.ID, m = map.ID });
+                                    company.Execute("insert into MapRuleItemMapItem values (@r, @m)", new { r = mapRule.ID, m = map.ID });
                                 }
                             }
                         }

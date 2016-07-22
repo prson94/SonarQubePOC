@@ -9,9 +9,6 @@ namespace d360.core.entities
     public class Map : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        public string Name { get; set; }
-
-        [DataMember]
         public int? IntersectRoleID { get; set; }
 
         [DataMember]
@@ -34,9 +31,6 @@ namespace d360.core.entities
 
         [DataMember]
         public virtual ICollection<MapItem> MapItems { get; set; }
-
-        [DataMember]
-        public virtual ICollection<MapRule> MapRules { get; set; }
 
         [DataMember]
         public virtual ICollection<MapSequence> MapSequences { get; set; }

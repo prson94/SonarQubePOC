@@ -9630,38 +9630,34 @@ for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, 
             models.Items.ForEach(m =>
             {
                 modelsSql += (string.IsNullOrEmpty(modelsSql)) ? "" : " union ";
-                modelsSql += $"select {m.SourceIntersectID} as SourceIntersectID, '{m.SourceDiagramKey}' as SourceDiagramKey, {m.TargetIntersectID} as TargetIntersectID, '{m.TargetDiagramKey}' as TargetDiagramKey";
+                modelsSql += $"select {m.SourceIntersectID} as SourceIntersectID, {m.TargetIntersectID} as TargetIntersectID";
             });
-
+            //need work on this query.
             var list = Company.Query<string>($@"
 select	MR.ID,
         O.SourceIntersectID,
-        O.SourceDiagramKey,
         O.TargetIntersectID,
-		O.TargetDiagramKey,
         (
 			select	I.ID,
-					I.FusionAttributeID,
+					I.SourceFusionAttributeID as FusionAttributeID,
 					A.TextPath as FusionAttributeTextPath
 			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 1
+					inner join FusionAttribute A on A.ID = I.SourceFusionAttributeID and I.MapRuleID = MR.ID
 			for json path
 		) as Sources,
 		(
 			select	I.ID,
-					I.FusionAttributeID,
+					I.TargetFusionAttributeID as FusionAttributeID,
 					A.TextPath as FusionAttributeTextPath
 			from	MapRuleItem I
-					inner join FusionAttribute A on A.ID = I.FusionAttributeID and I.MapRuleID = MR.ID and I.IsSource = 0
+					inner join FusionAttribute A on A.ID = I.TargetFusionAttributeID and I.MapRuleID = MR.ID
 			for json path
 		) as Targets,
 		MR.Transformation
 from	MapRule MR
-		inner join MapRuleMap MRM on MRM.MapRuleID = MR.ID
-		inner join Map M on M.ID = MRM.MapID
-		inner join MapItem SMI on SMI.MapID = M.ID and SMI.IsSource = 1
-		inner join MapItem TMI on TMI.MapID = M.ID and TMI.IsSource = 0
-        inner join ({modelsSql}) O on O.SourceIntersectID = SMI.IntersectID and O.SourceDiagramKey = SMI.DiagramKey and O.TargetIntersectID = TMI.IntersectID and O.TargetDiagramKey = TMI.DiagramKey
+		inner join MapItemMap MIM on
+        inner join MapItem MI on MI.SourceIntersectID
+		inner join ({modelsSql}) O on O.SourceIntersectID = SMI.IntersectID and O.SourceDiagramKey = SMI.DiagramKey and O.TargetIntersectID = TMI.IntersectID and O.TargetDiagramKey = TMI.DiagramKey
 for json path");
 
             var json = string.Join("", list);
@@ -9689,8 +9685,7 @@ for json path");
             model.Rules.ForEach(viewRule =>
             {
                 var map = Company.Filter<Map>(i =>
-                    i.MapItems.Any(mi => mi.IntersectID == viewRule.SourceIntersectID && mi.DiagramKey == viewRule.SourceDiagramKey && mi.IsSource) &&
-                    i.MapItems.Any(mi => mi.IntersectID == viewRule.TargetIntersectID && mi.DiagramKey == viewRule.TargetDiagramKey && !mi.IsSource),
+                    i.MapItems.Any(mi => mi.SourceIntersectID == viewRule.SourceIntersectID && mi.TargetIntersectID == viewRule.TargetIntersectID),
                     i => i.MapItems
                     ).FirstOrDefault();
 
@@ -9720,7 +9715,6 @@ for json path");
                         {
                             mapRule = new MapRule
                             {
-                                Name = $"Some rule {Guid.NewGuid()}",
                                 MapRuleItems = new List<MapRuleItem>()
                             };
                         }
@@ -9733,63 +9727,24 @@ for json path");
 
                             viewRule.Sources.ForEach(s =>
                             {
-                                if (s.ID > 0)
+                                if (s.FusionAttributeID > 0)
                                 {
-                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.ID == s.ID);
-                                    if (existingMapRuleItem != null)
-                                    {
-                                        // Check to ensure that there is a fusion attribute with an actual ID present.
-                                        if (s.FusionAttributeID > 0)
-                                        {
-                                            existingMapRuleItem.FusionAttributeID = s.FusionAttributeID;
-                                        }
-                                        else
-                                        {
-                                            message += " No valid fusion attribute assigned.";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        message += $" No existing map rule item found with the ID of {s.ID}.";
-                                    }
-                                }
-                                else
-                                {
-                                    //This is a new source map rule item.
-                                    mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = s.FusionAttributeID, IsSource = true });
-                                }
-                            });
+                                    #region Process Targets
 
-                            #endregion
-
-                            #region Process Targets
-
-                            viewRule.Targets.ForEach(t =>
-                            {
-                                if (t.ID > 0)
-                                {
-                                    var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.ID == t.ID);
-                                    if (existingMapRuleItem != null)
+                                    viewRule.Targets.ForEach(t =>
                                     {
-                                        // Check to ensure that there is a fusion attribute with an actual ID present.
                                         if (t.FusionAttributeID > 0)
                                         {
-                                            existingMapRuleItem.FusionAttributeID = t.FusionAttributeID;
+                                            var existingMapRuleItem = mapRule.MapRuleItems.SingleOrDefault(i => i.SourceFusionAttributeID == s.FusionAttributeID && i.TargetFusionAttributeID == t.FusionAttributeID);
+                                            if (existingMapRuleItem == null)
+                                            {
+                                                mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = s.FusionAttributeID, TargetFusionAttributeID = t.FusionAttributeID });
+                                            }
                                         }
-                                        else
-                                        {
-                                            message += " No valid fusion attribute assigned.";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        message += $" No existing map rule item found with the ID of {t.ID}.";
-                                    }
-                                }
-                                else
-                                {
-                                    //This is a new source map rule item.
-                                    mapRule.MapRuleItems.Add(new MapRuleItem { FusionAttributeID = t.FusionAttributeID, IsSource = false });
+                                    });
+
+                                    #endregion
+
                                 }
                             });
 
@@ -9815,9 +9770,6 @@ for json path");
                             try
                             {
                                 Company.SaveOrUpdate<MapRule>(mapRule);
-
-                                map.MapRules.Add(mapRule);
-                                Company.SaveChanges();
 
                                 if (canDelete)
                                 {
@@ -9916,10 +9868,9 @@ for json path");
                         }
                         else
                         {
-                            var newMap = new Map { Name = $"Map between {model.SourceIntersectID} and {model.TargetIntersectID}", IntersectRoleID = model.IntersectRoleID, Transformation = model.Transformation };
+                            var newMap = new Map { IntersectRoleID = model.IntersectRoleID, Transformation = model.Transformation };
                             newMap.MapItems = new List<MapItem>();
-                            newMap.MapItems.Add(new MapItem { IsSource = true, IntersectID = model.SourceIntersectID, DiagramKey = model.SourceKey });
-                            newMap.MapItems.Add(new MapItem { IsSource = false, IntersectID = model.TargetIntersectID, DiagramKey = model.TargetKey });
+                            newMap.MapItems.Add(new MapItem { SourceIntersectID = model.SourceIntersectID, TargetIntersectID = model.TargetIntersectID });
                             Company.Add<Map>(newMap);
                         }
                     }

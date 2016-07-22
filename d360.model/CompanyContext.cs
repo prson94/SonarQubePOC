@@ -2430,9 +2430,19 @@ order by Name", new { workflowType, type, id });
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<MapRule>().HasMany<Map>(i => i.Maps).WithMany(i => i.MapRules).Map(i =>
+            modelBuilder.Entity<MapRuleItem>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.MapRuleItems).Map(i =>
             {
-                i.MapLeftKey("MapRuleID").MapRightKey("MapID").ToTable("MapRuleMap");
+                i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
+            });
+
+            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
+            {
+                i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
+            });
+
+            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i =>
+            {
+                i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
             modelBuilder.Entity<FusionRuleStep>().HasRequired(t => t.FusionRule).WithMany(t => t.FusionRuleSteps).HasForeignKey(k => k.RuleID).WillCascadeOnDelete(true);

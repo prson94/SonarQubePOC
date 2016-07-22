@@ -9,9 +9,6 @@ namespace d360.core.entities
     public class MapRule : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        public string Name { get; set; }
-        
-        [DataMember]
         public string Transformation { get; set; }
 
         [DataMember]
@@ -28,8 +25,5 @@ namespace d360.core.entities
         
         [DataMember]
         public virtual ICollection<MapRuleItem> MapRuleItems { get; set; }
-
-        [DataMember]
-        public virtual ICollection<Map> Maps { get; set; }
     }
 }
