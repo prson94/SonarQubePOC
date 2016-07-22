@@ -32,6 +32,7 @@ public static class ContextList
         public const string FusionRule = "fusionrule";
         public const string FusionRuleStep = "fusionrulestep";
         public const string FusionType = "fusiontypeform";
+        public const string FusionTechnicalMapping = "FusionTechnicalMapping";
         public const string Group = "groupform";
         public const string Hierarchy = "hierarchyform";
         public const string Intersect = "intersectform";

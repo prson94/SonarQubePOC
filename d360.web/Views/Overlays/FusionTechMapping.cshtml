@@ -233,7 +233,7 @@
     
         var tools = [{ icon: 'plus', uri: "/form/AddTechnicalMapping", context: _context, title: 'Add technical mapping' }];
         
-     //   TileTools('#TechMappingTools', tools);
+        TileTools('#TechMappingTools', tools);
 
         amplify.subscribe('CancelAction', cancelAction, 1);
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
