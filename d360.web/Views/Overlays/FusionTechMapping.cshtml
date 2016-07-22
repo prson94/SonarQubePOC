@@ -114,11 +114,12 @@
             [
                 { name: 'SourceObjectName', type: 'string' },
                 { name: 'SourceObject', type: 'string' },
-                { name: 'SourceObjectID', type: 'number' },
+                { name: 'SourceObjectID', type: 'number' },                
                 { name: 'SourceFusionAttributeTextPath', type: 'string' },
                 { name: 'TargetObjectName', type: 'string' },
                 { name: 'TargetObject', type: 'string' },
                 { name: 'TargetObjectID', type: 'number' },
+                { name: 'MapRuleItemID', type: 'number' },
                 { name: 'TargetFusionAttributeTextPath', type: 'string' },
                 { name: 'MapID', type: 'number' }                
             ]
@@ -155,10 +156,13 @@
               },
               { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '28%' },
               { text: 'Group Key', datafield: 'MapID', width: '5%'},
-           /*   {
+             /* {
                   text: '', dataField: '', width: '5%', filterable: false, editable : false,
-                  cellsRenderer: function (row, column, value, data) {
-                      return '<div class="RowTools"><div class="row-icon"><a title="Remove mapping" id="DeleteRow" onclick="DeleteRow(event)"><i class="fa fa-trash-o"></i></a></div></div>';
+                  cellsRenderer: function (index, datafield, value, defaultvalue, column, data){
+                      console.log(data);
+                      var tools = [{ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?mapruleitemid=' + data.MapRuleItemID }];
+                      
+                      return renderToolsHtml(value, tools, _context, data);                      
                   }
               }*/
             ]

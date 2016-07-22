@@ -2142,7 +2142,7 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("fusion/technicalmapping")]
         public async System.Threading.Tasks.Task<IEnumerable<FusionTechnicalMapppingModel>> GetFusionTechnicalMapping()
         {
-            return await Company.QueryAsync<FusionTechnicalMapppingModel>("GetFusionTechnicalMapping");
+            return await Company.QueryAsync<FusionTechnicalMapppingModel>("GetTechnicalMapping");
             
         }
 

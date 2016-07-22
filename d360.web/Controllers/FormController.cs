@@ -5960,6 +5960,47 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        public ActionResult DeleteTechnicalMapping(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = "FusionTechnicalMapping",
+                FieldUri = string.Format("/form/FusionTechincalMapping_DeleteFields?ID={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Mapping"),
+                FormUri = "/form/DeleteTechnicalMapping",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteTechnicalMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("configuration");
+
+                Company.Delete<MapRuleItem>(model);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        
+
         #endregion
 
         #endregion
@@ -5994,6 +6035,19 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Data = types,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+                
+        public JsonResult FusionTechincalMapping_DeleteFields(int source, int target)
+        {
+            var list = new List<EditableField>();
+
+            //if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
+            //    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = source.ToString() });
+            list.Add(new EditableField { FieldName = "TargetID", FieldType = DataType.Hidden.ToString(), Value = target.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult FusionFilter_DeleteFields(int f, int a)

@@ -519,7 +519,7 @@
     <None Include="fusion\Stored Procedures\Rules.sql" />
     <None Include="dbo\Functions\ArtifactNgSiteNavigation.sql" />
     <None Include="dbo\Functions\GenerateNgObjectUrl.sql" />
-    <None Include="dbo\Stored Procedures\GetFusionTechnicalMapping.sql" />
+    <None Include="dbo\Stored Procedures\GetTechnicalMapping.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />
