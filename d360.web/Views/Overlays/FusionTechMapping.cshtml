@@ -1,28 +1,27 @@
 ﻿<div class="large-overlay">
-    <div class="ui segment">        
-        <div class="left form-header-info">
-            <h4>Fusion Technical Mapping</h4>
-        </div>
-        <div class="right">
-            <button type="button" id="CancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Close</button>            
-        </div>
-        <div class="clear"></div>
-        <div class="form-instructions"></div>
-        <div id="HistoryViewer">
+    <div class="ui segment" id="HistoryViewer">                
+            <div class="left form-header-info">
+                <h4>Fusion Technical Mapping</h4>
+            </div>
+            <div class="right">
+                <button type="button" id="CancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Close</button>
+            </div>
+            <div class="clear"></div>
+            <div class="form-instructions"></div>
             <div class="row">
                 <div class="col s12">
                     <div class="root-tile">
-                        <header>        
+                        <header>
                             <!--<div id="Tools" class="TileTools">
-                                <a id="addMapping" style="margin-left: 10px" class="btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-plus" title="Add Mapping"></i></a>
-                            </div>-->
+                            <a id="addMapping" style="margin-left: 10px" class="btn-floating waves-effect waves-light brown lighten-1"><i class="fa fa-plus" title="Add Mapping"></i></a>
+                        </div>-->
                         </header>
                         <div id="TechmappingGrid"></div>
                     </div>
-                </div>                
+                </div>
             </div>
-        </div>        
-    </div>
+        </div>            
+    <div id="HistoryEditor"></div>
 </div>
 
 
@@ -32,6 +31,29 @@
     var artifactAdapter;
     var gridSource;
     var gridDataAdapter;
+
+    var switchToViewer = function () {
+        $('#HistoryEditor').html('');
+        $('#HistoryEditor').fadeOut(1);
+        $('#HistoryViewer').fadeIn(500);
+        console.log("refreshing grid");
+        $('#TechmappingGrid').jqxGrid('updatebounddata');
+    }
+
+    var switchToEditor = function (uri) {
+        try {
+            $('#HistoryViewer').fadeOut(10);
+            $('#HistoryEditor').fadeIn(10);
+            $('#HistoryEditor').load(uri, function (response, status, xhr) {
+                if (status == "error") {
+                    amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                    switchToViewer();
+                }
+            });
+        } catch (e) {
+
+        }
+    }
         
     function unsubscribe() {
         artifactSource = null;
@@ -44,8 +66,51 @@
         $('#SaveButton').off('click');
         $('#DeleteRow').off('click');
 
+        amplify.unsubscribe('ToolAction', localAction);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
+
+    function cancelAction(data) {
+        try {
+            console.log(data.context);
+            switch (data.context) {
+                case _context:
+                    switchToViewer();                    
+                    return false;
+                    break;
+            }
+        } catch (e) {
+            logError("FetchTechMapping : CancelAction", e);
+        }
+    }
+        
+    function saveAction(data) {
+        try {
+            console.log(data.context);
+            switch (data.context) {
+                case _context:
+                    switchToViewer();                    
+                    return false;
+                    break;
+            }
+        } catch (e) {
+            logError("FetchTechMapping : SaveAction", e);
+        }
+    }
+
+    function localAction(data) {
+        try {
+            console.log(data.context);
+            switch (data.context) {
+                case _context:
+                    switchToEditor(data.uri);
+                    return false;
+                    break;
+            }
+        } catch (e) {
+            logError("FetchTechMapping : LocalAction", e);
+        }
+    };
         
     function DeleteRow(event) {
         var selectedrowindex = $("#TechmappingGrid").jqxGrid('getselectedrowindex');
@@ -68,7 +133,7 @@
         });
 
         $("#CancelButton").click(function (event) {
-            amplify.publish("CancelAction", { context: _context });
+            amplify.publish("CancelAction", { context: _context + "_close" });
             event.preventDefault();
         });
 
@@ -147,24 +212,23 @@
                         editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
                   }
               },
-              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '27%' },
+              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '25%' },
               {
                   text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '20%', cellbeginedit: rowEdit,
                   createeditor: function (row, value, editor) {
                       editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
                   }
               },
-              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '28%' },
+              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '25%' },
               { text: 'Group Key', datafield: 'MapID', width: '5%'},
-             /* {
+              {
                   text: '', dataField: '', width: '5%', filterable: false, editable : false,
-                  cellsRenderer: function (index, datafield, value, defaultvalue, column, data){
-                      console.log(data);
-                      var tools = [{ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?mapruleitemid=' + data.MapRuleItemID }];
+                  cellsRenderer: function (index, datafield, value, defaultvalue, column, data){                      
+                      var tools = [{ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?id=' + data.MapRuleItemID }];
                       
                       return renderToolsHtml(value, tools, _context, data);                      
                   }
-              }*/
+              }
             ]
         });
         // events
@@ -176,6 +240,12 @@
             //var args = event.args;
             //$("#cellendeditevent").text("Event Type: cellendedit, Column: " + args.datafield + ", Row: " + (1 + args.rowindex) + ", Value: " + args.value);
         });
+
+        amplify.subscribe('CancelAction', cancelAction, 1);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+        amplify.subscribe('SaveAction', saveAction, 1);
+        amplify.subscribe('ToolAction', localAction, 1);
 
 
         $("html, body").animate({ scrollTop: 0 }, "slow");

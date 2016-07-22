@@ -5968,7 +5968,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             {
                 Context = "FusionTechnicalMapping",
                 FieldUri = string.Format("/form/FusionTechincalMapping_DeleteFields?ID={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Mapping"),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "the selected mapping"),
                 FormUri = "/form/DeleteTechnicalMapping",
                 FormMethod = "DELETE"
             };
@@ -5983,9 +5983,15 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
 
-                var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
+                var mapRuleItemId = parseIntField(form, "ID");
+
+                var model = Company.GetById<MapRuleItem>(mapRuleItemId);
                 if (model == null) throw new NotFoundException("configuration");
 
+                //delete the map rule item map rule record
+                Company.Query<int>(@"delete [dbo].[mapruleitemmaprule] where [mapruleitemid] = @id", new { id = model.ID });
+                                
+                //delete the map rule item
                 Company.Delete<MapRuleItem>(model);
                 return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
@@ -6037,16 +6043,15 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
                 
-        public JsonResult FusionTechincalMapping_DeleteFields(int source, int target)
+        public JsonResult FusionTechincalMapping_DeleteFields(int ID)
         {
             var list = new List<EditableField>();
 
-            //if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
-            //    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+           // if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
+             //   return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-            list.Add(new EditableField { FieldName = "SourceID", FieldType = DataType.Hidden.ToString(), Value = source.ToString() });
-            list.Add(new EditableField { FieldName = "TargetID", FieldType = DataType.Hidden.ToString(), Value = target.ToString() });
-
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = ID.ToString() });
+            
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
