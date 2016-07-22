@@ -1164,6 +1164,253 @@ function MapSelectionModel(data) {
 
 function LineagePanelViewModel(data, permissions) {
     var self = this;
+
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+
+    self.Items = ko.observableArray([]);
+
+    self.IsSaving = ko.observable(false);
+    self.IsLoading = ko.observable(false);
+
+    self.AddItem = function () {
+        self.Items.push(new LineagePanelViewModelLine({}, permissions, self));
+    }
+
+    self.AddItem();
+}
+
+function LineagePanelViewModelLine(data, permissions, parent) {
+    var self = this;
+
+    self.SourceTypes = ko.observableArray([]);
+    self.TargetTypes = ko.observableArray([]);
+    self.SourceTypeIndex = ko.observable(-1);
+    self.TargetTypeIndex = ko.observable(-1);
+    self.SourceIntersectTypeID = ko.observable(-1);
+    self.TargetIntersectTypeID = ko.observable(-1);
+
+    self.SourceObjects = ko.observableArray([]);
+    self.TargetObjects = ko.observableArray([]);
+    self.SourceObjectIndex = ko.observable(-1);
+    self.TargetObjectIndex = ko.observable(-1);
+
+    self.IsSaving = ko.observable(false);
+    self.IsLoading = ko.observable(false);
+
+    self.Items = ko.observableArray([]);
+
+    //self.Items.push(new LineagePanelViewModelLineItem({}, permissions, parent));
+
+    self.Advanced = ko.observable(false);
+
+    self.SourceTypeIndex.subscribe(function () {
+        self.SourceObjectIndex(-1);
+        self.SourceObjects([]);
+
+        var source;
+        if (self.SourceTypeIndex() >= 0 && self.SourceTypes().length > 0)
+            source = self.SourceTypes()[self.SourceTypeIndex()];
+
+        if (source) {
+            var type = source.value.split('|')[0];
+            var id = source.value.split('|')[1];
+            self.SourceIntersectTypeID(source.intersectTypeID);
+            self.LoadTargetTypes(type, id);
+        }
+    });
+
+    self.TargetTypeIndex.subscribe(function () {
+        self.TargetIntersectTypeID(-1);
+        self.TargetObjectIndex(-1);
+        self.TargetObjects([]);
+        var intersect;
+        if (self.TargetTypeIndex() >= 0 && self.TargetTypes().length > 0)
+            intersect = self.TargetTypes()[self.TargetTypeIndex()].intersectTypeID;
+        if (intersect) {
+            self.TargetIntersectTypeID(intersect);
+        } else {
+            self.TargetIntersectTypeID(-1);
+        }
+    });
+
+    self.TargetIntersectTypeID.subscribe(function () {
+        if (self.TargetIntersectTypeID() >= 0) {
+            self.LoadTargetObjects(self.TargetIntersectTypeID());
+            //console.log('target intersect ID: ' + self.TargetIntersectTypeID());
+            //get targets
+        }
+    });
+
+    self.SourceIntersectTypeID.subscribe(function () {
+        if (self.SourceIntersectTypeID() >= 0) {
+            self.LoadSourceObjects(self.SourceIntersectTypeID());
+            //console.log('source intersect ID: ' + self.SourceIntersectTypeID());
+            //get sources
+        }
+    });
+
+    self.TargetObjectIndex.subscribe(function () {
+        self.LoadSharedObjects();
+    });
+    self.SourceObjectIndex.subscribe(function () {
+        self.LoadSharedObjects();
+    });
+
+    self.LoadSharedObjects = function () {
+        var data = {};
+        self.Items([]);
+
+        if (self.TargetIntersectTypeID() < 0 || self.SourceObjectIndex() < 0 || self.TargetObjectIndex() < 0 || self.SourceTypeIndex() < 0 || self.TargetTypeIndex() < 0)
+            return;
+        if (self.SourceObjects().length < 1 || self.TargetObjects().length < 1)
+            return;
+        if (self.SourceTypes().length < 1 || self.TargetTypes().length < 1)
+            return;
+
+
+        var source = self.SourceObjects()[self.SourceObjectIndex()];
+        var target = self.TargetObjects()[self.TargetObjectIndex()];
+        var sourceType = self.SourceTypes()[self.SourceTypeIndex()];
+        var targetType = self.SourceTypes()[self.TargetTypeIndex()];
+
+        if (!source || !target || !sourceType || !targetType)
+            return;
+
+        data.source = source.value.split('|')[0];
+        data.sourceID = source.value.split('|')[1];
+        data.target = target.value.split('|')[0];
+        data.targetID = target.value.split('|')[1];
+        data.sourceType = sourceType.value.split('|')[0];
+        data.sourceTypeID = sourceType.value.split('|')[1];
+        data.targetType = targetType.value.split('|')[0];
+        data.targetTypeID = targetType.value.split('|')[1];
+
+        $.ajax({
+            url: '/form/Lineage_IntersectSharedObjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+            }
+            console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.AddItem = function () {
+        self.Items.push(new LineagePanelViewModelLineItem({}, permissions, self));
+    }
+
+    self.LoadSourceTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypeSources',
+            method: 'GET'
+        }).done(function (data) {
+            self.SourceTypes(data);
+            self.SourceTypeIndex(-1);
+            //console.log(data); 
+        }).always(function () {
+            self.IsLoading(false);
+            self.AddItem();
+        });
+    }
+
+    self.LoadTargetTypes = function (type, id) {
+        self.IsLoading(true);
+        self.TargetTypeIndex(-1);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypeSources',
+            method: 'GET'
+        }).done(function (data) {
+            self.TargetTypes(data);
+
+            if (self.TargetTypes().length == 1)
+                self.TargetTypeIndex(0);
+            else
+                self.TargetTypeIndex(-1);
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSourceObjects = function (intersectID) {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.SourceIntersectTypeID() },
+            method: 'GET'
+        }).done(function (data) {
+            self.SourceObjects(data);
+            self.SourceObjectIndex(-1);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadTargetObjects = function (intersectID) {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.TargetIntersectTypeID() },
+            method: 'GET'
+        }).done(function (data) {
+            self.TargetObjects(data);
+            self.TargetObjectIndex(-1);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSourceTypes();
+
+    //self.AddItem
+}
+
+function LineagePanelViewModelLineItem(data, permissions, parent) {
+    var self = this;
+
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+
+
+    if (data) {
+
+        var source = {
+            Object: data.Source,
+            ObjectID: data.SourceID,
+            ObjectName: data.SourceName,
+            IntersectID: data.SourceIntersectID
+        };
+
+        var target = data;
+        target.IntersectID = data.ObjectIntersectID;
+
+        self.Sources.push(new LineagePanelViewModelItem(source, permissions, self));
+        self.Targets.push(new LineagePanelViewModelItem(target, permissions, self));
+
+    }
+}
+
+function LineagePanelViewModelItem(data, permissions, parent) {
+    var self = this;
+    self.IntersectID = ko.observable(data.IntersectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.ObjectName = ko.observable(data.ObjectName || 0);
+}
+
+
+//#region Old
+
+function LineagePanelViewModel_Old(data, permissions) {
+    var self = this;
     self.jqxLoaded = false;
 
     //#region Observables
@@ -1354,6 +1601,8 @@ function LineagePanelViewItemModel(data, permissions, parent) {
 
     return self;
 }
+
+//#endregion
 
 //#endregion
 

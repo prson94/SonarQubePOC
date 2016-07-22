@@ -417,7 +417,7 @@
 </script>
 
 
-<script id="lineageEditTmpl" type="text/html">
+<script id="lineageEditTmpl_Old" type="text/html">
     <div style="min-height: 250px; height: 250px">
         <div class="row">
             <div class="col s12">
@@ -485,6 +485,156 @@
         </div>
     </div>
 </script>
+
+
+<script id="lineageEditTmpl" type="text/html">
+    <div style="min-height: 250px; height: 250px">
+        <div class="row">
+            <div class="col s12">
+                <table>
+                    <tbody>
+                        <tr>
+                            <th colspan="12" style="text-align:center;">
+                                Business Mapping
+                            </th>
+                        </tr>
+                        <tr>
+                            <th colspan="5">
+                                <div style="background-color:black;color:white;">
+                                    &nbsp;Source
+                                </div>
+                            </th>
+                            <th colspan="2"></th>
+                            <th colspan="5">
+                                <div style="background-color:black;color:white;">
+                                    &nbsp;Target
+                                </div>
+                            </th>
+                        </tr>
+                    </tbody>
+                    <tbody data-bind="foreach: Items">
+                        <tr>
+                            <td colspan="2" style="vertical-align:top;width:16.67%;">
+                                <div data-bind="jqxDropDownList: {
+                                    theme: theme,
+                                    source: SourceTypes,
+                                    selectedIndex: SourceTypeIndex,
+                                    dropDownHeight: 250,
+                                    height: field_height,
+                                    width: field_width98,
+                                    displayMember: 'label',
+                                    valueMember: 'value',
+                                    enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                            <td colspan="2" style="vertical-align:top;width:16.67%;">
+                                <div data-bind="jqxDropDownList: {
+                                    theme: theme,
+                                    source: SourceObjects,
+                                    selectedIndex: SourceObjectIndex,
+                                    dropDownHeight: 250,
+                                    height: field_height,
+                                    width: field_width98,
+                                    displayMember: 'title',
+                                    valueMember: 'value',
+                                    enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                            <td colspan="4" style="vertical-align:top;width:33.33%">
+
+                                <table data-bind="ifnot: Advanced">
+                                    <tbody data-bind="foreach: Items">
+                                        <!-- ko foreach: Sources -->
+                                        <tr>
+                                            <td data-bind="text: ObjectName" style="text-align:center;"></td>
+                                            @*<td width="20">
+                                                +
+                                            </td>
+                                            <td width="20">
+                                                *
+                                            </td>*@
+                                        </tr>
+                                        <!-- /ko -->
+                                    </tbody>
+                                </table>
+
+                                <!--
+                                <table data-bind="ifnot: Advanced">
+                                    <tbody data-bind="foreach: Items">
+
+                                        <tr>
+                                            <td data-bind="text: ObjectName"></td>
+                                            <td width="20">
+                                                +
+                                            </td>
+                                            <td width="20">
+                                                *
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                                <table data-bind="if: Advanced">
+                                    <tbody data-bind="foreach: Items">
+                                        <tr>
+                                            <td style="vertical-align:top;">
+                                                <ul data-bind="foreach: Sources" style="margin-top:0;">
+                                                    <li data-bind="text: ObjectName"></li>
+                                                </ul>
+                                            </td>
+                                            <td width="20" style="vertical-align:top;">
+                                                +
+                                            </td>
+                                            <td style="vertical-align:top;">
+                                                <ul data-bind="foreach: Targets" style="margin-top:0;">
+                                                    <li data-bind="text: ObjectName"></li>
+                                                </ul>
+                                            </td>
+                                            <td width="20" style="vertical-align:top;">
+                                                +
+                                            </td>
+                                            <td width="20" style="vertical-align:top;">
+                                                *
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                    -->
+                            </td>
+                            <td colspan="2" style="vertical-align:top;width:16.67%;">
+                                <div data-bind="jqxDropDownList: {
+                                    theme: theme,
+                                    source: TargetTypes,
+                                    selectedIndex: TargetTypeIndex,
+                                    dropDownHeight: 250,
+                                    height: field_height,
+                                    width: field_width98,
+                                    displayMember: 'label',
+                                    valueMember: 'value',
+                                    enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                            <td colspan="2" style="vertical-align:top;width:16.67%;">
+                                <div data-bind="jqxDropDownList: {
+                                    theme: theme,
+                                    source: TargetObjects,
+                                    selectedIndex: TargetObjectIndex,
+                                    dropDownHeight: 250,
+                                    height: field_height,
+                                    width: field_width98,
+                                    displayMember: 'title',
+                                    valueMember: 'value',
+                                    enableBrowserBoundsDetection: true
+                                }"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+
 
 <script id="companySettingsIpRestictionTmpl" type="text/html">
     <tr style="margin-bottom: 10px">

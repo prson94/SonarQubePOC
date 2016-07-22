@@ -9583,6 +9583,93 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        public JsonNetResult Lineage_IntersectTypeSources()
+        {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
+
+            var detail = Company
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    ).ToList();
+
+            var sources = detail.Select(i => new { i.Subject, i.SubjectID, i.SubjectName }).Distinct().ToList();
+            var sourcesList = sources.Select(i => new { value = i.Subject + '|' + i.SubjectID, label = i.SubjectName, intersectTypeID = detail.First(d => d.Subject == i.Subject && d.SubjectID == i.SubjectID)?.ID ?? -1 });
+
+
+            return new JsonNetResult
+            {
+                Data = sourcesList.ToList().OrderBy(i => i.label),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
+        {
+            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
+
+            var targets = Company
+                    .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
+                        i.Subject != "IntersectType" && i.Object != "IntersectType" &&
+                        i.Subject != "FusionAttributeType" && i.Object != "FusionAttributeType"
+                    )
+                    .Where(i => i.Subject == type && i.SubjectID == id)
+                    .ToList().Select(i => new { value = i.Object + '|' + i.ObjectID, label = i.ObjectName, intersectTypeID = i.ID }).Distinct();
+
+
+
+            return new JsonNetResult
+            {
+                Data = targets.ToList().OrderBy(i => i.label),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult Lineage_IntersectSharedObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
+        {
+            var sql = @"select
+	i.ID as SourceIntersectID,
+	i.Object as Source,
+	i.ObjectID as SourceID,
+	d.Name as SourceName,
+	i2.ID as ObjectIntersectID,
+	i2.Object as Object,
+	i2.ObjectID as ObjectID,
+	d2.Name as ObjectName
+ from [intersect] i
+ join [intersect] i2 on 
+	i2.subject = @target 
+	and i2.subjectid = @targetID
+	and i2.object = i.object 
+	and i2.objectid = i.objectid 
+	and i.id != i2.id 
+	and i2.intersecttypeid in (
+	 select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @targetType and t.subjectid = @targetTypeID
+
+	)
+ join cache.objectdetails d on
+	d.object = i.Object and d.objectid = i.objectid
+ join cache.objectdetails d2 on
+	d2.object = i2.object and d2.objectid = i2.objectid
+ where 
+	i.subject = @source
+	and i.subjectid = @sourceID 
+	and i.intersecttypeid in ( select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @sourceType and t.subjectid = @sourceTypeID
+)";
+
+            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         /// <summary>
         /// Gets a list of subjects based on the given intersect type.
         /// </summary>
