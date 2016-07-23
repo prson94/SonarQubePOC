@@ -5960,6 +5960,83 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        public ActionResult EditTechnicalMapping(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) return HttpNotFound();
+
+            var model = new EditableForm
+            {
+                Context = ContextList.FusionTechnicalMapping,
+                FieldUri = string.Format("/form/FusionTechnicalMapping_EditMapping?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Technical Mapping"),
+                FormUri = "/form/EditTechnicalMapping",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditTechnicalMapping(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("configuration");
+
+                var existingRuleId = parseIntField(form, "TargetRule");
+
+                if (existingRuleId <= 0) throw new Exception("Invalid Rule");
+
+                var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
+                var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
+
+                var sourceFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == sourceFusionTextPath).FirstOrDefault();
+                var targetFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == targetFusionTextPath).FirstOrDefault();
+
+                if (sourceFusionAttribute == null || targetFusionAttribute == null) throw new Exception("Invalid fusion textpath specified");
+
+                var sourceArtifactID = parseNullableIntField(form, "SourceArtifact");
+
+                if (sourceArtifactID.HasValue)
+                {
+                    model.SourceOwner = "Artifact";
+                    model.SourceOwnerID = sourceArtifactID.GetValueOrDefault();
+                }
+
+                model.SourceFusionAttributeID = sourceFusionAttribute.ID;
+
+                var targetArtifactID = parseNullableIntField(form, "TargetArtifact");
+                
+                if (targetArtifactID.HasValue)
+                {                    
+                    model.TargetOwner = "Artifact";
+                    model.TargetOwnerID = targetArtifactID.GetValueOrDefault();
+                }
+                                
+                model.TargetFusionAttributeID = targetFusionAttribute.ID;
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+                
+                Company.SaveOrUpdate<MapRuleItem>(model);
+                
+                return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         public ActionResult AddTechnicalMapping()
         {            
             var model = new EditableForm
@@ -6115,6 +6192,30 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = ID.ToString() });
             
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult FusionTechnicalMapping_EditMapping(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) throw new Exception("Error cannot find technical mapping.");
+
+            var list = new List<EditableField>();
+
+            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            types.Insert(0, new SelectListItem { Text = "", Value = "" });
+
+            var rules = Company.MapRules.Select(i => new SelectListItem { Text = i.Transformation, Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.SourceOwner == "Artifact" ? a.SourceOwnerID.ToString() : "") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.SourceFusionAttribute.TextPath });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.TargetOwner == "Artifact" ? a.TargetOwnerID.ToString() : "") });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.TargetFusionAttribute.TextPath });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Target Rule", FieldType = DataType.Lookup.ToString(), Items = rules, Value = (a.MapRules.Any() ? a.MapRules.First().ID.ToString(): "") });
+
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 

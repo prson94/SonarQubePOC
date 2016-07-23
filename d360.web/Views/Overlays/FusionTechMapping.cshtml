@@ -24,9 +24,7 @@
 
 
 <script type="text/javascript">    
-    var _context = "FusionTechnicalMapping";
-    var artifactSource;
-    var artifactAdapter;
+    var _context = "FusionTechnicalMapping";    
     var gridSource;
     var gridDataAdapter;
 
@@ -53,9 +51,7 @@
         }
     }
         
-    function unsubscribe() {
-        artifactSource = null;
-        artifactAdapter = null;
+    function unsubscribe() {        
         gridSource = null;
         gridDataAdapter = null;
 
@@ -140,34 +136,6 @@
             event.preventDefault();
         });
 
-        $("#DeleteRow").click(function (event) {
-            console.log(event);
-            event.preventDefault();
-        });
-
-        var rowEdit = function (row) {            
-            var datarow = $("#TechmappingGrid").jqxGrid('getrowdata', row);
-            console.log(datarow);
-            var sourceObject = datarow.SourceObject ? datarow.SourceObject : '';
-            var targetObject = datarow.TargetObject ? datarow.TargetObject : '';         
-            if (sourceObject.toLowerCase() != 'artifact' || targetObject.toLowerCase() != 'artifact') return false;
-        }
-        
-
-        artifactSource =
-            {
-                datatype: "json",
-                url: '/api/fusion/fusionowningartifacts',
-                datafields: [
-                    { name: 'Name', type: 'string' },
-                    { name: 'ID', type: 'number' }
-                ]                
-            };
-        artifactAdapter = new $.jqx.dataAdapter(artifactSource, {
-            autoBind: true
-        });
-        
-
         gridSource =
         {
           //  localdata: data,
@@ -207,23 +175,19 @@
                 { text: 'Transformation', datafield: 'Transformation', columntype: 'textbox', width: '20%' },
                 //{ text: 'Group Key', datafield: 'MapID', width: '5%' },
               {
-                  text: 'Source Object', columntype: 'combobox', displayfield:'SourceObjectName', datafield: 'SourceObjectID', width: '20%', cellbeginedit: rowEdit,
-                  createeditor: function (row, value, editor) {
-                        editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
-                  }
+                  text: 'Source Object', columntype: 'combobox', displayfield:'SourceObjectName', datafield: 'SourceObjectID', width: '20%'
               },
               { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '20%' },
               {
-                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '15%', cellbeginedit: rowEdit,
-                  createeditor: function (row, value, editor) {
-                      editor.jqxComboBox({ source: artifactAdapter, displayMember: 'Name', valueMember: 'ID' });
-                  }
+                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '15%'
               },
               { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '20%' },              
               {
                   text: '', dataField: '', width: '5%', filterable: false, editable : false,
                   cellsRenderer: function (index, datafield, value, defaultvalue, column, data){                      
                       var tools = [{ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?id=' + data.MapRuleItemID }];
+
+                      tools.push({ icon: 'pencil', urlprefix: '/form/edittechnicalmapping?id=' + data.MapRuleItemID, title: 'Edit technical mapping' });
                       
                       return renderToolsHtml(value, tools, _context, data);                      
                   }
