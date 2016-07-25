@@ -6,14 +6,14 @@ import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression ): Promise<Artifacts> {
+    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression ): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `artifacts/ArtifactsByType?id=${artifactType.ID}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
@@ -49,6 +49,10 @@ export class ArtifactService extends BaseService {
                 uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${filter.value}`;
                 count++;
             }
+        }
+
+        if (attributes != undefined) {
+            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
         }
 
         if (relationships != undefined) {

@@ -31,12 +31,18 @@ export class AttributeTypeService extends BaseService {
     }
 
     getAttributeTypesForObject(objectType: string, objectId: number): Promise<AttributeType[]> {        
-        return this.http.get(`/api/${objectType}/${objectId}`)
+        return this.http.get(`/api/${objectType}/${objectId}/attributetypefilters`)
             .toPromise()
             .then(response => <AttributeType[]>response.json())
             .catch(err => this.handleError(err));
     }
 
+    getAttributeFilterValues(objectType: string, objectId: number, attributeId: number): Promise<string[]> {
+        return this.http.get(`/api/${objectType}/${objectId}/${attributeId}/attributefiltervalues`)
+            .toPromise()
+            .then(response => response.json().map(function (item) {return item['Name'];}))            
+            .catch(err => this.handleError(err));
+    }
 
     deleteAttributeType(id: number) {
         return this.deleteDynamic(this.http, 'attributetype', id);

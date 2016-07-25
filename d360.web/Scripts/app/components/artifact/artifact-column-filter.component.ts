@@ -24,7 +24,7 @@ import { AttributeType } from '../../models/attribute-type.model';
     template: ` 
                 <form (ngSubmit)="onSubmit()" #filterForm="ngForm">
                     <div *ngFor="let filter of filters;let first=first;let last=last;let index=index" class="row filter">
-                        <div class="col s1 center-align FieldName">Field:</div>
+                        <div class="col s1 FieldName">Field:</div>
                         <div class="col s4"><select [name]="'FilterField_' + index" required [(ngModel)]="filter.field" (change)="changeFilterField($event.target,filter)" style="width:100%;">                                            
                                                 <option *ngFor="let p of fields" [value]="p.datafield">{{p.text}}</option></select>
                         </div>
@@ -39,10 +39,33 @@ import { AttributeType } from '../../models/attribute-type.model';
                             <span (click)="addFilter()"><i *ngIf="last" class="fa fa-plus fa-2x" aria-hidden="true"></i></span> <span *ngIf="filters.length > 1" (click)="removeFilter(filter)"><i class="fa fa-minus fa-2x" aria-hidden="true"></i></span>
                         </div>                        
                     </div>
-                    <div *ngIf="attributeFilter">
+                    <div *ngIf="attributeFilter" class="row filter">
+                        <div class="col s1 filter FieldName">
+                            Attribute:
+                        </div>
+                        <div class="col s4 filter">
+                            <div class="row">
+                                <div class="col s12 FieldName">Attribute</div>
+                                <div class="col s12"><select name="attributeName" style="width:100%;" placeholder="Choose an attribute" [(ngModel)]="attributeFilter.attributeType" (change)="attributeSelected($event.target)">                                            
+                                      <option></option>
+                                      <option *ngFor="let p of attributeTypes" [value]="p.ID">{{p.Name}}</option></select>
+                                </div>                                
+                            </div>                       
+                        </div>
+                        <div class="col s4 filter">
+                            <div class="row">
+                                <div class="col s12 FieldName">Value</div>
+                                <div class="col s12">
+                                    <select name="attributeValue" style="width:100%;" placeholder="Choose a value" [(ngModel)]="attributeFilter.attributeSearchValue">                                            
+                                      <option></option>
+                                      <option *ngFor="let p of attributeValues" [value]="p">{{p}}</option></select>
+                                </div>     
+                            </div>
+                        </div>
+                        <div class="col s3"></div>
                     </div>
                     <div *ngIf="relationshipFilters" class="filter">
-                        <div class="col s1 filter center-align FieldName">
+                        <div class="col s1 filter FieldName">
                             Relationship:                            
                         </div>
                         <div class="col s4 filter">
@@ -73,11 +96,11 @@ import { AttributeType } from '../../models/attribute-type.model';
                     </div>
                     <div class="row">
                         <div class="col s12 buttons">
-                            <button pButton *ngIf="filters.length > 0 || relationshipFilters" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
-                            <button pButton *ngIf="filters.length || relationshipFilters" type="button" style="width: '150px';" label="Clear all Filters" (click)="clearFilter()"></button>
+                            <button pButton *ngIf="filters.length > 0 || relationshipFilters || attributeFilter" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
+                            <button pButton *ngIf="filters.length || relationshipFilters || attributeFilter" type="button" style="width: '150px';" label="Clear all Filters" (click)="clearFilter()"></button>
                             <button pButton *ngIf="!filters.length" type="button" style="width: '150px';" label="Add Filter" (click)="addFilter()"></button>
-                            <button pButton *ngIf="!relationshipFilters" type="button" style="width: '150px';" label="Add Relationship Filter" (click)="addRelationshipFilter()"></button>
-                            <button pButton *ngIf="!attributeFilter" [disabled]="!attributeTypes || attributeTypes.length == 0" type="button" style="width: '150px';" label="Add Attribute Filter" (click)="addAttributeFilter()"></button>
+                            <button pButton *ngIf="!relationshipFilters && (relationshipTypes && relationshipTypes.length > 0)" type="button" style="width: '150px';" label="Add Relationship Filter" (click)="addRelationshipFilter()"></button>
+                            <button pButton *ngIf="!attributeFilter && (attributeTypes && attributeTypes.length > 0)" type="button" style="width: '150px';" label="Add Attribute Filter" (click)="addAttributeFilter()"></button>
                         </div>
                     </div>
                 </form>
@@ -99,7 +122,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
     relationItems: string[];
     
     attributeTypes: AttributeType[];
-
+    attributeValues: string[];
+    
     constructor(private relationshipsService: RelationshipsService, private attributeTypeService: AttributeTypeService) {        
         
     }
@@ -114,7 +138,9 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.fields != null && this.fields.length > 0) {
-            this.getAttributes()                        
+            this.getAttributes();
+            //fetch relationships for this artifacttypeid
+            if (!this.relationshipTypes) this.getRelationshipTypes();
         }
     }
 
@@ -123,12 +149,13 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
             this.relationshipFilters.objectIds = this.relationItems.join(',');            
         }
 
-        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilters });
+        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilters, attributes: this.attributeFilter });
     }
 
     private clearFilter() {
         this.filters.splice(0, this.filters.length);
         this.relationshipFilters = null;
+        this.attributeFilter = null;
         this.relationItems = [];
         this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilters });
     }
@@ -177,6 +204,14 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
             });
     }
 
+    private attributeSelected(target) {
+        this.attributeValues = [];
+        this.attributeTypeService.getAttributeFilterValues('ArtifactType', this.artifactType.ID, target.value)
+            .then(result => {
+                this.attributeValues = result;
+            });
+    }
+
     private relationshipSelected(target) {
         //load values for this relationship
         this.relationItems = [];
@@ -192,9 +227,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
             });        
     }
 
-    private addRelationshipFilter() {
-        //fetch relationships for this artifacttypeid
-        if (!this.relationshipTypes) this.getRelationshipTypes();
+    private addRelationshipFilter() {        
         this.relationshipFilters = new GridRelationshipFilterExpression();      
     }
 

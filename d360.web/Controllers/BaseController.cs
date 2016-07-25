@@ -936,6 +936,13 @@ namespace d360.web.Controllers
             var AttributeType = Request.Form.AllKeys.Any(i => i == "AttributeType") ? Request["AttributeType"] : "";
             var AttributeSearchValue = Request.Form.AllKeys.Any(i => i == "AttributeSearchValue") ? Server.UrlDecode(Request["AttributeSearchValue"]) : "";
 
+            //check querystring
+            if (string.IsNullOrEmpty(AttributeType) && string.IsNullOrEmpty(AttributeSearchValue))
+            {
+                AttributeType = query.AllKeys.Any(i => i == "AttributeType") ? query["AttributeType"] : "";
+                AttributeSearchValue = query.AllKeys.Any(i => i == "AttributeSearchValue") ? Server.UrlDecode(query["AttributeSearchValue"]) : "";
+            }
+
             if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
             {
                 int attributeTypeID;

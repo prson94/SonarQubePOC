@@ -2,7 +2,7 @@
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
 import {DataTable, Column, LazyLoadEvent, Button} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService} from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
@@ -103,6 +103,7 @@ export class ArtifactGridComponent implements OnChanges {
     filtercolumns: GridFilterColumn[] = [];
     filters: GridFilterExpression[] = [];
     relationships: GridRelationshipFilterExpression;
+    attributes: GridAttributeFilterExpression;
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -140,6 +141,14 @@ export class ArtifactGridComponent implements OnChanges {
             this.relationships = null;
         }
 
+        if (filterData.attributes) {
+            this.attributes = filterData.attributes;
+        }
+        else {
+            this.attributes = null;
+        }
+
+
         this.currentPageNumber = 0;
         this.getData();
     }
@@ -161,7 +170,7 @@ export class ArtifactGridComponent implements OnChanges {
     }
     
     getData() {        
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships)
+        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
