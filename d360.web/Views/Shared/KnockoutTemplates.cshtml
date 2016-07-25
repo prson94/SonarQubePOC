@@ -542,22 +542,125 @@
                             </td>
                             <td colspan="4" style="vertical-align:top;width:33.33%">
 
-                                <table data-bind="ifnot: Advanced">
+                                <table data-bind="if: (ShowAdvanced() == 'hide')">
                                     <tbody data-bind="foreach: Items">
                                         <!-- ko foreach: Sources -->
                                         <tr>
                                             <td data-bind="text: ObjectName" style="text-align:center;"></td>
-                                            @*<td width="20">
-                                                +
-                                            </td>
-                                            <td width="20">
-                                                *
-                                            </td>*@
                                         </tr>
                                         <!-- /ko -->
                                     </tbody>
+                                    <tbody data-bind="if: (ShowAdvanced() == 'hide' && Items().length > 0)">
+                                        <tr>
+                                            <td>
+                                                <a style="cursor: pointer;" data-bind="click: SetShowAdvanced">+ Advanced</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 </table>
-
+                                <table data-bind="if: (ShowAdvanced() == 'show')" style="border-radius:0">
+                                    <tbody data-bind="foreach: Items">
+                                        <tr data-bind="style: { backgroundColor: $index()%2==0 ? 'white' : '#eee'}">
+                                            <td>
+                                                <ul data-bind="foreach: Sources" style="margin-top:0;margin-bottom:0">
+                                                    <li data-bind="text: ObjectName"></li>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <a style="cursor:pointer;" data-bind="click: ShowAddSource"><strong>+</strong></a>
+                                            </td>
+                                            <td>
+                                                <ul data-bind="foreach: Targets" style="margin-top:0;margin-bottom:0">
+                                                    <li data-bind="text: ObjectName"></li>
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <a style="cursor:pointer;" data-bind="click: ShowAddTarget"><strong>+</strong></a>
+                                            </td>
+                                        </tr>
+                                        <tr data-bind="if: (AddMode() == 'source')">
+                                            <td colspan="3">
+                                                <div data-bind="jqxDropDownList: {
+                                                    theme: theme,
+                                                    source: NewItems,
+                                                    selectedIndex: NewItemIndex,
+                                                    dropDownHeight: 250,
+                                                    height: field_height,
+                                                    width: field_width98,
+                                                    displayMember: 'SourceName',
+                                                    valueMember: 'value',
+                                                    enableBrowserBoundsDetection: true
+                                                }"></div>
+                                            </td>
+                                            <td colspan="1">
+                                                <button data-bind="click: AddSource">Add</button><button data-bind="click: AddCancel">Cancel</button>
+                                            </td>
+                                        </tr>
+                                        <tr data-bind="if: (AddMode() == 'target')">
+                                            <td colspan="3">
+                                                <div data-bind="jqxDropDownList: {
+                                                    theme: theme,
+                                                    source: NewItems,
+                                                    selectedIndex: NewItemIndex,
+                                                    dropDownHeight: 250,
+                                                    height: field_height,
+                                                    width: field_width98,
+                                                    displayMember: 'SourceName',
+                                                    valueMember: 'value',
+                                                    enableBrowserBoundsDetection: true
+                                                }"></div>
+                                            </td>
+                                            <td colspan="1">
+                                                <button data-bind="click: AddTarget">Add</button><button data-bind="click: AddCancel">Cancel</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    @*<tbody data-bind="if: (ShowAdd() === true)">
+                                        <tr>
+                                            <td colspan="3">
+                                                <div data-bind="jqxDropDownList: {
+                                                    theme: theme,
+                                                    source: AddSourceItems,
+                                                    selectedIndex: AddSourceIndex,
+                                                    dropDownHeight: 250,
+                                                    height: field_height,
+                                                    width: field_width98,
+                                                    displayMember: 'SourceName',
+                                                    valueMember: 'value',
+                                                    enableBrowserBoundsDetection: true
+                                                }"></div>
+                                                <div data-bind="jqxDropDownList: {
+                                                    theme: theme,
+                                                    source: AddTargetItems,
+                                                    selectedIndex: AddTargetIndex,
+                                                    dropDownHeight: 250,
+                                                    height: field_height,
+                                                    width: field_width98,
+                                                    displayMember: 'SourceName',
+                                                    valueMember: 'value',
+                                                    enableBrowserBoundsDetection: true
+                                                }"></div>
+                                            </td>
+                                            <td>
+                                                <button data-bind="click: AddNewItem">Add</button><button data-bind="click: AddCancel">Cancel</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tbody data-bind="if: (ShowAdvanced() == 'show' && ShowAdd() === false)">
+                                        <tr>
+                                            <td colspan="4">
+                                                <button data-bind="click: SetShowAdd">Add Item</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>*@
+                                    <tbody data-bind="if: (ShowAdvanced() == 'show' && Items().length > 0)">
+                                        <tr>
+                                            <td>
+                                                <a style="cursor: pointer;" data-bind="click: SetHideAdvanced">- Advanced</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                                 <!--
                                 <table data-bind="ifnot: Advanced">
                                     <tbody data-bind="foreach: Items">
