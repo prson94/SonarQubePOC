@@ -41,12 +41,13 @@
                     $(controlID).html(
                         template(data)
                     );
+
                     if ($(controlID).find('.AgentKpi').length) {                        
-                        var score = (data.AgentExecutions > 0) ? (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0) : 100;                        
+                        var score = (data.AgentExecutions > 0 && (data.AgentExecutions - data.AgentErrors) > 0) ? (((data.AgentExecutions - data.AgentErrors) / data.AgentExecutions) * 100).toFixed(0) : 100;
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
                     }
                     if ($(controlID).find('.FusionKpi').length) {                        
-                        var score = (data.FusionErrors > 0) ? (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0) : 100;                        
+                        var score = (data.FusionExecutions > 0 && (data.FusionExecutions - data.FusionErrors) > 0) ? (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0) : 100;
                         drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
                     }
                 }
