@@ -5988,9 +5988,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
                 if (model == null) throw new NotFoundException("configuration");
 
-                var existingRuleId = parseIntField(form, "TargetRule");
+                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
 
-                if (existingRuleId <= 0) throw new Exception("Invalid Rule");
+                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
 
                 var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
                 var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
@@ -6023,7 +6023,17 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 model.UpdatedOn = DateTime.UtcNow;
                 
                 Company.SaveOrUpdate<MapRuleItem>(model);
-                
+
+                //delete old mapruleitemmaprule records
+                Company.Query<int>(@"delete [dbo].[mapruleitemmaprule] where [mapruleitemid] = @id", new { id = model.ID });
+
+                //add new ones
+                foreach (var rule in existingRuleArray)
+                {
+                    // add mapping
+                    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
+                }
+
                 return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -6058,10 +6068,10 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                                
+                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
 
-                var existingRuleId = parseIntField(form, "TargetRule");
-
-                if (existingRuleId <= 0) throw new Exception("Invalid Rule");
+                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
 
                 var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
                 var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
@@ -6085,8 +6095,11 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 Company.SaveOrUpdate<MapRuleItem>(model);
 
-                // add mapping
-                Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = existingRuleId });
+                foreach (var rule in existingRuleArray)
+                {
+                    // add mapping
+                    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
+                }                
 
                 return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
             }
@@ -6204,8 +6217,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             types.Insert(0, new SelectListItem { Text = "", Value = "" });
-
-            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation??"N/A"), Value = i.ID.ToString() }).ToList();
+                        
+            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation??"N/A"), Value = i.ID.ToString(), Selected = a.MapRules.Any(c=>c.ID == i.ID) }).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.SourceOwner == "Artifact" ? a.SourceOwnerID.ToString() : "") });
@@ -6213,8 +6226,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.TargetOwner == "Artifact" ? a.TargetOwnerID.ToString() : "") });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.TargetFusionAttribute.TextPath });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, Value = (a.MapRules.Any() ? a.MapRules.First().ID.ToString(): "") });
+            
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6232,8 +6245,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString() });
-
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules });
+                        
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
