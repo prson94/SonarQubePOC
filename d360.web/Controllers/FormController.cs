@@ -6205,7 +6205,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
             types.Insert(0, new SelectListItem { Text = "", Value = "" });
 
-            var rules = Company.MapRules.Select(i => new SelectListItem { Text = i.Transformation, Value = i.ID.ToString() }).ToList();
+            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation??"N/A"), Value = i.ID.ToString() }).ToList();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.SourceOwner == "Artifact" ? a.SourceOwnerID.ToString() : "") });
@@ -6214,7 +6214,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.TargetOwner == "Artifact" ? a.TargetOwnerID.ToString() : "") });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.TargetFusionAttribute.TextPath });
 
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Target Rule", FieldType = DataType.Lookup.ToString(), Items = rules, Value = (a.MapRules.Any() ? a.MapRules.First().ID.ToString(): "") });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, Value = (a.MapRules.Any() ? a.MapRules.First().ID.ToString(): "") });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -6225,7 +6225,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
 
-            var rules = Company.MapRules.Select(i => new SelectListItem { Text = i.Transformation, Value = i.ID.ToString() }).ToList();
+            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}",i.ID, i.Transformation ?? "N/A"), Value = i.ID.ToString() }).ToList();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString() });
@@ -6233,7 +6233,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString() });
 
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Target Rule", FieldType = DataType.Lookup.ToString(), Items = rules });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
