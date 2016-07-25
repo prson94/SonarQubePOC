@@ -6,7 +6,7 @@ import {Button, Editor, InputText, Dropdown, SelectItem, Spinner} from 'primeng/
 import { StatisticService} from '../../services/index';
 import { StatisticType, StatisticCheckTypes} from '../../models/statistic.model';
 import { AdminStatisticCheckTypeInput} from './admin-statistic-checktype-input';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-statistic-editor',

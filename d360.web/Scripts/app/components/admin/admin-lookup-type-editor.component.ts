@@ -4,7 +4,7 @@ import { Input, Component, EventEmitter, Output } from '@angular/core';
 import {Button, Editor, InputText} from 'primeng/primeng';
 import {LookupService} from '../../services/index';
 import {Lookup} from '../../models/lookup.model';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-lookup-type-editor',

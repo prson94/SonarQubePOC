@@ -7,7 +7,7 @@ import { ReportsService} from '../../services/index';
 import { Report, ReportType} from '../../models/report.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',

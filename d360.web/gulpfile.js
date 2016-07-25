@@ -21,7 +21,7 @@ gulp.task('compile', ['clean'], function (done) {
 gulp.task('bundle', ['compile'], function (done) {
 
     let bundleFilename = `${app}/app.js`;
-    const Builder = require('systemjs-builder');
+    const Builder = require('systemjs-builder');    
     let builder = new Builder();
 
     builder.loadConfig('system.config.js')

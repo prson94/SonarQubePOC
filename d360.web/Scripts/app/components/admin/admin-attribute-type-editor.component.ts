@@ -7,7 +7,7 @@ import { AttributeTypeService, FieldsService } from '../../services/index';
 import { AttributeType } from '../../models/attribute-type.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-attribute-type-editor',

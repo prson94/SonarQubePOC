@@ -4,7 +4,7 @@ import { Input, Component, EventEmitter, Output } from '@angular/core';
 import {Button, Editor, InputText, Dropdown, SelectItem, Spinner} from 'primeng/primeng';
 import {TaxonomiesService, ObjectStyleService} from '../../services/index';
 import {Taxonomy, TaxonomyClassification} from '../../models/taxonomy.model';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-model-editor',

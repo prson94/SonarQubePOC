@@ -7,7 +7,7 @@ import { RelationshipsService} from '../../services/index';
 import { RelationshipDetail} from '../../models/relationship.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',

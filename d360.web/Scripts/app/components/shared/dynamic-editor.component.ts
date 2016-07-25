@@ -7,7 +7,7 @@ import { EditorDefinitionService, UriBasedService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
 import {DynamicFieldComponent} from './dynamic-field.component';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-editor',

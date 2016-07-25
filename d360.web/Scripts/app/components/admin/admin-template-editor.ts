@@ -4,7 +4,7 @@ import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { TemplatesService } from '../../services/templates.service';
 import { Template } from '../../models/template.model';
 import {Button, Editor, InputText, Dropdown, SelectItem} from 'primeng/primeng';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-template-editor',
