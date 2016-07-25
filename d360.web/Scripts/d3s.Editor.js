@@ -698,14 +698,52 @@
                                 break;
 
                                 //#endregion
+                            
                             default: //String, Text
-                                //#region Text Field Management
-
+                                //#region Text Field Management                                
                                 addLabel(cpnl, v, false);
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" />');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" ' + (v.TypeaheadUri ? '  autocomplete="off"' : '') +'/>');
                                 fld.val($('<div/>').html(cleanedValue).text());
-                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
+
+                                if (!v.TypeaheadUri) {
+                                    fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
+                                }
+                                else {
+                                    fld.jqxInput({
+                                        disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height,
+                                        source: function (query, response) {
+                                            var dataAdapter = new $.jqx.dataAdapter
+                                            (
+                                                {
+                                                    dataType: 'json',
+                                                    url: v.TypeaheadUri,
+                                                    data:
+                                                    {                                                        
+                                                        maxRows: 12
+                                                    }
+                                                },
+                                                {
+                                                    autoBind: true,
+                                                    formatData: function (data) {
+                                                        data.startsWith = query;                                                        
+                                                        return data;
+                                                    },
+                                                    loadComplete: function (data) {
+                                                        if (data.length > 0) {
+                                                            response($.map(data, function (item) {
+                                                                return {
+                                                                    label: item,
+                                                                    value: item
+                                                                }
+                                                            }));
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    });
+                                }
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);

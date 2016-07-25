@@ -2152,6 +2152,14 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true);
         }
 
+        [Route("fusion/textpathautocomplete")]
+        public IEnumerable<string> GetFusionTextpathsAutocomplete(string startsWith, int maxRows)
+        {
+            return (from fusionAttribute in Company.FusionAttributes
+                          where fusionAttribute.TextPath.StartsWith(startsWith)
+                          select  fusionAttribute.TextPath ).Take(maxRows).AsEnumerable();            
+        }
+
         #region Owner
 
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership/options")]
