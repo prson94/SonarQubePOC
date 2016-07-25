@@ -15,6 +15,7 @@ using d360.core.enums;
 using Newtonsoft.Json;
 using d360.core.queue;
 using System.Threading;
+using d360.core.exceptions;
 
 namespace d360.jobs.queue.ProcessBulkLoad
 {
@@ -476,7 +477,10 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             #region Create Load Items from Load file
 
-            var load = company.GetById<Load>(loadInfo.LoadID, i => i.LoadColumns, i => i.LoadItems);
+            var load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
+            //var load = company.GetById<Load>(loadInfo.LoadID, 
+            //    i => i.LoadColumns, 
+            //    i => i.LoadItems);
 
             var existingRows = load.LoadItems.Any();
 
@@ -816,12 +820,12 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                     if (verifiedTargetFusionConfiguration != null)
                     {
                         targetFusionConfigurationColumn.LookupObject = "Fusion";
-                        targetFusionConfigurationColumn.LookupObjectID = verifiedSourceFusionConfiguration.ID;
+                        targetFusionConfigurationColumn.LookupObjectID = verifiedTargetFusionConfiguration.ID;
                     }
 
                     #endregion
 
-                    #region Lookup up source fusion attribute
+                    #region Lookup up target fusion attribute
 
                     if (verifiedTargetFusionConfiguration != null)
                     {
@@ -866,8 +870,47 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     var shouldContinue = true;
 
-                    var source = company.AddIntersect(sourceSubject.LookupObject, sourceSubject.LookupObjectID.Value, sourceObject.LookupObject, sourceObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                    var target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                    Intersect source = null;
+                    Intersect target = null;
+
+                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue)
+                    {
+                        try
+                        {
+                            source = company.AddIntersect(sourceSubject.LookupObject, sourceSubject.LookupObjectID.Value, sourceObject.LookupObject, sourceObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                        }
+                        catch (BaseException ex)
+                        {
+                            shouldContinue = false;
+                            loadItem.Status = false;
+                            loadItem.StatusMessage += " " + ex.StatusDescription;
+                        }
+                    }
+                    else
+                    {
+                        shouldContinue = false;
+                        loadItem.Status = false;
+                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {sourceSubject.Value}, Subject = {sourceObject.Value}].";
+                    }
+                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue)
+                    {
+                        try
+                        {
+                            target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                        }
+                        catch (BaseException ex)
+                        {
+                            shouldContinue = false;
+                            loadItem.Status = false;
+                            loadItem.StatusMessage += " " + ex.StatusDescription;
+                        }
+                    }
+                    else
+                    {
+                        shouldContinue = false;
+                        loadItem.Status = false;
+                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {targetSubject.Value}, Subject = {targetObject.Value}].";
+                    }
 
                     if (source == null)
                     {
@@ -883,6 +926,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                         loadItem.StatusMessage += $" Could not create the target relationship.";
                     }
 
+                    #region Continue processing map logic
+
                     if (shouldContinue)
                     {
                         var map = company.Filter<Map>(i =>
@@ -892,7 +937,10 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                         if (map == null)
                         {
-                            map = new Map { IntersectRoleID = verifiedRole.ID, Transformation = rawTransformation, MapItems = new List<MapItem>() };
+                            map = new Map { Transformation = rawTransformation, MapItems = new List<MapItem>() };
+                            if (verifiedRole != null)
+                                map.IntersectRoleID = verifiedRole.ID;
+
                             map.MapItems.Add(new MapItem { SourceIntersectID = source.ID, TargetIntersectID = target.ID });
                             company.Add<Map>(map);
 
@@ -917,25 +965,56 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                             !string.IsNullOrEmpty(targetFusionAttribute.LookupObject) && targetFusionAttribute.LookupObjectID.HasValue
                             )
                         {
-                            var mapRule = company.Filter<MapRule>(i =>
-                                i.MapRuleItems.Any(mi => mi.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value),
-                                i => i.MapRuleItems
+                            // Create child relationships.
+                            Intersect childSourceRelation = null;
+                            Intersect childTargetRelation = null;
+                            MapRule mapRule = null;
+
+                            try
+                            {
+                                childSourceRelation = company.AddIntersect("Intersect", source.ID, "FusionAttribute", sourceFusionAttribute.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                            }
+                            catch (BaseException ex)
+                            {
+                                loadItem.StatusMessage += " " + ex.StatusDescription;
+                            }
+
+                            try
+                            {
+                                childTargetRelation = company.AddIntersect("Intersect", target.ID, "FusionAttribute", targetFusionAttribute.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                            }
+                            catch (BaseException ex)
+                            {
+                                loadItem.StatusMessage += " " + ex.StatusDescription;
+                            }
+
+                            if (childSourceRelation != null && childTargetRelation != null)
+                            {
+                                mapRule = company.Filter<MapRule>(i =>
+                                    i.MapRuleItems.Any(mi => mi.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value),
+                                    i => i.MapRuleItems
                                 ).FirstOrDefault();
 
-                            if (mapRule == null)
-                            {
-                                mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
-                                mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = source.ID, TargetFusionAttributeID = target.ID });
-                                company.Add<MapRule>(mapRule);
+                                if (mapRule == null)
+                                {
+                                    mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
+                                    mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = sourceFusionAttribute.LookupObjectID.Value, TargetFusionAttributeID = targetFusionAttribute.LookupObjectID.Value });
+                                    company.Add<MapRule>(mapRule);
 
-                                loadItem.StatusMessage += $" Technical Map created.";
+                                    loadItem.StatusMessage += $" Technical Map created.";
+                                }
+                                else
+                                {
+                                    //map.Transformation = rawTransformation;
+                                    //company.Update<MapRule>(mapRule);
+
+                                    //loadItem.StatusMessage += $" Technical Map updated.";
+                                }
                             }
                             else
                             {
-                                //map.Transformation = rawTransformation;
-                                //company.Update<MapRule>(mapRule);
-
-                                //loadItem.StatusMessage += $" Technical Map updated.";
+                                loadItem.Status = false;
+                                loadItem.StatusMessage += $"Technical relationship could not be created or updated.";
                             }
 
                             if (map != null && mapRule != null)
@@ -943,16 +1022,19 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                                 var mapItem = map.MapItems.Single(i => i.SourceIntersectID == source.ID && i.TargetIntersectID == target.ID);
                                 var mapRuleItem = mapRule.MapRuleItems.Single(i => i.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && i.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value);
 
-                                var joinRecord = company.Query<dynamic>(@"
-select * from MapRuleItemMapItem where MapRuleItemID = @r and MapItemID = @m", 
-new { r = mapRule.ID, m = map.ID }).FirstOrDefault();
+                                var joinRecord = company.Filter<MapRuleItemMapItem>(i => i.MapItemID == mapItem.ID && i.MapRuleItemID == mapRuleItem.ID).SingleOrDefault();
                                 if (joinRecord == null)
                                 {
-                                    company.Execute("insert into MapRuleItemMapItem values (@r, @m)", new { r = mapRule.ID, m = map.ID });
+                                    joinRecord = new MapRuleItemMapItem { MapItemID = mapItem.ID, MapRuleItemID = mapRuleItem.ID };
+                                    company.Add(joinRecord);
                                 }
                             }
                         }
                     }
+
+                    #endregion
+
+                    company.Update(loadItem);
                 }
 
                 load.DateCompleted = DateTime.UtcNow;

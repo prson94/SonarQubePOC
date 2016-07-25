@@ -1,6 +1,7 @@
 ﻿function NewLineageDiagram(controlID, type, id, readonly) {
     var originalObject = type;
     var originalObjectID = id;
+    var viewID = 1;
     var fullscreen = false;
     var selectedData = null;
     var permissions = new PermissionsModel();
@@ -17,6 +18,8 @@
 
     var ribbon_button_width = 58;
     var ribbon_button_height = "90%";
+
+    var controlID_splitter = controlID + '_splitter';
 
     var controlID_header = controlID + "_header";
     var controlID_wrapper = controlID + '_wrapper';
@@ -82,6 +85,10 @@
     var controlID_ribbon_maprule_cancel = controlID + '_ribbon_maprule_cancel';
     var controlID_ribbon_maprule_save = controlID + '_ribbon_maprule_save';
 
+    var controlID_ribbon_view_1 = controlID + '_ribbon_view_1';
+    var controlID_ribbon_view_2 = controlID + '_ribbon_view_2';
+    var controlID_ribbon_view_3 = controlID + '_ribbon_view_3';
+
     var controlID_popover_add = controlID + '_popover_add';
 
     var controlID_popover_lineage_editor = controlID + '_popover_lineage_editor';
@@ -118,6 +125,8 @@
 
     //#region Control instantiation
 
+    //$('#' + controlID_splitter).jqxSplitter({ theme: theme, width: '100%', height: '100%', panels: [ { size: '80%', collapsible: false } ]});
+
     $("#" + controlID_tabs).jqxTabs({ theme: theme, animationType: 'fade', selectionTracker: true }).on('tabclick',function(event) {
         var index = event.args.item;
         loadTab(index);
@@ -128,7 +137,7 @@
     $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
     $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
     $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
     $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
@@ -140,8 +149,8 @@
     $('#' + controlID_ribbon_lineage_addItem).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_lineage_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
-    $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $("#" + controlID_ribbon_maprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true }).hide();
+    $("#" + controlID_ribbon_maprule).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true }).hide();
     $('#' + controlID_ribbon_maprule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_maprule_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_maprule_save).jqxButton({ theme: theme, height: "100%", width: 64 });
@@ -153,6 +162,10 @@
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
 
     //$('#' + controlID_info_detail).MapItems();
+
+    $('#' + controlID_ribbon_view_1).jqxRadioButton({ theme: theme, checked: true });
+    $('#' + controlID_ribbon_view_2).jqxRadioButton({ theme: theme, checked: false });
+    $('#' + controlID_ribbon_view_3).jqxRadioButton({ theme: theme, checked: false });
 
     //#endregion
 
@@ -349,7 +362,7 @@
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
-       toggleFullscreen();
+        toggleFullscreen();
     });
 
     $('#' + controlID_ribbon_save).on('click', function () {
@@ -433,6 +446,41 @@
         }
     });
 
+
+    $('#' + controlID_ribbon_view_1).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 1;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $("#" + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_2).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_3).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+    $('#' + controlID_ribbon_view_2).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 2;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_1).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_3).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+    $('#' + controlID_ribbon_view_3).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 3;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_1).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_2).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+
     //#endregion
 
     $('#' + controlID_overlay_predicates).on('change', function (e) {
@@ -479,119 +527,81 @@
         dataType: "json",
         url: null,
         dataFields: [
-            { name: 'MapID' },
+            { name: 'MapItemID' },
+            { name: 'SourceType' },
+            { name: 'SourceName' },
+            { name: 'Source' },
             { name: 'SourceID' },
+            { name: 'SourceFusion' },
+            { name: 'SourceFusionAttribute' },
+            { name: 'SourceFusionAttributeType' },
+            { name: 'TargetType' },
+            { name: 'TargetName' },
+            { name: 'Target' },
             { name: 'TargetID' },
-            { name: 'SourceIntersectID' },
-            { name: 'SourceSubjectName' },
-            { name: 'SourceSubjectIconHtml' },
-            { name: 'SourceSubject' },
-            { name: 'SourceSubjectID' },
-            { name: 'SourceSubjectUrl' },
-            { name: 'SourceObjectName' },
-            { name: 'SourceObjectIconHtml' },
-            { name: 'SourceObject' },
-            { name: 'SourceObjectID' },
-            { name: 'SourceObjectUrl' },
-            { name: 'TargetIntersectID' },
-            { name: 'TargetSubjectName' },
-            { name: 'TargetSubjectIconHtml' },
-            { name: 'TargetSubject' },
-            { name: 'TargetSubjectUrl' },
-            { name: 'TargetSubjectID' },
-            { name: 'TargetObjectName' },
-            { name: 'TargetObjectIconHtml' },
-            { name: 'TargetObject' },
-            { name: 'TargetObjectUrl' },
-            { name: 'TargetObjectID' },
-            { name: 'Transformation' }
+            { name: 'TargetFusion' },
+            { name: 'TargetFusionAttribute' },
+            { name: 'TargetFusionAttributeType' }
         ]
     };
 
     var mapItemsAdapter = new $.jqx.dataAdapter(mapItemsSource);
 
-    $('#' + controlID_info_detail).jqxGrid({
+    $('#' + controlID_mappingrules_content).jqxGrid({
         source: mapItemsAdapter,
-        width: overlay_grid_width,
-        pagesizeoptions: ['5', '10', '20'],
-        pagesize: 5,
-        autoheight: true,
-        autorowheight: true,
-        sortable: true,
         altrows: true,
-        showfilterrow: true,
+        width: overlay_grid_width,
+        autoheight: true,
+        sortable: true,
         filterable: true,
-        pageable: false,
-        theme: 'flat',
-        autoshowloadelement: false,
+        showfilterrow: false,
+        pagesize: 5,
+        pageable: true,
+        pagermode: "simple",
         selectionmode: 'none',
+        autorowheight: true,
+        theme: list_theme,
         columngroups: [
-            { text: 'Source', align: 'left', name: 'S' },
-            { text: 'Target', align: 'left', name: 'T' }
+            { text: 'Source', name: 'S' },
+            { text: 'Target', name: 'T' }
         ],
         columns: [
-            //{ 
-            //  datafield: "SourceSubjectIconHtml", 
-            //  text: "", 
-            //  columngroup: "S", 
-            //  width: "30px" 
-            //},
-            //{
-            //  datafield: "SourceSubjectName", 
-            //  text: "Subject", 
-            //  columngroup: "S", 
-            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //      return previewLinkRenderer(data.SourceSubject, data.SourceSubjectID, data.SourceSubjectUrl, data.SourceSubjectName);
-            //  }
-            //},
             {
-                datafield: "SourceObjectIconHtml",
-                text: "",
-                filterable: false,
-                width: "30px"//,
-                //columngroup: "S"
-            },
-            {
-                datafield: "SourceObjectName",
-                text: "Source",
+                datafield: "Source",
+                columngroup: "S",
+                text: "Business",
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return previewLinkRenderer(data.SourceObject, data.SourceObjectID, data.SourceObjectUrl, data.SourceObjectName);
-                }//,
-                //columngroup: "S"
-            },
-            //{ 
-            //  datafield: "TargetSubjectIconHtml", 
-            //  text: "", 
-            //  columngroup: "T", 
-            //  width: "30px" 
-            //},
-            //{
-            //  datafield: "TargetSubjectName", 
-            //  text: "Subject", 
-            //  columngroup: "T", 
-            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //      return previewLinkRenderer(data.TargetSubject, data.TargetSubjectID, data.TargetSubjectUrl, data.TargetSubjectName);
-            //  }
-            //},
-            {
-                datafield: "TargetObjectIconHtml",
-                text: "",
-                filterable: false,
-                width: "30px"//,
-               // columngroup: "T"
+                    return '<span style="margin: 3px 0px 3px 0px"><b>' + data.SourceName + '</b><br/>' + data.SourceType + '</span>';
+                }
             },
             {
-                datafield: "TargetObjectName",
-                text: "Target",
+                datafield: "SourceID",
+                columngroup: "S",
+                text: "Technical",
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return previewLinkRenderer(data.TargetObject, data.TargetObjectID, data.TargetObjectUrl, data.TargetObjectName);
-                }//,
-                //columngroup: "T"
+                    return '<span style="margin: 3px 0px 3px 0px">' + data.SourceFusion + '<br/>' + data.SourceFusionAttributeType + '<br/>' + data.SourceFusionAttribute + '</span>';
+                }
+            },
+            {
+                datafield: "Target",
+                columngroup: "T",
+                text: "Business",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return '<span style="margin: 3px 0px 3px 0px"><b>' + data.TargetName + '</b><br/>' + data.TargetType + '</span>';
+                }
+            },
+            {
+                datafield: "TargetID",
+                columngroup: "T",
+                text: "Technical",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return '<span style="margin: 3px 0px 3px 0px">' + data.TargetFusion + '<br/>' + data.TargetFusionAttributeType + '<br/>' + data.TargetFusionAttribute + '</span>';
+                }
             }
         ]
     });
 
-    $('#' + controlID_info_detail).on('bindingcomplete', mappingBindingComplete);
+    $('#' + controlID_mappingrules_content).on('bindingcomplete', mappingBindingComplete);
 
     //#endregion
 
@@ -768,7 +778,7 @@
     };
 
     function mappingBindingComplete(event) {
-        $('#' + controlID_info_detail).jqxGrid('autoresizecolumns');
+        $('#' + controlID_mappingrules_content).jqxGrid('autoresizecolumns');
     }
 
     function cancelAddLink() {
@@ -853,8 +863,7 @@
         return {
             id: null,
             key: null,
-            //intersectTypeId: null,
-
+            Category: '',
             from: null,
             fromIntersectId: 0,
             fromPortId: "OUT",
@@ -864,8 +873,7 @@
             toPortId: "IN",
 
             text: null,
-            intersectRoleId: null,
-            //isDeletable: true,
+            //intersectRoleId: null,
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
@@ -883,11 +891,8 @@
             objid: null,
             name: null,
             typeName: null,
-            //objecttype: null,
-            //objecttypeid: null,
             back: null,
             fore: null,
-            //isDeletable: true,
             highlightColor: null,
             diagramObjectType: "Node",
             template: "Artifact",
@@ -904,7 +909,8 @@
             hasOpenIssues: false,
             transformationCount: 0,
             hasTransformations: false,
-            mapItems: null
+            mapItems: null,
+            other: null
         };
     };
 
@@ -1073,11 +1079,13 @@
     }
 
     function htmlDecode(s) {
-        return s.replace(/&#39;/g, '\'');
-        //.replace(/&amp;/g, '&')
-          //.replace(/&lt;/g, '<')
-          //.replace(/&gt;/g, '>')
-          //.replace(/&#34;/g, '"');
+        s = s.replace(/&#39;/g, '\'');
+        s = s.replace(/&amp;/g, '&')
+        s = s.replace(/&lt;/g, '<')
+        s = s.replace(/&gt;/g, '>')
+        s = s.replace(/&#34;/g, '"');
+
+        return s;
     }
 
     function initializeDiagram() {
@@ -1141,88 +1149,8 @@
         return panel;
     }
 
-    function makeTemplate(obj, w, h, borderColor, fontSize, inports, outports) {//, alignment) {
-
-        //if (!alignment) alignment = go.Spot.Center;
-
-        var node = g(go.Node, "Spot",
-        {
-            mouseEnter: mouseEnter,
-            mouseLeave: mouseLeave
-        },
-        g(go.Panel, "Auto", {
-            width: w,
-            height: h
-        },
-        g(go.Shape, "RoundedRectangle", {
-            stroke: borderColor,
-            strokeWidth: 2,
-            spot1: go.Spot.TopLeft,
-            spot2: go.Spot.BottomRight,
-            name: "NodeShape"
-        },
-        new go.Binding("fill", "back").makeTwoWay()
-       ),
-        g(go.Panel,
-            go.Panel.Horizontal,
-            {
-                alignment: go.Spot.BottomLeft,
-                margin: 5
-            },
-            makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", fontSize),
-            makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", fontSize),
-            makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize),
-            makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", fontSize),
-            makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", fontSize),
-            makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", fontSize),
-            makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", fontSize)
-        ),
-        g(go.Panel, "Table",
-            g(go.TextBlock, {
-                row: 0,
-                margin: 3,
-                alignment: go.Spot.Top,
-                editable: false,
-                maxSize: new go.Size(w - 20, h - 10),
-                font: "bold " + fontSize + "pt sans-serif"
-            },
-                new go.Binding("text", "name").makeTwoWay(),
-                new go.Binding("stroke", "fore").makeTwoWay()
-            ),
-            g(go.TextBlock, {
-                row: 1,
-                margin: 3,
-                maxSize: new go.Size(180, NaN),
-                font: (fontSize - 2) + "pt sans-serif"
-            },
-                new go.Binding("stroke", "fore").makeTwoWay(),
-                new go.Binding("text", "typeName").makeTwoWay()
-            )//,
-            //g(go.TextBlock, {
-            //    row: 2,
-            //    margin: 3,
-            //    maxSize: new go.Size(180, NaN),
-            //    font: "bold 10pt sans-serif"
-            //},
-            //    new go.Binding("text", "role").makeTwoWay(),
-            //    new go.Binding("stroke", "fore").makeTwoWay()
-            //)
-        )),
-        g(go.Panel, "Vertical", {
-            alignment: go.Spot.Left,
-            alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-        },
-        inports),
-        g(go.Panel, "Vertical", {
-            alignment: go.Spot.Right,
-            alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-        },
-        outports));
-
-        myDiagram.nodeTemplateMap.add(obj, node);
-    }
-
     function makeIconPanel(icon, tooltip, binding, fontSize) {
+        fontSize -= 2;
         var iconPanel = g(go.Panel,
          "Auto",
          {
@@ -1374,6 +1302,7 @@
         setTimeout(function () {
             myDiagram.requestUpdate();
             myDiagram.focus();
+            //$('#' + controlID_splitter).jqxSplitter('refresh');
         }, 0);
     }
 
@@ -1389,7 +1318,7 @@
             //$("#" + controlID_info).jqxExpander('collapse');
             //$("#" + controlID_info_body).html(defaultInfo);
             //$("#" + controlID_info_detail_wrapper).hide();
-            //$("#" + controlID_info_detail).html('');
+            $("#" + controlID_info_detail).html('');
 
             $('#' + controlID_tabs).hide(delay);
             for (var i = 0; i < tabs.length; i++) {
@@ -1398,11 +1327,12 @@
 
         } else {
             $('#' + controlID_tabs).show(delay);
+
             if (data.diagramObjectType == 'Node') {
                 first = tabs["responsibilities"];
 
                 //$("#" + controlID_info_detail_wrapper).hide();
-                //$("#" + controlID_info_detail).html('');
+                $("#" + controlID_info_detail).html('');
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
@@ -1421,20 +1351,20 @@
                     $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
 
-                //$.ajax({
-                //    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
-                //    async: true
-                //}).done(function (data) {
-                //    $('#' + controlID_info_body).html(data);
-                //    $("#" + controlID_info).jqxExpander('expand');
-                //}).fail(function () {
-                //    $('#' + controlID_info_body).html(errorInfo);
-                //    $("#" + controlID_info).jqxExpander('collapse');
-                //});
+                $.ajax({
+                    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                    async: true
+                }).done(function (data) {
+                    $('#' + controlID_info_detail).html(data);
+                    $("#" + controlID_info).jqxExpander('expand');
+                }).fail(function () {
+                    $('#' + controlID_info_body).html(errorInfo);
+                    $("#" + controlID_info).jqxExpander('collapse');
+                });
 
                 if (data.hasMappingRules) {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
                 } else { 
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
@@ -1504,16 +1434,16 @@
                     $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
 
-                if (data.hasMappingRules) {
+               // if (data.hasMappingRules) {
 
                     first = tabs["mappingrules"];
 
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
-                }
+                //} else {
+                //    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
+                //}
 
                 if (to.hasSourceRules) {
                     if (first == -1)
@@ -1592,25 +1522,34 @@
                 });
                 break;
             case tabs["mappingrules"]:
-                if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
-                    return;
-                }
-                url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
-                if (selectedData.diagramObjectType != 'Node') {
-                    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
-                }
 
-                $.ajax({
-                    url: url
-                }).done(function (data) {
-                    for (var i = 0; i < data.items.length; i++) {
-                        data.items[i].index = i + 1;
-                    }
-                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
-                }).fail(function () {
-                    $('#' + controlID_mappingrules_content).html(defaultTabContent);
-                });
+                if (from.template !== "Fusion" && to.template !== "Fusion") {
+                    mapItemsSource.url = '/api/maps/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/mapitems';
+                }
+                else {
+                    mapItemsSource.url = null;
+                }
+                $('#' + controlID_mappingrules_content).jqxGrid('updatebounddata');
+
+                //if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
+                //    return;
+                //}
+                //url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
+                //if (selectedData.diagramObjectType != 'Node') {
+                //    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
+                //}
+
+                //$.ajax({
+                //    url: url
+                //}).done(function (data) {
+                //    for (var i = 0; i < data.items.length; i++) {
+                //        data.items[i].index = i + 1;
+                //    }
+                //    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                //    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
+                //}).fail(function () {
+                //    $('#' + controlID_mappingrules_content).html(defaultTabContent);
+                //});
                 break;
         }
     }
@@ -1841,12 +1780,10 @@
                     $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
                 }
 
-                model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
+                model.template = d.template;// isFocalPoint ? "Focal" : "Normal";
                 model.key = d.key;
                 model.obj = d.obj;
                 model.objid = d.objid;
-                //model.objecttype = d.objecttype;
-                //model.objecttypeid = d.objecttypeid;
                 model.type = d.obj;
                 model.name = htmlDecode(d.name);
                 model.typeName = d.typeName;
@@ -1859,15 +1796,18 @@
                 model.mappingRuleCount = d.mappingRuleCount;
                 model.hasSourceRules = (d.sourceRuleCount > 0);
                 model.hasMappingRules = (d.mappingRuleCount > 0);
-                model.challengeCount = d.challengeCount;
-                model.hasChallenges = (d.challengeCount > 0);
+                model.challengeCount = d.challenges;
+                model.hasChallenges = (d.challenges > 0);
                 model.openEventCount = d.openEventCount;
                 model.hasOpenEvents = (d.openEventCount > 0);
-                model.openIssueCount = d.openIssueCount;
-                model.hasOpenIssues = (d.openIssueCount > 0);
+                model.openIssueCount = d.issues;
+                model.hasOpenIssues = (d.issues > 0);
                 model.hasTransformations = (d.transformationCount > 0);
 
                 model.mapItems = d.mapItems;
+
+                if (d.other)
+                    model.other = htmlDecode(d.other);
 
                 modelList.push(model);
             }
@@ -1877,15 +1817,17 @@
             for (var i = 0; i < data.links.length; i++) {
                 var d = data.links[i];
                 var link = createLinkModel();
-                link.id = d.id;
+                //myDiagram.model.setCategoryForLinkData(link, d.category);
+                //link.id = d.id;
                 //link.intersectTypeId = d.intersectTypeId;
-                link.key = d.id;
+                //link.key = d.id;
+                link.Category = d.category;
                 link.from = d.from;
-                link.fromIntersectId = d.fromIntersectId;
+                //link.fromIntersectId = d.fromIntersectId;
                 link.to = d.to;
-                link.toIntersectId = d.toIntersectId;
-                link.text = d.role;
-                link.intersectRoleId = d.intersectRoleId;
+                //link.toIntersectId = d.toIntersectId;
+                //link.text = d.role;
+                //link.intersectRoleId = d.intersectRoleId;
                 link.diagramObjectType = "Link";
                 link.sourceMappingCount = d.mappingRuleCount;
                 link.hasMappingRules = (d.mappingRuleCount > 0);
@@ -1899,8 +1841,10 @@
         for (var i = 0; i < modelList.length; i++) {
             myDiagram.model.addNodeData(modelList[i]);
         }
+        myDiagram.model.linkCategoryProperty ="Category";
         for (var i = 0; i < linkList.length; i++) {
             myDiagram.model.addLinkData(linkList[i]);
+            myDiagram.model.setCategoryForLinkData(linkList[i], linkList[i].Category);
         }
 
         //get deep copy of lists
@@ -1915,7 +1859,7 @@
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/diagrams/' + type + '/' + id + '/lineage/2',
+            url: '/diagrams/' + type + '/' + id + '/lineage/' + viewID,
             data: null
         }).done(function (data, status, xhr) {
             parseData(data);
@@ -2058,25 +2002,497 @@
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("IN", true)], [makePort("OUT", false)]);
-    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("IN", true)], [makePort("OUT", false)]);
+    //#region Node/Link Templates
 
-    myDiagram.linkTemplate = g(
-        go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
-        g(go.Shape, { stroke: "gray", strokeWidth: 2 },
-            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2;}),
+    var nodeWidth = 200;
+    var nodeHeight = 150;
+    var nodeBorderColor = '#000000';
+    var nodeFontSize = 14;
+    //var nodeInPorts = [makePort("IN", true)];
+    //var nodeOutPorts = [makePort("OUT", false)];
+
+    //#region Focal Template
+
+    var focalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Focal", focalNode);
+
+    //#endregion
+
+    //#region Normal Template
+
+    nodeWidth = 200;
+    nodeHeight = 105;
+    nodeBorderColor = 'transparent';
+    nodeFontSize = 10;
+
+    var normalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Normal", normalNode);
+
+    //#endregion
+
+    //#region SupportFocal Template
+
+    var nodeWidth = 140;
+    var nodeHeight = 80;
+    var nodeBorderColor = '#000000';
+    var nodeFontSize = 9;
+
+    var supportFocalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("SupportFocal", supportFocalNode);
+
+    //#endregion
+
+    //#region SupportNormal Template
+
+    var nodeWidth = 130;
+    var nodeHeight = 70;
+    var nodeBorderColor = 'transparent';
+    var nodeFontSize = 9;
+
+    var supportNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("SupportNormal", supportNode);
+
+    //#endregion
+
+    //#region Fusion Template
+
+    var nodeWidth = 225;
+    var nodeHeight = 80;
+    var nodeBorderColor = 'transparent';
+    var nodeFontSize = 9;
+
+    var supportNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 2,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: 'bold ' + (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "other").makeTwoWay()
+        )
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Fusion", supportNode);
+
+    //#endregion
+
+    //#region Default Link Template
+
+    myDiagram.linkTemplateMap.add("", g(
+            go.Link, {
+                routing: go.Link.AvoidsNodes,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+            new go.Binding("curve", "curve", go.Binding.parseEnum(go.Link, go.Link.JumpOver)),
+            g(go.Shape, {
+                stroke: "gray", strokeWidth: 2
+            },
+            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
             new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-        g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
-        g(go.Panel, "Auto",
-            g(go.Shape, { visible: false, fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }), stroke: null },
+            g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+            g(go.Panel, "Auto",
+                g(go.Shape, {
+                    visible: false,
+                    fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
                 //only visible if there's a label
                 new go.Binding("visible", "text", function (a) { return (a ? true : false) })
-            ), // the link shape
-            g(go.TextBlock, { textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4 },   // the label
+                ), // the link shape
+                g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                // the label
                 new go.Binding("text", "text").makeTwoWay()
-             )
+                )
+            )
         )
     );
+
+    //#endregion
+
+    //#region Support Template
+
+    myDiagram.linkTemplateMap.add("Support", g(
+            go.Link, {
+                routing: go.Link.AvoidsNodes,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+            g(go.Shape, {
+                stroke: "blue", strokeWidth: 2
+            },
+            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
+            new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+            //g(go.Shape, { toArrow: "standard", fill: "blue", stroke: "blue" }), // the arrowhead
+            g(go.Panel, "Auto",
+                g(go.Shape, {
+                    visible: false,
+                    fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
+                //only visible if there's a label
+                new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                ), // the link shape
+                g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                // the label
+                new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        )
+    );
+
+    //#endregion
+
+    //#endregion
 
     var myOverview = initializeOverview(myDiagram);
 

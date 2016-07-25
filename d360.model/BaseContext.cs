@@ -294,7 +294,6 @@ namespace d360.model
         public void ExecuteNonQueryCommand(string commandText, List<SqlParameter> parameters)
         {
             var connection = new SqlConnection(Database.Connection.ConnectionString);
-
             try
             {
                 var command = new SqlCommand();

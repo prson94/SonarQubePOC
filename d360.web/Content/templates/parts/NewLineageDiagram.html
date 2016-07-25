@@ -51,6 +51,9 @@
                                 <td colspan="2" style="padding-left:5px;" class="diagramcommands">
                                     Rules
                                 </td>
+                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
+                                    Views
+                                </td>
                                 <td colspan="2" style="padding-left:5px;" class="lineage">
                                     Business Lineage
                                 </td>
@@ -104,11 +107,17 @@
 
                                 <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
                                 <td style="padding:5px;vertical-align:top;" class="diagramcommands">
-                                    <button id="{{control}}_ribbon_sourcerule_add" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
-                                    <button id="{{control}}_ribbon_maprule" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
-                                    <button id="{{control}}_ribbon_multimaprule" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
+                                    <button id="{{control}}_ribbon_sourcerule_add" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
+                                    <button id="{{control}}_ribbon_maprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
+                                    <button id="{{control}}_ribbon_multimaprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
                                 </td>
 
+                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                    <div id="{{control}}_ribbon_view_1">Business System Flow</div>
+                                    <div id="{{control}}_ribbon_view_2">Business Data Flow</div>
+                                    <div id="{{control}}_ribbon_view_3">Technical Lineage</div>
+                                </td>
 
                                 <td style="width:1px;border-left:1px solid #ccc;" class="lineage"></td>
                                 <td style="padding:5px;vertical-align:top;" class="lineage">
@@ -129,89 +138,98 @@
             </div>
         </div>
     </div>
-    <table>
-        <tbody>
-            <tr style="vertical-align:top;height:520px">
-                <td style="vertical-align:top">
-                    <div id="{{control}}_popover_lineage_editor" style="display:none">
-                        <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
-                    </div>
-                    <div id="{{control}}_popover_maprule_editor" style="display:none">
-                        <header>Manage Mappings</header>
-                        <div id="{{control}}_popover_maprule_editor_body" data-bind="template: {name: 'MapRulesEditTmpl' }"></div>
-                    </div>
-                    <div id="{{control}}_popover_multimaprule_editor" style="display:none">
-                        <header>Manage Mappings</header>
-                        <div id="{{control}}_popover_multimaprule_editor_body" data-bind="template: {name: 'MultiMapRulesEditTmpl' }"></div>
-                    </div>
-                    <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
-                        <div id="{{control}}_dgm" style="height:400px; overflow: no-display" class="diagram"></div>
-                        <div id="{{control}}_message" style="background-color:rgba(141, 14, 14, 1);color:white;padding:2px;font-size:.8em; border-radius:3px;display:none;"><i class="fa fa-warning"></i> You have unsaved changes in this diagram!</div>
-                    </div>
+    <!--<div style="min-height: 600px">
+        <div id="{{control}}_splitter">
+            <div>-->
+                <table>
+                <tbody>
+                    <tr style="vertical-align:top;height:520px">
+                        <td style="vertical-align:top">
+                <div id="{{control}}_popover_lineage_editor" style="display:none">
+                    <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
+                </div>
+                <div id="{{control}}_popover_maprule_editor" style="display:none">
+                    <header>Manage Mappings</header>
+                    <div id="{{control}}_popover_maprule_editor_body" data-bind="template: {name: 'MapRulesEditTmpl' }"></div>
+                </div>
+                <div id="{{control}}_popover_multimaprule_editor" style="display:none">
+                    <header>Manage Mappings</header>
+                    <div id="{{control}}_popover_multimaprule_editor_body" data-bind="template: {name: 'MultiMapRulesEditTmpl' }"></div>
+                </div>
+                <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
+                    <div id="{{control}}_dgm" style="height:400px; overflow: no-display" class="diagram"></div>
+                    <div id="{{control}}_message" style="background-color:rgba(141, 14, 14, 1);color:white;padding:2px;font-size:.8em; border-radius:3px;display:none;"><i class="fa fa-warning"></i> You have unsaved changes in this diagram!</div>
+                </div>
+            <!--</div>
+            <div>-->
                 </td>
-                <td style="width:350px;vertical-align:top;height:100%">
-                    <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
-                        <div id="{{control}}_info">
-                            <div><i class="fa fa-info-circle"></i> Info</div>
-                            <div style="padding: 10px">
-                                <!--<div id="{{control}}_info_body"></div>
-                                <div id="{{control}}_info_detail_wrapper">-->
-                                    <!--<div>
-                                        <div style="text-align:right;" id="{{control}}_info_detail_edit"></div>
-                                    </div>-->
-                                    <div id="{{control}}_info_detail"></div>
-                                <!--</div>-->
-                            </div>
-                        </div>
-                        <div>
-                            <div id="{{control}}_tabs">
-                                <ul>
-                                    <li id="{{control}}_sourcerules_tab">
-                                        <i class="fa fa-2x fa-code-fork"></i>
-                                    </li>
-                                    <li id="{{control}}_mappingrules_tab">
-                                        <i class="fa fa-2x fa-exchange"></i>
-                                    </li>
-                                    <li id="{{control}}_responsibilities_tab">
-                                        <i class="fa fa-2x fa-user"></i>
-                                    </li>
-                                    <li id="{{control}}_fusion_tab">
-                                        <i class="fa fa-2x fa-database"></i>
-                                    </li>
-                                    <li id="{{control}}_transformations_tab">
-                                        <i class="fa fa-2x fa-random"></i>
-                                    </li>
-                                </ul>
-                                <div style="padding:10px;">
-                                    <h4 style="padding-bottom:3px;">Source Rules</h4>
-                                    <div id="{{control}}_sourcerules_content">
-                                    </div>
-                                </div>
-                                <div style="padding:10px;">
-                                    <h4 style="padding-bottom:3px;">Mapping Rules</h4>
-                                    <div id="{{control}}_mappingrules_content">
-                                    </div>
-                                </div>
-                                <div style="padding:10px;">
-                                    <h4 style="padding-bottom:3px;">Responsibilities</h4>
-                                    <div id="{{control}}_responsibilities_content">
-                                    </div>
-                                </div>
-                                <div style="padding:10px;">
-                                    <h4 style="padding-bottom:3px;">Fusion Relationships</h4>
-                                    <div id="{{control}}_fusion_content">
-                                    </div>
-                                </div>
-                                <div style="padding:10px;">
-                                    <h4 style="padding-bottom:3px;">Business Transformations</h4>
-                                    <div id="{{control}}_transformations_content">
-                                    </div>
-                                </div>
-                            </div>
+            <td style="width:350px;vertical-align:top;height:100%">
+                <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
+                    <div id="{{control}}_info">
+                        <div><i class="fa fa-info-circle"></i> Info</div>
+                        <div style="padding: 10px">
+                            <!--<div id="{{control}}_info_body"></div>
+                        <div id="{{control}}_info_detail_wrapper">-->
+                            <!--<div>
+                            <div style="text-align:right;" id="{{control}}_info_detail_edit"></div>
+                        </div>-->
+                            <div id="{{control}}_info_detail"></div>
+                            <!--</div>-->
                         </div>
                     </div>
+                    <div>
+                        <div id="{{control}}_tabs">
+                            <ul>
+                                <li id="{{control}}_sourcerules_tab">
+                                    <i class="fa fa-2x fa-code-fork"></i>
+                                </li>
+                                <li id="{{control}}_mappingrules_tab">
+                                    <i class="fa fa-2x fa-exchange"></i>
+                                </li>
+                                <li id="{{control}}_responsibilities_tab">
+                                    <i class="fa fa-2x fa-user"></i>
+                                </li>
+                                <li id="{{control}}_fusion_tab">
+                                    <i class="fa fa-2x fa-database"></i>
+                                </li>
+                                <li id="{{control}}_transformations_tab">
+                                    <i class="fa fa-2x fa-random"></i>
+                                </li>
+                            </ul>
+                            <div style="padding:10px;">
+                                <h4 style="padding-bottom:3px;">Source Rules</h4>
+                                <div id="{{control}}_sourcerules_content">
+                                </div>
+                            </div>
+                            <div style="padding:10px;">
+                                <h4 style="padding-bottom:3px;">Mapping Rules</h4>
+                                <div id="{{control}}_mappingrules_content">
+                                </div>
+                            </div>
+                            <div style="padding:10px;">
+                                <h4 style="padding-bottom:3px;">Responsibilities</h4>
+                                <div id="{{control}}_responsibilities_content">
+                                </div>
+                            </div>
+                            <div style="padding:10px;">
+                                <h4 style="padding-bottom:3px;">Fusion Relationships</h4>
+                                <div id="{{control}}_fusion_content">
+                                </div>
+                            </div>
+                            <div style="padding:10px;">
+                                <h4 style="padding-bottom:3px;">Business Transformations</h4>
+                                <div id="{{control}}_transformations_content">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 </td>
-            </tr>
-        </tbody>
-    </table>
+                    </tr>
+                </tbody>
+            </table>
+            <!--</div>
+        </div>
+    </div>
+-->
 </div>

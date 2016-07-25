@@ -254,6 +254,8 @@ namespace d360.model
 
         public DbSet<MapRuleItem> MapRuleItems { get; set; }
 
+        public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
+
         public DbSet<MapSequence> MapSequences { get; set; }
 
         public DbSet<MapSequenceContext> MapSequenceContexts { get; set; }
@@ -1269,7 +1271,7 @@ order by Name");
             ).FirstOrDefault();
 
             if (intersectType == null)
-                throw new NotFoundException("Intersect Type");
+                throw new NotFoundException($"Relation type [{subjectDetail.Name} to {objectDetail.Name}]");
 
             intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
                     (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
@@ -2430,10 +2432,10 @@ order by Name", new { workflowType, type, id });
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<MapRuleItem>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.MapRuleItems).Map(i =>
-            {
-                i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
-            });
+            //modelBuilder.Entity<MapRuleItem>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.MapRuleItems).Map(i =>
+            //{
+            //    i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
+            //});
 
             modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
             {

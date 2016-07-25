@@ -2933,79 +2933,44 @@ from    IntersectNode S
             public string Transformation { get; set; }
         }
 
-        [HttpGet, Route("maps/{id:int}/mapitems")]
-        public HttpResponseMessage MapItems(int id)
+        [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
+        public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
         {
-            var list = new List<MapItemDetail>();
-            var map = Company.GetById<Map>(id, i => i.MapItems);
-            if (map != null)
-            {
-                var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
+            var list = Company.Query<dynamic>(@"
+select	MI.ID as MapItemID,
+				
+		SI.ObjectTypeName as SourceType,
+		SI.ObjectName as SourceName,
+		SI.Object as Source,
+		SI.ObjectID as SourceID,
 
-                var intersectIDs = map.MapItems.Select(i => i.SourceIntersectID).ToList();
-                intersectIDs.AddRange(map.MapItems.Select(i => i.TargetIntersectID).ToList());
+		SF.Name as SourceFusion,
+		SFA.TextPath as SourceFusionAttribute,
+		SFT.TextPath as SourceFusionAttributeType,
 
-                var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
+		TI.ObjectTypeName as TargetType,
+		TI.ObjectName as TargetName,
+		TI.Object as Target,
+		TI.ObjectID as TargetID,
 
-                IntersectDetail intersectDetail = null;
+		TF.Name as TargetFusion,
+		TFA.TextPath as TargetFusionAttribute,
+		TFT.TextPath as TargetFusionAttributeType
 
-                foreach (var mi in map.MapItems)
-                {
-                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.SourceIntersectID);
-                    if (intersectDetail != null)
-                    {
-                        list.Add(new MapItemDetail
-                        {
-                            MapID = map.ID,
-                            SourceID = mi.ID,
-                            SourceIntersectID = mi.SourceIntersectID,
+from	MapItem MI
+		inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+		inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+		left join MapRuleItemMapItem J on J.MapItemID = MI.ID
+		left join MapRuleItem MRI on MRI.ID = J.MapRuleItemID
+		left join FusionAttribute SFA on SFA.ID = MRI.SourceFusionAttributeID
+		left join FusionAttributeType SFT on SFT.ID = SFA.FusionAttributeTypeID
+		left join Fusion SF on SF.ID = SFA.FusionID
+		left join FusionAttribute TFA on TFA.ID = MRI.TargetFusionAttributeID
+		left join FusionAttributeType TFT on TFT.ID = TFA.FusionAttributeTypeID
+		left join Fusion TF on TF.ID = TFA.FusionID
+where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
+		AND (TI.Subject = @target and TI.SubjectID = @targetID)", new { source, sourceID, target, targetID });
 
-                            SourceSubject = intersectDetail.Subject,
-                            SourceSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>",
-                            SourceSubjectID = intersectDetail.SubjectID,
-                            SourceSubjectName = intersectDetail.SubjectName,
-                            SourceSubjectUrl = intersectDetail.SubjectUrl,
-
-                            SourceObject = intersectDetail.Object,
-                            SourceObjectIconHtml = $"<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'>{intersectDetail.ObjectIconText}</span>",
-                            SourceObjectID = intersectDetail.ObjectID,
-                            SourceObjectName = intersectDetail.ObjectName,
-                            SourceObjectUrl = intersectDetail.ObjectUrl
-                        });
-                    }
-                }
-
-                foreach (var mi in map.MapItems)
-                {
-                    intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.TargetIntersectID);
-                    if (intersectDetail != null)
-                    {
-                        var first = list.First(i => i.TargetIntersectID == 0);
-                        if (first == null)
-                        {
-                            list.Add(new MapItemDetail { TargetIntersectID = 0 });
-                            first = list.First(i => i.TargetIntersectID == 0);
-                        }
-
-                        first.TargetIntersectID = mi.TargetIntersectID;
-                        first.TargetID = mi.ID;
-                        first.TargetIntersectID = mi.TargetIntersectID;
-
-                        first.TargetSubject = intersectDetail.Subject;
-                        first.TargetSubjectIconHtml = $"<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'>{intersectDetail.SubjectIconText}</span>";
-                        first.TargetSubjectID = intersectDetail.SubjectID;
-                        first.TargetSubjectName = intersectDetail.SubjectName;
-                        first.TargetSubjectUrl = intersectDetail.SubjectUrl;
-
-                        first.TargetObject = intersectDetail.Object;
-                        first.TargetObjectIconHtml = $"<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'>{intersectDetail.ObjectIconText}</span>";
-                        first.TargetObjectID = intersectDetail.ObjectID;
-                        first.TargetObjectName = intersectDetail.ObjectName;
-                        first.TargetObjectUrl = intersectDetail.ObjectUrl;
-                    }
-                }
-            }
-            map = null;
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }

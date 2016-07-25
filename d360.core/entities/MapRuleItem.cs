@@ -35,8 +35,8 @@ namespace d360.core.entities
         [DataMember]
         public virtual ICollection<MapRule> MapRules { get; set; }
 
-        [DataMember]
-        public virtual ICollection<MapItem> MapItems { get; set; }
+        //[DataMember]
+        //public virtual ICollection<MapItem> MapItems { get; set; }
 
         [IgnoreDataMember]
         public virtual FusionAttribute SourceFusionAttribute { get; set; }

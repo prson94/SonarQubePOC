@@ -117,6 +117,7 @@
     <Compile Include="entities\FusionRuleStepSetting.cs" />
     <Compile Include="entities\IntersectGroup.cs" />
     <Compile Include="entities\IntersectRole.cs" />
+    <Compile Include="entities\MapRuleItemMapItem.cs" />
     <Compile Include="entities\MapRule.cs" />
     <Compile Include="entities\MapRuleItem.cs" />
     <Compile Include="entities\MapItem.cs" />
