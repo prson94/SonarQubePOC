@@ -5,11 +5,16 @@ import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
-    selector: 'd3s-right-sidebar',
-    host: {
-        '(document:click)': 'onClick($event)',
-    },
-    template: ` <div *ngIf="visible" class="col hide-on-small-only m2 l1">                
+    selector: 'd3s-right-sidebar',  
+    styles: [`
+    .sidebar{
+        position:absolute;
+        width:50px;
+        right:5px; 
+        
+    }
+  `],  
+    template: ` <div *ngIf="items && items.length > 0" class="hide-on-small-only sidebar" [style.top]="calculatedTop()">                
                     <div *ngFor="let item of items">
                         <d3s-right-sidebar-item [item]="item" (itemClick)="itemClicked($event.item)"></d3s-right-sidebar-item>
                     </div>
@@ -20,8 +25,10 @@ import { Subscription }   from 'rxjs/Subscription';
 
 export class RightSidebarComponent implements OnChanges {
     @Input() visible: boolean = false;
+    @Input() titleHeight: number = 0;
+    
     @Output() visibleChange = new EventEmitter() // an event emitter
-    //@Output() closeClick = new EventEmitter();
+    
     subscription: Subscription;
     items: RightSidebarItem[];
     canHideTimeoutID: number = 0;
@@ -31,7 +38,11 @@ export class RightSidebarComponent implements OnChanges {
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
             item => {
-                this.items.push(item);                 
+                this.items.push(item);
+                if (this.items.length == 1) {
+                    this.visible = true;
+                    this.visibleChange.emit(this.visible);
+                }
             });
         this.subscription = rightSidebarService.rightSidebarClear$.subscribe(
             item => {
@@ -71,14 +82,13 @@ export class RightSidebarComponent implements OnChanges {
         this.rightSidebarService.itemClicked(item);
     }
 
-    onClick(event) {
-        if (this.visible && !this._eref.nativeElement.contains(event.target)) { // or some similar check
-         //   console.log('hide me');
-            //this.canHide = false;
-            //this.visible = false;
-       //     this.visibleChange.emit(this.visible);
+    private calculatedTop(): string{
+        
+        if (this.titleHeight) {            
+            return this.titleHeight + 45 + 'px';
         }
-   //     else console.log('dont hide me');
-           // this.closeClick.emit();
+        return '45px';        
     }
+    
+    
 };

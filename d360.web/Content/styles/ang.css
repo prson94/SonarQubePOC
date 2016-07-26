@@ -23046,14 +23046,22 @@ d3s-navbar-item.top > div > span.nav-item:hover {
 .maincontent {
   margin-left: 0;
 }
+@media only screen and (max-width: 600px) {
+  .maincontent {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
 @media only screen and (min-width: 601px) {
   .maincontent {
     margin-left: 0;
+    margin-right: 50px;
   }
 }
 @media only screen and (min-width: 993px) {
   .maincontent {
     margin-left: 220px;
+    margin-right: 50px;
   }
 }
 span.breadcrumbs {

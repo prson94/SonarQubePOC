@@ -1,9 +1,8 @@
 ///<reference path="./es6-shim.d.ts"/>
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService  } from './services/index';
-import { PageLinksComponent } from './components/shared/page-links.component';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 declare var $: JQueryStatic;
 import 'rxjs/Rx';
@@ -15,37 +14,48 @@ import 'rxjs/Rx';
                     <d3s-navbar></d3s-navbar>
                 </header>
                 <main>
-                    <div class="row PageHeader">
+                    <div class="row PageHeader" #pageheader>
                         <div class="col l7 m7 s12">              
                             <div class="PageDescription maincontent">{{pageHeader.description}}</div>              
-                        </div>            
-                        <d3s-page-links (onSideBarActivated)="toggleRightSidebar()"></d3s-page-links>
+                        </div>                                    
                     </div>
                     <div class="row">
-                        <div [class]="showRightSideBar ? 'col s12 m10 l11' : 'col s12'">
+                        <div class="col s12">
                             <div class="maincontent">                                            
                                 <router-outlet></router-outlet>                                                
                             </div>  
-                        </div>                        
-                        <d3s-right-sidebar [(visible)]="showRightSideBar"></d3s-right-sidebar>                        
+                        </div>                                                
                     </div>                    
+                    <d3s-right-sidebar [(visible)]="showRightSideBar" [titleHeight]="pageheader?.nativeElement?.clientHeight"></d3s-right-sidebar>                        
                 </main>
                 <d3s-messages></d3s-messages>
               `,
-    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, PageLinksComponent, RightSidebarComponent],
+    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, RightSidebarComponent],
     providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService]
 })
 
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnInit {
     showRightSideBar: boolean = false;
-    constructor(private pageHeader: PageHeader) { }
+    @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;
+
+    @ViewChild('pageheader') pageheader;
+    
+    constructor(private pageHeader: PageHeader) {
+        
+    }
 
     toggleRightSidebar() {
         this.showRightSideBar = !this.showRightSideBar;
     }
 
+    ngOnInit() {
+        //this.pageheaderList.changes.subscribe(changes => console.log(changes));
+    }
+    
     ngAfterViewInit() {
-        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function     
+        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                     
+      //  console.log(this.pageheader);
+      //  this.rightSidebarComponent.setTop(this.pageheader.nativeElement.clientHeight);
     }
 
     private initializeQtipTooltips() {

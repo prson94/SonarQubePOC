@@ -1,12 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { ClaimsTile } from '../tiles/claims.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ArtifactTypeService } from '../../services/artifact-type.service';
+import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService } from '../../services/index';
 import { ArtifactTypeForm } from '../forms/artifact-type.form';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DeleteForm } from '../forms/delete.form';
@@ -14,10 +13,13 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { AdminBaseComponent } from './admin-base.component'
 import { RelationshipsTile } from '../tiles/relationships.tile'
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
+import { Subscription }   from 'rxjs/Subscription';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-artifacts',
-    providers: [ArtifactTypeService],
+    providers: [ArtifactTypeService, AuditService],
     directives: [
         TreeTable,
         Column,
@@ -29,12 +31,13 @@ import { Title } from '@angular/platform-browser';
         FieldDefinitionTile,
         DeleteForm,
         TileActionsComponent,
-        RelationshipsTile
+        RelationshipsTile, 
+        AuditComponent
     ],
     templateUrl: 'scripts/app/components/admin/admin-artifacts.component.html',
 })
 
-export class AdminArtifactsComponent extends AdminBaseComponent { 
+export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy { 
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     selectedRow: TreeNode;
@@ -43,13 +46,34 @@ export class AdminArtifactsComponent extends AdminBaseComponent {
     isEditing = false;
     isDeleting = false;
     ArtifactTypes: TreeNode[];
+    isAuditVisible: boolean = false;
+    subscription: Subscription;
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+    constructor(protected rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
         super(headerBreadcrumbService, pageHeader, titleService);
         this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
         this.areaName = "Artifacts";
         this.setCommonItems();        
         this.load();
+
+        this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
+
+
+        this.subscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
+            item => {
+                this.showOverlay(item);
+            });
+    }
+
+    ngOnDestroy() {
+        this.rightSidebarService.clearItems();
+        this.subscription.unsubscribe();
+    }
+
+
+    showOverlay(item) {
+        if (item.tag = 'audit')
+            this.isAuditVisible = !this.isAuditVisible;
     }
 
     load() {
