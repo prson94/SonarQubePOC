@@ -22,7 +22,7 @@ import 'rxjs/Rx';
                         <d3s-page-links (onSideBarActivated)="toggleRightSidebar()"></d3s-page-links>
                     </div>
                     <div class="row">
-                        <div class="col" [ngClass]="{'s12 m10 l11':showRightSideBar}" [ngClass]="{'s12':!showRightSideBar}">
+                        <div [class]="showRightSideBar ? 'col s12 m10 l11' : 'col s12'">
                             <div class="maincontent">                                            
                                 <router-outlet></router-outlet>                                                
                             </div>  
