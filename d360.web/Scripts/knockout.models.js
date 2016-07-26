@@ -1266,6 +1266,7 @@ function LineagePanelViewModelLine(data, permissions, parent) {
     //self.Advanced = ko.observable(false);
 
     self.ShowAdvanced = ko.observable("hide");
+    self.HasLoadedItems = ko.observable(false);
     self.ShowAdd = ko.observable(false);
 
     self.AddSourceItems = ko.observableArray([]);
@@ -1274,9 +1275,19 @@ function LineagePanelViewModelLine(data, permissions, parent) {
     self.AddTargetIndex = ko.observable(-1);
 
 
+    
+
     self.AddNewItem = function () {
         var item = self.AddSourceItems()[self.AddSourceIndex()];
+        var item2 = self.AddTargetItems()[self.AddTargetIndex()];
+        //console.log(item);
+        
+        item.Object = item2.Source;
+        item.objectID = item2.SourceID;
+        item.ObjectName = item2.SourceName;
+
         self.Items.push(new LineagePanelViewModelLineItem(item, permissions, self));
+        self.HasLoadedItems(true);
         self.AddCancel();
     }
 
@@ -1287,6 +1298,8 @@ function LineagePanelViewModelLine(data, permissions, parent) {
     }
 
     self.SetShowAdd = function () {
+        self.LoadSubjects();
+        self.LoadObjects();
         self.ShowAdd(true);
     }
 
@@ -1349,6 +1362,7 @@ function LineagePanelViewModelLine(data, permissions, parent) {
     }
 
     self.SetHideAdvanced = function () {
+        self.LoadSharedObjects();
         self.ShowAdvanced("hide");
     }
 
@@ -1387,10 +1401,10 @@ function LineagePanelViewModelLine(data, permissions, parent) {
     self.LoadSharedObjects = function () {
         var data = {};
         self.Items([]);
-        self.AddSourceItems([]);
-        self.AddTargetItems([]);
-        self.AddSourceIndex(-1);
-        self.AddTargetIndex(-1);
+        //self.AddSourceItems([]);
+        //self.AddTargetItems([]);
+        //self.AddSourceIndex(-1);
+        //self.AddTargetIndex(-1);
 
         data = self.GetLoadData();
 
@@ -1405,11 +1419,80 @@ function LineagePanelViewModelLine(data, permissions, parent) {
             if (data && data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
                     self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
-                    self.AddSourceItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
-                    self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+                self.HasLoadedItems(true);
+            } else {
+                self.HasLoadedItems(false);
+            }
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+
+    self.LoadSubjects = function () {
+        var data = {};
+        //self.Items([]);
+        self.AddSourceItems([]);
+        //self.AddTargetItems([]);
+        self.AddSourceIndex(-1);
+        //self.AddTargetIndex(-1);
+
+        data = self.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: '/form/Lineage_IntersectSubjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                self.AddSourceItems(data);
+                for (var i = 0; i < data.length; i++) {
+                   
+                    //self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(data);
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
                 }
             }
-            console.log(data);
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadObjects = function () {
+        var data = {};
+        //self.Items([]);
+        //self.AddSourceItems([]);
+        self.AddTargetItems([]);
+        //self.AddSourceIndex(-1);
+        self.AddTargetIndex(-1);
+
+        data = self.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: '/form/Lineage_IntersectObjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                self.AddTargetItems(data);
+                for (var i = 0; i < data.length; i++) {
+                    //self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+            }
+            //console.log(data);
         }).always(function () {
             self.IsLoading(false);
         });
@@ -1532,23 +1615,32 @@ function LineagePanelViewModelLineItem(data, permissions, parent) {
 
     self.ShowAddSource = function () {
         self.AddMode('source');
+        self.LoadItems();
     }
 
     self.ShowAddTarget = function () {
         self.AddMode('target');
+        self.LoadItems();
     }
 
 
     self.LoadItems = function () {
         var data = {};
+        self.NewItems([]);
+        self.NewItemIndex(-1);
+        var url = '/form/Lineage_IntersectSubjects';
 
+        if (self.AddMode() == 'target')
+            url = '/form/Lineage_IntersectObjects';
+
+        
         data = parent.GetLoadData();
 
         if (data == null)
             return;
 
         $.ajax({
-            url: '/form/Lineage_IntersectSharedObjects',
+            url: url,
             data: data,
             method: 'GET'
         }).done(function (data) {

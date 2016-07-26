@@ -9835,6 +9835,108 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+
+        public JsonNetResult Lineage_IntersectSubjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
+        {
+            var sql = @"select i.ID as SourceIntersectID,
+ i.IntersectTypeID as SourceIntersectTypeID,
+ i.Object as Source,
+i.ObjectID as SourceID,
+d.Name as SourceName
+from [intersect] i
+join intersecttype t on i.intersecttypeid = t.id and t.subject = @sourceType and t.subjectid = @sourceTypeID
+join intersecttypepredicate p on p.intersecttypeid = t.id and p.predicatetype = 1
+join cache.objectdetails d on d.object = i.object and d.objectid = i.objectid
+where  i.subject = @source and i.subjectid = @sourceID
+and i.id not in (
+ select
+	i.ID
+ from [intersect] i
+ join [intersect] i2 on 
+	i2.subject = @target 
+	and i2.subjectid = @targetID
+	--and (i2.object + '|' + cast(i2.objectid as varchar(50))) != (i.object + '|' + cast(i.objectid as varchar(50)))
+	and i2.object = i.object 
+	and i2.objectid = i.objectid 
+	and i.id != i2.id 
+	and i2.intersecttypeid in (
+	 select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @targetType and t.subjectid = @targetTypeID
+
+	)
+ join cache.objectdetails d on
+	d.object = i.Object and d.objectid = i.objectid
+ join cache.objectdetails d2 on
+	d2.object = i2.object and d2.objectid = i2.objectid
+ where 
+	i.subject = @source
+	and i.subjectid = @sourceID 
+	and i.intersecttypeid in ( select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @sourceType and t.subjectid = @sourceTypeID
+)
+)";
+
+            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        public JsonNetResult Lineage_IntersectObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
+        {
+            var sql = @"select i.ID as SourceIntersectID,
+ i.IntersectTypeID as SourceIntersectTypeID,
+ i.Object as Source,
+i.ObjectID as SourceID,
+d.Name as SourceName
+from [intersect] i
+join intersecttype t on i.intersecttypeid = t.id and t.subject = @targetType and t.subjectid = @targetTypeID
+join intersecttypepredicate p on p.intersecttypeid = t.id and p.predicatetype = 1
+join cache.objectdetails d on d.object = i.object and d.objectid = i.objectid
+where  i.subject = @target and i.subjectid = @targetID
+and i.id not in (
+ select
+	i2.ID
+ from [intersect] i
+ join [intersect] i2 on 
+	i2.subject = @target 
+	and i2.subjectid = @targetID
+	--and (i2.object + '|' + cast(i2.objectid as varchar(50))) != (i.object + '|' + cast(i.objectid as varchar(50)))
+	and i2.object = i.object 
+	and i2.objectid = i.objectid 
+	and i.id != i2.id 
+	and i2.intersecttypeid in (
+	 select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @targetType and t.subjectid = @targetTypeID
+
+	)
+ join cache.objectdetails d on
+	d.object = i.Object and d.objectid = i.objectid
+ join cache.objectdetails d2 on
+	d2.object = i2.object and d2.objectid = i2.objectid
+ where 
+	i.subject = @source
+	and i.subjectid = @sourceID 
+	and i.intersecttypeid in ( select t.id from intersecttype t
+ join intersecttypepredicate tp on tp.intersecttypeid = t.id and tp.predicatetype=1
+ where t.subject = @sourceType and t.subjectid = @sourceTypeID
+)
+)";
+
+            var results = Company.Query<dynamic>(sql, new { sourceType, sourceTypeID, targetType, targetTypeID, source, target, sourceID, targetID }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         /// <summary>
         /// Gets a list of subjects based on the given intersect type.
         /// </summary>

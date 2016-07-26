@@ -137,7 +137,7 @@
     $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
     $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
+    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64, disabled: false });
     $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
     $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
