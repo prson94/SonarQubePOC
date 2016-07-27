@@ -498,7 +498,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
                     company.LoadItems.Add(loadItem);
-//company.Add<LoadItem>(loadItem);
+                    //company.Add<LoadItem>(loadItem);
 
                     foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                     {
@@ -518,7 +518,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         else
                         {
                             loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-                        }                                                
+                        }
 
                         company.LoadItemColumns.Add(
                             new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue }
@@ -536,10 +536,287 @@ namespace d360.jobs.queue.ProcessBulkLoad
             }
             #endregion
 
-            
+            List<SimpleTypeModel> subjectAreas = null;
 
-            if (load.Action == "N")
+            if (load.Action == "O" || load.Action == "N")   //List loading
             {
+                subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+            }
+
+            if (load.Action == "O")         // Ownership/Responsibilities
+            {
+                #region
+                /*
+                    "Item Type",
+                    "Subject Area", //ArtifactType only
+                    "Item Path",
+                    "Responsibility",
+                    "Resource"
+                 */
+                #endregion
+
+                #region Get data to pre-populate
+
+                List<SimpleTypeModel> types = null;
+                switch(load.Object)
+                {
+                    case "ArtifactType":
+                        types = company.Table<ArtifactType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                        break;
+                    case "DomainType":
+                        types = company.Table<DomainType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                        break;
+                    case "FusionType":
+                        types = company.Table<FusionType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                        break;
+                    case "PolicyType":
+                        types = company.Table<PolicyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                        break;
+                    case "TaxonomyType":
+                        types = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                        break;
+                }
+
+                var resources = new List<SimpleTypeModel>();
+                resources.AddRange(
+                    company.Table<Group>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = "group:" + x.Name.ToLower(), ID = x.ID }).ToList());
+                resources.AddRange(
+                    company.Table<GlobalReportingResource>().ToList().Select(x => new SimpleTypeModel { Name = "user:" + x.FullName.ToLower(), ID = x.ResourceID })
+                 );
+
+                var responsibilities = company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
+
+                var allocations = company.Table<ResponsibilityTypeRelation>().ToList();
+
+                #endregion
+
+                foreach (var loadItem in load.LoadItems)
+                {
+                    #region Vars
+
+                    var rawType = "";
+                    var rawSubjectArea = "";
+                    var rawItemPath = "";
+                    var rawResponsibility = "";
+                    var rawResource = "";
+
+                    LoadItemColumn typeColumn = null;
+                    LoadItemColumn subjectAreaColumn = null;
+                    LoadItemColumn itemColumn = null;
+                    LoadItemColumn responsibilityColumn = null;
+                    LoadItemColumn resourceColumn = null;
+
+                    SimpleTypeModel verifiedType = null;
+                    SimpleTypeModel verifiedSubjectArea = null;
+                    SimpleTypeModel verifiedItem = null;
+                    SimpleTypeModel verifiedResponsibility = null;
+                    SimpleTypeModel verifiedResource = null;
+
+                    var currentColumnIndex = 1;
+
+                    #endregion
+
+                    #region Verify Type
+
+                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawType = typeColumn.Value.Trim().ToLower();
+                    verifiedType = types.SingleOrDefault(i => i.Name == rawType);
+
+                    if (verifiedType != null)
+                    {
+                        typeColumn.LookupObject = load.Object;
+                        typeColumn.LookupObjectID = verifiedType.ID;
+                    }
+                    currentColumnIndex++;
+
+                    #endregion
+
+                    if (verifiedType != null)
+                    {
+                        #region Verify Subject Area
+
+                        if (load.Object == "ArtifactType")
+                        {
+                            subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                            rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
+                            verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                            if (verifiedSubjectArea != null)
+                            {
+                                subjectAreaColumn.LookupObject = "TaxonomyType";
+                                subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                            }
+                            currentColumnIndex++;
+                        }
+
+                        #endregion
+
+                        #region Verify Item
+
+                        itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                        rawItemPath = itemColumn.Value.Trim().ToLower();
+                        switch (load.Object)
+                        {
+                            case "ArtifactType":
+                                verifiedItem = company.Filter<Artifact>(x => 
+                                    x.ArtifactTypeID == verifiedType.ID && 
+                                    x.TaxonomyTypeID == verifiedSubjectArea.ID && 
+                                    x.TextPath.ToLower() == rawItemPath
+                                )
+                                .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
+                                .SingleOrDefault();
+                                break;
+                            case "DomainType":
+                                verifiedItem = company.Filter<Domain>(x => 
+                                    x.DomainTypeID == verifiedType.ID && 
+                                    x.Name.ToLower() == rawItemPath
+                                )
+                                .Select(x => new SimpleTypeModel { Name = "Domain", ID = x.ID })
+                                .SingleOrDefault();
+                                break;
+                            case "FusionType":
+                                verifiedItem = company.Filter<Fusion>(x =>
+                                    x.FusionTypeID == verifiedType.ID &&
+                                    x.Name.ToLower() == rawItemPath
+                                )
+                                .Select(x => new SimpleTypeModel { Name = "Fusion", ID = x.ID })
+                                .SingleOrDefault();
+                                break;
+                            case "PolicyType":
+                                verifiedItem = company.Filter<Policy>(x =>
+                                    x.PolicyTypeID == verifiedType.ID &&
+                                    x.TextPath.ToLower() == rawItemPath
+                                )
+                                .Select(x => new SimpleTypeModel { Name = "Policy", ID = x.ID })
+                                .SingleOrDefault();
+                                break;
+                            case "TaxonomyType":
+                                verifiedItem = company.Filter<Taxonomy>(x =>
+                                    x.TaxonomyTypeID == verifiedType.ID &&
+                                    x.TextPath.ToLower() == rawItemPath
+                                )
+                                .Select(x => new SimpleTypeModel { Name = "Taxonomy", ID = x.ID })
+                                .SingleOrDefault();
+                                break;
+                        }
+                        if (verifiedItem != null)
+                        {
+                            itemColumn.LookupObject = verifiedItem.Name;
+                            itemColumn.LookupObjectID = verifiedItem.ID;
+                        }
+                        currentColumnIndex++;
+
+                        #endregion
+
+                        if (verifiedItem != null)
+                        {
+                            #region Verify Responsibility
+
+                            responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                            rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
+                            verifiedResponsibility = responsibilities.SingleOrDefault(i => i.Name == rawResponsibility);
+                            if (verifiedResponsibility != null)
+                            {
+                                responsibilityColumn.LookupObject = "ResponsibilityType";
+                                responsibilityColumn.LookupObjectID = verifiedResponsibility.ID;
+                            }
+                            currentColumnIndex++;
+
+                            #endregion
+
+                            #region Verify Resource
+
+                            resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                            rawResource = resourceColumn.Value.Trim().ToLower();
+                            verifiedResource = resources.SingleOrDefault(i => i.Name == rawResource);
+                            if (verifiedResource != null)
+                            {
+                                resourceColumn.LookupObject = rawResource.StartsWith("group:") ? "Group" : "Resource";
+                                resourceColumn.LookupObjectID = verifiedResource.ID;
+                            }
+
+                            #endregion
+                        }
+                    }
+
+                    if (verifiedItem != null && verifiedResource != null && verifiedResponsibility != null)
+                    {
+                        if (allocations.Any(x => x.ObjectType == load.Object && x.ObjectID == verifiedType.ID && x.ResponsibilityTypeID == verifiedResponsibility.ID))
+                        {
+                            // OK to proceed with insert.
+                            var alreadyPresent = company.ResponsibilityDetails.Any(i =>
+                                i.ObjectType == verifiedItem.Name && i.ObjectID == verifiedItem.ID &&
+                                i.ResponsibleObjectType == resourceColumn.LookupObject && i.ResponsibleObjectID == resourceColumn.LookupObjectID &&
+                                i.ResponsibilityTypeID == verifiedResponsibility.ID &&
+                                i.AssigningItemType == verifiedItem.Name && i.AssigningItemID == verifiedItem.ID);
+
+                            if (!alreadyPresent)
+                            {
+                                var model = new Responsibility
+                                {
+                                    ObjectID = verifiedItem.ID,
+                                    ObjectType = verifiedItem.Name,
+                                    ResponsibilityTypeID = verifiedResponsibility.ID,
+                                    ResponsibleObjectID = resourceColumn.LookupObjectID.Value,
+                                    ResponsibleObjectType = resourceColumn.LookupObject,
+                                    Visible = true
+                                };
+
+                                try
+                                {
+                                    company.Add<Responsibility>(model);
+                                    loadItem.Object = "Responsibility";
+                                    loadItem.ObjectID = model.ID;
+                                    loadItem.Status = true;
+                                    loadItem.StatusMessage = "Successfully created responsibility.";
+                                }
+                                catch (BaseException ex)
+                                {
+                                    loadItem.Status = false;
+                                    loadItem.StatusMessage = ex.StatusDescription;
+                                }
+                                catch (Exception ex)
+                                {
+                                    loadItem.Status = false;
+                                    loadItem.StatusMessage = ex.Message;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            loadItem.Status = false;
+                            loadItem.StatusMessage = $" Responsibility {rawResponsibility} not allocated to this type of item.";
+                        }
+                    }
+                    else
+                    {
+                        // Log errors.
+                        loadItem.Status = false;
+
+                        if (verifiedItem == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find item [{rawItemPath}].";
+                        }
+
+                        if (verifiedResource == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find resource [{rawResource}].";
+                        }
+
+                        if (verifiedResponsibility == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find responsibility [{rawResponsibility}].";
+                        }
+                    }
+
+                    company.Update(loadItem);
+                }
+
+                load.DateCompleted = DateTime.UtcNow;
+                company.Update(load);
+            }
+            else if (load.Action == "N")    // New Lineage
+            {
+                #region
                 /*
                  * Source subject type	
                  * Source subject type name	
@@ -570,7 +847,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                  * Transformation
                  * Role
                  */
-                //"Artifact", "Domain", "Policy", "Rule", "Taxonomy"
+                #endregion
 
                 #region Get data to pre-populate
 
@@ -591,10 +868,11 @@ select 4 as ID, 'profile' as Name, 'Rule' as Type
 union
 select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyType").ToList();
                 var roles = company.Table<IntersectRole>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
                 var fusions = company.Table<Fusion>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
 
                 #endregion
+
+                #region ForEach
 
                 foreach (var loadItem in load.LoadItems)
                 {
@@ -1036,6 +1314,259 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                     company.Update(loadItem);
                 }
+
+                #endregion
+
+                load.DateCompleted = DateTime.UtcNow;
+                company.Update(load);
+            }
+            else if (load.Action == "T")         // Technical Fusion
+            {
+                #region
+                /*
+                    Source Fusion Configuration,
+                    Source Fusion Path,
+                    Target Fusion Configuration,
+                    Target Fusion Path,
+                    Group
+                 */
+                #endregion
+
+                #region Get data to pre-populate
+
+                var fusions = company.Table<Fusion>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
+
+                #endregion
+
+                var mappingList = new List<SimpleTypeModel>();
+
+                foreach (var loadItem in load.LoadItems)
+                {
+                    #region Vars
+
+                    var rawSourceFusion = "";
+                    var rawSourceFusionPath = "";
+                    var rawTargetFusion = "";
+                    var rawTargetFusionPath = "";
+                    var rawGroup = "";
+
+                    LoadItemColumn sourceFusionColumn = null;
+                    LoadItemColumn sourceFusionPathColumn = null;
+                    LoadItemColumn targetFusionColumn = null;
+                    LoadItemColumn targetFusionPathColumn = null;
+                    LoadItemColumn groupColumn = null;
+
+                    SimpleTypeModel verifiedSourceFusion = null;
+                    SimpleTypeModel verifiedSourceFusionPath = null;
+                    SimpleTypeModel verifiedTargetFusion = null;
+                    SimpleTypeModel verifiedTargetFusionPath = null;
+
+                    var currentColumnIndex = 1;
+
+                    #endregion
+
+                    #region Verify source fusion
+
+                    sourceFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawSourceFusion = (sourceFusionColumn.Value + "").Trim().ToLower();
+                    verifiedSourceFusion = fusions.SingleOrDefault(i => i.Name == rawSourceFusion);
+                    currentColumnIndex++;
+
+                    if (verifiedSourceFusion != null)
+                    {
+                        sourceFusionColumn.LookupObject = "Fusion";
+                        sourceFusionColumn.LookupObjectID = verifiedSourceFusion.ID;
+                    }
+
+                    #endregion
+
+                    #region Verify source fusion attribute
+
+                    if (verifiedSourceFusion != null)
+                    {
+                        sourceFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                        rawSourceFusionPath = (sourceFusionPathColumn.Value + "").Trim().ToLower();
+                        verifiedSourceFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedSourceFusion.ID && i.TextPath.ToLower() == rawSourceFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
+
+                        if (verifiedSourceFusionPath != null)
+                        {
+                            sourceFusionPathColumn.LookupObject = verifiedSourceFusionPath.Name;
+                            sourceFusionPathColumn.LookupObjectID = verifiedSourceFusionPath.ID;
+                        }
+                    }
+                    currentColumnIndex++;
+
+                    #endregion
+
+                    #region Verify target fusion
+
+                    targetFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawTargetFusion = (targetFusionColumn.Value + "").Trim().ToLower();
+                    verifiedTargetFusion = fusions.SingleOrDefault(i => i.Name == rawTargetFusion);
+                    currentColumnIndex++;
+
+                    if (verifiedTargetFusion != null)
+                    {
+                        targetFusionColumn.LookupObject = "Fusion";
+                        targetFusionColumn.LookupObjectID = verifiedTargetFusion.ID;
+                    }
+
+                    #endregion
+
+                    #region Verify target fusion attribute
+
+                    if (verifiedTargetFusion != null)
+                    {
+                        targetFusionPathColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                        rawTargetFusionPath = (targetFusionPathColumn.Value + "").Trim().ToLower();
+                        verifiedTargetFusionPath = company.Filter<FusionAttribute>(i => i.FusionID == verifiedTargetFusion.ID && i.TextPath.ToLower() == rawTargetFusionPath).Select(i => new SimpleTypeModel { Name = "FusionAttribute", ID = i.ID }).FirstOrDefault();
+
+                        if (verifiedTargetFusionPath != null)
+                        {
+                            targetFusionPathColumn.LookupObject = verifiedTargetFusionPath.Name;
+                            targetFusionPathColumn.LookupObjectID = verifiedTargetFusionPath.ID;
+                        }
+                    }
+                    currentColumnIndex++;
+
+                    #endregion
+
+                    #region Get group
+
+                    groupColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawGroup = (groupColumn.Value + "").Trim().ToLower();
+
+                    #endregion
+
+                    #region Validated data.  Decide if we should insert the record.
+
+                    if (verifiedSourceFusion != null && verifiedSourceFusionPath != null && 
+                        verifiedTargetFusion != null && verifiedTargetFusionPath != null)
+                    {
+                        // OK to proceed with insert.
+                        var technicalMapping = company.Filter<MapRuleItem>(i =>
+                            i.SourceFusionAttributeID == verifiedSourceFusionPath.ID &&
+                            i.TargetFusionAttributeID == verifiedTargetFusionPath.ID)
+                            .SingleOrDefault();
+
+                        if (technicalMapping == null)
+                        {
+                            technicalMapping = new MapRuleItem
+                            {
+                                SourceFusionAttributeID = verifiedSourceFusionPath.ID,
+                                TargetFusionAttributeID = verifiedTargetFusionPath.ID
+                            };
+
+                            try
+                            {
+                                company.Add<MapRuleItem>(technicalMapping);
+                                loadItem.Object = "MapRuleItem";
+                                loadItem.ObjectID = technicalMapping.ID;
+                                loadItem.Status = true;
+                                loadItem.StatusMessage = "Successfully created technical mapping.";
+
+                                mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
+                            }
+                            catch (BaseException ex)
+                            {
+                                loadItem.Status = false;
+                                loadItem.StatusMessage = ex.StatusDescription;
+                            }
+                            catch (Exception ex)
+                            {
+                                loadItem.Status = false;
+                                loadItem.StatusMessage = ex.Message;
+                            }
+                        }
+                        else
+                        {
+                            mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
+                        }
+                    }
+                    else
+                    {
+                        // Log errors.
+                        loadItem.Status = false;
+
+                        if (verifiedSourceFusion == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find source fusion configuration [{rawSourceFusion}].";
+                        }
+
+                        if (verifiedSourceFusionPath == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find source fusion path [{rawSourceFusionPath}].";
+                        }
+
+                        if (verifiedTargetFusion == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find target fusion [{rawTargetFusion}].";
+                        }
+
+                        if (verifiedTargetFusionPath == null)
+                        {
+                            loadItem.StatusMessage += $" Could not find target fusion path [{rawTargetFusionPath}].";
+                        }
+                    }
+                    
+                    #endregion
+
+                    company.Update(loadItem);
+                }
+
+                #region Now process maprules based on groups.
+
+                try
+                {
+                    var groups = mappingList.Select(i => i.Name).Distinct().ToList();
+                    foreach (var group in groups)
+                    {
+                        if (group != "")
+                        {
+                            var groupedMapRuleItems = mappingList.Where(i => i.Name == group).Select(i => i.ID).ToList();
+
+                            if (groupedMapRuleItems.Count > 0)
+                            {
+                                var mapRuleExistenceSql = "select M1.MapRuleID from MapRuleItemMapRule M1";
+                                var firstID = groupedMapRuleItems[0];
+
+                                groupedMapRuleItems.RemoveAt(0);
+
+                                var tableIndex = 2;
+                                groupedMapRuleItems.ForEach(i =>
+                                {
+                                    mapRuleExistenceSql += $" inner join MapRuleItemMapRule M{tableIndex} on M{tableIndex}.MapRuleID = M{tableIndex-1}.MapRuleID and M{tableIndex}.MapRuleItemID = {i}";
+                                    tableIndex++;
+                                });
+
+                                mapRuleExistenceSql += $" where M1.MapRuleItemID = {firstID}";
+
+
+                                //Make sure you add the rmeoved ID back into the ID list.
+                                groupedMapRuleItems.Add(firstID);
+
+                                var mapRuleCheck = company.Query<dynamic>(mapRuleExistenceSql).FirstOrDefault();
+
+                                if (mapRuleCheck == null)
+                                {
+                                    var mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
+                                    var mapRuleItems = company.Filter<MapRuleItem>(i => groupedMapRuleItems.Contains(i.ID));
+                                    foreach (var mri in mapRuleItems)
+                                    {
+                                        mapRule.MapRuleItems.Add(mri);
+                                    }
+                                    company.Add(mapRule);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    load.Notes += $" {ex.Message}";
+                }
+
+                #endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);

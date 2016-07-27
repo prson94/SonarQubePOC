@@ -118,14 +118,30 @@
 
         //#region List Properties
 
-        self.ActionOptions = ko.observableArray([
-            { title: 'Promotion', value: 'P' },
-            { title: 'Relation', value: 'R' },
-            { title: 'Unrelation', value: 'U' },
-            { title: 'Lineage', value: 'L' },
-            { title: 'Lineage (New)', value: 'N' },
-            { title: 'Synonyms', value: 'S' }
-        ]);
+        self.ActionOptions = ko.observableArray();
+
+        if (CompanySettings.UseNewRelationships == "true") {
+            self.ActionOptions = ko.observableArray([
+                { title: 'Promotion', value: 'P' },
+                { title: 'Relation', value: 'R' },
+                { title: 'Responsibilities', value: 'O' },
+                { title: 'Unrelation', value: 'U' },
+                { title: 'Lineage : Business', value: 'N' },
+                { title: 'Lineage : Technical', value: 'T' },
+                { title: 'Synonyms', value: 'S' }
+            ]);
+        }
+        else {
+            self.ActionOptions = ko.observableArray([
+                { title: 'Promotion', value: 'P' },
+                { title: 'Relation', value: 'R' },
+                { title: 'Responsibilities', value: 'O' },
+                { title: 'Unrelation', value: 'U' },
+                { title: 'Lineage', value: 'L' },
+                { title: 'Synonyms', value: 'S' }
+            ]);
+        }
+
         self.TypeOptions = ko.observableArray();
         self.Columns = ko.observableArray();
 

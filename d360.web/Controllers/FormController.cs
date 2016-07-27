@@ -10414,76 +10414,12 @@ for json path");
 
         List<string> getFieldNamesByType(string type, int id)
         {
-            List<string> fieldTypeNames;
+            var fieldTypeNames = new List<string>();
 
             switch (type)
             {
-                case "ArtifactType":
-                case "AttributeType":
-                case "DomainType":
-                case "IntersectType":
-                case "TaxonomyType":
-                    fieldTypeNames = Company.Filter<FieldType>(i => i.Object == type && i.ObjectID == id && 
-                        i.Type != "FilteredLookup" && 
-                        i.Type != "FusionLookup" && 
-                        i.Type != "RelationLookup"
-                    ).OrderBy(i => i.SortOrder).Select(i => i.Name).ToList();
-                    break;
-                default:
-                    fieldTypeNames = new List<string>();
-                    break;
-            }
-
-            switch (type)
-            {
-                case "ArtifactType":
-                    fieldTypeNames.Insert(0, "Name");
-                    fieldTypeNames.Insert(1, "Description");
-                    fieldTypeNames.Insert(2, "Subject Area");
-                    var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
-                    if (artifactType.ParentID.HasValue)
-                        fieldTypeNames.Insert(3, string.Format("Parent {0}", artifactType.Parent.Name));
-                    break;
-                case "AttributeType":
-                    fieldTypeNames.Insert(0, "Owner Type");
-                    fieldTypeNames.Insert(1, "Owner Type Name");
-                    fieldTypeNames.Insert(2, "Owner Name");
-                    break;
-                case "Domain":
-                    fieldTypeNames.Insert(0, "Code");
-                    fieldTypeNames.Insert(1, "Name");
-                    fieldTypeNames.Insert(2, "Description");
-                    break;
-                case "DomainType":
-                    fieldTypeNames.Insert(0, "Name");
-                    fieldTypeNames.Insert(1, "Description");
-                    fieldTypeNames.Insert(2, "Domain Group");
-                    break;
-                case "IntersectType":
-                    var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
-                    from	IntersectTypeNode S
-                            inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.[Order] = 1
-                            inner join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
-                            inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
-                    where   S.IntersectTypeID = @id", new { id }).SingleOrDefault();
-                    if (intersectType != null)
-                    {
-                        fieldTypeNames.Insert(0, intersectType.S);
-                        fieldTypeNames.Insert(1, intersectType.T);
-                    }
-                    break;
-                case "TaxonomyType":
-                    var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
-                    for (int i = 0; i < levels; i++)
-                    {
-                        fieldTypeNames.Insert(i, "Level" + (i + 1));
-                    }
-
-                    // fieldTypeNames.Add("Name");
-                    fieldTypeNames.Add("Description");
-                    // fieldTypeNames.Add("Parent");
-                    break;
                 case "Lineage":
+                    #region
                     fieldTypeNames.Add("Focal point object type");
                     fieldTypeNames.Add("Focal point object type name");
                     fieldTypeNames.Add("Focal point subject area");
@@ -10501,7 +10437,9 @@ for json path");
 
                     fieldTypeNames.Add("Predicate");
                     break;
+                #endregion
                 case "NewLineage":
+                    #region
                     fieldTypeNames.Add("Source subject type");
                     fieldTypeNames.Add("Source subject type name");
                     fieldTypeNames.Add("Source subject subject area");
@@ -10529,7 +10467,9 @@ for json path");
                     fieldTypeNames.Add("Transformation");
                     fieldTypeNames.Add("Role");
                     break;
+                    #endregion
                 case "Synonym":
+                    #region
                     fieldTypeNames.Add("Source object type");
                     fieldTypeNames.Add("Source object type name");
                     fieldTypeNames.Add("Source object subject area");
@@ -10540,6 +10480,132 @@ for json path");
                     fieldTypeNames.Add("Target object subject area");
                     fieldTypeNames.Add("Target object");
                     break;
+                    #endregion
+                case "TechnicalLineage":
+                    #region
+                    fieldTypeNames.Add("Source Fusion Configuration");
+                    fieldTypeNames.Add("Source Fusion Path");
+                    fieldTypeNames.Add("Target Fusion Configuration");
+                    fieldTypeNames.Add("Target Fusion Path");
+                    fieldTypeNames.Add("Group");
+                    break;
+                #endregion
+                default:
+                    #region
+                    if (id > 0)
+                    {
+                        switch (type)
+                        {
+                            case "ArtifactType":
+                            case "AttributeType":
+                            case "DomainType":
+                            case "IntersectType":
+                            case "TaxonomyType":
+                                fieldTypeNames.AddRange(
+                                    Company
+                                    .Filter<FieldType>(i => 
+                                        i.Object == type && 
+                                        i.ObjectID == id &&
+                                        i.Type != "FilteredLookup" &&
+                                        i.Type != "FusionLookup" &&
+                                        i.Type != "RelationLookup"
+                                    )
+                                    .OrderBy(i => i.SortOrder)
+                                    .Select(i => i.Name)
+                                );
+                                break;
+                        }
+
+                        switch (type)
+                        {
+                            case "ArtifactType":
+                                #region
+                                fieldTypeNames.Insert(0, "Name");
+                                fieldTypeNames.Insert(1, "Description");
+                                fieldTypeNames.Insert(2, "Subject Area");
+                                var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
+                                if (artifactType.ParentID.HasValue)
+                                    fieldTypeNames.Insert(3, string.Format("Parent {0}", artifactType.Parent.Name));
+                                break;
+                            #endregion
+                            case "AttributeType":
+                                #region
+                                fieldTypeNames.Insert(0, "Owner Type");
+                                fieldTypeNames.Insert(1, "Owner Type Name");
+                                fieldTypeNames.Insert(2, "Owner Name");
+                                break;
+                            #endregion
+                            case "Domain":
+                                #region
+                                fieldTypeNames.Insert(0, "Code");
+                                fieldTypeNames.Insert(1, "Name");
+                                fieldTypeNames.Insert(2, "Description");
+                                break;
+                            #endregion
+                            case "DomainType":
+                                #region
+                                fieldTypeNames.Insert(0, "Name");
+                                fieldTypeNames.Insert(1, "Description");
+                                fieldTypeNames.Insert(2, "Domain Group");
+                                break;
+                            #endregion
+                            case "IntersectType":
+                                #region
+                                var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
+                                from	IntersectTypeNode S
+                                        inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.[Order] = 1
+                                        inner join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
+                                        inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
+                                where   S.IntersectTypeID = @id", new { id }).SingleOrDefault();
+                                if (intersectType != null)
+                                {
+                                    fieldTypeNames.Insert(0, intersectType.S);
+                                    fieldTypeNames.Insert(1, intersectType.T);
+                                }
+                                break;
+                            #endregion
+                            case "TaxonomyType":
+                                #region
+                                var levels = Company.Query<int>("select MaximumDepth from TaxonomyType where ID = @id", new { id }).SingleOrDefault();
+                                for (int i = 0; i < levels; i++)
+                                {
+                                    fieldTypeNames.Insert(i, "Level" + (i + 1));
+                                }
+
+                                // fieldTypeNames.Add("Name");
+                                fieldTypeNames.Add("Description");
+                                // fieldTypeNames.Add("Parent");
+                                break;
+                            #endregion
+                        }
+                    }
+                    else
+                    {
+                        fieldTypeNames = new List<string>() {
+                            "Item Type",
+                            "Item Path",
+                            "Responsibility",
+                            "Resource"
+                        };
+
+                        switch (type)
+                        {
+                            case "ArtifactType":
+                                fieldTypeNames.Insert(1, "Subject Area");
+                                break;
+                                //case "DomainType":
+                                //    break;
+                                //case "FusionType":
+                                //    break;
+                                //case "PolicyType":
+                                //    break;
+                                //case "TaxonomyType":
+                                //    break;
+                        }
+                    }
+
+                    break;
+                    #endregion
             }
 
             return fieldTypeNames;
@@ -10551,6 +10617,22 @@ for json path");
 
             var sql = "";
             switch (act) {
+                case "O":   // Responsibility/Ownership
+                    #region
+                    sql = @"
+select * from (
+select 'FusionType|0' as value, 'Fusion' as title
+union
+select 'ArtifactType|0' as value, 'Glossary' as title
+union
+select 'TaxonomyType|0' as value, 'Model' as title
+union
+select 'PolicyType|0' as value, 'Policy' as title
+union
+select 'DomainType|0' as value, 'Reference' as title
+) O order by title";
+                    break;
+                #endregion
                 case "P":   // Promotion
                     #region
                     sql = @"
@@ -10570,7 +10652,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType order by Name";
+                    sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType where IsSystem = 0 order by Name";
                     break;
                     #endregion
                 case "L":   // Lineage
@@ -10578,6 +10660,9 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     break;
                 case "N":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "NewLineage|-1" } };
+                    break;
+                case "T":   // Technical Lineage
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "TechnicalLineage|-1" } };
                     break;
                 case "S":   // Synonym
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Synonym|-1" } };
@@ -10609,7 +10694,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             var parentColumnName = string.Empty;
             var artifactParentID = -1;
 
-            if (type == "ArtifactType")
+            if (type == "ArtifactType" && id > 0)
             {
                 var artifactType = Company.GetById<ArtifactType>(id, i => i.Parent);
                 if (artifactType.ParentID.HasValue)
@@ -10621,11 +10706,16 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
             #region Header
 
+            /*
+                    "Resource Type",
+                    "Resource"             
+             */
+
             for (int i = 0; i < columns.Count; i++)
             {
                 SLStyle style = document.CreateStyle();
 
-                style.Font.Bold = isRequiredColumn(type, columns[i], parentColumnName);
+                style.Font.Bold = isRequiredColumn(type, id, columns[i], parentColumnName);
 
                 document.SetCellStyle(1, i + 1, style);
 
@@ -10636,6 +10726,111 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 if (type == "ArtifactType" && lowerColName == "subject area")
                 {
                     var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
+                else if (lowerColName == "item type" && id == 0) //Responsibility bulk load
+                {
+                    switch (type)
+                    {
+                        case "ArtifactType":
+                            #region
+                            var artifactTypeItems = Company.Table<ArtifactType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                            if (artifactTypeItems.Any())
+                            {
+                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, artifactTypeItems);
+
+                                document.AddDataValidation(dv);
+                            }
+                            break;
+                            #endregion
+                        case "DomainType":
+                            #region
+                            var domainTypeItems = Company.Table<DomainType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                            if (domainTypeItems.Any())
+                            {
+                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, domainTypeItems);
+
+                                document.AddDataValidation(dv);
+                            }
+                            break;
+                            #endregion
+                        case "FusionType":
+                            #region
+                            var fusionTypeItems = Company.Table<FusionType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                            if (fusionTypeItems.Any())
+                            {
+                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, fusionTypeItems);
+
+                                document.AddDataValidation(dv);
+                            }
+                            break;
+                            #endregion
+                        case "PolicyType":
+                            #region
+                            var policyTypeItems = Company.Table<PolicyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                            if (policyTypeItems.Any())
+                            {
+                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, policyTypeItems);
+
+                                document.AddDataValidation(dv);
+                            }
+                            break;
+                            #endregion
+                        case "TaxonomyType":
+                            #region
+                            var taxonomyTypeItems = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                            if (taxonomyTypeItems.Any())
+                            {
+                                var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, taxonomyTypeItems);
+
+                                document.AddDataValidation(dv);
+                            }
+                            break;
+                            #endregion
+                    }
+                }
+                else if (lowerColName == "responsibility" && id == 0) //Responsibility bulk load
+                {
+                    var items = Company.Table<ResponsibilityType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
+                else if (lowerColName == "resource" && id == 0) //Responsibility bulk load
+                {
+                    var items = Company.Table<Group>().OrderBy(x => x.Name).Select(x => "Group:"+ x.Name).ToList();
+                    items.AddRange(
+                        Company.Table<GlobalReportingResource>().ToList().Select(x => "User:" + x.FullName)
+                     );
 
                     if (items.Any())
                     {
@@ -10717,7 +10912,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                         document.AddDataValidation(dv);
                     }
                 }
-                else if ( type == "NewLineage" && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
+                else if ( (type == "NewLineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
                 {
                     var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -10756,20 +10951,46 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return File(stream.ToArray(), "application/vnd.ms-excel", "Load.xlsx");
         }
 
-        private bool isRequiredColumn(string type, string columnName, string parentColumnName)
+        private bool isRequiredColumn(string type, int id, string columnName, string parentColumnName)
         {
             columnName = columnName.ToLower();
 
-            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != parentColumnName))
-                return false;
-            else if (type == "Domain" && (columnName != "name" && columnName != "code"))
-                return false;
-            else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
-                return false;
-            else if (type == "NewLineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
-                return false;
+            var required = true;
 
-            return true;
+            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != parentColumnName))
+                required = false;
+            else if (type == "Domain" && (columnName != "name" && columnName != "code"))
+                required = false;
+            else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
+                required = false;
+            else if (type == "NewLineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
+                required = false;
+
+            if (type == "TechnicalLineage")
+            {
+                required = (columnName != "group"); //All fields except Group are required.
+            }
+            else if (type == "Synonym")
+            {
+                required = true; //All fields are required.
+            }
+
+
+            if (id == 0)
+            {
+                if (
+                    columnName == "item type" ||
+                    columnName == "subject area" ||
+                    columnName == "item path" ||
+                    columnName == "responsibility" ||
+                    columnName == "resource"
+                    )
+                {
+                    required = true;
+                }
+            }
+
+            return required;
         }
 
         private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
