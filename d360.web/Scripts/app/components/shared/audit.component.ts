@@ -5,6 +5,7 @@ import { HeaderBreadcrumbService, AuditService  } from '../../services/index';
 import { Audit } from '../../models/audit.model';
 import { DataTable, Column, LazyLoadEvent} from 'primeng/primeng';
 import { SortOrder } from '../../models/enums.model';
+import { GridFilterExpression } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-audit',
@@ -29,6 +30,13 @@ import { SortOrder } from '../../models/enums.model';
                                 <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
                                 <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
                                 <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
+                                <p-column field="Field" header="Field" [sortable]="true" [filter]="true"></p-column>                                
+                                <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true">
+                                    <template let-col let-data="rowData">
+                                        <div [innerHtml]="data?.NewValue"></div>
+                                    </template>                                                        
+                                </p-column>
+                                <p-column field="Version" header="Revision #" [sortable]="true" [filter]="true"></p-column>
                             </p-dataTable> 
                         </div>
                     </div>
@@ -49,6 +57,7 @@ export class AuditComponent {
     currentPageNumber: number = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
+    filters: GridFilterExpression[] = [];
 
 
     constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
@@ -61,7 +70,7 @@ export class AuditComponent {
 
     private getData() {
         //    this.isLoading = true;
-        this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField)
+        this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
             .then(result => {
          //       this.isLoading = false;
                 this.audits = result.results;
@@ -75,6 +84,19 @@ export class AuditComponent {
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
+        console.log(event.filters);
+        this.filters.splice(0, this.filters.length);
+
+        for (var key in event.filters) {
+            var filter = event.filters[key];
+
+            var gridFilter = new GridFilterExpression();
+            gridFilter.condition = "CONTAINS"
+            gridFilter.field = key;
+            gridFilter.value = filter.value;
+            this.filters.push(gridFilter);
+        }
+        
 
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;

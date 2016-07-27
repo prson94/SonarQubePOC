@@ -12,6 +12,9 @@
     ObjectName: string;
     ResourceID: number;
     ResourceName: string;
+    Field: string;
+    NewValue: string;
+    Version: string;
 }
 
 export class AuditResults {

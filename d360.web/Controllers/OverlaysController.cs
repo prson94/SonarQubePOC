@@ -100,6 +100,36 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("{type}/{id:int}/auditcombined.json")]
+        public JsonNetResult AuditCombined(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        {
+            Trace.TraceInformation("Calling OverlaysController.Audit : {0}", id);
+
+            var querySql = string.Format(@"select A.*, R.FirstName + ' ' + R.LastName as ResourceName, A_f.FieldName as Field, A_f.Value as NewValue, A_f.[Version] as 'Version'
+from	[reporting].[Global_Audit] A 
+inner join [reporting].[Global_Resource] R on R.ResourceID = A.ResourceID and A.[Object] = @objType and A.ObjectID = {0}
+inner join [reporting].[global_fieldaudit] A_f on A.ID = A_f.AuditID
+", id);
+
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("objType", type.ToString());
+
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int total = Company.Query<int>(countSql, dbArgs).First();
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "Date", "desc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+            return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+
         [Route("{type}/{id:int}/audit.json")]
         public JsonNetResult Audit(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
