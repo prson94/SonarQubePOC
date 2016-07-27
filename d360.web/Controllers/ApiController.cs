@@ -1653,11 +1653,7 @@ where   h.ID <> @t order by h.[Level] desc;
                         }
 
                         list.Add(addItem);
-                    }
-                    if (id > 0)
-                    {
-                        list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
-                    }
+                    }                    
                     break;
                 #endregion
                 case SystemObjects.Monitor:
