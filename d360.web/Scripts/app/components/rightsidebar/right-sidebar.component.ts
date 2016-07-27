@@ -85,9 +85,9 @@ export class RightSidebarComponent implements OnChanges {
     private calculatedTop(): string{
         
         if (this.titleHeight) {            
-            return this.titleHeight + 45 + 'px';
+            return this.titleHeight + 65 + 'px';
         }
-        return '45px';        
+        return '65px';        
     }
     
     

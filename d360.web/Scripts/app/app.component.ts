@@ -14,10 +14,7 @@ import 'rxjs/Rx';
                     <d3s-navbar></d3s-navbar>
                 </header>
                 <main>
-                    <div class="row PageHeader" #pageheader>
-                        <div class="col l7 m7 s12">              
-                            <div class="PageDescription maincontent">{{pageHeader.description}}</div>              
-                        </div>                                    
+                    <div class="row PageHeader" #pageheader>                                             
                     </div>
                     <div class="row">
                         <div class="col s12">
@@ -26,7 +23,7 @@ import 'rxjs/Rx';
                             </div>  
                         </div>                                                
                     </div>                    
-                    <d3s-right-sidebar [(visible)]="showRightSideBar" [titleHeight]="pageheader?.nativeElement?.clientHeight"></d3s-right-sidebar>                        
+                    <d3s-right-sidebar [(visible)]="showRightSideBar" [titleHeight]="0"></d3s-right-sidebar>                        
                 </main>
                 <d3s-messages></d3s-messages>
               `,
@@ -38,7 +35,7 @@ export class AppComponent implements AfterViewInit, OnInit {
     showRightSideBar: boolean = false;
     @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;
 
-    @ViewChild('pageheader') pageheader;
+  //  @ViewChild('pageheader') pageheader;
     
     constructor(private pageHeader: PageHeader) {
         
