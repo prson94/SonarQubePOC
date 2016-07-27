@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { StatisticType } from '../../models/statistic.model';
@@ -9,13 +9,14 @@ import { AdminStatisticEditor } from './admin-statistics-editor.component';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { DeleteForm } from '../forms/delete.form';
 import { Title } from '@angular/platform-browser';
-
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-statistics-component',
-    directives: [DataTable, Column, TileActionsComponent, ObjectDetailTile, AdminStatisticEditor, DeleteForm],
+    directives: [DataTable, Column, TileActionsComponent, ObjectDetailTile, AdminStatisticEditor, DeleteForm, AuditComponent],
     providers: [StatisticService],
-    template: `<div class="row">
+    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'StatisticType'"></d3s-audit>
+                <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Analytic Types
@@ -66,23 +67,28 @@ import { Title } from '@angular/platform-browser';
                 `
 })
 
-export class AdminStatisticsComponent extends AdminBaseComponent {
+export class AdminStatisticsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     statistics: StatisticType[] = [];
     selected: StatisticType;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Create various types of measurements on items throughout the system, including analytics that factor into scores.";
         this.areaName = "Analytic Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteStatisticType.bind(this);
+        this.setCommonRightSideBar();
     }
 
     ngOnInit() {
         this.getStatistics();
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     getStatistics() {

@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactService, HeaderBreadcrumbService, PageHeader } from '../../services/index';
+import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
 import { DataTable, Column, Accordion, AccordionTab } from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
@@ -10,6 +10,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { ArtifactDefnintionComponent } from './artifact-definition.component';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -20,7 +21,8 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isLoading">
+                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
+                <div *ngIf="!isLoading && !isAuditVisible">
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail">
@@ -59,7 +61,7 @@ import { ObjectDetailTile } from '../tiles/object-detail.tile';
                     </div>
                 </div>                
                 `,
-    directives: [ArtifactDefnintionComponent, ObjectDetailTile, Accordion, AccordionTab],
+    directives: [ArtifactDefnintionComponent, ObjectDetailTile, Accordion, AccordionTab, AuditComponent],
     providers: [ArtifactService]
 })
 
@@ -68,12 +70,15 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
 
     constructor(private route: ActivatedRoute,
+        rightSidebarService: RightSidebarService,
         private router: Router,
         private artifactService: ArtifactService,
         pageHeader: PageHeader,
         private titleService: Title,
         headerBreadcrumbService: HeaderBreadcrumbService) {
-        super(headerBreadcrumbService, pageHeader);
+        super(headerBreadcrumbService, pageHeader, rightSidebarService);
+
+        this.setCommonRightSideBar();
     }
 
     ngOnInit() {
@@ -96,6 +101,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.clearSidebar();
     }
 
 

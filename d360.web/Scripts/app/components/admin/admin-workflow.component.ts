@@ -1,6 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, NgZone } from '@angular/core';
-import { PageHeader } from '../../services/page-header.service';
+import { Component, NgZone, OnDestroy } from '@angular/core';
+import { PageHeader, HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../services/index';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
@@ -10,12 +10,9 @@ import { DataTable, Column, Growl, MenuItem } from 'primeng/primeng';
 import { ActionBar } from '../parts/action-bar.part';
 import { ActionBarItem } from '../../models/action-bar.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { WorkflowService } from '../../services/workflow.service';
 import { AdminBaseComponent} from './admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
-
 
 @Component({
     selector: 'admin-workflow',
@@ -24,7 +21,7 @@ import { TileActionsComponent } from '../tiles/tile-actions.component';
     templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
 })
 
-export class AdminWorkflowComponent extends AdminBaseComponent {
+export class AdminWorkflowComponent extends AdminBaseComponent  {
     messages = new Array<any>();
 
     isEditing = false;
@@ -37,8 +34,8 @@ export class AdminWorkflowComponent extends AdminBaseComponent {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService : RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = 'Manage all workflow settings for types within your environment.';
         this.areaName = "Workflow";
         this.setCommonItems();
@@ -59,7 +56,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent {
 
         this.load();
     }
-
+        
     load() {
         this.isLoading = true;
 

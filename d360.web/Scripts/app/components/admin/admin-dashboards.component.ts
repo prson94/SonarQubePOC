@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+import { Component, OnDestroy, OnInit} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService, RightSidebarService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { Report, ReportType } from '../../models/report.model';
@@ -11,13 +11,15 @@ import { ReportItemsTile } from '../tiles/report-items.tile';
 import { ReportLayoutTile } from '../tiles/report-layout.tile';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
 
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile, AdminDashboardsEditor],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile, AdminDashboardsEditor, AuditComponent],
     providers: [ReportsService],
-    template: `<div class="row">
+    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Report'"></d3s-audit>
+                <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Dashboards
@@ -80,23 +82,28 @@ import { Title } from '@angular/platform-browser';
                 `
 })
 
-export class AdminDashboardsComponent extends AdminBaseComponent {    
+export class AdminDashboardsComponent extends AdminBaseComponent implements OnDestroy, OnInit {    
     showEditor: boolean = false;
     showDelete: boolean = false;
     reports: Report[] = [];
     selected: Report;
     theDeleteCallback: Function;
 
-    constructor(protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Manage your dashboard overlays and tiles.";
         this.areaName = "Dashboards";
         this.setCommonItems();
+        this.setCommonRightSideBar();
         this.theDeleteCallback = this.deleteReport.bind(this);
     }
 
     ngOnInit() {
         this.loadReports();      
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     private loadReports() {

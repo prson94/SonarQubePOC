@@ -1,19 +1,18 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { PageHeader} from '../../services/page-header.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, PageHeader } from '../../services/index';
 import { DataTable, Column } from 'primeng/primeng';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../models/responsibility-type.model';
-import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FormMode } from '../../models/form.model';
 import { ResponsibilityTypeForm } from '../forms/responsibility-type.form';
 import { DeleteForm } from '../forms/delete.form';
 import { AdminBaseComponent} from './admin-base.component';
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'admin-governance',
@@ -27,25 +26,31 @@ import { Title } from '@angular/platform-browser';
         NgSwitchCase,
         NgSwitchDefault,
         ResponsibilityTypeForm,
-        DeleteForm
+        DeleteForm,
+        AuditComponent
     ],
     templateUrl: 'scripts/app/components/admin/admin-governance.component.html',
 })
 
-export class AdminGovernanceComponent extends AdminBaseComponent {    
+export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {    
     private formMode = FormMode.Default;
     private FormMode = FormMode;
 
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = 'Assign which objects can be owned, and whether groups, users or both may own them. You may also define application and licensing source types.';
         this.areaName = "Responsibility Types";
         this.setCommonItems();
-        
+        this.setCommonRightSideBar();
         this.load();
+    }
+    
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     load(): void {

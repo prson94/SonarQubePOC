@@ -32,6 +32,7 @@ import { AuditService} from './audit.service';
 import { ArtifactService } from './artifacts.service';
 import { DiagnosticService } from './diagnostic.service';
 import { PermissionsService } from './permissions.service';
+import { FusionService } from './fusion.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -67,3 +68,4 @@ export * from './audit.service';
 export * from './artifacts.service';
 export * from './diagnostic.service';
 export * from './permissions.service';
+export * from './fusion.service';

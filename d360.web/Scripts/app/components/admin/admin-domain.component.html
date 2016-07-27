@@ -1,4 +1,5 @@
-<div class="row">
+<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedRow?.ID" [objectName]="selectedRow?.Name" [objectType]="objectType"></d3s-audit>
+<div *ngIf="!isAuditVisible" class="row">
     <div class="col l4 m6 s12">
         <div *ngIf="isLoading">
             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

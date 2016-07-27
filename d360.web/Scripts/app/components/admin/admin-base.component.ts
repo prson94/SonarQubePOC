@@ -29,7 +29,7 @@ export class AdminBaseComponent extends BaseComponent {
         this.setBrowserTitle(this.titleService, this.areaName);
     }
 
-    setCommonRightSideBar(hasAudit: boolean) {
+    setCommonRightSideBar(hasAudit?: boolean) {
         if (this.rightSidebarService) {
             this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
 

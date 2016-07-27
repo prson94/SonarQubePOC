@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { DeleteForm } from '../forms/delete.form';
@@ -12,12 +12,14 @@ import { PolicyType } from '../../models/policy.model';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-policies-component',
-    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile, DynamicEditorComponent, DeleteForm, FieldDefinitionTile, ObjectDetailTile],
+    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile, DynamicEditorComponent, DeleteForm, FieldDefinitionTile, ObjectDetailTile, AuditComponent],
     providers: [PoliciesService],
-    template: `<div class="row">
+    template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'PolicyType'"></d3s-audit>
+                <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Policy Types
@@ -87,23 +89,28 @@ import { Title } from '@angular/platform-browser';
                 `
 })
 
-export class AdminPoliciesComponent extends AdminBaseComponent {
+export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     policyTypes: PolicyType[] = [];
     selected: PolicyType;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Organize various sets of policies across your organization.";
         this.areaName = "Policy Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deletePolicyType.bind(this);
+        this.setCommonRightSideBar(true);
     }
 
     ngOnInit() {
         this.getPolicyTypes();
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     getPolicyTypes() {
