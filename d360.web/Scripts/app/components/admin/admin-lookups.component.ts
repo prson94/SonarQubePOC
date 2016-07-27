@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, LookupService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, LookupService, RightSidebarService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import {DeleteForm} from '../forms/delete.form';
@@ -10,13 +10,16 @@ import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { DynamicGridComponent } from '../shared/dynamic-grid.component';
 import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
+
 
 
 @Component({
     selector: 'd3s-admin-lookups-component',
-    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent, AdminLookupTypeEditorComponent ],
+    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent, AdminLookupTypeEditorComponent, AuditComponent ],
     providers: [LookupService],
-    template: `<div class="row">
+    template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selectedLookup?.ID" [objectName]="selectedLookup?.Name" [objectType]="'LookupType'"></d3s-audit>
+                <div class="row" *ngIf="!isAuditVisible">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Lookup Types
@@ -73,23 +76,28 @@ import { Title } from '@angular/platform-browser';
                 `
 })
 
-export class AdminLookupsComponent extends AdminBaseComponent {
+export class AdminLookupsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     lookups: Lookup[] = [];
     selectedLookup: Lookup;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);        
+    constructor(rightSidebarService: RightSidebarService, private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);        
         this.areaDescription = "Here you will find all general lookups used.";
         this.areaName = "Lookup Types";
         this.setCommonItems();
+        this.setCommonRightSideBar(true);
     }
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteLookup.bind(this);
         this.getLookups();
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     getLookups() {

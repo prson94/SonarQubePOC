@@ -5,11 +5,9 @@ import { AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { AttributeType } from '../../models/attribute-type.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
 import { DeleteForm } from '../forms/delete.form';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
-import { Subscription }   from 'rxjs/Subscription';
 import { AuditComponent} from '../shared/audit.component';
 import { Title } from '@angular/platform-browser';
 
@@ -71,23 +69,17 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     theDeleteCallback: Function;
     parentID: number = 0;
-    subscription: Subscription;
-    isAuditVisible: boolean = false;
+    
 
-    constructor(protected rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Here you will find all metadata that can be assigned to various objects and relationships.";
         this.areaName = "Attribute Groups";        
         //this.areaLink = window.location.pathname;
         this.setCommonItems();
+        this.setCommonRightSideBar(true);
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
-        this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
         
-
-        this.subscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
-            item => {
-                this.showOverlay(item);
-            });
     }
 
     ngOnInit() {
@@ -96,14 +88,9 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     }
 
     ngOnDestroy() {        
-        this.rightSidebarService.clearItems();
-        this.subscription.unsubscribe();
+        this.clearSidebar();
     }
-
-    showOverlay(item) {
-        if (item.tag = 'audit')
-            this.isAuditVisible = !this.isAuditVisible;
-    }
+    
 
     getAttributes() {
         this.isLoading = true;

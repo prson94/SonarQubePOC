@@ -1,8 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
 import {Taxonomy} from '../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService  } from '../../services/index';
 import {AdminBaseComponent} from './admin-base.component';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FieldDefinition } from '../../models/fields.model';
@@ -10,12 +10,14 @@ import {AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import {AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import {DeleteForm} from '../forms/delete.form';
 import { Title } from '@angular/platform-browser';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-models-component',    
-    directives: [DataTable, Column, TileActionsComponent, AdminTaxonomyDetailComponent, AdminTaxonomyEditorComponent, DeleteForm],
+    directives: [DataTable, Column, TileActionsComponent, AdminTaxonomyDetailComponent, AdminTaxonomyEditorComponent, DeleteForm, AuditComponent],
     providers: [TaxonomiesService, FieldsService],
-    template:   `<div class="row">
+    template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
+                <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor">Models
@@ -60,7 +62,7 @@ import { Title } from '@angular/platform-browser';
                 `
 })
 
-export class AdminTaxonomiesComponent extends AdminBaseComponent {
+export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     taxonomies: Taxonomy[] = [];    
     error: any;
     selectedTaxonomy: Taxonomy = null;
@@ -69,16 +71,21 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent {
     theDeleteCallback: Function;
     
 
-    constructor(pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type.";
         this.areaName = "Models";
         this.setCommonItems();
+        this.setCommonRightSideBar(true);
     }
 
     ngOnInit() {
         this.getTaxonomies();        
         this.theDeleteCallback = this.deleteTaxonomy.bind(this);        
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     getTaxonomies() {

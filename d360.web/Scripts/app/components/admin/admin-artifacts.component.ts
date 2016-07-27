@@ -14,8 +14,7 @@ import { AdminBaseComponent } from './admin-base.component'
 import { RelationshipsTile } from '../tiles/relationships.tile'
 import { Title } from '@angular/platform-browser';
 import { AuditComponent} from '../shared/audit.component';
-import { Subscription }   from 'rxjs/Subscription';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -46,28 +45,19 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     isEditing = false;
     isDeleting = false;
     ArtifactTypes: TreeNode[];
-    isAuditVisible: boolean = false;
-    subscription: Subscription;
+    
 
-    constructor(protected rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
-        super(headerBreadcrumbService, pageHeader, titleService);
+    constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
         this.areaName = "Artifacts";
         this.setCommonItems();        
         this.load();
-
-        this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
-
-
-        this.subscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
-            item => {
-                this.showOverlay(item);
-            });
+        this.setCommonRightSideBar(true);
     }
 
     ngOnDestroy() {
-        this.rightSidebarService.clearItems();
-        this.subscription.unsubscribe();
+        this.clearSidebar();
     }
 
 
