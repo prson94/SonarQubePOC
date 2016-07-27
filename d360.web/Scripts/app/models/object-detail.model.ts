@@ -37,3 +37,53 @@ export class ObjectStyle {
     IconBackColor: string;
     IconForeColor: string;
 }
+
+export class Synonym {
+    IntersectID: number;
+    IntersectMapID: number;
+    Name: string;
+    Description: string;
+    Object: string;
+    ObjectID: number;
+    ObjectTypeName: string;
+    Url: string;
+}
+
+export class SynonymItem {
+    ID: string;
+    Name: string;
+    TargetingSubject: boolean;
+}
+
+export class SynonymEditorModel {
+    typeIsSubject: boolean;
+    items: SynonymItem[];
+}
+
+export class SynonymEditModel {
+    Type: string;
+    ID: number;
+    Synonym: string;
+    TypeIsSubject: boolean;
+}
+
+export class AttributeHeirarchyItem {
+
+    Items: AttributeHeirarchyItem[];
+    ID: string;
+    ParentID: string;
+    TypeID: number;
+    ObjectTypeName: string;
+    ObjectType: string;
+    ObjectID: number;
+    ParentObjectType: string;
+    ParentObjectID: number;
+    TargetObjectType: string
+    TargetObjectID: number;
+    Name: string;
+    AttributeTypeCategory: string;
+    ShowNameInTree: boolean;
+    IsTechnical: boolean;
+    IsCategory: boolean = false;
+    expanded: boolean = true;
+}

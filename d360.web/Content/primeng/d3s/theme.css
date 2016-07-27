@@ -35,7 +35,7 @@
 
 /* Interaction states
 ----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d6d6d6; background: #ffffff; font-weight: normal; color: #555555; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { /* border: 1px solid #d6d6d6; */ background: #ffffff; font-weight: normal; color: #555555; }
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #555555; text-decoration: none; }
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #c0c0c0; background: #eeeeee; font-weight: normal; color: #212121; }
 .ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }
@@ -331,7 +331,7 @@
     content: "\f078" !important; /* chevron down*/
 }
 .ui-accordion .ui-accordion-header .fa-caret-down:before {
-    content: "" !important;
+    content: "\f077" !important; /* chevron up */
 }
 
 /* Tabview */
@@ -601,6 +601,7 @@ background: #fff;
 .ui-datatable th {
     font-weight: bold;
     text-transform: uppercase;
+    border-radius:0;
 }
 
 .ui-datatable tr.ui-state-hover {

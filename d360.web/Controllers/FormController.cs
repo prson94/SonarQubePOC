@@ -18660,6 +18660,26 @@ where	RT.SourceObjectType = @type
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult GetSynonyms(string type, int id)
+        {
+            var list = new List<EditableField>();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var typeIsSubject = true;
+            if (items.Count > 0)
+            {
+                typeIsSubject = (bool)items[0].TargetingSubject;
+            }
+
+            var model = new
+            {
+                items,
+                typeIsSubject
+            };
+
+            return Json(model, JsonRequestBehavior.AllowGet);
+        }
+
         /// <param name="type">Object's Type</param>
         /// <param name="id">Object's ID</param>
         /// <param name="intersectMapID">IntersectMapID</param>
@@ -18803,6 +18823,17 @@ where	RT.SourceObjectType = @type
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteSynonymByID(string type, int id, int intersectMapID)
+        {
+            var form = new FormCollection();
+
+            form.Add("ObjectID", id.ToString());
+            form.Add("Object", type);
+            form.Add("IntersectMapID", intersectMapID.ToString());
+
+            return DeleteSynonym(form);
+        }
         #endregion
 
         #endregion

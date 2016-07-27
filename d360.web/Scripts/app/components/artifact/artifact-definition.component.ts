@@ -6,7 +6,7 @@ import { Artifact } from '../../models/artifacts.model';
 @Component({
     selector: 'd3s-artifact-definition',
     template: `<header *ngIf="showHeader">Definition</header>                
-                <div class="row" [innerHtml]="artifact.Description">                    
+                <div class="row" [innerHtml]="artifact?.Description">                    
                 </div>        
                 `
 })

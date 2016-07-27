@@ -912,6 +912,7 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-detail.component.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
@@ -1429,6 +1430,7 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
@@ -1440,6 +1442,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-filters.tile.ts" />
@@ -1451,6 +1455,8 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-layout.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\rule-dimensions.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\structure.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />

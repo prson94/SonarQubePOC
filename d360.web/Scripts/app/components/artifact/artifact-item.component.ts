@@ -8,7 +8,8 @@ import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
-import { ArtifactDefnintionComponent } from './artifact-definition.component';
+//import { ArtifactDefnintionComponent } from './artifact-definition.component';
+import { ArtifactDetailComponent } from './artifact-detail.component';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { AuditComponent} from '../shared/audit.component';
 
@@ -34,21 +35,8 @@ import { AuditComponent} from '../shared/audit.component';
                     <div class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">
-                                <!--<object-detail [objectType]="'Artifact'" [objectID]="artifact?.ID"></object-detail>-->
-                                <p-accordion [multiple]="true">
-                                    <p-accordionTab header="Definition" [selected]="true">
-                                        <d3s-artifact-definition [artifact]="artifact" [showHeader]="false" ></d3s-artifact-definition>  
-                                    </p-accordionTab>
-                                    <p-accordionTab header="Synonyms">
-                                        artifact synonyms
-                                    </p-accordionTab>
-                                    <p-accordionTab header="Attribute">
-                                        artifact attribute
-                                    </p-accordionTab>
-                                    <p-accordionTab header="Structure">
-                                        artifact structure
-                                    </p-accordionTab>
-                                </p-accordion>
+                               <!-- <object-detail [objectType]="'Artifact'" [objectID]="artifact?.ID"></object-detail> -->
+                                <d3s-artifact-detail [artifact]="artifact"></d3s-artifact-detail>
                             </div>
                         </div>
                     </div>
@@ -61,7 +49,7 @@ import { AuditComponent} from '../shared/audit.component';
                     </div>
                 </div>                
                 `,
-    directives: [ArtifactDefnintionComponent, ObjectDetailTile, Accordion, AccordionTab, AuditComponent],
+    directives: [ArtifactDetailComponent, ObjectDetailTile, Accordion, AccordionTab, AuditComponent],
     providers: [ArtifactService]
 })
 

@@ -70,7 +70,7 @@ export class ObjectDetailTile implements OnChanges {
                         });
                     });
                     this.isLoading = false;
-                    console.log(data);
+                    //console.log(data);
                 });
         }
     }
