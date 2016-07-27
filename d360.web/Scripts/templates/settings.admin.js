@@ -28,6 +28,9 @@
             .then(function (content) {
                 context.contentHeader(pageViewModel);
 
+                $('#SideIcons').PageTools();
+                $('#SideIcons').PageTools('clear');
+
                 var model = new CompanySettingsViewModel();
                 ko.applyBindings(model, document.getElementById('SettingsModel'));
                 model.loadCurrentSettings();
