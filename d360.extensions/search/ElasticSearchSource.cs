@@ -381,7 +381,7 @@ namespace d360.extensions.search
             if (phrase.Any( ch => isElasticSearchSpecialChar(ch)))
             {
                 phrase = phrase.Replace("\\", "?");  // replace backslash with wildcard LEAVE FIRST
-
+                
                 phrase = phrase.Replace(":", "\\\\:"); // escape colon
 
                 phrase = phrase.Replace("^", "\\\\^"); // escape carat
@@ -563,8 +563,10 @@ namespace d360.extensions.search
 
                 foreach (var word in parts)
                 {
+                    var matchType = (indx == (parts.Length - 1)) ? "prefix" : "match";
+
                     if (indx > 0) sb.Append(',');
-                    sb.Append("{\"prefix\": {\"Name\": {\"value\": \"" + word + "\"}}}");
+                    sb.Append("{\""+ matchType + "\": {\"Name\": \"" + word + "\"}}");
 
                     indx++;
                 }
