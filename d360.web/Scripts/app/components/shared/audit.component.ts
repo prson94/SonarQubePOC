@@ -11,20 +11,27 @@ import { SortOrder } from '../../models/enums.model';
     directives: [DataTable, Column],
     providers: [AuditService],
     template: `
-             <div *ngIf="isLoading" style="width:100%; text-align:center;">
+                <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                
-                <div class="tile tile-detail" *ngIf="!isLoading">   
-                    <header *ngIf="!isLoading">Audit History for {{objectName}}</header>       
-                    <p-dataTable  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
-                        <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true"></p-column>                                                            
-                        <p-column field="Date" header="Date" [sortable]="true" [filter]="true"></p-column>
-                        <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
-                        <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
-                        <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
-                        <p-column field="AuditDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
-                    </p-dataTable> 
+                <div class="row" *ngIf="!isAuditVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail" *ngIf="!isLoading">   
+                            <header *ngIf="!isLoading">Audit History for {{objectName}}</header>       
+                            <p-dataTable  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
+                                <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true"></p-column>                                                                                    
+                                <p-column field="Date" header="Date" [sortable]="true" [filter]="true">
+                                    <template let-col let-data="rowData">
+                                        <span>{{data.Date | date: 'medium'}}</span>
+                                    </template>
+                                </p-column>
+                                <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
+                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
+                            </p-dataTable> 
+                        </div>
+                    </div>
                 </div>
         `    
 })
@@ -73,6 +80,7 @@ export class AuditComponent {
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
+        console.log(this.currentPageNumber);
         this.getData();
     }
 }

@@ -14,7 +14,7 @@ export class AuditService extends BaseService {
     getAuditData(objectID: number, objectType: string, pageNum: number, pageSize: number, sortOrder: SortOrder, sortField?: string): Promise<AuditResults> {
         let sortCol = sortField != undefined ? sortField : "";
 
-        return this.http.get(`overlays/${objectType}/${objectID}/audit.json?pagenum=0&pagesize=20&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc") }`)
+        return this.http.get(`overlays/${objectType}/${objectID}/audit.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc") }`)
             .toPromise()
             .then(response => <AuditResults>response.json())
             .catch(err => this.handleError(err));
