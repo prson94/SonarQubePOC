@@ -1410,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\community\community-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\index.ts" />

@@ -3,6 +3,9 @@
 export const CommunityRoutes = [
     {
         path: 'a/community',
-        component: community.CommunityComponent
+        component: community.CommunityComponent,
+        children: [
+            { path: '', component: community.CommunitySummaryComponent }
+        ]
     }
 ];
