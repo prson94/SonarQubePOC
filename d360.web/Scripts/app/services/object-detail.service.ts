@@ -1,9 +1,22 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { DetailField, DetailRow, DetailModel, IObjectDetailService, Synonym, SynonymItem, SynonymEditorModel, SynonymEditModel, AttributeHeirarchyItem } from '../models/object-detail.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
+import { TreeNode } from 'primeng/primeng';
+import { FormHelper } from '../models/form.model';
+import {
+    DetailField,
+    DetailRow,
+    DetailModel,
+    IObjectDetailService,
+    Synonym,
+    SynonymItem,
+    SynonymEditorModel,
+    SynonymEditModel,
+    AttributeHeirarchyItem,
+    ToolbarItem
+} from '../models/object-detail.model';
 
 @Injectable()
 export class ObjectDetailService extends BaseService implements IObjectDetailService {
@@ -50,6 +63,21 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
         return this.http.get(`attributes/hierarchy/${objectType}/${objectID}`)
             .toPromise()
             .then(response => <AttributeHeirarchyItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAttributeHierarchyTree(objectID: number, objectType: string): Promise<TreeNode[]> {
+        return this.getAttributeHierarchyItems(objectID, objectType).then(result => {
+            let data = FormHelper.flattenTree(result, 'Items','ID','ParentUID');
+            return FormHelper.formTree(data, 'ID', 'ParentUID');
+        });
+
+    }
+
+    getAttributeActions(objectID: number, objectType: string, ownerID: number, ownerType: string, attributeID: number = null): Promise<ToolbarItem[]> {
+        return this.http.get(`attributes/AttributeActions?id=${objectID}&type=${objectType}&ownerID=${ownerID}&owner=${ownerID}&attributeID=${attributeID}`)
+            .toPromise()
+            .then(response => <ToolbarItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

@@ -2,7 +2,21 @@
     <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
 </div>
 <div *ngIf="!isLoading">
-    <p-accordion [multiple]="true">
+
+    <simple-accordion header="Definition" [active]="true">
+        <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
+    </simple-accordion>
+    <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false">
+        <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-synonyms-tile>
+    </simple-accordion>
+    <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false">
+        <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-attributes-tile>
+    </simple-accordion>
+    <simple-accordion header="Structure" [active]="false">
+        structure
+    </simple-accordion>
+
+    <!--<p-accordion [multiple]="true">
         <p-accordionTab header="Definition" [selected]="true">
             <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
         </p-accordionTab>
@@ -15,5 +29,5 @@
         <p-accordionTab header="Structure">
             artifact structure
         </p-accordionTab>
-    </p-accordion>
+    </p-accordion>-->
 </div>

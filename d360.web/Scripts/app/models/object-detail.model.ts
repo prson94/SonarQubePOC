@@ -86,4 +86,17 @@ export class AttributeHeirarchyItem {
     IsTechnical: boolean;
     IsCategory: boolean = false;
     expanded: boolean = true;
+
+    UID: string;
+    ParentUID: string;
+}
+
+
+export class ToolbarItem {
+    Context: string;
+    Icon: string;
+    Title: string;
+    Description: string;
+    Items: ToolbarItem[];
+    Uri: string;
 }

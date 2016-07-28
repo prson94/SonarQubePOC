@@ -29,7 +29,7 @@ import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
                             <a (click)="selectedItem=item;" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
-                    </template>
+                    </template> 
                 </p-column>
             </p-dataTable>
         </div>
@@ -68,7 +68,7 @@ export class SynonymsTile implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() readonly: boolean = true;
-    @Output() itemCount: number = 0;
+    @Output() itemCount: number = 0; 
 
     private isLoading = false;
     private formMode = FormMode.Default;
@@ -79,7 +79,6 @@ export class SynonymsTile implements OnChanges {
     private synonymItems;
     private typeIsSubject;
     private selectedSynonym;
-
 
     constructor(private objectDetailService: ObjectDetailService) {
     }

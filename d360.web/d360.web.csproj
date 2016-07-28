@@ -1448,6 +1448,7 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />

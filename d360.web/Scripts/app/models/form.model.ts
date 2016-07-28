@@ -1,5 +1,6 @@
 ﻿import { EventEmitter } from '@angular/core';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode, MenuItem } from 'primeng/primeng';
+import { ToolbarItem } from './object-detail.model';
 
 export class BaseEditorModel {
     FormUri: string;
@@ -42,7 +43,6 @@ export module FormHelper {
 
     }
 
-
     export function getDataUrl(file: File): Promise<string> {
         let reader = new FileReader();
 
@@ -58,7 +58,7 @@ export module FormHelper {
         });
     }
 
-     export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
+    export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
         var tree = new Array<TreeNode>();
 
         data.filter(d => d[parentField] == null).forEach(d => {
@@ -80,7 +80,37 @@ export module FormHelper {
         });
      }
 
+    export function flattenTree(data: any[], subDataField: string, idField: string = null, parentField: string = null): any[] {
+        let flattened = [];
+        for (var i = 0; i < data.length; i++) {
+            flattened.push(data[i]);
+            if (data[i][subDataField] && data[i][subDataField].length > 0) {
+                let sub = flattenTree(data[i][subDataField], subDataField, idField, parentField);
+                sub.forEach(s => {
+                    if (idField && parentField)
+                        s[parentField] = data[i][idField];
+                    flattened.push(s)
+                });
+            }
+        }
+        return flattened;
+    }
 
+    export function convertToolBarToMenuItem(data: ToolbarItem[]): MenuItem[] {
+        let items = [];
+        for (var i = 0; i < data.length; i++) {
+            let m: any = {};
+            m.icon = 'fa-' + data[i].Icon;
+            m.label = data[i].Title;
+            m.url = data[i].Uri;
+
+            if (data[i].Items.length > 0)
+                m.items = convertToolBarToMenuItem(data[i].Items);
+
+            items.push(m);
+        }
+        return items;
+    }
 }
 
 
