@@ -1,6 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import {Component, EventEmitter, Output, Input} from '@angular/core';
-
+import {DataTable} from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-tile-actions',
@@ -21,6 +21,9 @@ import {Component, EventEmitter, Output, Input} from '@angular/core';
                     <a *ngIf="hasExport" class="waves-effect waves-teal btn-flat" (click)="exportClick.emit(null)">
                         <i class="fa fa-download" [title]="exportTitle"></i>
                     </a>
+                    <a *ngIf="grid" class="waves-effect waves-teal btn-flat" (click)="doGridExport()">
+                        <i class="fa fa-download" [title]="exportTitle"></i>
+                    </a>
                 </div>          
                 `
 })
@@ -33,5 +36,9 @@ export class TileActionsComponent {
     @Input() hasExport: boolean = false;
     @Input() addTitle: string = "Add";
     @Input() exportTitle: string = "Export";
-    
+    @Input() grid: DataTable;
+
+    private doGridExport() {
+        this.grid.exportCSV();
+    }    
 }

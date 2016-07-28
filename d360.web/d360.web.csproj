@@ -1501,6 +1501,7 @@
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
@@ -1534,12 +1535,14 @@
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
