@@ -2,7 +2,10 @@
 
 export const PolicyRoutes = [
     {
-        path: 'a/policy/:policyId',
-        component: policy.PolicyComponent
+        path: 'a/policy',
+        component: policy.PolicyComponent,
+        children: [
+            { path: ':policyId', component: policy.PolicyItemComponent }
+        ]
     }
 ];

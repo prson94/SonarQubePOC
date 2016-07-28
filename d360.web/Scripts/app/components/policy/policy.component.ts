@@ -1,11 +1,16 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
+import { ROUTER_DIRECTIVES } from '@angular/router';
 
 @Component({
     selector: 'd3s-policy',
-    template: `Policy`
+    template: ` <div id="main">
+                    <router-outlet></router-outlet>
+                </div>
+             ` ,
+    directives: [ROUTER_DIRECTIVES]
 })
 
-export class PolicyComponent {
+export class PolicyComponent{
 
 }
