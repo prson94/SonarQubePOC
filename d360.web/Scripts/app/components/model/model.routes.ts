@@ -2,7 +2,11 @@
 
 export const ModelRoutes = [
     {
-        path: 'a/model/:modelId',
-        component: model.ModelComponent
+        path: 'a/model',
+        component: model.ModelComponent,
+        children: [
+            { path: 'classification/:group', component: model.ModelListComponent },
+            { path: ':modelId', component: model.ModelItemComponent }
+        ]
     }
 ];

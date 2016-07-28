@@ -6,16 +6,21 @@ import { ROUTER_DIRECTIVES } from '@angular/router';
     selector: 'd3s-navbar-item',   
     directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     styles: [`
-    a.group {
-        display:inline;
-        font-size:small;
+    a.group, a.topgroup {
+        display:inline;        
         padding:0;
+    }
+    a.group {        
+        font-size:small;        
     }
   `],
     template: `
-                <div *ngIf="!item.subItems || item.subItems.length <= 0" [class.router-link-active]="item.active">
-                    <a *ngIf="item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>
-                    <a *ngIf="item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
+                <div *ngIf="!item.subItems || item.subItems.length <= 0" [class.router-link-active]="item.active" >                    
+                    <span *ngIf="item.isRootItem()" style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>
+                        <a *ngIf="item.route" [routerLink]="[item.route]" class="topgroup">&nbsp;&nbsp;{{item.name}}</a>
+                    </span>
+                    <a *ngIf="!item.isRootItem() && item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
+                    <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
                 </div>
                 <div *ngIf="item.subItems && item.subItems.length > 0" [class.router-link-active]="item.active">
                     <span style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>
@@ -56,4 +61,9 @@ export class NavBarItem {
     subItems: NavBarItem[];
     parent: NavBarItem;
     url: string;
+
+    public isRootItem(): boolean
+    {        
+        return this.parent == undefined;
+    }
 }

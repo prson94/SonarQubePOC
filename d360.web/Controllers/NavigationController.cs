@@ -435,7 +435,7 @@ SELECT	'#Models' as MenuID,
 		0 as Feature,
 		(
 		SELECT	name, 
-				'#/catalogs?classification=' + name As url,
+				'a/model/classification/' + name As url,
 				0 as feature,
 				(
 				SELECT	name, 
@@ -460,7 +460,7 @@ SELECT	'#Policy' as MenuID,
         select  *
         from    (
 		        SELECT	name, 
-				        '#/' As url,
+				        'a/' As url,
 				        0 as feature,
 				        (
 				        SELECT	name, 
@@ -475,7 +475,7 @@ SELECT	'#Policy' as MenuID,
 				        ) FT
 				union all
 				SELECT	'Rules' AS name, 
-						'#/rules' AS url, 
+						'a/rule' AS url, 
 						0 as feature,
 						NULL AS items
                 ) as mo
@@ -523,7 +523,7 @@ SELECT	'#Community' as MenuID,
 		4 as Feature,
 		(
         SELECT	'People' AS name, --'#People' as MenuID,
-                '#/groups' AS url, 		        
+                'a/community/groups' AS url, 		        
                 0 as feature,
 		        NULL AS Items
         FOR XML PATH('nav'), TYPE

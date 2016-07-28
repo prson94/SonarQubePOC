@@ -148,23 +148,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
         this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');        
     }
-
-    private renderLegacyChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {        
-        //add each to the navbar
-        if (siteMenuItems == null || siteMenuItems.length == 0) return;
-
-        for (let item of siteMenuItems) {
-            if (item.Items) {
-                var parent = this.addSubItem(navBar, item.Name, null, null); //menu doesnt yet support link / expand collapse combo
-
-                this.renderLegacyChildItems(parent, item.Items);
-            }
-            else {
-                this.addSubItem(navBar, item.Name, null, null, item.Url); //legacy items will go to old urls for now
-            }
-        }
-    }
-
+       
     private renderChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {
         //add each to the navbar
         if (siteMenuItems == null || siteMenuItems.length == 0) return;
@@ -185,13 +169,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
     }
 
-    addNavItem(name: string, icon: string, route: string, url?: string): NavBarItem {
+    addNavItem(name: string, icon: string, route: string): NavBarItem {
         route = _.trimStart(route, '/');
         let i = new NavBarItem();
         i.name = name;
         i.icon = icon;
-        i.route = route;
-        if (url != null) i.url = url;
+        i.route = route;        
         this.items.push(i);
         return i;
     }
