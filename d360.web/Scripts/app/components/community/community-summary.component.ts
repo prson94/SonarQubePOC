@@ -87,7 +87,7 @@ export class CommunitySummaryComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, `D3S - Community`);
+        this.setBrowserTitle(this.titleService, 'Community');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));        

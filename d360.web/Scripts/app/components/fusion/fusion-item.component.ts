@@ -15,6 +15,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, `D3S - Fusion`);
+        this.setBrowserTitle(this.titleService, 'Fusion');
     }
 };

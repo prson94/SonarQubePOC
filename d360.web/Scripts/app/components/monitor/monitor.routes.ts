@@ -3,6 +3,9 @@
 export const MonitorRoutes = [
     {
         path: 'a/monitor',
-        component: monitor.MonitorComponent
+        component: monitor.MonitorComponent,
+        children: [            
+            { path: '', component: monitor.MonitorListComponent }
+        ]
     }
 ];

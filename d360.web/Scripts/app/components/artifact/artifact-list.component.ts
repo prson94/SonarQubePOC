@@ -9,6 +9,7 @@ import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 
+
 @Component({
     selector: 'd3s-artifact-list',
     template: ` 

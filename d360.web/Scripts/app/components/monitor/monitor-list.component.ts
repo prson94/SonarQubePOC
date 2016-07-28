@@ -6,20 +6,20 @@ import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
 @Component({
-    selector: 'd3s-fusion-list',
-    template: ` Fusion List
+    selector: 'd3s-monitor-list',
+    template: ` Monitor List
                 `
 })
 
-export class FusionListComponent extends BaseComponent implements OnInit {
+export class MonitorListComponent extends BaseComponent implements OnInit {
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Fusion');
+        this.setBrowserTitle(this.titleService, 'Monitor');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));        
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor'));
     }
 };
