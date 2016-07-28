@@ -1410,6 +1410,9 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\community\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic-incorrect-textpath.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.routes.ts" />
@@ -1419,6 +1422,8 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\index.ts" />

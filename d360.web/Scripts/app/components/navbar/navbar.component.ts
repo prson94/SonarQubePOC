@@ -73,7 +73,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadFusionMenu(fusionMenu: SiteMenu) {
         if (fusionMenu == null || !fusionMenu.ShouldDisplay) return;
 
-        let fusion = this.addNavItem('Fusion', 'database', null);
+        let fusion = this.addNavItem('Fusion', 'database', 'a/fusion');
     }
 
     loadGlossaryMenu(glossaryMenu: SiteMenu) {
@@ -87,11 +87,11 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadCommunityMenu(communityMenu: SiteMenu) {
         if (communityMenu == null || !communityMenu.ShouldDisplay) return;
 
-        let community = this.addNavItem('Community', 'group', null);
+        let community = this.addNavItem('Community', 'group', 'a/community');
     }
 
     loadMonitorMenu() {        
-        let monitor = this.addNavItem('Monitor', 'dashboard', null);
+        let monitor = this.addNavItem('Monitor', 'dashboard', 'a/monitor');
     }
 
     loadPoliciesMenu(policiesMenus: SiteMenu) {
