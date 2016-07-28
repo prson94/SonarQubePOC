@@ -99,7 +99,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let policies = this.addNavItem('Policies', 'university', null);
 
-        this.renderLegacyChildItems(policies, policiesMenus.NavigationItems);
+        this.renderChildItems(policies, policiesMenus.NavigationItems);
     }
 
     loadModelMenu(modelMenus: SiteMenu) {
@@ -107,7 +107,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let models = this.addNavItem('Models', 'sitemap', null);
 
-        this.renderLegacyChildItems(models, modelMenus.NavigationItems);
+        this.renderChildItems(models, modelMenus.NavigationItems);
     }
 
     loadAdminMenu(adminMenu: SiteMenu) {
