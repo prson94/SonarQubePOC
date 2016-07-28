@@ -115,8 +115,8 @@ export class SynonymsTile implements OnChanges {
                 this.synonymItems = d.items;
                 //console.log(this.synonymItems);
                 //this.synonymOptions = FormHelper.getSelectList(this.synonymItems, 'Name', 'ID');
-               // console.log(this.synonymOptions);
-               //console.log(d);
+                //console.log(this.synonymOptions);
+                //console.log(d);
             });
     }
 

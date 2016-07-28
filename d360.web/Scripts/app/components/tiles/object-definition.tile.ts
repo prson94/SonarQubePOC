@@ -4,8 +4,6 @@ import { DataTable, Column, Accordion, AccordionTab } from 'primeng/primeng';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
-import { ArtifactDefnintionComponent } from '../artifact/artifact-definition.component';
-import { Artifact } from '../../models/artifacts.model';
 import { SynonymsTile } from '../tiles/synonyms.tile';
 import { AttributesTile } from '../tiles/attributes.tile';
 
@@ -13,14 +11,16 @@ declare var CompanySettings;
 
 
 @Component({
-    selector: 'd3s-artifact-detail',
-    directives: [DataTable, Column, ArtifactDefnintionComponent, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile],
-    templateUrl: 'scripts/app/components/artifact/artifact-detail.component.html',
+    selector: 'd3s-object-definition-tile',
+    directives: [DataTable, Column, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile],
+    templateUrl: 'scripts/app/components/tiles/object-definition.tile.html',
     providers: [ObjectDetailService],
 })
 
-export class ArtifactDetailComponent implements OnChanges {
-    @Input() artifact: Artifact;
+export class ObjectDefinitionTile implements OnChanges {
+    @Input() objectType: string = 'Artifact';
+    @Input() objectID: number;
+
 
     private isLoading = false;
 
@@ -29,12 +29,7 @@ export class ArtifactDetailComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            //if (p == 'objectType') {
-            //    this.objectType = changes['objectType'].currentValue;
-            //}
-            //if (p == 'objectID') {
-            //    this.objectID = changes['objectID'].currentValue;
-            //}
+
         }
 
         this.load();
@@ -42,10 +37,10 @@ export class ArtifactDetailComponent implements OnChanges {
 
     load(): void {
 
-        if (this.artifact == null)
+        if (this.objectID == null || this.objectType == null)
             return;
 
-        this.objectDetailService.getObjectDetail(this.artifact.ID, 'Artifact')
+        this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
             .then(d => {
                 //console.log(d);
             });

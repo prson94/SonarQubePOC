@@ -8,9 +8,7 @@ import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
-//import { ArtifactDefnintionComponent } from './artifact-definition.component';
-import { ArtifactDetailComponent } from './artifact-detail.component';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { AuditComponent} from '../shared/audit.component';
 
 @Component({
@@ -36,7 +34,7 @@ import { AuditComponent} from '../shared/audit.component';
                         <div class="col s12">
                             <div class="tile tile-detail">
                                <!-- <object-detail [objectType]="'Artifact'" [objectID]="artifact?.ID"></object-detail> -->
-                                <d3s-artifact-detail [artifact]="artifact"></d3s-artifact-detail>
+                                <d3s-object-definition-tile [objectType]="'Artifact'" [objectID]="artifact?.ID"></d3s-object-definition-tile>
                             </div>
                         </div>
                     </div>
@@ -49,7 +47,7 @@ import { AuditComponent} from '../shared/audit.component';
                     </div>
                 </div>                
                 `,
-    directives: [ArtifactDetailComponent, ObjectDetailTile, Accordion, AccordionTab, AuditComponent],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent],
     providers: [ArtifactService]
 })
 

@@ -4,13 +4,13 @@
 <div *ngIf="!isLoading">
     <p-accordion [multiple]="true">
         <p-accordionTab header="Definition" [selected]="true">
-            <object-detail [objectID]="artifact?.ID" [objectType]="'Artifact'"></object-detail>
+            <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
         </p-accordionTab>
         <p-accordionTab header="Synonyms ({{synonyms.itemCount}})" >
-            <d3s-synonyms-tile #synonyms [objectID]="artifact?.ID" [objectType]="'Artifact'" [readonly]="false"></d3s-synonyms-tile>
+            <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-synonyms-tile>
         </p-accordionTab>
         <p-accordionTab header="Attributes ({{attributes.itemCount}})">
-            <d3s-attributes-tile #attributes [objectID]="artifact?.ID" [objectType]="'Artifact'" [readonly]="false"></d3s-attributes-tile>
+            <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-attributes-tile>
         </p-accordionTab>
         <p-accordionTab header="Structure">
             artifact structure

@@ -912,7 +912,7 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
-    <Content Include="Scripts\app\components\artifact\artifact-detail.component.html" />
+    <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
@@ -1442,7 +1442,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
