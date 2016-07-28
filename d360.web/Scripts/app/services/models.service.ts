@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Model } from '../models/model.model';
+import { Model, ModelHierarchy } from '../models/model.model';
 
 @Injectable()
 export class ModelsService extends BaseService {
@@ -21,6 +21,13 @@ export class ModelsService extends BaseService {
         return this.http.get(`api/catalogs/${id}`)
             .toPromise()
             .then(response => <Model>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getModelHierarchy(id: number): Promise<ModelHierarchy[]> {
+        return this.http.get(`taxonomy/ModelHierarchy/${id}`)
+            .toPromise()
+            .then(response => <ModelHierarchy[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

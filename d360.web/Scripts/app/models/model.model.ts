@@ -5,3 +5,10 @@
     TaxonomyTypeClass: string;
     ID: number;
 }
+
+export class ModelHierarchy {
+    HasChildren: boolean;
+    ID: number;
+    Name: string;
+    ParentID: number;
+}

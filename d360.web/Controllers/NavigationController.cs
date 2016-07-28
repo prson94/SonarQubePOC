@@ -78,7 +78,7 @@ namespace d360.web.Controllers
                 ResourceID = Company.CurrentResourceID,
                 ResourceName = resource.FormatDisplayName(),
                 ResourceImageUrl = string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), 150),
-                ResourceUrl = string.Format("#/resources/{0}", Company.CurrentResourceID),            
+                ResourceUrl = string.Format("a/resource/{0}", Company.CurrentResourceID),            
             };
             return PartialView(navigation);            
         }

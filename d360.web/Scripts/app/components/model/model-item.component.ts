@@ -5,18 +5,29 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ModelsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Model } from '../../models/model.model';
+import { Model, ModelHierarchy } from '../../models/model.model';
+import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    template: ` Model Item
+    directives: [ObjectDefinitionTile],
+    template: ` 
+                <div class="row">
+                        <div class="col s12">
+                            <div class="tile tile-detail">
+                                <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
+                            </div>
+                        </div>
+                </div>
                 `
 })
 
 export class ModelItemComponent extends BaseComponent implements OnInit {
     sub: any;
     model: Model;
+    modelHierarchy: ModelHierarchy[] = [];
+    selected: ModelHierarchy;
 
     constructor(private route: ActivatedRoute,
             private router: Router,
@@ -33,6 +44,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit {
 
             
             this.isLoading = true;
+            this.loadModelHierarchy(modelId);
             this.modelsService.getModel(modelId)
                 .then(result => {
                     this.isLoading = false;
@@ -51,5 +63,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Model'));
+    }
+
+    private loadModelHierarchy(modelId: number) {
+        this.modelsService.getModelHierarchy(modelId)
+            .then(result => {
+                this.modelHierarchy = result;
+                this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
+            });
     }
 };

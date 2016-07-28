@@ -2,7 +2,10 @@
 
 export const ResourceRoutes = [
     {
-        path: 'a/resource/:ruleId',
-        component: resource.ResourceComponent
+        path: 'a/resource',
+        component: resource.ResourceComponent,
+        children: [
+            { path: ':resourceId', component: resource.ResourceItemComponent }
+        ]
     }
 ];
