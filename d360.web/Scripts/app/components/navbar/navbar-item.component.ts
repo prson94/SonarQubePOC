@@ -21,14 +21,14 @@ import { ROUTER_DIRECTIVES } from '@angular/router';
     template: `
                 <div *ngIf="!item.subItems || item.subItems.length <= 0" [class.router-link-active]="item.active" >                    
                     <span *ngIf="item.isRootItem()" style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>
-                        <a *ngIf="item.route" [routerLink]="[item.route]" class="topgroup">{{item.name}}</a>
+                        <a *ngIf="item.route" [routerLink]="[item.route]" class="topgroup truncate">{{item.name}}</a>
                     </span>
-                    <a *ngIf="!item.isRootItem() && item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i>{{item.name}}</a>                    
-                    <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
+                    <a *ngIf="!item.isRootItem() && item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i>{{item.name}}</a>                    
+                    <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
                 </div>
                 <div *ngIf="item.subItems && item.subItems.length > 0" [class.router-link-active]="item.active">
                     <span style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i *ngIf="item.isRootItem()" [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>
-                        <a class="group" *ngIf="item.route" [routerLink]="[item.route]">{{item.name}}</a>
+                        <a class="group truncate" *ngIf="item.route" [routerLink]="[item.route]">{{item.name}}</a>
                         <span *ngIf="!item.route" [ngClass]="{'topitem':item.isRootItem()}">{{item.name}}</span>
                         <span class="right"><i [class]="'fa fa-' + (item.expanded ? 'caret-up' : 'caret-down')"></i></span>
                     </span>

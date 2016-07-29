@@ -102,8 +102,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.rulesService.getRules()
             .then(result => {
                 this.isLoading = false;
-                this.rules = result;
-                console.log(this.rules);
+                this.rules = result;                
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });
     }

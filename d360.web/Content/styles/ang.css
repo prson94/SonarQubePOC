@@ -22997,7 +22997,9 @@ nav.top,
   height: auto;
   line-height: normal;
 }
-d3s-navbar-item > div.router-link-active > a {
+d3s-navbar-item > div.router-link-active > a,
+d3s-navbar-item > div.router-link-active > span,
+d3s-navbar-item > div.router-link-active > span > a {
   background-color: #F8F3EF;
   color: #383127 !important;
 }

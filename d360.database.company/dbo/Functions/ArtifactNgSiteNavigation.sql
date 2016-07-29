@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION [dbo].[ArtifactNgSiteNavigation](@id int)
+﻿ALTER FUNCTION [dbo].[ArtifactNgSiteNavigation](@id int)
 RETURNS XML
 WITH RETURNS NULL ON NULL INPUT
 BEGIN 
@@ -8,7 +8,7 @@ BEGIN
 			url,
 			'Menu_AT' + cast(id as varchar(15)) as menuID,
 			0 as feature,
-			dbo.ArtifactSiteNavigation(id) as items
+			dbo.ArtifactNgSiteNavigation(id) as items
 	FROM	(
 			--SELECT	A.name,
 			--		A.url,
@@ -26,7 +26,4 @@ BEGIN
 			FOR XML PATH('nav'), TYPE
 	)
 END
-
-GO
-
 

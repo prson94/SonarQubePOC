@@ -217,14 +217,13 @@ export class NavBarComponent implements OnInit, OnDestroy {
             this.expandRoute(i.parent);
     }
 
-    activateRoute(route: string, itms: NavBarItem[] = null): NavBarItem {
+    activateRoute(route: string, itms: NavBarItem[] = null): NavBarItem {        
         let r = null;
         if (!itms)
-            itms = this.items;
-        for (var i = 0; i < itms.length; i++) {
-            var item = itms[i];
+            itms = this.items;        
+        for(let item of itms){            
             item.expanded = false;
-            item.active = false;
+            item.active = false;            
             if (item.route == route) r = item;
             if (item.subItems && item.subItems.length > 0) {
                 let s = this.activateRoute(route, item.subItems);
