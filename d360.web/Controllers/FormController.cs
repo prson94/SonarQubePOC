@@ -339,6 +339,8 @@ namespace d360.web.Controllers
                     return Fusion_EditFields(ID);
                 case "ARTIFACT":
                     return Artifact_EditFields(ID);
+                case "RULE":
+                    return Rule_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -366,6 +368,8 @@ namespace d360.web.Controllers
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "RULE":
+                    return Rule_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -409,6 +413,8 @@ namespace d360.web.Controllers
                     return EditAttributeType(form);
                 case "ARTIFACT":
                     return EditArtifact(form);
+                case "RULE":
+                    return EditRule(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -440,6 +446,8 @@ namespace d360.web.Controllers
                     return DeleteAttributeType(form);
                 case "ARTIFACT":
                     return DeleteArtifact(form);
+                case "RULE":
+                    return DeleteRule(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -484,6 +492,8 @@ namespace d360.web.Controllers
                     return AddAttributeType(form);
                 case "ARTIFACT":
                     return AddArtifact(form);
+                case "RULE":
+                    return AddRule(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

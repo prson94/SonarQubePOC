@@ -1,19 +1,91 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
+import {DataTable, Column} from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { HeaderBreadcrumbService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
+import {DeleteForm} from '../forms/delete.form';
+import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+
 
 @Component({
     selector: 'd3s-rule-list',
-    template: ` Rule List
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent],
+    providers: [RulesService],
+    template: ` 
+                <div class="row">
+                    <div class="col s12">
+                        <div *ngIf="isLoading">
+                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                        </div>
+                        <div class="tile tile-detail" >    
+                            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
+                                <div class="col s12">
+                                    <header>{{modelGroup}} Rules                                
+                                        <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Rule'" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
+                                    </header>                              
+                                    <p-dataTable [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
+                                        <p-column field="ID" header="ID" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
+                                        <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'45%'}"></p-column>                                                                                                                        
+                                        <p-column field="RuleType" header="Type" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
+                                            <template let-col let-data="rowData">
+                                                <span>{{getRuleTypeText(data.RuleType)}}</span>
+                                            </template>                          
+                                        </p-column>
+                                        <p-column field="Dimension" header="Dimension" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
+                                            <template let-col let-data="rowData">
+                                                <span>{{data.Dimension?.Name}}</span>
+                                            </template>                          
+                                        </p-column>
+                                        <p-column [style]="{width:'40px'}">
+                                            <template let-item="rowData">
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                                </div>
+                                            </template>
+                                        </p-column>                            
+                                        <p-column  [style]="{width:'40px'}">
+                                                <template let-item="rowData">
+                                                    <div class="RowTools">                                
+                                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                                    </div>
+                                                </template>
+                                        </p-column> 
+                                    </p-dataTable>      
+                                </div>
+                            </div>
+                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
+                            <delete-form *ngIf="showDelete"
+                                                    [callback]="theDeleteCallback"
+                                                    [itemId]="selected?.ID"
+                                                    [method]="'callback'"
+                                                    [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                                                    (onCancel)="showDelete=false;"
+                            ></delete-form>  
+                        </div>                        
+                    </div>
+                </div>
                 `
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit {
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+    private rules: Rule[] = [];
+    private selected: Rule;
+    private showEditor: boolean = false;
+    private showDelete: boolean = false;
+
+    theDeleteCallback: Function;
+    
+    constructor(private route: ActivatedRoute,
+        private router: Router,
+        protected rulesService: RulesService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
+
+        this.theDeleteCallback = this.deleteRule.bind(this);
     }
 
     ngOnInit() {
@@ -21,5 +93,62 @@ export class RuleListComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules'));
+
+        this.loadRules();
+    }
+
+    private loadRules() {
+        this.isLoading = true;
+        this.rulesService.getRules()
+            .then(result => {
+                this.isLoading = false;
+                this.rules = result;
+                console.log(this.rules);
+                if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
+            });
+    }
+
+    private showAddRule() {
+        this.selected = null;
+        this.showEditor = true;
+    }
+
+    private saveRule(event) {
+        this.rulesService.saveRule(event.item)
+            .then(result => {
+                if (event.item.ID == undefined) {
+                    event.item.ID = Number(result.id);
+                    this.rules[this.rules.length] = event.item;
+                }
+                else {
+                    this.rules[this.findRuleIndex(event.item.ID)] = event.item;
+                }
+                this.selected = event.item;
+                this.showEditor = false;
+            });
+    }
+
+    private showRule() {
+        this.router.navigateByUrl(`/a/rule/${this.selected.ID}`)
+    }
+
+    findRuleIndex(id: number) {
+        var index: number = -1;
+        for (var rule of this.rules) {
+            index++;
+            if (rule.ID == id) return index;
+        }
+    }
+
+
+    private deleteRule(id: number) {
+        this.rulesService.deleteRule(id);
+        this.showDelete = false;
+        this.selected = this.rules.length > 0 ? this.rules[0] : null;
+        this.rules.splice(this.findRuleIndex(id), 1);
+    }
+
+    private getRuleTypeText(ruleType: RuleClassification): string {
+        return RuleClassification[ruleType];
     }
 };
