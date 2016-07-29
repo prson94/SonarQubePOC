@@ -6436,5 +6436,32 @@ order by    title
 
 
         #endregion
+
+        #region Angular Breadcrumb calls
+        
+        public class BreadcrumbTypeAheadModel
+        {
+            public string Name { get; set; }
+            public string Url { get; set; }
+        }
+
+        [Route("breadcrumb/typeahead")]
+        public IEnumerable<BreadcrumbTypeAheadModel> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
+        {
+            
+            switch (objectType)
+            {
+                case SystemObjects.Artifact:
+                    return (from artifact in Company.Artifacts
+                            where artifact.Name.StartsWith(q) && artifact.ArtifactTypeID == objectId
+                            select artifact).Take(num).AsEnumerable().Select( x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
+                default:
+                    break;
+            }
+            return null;
+        }
+
+        #endregion
+
     }
 }

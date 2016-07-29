@@ -578,11 +578,8 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 	color: #222222;
 }
 
-.ui-inputtext.ui-state-focus, .ui-widget-content .ui-inputtext.ui-state-focus, .ui-widget-header .ui-inputtext.ui-state-focus {
--webkit-box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
--moz-box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
-box-shadow: 1px 1px 10px 0 rgba(0,0,0,0.75);
-background: #fff;
+.ui-inputtext.ui-state-focus, .ui-widget-content .ui-inputtext.ui-state-focus, .ui-widget-header .ui-inputtext.ui-state-focus {    
+    background: #fff;
 }
     
 /* InputSwitch */
@@ -743,7 +740,7 @@ background: #fff;
 }
 */
 .ui-multiselect-item .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { 
-    border: none; background: #eeeeee; font-weight: normal; color: #212121;background:#A8D6F4;;
+    /*border: none;*/ background: #eeeeee; font-weight: normal; color: #212121;background:#A8D6F4;;
 }
 
 .ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {
@@ -872,4 +869,10 @@ p-selectbutton.ng-dirty.ng-invalid .ui-button,
 p-togglebutton.ng-dirty.ng-invalid .ui-button {
     border-bottom-color: #BC1B01;
     border-bottom-width: 2px;
+}
+
+
+.ui-autocomplete ul li{
+    float:none;
+    transition:none;
 }

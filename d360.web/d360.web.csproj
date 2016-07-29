@@ -1429,6 +1429,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />

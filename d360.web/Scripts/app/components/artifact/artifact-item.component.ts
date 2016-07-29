@@ -71,13 +71,19 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
         this.sub = this.route.params.subscribe(params => {            
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
+            let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
             this.artifactService.getArtifact(artifactId)
                 .then(artifact => {
                     this.artifact = artifact;
                     this.headerBreadcrumbService.clearBreadcrumbs();
+                    let index = 0;
                     for (let breadcrumb of this.artifact.Breadcrumbs) {
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
+                        index++;
+                        if (index == this.artifact.Breadcrumbs.length)
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', artifactTypeId));
+                        else
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));                                
                     }             
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
                     this.isLoading = false;

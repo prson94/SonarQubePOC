@@ -3,21 +3,15 @@ import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ROUTER_DIRECTIVES } from '@angular/router';
-
+import { HeaderBreadcrumbItemComponent } from './header-breadcrumb-item.component'
 import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
-    directives: [ROUTER_DIRECTIVES],
-    styles: [`
-    a.breadcrumb {
-        color:#54a4da;
-    }
-  `],
+    directives: [ROUTER_DIRECTIVES, HeaderBreadcrumbItemComponent],  
     template: ` <span class="breadcrumbs">
                  <span *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{active:last}">
-                    <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                    <span *ngIf="!breadcrumb.hasLink()">{{ breadcrumb.text }}</span> <span *ngIf="!last" class="sep"> :: </span>
+                    <d3s-header-breadcrumb-item [breadcrumb]="breadcrumb" [lastItem]="last"></d3s-header-breadcrumb-item>                    
                  </span>                
                 </span>
               `

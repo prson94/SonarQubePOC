@@ -9,7 +9,7 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
     selector: 'd3s-header-typeahead-search',
     host: {
         '(document:click)': 'onClick($event)',
-    },
+    },  
     template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" >
                     <a style="display:table-cell;" (click)="showSearch=!showSearch;" ><i class="fa fa-search"></i></a>
                     <p-autoComplete size="50" 
@@ -42,15 +42,11 @@ export class HeaderTypeaheadSearchComponent {
         });       
     }
 
-    selectItem() {
-        console.log(this.result);
-        console.log(window.location.host);
-        window.location.href = this.result.Url;
-        //window.location.hash = this.result.Url;        
+    selectItem() {        
+        window.location.href = this.result.Url;        
     }
 
-    hide() {
-        console.log(3);
+    hide() {        
         this.showSearch = false;
         this.hideTimeoutID = 0;
     }
