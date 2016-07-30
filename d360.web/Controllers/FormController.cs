@@ -17073,7 +17073,7 @@ order by	D.Name, I.Name";
             dimensions.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "RuleDimensionID", Name = model.GetName(i => i.RuleDimensionID), FieldDescription = model.GetDescription(i => i.RuleDimensionID), Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
