@@ -83,13 +83,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.FusionWorkerRo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.fusion", "d360.fusion\d360.fusion.csproj", "{0373748F-2BCE-4C69-8031-7D7907282B60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.FusionRelationshipProcessing", "Jobs\d360.jobs.FusionRelationshipProcessing\d360.jobs.FusionRelationshipProcessing.csproj", "{E2D62185-65D3-461C-B0E2-479C1D3B8434}"
-EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "d360.worker.ProcessDatabaseTasks", "d360.worker.ProcessDatabaseTasks\d360.worker.ProcessDatabaseTasks.ccproj", "{854E5857-8BF1-4A14-A3CF-4404E406305C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.workers.ProcessDatabaseTasksWorkerRole", "d360.workers.ProcessDatabaseTasksWorkerRole\d360.workers.ProcessDatabaseTasksWorkerRole.csproj", "{E08D277F-9E95-4842-84D0-511076BA356D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.QualityChecks", "Jobs\d360.jobs.QualityChecks\d360.jobs.QualityChecks.csproj", "{E433760E-2688-4A92-B1B4-42C628C83AC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.jobs.MatchTechnicalMappingsToBusinessMappings", "Jobs\d360.jobs.MatchTechnicalMappingsToBusinessMappings\d360.jobs.MatchTechnicalMappingsToBusinessMappings.csproj", "{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -929,36 +929,6 @@ Global
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.ActiveCfg = Release|Any CPU
 		{0373748F-2BCE-4C69-8031-7D7907282B60}.Release|x86.Build.0 = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|x86.ActiveCfg = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Client Development|x86.Build.0 = Client Development|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Debug|x86.Build.0 = Debug|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|x86.ActiveCfg = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Nightly|x86.Build.0 = Nightly|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|Any CPU.ActiveCfg = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|Any CPU.Build.0 = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|Mixed Platforms.Build.0 = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|x86.ActiveCfg = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Production|x86.Build.0 = Production|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|x86.ActiveCfg = Release|Any CPU
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434}.Release|x86.Build.0 = Release|Any CPU
 		{854E5857-8BF1-4A14-A3CF-4404E406305C}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
 		{854E5857-8BF1-4A14-A3CF-4404E406305C}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
 		{854E5857-8BF1-4A14-A3CF-4404E406305C}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
@@ -1049,6 +1019,36 @@ Global
 		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|x86.ActiveCfg = Release|Any CPU
 		{E433760E-2688-4A92-B1B4-42C628C83AC7}.Release|x86.Build.0 = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|Any CPU.ActiveCfg = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|Any CPU.Build.0 = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|Mixed Platforms.ActiveCfg = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|Mixed Platforms.Build.0 = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|x86.ActiveCfg = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Client Development|x86.Build.0 = Client Development|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Debug|x86.Build.0 = Debug|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|Any CPU.ActiveCfg = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|Any CPU.Build.0 = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|Mixed Platforms.ActiveCfg = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|Mixed Platforms.Build.0 = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|x86.ActiveCfg = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Nightly|x86.Build.0 = Nightly|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|Any CPU.ActiveCfg = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|Any CPU.Build.0 = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|Mixed Platforms.ActiveCfg = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|Mixed Platforms.Build.0 = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|x86.ActiveCfg = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Production|x86.Build.0 = Production|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|x86.ActiveCfg = Release|Any CPU
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1082,10 +1082,10 @@ Global
 		{E6C09D3B-5937-45B1-9B1D-CE0ABD63A19B} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{23A76C7C-9489-4CA2-AA7B-6182924EC188} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{0373748F-2BCE-4C69-8031-7D7907282B60} = {DF896E70-6A4C-4E11-B0AF-0780094E0BEF}
-		{E2D62185-65D3-461C-B0E2-479C1D3B8434} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 		{854E5857-8BF1-4A14-A3CF-4404E406305C} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{E08D277F-9E95-4842-84D0-511076BA356D} = {308C42E3-824D-4028-8C69-60FAD6754839}
 		{E433760E-2688-4A92-B1B4-42C628C83AC7} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
+		{C3C28D82-F2D3-424C-A80F-BDB35ED9ED1E} = {DD6FCBE9-7CBE-4B0E-B7F0-18AE548CDB03}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
@@ -1203,22 +1203,22 @@ Global
 		SccProjectTopLevelParentUniqueName27 = D360.sln
 		SccProjectName27 = d360.fusion
 		SccLocalPath27 = d360.fusion
-		SccProjectUniqueName28 = Jobs\\d360.jobs.FusionRelationshipProcessing\\d360.jobs.FusionRelationshipProcessing.csproj
+		SccProjectUniqueName28 = d360.worker.ProcessDatabaseTasks\\d360.worker.ProcessDatabaseTasks.ccproj
 		SccProjectTopLevelParentUniqueName28 = D360.sln
-		SccProjectName28 = Jobs/d360.jobs.FusionRelationshipProcessing
-		SccLocalPath28 = Jobs\\d360.jobs.FusionRelationshipProcessing
-		SccProjectUniqueName29 = d360.worker.ProcessDatabaseTasks\\d360.worker.ProcessDatabaseTasks.ccproj
+		SccProjectName28 = d360.worker.ProcessDatabaseTasks
+		SccLocalPath28 = d360.worker.ProcessDatabaseTasks
+		SccProjectUniqueName29 = d360.workers.ProcessDatabaseTasksWorkerRole\\d360.workers.ProcessDatabaseTasksWorkerRole.csproj
 		SccProjectTopLevelParentUniqueName29 = D360.sln
-		SccProjectName29 = d360.worker.ProcessDatabaseTasks
-		SccLocalPath29 = d360.worker.ProcessDatabaseTasks
-		SccProjectUniqueName30 = d360.workers.ProcessDatabaseTasksWorkerRole\\d360.workers.ProcessDatabaseTasksWorkerRole.csproj
+		SccProjectName29 = d360.workers.ProcessDatabaseTasksWorkerRole
+		SccLocalPath29 = d360.workers.ProcessDatabaseTasksWorkerRole
+		SccProjectUniqueName30 = Jobs\\d360.jobs.QualityChecks\\d360.jobs.QualityChecks.csproj
 		SccProjectTopLevelParentUniqueName30 = D360.sln
-		SccProjectName30 = d360.workers.ProcessDatabaseTasksWorkerRole
-		SccLocalPath30 = d360.workers.ProcessDatabaseTasksWorkerRole
-		SccProjectUniqueName31 = Jobs\\d360.jobs.QualityChecks\\d360.jobs.QualityChecks.csproj
+		SccProjectName30 = Jobs/d360.jobs.QualityChecks
+		SccLocalPath30 = Jobs\\d360.jobs.QualityChecks
+		SccProjectUniqueName31 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings\\d360.jobs.MatchTechnicalMappingsToBusinessMappings.csproj
 		SccProjectTopLevelParentUniqueName31 = D360.sln
-		SccProjectName31 = Jobs/d360.jobs.QualityChecks
-		SccLocalPath31 = Jobs\\d360.jobs.QualityChecks
+		SccProjectName31 = Jobs/d360.jobs.MatchTechnicalMappingsToBusinessMappings
+		SccLocalPath31 = Jobs\\d360.jobs.MatchTechnicalMappingsToBusinessMappings
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = D360.vsmdi

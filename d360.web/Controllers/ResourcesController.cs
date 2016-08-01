@@ -288,7 +288,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             return Content(sb.ToString(), "text/html");
         }
 
-        [Route("{type}/{itemid}/templates/tooltip/{templateAction}")]
+        [Route("{type}/{itemid:int}/templates/tooltip/{templateAction}")]
         public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction)
         {
             string html = "";

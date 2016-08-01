@@ -38,7 +38,7 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
     }
 
     getSynonymOptions(objectID: number, objectType: string): Promise<SynonymEditorModel> {
-        return this.http.get(`form/GetSynonyms?id=${objectID}&type=${objectType}`)
+        return this.http.get(`form/SynonymsOptions?id=${objectID}&type=${objectType}`)
             .toPromise()
             .then(response => <SynonymEditorModel>response.json())
             .then(r => {

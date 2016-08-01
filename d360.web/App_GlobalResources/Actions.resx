@@ -279,4 +279,16 @@
   <data name="Issue_Icon" xml:space="preserve">
     <value>flag</value>
   </data>
+  <data name="IntersectRoles" xml:space="preserve">
+    <value>Manage Roles</value>
+  </data>
+  <data name="IntersectRoles_Icon" xml:space="preserve">
+    <value>tags</value>
+  </data>
+  <data name="Predicates" xml:space="preserve">
+    <value>Manage Predicates</value>
+  </data>
+  <data name="Predicates_Icon" xml:space="preserve">
+    <value>map-signs</value>
+  </data>
 </root>

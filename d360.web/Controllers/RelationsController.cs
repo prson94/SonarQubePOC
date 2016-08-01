@@ -142,9 +142,35 @@ namespace d360.web.Controllers
         }
 
         [HttpGet]
+        public JsonNetResult IntersectRoles()
+        {
+            var roles = Company.Table<IntersectRole>().OrderBy(i => i.Name);
+            var usage = Company.Filter<Map>(i => i.IntersectRoleID.HasValue).Select(i => i.IntersectRoleID.Value).Distinct().ToList();
+            var data = new List<dynamic>();
+
+            roles.ToList().ForEach(p =>
+            {
+                data.Add(new
+                {
+                    ID = p.ID,
+                    Name = p.Name,
+                    Description = p.Description,
+                    IsUsed = usage.Any(i => i == p.ID)
+                });
+            });
+
+            return new JsonNetResult
+            {
+                Data = data,
+                Formatting = Formatting.None
+            };
+        }
+
+        [HttpGet]
         public JsonNetResult Predicates()
         {
             var predicates = Company.Table<Predicate>().OrderBy(i => i.Name);
+            var usage = Company.Filter<IntersectType>(i => i.PredicateID.HasValue).Select(i => i.PredicateID.Value).Distinct().ToList();
             var data = new List<dynamic>();
 
             predicates.ToList().ForEach(p =>
@@ -154,14 +180,16 @@ namespace d360.web.Controllers
                         ID = p.ID,
                         Name = p.Name,
                         Inverse = p.Inverse,
-                        Type = p.Type.GetName()
+                        p.IsSystem,
+                        IsUsed = usage.Any(i => i == p.ID),
+                        Type = p.Type.GetDisplayName()
                     });
             });
 
             return new JsonNetResult
             {
                 Data = data,
-                Formatting = Newtonsoft.Json.Formatting.None
+                Formatting = Formatting.None
             };
         }
 
@@ -169,27 +197,29 @@ namespace d360.web.Controllers
         public JsonNetResult GetPredicates()
         {
             var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = list, Formatting = Formatting.None };
         }
 
-        public JsonResult _IntersectTypes()
+        public JsonNetResult _IntersectTypes()
         {
-            var models = Company.Query<IntersectTypeListViewModel>(
+            var models = Company.Query<dynamic>(
 @"select    I.ID,
-			S.ObjectType as Source,
-			S.ObjectID as SourceID,
-			SD.TextPath as SourceName,
-			T.ObjectType as Target,
-			T.ObjectID as TargetID,
-			TD.TextPath as TargetName
+			I.Subject,
+			I.SubjectID,
+			SD.TextPath as SubjectName,
+            I.PredicateID,
+            P.Name as PredicateName,
+			I.Object,
+			I.ObjectID,
+			TD.TextPath as ObjectName
 from		IntersectType I
-			inner join IntersectTypeNode S on S.IntersectTypeID = I.ID and S.[Order] = 1 and I.IsSystem = 0
-			inner join IntersectTypeNode T on T.IntersectTypeID = I.ID and T.ID <> S.ID
-			left join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
-			left join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
+            left join [Predicate] P on P.ID = I.PredicateID
+			left join cache.ObjectDetails SD on SD.[Object] = I.Subject and SD.ObjectID = I.SubjectID
+			left join cache.ObjectDetails TD on TD.[Object] = I.Object and TD.ObjectID = I.ObjectID
+where       I.IsSystem = 0
 order by	SD.Name,
 			TD.Name");
-            return Json(models, JsonRequestBehavior.AllowGet);
+            return new JsonNetResult { Data = models, Formatting = Formatting.None };
         }
 
         public JsonNetResult OptionsToRelate(SystemObjects type, int id)
@@ -1419,6 +1449,14 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
 	        {
                 ViewData.Add("CanCreateRelationships", false);
 	        }
+            ViewData.Add("Object", type.ToString());
+            ViewData.Add("ObjectID", id.ToString());
+            var model = Company.GetObjectDetail(type, id);
+            return PartialView(model);
+        }
+
+        public ActionResult ImpactAnalysisOverlay(SystemObjects type, int id)
+        {
             ViewData.Add("Object", type.ToString());
             ViewData.Add("ObjectID", id.ToString());
             var model = Company.GetObjectDetail(type, id);

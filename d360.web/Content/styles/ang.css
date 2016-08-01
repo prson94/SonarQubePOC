@@ -22263,6 +22263,7 @@ ul.hierarchy :last-child {
 .root-tile {
   position: relative;
   margin-bottom: 25px;
+  padding-right: 3px;
   width: 100%;
 }
 .root-tile .TileTools {

@@ -4,10 +4,8 @@ using System.Web.Mvc;
 using d360.core.entities;
 using d360.model;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using d360.core.enums;
 using d360.web.Models;
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -48,6 +46,91 @@ namespace d360.web.Controllers
             {
                 return null;
             }
+        }
+
+        #endregion
+
+        #region Impact Analysis Diagram
+
+        public JsonNetResult ImpactAnalysis(SystemObjects type, int id)
+        {
+            var sql = @"
+	declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), intersectid int)
+	declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), intersectid int)
+	
+	insert into @nodes
+		select	D.Object + cast(D.ObjectID as varchar),
+				D.Object,
+				D.ObjectID,
+				D.ObjectTypeName,
+				D.TextPath,
+				D.IconBackColor,
+				D.IconForeColor,
+				case 
+					when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
+					else coalesce(P.Inverse, 'used in')
+				end as [Predicate],
+				I.ID
+		from	[Intersect] I
+				inner join cache.ObjectDetails D on 
+									D.Object = case 
+												when I.Subject = @type and I.SubjectID = @id then I.Object
+												else I.Subject
+											   end 
+									and
+									D.ObjectID = case 
+												when I.Subject = @type and I.SubjectID = @id then I.ObjectID
+												else I.SubjectID
+											   end
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				left join [Predicate] P on P.ID = T.PredicateID
+		where	( 
+					(I.Subject = @type and I.SubjectID = @id) OR 
+					(I.Object = @type and I.ObjectID = @id)  
+				)
+	
+	insert into @links
+		select	@type + cast(@id as varchar),
+				[key],
+				[predicate],
+				[intersectid]
+		from	@nodes
+
+
+	insert into @nodes
+		select	D.Object + cast(D.ObjectID as varchar),
+				D.Object,
+				D.ObjectID,
+				D.ObjectTypeName,
+				D.TextPath,
+				D.IconBackColor,
+				D.IconForeColor,
+				null,
+				null
+		from	cache.ObjectDetails D
+		where	Object = @type and ObjectID = @id
+
+	select	(
+			select * from @links for json path			
+			) as 'links',
+			(
+			select * from @nodes for json path			
+			) as 'nodes'
+	for json path, WITHOUT_ARRAY_WRAPPER";
+
+            var list = Company.Query<string>(sql, new {
+                type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+                id
+            });
+
+            var json = string.Join("", list);
+            var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+
+            return new JsonNetResult
+            {
+                Data = obj,
+                Formatting = Formatting.None
+            };
         }
 
         #endregion

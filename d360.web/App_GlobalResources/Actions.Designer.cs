@@ -376,6 +376,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manage Roles.
+        /// </summary>
+        internal static string IntersectRoles {
+            get {
+                return ResourceManager.GetString("IntersectRoles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to tags.
+        /// </summary>
+        internal static string IntersectRoles_Icon {
+            get {
+                return ResourceManager.GetString("IntersectRoles_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Raise Issue.
         /// </summary>
         internal static string Issue {
@@ -417,6 +435,24 @@ namespace Resources {
         internal static string Lineage_Icon {
             get {
                 return ResourceManager.GetString("Lineage_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Predicates.
+        /// </summary>
+        internal static string Predicates {
+            get {
+                return ResourceManager.GetString("Predicates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to map-signs.
+        /// </summary>
+        internal static string Predicates_Icon {
+            get {
+                return ResourceManager.GetString("Predicates_Icon", resourceCulture);
             }
         }
         

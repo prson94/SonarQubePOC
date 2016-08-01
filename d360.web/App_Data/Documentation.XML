@@ -195,6 +195,16 @@
               Looks up a localized string similar to group.
             </summary>
         </member>
+        <member name="P:Resources.Actions.IntersectRoles">
+            <summary>
+              Looks up a localized string similar to Manage Roles.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.IntersectRoles_Icon">
+            <summary>
+              Looks up a localized string similar to tags.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.Issue">
             <summary>
               Looks up a localized string similar to Raise Issue.
@@ -218,6 +228,16 @@
         <member name="P:Resources.Actions.Lineage_Icon">
             <summary>
               Looks up a localized string similar to code-fork.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Predicates">
+            <summary>
+              Looks up a localized string similar to Manage Predicates.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.Predicates_Icon">
+            <summary>
+              Looks up a localized string similar to map-signs.
             </summary>
         </member>
         <member name="P:Resources.Actions.Report_Icon">
@@ -2726,6 +2746,12 @@
         <member name="M:d360.web.Controllers.FormController.FusionAttributeType_EditFields(System.Int32)">
             <param name="id">FusionAttributeTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectRole_DeleteFields(System.Int32)">
+            <param name="id">IntersectRoleID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.IntersectRole_EditFields(System.Int32)">
+            <param name="id">IntersectRoleID</param>
+        </member>
         <member name="M:d360.web.Controllers.FormController.IntersectType_DeleteFields(System.Int32)">
             <param name="id">IntersectTypeID</param>
         </member>
@@ -2936,10 +2962,8 @@
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Synonym_DeleteFields(d360.core.SystemObjects,System.Int32,System.Int32)">
-            <param name="type">Object's Type</param>
+        <member name="M:d360.web.Controllers.FormController.Synonym_DeleteFields(System.Int32)">
             <param name="id">Object's ID</param>
-            <param name="intersectMapID">IntersectMapID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">
             <param name="t">TaxonomyTypeID</param>

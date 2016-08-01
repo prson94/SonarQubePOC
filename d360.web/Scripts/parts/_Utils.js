@@ -102,7 +102,7 @@ function drawKpi(controlID, title, total, available, isPercentage) {
     $(controlID).jqxChart({ colorScheme: 'customColorScheme' });
 }
 
-function TileTools(toolsControlID, tools) {
+function TileTools(toolsControlID, tools, local) {
     $(toolsControlID).addClass('TileTools');
     $(toolsControlID).html('');
 
@@ -120,7 +120,12 @@ function TileTools(toolsControlID, tools) {
     }
 
     $.each(tools, function () {
-        var tool = $("<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
+        var html = "<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'";
+        if (local) {
+            html += " data-local ";
+        }
+        html += "><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>";
+        var tool = $(html);
         if (this.action) {
             tool.data('action', this.action);
             tool.on('click', internalToolClick);

@@ -1229,6 +1229,11 @@ where   h.ID <> @t order by h.[Level] desc;
                     #endregion
                 case SystemObjects.IntersectType:
                     #region Actions
+                    if (Company.CurrentResourceIsAdmin)
+                    {
+                        list.Add(new PageActionItem { Context = ContextList.Predicate, Icon = Resources.Actions.Predicates_Icon, Title = Resources.Actions.Predicates, Uri = "/overlays/predicates" });
+                        list.Add(new PageActionItem { Context = ContextList.IntersectRole, Icon = Resources.Actions.IntersectRoles_Icon, Title = Resources.Actions.IntersectRoles, Uri = "/overlays/intersectroles" });
+                    }
                     if (id > 0)
                     {
                         //list.Add(new PageActionItem { Context = "Allocation", Icon = Resources.Actions.Allocation_Icon, Title = "Allocate Predicates", Uri = string.Format("/form/IntersectTypePredicateEditForm?id={0}", id) });
@@ -3489,66 +3494,6 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
             return model;
         }
 
-        //[Route("{type}/{id:int}/relationshipsAndAttributes/{targetType}/{targetID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        //public List<RelationAttributeValue> GetRelationshipsAndAttributesForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, bool criticalOnly, int intersectTypeID)
-        //{
-        //    //get list of relationships
-        //    var sType = type.ToString();
-        //    var tType = targetType.ToString();
-        //    var rels = Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id && i.TargetType == tType && i.TargetTypeID == targetID && ((i.Classification == IntersectClassification.Critical && criticalOnly) || !criticalOnly));
-
-        //    //get list of attributes
-        //    var attributesList = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID).Select(i => i.AttributeTypeID).ToList();
-
-        //    //build a list of object ids so we dont make tons of queries
-        //    var targetIDList = rels.Select(i => i.IntersectID).ToList();
-            
-        //    var results = Company.Filter<AttributeDetail>(i => 
-        //            targetIDList.Contains(i.ObjectID) && 
-        //            attributesList.Contains(i.AttributeTypeID)
-        //        )
-        //        .Select(t => 
-        //            new RelationAttributeValue {
-        //                AttributeTypeID = t.AttributeTypeID,
-        //                Name = t.Name,
-        //                Value = t.FormattedValue,
-        //                TargetID = t.ObjectID
-        //            })
-        //        .OrderBy(t => t.TargetID)
-        //        .ToList();
-
-        //    return results;
-        //}
-
-        //[Route("{type}/{id:int}/relationships"), HttpPost]
-        //public HttpResponseMessage AddRelationships(SystemObjects type, int id, AddRelationshipsModel model)
-        //{
-        //    HttpResponseMessage msg = null;
-
-        //    try
-        //    {
-        //        Company.AddRelationships(type, id, model.Classification, model.Role, model.Description, model.Targets);
-        //        msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships added successfully.");
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        if (ex.Message.Contains("Cannot insert the value NULL into column 'IntersectID'"))
-        //        {
-        //            msg = Request.CreateErrorResponse(HttpStatusCode.Conflict, string.Format("You do not yet have a relationship type defined for between {0} and {1}.", type.ToString(), model.Targets.First().ObjectType.ToString()), ex);
-        //        }
-        //        else
-        //        {
-        //            msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-        //    }
-
-        //    return msg;
-        //}
-
         [Route("relationships/{id:int}"), HttpDelete]
         public HttpResponseMessage DeleteRelationship(int id)
         {
@@ -3585,29 +3530,7 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
 
             return msg;
         }
-
-        //[Route("relationships/{id:int}"), HttpPut]
-        //public HttpResponseMessage EditRelationship(int id, EditRelationshipModel model)
-        //{
-        //    HttpResponseMessage msg = null;
-
-        //    try
-        //    {
-        //        Company.EditRelationship(id, model.Role, model.Classification, model.Description);
-        //        msg = Request.CreateResponse<string>(HttpStatusCode.Created, "Relationships updated successfully.");
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        msg = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message.Replace(System.Environment.NewLine, " "), ex);
-        //    }
-
-        //    return msg;
-        //}
-       
+    
         #endregion
 
         #region Template Logic
@@ -3973,23 +3896,6 @@ order by    title
         {
             return Company.GetObjectDetail(type, id);
         }
-
-        //[Route("Artifact/{id:int}/artifacts/statistics")]
-        //public List<ChildArtifactStatisticsByObject> GetChildArtifactTileStatistics(int id)
-        //{
-        //    return Company.GetChildArtifactStatisticsByObject(id);
-        //}
-
-        //[Route("{type}/{id:int}/flags")]
-        //public HttpResponseMessage GetFlags(SystemObjects type, int id)
-        //{
-        //    var flag = Company.GetActiveAlertFlagByObject(type, id);
-        //    return Request.CreateResponse(HttpStatusCode.OK, 
-        //        new {
-        //            RedFlagged = (flag != null) ? flag.Active : false, 
-        //            RedFlaggedOn = (flag != null) ? flag.Date : DateTime.MinValue
-        //        });
-        //}
 
         /// <summary>
         /// Used mainly by the client-side search tool.
@@ -6112,12 +6018,6 @@ order by    title
 
             return permissions;
         }
-
-        //[Route("{type}/{id:int}/social/statistics")]
-        //public SocialStatisticsByObject GetSocialTileStatistics(SystemObjects type, int id)
-        //{
-        //    return Company.GetSocialStatisticsByObject(type, id);
-        //}
 
         [Route("{type}/{id:int}/statistics")]
         public IQueryable<StatisticDetail> GetStatisticDetails(SystemObjects type, int id)

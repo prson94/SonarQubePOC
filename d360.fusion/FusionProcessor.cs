@@ -690,6 +690,11 @@ namespace d360.fusion
             await DoFusionAttributeMerge(companyConnection);
             Trace.TraceInformation(string.Format("DoFusionAttributeMerge TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
 
+            // RUN QUERY TO PUT FUSION ATTRIBUTES INTO CACHE
+            sw.Restart();
+            await DoFusionAttributeCache(companyConnection);
+            Trace.TraceInformation(string.Format("DoFusionAttributeCache TOOK\tTIME ELAPSED {0} MS", sw.ElapsedMilliseconds));
+
             // RUN QUERY TO GET FUSION ATTRIBUTE IDS
             sw.Restart();
             await LoadCurrentFusionAttributeInfo(companyConnection);
@@ -1206,6 +1211,39 @@ namespace d360.fusion
                         insert (FusionID, FusionAttributeTypeID, SourceID, Name, Deleted)
                         values (@fus, S.FusionAttributeTypeID, S.SourceID, S.Name, S.Deleted);
                     ", new { fus = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
+
+                trans.Commit();
+            }
+        }
+
+        private async Task DoFusionAttributeCache(SqlConnection companyConnection)
+        {
+            Trace.TraceInformation("INSERTING {0} FUSION ATTRIBUTE IDs TO cache.Object TABLE.", _workArea.FusionAttributeTempValues.Count);
+
+            using (var trans = companyConnection.BeginTransaction())
+            {
+                //merge temp table with fusion attributes table
+                await companyConnection.ExecuteAsync(@"
+merge	cache.[Object] as T
+using	(
+		SELECT	'FusionAttribute' as [Object],
+				ID as ObjectID,
+				'FusionAttributeType' as ObjectType,
+				FusionAttributeTypeID as ObjectTypeID
+		FROM	FusionAttribute
+		where	FusionID = @id
+		) as S
+on		(
+			T.[Object] = S.[Object] and T.[ObjectID] = S.[ObjectID]
+		)
+when matched then
+		update	
+		set		T.ObjectType = S.ObjectType,
+				T.ObjectTypeID = S.ObjectTypeID
+when not matched then
+		insert ( [Object], ObjectID, ObjectType, ObjectTypeID )
+		values ( S.[Object], S.ObjectID, S.ObjectType, S.ObjectTypeID );", 
+        new { id = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                 trans.Commit();
             }

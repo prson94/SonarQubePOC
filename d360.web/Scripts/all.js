@@ -44273,6 +44273,533 @@ function MapSelectionModel(data) {
 
 function LineagePanelViewModel(data, permissions) {
     var self = this;
+
+    self.Object = ko.observable(data.object || '');
+    self.ObjectID = ko.observable(data.objectID || 0);
+
+    self.Items = ko.observableArray([]);
+
+    self.IsSaving = ko.observable(false);
+    self.IsLoading = ko.observable(false);
+
+    self.AddItem = function () {
+        self.Items.push(new LineagePanelViewModelLine({}, permissions, self));
+    }
+
+    self.Save = function () {
+        if (self.Items().length > 0) {
+            var deferred = $.Deferred();
+
+            self.IsSaving(true);
+
+            var items = [];
+
+            for (var i = 0; i < self.Items().length; i++) {
+                var item = self.Items()[i];
+
+                var subject = item.SourceObjects()[item.SourceObjectIndex()].value.split('|')//item.Subject().split('|')
+                var object = item.TargetObjects()[item.TargetObjectIndex()].value.split('|')//item.Object().split('|')
+
+                items.push({
+                    Position: i,
+                    IntersectTypeID: item.TargetIntersectTypeID(),
+                    Subject: subject[0],
+                    SubjectID: subject[1],
+                    Object: object[0],
+                    ObjectID: object[1]
+                });
+            }
+
+            var successfulItems = [];
+
+            if (items.length > 0) {
+                $.ajax({
+                    url: '/form/Lineage_AddItemsToDiagram',
+                    method: 'POST',
+                    data: { Items: items }
+                }).done(function (returnedItems) {
+                    if (returnedItems == null) {
+                        //self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclamation-circle"></i> An error occurred while saving the source rules.</span>');
+                    } else {
+                        //self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>');
+                        $.each(returnedItems, function (returnedItemIndex, returnedItem) {
+                            if (returnedItem.ErrorMessage) {
+
+                            }
+                            else {
+                                var model = self.Items()[returnedItem.Position];
+                                //model.Intersect(returnedItem.IntersectID);
+                                //items[returnedItem.Position].IntersectID = returnedItem.IntersectID;
+                                //returnedItem.Name = model.SourceName();
+                                successfulItems.push(returnedItem);
+                            }
+                        });
+
+                    }
+                }).always(function () {
+                    self.IsSaving(false);
+                    deferred.resolve(successfulItems);
+                });
+            }
+
+            return deferred.promise();
+        }
+    }
+
+
+    self.AddItem();
+}
+
+function LineagePanelViewModelLine(data, permissions, parent) {
+    var self = this;
+
+    self.SourceTypes = ko.observableArray([]);
+    self.TargetTypes = ko.observableArray([]);
+    self.SourceTypeIndex = ko.observable(-1);
+    self.TargetTypeIndex = ko.observable(-1);
+    self.SourceIntersectTypeID = ko.observable(-1);
+    self.TargetIntersectTypeID = ko.observable(-1);
+
+    self.SourceObjects = ko.observableArray([]);
+    self.TargetObjects = ko.observableArray([]);
+    self.SourceObjectIndex = ko.observable(-1);
+    self.TargetObjectIndex = ko.observable(-1);
+
+    self.IsSaving = ko.observable(false);
+    self.IsLoading = ko.observable(false);
+
+    self.Items = ko.observableArray([]);
+
+    //self.Items.push(new LineagePanelViewModelLineItem({}, permissions, parent));
+
+    //self.Advanced = ko.observable(false);
+
+    self.ShowAdvanced = ko.observable("hide");
+    self.HasLoadedItems = ko.observable(false);
+    self.ShowAdd = ko.observable(false);
+
+    self.AddSourceItems = ko.observableArray([]);
+    self.AddTargetItems = ko.observableArray([]);
+    self.AddSourceIndex = ko.observable(-1);
+    self.AddTargetIndex = ko.observable(-1);
+
+
+    
+
+    self.AddNewItem = function () {
+        var item = self.AddSourceItems()[self.AddSourceIndex()];
+        var item2 = self.AddTargetItems()[self.AddTargetIndex()];
+        //console.log(item);
+        
+        item.Object = item2.Source;
+        item.objectID = item2.SourceID;
+        item.ObjectName = item2.SourceName;
+
+        self.Items.push(new LineagePanelViewModelLineItem(item, permissions, self));
+        self.HasLoadedItems(true);
+        self.AddCancel();
+    }
+
+    self.AddCancel = function () {
+        self.ShowAdd(false);
+        self.AddSourceIndex = ko.observable(-1);
+        self.AddTargetIndex = ko.observable(-1);
+    }
+
+    self.SetShowAdd = function () {
+        self.LoadSubjects();
+        self.LoadObjects();
+        self.ShowAdd(true);
+    }
+
+    self.SourceTypeIndex.subscribe(function () {
+        self.SourceObjectIndex(-1);
+        self.SourceObjects([]);
+
+        var source;
+        if (self.SourceTypeIndex() >= 0 && self.SourceTypes().length > 0)
+            source = self.SourceTypes()[self.SourceTypeIndex()];
+
+        if (source) {
+            var type = source.value.split('|')[0];
+            var id = source.value.split('|')[1];
+            self.SourceIntersectTypeID(source.intersectTypeID);
+            self.LoadTargetTypes(type, id);
+        }
+    });
+
+    self.TargetTypeIndex.subscribe(function () {
+        self.TargetIntersectTypeID(-1);
+        self.TargetObjectIndex(-1);
+        self.TargetObjects([]);
+        var intersect;
+        if (self.TargetTypeIndex() >= 0 && self.TargetTypes().length > 0)
+            intersect = self.TargetTypes()[self.TargetTypeIndex()].intersectTypeID;
+        if (intersect) {
+            self.TargetIntersectTypeID(intersect);
+        } else {
+            self.TargetIntersectTypeID(-1);
+        }
+    });
+
+    self.TargetIntersectTypeID.subscribe(function () {
+        if (self.TargetIntersectTypeID() >= 0) {
+            self.LoadTargetObjects(self.TargetIntersectTypeID());
+            //console.log('target intersect ID: ' + self.TargetIntersectTypeID());
+            //get targets
+        }
+    });
+
+    self.SourceIntersectTypeID.subscribe(function () {
+        if (self.SourceIntersectTypeID() >= 0) {
+            self.LoadSourceObjects(self.SourceIntersectTypeID());
+            //console.log('source intersect ID: ' + self.SourceIntersectTypeID());
+            //get sources
+        }
+    });
+
+    self.TargetObjectIndex.subscribe(function () {
+        self.LoadSharedObjects();
+    });
+    self.SourceObjectIndex.subscribe(function () {
+        self.LoadSharedObjects();
+    });
+
+
+    self.SetShowAdvanced = function () {
+        self.ShowAdvanced("show");
+    }
+
+    self.SetHideAdvanced = function () {
+        self.LoadSharedObjects();
+        self.ShowAdvanced("hide");
+    }
+
+
+    self.GetLoadData = function () {
+        var data = {};
+
+        if (self.TargetIntersectTypeID() < 0 || self.SourceObjectIndex() < 0 || self.TargetObjectIndex() < 0 || self.SourceTypeIndex() < 0 || self.TargetTypeIndex() < 0)
+            return null;
+        if (self.SourceObjects().length < 1 || self.TargetObjects().length < 1)
+            return null;
+        if (self.SourceTypes().length < 1 || self.TargetTypes().length < 1)
+            return null;
+
+
+        var source = self.SourceObjects()[self.SourceObjectIndex()];
+        var target = self.TargetObjects()[self.TargetObjectIndex()];
+        var sourceType = self.SourceTypes()[self.SourceTypeIndex()];
+        var targetType = self.SourceTypes()[self.TargetTypeIndex()];
+
+        if (!source || !target || !sourceType || !targetType)
+            return null;
+
+        data.source = source.value.split('|')[0];
+        data.sourceID = source.value.split('|')[1];
+        data.target = target.value.split('|')[0];
+        data.targetID = target.value.split('|')[1];
+        data.sourceType = sourceType.value.split('|')[0];
+        data.sourceTypeID = sourceType.value.split('|')[1];
+        data.targetType = targetType.value.split('|')[0];
+        data.targetTypeID = targetType.value.split('|')[1];
+
+        return data;
+    }
+
+    self.LoadSharedObjects = function () {
+        var data = {};
+        self.Items([]);
+        //self.AddSourceItems([]);
+        //self.AddTargetItems([]);
+        //self.AddSourceIndex(-1);
+        //self.AddTargetIndex(-1);
+
+        data = self.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: '/form/Lineage_IntersectSharedObjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+                self.HasLoadedItems(true);
+            } else {
+                self.HasLoadedItems(false);
+            }
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+
+    self.LoadSubjects = function () {
+        var data = {};
+        //self.Items([]);
+        self.AddSourceItems([]);
+        //self.AddTargetItems([]);
+        self.AddSourceIndex(-1);
+        //self.AddTargetIndex(-1);
+
+        data = self.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: '/form/Lineage_IntersectSubjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                self.AddSourceItems(data);
+                for (var i = 0; i < data.length; i++) {
+                   
+                    //self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(data);
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+            }
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadObjects = function () {
+        var data = {};
+        //self.Items([]);
+        //self.AddSourceItems([]);
+        self.AddTargetItems([]);
+        //self.AddSourceIndex(-1);
+        self.AddTargetIndex(-1);
+
+        data = self.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: '/form/Lineage_IntersectObjects',
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                self.AddTargetItems(data);
+                for (var i = 0; i < data.length; i++) {
+                    //self.Items.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddSourceItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                    //self.AddTargetItems.push(new LineagePanelViewModelLineItem(data[i], permissions, self));
+                }
+            }
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.AddItem = function () {
+        self.Items.push(new LineagePanelViewModelLineItem({}, permissions, self));
+    }
+
+    self.LoadSourceTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypeSources',
+            method: 'GET'
+        }).done(function (data) {
+            self.SourceTypes(data);
+            self.SourceTypeIndex(-1);
+            //console.log(data); 
+        }).always(function () {
+            self.IsLoading(false);
+            self.AddItem();
+        });
+    }
+
+    self.LoadTargetTypes = function (type, id) {
+        self.IsLoading(true);
+        self.TargetTypeIndex(-1);
+        $.ajax({
+            url: '/form/Lineage_IntersectTypeSources',
+            method: 'GET'
+        }).done(function (data) {
+            self.TargetTypes(data);
+
+            if (self.TargetTypes().length == 1)
+                self.TargetTypeIndex(0);
+            else
+                self.TargetTypeIndex(-1);
+            //console.log(data);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSourceObjects = function (intersectID) {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.SourceIntersectTypeID() },
+            method: 'GET'
+        }).done(function (data) {
+            self.SourceObjects(data);
+            self.SourceObjectIndex(-1);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadTargetObjects = function (intersectID) {
+        self.IsLoading(true);
+        $.ajax({
+            url: '/form/Lineage_MapSubjects',
+            data: { id: self.TargetIntersectTypeID() },
+            method: 'GET'
+        }).done(function (data) {
+            self.TargetObjects(data);
+            self.TargetObjectIndex(-1);
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+    self.LoadSourceTypes();
+
+    //self.AddItem
+}
+
+function LineagePanelViewModelLineItem(data, permissions, parent) {
+    var self = this;
+
+    self.Sources = ko.observableArray([]);
+    self.Targets = ko.observableArray([]);
+
+    self.NewItems = ko.observableArray([]);
+    self.NewItemIndex = ko.observable(-1);
+
+    self.AddMode = ko.observable('');
+
+    self.AddingItem = ko.observable({});
+    self.IsLoading = ko.observable(false);
+
+    self.AddSource = function () {
+        var item = self.NewItems()[self.NewItemIndex()];
+
+        item.IntersectID = item.SourceIntersectID;
+        item.Object = item.Source;
+        item.ObjectID = item.SourceID;
+        item.ObjectName = item.SourceName;
+
+        self.Sources.push(new LineagePanelViewModelItem(item, permissions, self));
+        self.AddMode('');
+        self.AddingItem({});
+    }
+    self.AddTarget = function () {
+        var item = self.NewItems()[self.NewItemIndex()];
+
+        item.IntersectID = item.SourceIntersectID;
+        item.Object = item.Source;
+        item.ObjectID = item.SourceID;
+        item.ObjectName = item.SourceName;
+
+        self.Targets.push(new LineagePanelViewModelItem(item, permissions, self));
+        self.AddMode('');
+        self.AddingItem({});
+    }
+
+    self.AddCancel = function () {
+        self.AddMode('');
+        self.AddingItem({});
+    }
+
+    self.ShowAddSource = function () {
+        self.AddMode('source');
+        self.LoadItems();
+    }
+
+    self.ShowAddTarget = function () {
+        self.AddMode('target');
+        self.LoadItems();
+    }
+
+
+    self.LoadItems = function () {
+        var data = {};
+        self.NewItems([]);
+        self.NewItemIndex(-1);
+        var url = '/form/Lineage_IntersectSubjects';
+
+        if (self.AddMode() == 'target')
+            url = '/form/Lineage_IntersectObjects';
+
+        
+        data = parent.GetLoadData();
+
+        if (data == null)
+            return;
+
+        $.ajax({
+            url: url,
+            data: data,
+            method: 'GET'
+        }).done(function (data) {
+            if (data && data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    item.value = data[i].SourceID + '|' + data[i].Source;
+                }
+
+                self.NewItems(data);
+            }
+        }).always(function () {
+            self.IsLoading(false);
+        });
+    }
+
+
+    if (data) {
+
+        var source = {
+            Object: data.Source,
+            ObjectID: data.SourceID,
+            ObjectName: data.SourceName,
+            IntersectID: data.SourceIntersectID
+        };
+
+        var target = data;
+        target.IntersectID = data.ObjectIntersectID;
+
+        self.Sources.push(new LineagePanelViewModelItem(source, permissions, self));
+        self.Targets.push(new LineagePanelViewModelItem(target, permissions, self));
+
+
+        self.LoadItems();
+    }
+}
+
+function LineagePanelViewModelItem(data, permissions, parent) {
+    var self = this;
+    self.IntersectID = ko.observable(data.IntersectID || 0);
+    self.Object = ko.observable(data.Object || '');
+    self.ObjectID = ko.observable(data.ObjectID || 0);
+    self.ObjectName = ko.observable(data.ObjectName || '');
+}
+
+
+//#region Old
+
+function LineagePanelViewModel_Old(data, permissions) {
+    var self = this;
     self.jqxLoaded = false;
 
     //#region Observables
@@ -44463,6 +44990,8 @@ function LineagePanelViewItemModel(data, permissions, parent) {
 
     return self;
 }
+
+//#endregion
 
 //#endregion
 
@@ -50667,14 +51196,52 @@ function renderSearchTypesDropdown(controlID) {
                                 break;
 
                                 //#endregion
+                            
                             default: //String, Text
-                                //#region Text Field Management
-
+                                //#region Text Field Management                                
                                 addLabel(cpnl, v, false);
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" />');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" ' + (v.TypeaheadUri ? '  autocomplete="off"' : '') +'/>');
                                 fld.val($('<div/>').html(cleanedValue).text());
-                                fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
+
+                                if (!v.TypeaheadUri) {
+                                    fld.jqxInput({ disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height });
+                                }
+                                else {
+                                    fld.jqxInput({
+                                        disabled: v.ReadOnly, theme: theme, width: field_width, height: field_height,
+                                        source: function (query, response) {
+                                            var dataAdapter = new $.jqx.dataAdapter
+                                            (
+                                                {
+                                                    dataType: 'json',
+                                                    url: v.TypeaheadUri,
+                                                    data:
+                                                    {                                                        
+                                                        maxRows: 12
+                                                    }
+                                                },
+                                                {
+                                                    autoBind: true,
+                                                    formatData: function (data) {
+                                                        data.startsWith = query;                                                        
+                                                        return data;
+                                                    },
+                                                    loadComplete: function (data) {
+                                                        if (data.length > 0) {
+                                                            response($.map(data, function (item) {
+                                                                return {
+                                                                    label: item,
+                                                                    value: item
+                                                                }
+                                                            }));
+                                                        }
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    });
+                                }
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);
@@ -51341,7 +51908,6 @@ function renderSearchTypesDropdown(controlID) {
         url: null,
         dataFields: [
             { name: 'IntersectID' },
-            { name: 'IntersectMapID' },
             { name: 'Object' },
             { name: 'ObjectID' },
             { name: 'Name' },
@@ -51554,7 +52120,7 @@ function renderSearchTypesDropdown(controlID) {
 
                                 tools.push({ isitemlink: true, urlprefix: data.Url, type: data.Object, id: data.ObjectID, context: 'Preview' });
                                 if (CanDelete) {
-                                    tools.push({ icon: 'trash-o', urlprefix: 'form/DeleteSynonym?type=' + data.Object + '&id=' + data.ObjectID + '&intersectMapID=' + data.IntersectMapID });
+                                    tools.push({ icon: 'trash-o', urlprefix: 'form/DeleteSynonym?id=' + data.IntersectID });
                                 }
                                 return renderToolsHtml(value, tools, contextList.Synonym, data);
                             }
@@ -57031,6 +57597,7 @@ function LookupTypeItemsGrid(controlID, contextList, permissions, id) {
 function NewLineageDiagram(controlID, type, id, readonly) {
     var originalObject = type;
     var originalObjectID = id;
+    var viewID = 1;
     var fullscreen = false;
     var selectedData = null;
     var permissions = new PermissionsModel();
@@ -57047,6 +57614,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     var ribbon_button_width = 58;
     var ribbon_button_height = "90%";
+
+    var controlID_splitter = controlID + '_splitter';
 
     var controlID_header = controlID + "_header";
     var controlID_wrapper = controlID + '_wrapper';
@@ -57112,6 +57681,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_ribbon_maprule_cancel = controlID + '_ribbon_maprule_cancel';
     var controlID_ribbon_maprule_save = controlID + '_ribbon_maprule_save';
 
+    var controlID_ribbon_view_1 = controlID + '_ribbon_view_1';
+    var controlID_ribbon_view_2 = controlID + '_ribbon_view_2';
+    var controlID_ribbon_view_3 = controlID + '_ribbon_view_3';
+
     var controlID_popover_add = controlID + '_popover_add';
 
     var controlID_popover_lineage_editor = controlID + '_popover_lineage_editor';
@@ -57148,6 +57721,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#region Control instantiation
 
+    //$('#' + controlID_splitter).jqxSplitter({ theme: theme, width: '100%', height: '100%', panels: [ { size: '80%', collapsible: false } ]});
+
     $("#" + controlID_tabs).jqxTabs({ theme: theme, animationType: 'fade', selectionTracker: true }).on('tabclick',function(event) {
         var index = event.args.item;
         loadTab(index);
@@ -57158,7 +57733,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
     $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64, disabled: false });
     $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
     $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
@@ -57170,8 +57745,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID_ribbon_lineage_addItem).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_lineage_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
-    $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
-    $("#" + controlID_ribbon_maprule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_multimaprule).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true }).hide();
+    $("#" + controlID_ribbon_maprule).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true }).hide();
     $('#' + controlID_ribbon_maprule_add).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_maprule_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_maprule_save).jqxButton({ theme: theme, height: "100%", width: 64 });
@@ -57183,6 +57758,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
 
     //$('#' + controlID_info_detail).MapItems();
+
+    $('#' + controlID_ribbon_view_1).jqxRadioButton({ theme: theme, checked: true });
+    $('#' + controlID_ribbon_view_2).jqxRadioButton({ theme: theme, checked: false });
+    $('#' + controlID_ribbon_view_3).jqxRadioButton({ theme: theme, checked: false });
 
     //#endregion
 
@@ -57379,7 +57958,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
-       toggleFullscreen();
+        toggleFullscreen();
     });
 
     $('#' + controlID_ribbon_save).on('click', function () {
@@ -57463,6 +58042,41 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         }
     });
 
+
+    $('#' + controlID_ribbon_view_1).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 1;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $("#" + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_2).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_3).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+    $('#' + controlID_ribbon_view_2).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 2;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_1).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_3).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+    $('#' + controlID_ribbon_view_3).on('change', function (event) {
+        var isChecked = event.args.checked;
+        if (isChecked) {
+            viewID = 3;
+            $("#" + controlID_ribbon_maprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_multimaprule).jqxButton({ disabled: true });
+            $('#' + controlID_ribbon_view_1).jqxRadioButton('uncheck');
+            $('#' + controlID_ribbon_view_2).jqxRadioButton('uncheck');
+            populateDiagram();
+        }
+    });
+
     //#endregion
 
     $('#' + controlID_overlay_predicates).on('change', function (e) {
@@ -57509,119 +58123,81 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         dataType: "json",
         url: null,
         dataFields: [
-            { name: 'MapID' },
+            { name: 'MapItemID' },
+            { name: 'SourceType' },
+            { name: 'SourceName' },
+            { name: 'Source' },
             { name: 'SourceID' },
+            { name: 'SourceFusion' },
+            { name: 'SourceFusionAttribute' },
+            { name: 'SourceFusionAttributeType' },
+            { name: 'TargetType' },
+            { name: 'TargetName' },
+            { name: 'Target' },
             { name: 'TargetID' },
-            { name: 'SourceIntersectID' },
-            { name: 'SourceSubjectName' },
-            { name: 'SourceSubjectIconHtml' },
-            { name: 'SourceSubject' },
-            { name: 'SourceSubjectID' },
-            { name: 'SourceSubjectUrl' },
-            { name: 'SourceObjectName' },
-            { name: 'SourceObjectIconHtml' },
-            { name: 'SourceObject' },
-            { name: 'SourceObjectID' },
-            { name: 'SourceObjectUrl' },
-            { name: 'TargetIntersectID' },
-            { name: 'TargetSubjectName' },
-            { name: 'TargetSubjectIconHtml' },
-            { name: 'TargetSubject' },
-            { name: 'TargetSubjectUrl' },
-            { name: 'TargetSubjectID' },
-            { name: 'TargetObjectName' },
-            { name: 'TargetObjectIconHtml' },
-            { name: 'TargetObject' },
-            { name: 'TargetObjectUrl' },
-            { name: 'TargetObjectID' },
-            { name: 'Transformation' }
+            { name: 'TargetFusion' },
+            { name: 'TargetFusionAttribute' },
+            { name: 'TargetFusionAttributeType' }
         ]
     };
 
     var mapItemsAdapter = new $.jqx.dataAdapter(mapItemsSource);
 
-    $('#' + controlID_info_detail).jqxGrid({
+    $('#' + controlID_mappingrules_content).jqxGrid({
         source: mapItemsAdapter,
-        width: overlay_grid_width,
-        pagesizeoptions: ['5', '10', '20'],
-        pagesize: 5,
-        autoheight: true,
-        autorowheight: true,
-        sortable: true,
         altrows: true,
-        showfilterrow: true,
+        width: overlay_grid_width,
+        autoheight: true,
+        sortable: true,
         filterable: true,
-        pageable: false,
-        theme: 'flat',
-        autoshowloadelement: false,
+        showfilterrow: false,
+        pagesize: 5,
+        pageable: true,
+        pagermode: "simple",
         selectionmode: 'none',
+        autorowheight: true,
+        theme: list_theme,
         columngroups: [
-            { text: 'Source', align: 'left', name: 'S' },
-            { text: 'Target', align: 'left', name: 'T' }
+            { text: 'Source', name: 'S' },
+            { text: 'Target', name: 'T' }
         ],
         columns: [
-            //{ 
-            //  datafield: "SourceSubjectIconHtml", 
-            //  text: "", 
-            //  columngroup: "S", 
-            //  width: "30px" 
-            //},
-            //{
-            //  datafield: "SourceSubjectName", 
-            //  text: "Subject", 
-            //  columngroup: "S", 
-            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //      return previewLinkRenderer(data.SourceSubject, data.SourceSubjectID, data.SourceSubjectUrl, data.SourceSubjectName);
-            //  }
-            //},
             {
-                datafield: "SourceObjectIconHtml",
-                text: "",
-                filterable: false,
-                width: "30px"//,
-                //columngroup: "S"
-            },
-            {
-                datafield: "SourceObjectName",
-                text: "Source",
+                datafield: "Source",
+                columngroup: "S",
+                text: "Business",
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return previewLinkRenderer(data.SourceObject, data.SourceObjectID, data.SourceObjectUrl, data.SourceObjectName);
-                }//,
-                //columngroup: "S"
-            },
-            //{ 
-            //  datafield: "TargetSubjectIconHtml", 
-            //  text: "", 
-            //  columngroup: "T", 
-            //  width: "30px" 
-            //},
-            //{
-            //  datafield: "TargetSubjectName", 
-            //  text: "Subject", 
-            //  columngroup: "T", 
-            //  cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-            //      return previewLinkRenderer(data.TargetSubject, data.TargetSubjectID, data.TargetSubjectUrl, data.TargetSubjectName);
-            //  }
-            //},
-            {
-                datafield: "TargetObjectIconHtml",
-                text: "",
-                filterable: false,
-                width: "30px"//,
-               // columngroup: "T"
+                    return '<span style="margin: 3px 0px 3px 0px"><b>' + data.SourceName + '</b><br/>' + data.SourceType + '</span>';
+                }
             },
             {
-                datafield: "TargetObjectName",
-                text: "Target",
+                datafield: "SourceID",
+                columngroup: "S",
+                text: "Technical",
                 cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                    return previewLinkRenderer(data.TargetObject, data.TargetObjectID, data.TargetObjectUrl, data.TargetObjectName);
-                }//,
-                //columngroup: "T"
+                    return '<span style="margin: 3px 0px 3px 0px">' + data.SourceFusion + '<br/>' + data.SourceFusionAttributeType + '<br/>' + data.SourceFusionAttribute + '</span>';
+                }
+            },
+            {
+                datafield: "Target",
+                columngroup: "T",
+                text: "Business",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return '<span style="margin: 3px 0px 3px 0px"><b>' + data.TargetName + '</b><br/>' + data.TargetType + '</span>';
+                }
+            },
+            {
+                datafield: "TargetID",
+                columngroup: "T",
+                text: "Technical",
+                cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                    return '<span style="margin: 3px 0px 3px 0px">' + data.TargetFusion + '<br/>' + data.TargetFusionAttributeType + '<br/>' + data.TargetFusionAttribute + '</span>';
+                }
             }
         ]
     });
 
-    $('#' + controlID_info_detail).on('bindingcomplete', mappingBindingComplete);
+    $('#' + controlID_mappingrules_content).on('bindingcomplete', mappingBindingComplete);
 
     //#endregion
 
@@ -57798,7 +58374,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     };
 
     function mappingBindingComplete(event) {
-        $('#' + controlID_info_detail).jqxGrid('autoresizecolumns');
+        $('#' + controlID_mappingrules_content).jqxGrid('autoresizecolumns');
     }
 
     function cancelAddLink() {
@@ -57883,8 +58459,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return {
             id: null,
             key: null,
-            //intersectTypeId: null,
-
+            Category: '',
             from: null,
             fromIntersectId: 0,
             fromPortId: "OUT",
@@ -57894,8 +58469,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             toPortId: "IN",
 
             text: null,
-            intersectRoleId: null,
-            //isDeletable: true,
+            //intersectRoleId: null,
             diagramObjectType: "Link",
             sourceMappingCount: 0,
             hasMappingRules: false,
@@ -57913,11 +58487,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             objid: null,
             name: null,
             typeName: null,
-            //objecttype: null,
-            //objecttypeid: null,
             back: null,
             fore: null,
-            //isDeletable: true,
             highlightColor: null,
             diagramObjectType: "Node",
             template: "Artifact",
@@ -57934,7 +58505,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             hasOpenIssues: false,
             transformationCount: 0,
             hasTransformations: false,
-            mapItems: null
+            mapItems: null,
+            other: null
         };
     };
 
@@ -58103,11 +58675,13 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     }
 
     function htmlDecode(s) {
-        return s.replace(/&#39;/g, '\'');
-        //.replace(/&amp;/g, '&')
-          //.replace(/&lt;/g, '<')
-          //.replace(/&gt;/g, '>')
-          //.replace(/&#34;/g, '"');
+        s = s.replace(/&#39;/g, '\'');
+        s = s.replace(/&amp;/g, '&')
+        s = s.replace(/&lt;/g, '<')
+        s = s.replace(/&gt;/g, '>')
+        s = s.replace(/&#34;/g, '"');
+
+        return s;
     }
 
     function initializeDiagram() {
@@ -58171,88 +58745,8 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return panel;
     }
 
-    function makeTemplate(obj, w, h, borderColor, fontSize, inports, outports) {//, alignment) {
-
-        //if (!alignment) alignment = go.Spot.Center;
-
-        var node = g(go.Node, "Spot",
-        {
-            mouseEnter: mouseEnter,
-            mouseLeave: mouseLeave
-        },
-        g(go.Panel, "Auto", {
-            width: w,
-            height: h
-        },
-        g(go.Shape, "RoundedRectangle", {
-            stroke: borderColor,
-            strokeWidth: 2,
-            spot1: go.Spot.TopLeft,
-            spot2: go.Spot.BottomRight,
-            name: "NodeShape"
-        },
-        new go.Binding("fill", "back").makeTwoWay()
-       ),
-        g(go.Panel,
-            go.Panel.Horizontal,
-            {
-                alignment: go.Spot.BottomLeft,
-                margin: 5
-            },
-            makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", fontSize),
-            makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", fontSize),
-            makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", fontSize),
-            makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", fontSize),
-            makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", fontSize),
-            makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", fontSize),
-            makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", fontSize)
-        ),
-        g(go.Panel, "Table",
-            g(go.TextBlock, {
-                row: 0,
-                margin: 3,
-                alignment: go.Spot.Top,
-                editable: false,
-                maxSize: new go.Size(w - 20, h - 10),
-                font: "bold " + fontSize + "pt sans-serif"
-            },
-                new go.Binding("text", "name").makeTwoWay(),
-                new go.Binding("stroke", "fore").makeTwoWay()
-            ),
-            g(go.TextBlock, {
-                row: 1,
-                margin: 3,
-                maxSize: new go.Size(180, NaN),
-                font: (fontSize - 2) + "pt sans-serif"
-            },
-                new go.Binding("stroke", "fore").makeTwoWay(),
-                new go.Binding("text", "typeName").makeTwoWay()
-            )//,
-            //g(go.TextBlock, {
-            //    row: 2,
-            //    margin: 3,
-            //    maxSize: new go.Size(180, NaN),
-            //    font: "bold 10pt sans-serif"
-            //},
-            //    new go.Binding("text", "role").makeTwoWay(),
-            //    new go.Binding("stroke", "fore").makeTwoWay()
-            //)
-        )),
-        g(go.Panel, "Vertical", {
-            alignment: go.Spot.Left,
-            alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-        },
-        inports),
-        g(go.Panel, "Vertical", {
-            alignment: go.Spot.Right,
-            alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-        },
-        outports));
-
-        myDiagram.nodeTemplateMap.add(obj, node);
-    }
-
     function makeIconPanel(icon, tooltip, binding, fontSize) {
+        fontSize -= 2;
         var iconPanel = g(go.Panel,
          "Auto",
          {
@@ -58404,6 +58898,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         setTimeout(function () {
             myDiagram.requestUpdate();
             myDiagram.focus();
+            //$('#' + controlID_splitter).jqxSplitter('refresh');
         }, 0);
     }
 
@@ -58419,7 +58914,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             //$("#" + controlID_info).jqxExpander('collapse');
             //$("#" + controlID_info_body).html(defaultInfo);
             //$("#" + controlID_info_detail_wrapper).hide();
-            //$("#" + controlID_info_detail).html('');
+            $("#" + controlID_info_detail).html('');
 
             $('#' + controlID_tabs).hide(delay);
             for (var i = 0; i < tabs.length; i++) {
@@ -58428,11 +58923,12 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         } else {
             $('#' + controlID_tabs).show(delay);
+
             if (data.diagramObjectType == 'Node') {
                 first = tabs["responsibilities"];
 
                 //$("#" + controlID_info_detail_wrapper).hide();
-                //$("#" + controlID_info_detail).html('');
+                $("#" + controlID_info_detail).html('');
 
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
                 $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
@@ -58451,20 +58947,20 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
 
-                //$.ajax({
-                //    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
-                //    async: true
-                //}).done(function (data) {
-                //    $('#' + controlID_info_body).html(data);
-                //    $("#" + controlID_info).jqxExpander('expand');
-                //}).fail(function () {
-                //    $('#' + controlID_info_body).html(errorInfo);
-                //    $("#" + controlID_info).jqxExpander('collapse');
-                //});
+                $.ajax({
+                    url: '/resources/' + data.obj + '/' + data.objid + '/templates/tooltip/Preview',
+                    async: true
+                }).done(function (data) {
+                    $('#' + controlID_info_detail).html(data);
+                    $("#" + controlID_info).jqxExpander('expand');
+                }).fail(function () {
+                    $('#' + controlID_info_body).html(errorInfo);
+                    $("#" + controlID_info).jqxExpander('collapse');
+                });
 
                 if (data.hasMappingRules) {
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
                 } else { 
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
@@ -58534,16 +59030,16 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
 
-                if (data.hasMappingRules) {
+               // if (data.hasMappingRules) {
 
                     first = tabs["mappingrules"];
 
                     $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    $("#" + controlID_mappingrules_content).html(defaultTabContent);
+                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
                     first = tabs["mappingrules"];
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
-                }
+                //} else {
+                //    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
+                //}
 
                 if (to.hasSourceRules) {
                     if (first == -1)
@@ -58622,25 +59118,34 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 });
                 break;
             case tabs["mappingrules"]:
-                if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
-                    return;
-                }
-                url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
-                if (selectedData.diagramObjectType != 'Node') {
-                    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
-                }
 
-                $.ajax({
-                    url: url
-                }).done(function (data) {
-                    for (var i = 0; i < data.items.length; i++) {
-                        data.items[i].index = i + 1;
-                    }
-                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
-                }).fail(function () {
-                    $('#' + controlID_mappingrules_content).html(defaultTabContent);
-                });
+                if (from.template !== "Fusion" && to.template !== "Fusion") {
+                    mapItemsSource.url = '/api/maps/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/mapitems';
+                }
+                else {
+                    mapItemsSource.url = null;
+                }
+                $('#' + controlID_mappingrules_content).jqxGrid('updatebounddata');
+
+                //if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
+                //    return;
+                //}
+                //url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
+                //if (selectedData.diagramObjectType != 'Node') {
+                //    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
+                //}
+
+                //$.ajax({
+                //    url: url
+                //}).done(function (data) {
+                //    for (var i = 0; i < data.items.length; i++) {
+                //        data.items[i].index = i + 1;
+                //    }
+                //    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
+                //    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
+                //}).fail(function () {
+                //    $('#' + controlID_mappingrules_content).html(defaultTabContent);
+                //});
                 break;
         }
     }
@@ -58871,12 +59376,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     $('#' + controlID_header).text('Lineage: ' + htmlDecode(d.name));
                 }
 
-                model.template = isFocalPoint ? "FocalArtifact" : "Artifact";
+                model.template = d.template;// isFocalPoint ? "Focal" : "Normal";
                 model.key = d.key;
                 model.obj = d.obj;
                 model.objid = d.objid;
-                //model.objecttype = d.objecttype;
-                //model.objecttypeid = d.objecttypeid;
                 model.type = d.obj;
                 model.name = htmlDecode(d.name);
                 model.typeName = d.typeName;
@@ -58889,15 +59392,18 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                 model.mappingRuleCount = d.mappingRuleCount;
                 model.hasSourceRules = (d.sourceRuleCount > 0);
                 model.hasMappingRules = (d.mappingRuleCount > 0);
-                model.challengeCount = d.challengeCount;
-                model.hasChallenges = (d.challengeCount > 0);
+                model.challengeCount = d.challenges;
+                model.hasChallenges = (d.challenges > 0);
                 model.openEventCount = d.openEventCount;
                 model.hasOpenEvents = (d.openEventCount > 0);
-                model.openIssueCount = d.openIssueCount;
-                model.hasOpenIssues = (d.openIssueCount > 0);
+                model.openIssueCount = d.issues;
+                model.hasOpenIssues = (d.issues > 0);
                 model.hasTransformations = (d.transformationCount > 0);
 
                 model.mapItems = d.mapItems;
+
+                if (d.other)
+                    model.other = htmlDecode(d.other);
 
                 modelList.push(model);
             }
@@ -58907,15 +59413,17 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             for (var i = 0; i < data.links.length; i++) {
                 var d = data.links[i];
                 var link = createLinkModel();
-                link.id = d.id;
+                //myDiagram.model.setCategoryForLinkData(link, d.category);
+                //link.id = d.id;
                 //link.intersectTypeId = d.intersectTypeId;
-                link.key = d.id;
+                //link.key = d.id;
+                link.Category = d.category;
                 link.from = d.from;
-                link.fromIntersectId = d.fromIntersectId;
+                //link.fromIntersectId = d.fromIntersectId;
                 link.to = d.to;
-                link.toIntersectId = d.toIntersectId;
-                link.text = d.role;
-                link.intersectRoleId = d.intersectRoleId;
+                //link.toIntersectId = d.toIntersectId;
+                //link.text = d.role;
+                //link.intersectRoleId = d.intersectRoleId;
                 link.diagramObjectType = "Link";
                 link.sourceMappingCount = d.mappingRuleCount;
                 link.hasMappingRules = (d.mappingRuleCount > 0);
@@ -58929,8 +59437,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         for (var i = 0; i < modelList.length; i++) {
             myDiagram.model.addNodeData(modelList[i]);
         }
+        myDiagram.model.linkCategoryProperty ="Category";
         for (var i = 0; i < linkList.length; i++) {
             myDiagram.model.addLinkData(linkList[i]);
+            myDiagram.model.setCategoryForLinkData(linkList[i], linkList[i].Category);
         }
 
         //get deep copy of lists
@@ -58945,7 +59455,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     function populateDiagram() {
         var results = $.ajax({
-            url: '/diagrams/' + type + '/' + id + '/lineage/2',
+            url: '/diagrams/' + type + '/' + id + '/lineage/' + viewID,
             data: null
         }).done(function (data, status, xhr) {
             parseData(data);
@@ -59088,25 +59598,497 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
     myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-    makeTemplate("FocalArtifact", 275, 150, '#000000', 14, [makePort("IN", true)], [makePort("OUT", false)]);
-    makeTemplate("Artifact", 225, 105, 'transparent', 10, [makePort("IN", true)], [makePort("OUT", false)]);
+    //#region Node/Link Templates
 
-    myDiagram.linkTemplate = g(
-        go.Link, { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 10, relinkableFrom: false, relinkableTo: false }, // the whole link panel
-        g(go.Shape, { stroke: "gray", strokeWidth: 2 },
-            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2;}),
+    var nodeWidth = 200;
+    var nodeHeight = 150;
+    var nodeBorderColor = '#000000';
+    var nodeFontSize = 14;
+    //var nodeInPorts = [makePort("IN", true)];
+    //var nodeOutPorts = [makePort("OUT", false)];
+
+    //#region Focal Template
+
+    var focalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Focal", focalNode);
+
+    //#endregion
+
+    //#region Normal Template
+
+    nodeWidth = 200;
+    nodeHeight = 105;
+    nodeBorderColor = 'transparent';
+    nodeFontSize = 10;
+
+    var normalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Normal", normalNode);
+
+    //#endregion
+
+    //#region SupportFocal Template
+
+    var nodeWidth = 140;
+    var nodeHeight = 80;
+    var nodeBorderColor = '#000000';
+    var nodeFontSize = 9;
+
+    var supportFocalNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("SupportFocal", supportFocalNode);
+
+    //#endregion
+
+    //#region SupportNormal Template
+
+    var nodeWidth = 130;
+    var nodeHeight = 70;
+    var nodeBorderColor = 'transparent';
+    var nodeFontSize = 9;
+
+    var supportNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel,
+        go.Panel.Horizontal,
+        {
+            alignment: go.Spot.BottomLeft,
+            margin: 5
+        },
+        makeIconPanel("\uf128", "Has outstanding challenges", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
+        makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
+        makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize),
+        makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
+        makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
+        makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
+    ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        )//,
+        //g(go.TextBlock, {
+        //    row: 2,
+        //    margin: 3,
+        //    maxSize: new go.Size(180, NaN),
+        //    font: "bold 10pt sans-serif"
+        //},
+        //    new go.Binding("text", "role").makeTwoWay(),
+        //    new go.Binding("stroke", "fore").makeTwoWay()
+        //)
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("SupportNormal", supportNode);
+
+    //#endregion
+
+    //#region Fusion Template
+
+    var nodeWidth = 225;
+    var nodeHeight = 80;
+    var nodeBorderColor = 'transparent';
+    var nodeFontSize = 9;
+
+    var supportNode = g(go.Node, "Spot",
+    {
+        mouseEnter: mouseEnter,
+        mouseLeave: mouseLeave
+    },
+    g(go.Panel, "Auto", {
+        width: nodeWidth,
+        height: nodeHeight
+    },
+    g(go.Shape, "RoundedRectangle", {
+        stroke: nodeBorderColor,
+        strokeWidth: 2,
+        spot1: go.Spot.TopLeft,
+        spot2: go.Spot.BottomRight,
+        name: "NodeShape"
+    },
+    new go.Binding("fill", "back").makeTwoWay()
+   ),
+    g(go.Panel, "Table",
+        g(go.TextBlock, {
+            row: 0,
+            margin: 3,
+            alignment: go.Spot.Top,
+            editable: false,
+            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+            font: "bold " + nodeFontSize + "pt sans-serif"
+        },
+            new go.Binding("text", "name").makeTwoWay(),
+            new go.Binding("stroke", "fore").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 1,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "typeName").makeTwoWay()
+        ),
+        g(go.TextBlock, {
+            row: 2,
+            margin: 3,
+            maxSize: new go.Size(180, NaN),
+            font: 'bold ' + (nodeFontSize - 2) + "pt sans-serif"
+        },
+            new go.Binding("stroke", "fore").makeTwoWay(),
+            new go.Binding("text", "other").makeTwoWay()
+        )
+    )),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Left,
+        alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+    },
+    [makePort("IN", false)]),
+    g(go.Panel, "Vertical", {
+        alignment: go.Spot.Right,
+        alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+    },
+    [makePort("OUT", false)]));
+
+    myDiagram.nodeTemplateMap.add("Fusion", supportNode);
+
+    //#endregion
+
+    //#region Default Link Template
+
+    myDiagram.linkTemplateMap.add("", g(
+            go.Link, {
+                routing: go.Link.AvoidsNodes,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+            new go.Binding("curve", "curve", go.Binding.parseEnum(go.Link, go.Link.JumpOver)),
+            g(go.Shape, {
+                stroke: "gray", strokeWidth: 2
+            },
+            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
             new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-        g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
-        g(go.Panel, "Auto",
-            g(go.Shape, { visible: false, fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }), stroke: null },
+            g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+            g(go.Panel, "Auto",
+                g(go.Shape, {
+                    visible: false,
+                    fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
                 //only visible if there's a label
                 new go.Binding("visible", "text", function (a) { return (a ? true : false) })
-            ), // the link shape
-            g(go.TextBlock, { textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4 },   // the label
+                ), // the link shape
+                g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                // the label
                 new go.Binding("text", "text").makeTwoWay()
-             )
+                )
+            )
         )
     );
+
+    //#endregion
+
+    //#region Support Template
+
+    myDiagram.linkTemplateMap.add("Support", g(
+            go.Link, {
+                routing: go.Link.AvoidsNodes,
+                corner: 10,
+                relinkableFrom: false,
+                relinkableTo: false
+            }, // the whole link panel
+            g(go.Shape, {
+                stroke: "blue", strokeWidth: 2
+            },
+            new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
+            new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+            //g(go.Shape, { toArrow: "standard", fill: "blue", stroke: "blue" }), // the arrowhead
+            g(go.Panel, "Auto",
+                g(go.Shape, {
+                    visible: false,
+                    fill: g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                    stroke: '#999',
+                    strokeDashArray: [3, 2]
+                },
+                //only visible if there's a label
+                new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                ), // the link shape
+                g(go.TextBlock, {
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
+                // the label
+                new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        )
+    );
+
+    //#endregion
+
+    //#endregion
 
     var myOverview = initializeOverview(myDiagram);
 
@@ -59885,7 +60867,8 @@ function RelationshipAggregatesTile(controlID, type, id, permissions) {
 
         if (permissions.HasPermission("Relationship", "Update")) {
             TileTools(toolsControlID, [
-                    { icon: 'pencil', uri: '/relations/RelationOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'Manage Relationships' }
+                { icon: 'level-up', uri: '/relations/ImpactAnalysisOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'See Impact' },
+                { icon: 'pencil', uri: '/relations/RelationOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'Manage Relationships' }
             ]);
         }
 
@@ -61437,7 +62420,7 @@ function drawKpi(controlID, title, total, available, isPercentage) {
     $(controlID).jqxChart({ colorScheme: 'customColorScheme' });
 }
 
-function TileTools(toolsControlID, tools) {
+function TileTools(toolsControlID, tools, local) {
     $(toolsControlID).addClass('TileTools');
     $(toolsControlID).html('');
 
@@ -61455,7 +62438,12 @@ function TileTools(toolsControlID, tools) {
     }
 
     $.each(tools, function () {
-        var tool = $("<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>");
+        var html = "<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'";
+        if (local) {
+            html += " data-local ";
+        }
+        html += "><i class='fa fa-" + this.icon + "' title='" + this.title + "'></i></a>";
+        var tool = $(html);
         if (this.action) {
             tool.data('action', this.action);
             tool.on('click', internalToolClick);
@@ -65123,12 +66111,13 @@ function fusion_list(app, pageViewModel, templatePath, contextList) {
                     $(controlID).html(
                         template(data)
                     );
+
                     if ($(controlID).find('.AgentKpi').length) {                        
-                        var score = (data.AgentExecutions > 0) ? (((data.AgentExecutions - data.AgentErrors)/data.AgentExecutions) * 100).toFixed(0) : 100;                        
+                        var score = (data.AgentExecutions > 0 && (data.AgentExecutions - data.AgentErrors) > 0) ? (((data.AgentExecutions - data.AgentErrors) / data.AgentExecutions) * 100).toFixed(0) : 100;
                         drawKpi($(controlID).find('.AgentKpi'), 'Agent % Success', score, 100 - score, true);
                     }
                     if ($(controlID).find('.FusionKpi').length) {                        
-                        var score = (data.FusionErrors > 0) ? (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0) : 100;                        
+                        var score = (data.FusionExecutions > 0 && (data.FusionExecutions - data.FusionErrors) > 0) ? (((data.FusionExecutions - data.FusionErrors) / data.FusionExecutions) * 100).toFixed(0) : 100;
                         drawKpi($(controlID).find('.FusionKpi'), 'Processing % Success', score, 100 - score, true);
                     }
                 }
@@ -67354,22 +68343,21 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
         var permissions = new PermissionsModel();
 
-        //var RelationTypeSource;
-        //var RelationTypeAdapter;
         var IntersectTypeSource;
         var IntersectTypeAdapter;
-        var PredicateSource;
-        var PredicateAdapter;
 
         //#region Event Handlers
 
+        function listBindingComplete(event) {
+            var rowCount = $('#List').jqxDataTable('getRows').length;
+            if (rowCount > 0) {
+                $('#List').jqxDataTable('selectRow', 0);
+            }
+        }
+
         function listRowSelect(event) {
-
-            // event args.
-            var args = event.args;
-            // row data.
-            var data = args.row;
-
+            var args = event.args;  // event args.
+            var data = args.row;    // row data.
             if (data) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
 
@@ -67378,33 +68366,22 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
             }
         }
 
-
         function saveAction(data) {
             try {
                 switch (data.context) {
                     case contextList.IntersectType:
                         $('#List').jqxDataTable('updateBoundData');
                         break;
-                    case contextList.Predicate:
-                        $('#Predicates').jqxDataTable('updateBoundData');
-                        break;
-                    //case contextList.RelationType:
-                    //    if (CompanySettings.UseNewRelationships == "true") {
-                    //        $('#NewRelationTypes').jqxDataTable('updateBoundData');
-                    //    }
-                    //    break;
                 }
             } catch (e) { }
         }
 
         function unsubscribe(data) {
-            //RelationTypeAdapter = null;
-            //RelationTypeSource = null;
             IntersectTypeAdapter = null;
             IntersectTypeSource = null;
-            PredicateAdapter = null;
-            PredicateSource = null;
 
+            //$('#List').off('bindingComplete', listBindingComplete);
+            $('#List').off('rowSelect', listRowSelect);
             amplify.unsubscribe('SaveAction', saveAction);
             amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
         }
@@ -67435,12 +68412,14 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                         datafields:
                         [
                             { name: 'ID' },
-                            { name: 'Source' },
-                            { name: 'SourceID' },
-                            { name: 'SourceName' },
-                            { name: 'Target' },
-                            { name: 'TargetID' },
-                            { name: 'TargetName' }
+                            { name: 'Subject' },
+                            { name: 'SubjectID' },
+                            { name: 'SubjectName' },
+                            { name: 'PredicateID' },
+                            { name: 'PredicateName' },
+                            { name: 'Object' },
+                            { name: 'ObjectID' },
+                            { name: 'ObjectName' }
                         ]
                     };
 
@@ -67457,15 +68436,22 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
                         source: IntersectTypeAdapter,
                         theme: theme,
                         columnsResize: true,
-                        columnGroups: [
-                            { text: 'Relationship Side 1', align: 'center', name: 'S1' },
-                            { text: 'Relationship Side 2', align: 'center', name: 'S2' }
-                        ],
                         columns: [
-                            { dataField: "Source", text: "Type", columnGroup: 'S1', width: '125px' },
-                            { dataField: "SourceName", text: "Name", columnGroup: 'S1' },
-                            { dataField: "Target", text: "Type", columnGroup: 'S2', width: '125px' },
-                            { dataField: "TargetName", text: "Name", columnGroup: 'S2' },
+                            {
+                                dataField: "SubjectID",
+                                text: "Subject",
+                                cellsRenderer: function (row, column, value, rowData) {
+                                    return rowData.SubjectName + ' <span style="font-size: 75%; color: #999">(' + rowData.Subject.replace("Type", "") + ')</span>';
+                                }
+                            },
+                            { dataField: "PredicateName", text: "Predicate", width: '15%' },
+                            {
+                                dataField: "ObjectID",
+                                text: "Object",
+                                cellsRenderer: function (row, column, value, rowData) {
+                                    return rowData.ObjectName + ' <span style="font-size: 75%; color: #999">(' + rowData.Object.replace("Type", "") + ')</span>';
+                                }
+                            },
                             {
                                 text: '',
                                 dataField: 'ID',
@@ -67489,139 +68475,9 @@ function relations_admin(app, pageViewModel, templatePath, contextList) {
 
                     //#endregion
 
-                    //#region PredicateGrid
-
-                    var predicateTools = [];
-                    if (permissions.HasPermission("Root", "Create")) {
-                        predicateTools.push({ icon: 'plus', uri: '/form/AddPredicate', context: contextList.Predicate, title: 'Add predicate' });
-                    }
-                    TileTools('#PredicateTools', predicateTools);
-
-                    PredicateSource = {
-                        datatype: 'json',
-                        url: '/relations/Predicates',
-                        datafields:
-                        [
-                            { name: 'ID' },
-                            { name: 'Name' },
-                            { name: 'Inverse' },
-                            { name: 'Type' }
-                        ]
-                    };
-
-                    PredicateAdapter = new $.jqx.dataAdapter(PredicateSource);
-
-                    $("#Predicates").jqxDataTable({
-                        pageable: true,
-                        pagerButtonsCount: 10,
-                        altRows: true,
-                        filterable: true,
-                        pagerMode: 'advanced',
-                        width: '100%',
-                        filterMode: 'simple',
-                        source: PredicateAdapter,
-                        theme: theme,
-                        columnsResize: true,
-                        columns: [
-                            { dataField: "Name", text: "Name" },
-                            { dataField: "Inverse", text: "Inverse" },
-                            { dataField: "Type", text: "Type" },
-                            {
-                                text: '',
-                                dataField: 'ID',
-                                width: 100,
-                                cellsRenderer: function (row, column, value, rowData) {
-
-                                    var tools = [];
-                                    if (permissions.HasPermission('Root', 'Update')) {
-                                        tools = [
-                                            { icon: 'pencil', urlprefix: '/form/EditPredicate?id={0}' },
-                                            { icon: 'trash-o', urlprefix: '/form/DeletePredicate?id={0}' }
-                                        ];
-                                    }
-
-                                    return renderToolsHtml(value, tools, contextList.Predicate);
-                                }
-                            }
-                        ]
-                    });
-
-                    //#endregion
-
-                    //if (CompanySettings.UseNewRelationships == "true") {
-
-                    //    $('#NewRelationTypesWrapper').show();
-
-                    //    //#region Grid
-
-                    //    var newRelationTypesTools = [];
-                    //    if (permissions.HasPermission("Root", "Create")) {
-                    //        newRelationTypesTools.push({ icon: 'plus', uri: '/form/AddRelationType', context: contextList.IntersectType, title: 'Add relation type' });
-                    //    }
-                    //    TileTools('#NewRelationTypesTools', newRelationTypesTools);
-
-                    //    RelationTypeSource = {
-                    //        datatype: 'json',
-                    //        url: '/services/relationships/types',
-                    //        datafields:
-                    //        [
-                    //            { name: 'ID' },
-                    //            { name: 'Subject' },
-                    //            { name: 'SubjectID' },
-                    //            { name: 'SubjectName' },
-                    //            { name: 'Object' },
-                    //            { name: 'ObjectID' },
-                    //            { name: 'ObjectName' },
-                    //            { name: 'PredicateType' },
-                    //            { name: 'PredicateTypeName' }
-                    //        ]
-                    //    };
-
-                    //    var RelationTypeAdapter = new $.jqx.dataAdapter(RelationTypeSource);
-
-                    //    $("#NewRelationTypes").jqxDataTable({
-                    //        pageable: true,
-                    //        pagerButtonsCount: 10,
-                    //        altRows: true,
-                    //        filterable: true,
-                    //        pagerMode: 'advanced',
-                    //        width: '100%',
-                    //        filterMode: 'simple',
-                    //        source: RelationTypeAdapter,
-                    //        theme: theme,
-                    //        columnsResize: true,
-                    //        columns: [
-                    //            { dataField: "Subject", text: "Type", width: '125px' },
-                    //            { dataField: "SubjectName", text: "Name" },
-                    //            { dataField: "Object", text: "Type", width: '125px' },
-                    //            { dataField: "ObjectName", text: "Name"},
-                    //            { dataField: "PredicateTypeName", text: "Predicate", width: '125px' },
-                    //            {
-                    //                text: '',
-                    //                dataField: 'ID',
-                    //                width: 100,
-                    //                cellsRenderer: function (row, column, value, rowData) {
-
-                    //                    var tools = [];
-                    //                    if (permissions.HasPermission('Root', 'Update')) {
-                    //                        tools = [
-                    //                            { icon: 'pencil', urlprefix: '/form/EditRelationType?id={0}' },
-                    //                            { icon: 'trash-o', urlprefix: '/form/DeleteRelationType?id={0}' }
-                    //                        ];
-                    //                    }
-
-                    //                    return renderToolsHtml(value, tools, contextList.IntersectType);
-                    //                }
-                    //            }
-                    //        ]
-                    //    });
-
-                    //    //#endregion
-
-                    //}
-
                     //#region Event Subscriptions
 
+                    $('#List').one('bindingComplete', listBindingComplete);//$('#List').on('bindingComplete', listBindingComplete);
                     $('#List').on('rowSelect', listRowSelect);
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
@@ -68785,6 +69641,9 @@ function settings_admin(app, pageViewModel, templatePath, contextList) {
             .appendTo(context.$element())
             .then(function (content) {
                 context.contentHeader(pageViewModel);
+
+                $('#SideIcons').PageTools();
+                $('#SideIcons').PageTools('clear');
 
                 var model = new CompanySettingsViewModel();
                 ko.applyBindings(model, document.getElementById('SettingsModel'));

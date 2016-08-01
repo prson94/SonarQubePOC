@@ -89,13 +89,14 @@ namespace d360.core.enums
         public bool AllowMultiplePredicates { get; set; }
         public bool AllowDifferentSubjectObject { get; set; }
         public bool ForceDifferentSubjectObject { get; set; }
+        public bool ReadOnly { get; set; }
     }
 
     public static class PredicateTypeExtensions
     {
         public static string GetDisplayName(this PredicateType type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
         }
 
         public static string GetName(this PredicateType type)
@@ -124,12 +125,30 @@ namespace d360.core.enums
                         ID = (PredicateType)Enum.Parse(typeof(PredicateType), tm.Name),
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
-                        ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed
+                        ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
+                        ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
                     });
                 }
             }
 
             return list.OrderBy(i => i.Name).ToList();
+        }
+
+        public static PredicateTypeInfo AsInfoModel(this PredicateType type)
+        {
+            var t = type.GetType().GetMember(type.ToString()).First();
+            return 
+                new PredicateTypeInfo
+                {
+                    Name = ((NameAttribute)t.GetCustomAttribute(typeof(NameAttribute))).Name,
+                    Description = ((DescriptionAttribute)t.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Graph = ((GraphAttribute)t.GetCustomAttribute(typeof(GraphAttribute))).Graph,
+                    ID = type,
+                    AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)t.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
+                    AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
+                    ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
+                    ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
+                };
         }
     }
 }

@@ -36,418 +36,6 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             var host = new JobHost(config);
             host.RunAndBlock();
-
-            #region 
-//            var mex = new List<Exception>();
-
-//            try
-//            {
-//                var companies = new List<int>() { 4 };
-//                //var companies = GetActiveCompanyIDs();//.Where(i => i == 4).ToList();
-
-//                var domainPrefixes = GetCompanyDomainPrefixes();
-
-//                companies.AsParallel().WithDegreeOfParallelism(4).ForAll(companyID =>
-//                {
-//                    var sec = new UriSecurityContextProvider() {
-//                        CompanyID = companyID,
-//                        ResourceID = 0,
-//                        CompanyPrefix = domainPrefixes.Single(i => i.Key == companyID).Value,
-//                        IsAdministrator = true
-//                    };
-//                    var cache = new DummyCachingProvider();
-//                    var queue = new AzureQueueSource();
-//                    var community = new CommunityContext(cache, queue, sec);
-//                    var company = new CompanyContext(community, cache, queue, sec);
-
-//                    var queueItems = company.BulkLoadQueues.Where(i => i.MachineAssigned == null && i.NumberOfRetries < 3).OrderBy(i => i.LoadID).Take(2).ToList();
-
-//                    queueItems.ForEach(q =>
-//                    {
-//                        q.MachineAssigned = System.Environment.MachineName;
-//                    });
-//                    company.SaveChanges();
-
-//                    queueItems.ForEach(q =>
-//                    {
-//                        try
-//                        {
-//                            var load = company.Loads.Include(i => i.LoadColumns).SingleOrDefault(i => i.ID == q.LoadID);
-
-//                            Console.WriteLine("Company: {0}. Processing Load {1}", companyID, load.ID);
-
-//                            var existingRows = company.LoadItems.Any(i => i.LoadID == q.LoadID);
-
-//                            if (!existingRows)
-//                            {
-//                                var memoryStream = new MemoryStream(load.File);
-//                                var xls = new SLDocument(memoryStream);
-
-//                                var stats = xls.GetWorksheetStatistics();
-
-//                                var numberOfRows = stats.NumberOfRows;
-//                                var rowIndex = stats.StartRowIndex + 1;
-//                                while (rowIndex <= stats.EndRowIndex)
-//                                {
-
-//                                    var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>(), Status = "Queued" };
-
-//                                    foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
-//                                    {
-//                                        var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
-//                                        var isDate = false;
-
-//                                        if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
-//                                            format.Contains("[$-F400]") || format.Contains("[$-409]"))
-//                                            isDate = true;
-
-//                                        loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex) )});
-//                                    }
-
-//                                    load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
-
-//                                    rowIndex++;
-//                                }
-
-//                                company.SaveChanges();  // Save all load items and columns we created.
-//                            }
-
-//                            Console.WriteLine("Company: {0}. Executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
-
-//                            if (load.Action == "N")
-//                            {
-//                                /*
-//                                 * Source subject type	
-//                                 * Source subject type name	
-//                                 * Source subject subject area	
-//                                 *      Source subject	
-//                                 * 
-//                                 * Source object type	
-//                                 * Source object type name	
-//                                 * Source object subject area	
-//                                 *      Source object	
-//                                 * 
-//                                 * Target subject type	
-//                                 * Target subject type name	
-//                                 * Target subject subject area	
-//                                 *      Target subject	
-//                                 * 
-//                                 * Target object type	
-//                                 * Target object type name	
-//                                 * Target object subject area	
-//                                 *      Target object	
-//                                 * 
-//                                 * Role
-//                                 */
-//                                //"Artifact", "Domain", "Policy", "Rule", "Taxonomy"
-
-//                                #region Get data to pre-populate
-
-//                                var objectTypes = company.Query<IntersectTypeOption>(@"
-//select ID, ltrim(rtrim(lcase(Name))) as Name, 'Artifact' from ArtifactType
-//union
-//select ID, ltrim(rtrim(lcase(Name))) as Name, 'Domain' from DomainType
-//union
-//select ID, ltrim(rtrim(lcase(Name))) as Name, 'Policy' from PolicyType
-//union
-//select 1 as ID, 'informational' as Name, 'Rule'
-//union
-//select 2 as ID, 'quality check' as Name, 'Rule'
-//union
-//select 3 as ID, 'metric' as Name, 'Rule'
-//union
-//select 4 as ID, 'profile' as Name, 'Rule'
-//union
-//select ID, ltrim(rtrim(lcase(Name))) as Name, 'Taxonomy' from TaxonomyType").ToList();
-//                                var roles = company.Table<IntersectRole>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-//                                var subjectAreas = company.Table<IntersectType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-
-//                                #endregion
-
-//                                foreach (var loadItem in load.LoadItems)
-//                                {
-//                                    var rawType = "";
-//                                    var rawTypeName = "";
-//                                    var rawSubjectArea = "";
-//                                    var rawItem = "";
-
-//                                    LoadItemColumn typeColumn = null;
-//                                    LoadItemColumn typeNameColumn = null;
-//                                    LoadItemColumn subjectAreaColumn = null;
-//                                    LoadItemColumn itemColumn = null;
-
-//                                    IntersectTypeOption verifiedType = null;
-//                                    SimpleTypeModel verifiedSubjectArea = null;
-//                                    SimpleTypeModel verifiedRole = null;
-
-//                                    #region Look up source subject info
-
-//                                    #region Verify Type
-
-//                                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
-//                                    rawType = typeColumn.Value.Trim().ToLower();
-//                                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
-//                                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-//                                    verifiedType = objectTypes.SingleOrDefault(i => i.Type == rawType && i.Name == rawTypeName);
-
-//                                    if (verifiedType != null)
-//                                    {
-//                                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-//                                        typeNameColumn.LookupObjectID = verifiedType.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Subject Area
-
-//                                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 3);
-//                                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-//                                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-//                                    if (subjectAreaColumn != null)
-//                                    {
-//                                        subjectAreaColumn.LookupObject = "TaxonomyType";
-//                                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Item
-
-//                                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
-//                                    rawItem = itemColumn.Value.Trim().ToLower();
-//                                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-//                                    #endregion
-
-//                                    #endregion
-
-//                                    #region Look up source object info
-
-//                                    #region Verify Type
-
-//                                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 5);
-//                                    rawType = typeColumn.Value.Trim().ToLower();
-//                                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 6);
-//                                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-//                                    verifiedType = objectTypes.SingleOrDefault(i => i.Type == rawType && i.Name == rawTypeName);
-
-//                                    if (verifiedType != null)
-//                                    {
-//                                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-//                                        typeNameColumn.LookupObjectID = verifiedType.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Subject Area
-
-//                                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 7);
-//                                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-//                                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-//                                    if (subjectAreaColumn != null)
-//                                    {
-//                                        subjectAreaColumn.LookupObject = "TaxonomyType";
-//                                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Item
-
-//                                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 8);
-//                                    rawItem = itemColumn.Value.Trim().ToLower();
-//                                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-//                                    #endregion
-
-//                                    #endregion
-
-//                                    #region Look up target subject info
-
-//                                    #region Verify Type
-
-//                                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
-//                                    rawType = typeColumn.Value.Trim().ToLower();
-//                                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
-//                                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-//                                    verifiedType = objectTypes.SingleOrDefault(i => i.Type == rawType && i.Name == rawTypeName);
-
-//                                    if (verifiedType != null)
-//                                    {
-//                                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-//                                        typeNameColumn.LookupObjectID = verifiedType.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Subject Area
-
-//                                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 11);
-//                                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-//                                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-//                                    if (subjectAreaColumn != null)
-//                                    {
-//                                        subjectAreaColumn.LookupObject = "TaxonomyType";
-//                                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Item
-
-//                                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
-//                                    rawItem = itemColumn.Value.Trim().ToLower();
-//                                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-//                                    #endregion
-
-//                                    #endregion
-
-//                                    #region Look up target object info
-
-//                                    #region Verify Type
-
-//                                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 13);
-//                                    rawType = typeColumn.Value.Trim().ToLower();
-//                                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
-//                                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-//                                    verifiedType = objectTypes.SingleOrDefault(i => i.Type == rawType && i.Name == rawTypeName);
-
-//                                    if (verifiedType != null)
-//                                    {
-//                                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-//                                        typeNameColumn.LookupObjectID = verifiedType.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Subject Area
-
-//                                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 15);
-//                                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-//                                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-//                                    if (subjectAreaColumn != null)
-//                                    {
-//                                        subjectAreaColumn.LookupObject = "TaxonomyType";
-//                                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    #region Verify Item
-
-//                                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
-//                                    rawItem = itemColumn.Value.Trim().ToLower();
-//                                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-//                                    #endregion
-
-//                                    #endregion
-
-//                                    #region Lookup up role
-
-//                                    var roleColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 13);
-//                                    var rawRole = roleColumn.Value.Trim().ToLower();
-//                                    verifiedRole = roles.SingleOrDefault(i => i.Name == rawRole);
-
-//                                    if (verifiedRole != null)
-//                                    {
-//                                        roleColumn.LookupObject ="IntersectRole";
-//                                        roleColumn.LookupObjectID = verifiedRole.ID;
-//                                    }
-
-//                                    #endregion
-
-//                                    var sourceSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
-//                                    var sourceObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 8);
-//                                    var targetSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
-//                                    var targetObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
-
-//                                    var source = company.AddIntersect(sourceSubject.LookupObject, sourceSubject.LookupObjectID.Value, sourceObject.LookupObject, sourceObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-//                                    var target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-//                                    var map = company.Filter<Map>(i =>
-//                                        i.MapItems.Any(mi => mi.IntersectID == source.ID && mi.IsSource) &&
-//                                        i.MapItems.Any(mi => mi.IntersectID == target.ID && !mi.IsSource),
-//                                        i => i.MapItems
-//                                        ).FirstOrDefault();
-
-//                                    if (map == null)
-//                                    {
-//                                        map = new Map { IntersectRoleID = verifiedRole.ID, Transformation = "some transform", MapItems = new List<MapItem>() };
-//                                        map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value S", IntersectID = source.ID, IsSource = true });
-//                                        map.MapItems.Add(new MapItem { DiagramKey = "some arbitrary value T", IntersectID = target.ID, IsSource = false });
-//                                        company.Add<Map>(map);
-//                                    }
-
-//                                    if (map != null)
-//                                    {
-//                                        loadItem.Status = "Success";
-//                                    }
-//                                }
-//                            }
-//                            else
-//                            {
-//                                #region Legacy stored procedure method
-
-//                                bool writeStatus = true;
-//                                var task = company.ObjectContext.Connection.ExecuteAsync(
-//                                    "exec ProcessBulkLoad @LoadID", 
-//                                    new { LoadID = load.ID }, 
-//                                    null, 
-//                                    10800
-//                                );   // 180 minute timeout.
-
-//                                task.ContinueWith(t =>
-//                                {
-//                                    if (t.IsCompleted)
-//                                        Console.WriteLine("Bulk load procedure completed for Load ID {0}", q.LoadID);
-//                                    if(t.IsFaulted)
-//                                        Console.WriteLine("Bulk load procedure failed for Load ID {0}", q.LoadID);
-//                                    if (t.Exception != null)
-//                                    {
-//                                        if (t.Exception.InnerExceptions != null)
-//                                        {
-//                                            mex.AddRange(t.Exception.InnerExceptions);
-//                                        }
-//                                    }
-//                                    writeStatus = false;
-//                                });
-
-//                                while (writeStatus && (task.Exception == null))
-//                                {
-//                                    Console.WriteLine(".");
-//                                    System.Threading.Thread.Sleep(45000);
-//                                }
-
-//                                #endregion
-//                            }
-
-//                            Console.WriteLine("Company: {0}. Finished executing ProcessBulkLoad procedure for Load {1}", companyID, load.ID);
-
-//                            company.BulkLoadQueues.Remove(q);
-//                            company.SaveChanges();
-//                        }
-//                        catch (Exception ex)
-//                        {
-//                            mex.Add(ex);
-//                            q.NumberOfRetries++;
-//                            q.HasError = true;
-//                            q.ErrorMessage = ex.GetFullExceptionData();
-//                            company.SaveChanges();
-//                        }
-//                    });
-
-//                    company.Dispose();
-//                });
-//            }
-//            catch (Exception ex)
-//            {
-//                var msg = ex.Message + ((ex.InnerException != null) ? "  " + ex.InnerException.Message : "");
-//                Console.WriteLine(msg);
-//            }
-
-//            if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);
-            #endregion
         }
 
         public static void ProcessBulkLoadPoisonMessage([QueueTrigger("d3s-bulkload-poison")] string queueMessage, TextWriter logger)
@@ -455,7 +43,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
             logger.WriteLine("Failed to process load, data=" + queueMessage);
         }
 
-        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload")] string queueMessage, TextWriter logger, CancellationToken token)
+        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload-debug")] string queueMessage, TextWriter logger, CancellationToken token)
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
@@ -493,40 +81,52 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 var numberOfRows = stats.NumberOfRows;
                 var rowIndex = stats.StartRowIndex + 1;
+                var numberOfColumns = load.LoadColumns.Count;
                 while (rowIndex <= stats.EndRowIndex)
                 {
-
-                    var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
-                    company.LoadItems.Add(loadItem);
-                    //company.Add<LoadItem>(loadItem);
-
+                    // Empty row validation.
+                    var numberOfEmptyColumns = 0;
                     foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                     {
-                        var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
-                        var isDate = false;
-
-                        if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
-                            format.Contains("[$-F400]") || format.Contains("[$-409]"))
-                            isDate = true;
-
-                        var loadValue = string.Empty;
-
-                        if (isDate)
-                        {
-                            loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
-                        }
-                        else
-                        {
-                            loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-                        }
-
-                        company.LoadItemColumns.Add(
-                            new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue }
-                        );
-                        //loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
+                        var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+                        if (string.IsNullOrEmpty(testValue))
+                            numberOfEmptyColumns++;
                     }
-                    //load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
 
+                    // Empty row check.
+                    if (numberOfEmptyColumns < numberOfColumns)
+                    {
+                        var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
+                        company.LoadItems.Add(loadItem);
+                        //company.Add<LoadItem>(loadItem);
+
+                        foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
+                        {
+                            var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
+                            var isDate = false;
+
+                            if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
+                                format.Contains("[$-F400]") || format.Contains("[$-409]"))
+                                isDate = true;
+
+                            var loadValue = string.Empty;
+
+                            if (isDate)
+                            {
+                                loadValue = xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString();
+                            }
+                            else
+                            {
+                                loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
+                            }
+
+                            company.LoadItemColumns.Add(
+                                new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue }
+                            );
+                            //loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
+                        }
+                        //load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
+                    }
                     rowIndex++;
                 }
 
@@ -810,6 +410,139 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     company.Update(loadItem);
                 }
+
+                load.DateCompleted = DateTime.UtcNow;
+                company.Update(load);
+            }
+            else if (load.Action == "R")    // Relation
+            {
+                #region
+                /*
+                 * Side 1
+                 * Side 2
+                 * 
+                 * OR
+                 * 
+                 * Side 1 Subject Area
+                 * Side 1
+                 * Side 2 Subject Area
+                 * Side 2
+                 */
+                #endregion
+
+                #region Get data to pre-populate
+
+                var relationIntersectTypeDetail = company.Filter<IntersectTypeDetail>(i => i.ID == load.ObjectID).FirstOrDefault();
+                var relationSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
+                var subjectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.SubjectID, Type = relationIntersectTypeDetail.Subject.Replace("Type", ""), Name = relationIntersectTypeDetail.SubjectName };
+                var objectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.ObjectID, Type = relationIntersectTypeDetail.Object.Replace("Type", ""), Name = relationIntersectTypeDetail.ObjectName };
+
+                #endregion
+
+                #region ForEach
+
+                foreach (var loadItem in load.LoadItems)
+                {
+                    var rawSubjectArea = "";
+                    var rawItem = "";
+
+                    LoadItemColumn subjectSubjectAreaColumn = null;
+                    LoadItemColumn subjectColumn = null;
+
+                    LoadItemColumn objectSubjectAreaColumn = null;
+                    LoadItemColumn objectColumn = null;
+
+                    SimpleTypeModel verifiedSubjectArea = null;
+
+                    #region Look up subject
+
+                    #region Verify Subject Area
+
+                    subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
+                    rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
+                    verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                    if (subjectSubjectAreaColumn != null)
+                    {
+                        subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
+                        subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                    }
+
+                    #endregion
+
+                    #region Verify Item
+
+                    subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
+                    rawItem = subjectColumn.Value.Trim().ToLower();
+                    LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
+
+                    #endregion
+
+                    #endregion
+
+                    #region Look up object
+
+                    #region Verify Subject Area
+
+                    objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 3);
+                    rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
+                    verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                    if (objectSubjectAreaColumn != null)
+                    {
+                        objectSubjectAreaColumn.LookupObject = "TaxonomyType";
+                        objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                    }
+
+                    #endregion
+
+                    #region Verify Item
+
+                    objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
+                    rawItem = objectColumn.Value.Trim().ToLower();
+                    LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
+
+                    #endregion
+
+                    #endregion
+
+                    var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
+                    var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
+
+                    Intersect model = null;
+
+                    if (!string.IsNullOrEmpty(subject.LookupObject) && subject.LookupObjectID.HasValue && 
+                        !string.IsNullOrEmpty(@object.LookupObject) && @object.LookupObjectID.HasValue)
+                    {
+                        try
+                        {
+                            model = company.AddIntersect(subject.LookupObject, subject.LookupObjectID.Value, @object.LookupObject, @object.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                            if (model != null)
+                            {
+                                loadItem.Status = true;
+                                loadItem.StatusMessage = "Successfully created/updated relationship.";
+                            }
+                            else
+                            {
+                                loadItem.Status = false;
+                                loadItem.StatusMessage = "Unable to create relationship.";
+                            }
+
+                        }
+                        catch (BaseException ex)
+                        {
+                            loadItem.Status = false;
+                            loadItem.StatusMessage += " " + ex.StatusDescription;
+                        }
+                    }
+                    else
+                    {
+                        loadItem.Status = false;
+                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Subject = {@object.Value}].";
+                    }
+
+                    company.Update(loadItem);
+                }
+
+                #endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
@@ -1151,7 +884,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                     Intersect source = null;
                     Intersect target = null;
 
-                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue)
+                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue && !string.IsNullOrEmpty(sourceObject.LookupObject) && sourceObject.LookupObjectID.HasValue)
                     {
                         try
                         {
@@ -1170,24 +903,27 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                         loadItem.Status = false;
                         loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {sourceSubject.Value}, Subject = {sourceObject.Value}].";
                     }
-                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue)
+                    if (targetObject != null)
                     {
-                        try
+                        if (!string.IsNullOrEmpty(targetSubject.LookupObject) && targetSubject.LookupObjectID.HasValue && !string.IsNullOrEmpty(targetObject.LookupObject) && targetObject.LookupObjectID.HasValue)
                         {
-                            target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                            try
+                            {
+                                target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+                            }
+                            catch (BaseException ex)
+                            {
+                                shouldContinue = false;
+                                loadItem.Status = false;
+                                loadItem.StatusMessage += " " + ex.StatusDescription;
+                            }
                         }
-                        catch (BaseException ex)
+                        else
                         {
                             shouldContinue = false;
                             loadItem.Status = false;
-                            loadItem.StatusMessage += " " + ex.StatusDescription;
+                            loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {targetSubject.Value}, Subject = {targetObject.Value}].";
                         }
-                    }
-                    else
-                    {
-                        shouldContinue = false;
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {targetSubject.Value}, Subject = {targetObject.Value}].";
                     }
 
                     if (source == null)
@@ -1480,6 +1216,11 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                         }
                         else
                         {
+                            loadItem.Object = "MapRuleItem";
+                            loadItem.ObjectID = technicalMapping.ID;
+                            loadItem.Status = true;
+                            loadItem.StatusMessage = "Technical mapping already exists.";
+
                             mappingList.Add(new SimpleTypeModel { Name = rawGroup, ID = technicalMapping.ID }); //This is used for post processing.
                         }
                     }

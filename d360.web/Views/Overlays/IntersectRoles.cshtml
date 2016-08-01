@@ -1,0 +1,151 @@
+﻿<div class="small-overlay">
+    <div class="ui segment">
+        <div id="IntersectRolesViewer">
+            <h4><i class="fa fa-@(Resources.Actions.IntersectRoles_Icon) grey-text"></i>&#160;Relationship Roles</h4>
+            <div class="form-instructions"></div>
+            <div class="root-tile">
+                <div class="TileTools">
+                    <a style="margin-left: 10px" class="btn-floating waves-effect waves-light brown lighten-1" data-context="@(ContextList.IntersectRole)" data-local data-uri="/form/AddIntersectRole"><i class="fa fa-plus" title="Add relationship role"></i></a>
+                </div>
+                <div id="IntersectRolesGrid"></div>
+            </div>
+        </div>
+        <div id="IntersectRolesEditor"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var IntersectRolesGridSource;
+    var IntersectRolesGridAdapter;
+
+    $(function () {
+
+        function localAction(data) {
+            try {
+                switch (data.context) {
+                    case contextList.IntersectRole:
+                        switchToEditor(data.uri);
+                        break;
+                }
+            } catch (e) {
+                logError("IntersectRolesOverlay : localAction", e);
+            }
+        };
+
+        function localCancel(data) {
+            try {
+                switch (data.context) {
+                    case contextList.IntersectRole:
+                        switchToViewer();
+                        break;
+                }
+            } catch (e) {
+                logError("IntersectRolesOverlay : localCancel", e);
+            }
+        }
+
+        function localSave(data) {
+            try {
+                switch (data.context) {
+                    case contextList.IntersectRole:
+                        switchToViewer();
+                        $('#IntersectRolesGrid').jqxGrid('updatebounddata');
+                        break;
+                }
+            } catch (e) {
+                logError("IntersectRolesOverlay : localSave", e);
+            }
+        }
+
+        var switchToEditor = function (uri) {
+            try {
+                $('#IntersectRolesViewer').fadeOut(10);
+                $('#IntersectRolesEditor').fadeIn(10);
+                $('#IntersectRolesEditor').load(uri, function (response, status, xhr) {
+                    if (status == "error") {
+                        amplify.publish("ShowMessage", { title: "Something unexpected happened!", message: xhr.status + ' ' + xhr.statusText, type: 'error' });
+                        switchToViewer();
+                    }
+                });
+            } catch (e) {
+                logError("IntersectRolesOverlay : switchToEditor", e);
+            }
+        }
+
+        var switchToViewer = function () {
+            $('#IntersectRolesEditor').html('');
+            $('#IntersectRolesEditor').fadeOut(1);
+            $('#IntersectRolesViewer').fadeIn(500);
+        }
+
+        function unsubscribe(data) {
+            IntersectRolesGridAdapter = null;
+            IntersectRolesGridSource = null;
+
+            amplify.unsubscribe(AmplifyActions.Local, localAction);
+            amplify.unsubscribe(AmplifyActions.Cancel, localCancel);
+            amplify.unsubscribe(AmplifyActions.Save, localSave);
+            amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.unsubscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+        }
+
+        //#region Grid
+
+        IntersectRolesGridSource = {
+            datatype: 'json',
+            url: "/relations/IntersectRoles",
+            datafields: [
+                { name: "ID", type: "number" },
+                { name: "Name", type: "string" },
+                { name: "Description", type: "string" },
+                { name: "IsUsed", type: "bool" }
+            ]
+        };
+
+        IntersectRolesGridAdapter = new $.jqx.dataAdapter(IntersectRolesGridSource);
+
+        $('#IntersectRolesGrid').jqxGrid({
+            altrows: true,
+            source: IntersectRolesGridAdapter,
+            width: grid_width,
+            autoheight: true,
+            autorowheight: true,
+            filterable: true,
+            sortable: true,
+            pageable: true,
+            pagesize: 5,
+            theme: list_theme,
+            columns: [
+                { text: 'Name', dataField: 'Name' },
+                { text: 'Description', dataField: 'Description' },
+                {
+                    text: '',
+                    dataField: 'ID',
+                    width: '80px',
+                    cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                        var html = "";
+
+                        html += "<div class='RowMultiTools'>";
+                        html += "<a title='Edit relationship role' data-context='" + contextList.IntersectRole + "' data-local data-uri='/form/EditIntersectRole?id=" + data.ID + "'><i class='fa fa-pencil'></i></a>";
+                        if (!data.IsUsed) {
+                            html += "<a title='Remove relationship role' data-context='" + contextList.IntersectRole + "' data-local data-uri='/form/DeleteIntersectRole?id=" + data.ID + "'><i class='fa fa-trash-o'></i></a>";
+                        }
+                        html += "</div>";
+
+                        return html;
+                    }
+                }
+            ]
+        });
+
+        //#endregion
+
+        amplify.subscribe(AmplifyActions.Local, localAction);
+        amplify.subscribe(AmplifyActions.Cancel, localCancel);
+        amplify.subscribe(AmplifyActions.Save, localSave);
+        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    });
+</script>

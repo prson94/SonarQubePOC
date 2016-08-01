@@ -123,6 +123,7 @@
             self.FusionType = "@(ContextList.FusionType)";
             self.Group = "@(ContextList.Group)";
             self.Intersect = "@(ContextList.Intersect)";
+            self.IntersectRole = "@(ContextList.IntersectRole)";
             self.IntersectType = "@(ContextList.IntersectType)";
 
             self.Load = "@(ContextList.Load)";
@@ -356,7 +357,7 @@
                 $('body').append(overlaybg);
                 $('body').append(overlay);
                 overlaybg.fadeIn(100);
-                overlay.fadeIn(300);
+                overlay.fadeIn(150);
             });
 
             $('body').on('click', '*[data-sidebaroverlay]', function (event) {
@@ -530,10 +531,12 @@
                         case contextList.FusionPromotionRuleMapping:
                         case contextList.FusionRuleStep:
                         case contextList.Intersect:
+                        case contextList.IntersectRole:
                         case contextList.ActionEditRelate:
                         case contextList.ActionResponsibility:
                         case contextList.IntersectSourcingResponsibility:
                         case contextList.PolicyTypeClass:
+                        case contextList.Predicate:
                         case contextList.ResponsibilityTransformation:
                         case contextList.AttributeTypeCategory:
                         case contextList.ResponsibilityTypeHierarchy:
@@ -565,11 +568,13 @@
                         case contextList.FusionRuleStep:
                         case contextList.FusionRule:
                         case contextList.Intersect:
+                        case contextList.IntersectRole:
                         case contextList.ActionResponsibility:
                         case contextList.IntersectSourcingResponsibility:
                         case contextList.ResponsibilityTransformation:
                         case contextList.AttributeTypeCategory:
                         case contextList.PolicyTypeClass:
+                        case contextList.Predicate:
                         case contextList.ResponsibilityTypeHierarchy:
                         case contextList.SourceToTarget:
                         case contextList.TaxonomyTypeClass:                        
@@ -676,8 +681,8 @@
 
                                 $('body').append(overlaybg);
                                 $('body').append(overlay);
-                                overlaybg.fadeIn(750);
-                                overlay.fadeIn(750);
+                                overlaybg.fadeIn(100);
+                                overlay.fadeIn(150);
                                 break;
                         }
                     } catch (e) {
@@ -703,7 +708,6 @@
 
         $(function () {
             setupPage();
-            //$('select').material_select();
         });
 
         $(document).ajaxComplete(function () {

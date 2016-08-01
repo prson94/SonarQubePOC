@@ -1,7 +1,7 @@
-﻿@{ 
+﻿@{
     var id = (int)ViewBag.ID;
     var title = (id == 0) ? "Add Relationship Type" : "Edit Relationship Type";
-    var description = (id == 0) ?  Resources.FormInfo.Add_RelationshipType_Directions : Resources.FormInfo.Edit_RelationshipType_Directions;
+    var description = (id == 0) ? Resources.FormInfo.Add_RelationshipType_Directions : Resources.FormInfo.Edit_RelationshipType_Directions;
 }
 <script id="intersectTypeTmpl" type="text/html">
     <div class="left form-header-info">
@@ -16,7 +16,7 @@
     <div id="progress" data-bind="visible: InProgress"><i class="fa fa-spinner fa-spin fa-4x"></i></div>
 
     <div class="row">
-        <div class="col s6">
+        <div class="col s4">
             <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipSide1_Name)</div>
             <div data-bind="intersectTypeSide1FilteredDropdown, jqxDropDownList: {
                  width: field_width,
@@ -30,7 +30,22 @@
                  searchMode: 'containsignorecase' }"></div>
             <span data-bind="visible: Side1OptionsLoading">Loading, please wait...</span>
         </div>
-        <div class="col s6">
+        <div class="col s4">
+            <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipPredicate_Name)</div>
+            <div data-bind="intersectTypePredicateFilteredDropdown, jqxDropDownList: {
+                 width: field_width,
+                 theme: theme,
+                 filterable: true,
+                 selectedIndex: PredicateIndex,
+                 source: PredicateOptions,
+                 displayMember: 'title',
+                 valueMember: 'value',
+                 searchMode: 'containsignorecase' }"></div>
+            @*disabled: LimitedChangesOnly,*@
+
+            <span data-bind="visible: PredicateOptionsLoading">Loading, please wait...</span>
+        </div>
+        <div class="col s4">
             <div class="FieldNameRequired">@(Resources.FieldInfo.RelationshipSide2_Name)</div>
             <div data-bind="intersectTypeSide2FilteredDropdown, jqxDropDownList: {
                  width: field_width,
@@ -46,32 +61,32 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col s6">
-            <div class="FieldNameRequired">@(Resources.FieldInfo.FriendlyName_Name)</div>
-            <input type="text" data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Side1DisplayText}" />
-        </div>
-        <div class="col s6">
-            <div class="FieldNameRequired">@(Resources.FieldInfo.FriendlyName_Name)</div>
-            <input type="text" data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Side2DisplayText}" />
-        </div>
-    </div>
+    @*<div class="row">
+            <div class="col s6">
+                <div class="FieldNameRequired">@(Resources.FieldInfo.FriendlyName_Name)</div>
+                <input type="text" data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Side1DisplayText}" />
+            </div>
+            <div class="col s6">
+                <div class="FieldNameRequired">@(Resources.FieldInfo.FriendlyName_Name)</div>
+                <input type="text" data-bind="jqxInput: { width: field_width, height: field_height, theme: theme, value: Side2DisplayText}" />
+            </div>
+        </div>*@
 
-    <div class="row">
-        <div class="col s6">
-            <div class="FieldNameRequired">Assigned Predicates</div>
-            <div data-bind="predicatesFilteredDropdown, jqxDropDownList: {
-                width: field_width,
-                theme: theme,
-                filterable: true,
-                checkboxes:true,
-                source: PredicateOptions,
-                displayMember: 'title',
-                valueMember: 'value',
-                searchMode: 'containsignorecase' }"></div>
-        </div>
-        <div class="col s6"></div>
-    </div>
+    @*<div class="row">
+            <div class="col s6">
+                <div class="FieldNameRequired">Assigned Predicates</div>
+                <div data-bind="predicatesFilteredDropdown, jqxDropDownList: {
+                    width: field_width,
+                    theme: theme,
+                    filterable: true,
+                    checkboxes:true,
+                    source: PredicateOptions,
+                    displayMember: 'title',
+                    valueMember: 'value',
+                    searchMode: 'containsignorecase' }"></div>
+            </div>
+            <div class="col s6"></div>
+        </div>*@
 
 </script>
 
@@ -83,10 +98,19 @@
 
 <script type="text/javascript">
     //#region Bindings
+
     ko.bindingHandlers.intersectTypeSide1FilteredDropdown = {
         init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             $(element).on('change', function (event) {
                 viewModel.Side1(event.args.item.value);
+            });
+        },
+        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    };
+    ko.bindingHandlers.intersectTypePredicateFilteredDropdown = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            $(element).on('change', function (event) {
+                viewModel.Predicate(event.args.item.value);
             });
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
@@ -99,31 +123,32 @@
         },
         update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
     };
-    ko.bindingHandlers.intersectTypeRoleFilteredDropdown = {
-        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-            $(element).on('change', function (event) {
-                viewModel.RoleID(event.args.item.value);
-            });
-        },
-        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
-    };
-    ko.bindingHandlers.predicatesFilteredDropdown = {
-        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-            $(element).on('checkChange', function (event) {
-                var checkedItems = $(element).jqxDropDownList('getCheckedItems');
-                if (checkedItems) {
-                    viewModel.Predicates.removeAll();
+    //ko.bindingHandlers.intersectTypeRoleFilteredDropdown = {
+    //    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+    //        $(element).on('change', function (event) {
+    //            viewModel.RoleID(event.args.item.value);
+    //        });
+    //    },
+    //    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    //};
+    //ko.bindingHandlers.predicatesFilteredDropdown = {
+    //    init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+    //        $(element).on('checkChange', function (event) {
+    //            var checkedItems = $(element).jqxDropDownList('getCheckedItems');
+    //            if (checkedItems) {
+    //                viewModel.Predicates.removeAll();
 
-                    if (checkedItems.length > 0) {
-                        $.each(checkedItems, function(cix, ci) {
-                            viewModel.Predicates.push(ci.value);
-                        });
-                    }
-                }
-            });
-        },
-        update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
-    };
+    //                if (checkedItems.length > 0) {
+    //                    $.each(checkedItems, function(cix, ci) {
+    //                        viewModel.Predicates.push(ci.value);
+    //                    });
+    //                }
+    //            }
+    //        });
+    //    },
+    //    update: function (element, valueAccessor, allBindings, viewModel, bindingContext) { }
+    //};
+
     //#endregion
 
     function IntersectTypeViewModel(data) {
@@ -137,11 +162,14 @@
 
         self.Side1Index = ko.observable(data.Side1Index || -1);
         self.Side1 = ko.observable(data.Side1);
-        self.Side1DisplayText = ko.observable(((data.Side1DisplayText) ? data.Side1DisplayText : ""));
+        //self.Side1DisplayText = ko.observable(((data.Side1DisplayText) ? data.Side1DisplayText : ""));
+
+        self.PredicateIndex = ko.observable(data.PredicateIndex || -1);
+        self.Predicate = ko.observable(data.Predicate);
 
         self.Side2Index = ko.observable(data.Side2Index || -1);
         self.Side2 = ko.observable(data.Side2);
-        self.Side2DisplayText = ko.observable(((data.Side2DisplayText) ? data.Side2DisplayText : ""));
+        //self.Side2DisplayText = ko.observable(((data.Side2DisplayText) ? data.Side2DisplayText : ""));
 
         self.LimitedChangesOnly = ko.observable(data.LimitedChangesOnly || false);
         self.InProgress = ko.observable(false);
@@ -151,12 +179,16 @@
         //#region Computed Properties
 
         self.TypesNotPresent = ko.pureComputed(function () {
-            return (self.Side1OptionsLoading().length <= 0 || 
+            return (self.Side1OptionsLoading().length <= 0 ||
                     self.Side2OptionsLoading().length <= 0);
         }, self);
 
         self.Side1OptionsLoading = ko.pureComputed(function () {
             return self.Side1Options().length == 0;
+        }, self);
+
+        self.PredicateOptionsLoading = ko.pureComputed(function () {
+            return self.PredicateOptions().length == 0;
         }, self);
 
         self.Side2OptionsLoading = ko.pureComputed(function () {
@@ -167,7 +199,9 @@
 
         //#region List Properties
 
-        self.Predicates = ko.observableArray();
+        self.IntersectRoles = ko.observableArray();
+        self.IntersectRoleOptions = ko.observableArray();
+
         self.PredicateOptions = ko.observableArray();
         self.Side1Options = ko.observableArray();
         self.Side2Options = ko.observableArray();
@@ -230,16 +264,11 @@
 
                             //Side2 needs to be first, here.
                             self.Side2(relData.Side2);
-                            self.Side2DisplayText(relData.Side2DisplayText);
                             self.Side1(relData.Side1);
-                            self.Side1DisplayText(relData.Side1DisplayText);
-
-                            self.Predicates(relData.Predicates || []);
-
+                            self.Predicate(relData.Predicate);
                             self.LimitedChangesOnly(relData.LimitedChangesOnly);
 
                             var indexToSelect = -1;
-
                             $.each(self.Side1Options(), function (ix, item) {
                                 if (item.value == relData.Side1) {
                                     indexToSelect = ix;
@@ -265,18 +294,15 @@
                 { },
                 function (relData) {
 
-                    var values = self.Predicates();
-                    if (values.length > 0) {
-                        $.each(values, function(vix, vi) {
-                            $.each(relData, function(){
-                                if (this.value == vi) {
-                                    this.checked = true;
-                                }
-                            });
-                        });
-                    }
-
                     self.PredicateOptions(relData);
+
+                    var indexToSelect = -1;
+                    $.each(relData, function (ix, item) {
+                        if (item.value == self.Predicate()) {
+                            indexToSelect = ix;
+                        }
+                    });
+                    self.PredicateIndex(indexToSelect);
                 });
         }
 
@@ -286,10 +312,10 @@
             var postModel = {
                 ID: self.ID(),
                 Side1: self.Side1(),
-                Side1DisplayText: self.Side1DisplayText(),
+                //Side1DisplayText: self.Side1DisplayText(),
                 Side2: self.Side2(),
-                Side2DisplayText: self.Side2DisplayText(),
-                Predicates: self.Predicates(),
+                //Side2DisplayText: self.Side2DisplayText(),
+                Predicate: self.Predicate()//Predicates: self.Predicates(),
             }
 
             var uri = '';

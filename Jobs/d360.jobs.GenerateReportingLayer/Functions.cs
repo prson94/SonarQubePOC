@@ -285,7 +285,7 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
 
             sql.AppendFormat("select R.IntersectID, A.ID as {0}ID, A.Name as {0}Name, ", name);
             if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
-            sql.Append("R.TargetTypeName as TargetType, R.TargetObjectID as TargetID, R.TargetObjectName as TargetName, dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl, case R.Classification when 1 then 'Critical' else 'Normal' end as Classification, R.Description, TR.[Count] as ChildRelationshipCount ");
+            sql.Append("R.TargetTypeName as TargetType, R.TargetObject as Target, R.TargetObjectID as TargetID, R.TargetObjectName as TargetName, dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl, case R.Classification when 1 then 'Critical' else 'Normal' end as Classification, R.Description, TR.[Count] as ChildRelationshipCount ");
             sql.Append("from cache.Relationships R ");
             sql.AppendFormat("inner join {0} A on A.{1} = {2} and R.SourceObject = '{3}' and A.ID = R.SourceObjectID ", tableName, objectTypeKeyName, typeID, objectType);
             if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");

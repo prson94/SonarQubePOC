@@ -2446,138 +2446,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region BusinessTransformationRule
-
-        [HttpGet, Route("transformation/load/{focal}/{focalid}/{source}/{sourceid}/{target}/{targetid}")]
-        public JsonNetResult LoadBusinessTransformationRule(string focal, int focalid, string source, int sourceid, string target, int targetid)
-        {
-            var rule = Company.Filter<BusinessTransformationRule>(b =>
-                b.FocalObject == focal &&
-                b.FocalObjectID == focalid &&
-                b.SourceObject == source &&
-                b.SourceObjectID == sourceid &&
-                b.TargetObject == target &&
-                b.TargetObjectID == targetid).SingleOrDefault();
-            if (rule != null)
-            {
-                var sourceObj = Company.GetObjectDetail(source, sourceid);
-                var targetObj = Company.GetObjectDetail(target, targetid);
-
-                rule.SourceName = sourceObj.Name;
-                rule.SourceTypeName = sourceObj.TypeName;
-                rule.SourceForeColor = sourceObj.IconForeColor;
-                rule.SourceBackColor = sourceObj.IconBackColor;
-
-                rule.TargetName = targetObj.Name;
-                rule.TargetTypeName = targetObj.TypeName;
-                rule.TargetForeColor = targetObj.IconForeColor;
-                rule.TargetBackColor = targetObj.IconBackColor;
-            }
-
-
-            return new JsonNetResult
-            {
-                Data = new { rule },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("transformation/save")]
-        public JsonNetResult SaveBusinessTransformationRule(BusinessTransformationRule rule)
-        {
-            var error = false;
-            var message = "";
-
-            if (rule.ID < 1)
-            {
-                if (string.IsNullOrWhiteSpace(rule.Transformation))
-                {
-                    return new JsonNetResult
-                    {
-                        Data = new { error, message },
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-                }
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(rule.Transformation))
-                {
-                    try
-                    {
-                        rule = Company.GetById<BusinessTransformationRule>(rule.ID);
-                        Company.Delete(rule);
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while trying to save the transformation.\n{ex.Message}\n{ex.StackTrace}";
-                    }
-                    return new JsonNetResult
-                    {
-                        Data = new { error, message },
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-                }
-            }
-            try
-            {
-                Company.SaveOrUpdate(rule);
-            }
-            catch (Exception ex)
-            {
-                error = true;
-                message += $"[{DateTime.Now}] An error occurred while trying to save the transformation.\n{ex.Message}\n{ex.StackTrace}";
-            }
-            return new JsonNetResult
-            {
-                Data = new { error, message },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpGet, Route("transformation/load/{focal}/{focalid}/{target}/{targetid}")]
-        public JsonNetResult LoadBusinessTransformationRulesByTarget(string focal, int focalid, string target, int targetid)
-        {
-            var rules = Company.Filter<BusinessTransformationRule>(b =>
-                b.FocalObject == focal &&
-                b.FocalObjectID == focalid &&
-                b.TargetObject == target &&
-                b.TargetObjectID == targetid).ToList();
-
-            var targetObj = Company.GetObjectDetail(target, targetid);
-
-            rules.ForEach(r =>
-            {
-                ObjectDetail sourceObj;
-                if (r.SourceObject == r.TargetObject && r.SourceObjectID == r.TargetObjectID)
-                    sourceObj = targetObj;
-                else
-                    sourceObj = Company.GetObjectDetail(r.SourceObject, r.SourceObjectID);
-
-                r.SourceName = sourceObj.Name;
-                r.SourceTypeName = sourceObj.TypeName;
-                r.SourceForeColor = sourceObj.IconForeColor;
-                r.SourceBackColor = sourceObj.IconBackColor;
-
-                r.TargetName = targetObj.Name;
-                r.TargetTypeName = targetObj.TypeName;
-                r.TargetForeColor = targetObj.IconForeColor;
-                r.TargetBackColor = targetObj.IconBackColor;
-            });
-
-            return new JsonNetResult
-            {
-                Data = new { rules },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
-        }
-
-        #endregion
-
         #region Company Settings
 
         public JsonNetResult CompanySettings()
@@ -8741,6 +8609,198 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #endregion
 
+        #region IntersectRole
+
+        #region Field Generation
+
+        public JsonResult IntersectRole_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.IntersectRole, 0, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">IntersectRoleID</param>
+        public JsonResult IntersectRole_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<IntersectRole>(id);
+            if (!Company.HasPermission(SystemObjects.IntersectRole, id, Claim.Delete))
+                return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">IntersectRoleID</param>
+        public JsonResult IntersectRole_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<IntersectRole>(id);
+
+            if (!Company.HasPermission(SystemObjects.IntersectRole, id, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Form Get/Post
+
+        public ActionResult AddIntersectRole()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectRole,
+                FieldUri = "/form/IntersectRole_AddFields",
+                FormTitle = "Add role",
+                FormUri = "/form/AddIntersectRole",
+                FormMethod = "POST"
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddIntersectRole(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("role");
+
+                if (!Company.HasPermission(SystemObjects.IntersectRole, 0, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new IntersectRole
+                {
+                    Name = parseTextField(form, "Name", null, true),
+                    Description = parseTextField(form, "Description", null, false)
+                };
+
+                Company.Add<IntersectRole>(a);
+
+                return jsonSuccess(a.Name + " successfully created.", string.Format("IntersectRole|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeleteIntersectRole(int id)
+        {
+            var a = Company.GetById<IntersectRole>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectRole,
+                FieldUri = string.Format("/form/IntersectRole_DeleteFields?id={0}", id),
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
+                FormUri = "/form/DeleteIntersectRole",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("OverlayDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteIntersectRole(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("role");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<IntersectRole>(id);
+                if (model == null) throw new NotFoundException("role");
+
+                if (!Company.HasPermission(SystemObjects.IntersectRole, model.ID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<IntersectRole>(model);
+                return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditIntersectRole(int id)
+        {
+            var a = Company.GetById<IntersectRole>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.IntersectRole,
+                FieldUri = string.Format("/form/IntersectRole_EditFields?id={0}", id),
+                FormTitle = "Edit " + a.Name,
+                FormUri = "/form/EditIntersectRole",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("OverlayEditableForm", model);
+        }
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditIntersectRole(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("role");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<IntersectRole>(id);
+                if (model == null) throw new NotFoundException("role");
+
+                if (!Company.HasPermission(SystemObjects.IntersectRole, model.ID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name", null, true);
+                model.Description = parseTextField(form, "Description", null, false);
+
+                Company.Update<IntersectRole>(model);
+
+                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
         #region IntersectType
 
         #region Field Generation
@@ -8764,7 +8824,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #endregion
 
-        #region Form Get/Post
+        #region Json Feeds To Support Editing
 
         public JsonNetResult IntersectType_FormData(int id)
         {
@@ -8779,20 +8839,27 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 { "ID", id },
                 { "LimitedChangesOnly", currentIntersects },
                 { "Side1", $"{first.ObjectType}|{first.ObjectID}" },
-                { "Side1DisplayText", first.MenuDisplayText },
+                //{ "Side1DisplayText", first.MenuDisplayText },
                 { "Side2", $"{last.ObjectType}|{last.ObjectID}" },
-                { "Side2DisplayText", last.MenuDisplayText }
+                { "Predicate", type.PredicateID }//{ "Side2DisplayText", last.MenuDisplayText }
             };
 
-            model.Add("Predicates", type.IntersectTypePredicates.Select(i => (int)i.PredicateType).ToArray());
+            //model.Add("Predicates", type.IntersectTypePredicates.Select(i => (int)i.PredicateType).ToArray());
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         public JsonNetResult IntersectType_PredicateOptions()
         {
-            var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
-            //var models = Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            //var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            var models = Company.Table<Predicate>()
+                .ToList()
+                .Where(i => !i.Type.AsInfoModel().ReadOnly)
+                .Select(i => new {
+                    title = $"{i.Name} <span style='color: #999; font-size: 85%'>({i.Type.AsInfoModel().Name})</span>",
+                    value = i.ID
+                })
+                .OrderBy(i => i.title);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -8807,74 +8874,15 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null)
         {
             var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID)
+                .Where(i => i.Type != "IntersectType")
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        //public ActionResult IntersectTypePredicateEditForm(int id)
-        //{
-        //    var model = new IntersectTypePredicateEditorModel
-        //    {
-        //        FormName = "Allocate Intersect Type Predicates",
-        //        FormDescription = "Allocate predicates to this intersect type by dragging them between the two lists.",
-        //        FormUri = "/form/SavePredicateAllocations",
-        //        FormMethod = "POST",
-        //        AllocatedPredicates = new List<Predicate>(),
-        //        AvailablePredicates = new List<Predicate>(),
-        //        IntersectTypeID = id
-        //    };
+        #endregion
 
-        //    return PartialView(model);
-        //}
-
-        //[ValidateHttpAntiForgeryToken]
-        //[HttpPost, ValidateInput(false)]
-        //public JsonResult SavePredicateAllocations(IntersectTypePredicateEditorModel model)
-        //{
-        //    if (model == null || model.IntersectTypeID == 0)
-        //    {
-        //        throw new NotFoundException("save predicate allocations");
-        //    }
-
-        //    var intersectTypePredicates = Company.IntersectTypePredicates.Where(p => p.IntersectTypeID == model.IntersectTypeID).ToList();
-
-        //    try
-        //    {
-        //        foreach (IntersectTypePredicate p in intersectTypePredicates)
-        //        {
-        //            var allocated = model.AllocatedPredicates.Where(a => a.ID == p.PredicateID).FirstOrDefault();
-        //            if (allocated == null)
-        //            {
-        //                Company.Delete(p);
-        //            }
-        //        }
-
-        //        foreach (Predicate p in model.AllocatedPredicates.ToList())
-        //        {
-        //            var existing = Company.IntersectTypePredicates.Where(e => e.IntersectTypeID == model.IntersectTypeID && e.PredicateID == p.ID).FirstOrDefault();
-
-        //            if (existing == null)
-        //            {
-
-        //                Company.Add(new IntersectTypePredicate() { IntersectTypeID = model.IntersectTypeID, PredicateID = p.ID });
-        //            }
-        //        }
-
-        //      return jsonSuccess("Predicate allocations successfully saved.", model.IntersectTypeID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
-
-        //    }
-
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
+        #region Form Get/Post
 
         public ActionResult AddIntersectType()
         {
@@ -8896,8 +8904,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 short side1Order = 1;
                 var side1Info = side1.Split('|');
                 var node1 = new IntersectTypeNode { ObjectID = int.Parse(side1Info[1]), ObjectType = side1Info[0], Order = side1Order };
-                if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
-                    node1.MenuDisplayText = form["Side1DisplayText"];
+                //if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
+                //    node1.MenuDisplayText = form["Side1DisplayText"];
 
                 nodes.Add(node1);
 
@@ -8905,11 +8913,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 short side2Order = 2;
                 var side2Info = side2.Split('|');
                 var node2 = new IntersectTypeNode { ObjectID = int.Parse(side2Info[1]), ObjectType = side2Info[0], Order = side2Order };
-                if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
-                    node2.MenuDisplayText = form["Side2DisplayText"];
+                //if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
+                //    node2.MenuDisplayText = form["Side2DisplayText"];
                 nodes.Add(node2);
 
                 Company.ValidateIntersectType(0, nodes);
+
+                var predicate = form["Predicate"];
 
                 var model = new IntersectType {
                     Nodes = nodes,
@@ -8917,33 +8927,34 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     SubjectID = int.Parse(side1Info[1]),
                     Object = side2Info[0],
                     ObjectID = int.Parse(side2Info[1]),
-                    IsSystem = false
+                    IsSystem = false,
+                    PredicateID = int.Parse(predicate)
                 };
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
 
-                if (!string.IsNullOrEmpty(form["Predicates[]"]))
-                {
-                    var predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                //if (!string.IsNullOrEmpty(form["Predicates[]"]))
+                //{
+                //    var predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
 
-                    predicates.ForEach(p => {
-                        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                    });
-                    Company.SaveChanges();
-                }
+                //    predicates.ForEach(p => {
+                //        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
+                //    });
+                //    Company.SaveChanges();
+                //}
 
-                if (!string.IsNullOrEmpty(form["Predicates"]))
-                {
-                    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
-                    if (!string.IsNullOrEmpty(vals))
-                    {
-                        var predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                        predicates.ForEach(p => {
-                            Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                        });
-                        Company.SaveChanges();
-                    }                    
-                }
+                //if (!string.IsNullOrEmpty(form["Predicates"]))
+                //{
+                //    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
+                //    if (!string.IsNullOrEmpty(vals))
+                //    {
+                //        var predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                //        predicates.ForEach(p => {
+                //            Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
+                //        });
+                //        Company.SaveChanges();
+                //    }                    
+                //}
 
                 return jsonSuccess(model.Name + " successfully created.", id.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
             }
@@ -9050,6 +9061,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     side2Node.MenuDisplayText = form["Side2DisplayText"];
                 nodes.Add(side2Node);
 
+                var predicate = form["Predicate"];
+
                 // Validation
                 Company.ValidateIntersectType(id, nodes);
 
@@ -9059,55 +9072,56 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var existingSide1Node = model.Nodes.Single(i => i.Order == 1);
                 existingSide1Node.ObjectType = side1Node.ObjectType;
                 existingSide1Node.ObjectID = side1Node.ObjectID;
-                existingSide1Node.MenuDisplayText = side1Node.MenuDisplayText;
+                //existingSide1Node.MenuDisplayText = side1Node.MenuDisplayText;
 
                 var existingSide2Node = model.Nodes.Single(i => i.Order == 2);
                 existingSide2Node.ObjectType = side2Node.ObjectType;
                 existingSide2Node.ObjectID = side2Node.ObjectID;
-                existingSide2Node.MenuDisplayText = side2Node.MenuDisplayText;
+                //existingSide2Node.MenuDisplayText = side2Node.MenuDisplayText;
 
                 model.Subject = side1Info[0];
                 model.SubjectID = int.Parse(side1Info[1]);
                 model.Object = side2Info[0];
                 model.ObjectID = int.Parse(side2Info[1]);
+                model.PredicateID = int.Parse(predicate);
 
                 Company.Update<IntersectType>(model);
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
 
-                List<PredicateType> predicates = null;
-                if (!string.IsNullOrEmpty(form["Predicates[]"]))
-                {
-                    predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                }
+                //List<PredicateType> predicates = null;
+                //if (!string.IsNullOrEmpty(form["Predicates[]"]))
+                //{
+                //    predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                //}
 
-                if (!string.IsNullOrEmpty(form["Predicates"]))
-                {
-                    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
-                    if (!string.IsNullOrEmpty(vals))
-                        predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                    else
-                        predicates = new List<PredicateType>();
-                }
+                //if (!string.IsNullOrEmpty(form["Predicates"]))
+                //{
+                //    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
+                //    if (!string.IsNullOrEmpty(vals))
+                //        predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
+                //    else
+                //        predicates = new List<PredicateType>();
+                //}
 
-                var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();
-                invalidPredicates.ForEach(p => {
-                    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateType == p);
-                    if (ip != null)
-                    {
-                        Company.Set<IntersectTypePredicate>().Remove(ip);
-                    }
-                });
-                if (invalidPredicates.Count > 0)
-                {
-                    Company.SaveChanges();
-                }
+                //var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();
+                //invalidPredicates.ForEach(p => {
+                //    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateType == p);
+                //    if (ip != null)
+                //    {
+                //        Company.Set<IntersectTypePredicate>().Remove(ip);
+                //    }
+                //});
+                //if (invalidPredicates.Count > 0)
+                //{
+                //    Company.SaveChanges();
+                //}
 
-                predicates.ForEach(p => {
-                    if (!model.IntersectTypePredicates.Any(i => i.PredicateType == p))
-                        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                });
-                Company.SaveChanges();
+                //predicates.ForEach(p => {
+                //    if (!model.IntersectTypePredicates.Any(i => i.PredicateType == p))
+                //        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
+                //});
+                //Company.SaveChanges();
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
             }
@@ -10561,16 +10575,24 @@ for json path");
                             #endregion
                             case "IntersectType":
                                 #region
-                                var intersectType = Company.Query<dynamic>(@"select	SD.Name as S, TD.Name as T
-                                from	IntersectTypeNode S
-                                        inner join IntersectTypeNode T on T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.[Order] = 1
-                                        inner join cache.ObjectDetails SD on SD.[Object] = S.ObjectType and SD.ObjectID = S.ObjectID
-                                        inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID
-                                where   S.IntersectTypeID = @id", new { id }).SingleOrDefault();
+                                var intersectType = Company.Query<dynamic>(@"select	O.Subject, SD.Name as SubjectName, O.Object, TD.Name as ObjectName
+                                from	IntersectType O
+                                        inner join cache.ObjectDetails SD on SD.[Object] = O.Subject and SD.ObjectID = O.SubjectID
+                                        inner join cache.ObjectDetails TD on TD.[Object] = O.Object and TD.ObjectID = O.ObjectID
+                                where   O.ID = @id", new { id }).SingleOrDefault();
                                 if (intersectType != null)
                                 {
-                                    fieldTypeNames.Insert(0, intersectType.S);
-                                    fieldTypeNames.Insert(1, intersectType.T);
+                                    //Do fields backwards, because of insert at 0.
+
+                                    fieldTypeNames.Insert(0, intersectType.ObjectName);
+
+                                    if (intersectType.Object == "ArtifactType")
+                                        fieldTypeNames.Insert(0, $"{intersectType.ObjectName} Subject Area");
+
+                                    fieldTypeNames.Insert(0, intersectType.SubjectName);
+
+                                    if (intersectType.Subject == "ArtifactType")
+                                        fieldTypeNames.Insert(0, $"{intersectType.SubjectName} Subject Area");
                                 }
                                 break;
                             #endregion
@@ -10733,7 +10755,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 var lowerColName = columns[i].ToLower();
 
-                if (type == "ArtifactType" && lowerColName == "subject area")
+                if ((type == "ArtifactType" && lowerColName == "subject area") || (type == "IntersectType" && lowerColName.Contains("subject area")))
                 {
                     var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -10976,6 +10998,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             else if (type == "NewLineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
                 required = false;
 
+            if (type == "IntersectType")
+            {
+                required = true; //All fields are required.
+            }
             if (type == "TechnicalLineage")
             {
                 required = (columnName != "group"); //All fields except Group are required.
@@ -11137,7 +11163,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     // regular production queue
-                    Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
@@ -12583,7 +12609,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 FormMethod = "POST"
             };
 
-            return PartialView("EditableForm", model);
+            return PartialView("OVerlayEditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken]
@@ -12607,7 +12633,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 Company.Add<Predicate>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", string.Format("DomainGroup|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
+                return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), form["_context"], "add", HttpStatusCode.Created, new { });
             }
             catch (BaseException ex)
             {
@@ -12633,7 +12659,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 FormMethod = "DELETE"
             };
 
-            return PartialView("DeleteForm", model);
+            return PartialView("OverlayDeleteForm", model);
         }
 
         [HttpDelete]
@@ -12677,7 +12703,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 FormMethod = "PUT"
             };
 
-            return PartialView("EditableForm", model);
+            return PartialView("OverlayEditableForm", model);
         }
 
         [HttpPut, ValidateInput(false)]
@@ -12699,7 +12725,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
                 Company.Update<Predicate>(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("DomainGroup|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
+                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
             }
             catch (BaseException ex)
             {
@@ -12713,195 +12739,6 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         }
 
         #endregion
-
-        #endregion
-
-        #region PredicatePhrase
-
-        //#region Field Generation
-
-        //public JsonResult PredicatePhrase_AddFields(int id)
-        //{
-        //    if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //    var list = new List<EditableField>();
-
-        //    list.Add(new EditableField { FieldName = "PredicateID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Phrase", Name = "Phrase", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Phrase", true, "", 1, 250) });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">Predicate Phrase ID</param>
-        //public JsonResult PredicatePhrase_DeleteFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = Company.GetById<PredicatePhrase>(id);
-        //    if (!Company.HasPermission(SystemObjects.Predicate, a.PredicateID, Claim.Delete))
-        //        return jsonException("You do not have permissions to delete this.", HttpStatusCode.Forbidden);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">Predicate Phrase ID</param>
-        //public JsonResult PredicatePhrase_EditFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = Company.GetById<PredicatePhrase>(id);
-
-        //    if (!Company.HasPermission(SystemObjects.Predicate, a.PredicateID, Claim.Update))
-        //        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Phrase", Name = "Phrase", FieldType = DataType.Text.ToString(), Value = a.Phrase, Validations = checkAndAddValidation("Text", "Phrase", true, "", 1, 250) });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        //#endregion
-
-        //#region Form Get/Post
-
-        //public ActionResult AddPredicatePhrase(int id)
-        //{
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.PredicatePhrase,
-        //        FieldUri = $"/form/PredicatePhrase_AddFields?id={id}",
-        //        FormTitle = "Add predicate phrase",
-        //        FormUri = "/form/AddPredicatePhrase",
-        //        FormMethod = "POST"
-        //    };
-
-        //    return PartialView("EditableForm", model);
-        //}
-
-        //[ValidateHttpAntiForgeryToken]
-        //[HttpPost]
-        //public JsonResult AddPredicatePhrase(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
-
-        //        if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
-        //            return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //        var a = new PredicatePhrase
-        //        {
-        //            PredicateID = parseIntField(form, "PredicateID"),
-        //            Phrase = parseTextField(form, "Phrase", null, true)
-        //        };
-
-        //        Company.Add<PredicatePhrase>(a);
-
-        //        return jsonSuccess("Phrase successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, new { });
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //public ActionResult DeletePredicatePhrase(int id)
-        //{
-        //    var a = Company.GetById<PredicatePhrase>(id);
-        //    if (a == null) return HttpNotFound();
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.PredicatePhrase,
-        //        FieldUri = string.Format("/form/PredicatePhrase_DeleteFields?id={0}", id),
-        //        FormTitle = "Remove predicate phrase?",
-        //        FormUri = "/form/DeletePredicatePhrase",
-        //        FormMethod = "DELETE"
-        //    };
-
-        //    return PartialView("DeleteForm", model);
-        //}
-
-        //[HttpDelete]
-        //public JsonResult DeletePredicatePhrase(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
-
-        //        var id = parseIntField(form, "ID");
-        //        var model = Company.GetById<PredicatePhrase>(id);
-        //        if (model == null) throw new NotFoundException("predicate phrase");
-
-        //        if (!Company.HasPermission(SystemObjects.Predicate, model.PredicateID, Claim.Delete))
-        //            return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-        //        Company.Delete<PredicatePhrase>(model);
-        //        return jsonSuccess("Item successfully removed.", null, form["_context"], "delete", HttpStatusCode.OK, new { });
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //public ActionResult EditPredicatePhrase(int id)
-        //{
-        //    var a = Company.GetById<PredicatePhrase>(id);
-        //    if (a == null) return HttpNotFound();
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.PredicatePhrase,
-        //        FieldUri = string.Format("/form/PredicatePhrase_EditFields?id={0}", id),
-        //        FormTitle = "Edit phrase",
-        //        FormUri = "/form/EditPredicatePhrase",
-        //        FormMethod = "PUT"
-        //    };
-
-        //    return PartialView("EditableForm", model);
-        //}
-
-        //[HttpPut, ValidateInput(false)]
-        //public JsonResult EditPredicatePhrase(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("predicate phrase");
-
-        //        var id = parseIntField(form, "ID");
-        //        var model = Company.GetById<PredicatePhrase>(id);
-        //        if (model == null) throw new NotFoundException("predicate");
-
-        //        if (!Company.HasPermission(SystemObjects.Predicate, model.ID, Claim.Update))
-        //            return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-        //        model.Phrase = parseTextField(form, "Phrase", null, true);
-        //        Company.Update<PredicatePhrase>(model);
-
-        //        return jsonSuccess("Phrase successfully updated.", string.Format("DomainGroup|{0}", id), form["_context"], "edit", HttpStatusCode.OK, new { });
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //#endregion
 
         #endregion
 
@@ -13359,234 +13196,6 @@ order by D.TextPath";
 
 
         #endregion
-
-        #endregion
-
-        #region RelationType
-
-        //        #region Field Generation
-
-        //        /// <param name="id">RelationTypeID</param>
-        //        public JsonResult RelationType_DeleteFields(int id)
-        //        {
-        //            if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
-        //                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-        //            if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
-        //                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-        //            var list = new List<EditableField>();
-        //            var a = Company.GetById<RelationType>(id);
-
-        //            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-        //            return Json(list, JsonRequestBehavior.AllowGet);
-        //        }
-
-        //        #endregion
-
-        //        #region Form Get/Post
-
-        //        public JsonNetResult RelationType_FormData(int id)
-        //        {
-        //            var type = Company.GetById<RelationType>(id);
-        //            if (type == null) return new JsonNetResult { Data = null };
-
-        //            var anyCurrentRelations = Company.Filter<Relation>(i => i.RelationTypeID == id).Any();
-
-        //            var model = new RelationTypeEditorModel
-        //            {
-        //                ID = id,
-        //                LimitedChangesOnly = anyCurrentRelations,
-        //                Subject = $"{type.Subject}|{type.SubjectID}",
-        //                Object = $"{type.Object}|{type.ObjectID}",
-        //                PredicateType = type.PredicateType
-        //            };
-
-        //            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
-        //        }
-
-        //        public JsonNetResult RelationType_SubjectOptions()
-        //        {
-        //            var models = Company.GetRelationTypeOptions()
-        //                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
-
-        //            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        //        }
-
-        //        public JsonNetResult RelationType_ObjectOptions(SystemObjects Subject, int SubjectID, SystemObjects? Object, int? ObjectID)
-        //        {
-        //            var models = Company.GetRelationTypeOptions(Subject, SubjectID, Object, ObjectID)
-        //                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
-
-        //            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        //        }
-
-        //        public JsonNetResult RelationType_PredicateOptions(SystemObjects Subject, int SubjectID, SystemObjects Object, int ObjectID, MapType? PredicateType)
-        //        {
-        //            var allowedPredicateTypes = MapType.Lineage.GetAsList().Select(i => i.ID).ToList();
-        //            var models = Company.Query<Predicate>(@"
-        //select	* 
-        //from	Predicate
-        //where	ID not in	(
-        //					select	PredicateType
-        //					from	RelationType
-        //					where	(
-        //                            (Subject = @s and SubjectID = @SubjectID and Object = @o and ObjectID = @ObjectID)
-        //							or (Object = @s and ObjectID = @SubjectID and Subject = @o and SubjectID = @ObjectID)
-        //                            )
-        //                            and (
-        //                                (@p is not null and PredicateType <> @p) or
-        //                                (@p is null)
-        //                                )
-        //					)", new { s = new Dapper.DbString { Value = Subject.ToString(), IsAnsi = true }, SubjectID, o = new Dapper.DbString { Value = Object.ToString(), IsAnsi = true }, ObjectID, p = (int)PredicateType })
-        //                    .Where(i => allowedPredicateTypes.Contains(i.Type))
-        //                    .Select(i => new { title = i.Name, value = i.ID.ToString() })
-        //                    .OrderBy(i => i.title);
-
-        //            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        //        }
-
-        //        public ActionResult AddRelationType()
-        //        {
-        //            ViewBag.ID = 0;
-        //            return PartialView("RelationTypeEditForm");
-        //        }
-
-        //        [ValidateHttpAntiForgeryToken]
-        //        [HttpPost, ValidateInput(false)]
-        //        public JsonResult AddRelationType(RelationTypeEditorModel formModel)
-        //        {
-        //            try
-        //            {
-        //                if (!Company.CurrentResourceIsAdmin)
-        //                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //                if (formModel == null) throw new NoFormDataException("relation type");
-
-        //                var subInfo = formModel.Subject.Split('|');
-        //                var objInfo = formModel.Object.Split('|');
-
-        //                var model = new RelationType
-        //                {
-        //                    Subject = subInfo[0],
-        //                    SubjectID = int.Parse(subInfo[1]),
-        //                    Object = objInfo[0],
-        //                    ObjectID = int.Parse(objInfo[1]),
-        //                    PredicateType = formModel.PredicateType
-        //                };
-
-        //                Company.Add<RelationType>(model);
-        //                formModel.ID = model.ID;
-
-        //                return jsonSuccess("Relation type successfully created.", model.ID.ToString(), ContextList.RelationType, "add", HttpStatusCode.Created);
-        //            }
-        //            catch (BaseException ex)
-        //            {
-        //                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                SendException(ex);
-        //                return jsonException(ex, HttpStatusCode.InternalServerError);
-        //            }
-        //        }
-
-
-        //        public ActionResult DeleteRelationType(int id)
-        //        {
-        //            var type = Company.GetById<RelationType>(id);
-        //            if (type == null) return HttpNotFound();
-        //            var model = new EditableForm
-        //            {
-        //                Context = ContextList.RelationType,
-        //                FieldUri = string.Format("/form/RelationType_DeleteFields?id={0}", id),
-        //                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "relation type"),
-        //                FormUri = "/form/DeleteRelationType",
-        //                FormMethod = "DELETE"
-        //            };
-
-        //            return PartialView("DeleteForm", model);
-        //        }
-
-        //        [HttpDelete]
-        //        public JsonResult DeleteRelationType(FormCollection form)
-        //        {
-        //            try
-        //            {
-        //                var id = parseIntField(form, "ID");
-        //                if (!form.HasKeys()) throw new NoFormDataException("relation type");
-
-        //                if (!Company.HasPermission(SystemObjects.RelationType, id, Claim.Delete))
-        //                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-        //                if (Company.Filter<Relation>(i => i.RelationTypeID == id).Count() > 0)
-        //                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
-
-        //                var model = Company.GetById<RelationType>(id);
-        //                if (model == null) throw new NotFoundException("relation type");
-
-        //                Company.Delete<RelationType>(model);
-
-        //                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-        //            }
-        //            catch (BaseException ex)
-        //            {
-        //                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                SendException(ex);
-        //                return jsonException(ex, HttpStatusCode.InternalServerError);
-        //            }
-        //        }
-
-
-        //        public ActionResult EditRelationType(int id)
-        //        {
-        //            ViewBag.ID = id;
-        //            return PartialView("RelationTypeEditForm");
-        //        }
-
-        //        [HttpPut, ValidateInput(false)]
-        //        public JsonResult EditRelationType(RelationTypeEditorModel formModel)
-        //        {
-        //            try
-        //            {
-        //                if (formModel == null) throw new NoFormDataException("relation type");
-
-        //                // Permisisons validation.
-        //                if (!Company.HasPermission(SystemObjects.RelationType, formModel.ID, Claim.Update))
-        //                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-        //                var model = Company.GetById<RelationType>(formModel.ID);
-        //                if (model == null) throw new NotFoundException("relation type");
-
-        //                var subInfo = formModel.Subject.Split('|');
-        //                var objInfo = formModel.Object.Split('|');
-
-        //                model.Subject = subInfo[0];
-        //                model.SubjectID = int.Parse(subInfo[1]);
-        //                model.Object = objInfo[0];
-        //                model.ObjectID = int.Parse(objInfo[1]);
-        //                model.PredicateType = formModel.PredicateType;
-
-        //                Company.Update<RelationType>(model);
-
-        //                return jsonSuccess("Relation type successfully updated.", model.ID.ToString(), ContextList.RelationType, "edit", HttpStatusCode.OK);
-        //            }
-        //            catch (BaseException ex)
-        //            {
-        //                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                SendException(ex);
-        //                return jsonException(ex, HttpStatusCode.InternalServerError);
-        //            }
-        //        }
-
-        //        #endregion
 
         #endregion
 
@@ -18648,6 +18257,30 @@ where	RT.SourceObjectType = @type
 
         #region Synonym
 
+        #region Json
+
+        [HttpGet]
+        public JsonResult SynonymsOptions(string type, int id)
+        {
+            var list = new List<EditableField>();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var typeIsSubject = true;
+            if (items.Count > 0)
+            {
+                typeIsSubject = (bool)items[0].TargetingSubject;
+            }
+
+            var model = new
+            {
+                items,
+                typeIsSubject
+            };
+
+            return Json(model, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
         #region Field Generation
 
         public JsonResult Synonym_AddFields(string type, int id)
@@ -18670,39 +18303,17 @@ where	RT.SourceObjectType = @type
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet]
-        public JsonResult GetSynonyms(string type, int id)
-        {
-            var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
-            var typeIsSubject = true;
-            if (items.Count > 0)
-            {
-                typeIsSubject = (bool)items[0].TargetingSubject;
-            }
-
-            var model = new
-            {
-                items,
-                typeIsSubject
-            };
-
-            return Json(model, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="type">Object's Type</param>
         /// <param name="id">Object's ID</param>
-        /// <param name="intersectMapID">IntersectMapID</param>
-        public JsonResult Synonym_DeleteFields(SystemObjects type, int id, int intersectMapID)
+        public JsonResult Synonym_DeleteFields(int id)
         {
-            if (!Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
+            var detail = Company.GetById<Intersect>(id);
+
+            if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Subject), detail.SubjectID, Claim.Delete, ClaimObject.Relationship))
                 return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "Object", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { FieldName = "IntersectMapID", FieldType = DataType.Hidden.ToString(), Value = intersectMapID.ToString() });
+            list.Add(new EditableField { FieldName = "IntersectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -18739,28 +18350,33 @@ where	RT.SourceObjectType = @type
                 var subjectID = model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
                 var @object = !model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
                 var objectID = !model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
-                var predicateID = int.Parse(synonymSegments[2]);
 
-                var intersect = Company.AddIntersect(subject, subjectID, @object, objectID, IntersectClassification.Normal, predicateID, null);
+                var sSubject = subject.ToString();
+                var sObject = @object.ToString();
 
-                if (intersect == null)
-                    throw new ApplicationException("Failed to create synonym relationship.");
+                var subjectDetail = Company.CacheObjects.SingleOrDefault(i => i.Object == sSubject && i.ObjectID == subjectID);
+                var objectDetail = Company.CacheObjects.SingleOrDefault(i => i.Object == sObject && i.ObjectID == objectID);
 
-                var im = new IntersectMap {
-                    PredicateID = predicateID,
-                    SubjectIntersectNodeID = intersect.Nodes.First().ID,
-                    ObjectIntersectNodeID = intersect.Nodes.Last().ID,
-                    Type = PredicateType.Synonym
-                };
-                Company.Add<IntersectMap>(im);
-
-                dynamic custom = new
+                if (subjectDetail != null && objectDetail != null)
                 {
-                    Name = intersect.Name,
-                    Context = ContextList.Synonym
-                };
+                    var intersectType = Company.Filter<IntersectType>(i =>
+                        (
+                        (i.Subject == subjectDetail.ObjectType && i.SubjectID == subjectDetail.ObjectTypeID && i.Object == objectDetail.ObjectType && i.ObjectID == objectDetail.ObjectTypeID) ||
+                        (i.Subject == objectDetail.ObjectType && i.SubjectID == objectDetail.ObjectTypeID && i.Object == subjectDetail.ObjectType && i.ObjectID == subjectDetail.ObjectTypeID)
+                        )
+                        && i.Predicate.Type == PredicateType.Synonym
+                    ).SingleOrDefault();
+                    var intersect = Company.AddIntersect(intersectType.ID, subject, subjectID, @object, objectID);
 
-                return jsonSuccess(intersect.Name + " successfully created.", intersect.ID.ToString(), ContextList.Synonym, "add", HttpStatusCode.Created, custom);
+                    if (intersect == null)
+                        throw new ApplicationException("Failed to create synonym relationship.");
+
+                    return jsonSuccess("Synonym assigned.", intersect.ID.ToString(), ContextList.Synonym, "add", HttpStatusCode.Created, new { });
+                }
+                else
+                {
+                    return jsonException("Item not found.", HttpStatusCode.NotFound, "Item not found.");
+                }
             }
             catch (BaseException ex)
             {
@@ -18773,14 +18389,12 @@ where	RT.SourceObjectType = @type
             }
         }
 
-        public ActionResult DeleteSynonym(SystemObjects type, int id, int intersectMapID)
+        public ActionResult DeleteSynonym(int id)
         {
-            var a = Company.GetById<IntersectMap>(intersectMapID);
-            if (a == null) return HttpNotFound();
             var model = new EditableForm
             {
                 Context = ContextList.Synonym,
-                FieldUri = $"/form/Synonym_DeleteFields?type={type.ToString()}&id={id}&intersectMapID={intersectMapID}",
+                FieldUri = $"/form/Synonym_DeleteFields?id={id}",
                 FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Synonym"),
                 FormUri = "/form/DeleteSynonym",
                 FormMethod = "DELETE"
@@ -18795,23 +18409,16 @@ where	RT.SourceObjectType = @type
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("synonym");
-                var type = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["Object"]);
-                var id = parseIntField(form, "ObjectID");
-                var intersectMapID = parseIntField(form, "IntersectMapID");
+                var id = parseIntField(form, "IntersectID");
 
-                if (!Company.HasPermission(type, id, Claim.Delete, ClaimObject.Relationship))
+                var detail = Company.GetById<Intersect>(id);
+
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Subject), detail.SubjectID, Claim.Delete, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-
-                var model = Company.GetById<IntersectMap>(intersectMapID);
-                if (model == null) throw new NotFoundException("synonym");
-
-                var intersect = Company.Intersects.FirstOrDefault(i => i.Nodes.Any(n => n.ID == model.SubjectIntersectNodeID));
-
-                if (intersect != null)
+                if (detail != null)
                 {
-                    Company.Delete(model);
-                    Company.Delete(intersect);
+                    Company.Delete(detail);
                 }
 
                 dynamic custom = new
@@ -18833,17 +18440,6 @@ where	RT.SourceObjectType = @type
             }
         }
 
-        [HttpDelete]
-        public JsonResult DeleteSynonymByID(string type, int id, int intersectMapID)
-        {
-            var form = new FormCollection();
-
-            form.Add("ObjectID", id.ToString());
-            form.Add("Object", type);
-            form.Add("IntersectMapID", intersectMapID.ToString());
-
-            return DeleteSynonym(form);
-        }
         #endregion
 
         #endregion

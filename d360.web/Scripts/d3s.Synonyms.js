@@ -10,7 +10,6 @@
         url: null,
         dataFields: [
             { name: 'IntersectID' },
-            { name: 'IntersectMapID' },
             { name: 'Object' },
             { name: 'ObjectID' },
             { name: 'Name' },
@@ -223,7 +222,7 @@
 
                                 tools.push({ isitemlink: true, urlprefix: data.Url, type: data.Object, id: data.ObjectID, context: 'Preview' });
                                 if (CanDelete) {
-                                    tools.push({ icon: 'trash-o', urlprefix: 'form/DeleteSynonym?type=' + data.Object + '&id=' + data.ObjectID + '&intersectMapID=' + data.IntersectMapID });
+                                    tools.push({ icon: 'trash-o', urlprefix: 'form/DeleteSynonym?id=' + data.IntersectID });
                                 }
                                 return renderToolsHtml(value, tools, contextList.Synonym, data);
                             }

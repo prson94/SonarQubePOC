@@ -36,6 +36,7 @@ public static class ContextList
         public const string Group = "groupform";
         public const string Hierarchy = "hierarchyform";
         public const string Intersect = "intersectform";
+        public const string IntersectRole = "intersectroleform";
         public const string IntersectType = "intersecttypeform";
 
         public const string Load = "loadform";

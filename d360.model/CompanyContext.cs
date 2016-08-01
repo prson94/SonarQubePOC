@@ -94,8 +94,6 @@ namespace d360.model
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
 
-        public DbSet<BusinessTransformationRule> BusinessTransformationRules { get; set; }
-
         public DbSet<BulkLoadQueue> BulkLoadQueues { get; set; }
 
         public DbSet<CacheObject> CacheObjects { get; set; }
@@ -1017,6 +1015,11 @@ order by	ColumnIndex", new { id });
             return Database.Connection.Query<T>(sql, param, null, true, timeout);
         }
 
+        public SqlMapper.GridReader QueryMultiple(string sql, object param = null)
+        {
+            return Database.Connection.QueryMultiple(sql, param, null);
+        }
+
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
         {
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
@@ -1340,14 +1343,14 @@ order by Name");
             if (objectDetail == null)
                 throw new NotFoundException("Object");
 
-            var intersectType = GetById<IntersectType>(intersectTypeID);
+            var intersectType = GetById<IntersectType>(intersectTypeID, i => i.Nodes);
 
             if (intersectType == null)
                 throw new NotFoundException("Intersect Type");
 
-            if (
-                intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID &&
-                intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID
+            if  (
+                (intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
+                (intersectType.Subject == objectDetail.Type && intersectType.SubjectID == objectDetail.TypeID && intersectType.Object == subjectDetail.Type && intersectType.ObjectID == subjectDetail.TypeID)
                 )
             {
                 dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (

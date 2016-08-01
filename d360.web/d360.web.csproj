@@ -1275,6 +1275,9 @@
     <Content Include="Views\Navigation\HeaderActions.cshtml" />
     <Content Include="Views\Reports\PowerBIOverlay.cshtml" />
     <Content Include="Views\Overlays\FusionTechMapping.cshtml" />
+    <Content Include="Views\Overlays\Predicates.cshtml" />
+    <Content Include="Views\Overlays\IntersectRoles.cshtml" />
+    <Content Include="Views\Relations\ImpactAnalysisOverlay.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

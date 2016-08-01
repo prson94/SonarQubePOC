@@ -229,6 +229,11 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        public ActionResult IntersectRoles()
+        {
+            return PartialView();
+        }
+
         [Route("{type}/{id:int}/issues")]
         public ActionResult Issues(SystemObjects type, int id)
         {
@@ -256,10 +261,10 @@ where A.AuditID = {0}", auditID);
             return PartialView();
         }
 
-        //public ActionResult ResponsibilityTypeHierarchies()
-        //{
-        //    return PartialView();
-        //}
+        public ActionResult Predicates()
+        {
+            return PartialView();
+        }
 
         [Route("{type}/{id:int}/score")]
         public ActionResult Score(SystemObjects type, int id)

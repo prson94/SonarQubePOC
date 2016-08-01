@@ -890,7 +890,6 @@ order by	D.ObjectTypeName,
 
         public static string SynonymsByObjectList = @"
 select	I.ID as IntersectID,
-		IM.ID as IntersectMapID,
 		D.Object,
 		D.ObjectID,
 		D.TextPath as Name,
@@ -898,22 +897,17 @@ select	I.ID as IntersectID,
 		D.Description,
 		D.Url
 from	[Intersect] I
-		inner join IntersectNode SN on SN.IntersectID = I.ID and SN.ObjectType = @type and SN.ObjectID = @id
-		inner join IntersectNode TN on TN.IntersectID = I.ID and TN.ID <> SN.ID 
-		inner join IntersectMap IM on 
-								    (
-										( IM.SubjectIntersectNodeID = SN.ID and IM.ObjectIntersectNodeID = TN.ID )
-										OR ( IM.SubjectIntersectNodeID = TN.ID and IM.ObjectIntersectNodeID = SN.ID )
-									)
-                                    and IM.Type = 6
-		inner join cache.ObjectDetails D on D.Object = case 
+		inner join IntersectType T on T.ID = I.IntersectTypeID 
+        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+        inner join cache.ObjectDetails D on D.Object = case 
 															when I.Subject = @type and I.SubjectID = @id then I.Object 
 															else I.Subject
 														end
 											and D.ObjectID = case 
 																when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
 																else I.SubjectID 
-															 end";
+															 end
+where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)";
 
         public static string TaxonomySettingsItem = @"
 select	*

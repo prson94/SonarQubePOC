@@ -132,7 +132,9 @@ namespace d360.core
         [Description("Monitor"), AllowSurvey(false)]
         Monitor = 61,
         [Description("Map"), AllowSurvey(false)]
-        Map= 62
+        Map= 62,
+        [Description("Intersect Role"), AllowSurvey(false)]
+        IntersectRole = 63
     }
 
     public class SystemObjectInfo
