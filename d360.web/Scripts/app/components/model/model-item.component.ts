@@ -51,9 +51,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit {
                     this.model = result;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Model'));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.TaxonomyTypeClass));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Information Models'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, undefined, true, 'TaxonomyType', this.model.ID));
 
                     this.setBrowserTitle(this.titleService, this.model.Name);
 

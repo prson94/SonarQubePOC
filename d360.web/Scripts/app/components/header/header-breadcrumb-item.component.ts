@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, ElementRef } from '@angular/core';
+import { Component, Input, ElementRef, ViewChildren, AfterViewInit } from '@angular/core';
 import { Router }       from '@angular/router';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -22,14 +22,14 @@ import { TypeaheadSearchResult } from '../../models/typeahead-search-result.mode
     .breadcrumb {
         font-weight:bold;
         text-transform:uppercase;
-    }       
+    }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
                 <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in()" class="breadcrumb">{{ breadcrumb.text }}</span>
                 <p-autoComplete size="50"                                                      
                             *ngIf="showSearch" 
-                            [inputStyle]="{border:'none'}"
-                            styleClass="searchTypeahead" 
+                            [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
+                            styleClass="searchTypeahead"             
                             [minLength]="1"                               
                             [(ngModel)]="result" 
                             [suggestions]="results" 
@@ -42,11 +42,12 @@ import { TypeaheadSearchResult } from '../../models/typeahead-search-result.mode
               `
 })
 
-export class HeaderBreadcrumbItemComponent {    
+export class HeaderBreadcrumbItemComponent implements AfterViewInit {    
     @Input() breadcrumb: Breadcrumb;
     @Input() lastItem: boolean;
 
-
+    //@ViewChildren('input') inputs;
+    
     results: TypeaheadSearchResult[];
     result: TypeaheadSearchResult;
     showSearch: boolean;
@@ -55,11 +56,18 @@ export class HeaderBreadcrumbItemComponent {
     constructor(private elementRef: ElementRef, private router: Router,
                 private typeaheadSearchService: TypeaheadSearchService) { }
 
+    ngAfterViewInit() {        
+      /*  this.inputs.changes.subscribe(elements => {
+            console.log(3);
+            elements.last.nativeElement.focus();
+        });*/
+    }
+    
 
     private in() {
         if (this.breadcrumb.objectType && this.breadcrumb.objectId) {
             this.showSearch = true;
-        }
+        }        
     }    
 
     search(event) {

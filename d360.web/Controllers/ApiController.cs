@@ -6355,6 +6355,10 @@ order by    title
                     return (from artifact in Company.Artifacts
                             where artifact.Name.StartsWith(q) && artifact.ArtifactTypeID == objectId
                             select artifact).Take(num).AsEnumerable().Select( x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
+                case SystemObjects.TaxonomyType:
+                    return (from taxonomyType in Company.TaxonomyTypes
+                            where taxonomyType.Name.StartsWith(q)
+                            select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/model/{0}", x.ID) });
                 default:
                     break;
             }
