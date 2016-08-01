@@ -123,7 +123,7 @@ namespace d360.extensions.search
 
         string createItemID(IndexObjectModel item)
         {
-            return $"{item.Group}|{item.ID}";
+            return item.getObjectID();            
         }
 
         void loadSearchServerUrl(int companyID)
@@ -273,8 +273,8 @@ namespace d360.extensions.search
                 var indexName = getCompanyIndexName(companyId);
                 foreach (var item in batch)
                 {
-                    sb.Append("{\"index\":{\"_id\":\"");
-                    sb.Append($"{item.Group}|{item.ID}");
+                    sb.Append("{\"index\":{\"_id\":\"");                                        
+                    sb.Append(item.getObjectID());
                     sb.Append("\",\"_type\":\"");
                     sb.Append(item.Group);
                     sb.Append("\" } }\n");
@@ -484,7 +484,7 @@ namespace d360.extensions.search
                     Description = GetHighlightedPropertyValueIfExists(h, "Description"),
                     Group = h._type,
                     ID = h._id,
-                    Name = GetHighlightedPropertyValueIfExists(h, "Name"),
+                    Name = GetHighlightedNameValueIfExists(h),
                     NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
                     Score = h._score,
                     Type = GetHighlightedPropertyValueIfExists(h, "Type"),
@@ -585,7 +585,7 @@ namespace d360.extensions.search
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
                 Name = GetPropertyValue<string>(h._source, "Name"),
-                DisplayName = GetHighlightedPropertyValueIfExists(h, "Name"),
+                DisplayName = GetDisplayName(h),//GetHighlightedPropertyValueIfExists(h, "Name"),
                 Desc = GetHighlightedPropertyValueIfExists(h, "Description"),
                 Type = GetTypeAheadDisplayType(h),//mapTypeToFriendlyName(h._type),
                 Url = GetPropertyValue<string>(h._source, "Url"),
@@ -599,6 +599,16 @@ namespace d360.extensions.search
                 return $"{mapTypeToFriendlyName(h._type)} - {GetPropertyValue<string>(h._source, "Type")}";
             }
             return mapTypeToFriendlyName(h._type);
+        }
+
+        private string GetTypeAheadSynonymDisplayType(SearchResultsHitModel h)
+        {
+            var type = GetPropertyValue<string>(h._source, "SynonymForObject");
+            if ((type ?? string.Empty).ToUpper() == "ARTIFACT")
+            {
+                return $"{mapTypeToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
+            }
+            return mapTypeToFriendlyName(type);
         }
 
         /// <summary>
@@ -660,6 +670,33 @@ namespace d360.extensions.search
                 result.Matches = searchResults.hits.total;
 
             return result;
+        }
+
+        private string GetDisplayName(SearchResultsHitModel h)
+        {
+            var synonymFor = GetPropertyValue<string>(h._source, "SynonymFor");
+            
+            var name = GetPropertyValue<string>(h._source, "Name");
+
+            if (string.IsNullOrEmpty(synonymFor)) return name;
+
+            return $"{name} (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
+        }
+        
+        private string GetHighlightedNameValueIfExists(SearchResultsHitModel h)
+        {
+            var synonymFor = GetPropertyValue<string>(h._source, "SynonymFor");
+
+            if(!string.IsNullOrEmpty(synonymFor))
+            {
+                synonymFor = $" (For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
+            }
+
+            var highlightVal = GetPropertyValue<string>(h.highlight, "Name");
+
+            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal + (synonymFor ?? "");
+
+            return GetPropertyValue<string>(h._source, "Name") + (synonymFor ?? "");
         }
 
         private string GetHighlightedPropertyValueIfExists(SearchResultsHitModel h, string propName)

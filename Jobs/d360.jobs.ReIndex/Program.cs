@@ -15,12 +15,15 @@ namespace d360.jobs.ReIndex
     class Program: FunctionsBase
     {
         private static int _defaultQueryCommandTimeout = 180;
+        private static string _jobName = "Re-Index Search Job";
 
         static void Main()
         {
             var host = new JobHost(new JobHostConfiguration(d360.core.constants.WEBJOBS_STORAGE_CONNECTION));
-
+            
             var mex = new List<Exception>();
+
+            AITrackJobStart(_jobName);
 
             try
             {
@@ -35,11 +38,12 @@ namespace d360.jobs.ReIndex
               {
                   try
                   {
+                      var jobDuration = System.Diagnostics.Stopwatch.StartNew();
+
                       var source = new ElasticSearchSource();                    
 
                       using (var context = GetCompanyConnection(companyID))
-                      {
-
+                      {                          
                           Console.WriteLine("Starting to rebuild search index [company id: {0}]", companyID);
 
                           context.OpenWithRetry(RetryPolicy.DefaultFixed);
@@ -83,6 +87,11 @@ namespace d360.jobs.ReIndex
                           Console.WriteLine("loading fusion attributes [company id: {0}]", companyID);
 
                           source.AddToIndex(LoadFusionAttributes(context, companyID, source));
+                          
+                          Console.WriteLine("loading synonyms [company id: {0}]", companyID);
+
+                          source.AddToIndex(LoadSynonyms(context, companyID, source));
+
                       }
 
                       using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
@@ -91,9 +100,13 @@ namespace d360.jobs.ReIndex
 
                           source.AddToIndex(LoadUsers(community, companyID, source));
                       }
+
+                      AITrackRequest($"{_jobName} - for company {companyID}", jobDuration.Elapsed);
                   }
                   catch (Exception ex)
                   {
+                      AITrackException(_jobName, ex, companyID.ToString());
+
                       mex.Add(ex);
                   }
 
@@ -101,10 +114,63 @@ namespace d360.jobs.ReIndex
             }
             catch (Exception ex)
             {
+                AITrackException(_jobName, ex);
+
                 mex.Add(ex);
             }
 
-            if (mex.Count > 0) throw new AggregateException("One or more exceptions occurred", mex);
+            if (mex.Count > 0)
+            {
+                throw new AggregateException("One or more exceptions occurred", mex);
+            }
+            else
+            {
+                AITrackJobCompletedNoErrors(_jobName);
+            }            
+        }
+
+        private static IEnumerable<AddToIndexModel> LoadSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"
+                    select	D.Name as 'Synonym',      
+		                    D.[Object] as 'SynonymObjectType',
+		                    D.ObjectID as  'SynonymObjectID',
+		                    SN_D.Name as 'SynonymFor',
+		                    SN.ObjectType as 'SynonymForObject',
+		                    SN.ObjectID as 'SynonymForObjectID',		
+		                    SN_D.Url as Url,
+							SN_D.ObjectTypeName as 'SynonymForObjectType'
+                    from	[Intersect] I
+		                    inner join IntersectNode SN on SN.IntersectID = I.ID 		
+		                    inner join IntersectNode TN on TN.IntersectID = I.ID and TN.ID <> SN.ID 
+		                    inner join IntersectMap IM on 
+								                        (
+										                    ( IM.SubjectIntersectNodeID = SN.ID and IM.ObjectIntersectNodeID = TN.ID )
+										                    OR ( IM.SubjectIntersectNodeID = TN.ID and IM.ObjectIntersectNodeID = SN.ID )
+									                    )
+                                                        and IM.Type = 6
+		                    inner join cache.ObjectDetails D on D.Object = case 
+															                    when I.Subject = SN.ObjectType and I.SubjectID = SN.ObjectID then I.Object 
+															                    else I.Subject
+														                    end
+											                    and D.ObjectID = case 
+																                    when I.Subject = SN.ObjectType and I.SubjectID = SN.ObjectID then I.ObjectID 
+																                    else I.SubjectID 
+															                     end
+	                    inner join cache.ObjectDetails SN_D on SN.ObjectType = SN_D.Object and SN.ObjectID = SN_D.ObjectID
+            ";
+
+            foreach (var a in context.Query(sql))
+            {
+                var item = new AddToIndexModel { Group = "Synonym", CompanyID = companyID, Type = "Synonym", ItemUniqueID = $"{a.SynonymObjectType}|{a.SynonymObjectID}|{a.SynonymForObjectType}|{a.SynonymForObjectID}", RelativeUrl = a.Url };
+                item.Fields = new Dictionary<string, string>();
+                item.Fields.Add("Name", a.Synonym);
+                item.Fields.Add("SynonymFor", a.SynonymFor);
+                item.Fields.Add("SynonymForObject", a.SynonymForObject);
+                item.Fields.Add("SynonymForObjectType", a.SynonymForObjectType);
+
+                yield return item;
+            }
         }
 
         private static void LoadFusionAttributesIncremental(SqlConnection context, int companyID, ElasticSearchSource source)

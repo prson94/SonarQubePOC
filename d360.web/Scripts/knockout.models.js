@@ -3166,6 +3166,7 @@ function CompanySettingsViewModel(data) {
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
         { title: "User", value: "Users" },
+        { title: "Synonym", value: "Synonym" },
     ]);
 
     //Computed Properties
@@ -4499,6 +4500,7 @@ function SearchAdvancedFilter(selectedField, search, exact) {
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
         { title: "User", value: "Users" },
+        { title: "Synonym", value: "Synonym" },
     ]);
     self.ShowConnectors = ko.observable(false);
     self.Connectors = ko.observableArray([

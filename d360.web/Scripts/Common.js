@@ -632,7 +632,8 @@ function renderSearchTypesDropdown(controlID) {
                         { val: "Group", display: "Group" },
                         { val: "Taxonomy", display: "Model" },
                         { val: "Domain", display: "Reference" },
-                        { val: "Users", display: "User" }
+                        { val: "Users", display: "User" },
+                        { val: "Synonym", display: "Synonym" },
     ];
     // Create a jqxDropDownList
     $("#" + controlID).jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });

@@ -211,7 +211,7 @@
                         var data = new Array();
                         for (var i = 0; i < records.length; i++) {
                             var row = records[i];
-                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
+                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>" + (row.Type ? "Category: <em class='result-category'>" + row.Type + "</em>&nbsp;&nbsp;" : "") + "Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
                             data.push(row);
                         }
 

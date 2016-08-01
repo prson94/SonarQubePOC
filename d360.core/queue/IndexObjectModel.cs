@@ -6,6 +6,8 @@ namespace d360.core.queue
     {
         public int ID { get; set; }
 
+        public string ItemUniqueID { get; set; }
+
         public string RelativeUrl { get; set; }
 
         /// <summary>
@@ -21,5 +23,16 @@ namespace d360.core.queue
         public string Group { get; set; }
 
         public Dictionary<string, string> Fields { get; set; }
+
+        /// <summary>
+        /// Returns the unique id for this search item
+        /// </summary>
+        /// <returns></returns>
+        public string getObjectID()
+        {
+            if (!string.IsNullOrEmpty(ItemUniqueID))
+                return $"{Group}|{ItemUniqueID}";
+            return $"{Group}|{ID}";
+        }
     }
 }

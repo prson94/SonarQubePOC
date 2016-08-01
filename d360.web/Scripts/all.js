@@ -46275,6 +46275,7 @@ function CompanySettingsViewModel(data) {
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
         { title: "User", value: "Users" },
+        { title: "Synonym", value: "Synonym" },
     ]);
 
     //Computed Properties
@@ -47608,6 +47609,7 @@ function SearchAdvancedFilter(selectedField, search, exact) {
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Domain" },
         { title: "User", value: "Users" },
+        { title: "Synonym", value: "Synonym" },
     ]);
     self.ShowConnectors = ko.observable(false);
     self.Connectors = ko.observableArray([
@@ -50058,7 +50060,8 @@ function renderSearchTypesDropdown(controlID) {
                         { val: "Group", display: "Group" },
                         { val: "Taxonomy", display: "Model" },
                         { val: "Domain", display: "Reference" },
-                        { val: "Users", display: "User" }
+                        { val: "Users", display: "User" },
+                        { val: "Synonym", display: "Synonym" },
     ];
     // Create a jqxDropDownList
     $("#" + controlID).jqxDropDownList({ source: source, width: 200, height: 23, checkboxes: true, placeHolder: 'Search Types', displayMember: 'display', valueMember: 'val' });
@@ -61443,7 +61446,7 @@ function SearchResultsGrid(contextList, defaultItemsPerPage, initialPhrase) {
                         var data = new Array();
                         for (var i = 0; i < records.length; i++) {
                             var row = records[i];
-                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>Category: <em class='result-category'>" + row.Type + "</em> &nbsp;&nbsp;Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
+                            row.Merged = "<div class='search-res-container'><h4 class='search-result-name'><a href='/" + row.Url + "' class='search-result-link'>" + row.Name + "</a></h4><p class='search-result-desc'>" + (row.Description != null ? row.Description : "") + "</p><h5 class='search-result-attributes'>" + (row.Type ? "Category: <em class='result-category'>" + row.Type + "</em>&nbsp;&nbsp;" : "") + "Type: <em class='result-type'>" + row.Group + "</em></h5></div>";
                             data.push(row);
                         }
 
