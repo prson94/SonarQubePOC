@@ -832,19 +832,35 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 /* Menus */
 .ui-menu,
 .ui-menu .ui-menu-child {
-    border: none;
+    border: none !important;
     color: white;
-    background: #6B5A51;
+    background: #275075;
+    min-height: 30px;
 }
 
 .ui-menu a.ui-state-hover {
-    background-color: #ddd;
-    color: #000;
+    background-color: white;
+    color: #275075;
 }
 
-.ui-menu-icon, .ui-submenu-icon, .ui-menuitem-icon, ui-menuitem-text {
+
+.ui-menuitem-link {
+    color: white;
+}
+
+.ui-menuitem-link:hover {
+    color:#275075;
+}
+a.ui-menuitem-link {
+    border:none !important;
     color:white;
 }
+
+/*.ui-menu-icon, .ui-submenu-icon, .ui-menuitem-icon, .ui-menuitem-text {
+    color:white;
+}*/
+
+
 
 /* PanelMenu */
 .ui-panelmenu .ui-panelmenu-header.ui-state-active,

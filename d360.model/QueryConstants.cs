@@ -948,5 +948,28 @@ where	T.ID = @id";
 		            and
 	            od.[object] in ('Artifact','Taxonomy', 'Policy', 'Domain')
 ";
+
+        public static string SimilarItems = @"
+                    select top 10
+						objectid,
+	                    Name,
+	                    Url, 
+	                    IconForeColor, 
+	                    IconBackColor, 
+	                    [Description],
+	                    objecttypeid,
+						case when Name like @query + '%' then
+							0
+						else
+							1
+						end as rnk
+                    from 
+	                    cache.objectdetails
+                    where 
+	                    [object] = @type
+	                    and (@typeID is null or objectTypeID = @typeID)
+	                    and Name like '%' + @query + '%'
+					order by rnk
+            ";
     }
 }

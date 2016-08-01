@@ -345,8 +345,8 @@ namespace d360.web.Controllers
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}")]
-        public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID)
+        [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
+        public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
         {
             switch ((objectType ?? "").ToUpper())
             {
@@ -368,6 +368,8 @@ namespace d360.web.Controllers
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "ATTRIBUTE":
+                    return Attribute_AddFields(typeID.GetValueOrDefault(),objectType,objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields();
             }
@@ -492,6 +494,8 @@ namespace d360.web.Controllers
                     return AddAttributeType(form);
                 case "ARTIFACT":
                     return AddArtifact(form);
+                case "ATTRIBUTE":
+                    return AddAttribute(form);
                 case "RULE":
                     return AddRule(form);
             }
@@ -534,7 +538,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
             }
 
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"/form/Aritfact_SimilarItems?typeID={at}&query=" });
 
             var parentTaxonomy = Company.GetById<Artifact>(p);
             int parentTaxonomyId = 0;
@@ -676,7 +680,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
             }
 
-            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = row, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"/form/Aritfact_SimilarItems?typeID={at}&query=" });
             list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "TaxonomyTypeID", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
             row++;
             list.Add(new EditableField { Row = row, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
@@ -686,6 +690,15 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Artifact", typeID, query }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #endregion
 
         #region Form Get/Post
@@ -2773,7 +2786,7 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "DomainGroupID", FieldType = DataType.Hidden.ToString(), Value = g.ToString() });
             list.Add(new EditableField { FieldName = "DomainTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Domain_SimilarItems?typeID={t}&query=" });
             //list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourcesList, Value = "-1" });
             list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "Classification", Name = "Classification", FieldType = DataType.Lookup.ToString(), Items = classificationList, Value = "1" });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
@@ -2830,6 +2843,14 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonNetResult Domain_SimilarItems(int typeID, string query)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Domain", typeID, query }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
         #endregion
 
@@ -11653,7 +11674,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
             if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Policy_SimilarItems?typeID={typeID}&query=" });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
 
             list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, typeID).ToList(), 3);
@@ -11691,6 +11712,15 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+
+        public JsonNetResult Policy_SimilarItems(int typeID, string query)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Policy", typeID, query }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #endregion
 
         #region Form Get/Post
@@ -16637,7 +16667,7 @@ order by	D.Name, I.Name";
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = model.GetName(i => i.RuleType), FieldDescription = model.GetDescription(i => i.RuleType), Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
 
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
@@ -16687,6 +16717,16 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonNetResult Rule_SimilarItems(string query)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Rule", typeID = (int?)null, query }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+    
         #endregion
 
         #region Form Get/Post
@@ -18460,7 +18500,7 @@ where	RT.SourceObjectType = @type
 
             list.Add(new EditableField { FieldName = "TaxonomyTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
             list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Taxonomy_SimilarItems?typeID={t}&id={p}&query=" });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
             list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.TaxonomyType, t).ToList(), 3);
 
@@ -18526,6 +18566,34 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonNetResult Taxonomy_SimilarItems(int typeID, int id, string query)
+        {
+
+            var sql = @"with p as
+                    (
+                    select t.id, t.parentid, t.name from taxonomy t
+                    where t.id = @id
+                    union all
+                    select t.id, t.parentid, t.name from taxonomy t
+                    join p on t.parentid = p.id and t.parentid is not null and t.id != p.id
+                    )
+                    select 
+	                    d.Name,
+	                    d.Url, 
+	                    d.IconForeColor, 
+	                    d.IconBackColor, 
+	                    d.[Description],
+	                    d.objecttypeid
+                    from p
+                    join cache.objectdetails d on d.objectid = p.id and d.[object] = @type
+                    where d.name like @query + '%'
+                    ";
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>((id > 0) ? sql : QueryConstants.SimilarItems, new { type = "Taxonomy", typeID, id, query }),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
         #endregion
 
         #region Form Get/Post

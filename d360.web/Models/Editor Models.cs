@@ -322,9 +322,11 @@ namespace d360.web.Models
         [DataMember]
         public List<FieldValidationModel> Validations { get; set; }
 
-
         [DataMember]
         public string TypeaheadUri { get; set; }
+
+        [DataMember]
+        public string SimilarItemsUri { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
