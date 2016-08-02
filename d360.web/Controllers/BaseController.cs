@@ -649,7 +649,7 @@ namespace d360.web.Controllers
         //    fields = null;
         //}
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true)
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false)
         {
             columns = "";
             joins = "";
@@ -670,15 +670,16 @@ namespace d360.web.Controllers
             foreach (var f in fields)
             {
                 var name = $"Field{f.ID}";//f.Name.Replace("'", "''").Replace("--", "");
+                var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += $"{name}_T.FormattedValue as [{name}], ";
+                columns += $"{name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
                 joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
             }
 
             fields = null;
         }
 
-        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true)
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false)
         {
             columns = "";
             joins = "";
@@ -702,10 +703,11 @@ namespace d360.web.Controllers
             foreach (var f in fields)
             {
                 var name = $"Field{f.ID}"; //f.Name.Replace("'", "''").Replace("--", "");
+                var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
 
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
-                var thisColumn = $", {name}_T.FormattedValue as [{name}]";
+                var thisColumn = $", {name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}]";
                 var thisJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
 
                 columns += thisColumn;

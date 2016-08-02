@@ -37,7 +37,8 @@ namespace d360.web.Controllers
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
+
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, false, true);
 
             var sql = string.Format(@"select * from (
 select	A.ID,

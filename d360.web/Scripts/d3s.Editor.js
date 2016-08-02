@@ -744,6 +744,76 @@
                                         }
                                     });
                                 }
+
+                                if (v.SimilarItemsUri) {
+
+                                    var delay = (function () {
+                                        var timer = 0;
+                                        return function (callback, ms) {
+                                            clearTimeout(timer);
+                                            timer = setTimeout(callback, ms);
+                                        };
+                                    })();
+
+                                    fld.on('keyup', function () {
+
+                                        delay(function () {
+                                            var val = fld.val();
+                                            
+                                            if (val.length > 2 && val.trim(' ').length > 0) {
+                                                $.ajax({
+                                                    url: v.SimilarItemsUri + val,
+                                                    method: 'GET',
+                                                    dataType: 'json'
+                                                }).complete(function (data) {
+                                                    data = data.responseJSON;
+                                                    $('#Similar_' + v.FieldName).remove();
+                                                    fld.css('border-color', '');
+                                                    if (data && data.length > 0) {
+
+                                                        fld.css('border-color', '#f6ab00');
+                                                        var warning = '<div id="Similar_' + v.FieldName + '"><span style="color:#f6ab00">The following items with similar names already exist: </span><br/>';
+                                                        var items = [];
+
+                                                        for (var i = 0; i < data.length; i++) {
+                                                            var item = '<a id="Similar_' + v.FieldName + '_item_' + i + '" href="' + data[i].Url + '">' + data[i].Name + '</a>';
+                                                            items.push(item);
+                                                        }
+
+                                                        warning += items.join(', ');
+                                                        fld.after(warning);
+
+                                                        for (var i = 0; i < items.length; i++) {
+                                                            $('#Similar_' + v.FieldName + '_item_' + i).qtip({
+                                                                content: {
+                                                                    text: data[i].Description,
+                                                                    position: {
+                                                                        at: 'bottom center',
+                                                                        my: 'top center',
+                                                                        viewport: $(window),
+                                                                        effect: false
+                                                                    }
+                                                                },
+                                                                style: {
+                                                                    classes: 'qtip-blue qtip-rounded'
+                                                                }
+                                                            });
+                                                        }
+
+                                                    } else {
+                                                        $('#Similar_' + v.FieldName).remove();
+                                                        fld.css('border-color', '');
+                                                    }
+                                                });
+                                            } else {
+                                                $('#Similar_' + v.FieldName).remove();
+                                                fld.css('border-color', '');
+                                            }
+                                        }, 200);
+
+                                    });
+                                }
+
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);
