@@ -986,7 +986,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             #region Non-admin sidebar
 
                             var wtr = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Enabled).ToList();
-                            if (wtr.Count(i => i.WorkflowType == WorkflowType.SuggestNewArtifact) > 0)
+                            if (wtr.Count(i => i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti) > 0)
                             {
                                 var responsibilityIDs = wtr.Select(i => i.ResponsibilityTypeID).ToList();
                                 var any = Company.Filter<ResponsibilityDetail>(i => i.ObjectType == "ArtifactType" && i.ObjectID == id && responsibilityIDs.Contains(i.ResponsibilityTypeID)).Any();
@@ -6312,7 +6312,7 @@ order by    title
 
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)
         {
-            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 1
+            var sql = @"(select '/Home/AssignmentActivityOverlay?mode=total&type=1&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_SuggestNewArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType in(1,5)
                         union
                         select '/Home/AssignmentActivityOverlay?mode=total&type=2&resourceID=" + resourceId + "' as TotalUri, '" + Resources.Core.WorkflowType_CertifyArtifact + @"' as Name, COUNT(*) AS Total FROM WorkflowResource WR inner join Workflow W on (W.ID = WR.WorkflowID) where W.DateCompleted is null and WR.ResourceID = @r and WR.IsComplete = 0 and W.WorkflowType = 2
                         union

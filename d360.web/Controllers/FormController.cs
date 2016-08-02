@@ -519,7 +519,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
             var type = Company.GetById<ArtifactType>(at, i => i.Parent);
-            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == type.ID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == type.ID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
 
@@ -591,7 +591,7 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
             var a = Company.GetById<Artifact>(id);
-            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+            var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
@@ -736,7 +736,7 @@ namespace d360.web.Controllers
 
                 if (type == null) throw new NotFoundException("artifact type");
 
-                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
 
                 int taxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
 
@@ -857,7 +857,7 @@ namespace d360.web.Controllers
                 var sType = SystemObjects.Artifact.ToString();
                 bool isPromoted = Company.Filter<FusionAttributePromotion>(i => i.ObjectType == sType && i.ObjectID == id).Any();
 
-                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == model.ArtifactTypeID && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == model.ArtifactTypeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
 
 
                 // Static fields
@@ -1172,7 +1172,13 @@ namespace d360.web.Controllers
                 var dictionary = new Dictionary<string, object>();
                 dictionary.Add("CompanyID", Company.CurrentCompanyID);
                 dictionary.Add("requestInfo", model);
-                processor.CreateNewWorkflowInstance(WorkflowVersionMap.SuggestNewArtifactIdentity_vCurrent, dictionary);
+
+                var wtr = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == typeID && i.Enabled).ToList();
+
+                if (wtr.Count(i => i.WorkflowType == WorkflowType.SuggestNewArtifactMulti) > 0)
+                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.SuggestNewArtifactMultiStepIdentity_vCurrent, dictionary);
+                else
+                    processor.CreateNewWorkflowInstance(WorkflowVersionMap.SuggestNewArtifactIdentity_vCurrent, dictionary);
 
                 return jsonSuccess("Request successfully created.", "", form["_context"], "add", HttpStatusCode.Created);
             }
@@ -19869,11 +19875,10 @@ order by TextPath
                 case WorkflowType.CertifyArtifact:
                     checkValueAndAddNode("DateForScheduleCalculation", form, xml);
                     checkValueAndAddNode("MonthsUntilCertification", form, xml);
-                    checkValueAndAddNode("DaysGivenToCompleteCertification", form, xml);
-                    //checkValueAndAddNode("CertificationStartDate", form, xml);
-                    //checkValueAndAddNode("CertificationEndDate", form, xml);
-                    break;
-                case WorkflowType.SuggestNewArtifact:
+                    checkValueAndAddNode("DaysGivenToCompleteCertification", form, xml);                    
+                    break;                
+                case WorkflowType.SuggestNewArtifactMulti:
+                    checkValueAndAddNode("ResponsibilityFinalApproval", form, xml);
                     break;
             }
 

@@ -37,12 +37,15 @@ new { N = request.Name, D = request.Description, A = request.ArtifactTypeID, V =
 
                 if (artifactID > 0)
                 {
-                    foreach (var k in request.Fields.Keys)
+                    if (request.Fields != null)
                     {
-                        connection.Execute(
-                            @"insert into Field (ObjectType, ObjectID, FieldTypeID, Value) values (@T, @I, @F, @V)",
-                            new { T = "Artifact", I = artifactID, F = int.Parse(k.ToString().Replace("FieldType_", "")), V = request.Fields[k].ToString() }
-                        );
+                        foreach (var k in request.Fields.Keys)
+                        {
+                            connection.Execute(
+                                @"insert into Field (ObjectType, ObjectID, FieldTypeID, Value) values (@T, @I, @F, @V)",
+                                new { T = "Artifact", I = artifactID, F = int.Parse(k.ToString().Replace("FieldType_", "")), V = request.Fields[k].ToString() }
+                            );
+                        }
                     }
                     context.SetValue<int>(this.ArtifactID, artifactID);
                 }

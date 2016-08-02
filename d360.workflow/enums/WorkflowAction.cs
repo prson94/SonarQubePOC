@@ -11,6 +11,7 @@ namespace d360.workflow
         SuggestNewArtifact = 1,
         CertifyArtifact = 2,
         WorkIssue = 3,
-        ChallengeArtifact = 4
+        ChallengeArtifact = 4,
+        SuggestNewArtifactMultiStep = 5,
     }
 }

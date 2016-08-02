@@ -263,4 +263,8 @@ namespace d360.web.Models
         public int ArtifactID { get; set; }
     }
 
+    public class WorkflowTask5Model : WorkflowTask1Model
+    {        
+    }
+
 }

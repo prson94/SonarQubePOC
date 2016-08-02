@@ -40,7 +40,13 @@ namespace d360.workflow
         Description("The workflow that is triggered when an item is challenged."),
         EnumMember(Value = "4")
         ]
-        ChallengeArtifact = 4
+        ChallengeArtifact = 4,
+        [
+        Name("Propose New Artifact(Multi-approval)"),
+        Description("The workflow that is triggered when a user proposes a new artifact.  Multiple roles need to approve."),
+        EnumMember(Value = "5"),
+        AssignableTypesAttribute(SystemObjects.ArtifactType)]
+        SuggestNewArtifactMulti = 5
     }
 
     [Flags]

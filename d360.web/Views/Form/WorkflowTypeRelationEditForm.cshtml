@@ -4,6 +4,7 @@
     string dateForScheduleCalculation = DateTime.Now.ToShortDateString();
     string monthsUntilCertification = "12";
     string daysGivenToCertify = "14";
+    string finalApproverRole = "";
 
     if (Model.WorkflowType == d360.workflow.WorkflowType.CertifyArtifact)
     {
@@ -23,6 +24,14 @@
         if (Model.WorkflowTypeRelation.Fields.ContainsKey(key))
         {
             daysGivenToCertify = Model.WorkflowTypeRelation.Fields[key];
+        }
+    }
+    else if (Model.WorkflowType == d360.workflow.WorkflowType.SuggestNewArtifactMulti)
+    {
+        var key = "ResponsibilityFinalApproval";
+        if (Model.WorkflowTypeRelation.Fields.ContainsKey(key))
+        {
+            finalApproverRole = Model.WorkflowTypeRelation.Fields[key];
         }
     }
 }
@@ -56,6 +65,12 @@
                     <label id='EnabledTip' for="Enabled">Enabled?</label>
                 </div>
             </div>
+            <div class="row tile Workflow-5">
+                <div class="col s6">
+                    <div id='ResponsibilityFinalApprovalTip' class="FieldName">Final Approval Responsibility</div>
+                    @Html.DropDownList("ResponsibilityFinalApproval", Model.ResponsibilityTypes, "Select responsibility...", new { @class = "browser-default" })
+                </div>
+            </div>
             <div class="row tile Workflow-2">
                 <div class="col s6">
                     <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
@@ -71,7 +86,7 @@
                     <div id='DaysGivenToCompleteCertificationTip' class="FieldName"># Days Given To Complete Certification</div>
                     <div id="DaysGivenToCompleteCertification" name="DaysGivenToCompleteCertification"></div>
                 </div>
-            </div>
+            </div>            
         }
     </div>
 </div>
@@ -108,6 +123,14 @@
         }
         else {
             $('.Workflow-2').hide();
+        }
+
+        if (workflowType == 5) {                        
+            $("#ResponsibilityFinalApproval").jqxDropDownList({ width: field_width, theme: theme, disabled: (responsibilityOptionLength <= 1) });
+            $("#ResponsibilityFinalApproval").jqxDropDownList('val', '@(finalApproverRole)');            
+        }
+        else {
+            $('.Workflow-5').hide();
         }
 
         $("#ObjectType").jqxDropDownList({ width: field_width, theme: theme });
@@ -164,6 +187,17 @@
                     rule: function () {
                         if (workflowType == 2) {
                             return $('#DaysGivenToCompleteCertification').val() != '';
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                },
+                {
+                    input: '#ResponsibilityFinalApproval', message: 'Final approval role is required.', action: 'blur',
+                    rule: function () {
+                        if (workflowType == 5) {
+                            return $('#ResponsibilityFinalApproval').val() != '';
                         }
                         else {
                             return true;
@@ -227,6 +261,18 @@
             }
         });
 
+        $('#ResponsibilityFinalApprovalTip').qtip({
+            content: {
+                text: "Choose the role responsible for final approval of the certification process."
+            },
+            style: {
+                classes: tipCss
+            }
+        });
+
+
+
+
         //#endregion
 
         //#region Events
@@ -282,8 +328,32 @@
                     //ddl.jqxDropDownList('addItem', { label: this.Text, value: this.Value });
                 });
                 ddl.jqxDropDownList('loadFromSelect', 'ResponsibilityType_jqxDropDownList');
-                ddl.jqxDropDownList({disabled: false});
+                ddl.jqxDropDownList({disabled: false});                
             });
+
+            if(workflowType == 5){
+                $.getJSON('/workflow/WorkflowResponsibilityTypeOptions', { type: ot[0], id: ot[1] }, function (rData) {
+                    var ddl = $('#ResponsibilityFinalApproval');
+                    var existingItems = ddl.jqxDropDownList('getItems');
+                    if (existingItems) {
+                        if (existingItems.length > 0) {
+                            ddl.jqxDropDownList('clearSelection');
+                            ddl.jqxDropDownList('clearFilter');
+                            try {
+                                ddl.jqxDropDownList('clear');
+                            } catch (e) {}
+                            existingItems = null;
+                        }
+                    }
+                    $("#ResponsibilityFinalApproval_jqxDropDownList").html('');
+                    $("#ResponsibilityFinalApproval_jqxDropDownList").append("<option value=''>Select responsibility...</option>");
+                    $.each(rData, function(){
+                        $("#ResponsibilityFinalApproval_jqxDropDownList").append('<option value="' + this.Value + '">' + this.Text + '</option>');                        
+                    });
+                    ddl.jqxDropDownList('loadFromSelect', 'ResponsibilityFinalApproval_jqxDropDownList');
+                    ddl.jqxDropDownList({disabled: false});                
+                }); 
+            }
         });
 
         $('#form0').on('validationSuccess', function (event) {

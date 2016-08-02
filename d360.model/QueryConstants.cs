@@ -182,7 +182,7 @@ from	    Workflow W
 			inner join WorkflowResource WR on	WR.WorkflowID = W.ID 
 											    and W.DateCompleted is null
 											    and WR.ResourceID = @r
-												and W.WorkflowType = 1
+												and W.WorkflowType in(1,5)
                                                 and WR.IsComplete = 0 
 {0} 
 order by    A.Name, W.Data.value('(fields/Name)[1]', 'nvarchar(250)')";

@@ -18,7 +18,9 @@ namespace d360.workflow
         [Name("Assign Issue To Pool"), Description("The owner is assigned as a potential resource to work on the issue.  They must still choose to work the issue."), EnumMember]
         AssignIssueToPool = 3,
         [Name("Assign Issue To Self"), Description("The owner has chosen to work the issue."), EnumMember]
-        AssignIssueToSelf = 4
+        AssignIssueToSelf = 4,
+        [Name("Final Approval"), Description("The owner has approved this item and it needs to be signed off by another user."), EnumMember]
+        FinalApproval = 5,
     }
 
     public class ActivityTypeInfo

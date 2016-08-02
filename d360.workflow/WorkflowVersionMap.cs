@@ -22,18 +22,18 @@ namespace d360.workflow
         public static WorkflowIdentity ChallengeArtifact_v1000;
         public static WorkflowIdentity ChallengeArtifact_vCurrent;
 
+        public static WorkflowIdentity SuggestNewArtifactMultiStepIdentity_vCurrent;
+
         static WorkflowVersionMap()
         {
             map = new Dictionary<WorkflowIdentity, Activity>();
 
             CertifyArtifactIdentity_v1000 = new WorkflowIdentity { Name = "CertifyArtifactWorkflow v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(CertifyArtifactIdentity_v1000, new CertifyArtifact_v1000());
+
             CertifyArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "CertifyArtifactWorkflow v1.0.0.1", Version = new Version(1, 0, 0, 1) };
             map.Add(CertifyArtifactIdentity_vCurrent, new CertifyArtifact_v1001());
-
-
-            //SuggestNewArtifactIdentity_v1000 = new WorkflowIdentity     { Name = "SuggestNewArtifactWorkflow v1.0.0.0",     Version = new Version(1, 0, 0, 0)   };
-            //map.Add(SuggestNewArtifactIdentity_v1000, new SuggestNewArtifact());
+                        
             SuggestNewArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(SuggestNewArtifactIdentity_vCurrent, new SuggestNewArtifact_v1000());
 
@@ -52,6 +52,8 @@ namespace d360.workflow
             ChallengeArtifact_vCurrent = new WorkflowIdentity { Name = "ChallengeArtifact v1.0.0.1", Version = new Version(1, 0, 0, 1) };
             map.Add(ChallengeArtifact_vCurrent, new ChallengeArtifact_v1001());
             
+            SuggestNewArtifactMultiStepIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflowMultiStep v1.0.0.0", Version = new Version(1, 0, 0, 0) };
+            map.Add(SuggestNewArtifactMultiStepIdentity_vCurrent, new SuggestNewArtifactMultiStep_v1000());
         }
 
         public static Activity GetWorkflowDefinition(WorkflowIdentity identity)

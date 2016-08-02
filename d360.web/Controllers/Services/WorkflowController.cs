@@ -412,6 +412,19 @@ namespace d360.web.Controllers.Services
                         return Request.CreateResponse(HttpStatusCode.OK, model4);
                     }
                     break;
+                case WorkflowType.SuggestNewArtifactMulti:
+                    sql = string.Format(QueryConstants.CurrentUserWorkflow1TaskItem, whereSuffix);
+                    var model5 = Company.Query<WorkflowTask5Model>(sql, new { r = Company.CurrentResourceID }).SingleOrDefault();
+                    if (model5 != null)
+                    {
+                        model5.WorkflowName = workflow.WorkflowType.GetWorkflowTypeDisplayName();
+                        model5.WorkflowDescription = workflow.WorkflowType.GetWorkflowTypeDescription();
+                        model5.ActivityName = model5.Activity.GetActivityTypeDisplayName();
+                        model5.ActivityDescription = model5.Activity.GetReportTileTypeDescription();
+
+                        return Request.CreateResponse(HttpStatusCode.OK, model5);
+                    }
+                    break;
             }
 
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow not found");
@@ -570,6 +583,42 @@ namespace d360.web.Controllers.Services
                             });
                         }
 
+                        break;
+
+                    case ActivityType.FinalApproval:
+                        bookmarkName = "ApprovalFromOwner";
+                        //var appModel = model as WorkflowApprovalRequestModel;
+                        obj = new RequestApproval
+                        {
+                            Approved = bool.Parse(model["Approved"]),
+                            Note = " " + (model["Notes"] ?? ""),
+                            ResourceID = Company.CurrentResourceID
+                        };
+                        try
+                        {
+                            processor.ResumeWorkflowInstance(id, bookmarkName, obj);
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.Accepted, new
+                            {
+                                context = "OwnerApprovalWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "confirm",
+                                title = "Workflow Task",
+                                text = "Workflow task successfully completed."
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            response = Request.CreateResponse<dynamic>(HttpStatusCode.BadRequest, new
+                            {
+                                context = "OwnerApprovalWorkflow",
+                                action = "edit",
+                                id = id.ToString(),
+                                type = "error",
+                                title = "Workflow Task",
+                                text = ex.GetFullExceptionData()
+                            });
+                        }
                         break;
                 }
             }

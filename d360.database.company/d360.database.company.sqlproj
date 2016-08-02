@@ -489,6 +489,7 @@
     <Build Include="dbo\Tables\IntersectGroup.sql" />
     <Build Include="fusion\Stored Procedures\Rules_1.sql" />
     <Build Include="dbo\Stored Procedures\GetTypeHierarchyByObject.sql" />
+    <Build Include="utility\Stored Procedures\GetApproversForWorkflow.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
