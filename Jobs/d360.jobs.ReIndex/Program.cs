@@ -43,7 +43,8 @@ namespace d360.jobs.ReIndex
                       var source = new ElasticSearchSource();                    
 
                       using (var context = GetCompanyConnection(companyID))
-                      {                          
+                      {   
+                                             
                           Console.WriteLine("Starting to rebuild search index [company id: {0}]", companyID);
 
                           context.OpenWithRetry(RetryPolicy.DefaultFixed);
@@ -88,9 +89,9 @@ namespace d360.jobs.ReIndex
 
                           source.AddToIndex(LoadFusionAttributes(context, companyID, source));
                           
-                          Console.WriteLine("loading synonyms [company id: {0}]", companyID);
+                          Console.WriteLine("loading artifact synonyms [company id: {0}]", companyID);
 
-                          source.AddToIndex(LoadSynonyms(context, companyID, source));
+                          source.AddToIndex(LoadArtifactSynonyms(context, companyID, source));
 
                       }
 
@@ -129,35 +130,41 @@ namespace d360.jobs.ReIndex
             }            
         }
 
-        private static IEnumerable<AddToIndexModel> LoadSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"
-                    select	D.Name as 'Synonym',      
-		                    D.[Object] as 'SynonymObjectType',
-		                    D.ObjectID as  'SynonymObjectID',
-		                    SN_D.Name as 'SynonymFor',
-		                    SN.ObjectType as 'SynonymForObject',
-		                    SN.ObjectID as 'SynonymForObjectID',		
-		                    SN_D.Url as Url,
-							SN_D.ObjectTypeName as 'SynonymForObjectType'
-                    from	[Intersect] I
-		                    inner join IntersectNode SN on SN.IntersectID = I.ID 		
-		                    inner join IntersectNode TN on TN.IntersectID = I.ID and TN.ID <> SN.ID 
-		                    inner join IntersectMap IM on 
-								                        (
-										                    ( IM.SubjectIntersectNodeID = SN.ID and IM.ObjectIntersectNodeID = TN.ID )
-										                    OR ( IM.SubjectIntersectNodeID = TN.ID and IM.ObjectIntersectNodeID = SN.ID )
-									                    )
-                                                        and IM.Type = 6
-		                    inner join cache.ObjectDetails D on D.Object = case 
-															                    when I.Subject = SN.ObjectType and I.SubjectID = SN.ObjectID then I.Object 
-															                    else I.Subject
-														                    end
-											                    and D.ObjectID = case 
-																                    when I.Subject = SN.ObjectType and I.SubjectID = SN.ObjectID then I.ObjectID 
-																                    else I.SubjectID 
-															                     end
-	                    inner join cache.ObjectDetails SN_D on SN.ObjectType = SN_D.Object and SN.ObjectID = SN_D.ObjectID
+            var sql = @"                    	
+                (select	
+	                SubjectArt.Name as 'Synonym',	
+	                I.Subject as 'SynonymObjectType',
+	                I.SubjectID as  'SynonymObjectID',
+	                ObjectArt.Name as 'SynonymFor',	
+	                I.Object as 'SynonymForObject',
+	                I.ObjectID as 'SynonymForObjectID',		
+	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                ArtType.Name as 'SynonymForObjectType'	
+                from [intersect] I
+	                inner join IntersectType T on T.ID = I.IntersectTypeID 
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+	                inner join Artifact SubjectArt on SubjectArt.ID = I.SubjectID and I.Subject = 'Artifact'
+	                inner join Artifact ObjectArt on ObjectArt.ID = I.ObjectID and I.Object = 'Artifact'
+	                inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
+                Union
+                (select	
+	                SubjectArt.Name as 'Synonym',	
+	                I.Object as 'SynonymObjectType',
+	                I.ObjectID as  'SynonymObjectID',
+	                ObjectArt.Name as 'SynonymFor',	
+	                I.Subject as 'SynonymForObject',
+	                I.SubjectID as 'SynonymForObjectID',		
+	                dbo.GenerateObjectUrl('Artifact', ArtType.ID, ObjectArt.ID) as 'Url',	
+	                ArtType.Name as 'SynonymForObjectType'	
+                from [intersect] I
+	                inner join IntersectType T on T.ID = I.IntersectTypeID 
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+	                inner join Artifact SubjectArt on SubjectArt.ID = I.ObjectID and I.Subject = 'Artifact'
+	                inner join Artifact ObjectArt on ObjectArt.ID = I.SubjectID and I.Object = 'Artifact'
+	                inner join ArtifactType ArtType on ObjectArt.ArtifactTypeID = ArtType.ID)
+                order by ObjectArt.Name
             ";
 
             foreach (var a in context.Query(sql))
