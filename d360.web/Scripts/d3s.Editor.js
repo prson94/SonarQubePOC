@@ -703,7 +703,7 @@
                                 //#region Text Field Management                                
                                 addLabel(cpnl, v, false);
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" ' + (v.TypeaheadUri ? '  autocomplete="off"' : '') +'/>');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" autocomplete="off" />');
                                 fld.val($('<div/>').html(cleanedValue).text());
 
                                 if (!v.TypeaheadUri) {
