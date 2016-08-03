@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { RuleType, RuleDimension, Rule } from '../models/rule.model';
+import { RuleType, RuleDimension, Rule, RuleDetail } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -22,6 +22,13 @@ export class RulesService extends BaseService {
         return this.http.get('api/rules')
             .toPromise()
             .then(response => <Rule[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRule(id: number): Promise<RuleDetail> {
+        return this.http.get(`api/rule/${id}`)
+            .toPromise()
+            .then(response => <RuleDetail>response.json())
             .catch(err => this.handleError(err));
     }
 

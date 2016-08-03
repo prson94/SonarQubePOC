@@ -161,8 +161,7 @@ export class AttributesTile implements OnInit {
         this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID).
             then(d => {
                 this.menuItems = FormHelper.convertToolBarToMenuItem(d);
-                this.updateMenuItems(this.menuItems);
-                console.log(this.menuItems);
+                this.updateMenuItems(this.menuItems);                
             });
     }
 

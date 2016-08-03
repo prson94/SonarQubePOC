@@ -15,7 +15,7 @@ import { ModelTypePipe } from '../../pipes/model-type.pipe';
     providers: [ModelsService],
     directives: [DataTable, Column, TileActionsComponent],
     pipes: [ModelTypePipe],
-    template: ` 
+    template: `                 
                 <div class="row">
                     <div class="col s12">
                         <div *ngIf="isLoading">
@@ -46,12 +46,14 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     private models: Model[] = [];
     private selected: Model;
     
-    constructor(private route: ActivatedRoute,
+    constructor(
+                private route: ActivatedRoute,
                 private router: Router,
                 protected titleService: Title,
                 protected headerBreadcrumbService: HeaderBreadcrumbService,
                 protected modelsService: ModelsService) {
         super();
+        
     }
 
     ngOnInit() {
@@ -69,7 +71,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        this.sub.unsubscribe();        
     }
 
     loadModels() {

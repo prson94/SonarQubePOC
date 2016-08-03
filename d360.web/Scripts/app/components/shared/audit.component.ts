@@ -83,8 +83,7 @@ export class AuditComponent {
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-        console.log(event.filters);
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
         this.filters.splice(0, this.filters.length);
 
         for (var key in event.filters) {
@@ -101,8 +100,7 @@ export class AuditComponent {
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;
-        console.log(this.currentPageNumber);
+        this.currentPageNumber = event.first / event.rows;        
         this.getData();
     }
 }

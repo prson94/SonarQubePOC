@@ -3,17 +3,21 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angu
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
+import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    directives: [ObjectDefinitionTile],
-    template: ` 
-                <div class="row">
+    directives: [ObjectDefinitionTile, AuditComponent],
+    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>
+                <div *ngIf="isLoading">
+                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+                <div *ngIf="!isLoading && !isAuditVisible" class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">
                                 <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
@@ -23,7 +27,7 @@ import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
                 `
 })
 
-export class ModelItemComponent extends BaseComponent implements OnInit {
+export class ModelItemComponent extends BaseComponent implements OnInit, OnDestroy {
     sub: any;
     model: Model;
     modelHierarchy: ModelHierarchy[] = [];
@@ -31,10 +35,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit {
 
     constructor(private route: ActivatedRoute,
             private router: Router,
+            rightSidebarService: RightSidebarService,
             protected modelsService: ModelsService,
             protected titleService: Title,
             protected headerBreadcrumbService: HeaderBreadcrumbService) {
-        super();
+        super(rightSidebarService);
+
+        this.setCommonRightSideBar();
     }
 
     ngOnInit() {
@@ -62,6 +69,10 @@ export class ModelItemComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Model'));
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     private loadModelHierarchy(modelId: number) {

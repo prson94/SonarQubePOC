@@ -11,6 +11,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
         border-radius:4px;
         color:white;
         font-weight:bold;
+        font-size:0.7em;
         cursor:pointer;
         margin-bottom:10px;
     }

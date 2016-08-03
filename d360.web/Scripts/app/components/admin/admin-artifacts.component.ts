@@ -60,12 +60,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.clearSidebar();
     }
 
-
-    showOverlay(item) {
-        if (item.tag = 'audit')
-            this.isAuditVisible = !this.isAuditVisible;
-    }
-
     load() {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree()

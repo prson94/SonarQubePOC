@@ -22,10 +22,13 @@ import { TypeaheadSearchResult } from '../../models/typeahead-search-result.mode
     .breadcrumb {
         font-weight:bold;
         text-transform:uppercase;
+    }
+    .link {
+        border-bottom: 2px solid #3979a2;
     }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in()" class="breadcrumb">{{ breadcrumb.text }}</span>
+                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in()" class="breadcrumb" [ngClass]="{'link':isChangableItem()}">{{ breadcrumb.text }}</span>
                 <p-autoComplete size="50"                                                      
                             *ngIf="showSearch" 
                             [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
@@ -62,10 +65,13 @@ export class HeaderBreadcrumbItemComponent implements AfterViewInit {
             elements.last.nativeElement.focus();
         });*/
     }
-    
+
+    private isChangableItem() {
+        return (this.breadcrumb.objectType && this.breadcrumb.objectId);
+    }
 
     private in() {
-        if (this.breadcrumb.objectType && this.breadcrumb.objectId) {
+        if (this.isChangableItem()){
             this.showSearch = true;
         }        
     }    
@@ -77,7 +83,7 @@ export class HeaderBreadcrumbItemComponent implements AfterViewInit {
     }
 
     selectItem() {
-        this.router.navigateByUrl(this.result.Url)
+    this.router.navigateByUrl(this.result.Url);
     }
 
     onClick(event) {

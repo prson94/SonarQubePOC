@@ -10,6 +10,10 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { AuditComponent} from '../shared/audit.component';
+import { DashboardComponent} from '../shared/dashboard.component';
+import { LineageComponent} from '../shared/lineage.component';
+import { OwnershipComponent} from '../shared/ownership.component';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -20,8 +24,11 @@ import { AuditComponent} from '../shared/audit.component';
                         </div>
                     </div>
                 </div>
+                <d3s-ownership *ngIf="!isLoading && isOwnershipVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-ownership>
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
+                <d3s-dashboard *ngIf="!isLoading && isDashboardVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
-                <div *ngIf="!isLoading && !isAuditVisible">
+                <div *ngIf="!isLoading && !isTabVisible()">
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail">
@@ -47,13 +54,16 @@ import { AuditComponent} from '../shared/audit.component';
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent],
     providers: [ArtifactService]
 })
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
     private sub: any;
+    private isDashboardVisible: boolean = false;
+    private isLineageVisible: boolean = false;    
+    private isOwnershipVisible: boolean = false;
 
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
@@ -65,6 +75,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         super(headerBreadcrumbService, pageHeader, rightSidebarService);
 
         this.setCommonRightSideBar();
+
+        this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Dashboard', 'dashboards'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership'));
     }
 
     ngOnInit() {
@@ -94,6 +108,17 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    protected isTabVisible() {
+        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible;
+    }
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
+        // put logic to show hide lineage / dashboard / ownership here
+        if (activatedItem.tag == 'dashboards') this.isDashboardVisible = !this.isDashboardVisible;
+        else if (activatedItem.tag == 'lineage') this.isLineageVisible = !this.isLineageVisible;
+        else if (activatedItem.tag == 'ownership') this.isOwnershipVisible = !this.isOwnershipVisible;
     }
 
 

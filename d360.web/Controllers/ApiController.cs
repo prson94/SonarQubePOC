@@ -6318,6 +6318,10 @@ order by    title
                     return (from taxonomyType in Company.TaxonomyTypes
                             where taxonomyType.Name.StartsWith(q)
                             select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/model/{0}", x.ID) });
+                case SystemObjects.Rule:
+                    return (from rule in Company.Rules
+                            where rule.Name.StartsWith(q)
+                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/rule/{0}", x.ID) });
                 default:
                     break;
             }

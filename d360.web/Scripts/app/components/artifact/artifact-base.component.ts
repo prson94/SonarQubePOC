@@ -32,11 +32,17 @@ export class ArtifactBaseComponent extends BaseComponent {
 
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
-                item => {
-                    if (item.tag = 'audit')
+                item => {                    
+                    if (item.tag == 'audit')
                         this.isAuditVisible = !this.isAuditVisible;
+                    else
+                        this.showHideBreadcrumbItem(item);
                 });
         }
+    }
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+        console.log('show/hide ' + activatedItem);
     }
 
     clearSidebar() {

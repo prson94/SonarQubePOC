@@ -1472,11 +1472,14 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\ownership.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
