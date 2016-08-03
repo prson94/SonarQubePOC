@@ -4849,69 +4849,6 @@ order by    title
                     lookupType = null;
                     break;
                 #endregion
-//                case SystemObjects.Map:
-//                    #region Fields                    
-//                    var map = Company.GetById<Map>(id, i => i.MapItems);
-//                    if (map != null)
-//                    {
-//                        model.columns = 1;
-
-//                        if (!string.IsNullOrEmpty(map.Transformation))
-//                        {
-//                            model.rows.Add(new DetailReadOnlyRowModel
-//                            {
-//                                columns = 1,
-//                                FirstColumnFields = new List<ReadOnlyField>
-//                            {
-//                                new ReadOnlyField { Name = "Transformation", FieldName = "Transformation", Value = map.Transformation }
-//                            }
-//                            });
-//                        }
-
-//                        var intersectIDs = map.MapItems.Select(i => i.IntersectID).Distinct().ToList();
-
-//                        var intersectDetails = Company.Filter<IntersectDetail>(i => intersectIDs.Contains(i.ID)).ToList();
-
-//                        var sources = "";
-//                        var targets = "";
-//                        var styles = "padding: 3px; border: 0 solid transparent; border-radius:3px; ";
-//                        foreach (var mi in map.MapItems)
-//                        {
-//                            var intersectDetail = intersectDetails.SingleOrDefault(i => i.ID == mi.IntersectID);
-//                            if (intersectDetail != null)
-//                            {
-//                                var text = $@"<div>
-//<span style='{styles}color: {intersectDetail.SubjectIconForeColor};background-color: {intersectDetail.SubjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Subject}' data-id='{intersectDetail.SubjectID}' href='{intersectDetail.SubjectUrl}'>{intersectDetail.SubjectName}</a></span> / 
-//<span style='{styles}color: {intersectDetail.ObjectIconForeColor};background-color: {intersectDetail.ObjectIconBackColor};'><a style='color: {intersectDetail.SubjectIconForeColor};' data-context='Preview' data-type='{intersectDetail.Object}' data-id='{intersectDetail.ObjectID}' href='{intersectDetail.ObjectUrl}'>{intersectDetail.ObjectName}</a></span>
-//</div>";
-//                                if (mi.IsSource)
-//                                    sources += text;
-//                                else
-//                                    targets += text;
-//                            }
-//                        }
-                        
-//                        model.rows.Add(new DetailReadOnlyRowModel
-//                        {
-//                            columns = 1,
-//                            FirstColumnFields = new List<ReadOnlyField>
-//                            {
-//                                new ReadOnlyField { Name = "Sources", FieldName = "Sources", Value = sources }
-//                            }
-//                        });
-
-//                        model.rows.Add(new DetailReadOnlyRowModel
-//                        {
-//                            columns = 1,
-//                            FirstColumnFields = new List<ReadOnlyField>
-//                            {
-//                                new ReadOnlyField { Name = "Targets", FieldName = "Targets", Value = targets }
-//                            }
-//                        });
-//                    }
-//                    map = null;
-//                    break;
-//                #endregion
                 case SystemObjects.Policy:
                     #region Fields
                     var policy = Company.GetById<Policy>(id, i => i.Children);
@@ -5786,14 +5723,36 @@ order by    title
 
                         foreach (var p in wtr.Properties)
                         {
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            if (p.Key == "ResponsibilityFinalApproval")
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
+                                // look up the name for the role its value is in p.Value
+
+                                var responsibilityId = System.Convert.ToInt32(p.Value);
+                                var responsibility = Company.ResponsibilityTypes.FirstOrDefault(x => x.ID == responsibilityId);
+
+                                if (responsibility != null)
+                                {
+                                    model.rows.Add(new DetailReadOnlyRowModel
+                                    {
+                                        columns = 1,
+                                        FirstColumnFields = new List<ReadOnlyField>
+                                        {
+                                            new ReadOnlyField { Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = responsibility.Name }
+                                        }
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = p.Key, FieldName = string.Format("Wtr{0}", p.Key), FieldDescription = "", Value = p.Value }
                                 }
-                            });
+                                });
+                            }
                         }
                     }
                     wtr = null;
