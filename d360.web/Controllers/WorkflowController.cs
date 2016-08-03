@@ -281,6 +281,51 @@ where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
                     fields.Add(new GridField { name = "DateStarted", type = "date" });
                     fields.Add(new GridField { name = "DateCompleted", type = "date" });
                     break;
+                case WorkflowType.SuggestNewArtifactMulti:
+                    #region SQL
+                    sql = @"select	W.ID,
+		                            W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') as ArtifactTypeID,
+		                            W.Data.value('(/fields/Name)[1]', 'nvarchar(250)') as Name,
+		                            W.Data.value('(/fields/Description)[1]', 'nvarchar(4000)') as Description,
+		                            W.Data.value('(/fields/RequestingResourceID)[1]', 'int') as RequestingResourceID,
+		                            R.FirstName + ' ' + R.LastName as RequestingResource,
+		                            W.Data.value('(/fields/TaxonomyTypeID)[1]', 'int') as TaxonomyTypeID,
+		                            V.Name as OwningModel,
+		                            W.DateStarted,
+                                    W.DateCompleted,
+		                            WA.[Count] as ResourcesAssigned,
+		                            WC.[Count] as ResourcesCompleted
+                            from	Workflow W
+		                            inner join TaxonomyType V on V.ID = W.Data.value('(/fields/TaxonomyTypeID)[1]', 'int')
+		                            inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(/fields/RequestingResourceID)[1]', 'int')
+		                            cross apply (
+					                            select	count(1) as [Count]
+					                            from	WorkflowResource
+					                            where	WorkflowID = W.ID
+					                            ) WA
+		                            cross apply (
+					                            select	count(1) as [Count]
+					                            from	WorkflowResource
+					                            where	WorkflowID = W.ID and IsComplete = 1
+					                            ) WC
+                            where   W.Data.value('(/fields/ArtifactTypeID)[1]', 'int') = @id
+		                            and W.WorkflowType = 5
+		                            and W.Step = @step";
+                    #endregion
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "Name", filterable = true, filtertype = GridColumn.FILTER_TYPE_STRING, sortable = true, text = "Name", width = "18%" });
+                    columns.Add(new GridColumn { columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "RequestingResource", filterable = true, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, sortable = true, text = "Requestor", width = "17%" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateStarted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Started On", width = "15%" });
+                    columns.Add(new GridColumn { cellsformat = "d", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "DateCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_DATE, sortable = true, text = "Completed On", width = "15%" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesAssigned", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Assigned", width = "10%" });
+                    columns.Add(new GridColumn { cellsformat = "n", columntype = GridColumn.COLUMN_TYPE_STRING, datafield = "ResourcesCompleted", filterable = true, filtertype = GridColumn.FILTER_TYPE_NUMBER, sortable = true, text = "# Completed", width = "10%" });
+                    fields.Add(new GridField { name = "ArtifactTypeID", type = "number" });
+                    fields.Add(new GridField { name = "Name", type = "string" });
+                    fields.Add(new GridField { name = "Description", type = "string" });
+                    fields.Add(new GridField { name = "RequestingResourceID", type = "number" });
+                    fields.Add(new GridField { name = "RequestingResource", type = "string" });
+                    fields.Add(new GridField { name = "DateStarted", type = "date" });
+                    fields.Add(new GridField { name = "DateCompleted", type = "date" });
+                    break;
             }
 
             if (!string.IsNullOrEmpty(sql))

@@ -103,19 +103,30 @@ namespace d360.web.Controllers
         [Route("{type}/{id:int}/auditcombined.json")]
         public JsonNetResult AuditCombined(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
-            Trace.TraceInformation("Calling OverlaysController.Audit : {0}", id);
+            Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
 
-            var querySql = string.Format(@"select A.*, R.FirstName + ' ' + R.LastName as ResourceName, A_f.FieldName as Field, A_f.Value as NewValue, A_f.[Version] as 'Version'
-from	[reporting].[Global_Audit] A 
-inner join [reporting].[Global_Resource] R on R.ResourceID = A.ResourceID and A.[Object] = @objType and A.ObjectID = {0}
-inner join [reporting].[global_fieldaudit] A_f on A.ID = A_f.AuditID
-", id);
+            var querySql = @"select 	                            
+	                                 ga.*,
+                                     R.FirstName + ' ' + R.LastName as ResourceName, 
+                                     fa.FieldName as Field, 
+                                     fa.Value as NewValue, 
+                                     fa.[Version] as 'Version',	                            
+	                                 ( select			
+				                            top 1 fa_sub.value as 'value'			                            
+			                            from reporting.global_fieldaudit fa_sub
+				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId ) as 'PreviousValue'
+			
+                            from reporting.global_fieldaudit fa
+	                            inner join reporting.global_audit ga on ( fa.auditid = ga.id) 
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";	                            
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("objType", type.ToString());
+            dbArgs.Add("objId", id);
 
             countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
             int total = Company.Query<int>(countSql, dbArgs).First();

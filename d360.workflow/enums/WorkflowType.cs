@@ -67,6 +67,31 @@ namespace d360.workflow
         [Name("Workflow Complete"), EnumMember(Value = "7")]
         WorkflowComplete = 7
     }
+    
+    [Flags]
+    public enum SuggestNewArtifactMultiSteps
+    {
+        [Name("Collect Relevant Request Information"), EnumMember(Value = "1")]
+        CollectInfo = 1,
+        [Name("Assign Responsible Resources"), EnumMember(Value = "2")]
+        AssignResponsibleResources = 2,
+        [Name("Awaiting Approvals from Assigned Resources"), EnumMember(Value = "3")]
+        AwaitingApprovals = 3,
+        [Name("Received Approvals from Assigned Resources"), EnumMember(Value = "4")]
+        ReceivedApprovals = 4,
+        [Name("Assigning Final Signoff Resources"), EnumMember(Value = "5")]
+        AssignFinalSignoffResources = 5,
+        [Name("Awaiting Final Signoff from Assigned Resources"), EnumMember(Value = "6")]
+        AwaitingFinalSignoff = 6,
+        [Name("Received Final Signoff from Assigned Resources"), EnumMember(Value = "7")]
+        ReceivedFinalSignoff = 7,
+        [Name("Artifact Added to System"), EnumMember(Value = "8")]
+        ArtifactAdded = 8,
+        [Name("Notification Issued"), EnumMember(Value = "9")]
+        NotificationIssued = 9,
+        [Name("Workflow Complete"), EnumMember(Value = "10")]
+        WorkflowComplete = 10
+    }
 
     [Flags]
     public enum CertifyArtifactSteps
@@ -206,6 +231,16 @@ namespace d360.workflow
                         {
                             Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                             ID = (int)Enum.Parse(typeof(SuggestNewArtifactSteps), tm.Name)
+                        });
+                    }
+                    break;
+                case WorkflowType.SuggestNewArtifactMulti:
+                    foreach (MemberInfo tm in SuggestNewArtifactMultiSteps.CollectInfo.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
+                    {
+                        list.Add(new WorkflowTypeStepInfo
+                        {
+                            Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                            ID = (int)Enum.Parse(typeof(SuggestNewArtifactMultiSteps), tm.Name)
                         });
                     }
                     break;

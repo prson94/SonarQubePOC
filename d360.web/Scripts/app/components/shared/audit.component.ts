@@ -27,6 +27,7 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                                     </template>
                                 </p-column>
                                 <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
+                                <p-column field="ActionObject" header="Action Object" [sortable]="true" [filter]="true"></p-column>
                                 <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
                                 <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
                                 <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
@@ -34,6 +35,11 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                                 <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true">
                                     <template let-col let-data="rowData">
                                         <div [innerHtml]="data?.NewValue"></div>
+                                    </template>                                                        
+                                </p-column>
+                                <p-column field="PreviousValue" header="Previous Value" [sortable]="true" [filter]="true">
+                                    <template let-col let-data="rowData">
+                                        <div [innerHtml]="data?.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>
                                 <p-column field="Version" header="Revision #" [sortable]="true" [filter]="true"></p-column>

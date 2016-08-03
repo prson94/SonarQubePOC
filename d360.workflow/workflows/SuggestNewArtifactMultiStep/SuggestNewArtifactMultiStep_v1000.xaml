@@ -230,7 +230,7 @@
                 </local1:UpdateWorkflowStep.CompanyID>
                 <local1:UpdateWorkflowStep.Step>
                   <InArgument x:TypeArguments="x:Int32">
-                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.AssignResponsibleResources</mca:CSharpValue>
+                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.AssignResponsibleResources</mca:CSharpValue>
                   </InArgument>
                 </local1:UpdateWorkflowStep.Step>
               </local1:UpdateWorkflowStep>
@@ -366,7 +366,7 @@
                 </local1:UpdateWorkflowStep.CompanyID>
                 <local1:UpdateWorkflowStep.Step>
                   <InArgument x:TypeArguments="x:Int32">
-                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.AwaitingApprovals</mca:CSharpValue>
+                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.AwaitingApprovals</mca:CSharpValue>
                   </InArgument>
                 </local1:UpdateWorkflowStep.Step>
               </local1:UpdateWorkflowStep>
@@ -504,7 +504,7 @@
                 </local1:UpdateWorkflowStep.CompanyID>
                 <local1:UpdateWorkflowStep.Step>
                   <InArgument x:TypeArguments="x:Int32">
-                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.ReceivedApprovals</mca:CSharpValue>
+                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.ReceivedApprovals</mca:CSharpValue>
                   </InArgument>
                 </local1:UpdateWorkflowStep.Step>
               </local1:UpdateWorkflowStep>
@@ -572,7 +572,7 @@
                         </local1:UpdateWorkflowStep.CompanyID>
                         <local1:UpdateWorkflowStep.Step>
                           <InArgument x:TypeArguments="x:Int32">
-                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.AssignResponsibleResources</mca:CSharpValue>
+                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.AssignFinalSignoffResources</mca:CSharpValue>
                           </InArgument>
                         </local1:UpdateWorkflowStep.Step>
                       </local1:UpdateWorkflowStep>
@@ -708,7 +708,7 @@
                         </local1:UpdateWorkflowStep.CompanyID>
                         <local1:UpdateWorkflowStep.Step>
                           <InArgument x:TypeArguments="x:Int32">
-                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.AwaitingApprovals</mca:CSharpValue>
+                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.AwaitingFinalSignoff</mca:CSharpValue>
                           </InArgument>
                         </local1:UpdateWorkflowStep.Step>
                       </local1:UpdateWorkflowStep>
@@ -834,7 +834,7 @@
                         </local1:UpdateWorkflowStep.CompanyID>
                         <local1:UpdateWorkflowStep.Step>
                           <InArgument x:TypeArguments="x:Int32">
-                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.ReceivedApprovals</mca:CSharpValue>
+                            <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.ReceivedFinalSignoff</mca:CSharpValue>
                           </InArgument>
                         </local1:UpdateWorkflowStep.Step>
                       </local1:UpdateWorkflowStep>
@@ -872,7 +872,7 @@
                                 </local1:UpdateWorkflowStep.CompanyID>
                                 <local1:UpdateWorkflowStep.Step>
                                   <InArgument x:TypeArguments="x:Int32">
-                                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.ArtifactAdded</mca:CSharpValue>
+                                    <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.ArtifactAdded</mca:CSharpValue>
                                   </InArgument>
                                 </local1:UpdateWorkflowStep.Step>
                               </local1:UpdateWorkflowStep>
@@ -977,7 +977,7 @@
                                     </local1:UpdateWorkflowStep.CompanyID>
                                     <local1:UpdateWorkflowStep.Step>
                                       <InArgument x:TypeArguments="x:Int32">
-                                        <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.NotificationIssued</mca:CSharpValue>
+                                        <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.NotificationIssued</mca:CSharpValue>
                                       </InArgument>
                                     </local1:UpdateWorkflowStep.Step>
                                   </local1:UpdateWorkflowStep>
@@ -996,7 +996,7 @@
                                     </local1:UpdateWorkflowStep.CompanyID>
                                     <local1:UpdateWorkflowStep.Step>
                                       <InArgument x:TypeArguments="x:Int32">
-                                        <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.WorkflowComplete</mca:CSharpValue>
+                                        <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.WorkflowComplete</mca:CSharpValue>
                                       </InArgument>
                                     </local1:UpdateWorkflowStep.Step>
                                   </local1:UpdateWorkflowStep>
@@ -1112,7 +1112,7 @@
                                 </local1:UpdateWorkflowStep>
                               </Sequence>
                               <Sequence sap2010:WorkflowViewState.IdRef="Sequence_9">
-                                <local1:UpdateWorkflowStep DisplayName="UpdateWorkflowStep = 6" sap2010:WorkflowViewState.IdRef="UpdateWorkflowStep_6">
+                                <local1:UpdateWorkflowStep DisplayName="UpdateWorkflowStep = 9" sap2010:WorkflowViewState.IdRef="UpdateWorkflowStep_6">
                                   <local1:UpdateWorkflowStep.CompanyID>
                                     <InArgument x:TypeArguments="x:Int32">
                                       <mca:CSharpValue x:TypeArguments="x:Int32">CompanyID</mca:CSharpValue>
@@ -1120,7 +1120,7 @@
                                   </local1:UpdateWorkflowStep.CompanyID>
                                   <local1:UpdateWorkflowStep.Step>
                                     <InArgument x:TypeArguments="x:Int32">
-                                      <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.NotificationIssued</mca:CSharpValue>
+                                      <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.NotificationIssued</mca:CSharpValue>
                                     </InArgument>
                                   </local1:UpdateWorkflowStep.Step>
                                 </local1:UpdateWorkflowStep>
@@ -1131,7 +1131,7 @@
                                     </InArgument>
                                   </local1:CompleteWorkflowInDatabase.CompanyID>
                                 </local1:CompleteWorkflowInDatabase>
-                                <local1:UpdateWorkflowStep DisplayName="UpdateWorkflowStep = 7" sap2010:WorkflowViewState.IdRef="UpdateWorkflowStep_9">
+                                <local1:UpdateWorkflowStep DisplayName="UpdateWorkflowStep = 10" sap2010:WorkflowViewState.IdRef="UpdateWorkflowStep_9">
                                   <local1:UpdateWorkflowStep.CompanyID>
                                     <InArgument x:TypeArguments="x:Int32">
                                       <mca:CSharpValue x:TypeArguments="x:Int32">CompanyID</mca:CSharpValue>
@@ -1139,7 +1139,7 @@
                                   </local1:UpdateWorkflowStep.CompanyID>
                                   <local1:UpdateWorkflowStep.Step>
                                     <InArgument x:TypeArguments="x:Int32">
-                                      <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactSteps.WorkflowComplete</mca:CSharpValue>
+                                      <mca:CSharpValue x:TypeArguments="x:Int32">(int)d360.workflow.SuggestNewArtifactMultiSteps.WorkflowComplete</mca:CSharpValue>
                                     </InArgument>
                                   </local1:UpdateWorkflowStep.Step>
                                 </local1:UpdateWorkflowStep>
@@ -1168,7 +1168,7 @@
     <x:Reference>__ReferenceID5</x:Reference>
     <x:Reference>__ReferenceID6</x:Reference>
     <x:Reference>__ReferenceID7</x:Reference>
-    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
+    <sads:DebugSymbol.Symbol>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</sads:DebugSymbol.Symbol>
   </Flowchart>
   <sap2010:WorkflowViewState.ViewStateManager>
     <sap2010:ViewStateManager>
@@ -1230,7 +1230,7 @@
       <sap2010:ViewStateData Id="DoWhile_1" sap:VirtualizedContainerService.HintSize="557,828" />
       <sap2010:ViewStateData Id="Assign_2" sap:VirtualizedContainerService.HintSize="557,62" />
       <sap2010:ViewStateData Id="UpdateWorkflowStep_3" sap:VirtualizedContainerService.HintSize="557,22" />
-      <sap2010:ViewStateData Id="Sequence_2" sap:VirtualizedContainerService.HintSize="579,3172">
+      <sap2010:ViewStateData Id="Sequence_2" sap:VirtualizedContainerService.HintSize="200,51">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -1307,7 +1307,7 @@
       <sap2010:ViewStateData Id="UpdateWorkflowStep_5" sap:VirtualizedContainerService.HintSize="378,22" />
       <sap2010:ViewStateData Id="CompleteWorkflowInDatabase_1" sap:VirtualizedContainerService.HintSize="378,22" />
       <sap2010:ViewStateData Id="UpdateWorkflowStep_7" sap:VirtualizedContainerService.HintSize="378,22" />
-      <sap2010:ViewStateData Id="Sequence_4" sap:VirtualizedContainerService.HintSize="200,51">
+      <sap2010:ViewStateData Id="Sequence_4" sap:VirtualizedContainerService.HintSize="400,1252">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
@@ -1331,7 +1331,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="AddToDictionary`2_12" sap:VirtualizedContainerService.HintSize="270.4,72">
+      <sap2010:ViewStateData Id="AddToDictionary`2_12" sap:VirtualizedContainerService.HintSize="271,72">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -1339,7 +1339,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="AddToDictionary`2_13" sap:VirtualizedContainerService.HintSize="270.4,72">
+      <sap2010:ViewStateData Id="AddToDictionary`2_13" sap:VirtualizedContainerService.HintSize="271,72">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -1347,7 +1347,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="AddToDictionary`2_14" sap:VirtualizedContainerService.HintSize="270.4,72">
+      <sap2010:ViewStateData Id="AddToDictionary`2_14" sap:VirtualizedContainerService.HintSize="271,72">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -1355,7 +1355,7 @@
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="AddToDictionary`2_15" sap:VirtualizedContainerService.HintSize="270.4,72">
+      <sap2010:ViewStateData Id="AddToDictionary`2_15" sap:VirtualizedContainerService.HintSize="271,72">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -1373,17 +1373,17 @@
       </sap2010:ViewStateData>
       <sap2010:ViewStateData Id="SendEmailActivity_4" sap:VirtualizedContainerService.HintSize="270.4,22.4" />
       <sap2010:ViewStateData Id="UpdateWorkflowStep_8" sap:VirtualizedContainerService.HintSize="270.4,22.4" />
-      <sap2010:ViewStateData Id="Sequence_8" sap:VirtualizedContainerService.HintSize="292.8,769.6">
+      <sap2010:ViewStateData Id="Sequence_8" sap:VirtualizedContainerService.HintSize="293,768">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>
           </scg:Dictionary>
         </sap:WorkflowViewStateService.ViewState>
       </sap2010:ViewStateData>
-      <sap2010:ViewStateData Id="UpdateWorkflowStep_6" sap:VirtualizedContainerService.HintSize="200,22.4" />
-      <sap2010:ViewStateData Id="CompleteWorkflowInDatabase_2" sap:VirtualizedContainerService.HintSize="200,22.4" />
-      <sap2010:ViewStateData Id="UpdateWorkflowStep_9" sap:VirtualizedContainerService.HintSize="200,22.4" />
-      <sap2010:ViewStateData Id="Sequence_9" sap:VirtualizedContainerService.HintSize="222.4,769.6">
+      <sap2010:ViewStateData Id="UpdateWorkflowStep_6" sap:VirtualizedContainerService.HintSize="200,22" />
+      <sap2010:ViewStateData Id="CompleteWorkflowInDatabase_2" sap:VirtualizedContainerService.HintSize="200,22" />
+      <sap2010:ViewStateData Id="UpdateWorkflowStep_9" sap:VirtualizedContainerService.HintSize="200,22" />
+      <sap2010:ViewStateData Id="Sequence_9" sap:VirtualizedContainerService.HintSize="222,768">
         <sap:WorkflowViewStateService.ViewState>
           <scg:Dictionary x:TypeArguments="x:String, x:Object">
             <x:Boolean x:Key="IsExpanded">True</x:Boolean>

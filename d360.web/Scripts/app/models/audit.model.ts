@@ -14,6 +14,7 @@
     ResourceName: string;
     Field: string;
     NewValue: string;
+    PreviousValue: string;
     Version: string;
 }
 

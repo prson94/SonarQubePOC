@@ -24,7 +24,7 @@ import { TypeaheadSearchResult } from '../../models/typeahead-search-result.mode
         text-transform:uppercase;
     }
     .link {
-        border-bottom: 2px solid #3979a2;
+        border-bottom: 1px solid #3979a2;
     }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
