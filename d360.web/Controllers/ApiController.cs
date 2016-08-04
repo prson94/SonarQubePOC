@@ -6012,9 +6012,10 @@ order by    title
         [Route("surveys/{type}/{id}/randomquestion")]
         public JObject GetRandomSurveyQuestion(SystemObjects type, int id)
         {
-            var xml = Company.GetRandomSurveyQuestionForUser(type, id);
-            string json = JsonConvert.SerializeXNode(xml);
-            return JObject.Parse(json);
+            /*    var xml = Company.GetRandomSurveyQuestionForUser(type, id);
+                string json = JsonConvert.SerializeXNode(xml);
+                return JObject.Parse(json);*/
+            return null;
         }
 
         [Route("surveys/randomquestion")]
