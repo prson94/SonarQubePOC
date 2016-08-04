@@ -1503,16 +1503,6 @@ where   h.ID <> @t order by h.[Level] desc;
                     #endregion
                 case SystemObjects.SurveyType:
                     #region Actions
-                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
-                    {
-                        addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                        addItem.Items.Add(new PageActionItem { Context = ContextList.SurveyType, Icon = "bar-chart-o", Title = "Survey", Uri = "/form/surveys/add" });
-                        if (id > 0)
-                        {
-                            addItem.Items.Add(new PageActionItem { Context = ContextList.QuestionType, Icon = "question", Title = "Question", Uri = string.Format("/form/surveys/{0}/questions/add", id) });
-                        }
-                        list.Add(addItem);
-                    }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
@@ -5299,36 +5289,6 @@ order by    title
                     resourceType = null;
                     break;
                     #endregion
-                case SystemObjects.ResponseType:
-                    #region Fields
-                    var responseType = Company.GetById<ResponseType>(id);
-                    if (responseType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = responseType.GetName(i => i.Name), FieldName = "ResponseTypeName", FieldDescription = responseType.GetDescription(i => i.Name), Value = responseType.Name }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = responseType.GetName(i => i.AllowOptions), FieldName = "ResponseTypeAllowOptions", FieldDescription = responseType.GetDescription(i => i.AllowOptions), Value = responseType.AllowOptions.FormatBooleanReadOnlyValue() }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = responseType.GetName(i => i.AllowValueOverride), FieldName = "ResponseTypeAllowValueOverride", FieldDescription = responseType.GetDescription(i => i.AllowValueOverride), Value = responseType.AllowValueOverride.FormatBooleanReadOnlyValue() }
-                            }
-                        });
-                    }
-                    responseType = null;
-                    break;
-                    #endregion
                 case SystemObjects.StatisticType:
                     #region Fields
                     var statisticType = Company.GetById<StatisticType>(id);
@@ -5570,13 +5530,13 @@ order by    title
                             }
                         });
 
-                        var dtlSurveyType = Company.GetObjectDetail(surveyType.ObjectType, surveyType.ObjectID);
+                        var dtlSurveyType = Company.GetObjectDetail(surveyType.Object, surveyType.ObjectID);
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = surveyType.GetName(i => i.ObjectType), FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.ObjectType), Value = surveyType.ObjectType.ToString() }
+                                new ReadOnlyField { Name = surveyType.GetName(i => i.Object), FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = surveyType.Object.ToString() }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -5763,8 +5723,6 @@ order by    title
             sections.Add(new ReadOnlySection { Name = "Governance", Fields = list, ID = 0 });
 
             return model;
-
-            //return Request.CreateResponse(HttpStatusCode.OK, sections);//new { Fields = list });
         }
 
         private string getUserLastSeenText(DateTime? dateLastLoggedIn)
@@ -6012,69 +5970,43 @@ order by    title
 
         #region Surveys
 
-        [Route("responsetypes")]
-        public IQueryable<ResponseType> GetResponseTypes()
-        {
-            return Company.Table<ResponseType>();
-        }
-
-        [Route("responsetypes/{typeID:int}/options")]
-        public IQueryable<ResponseTypeOption> GetOptionsByResponseType(int typeID)
-        {
-            return Company.Filter<ResponseTypeOption>(i => i.ResponseTypeID == typeID);
-        }
-
         [Route("surveys")]
         public IQueryable<SurveyType> GetSurveyTypes()
         {
             return Company.Table<SurveyType>();
         }
 
-        [Route("surveys/{typeID:int}/entries")]
-        public List<SurveyModel> GetEntriesBySurveyType(int typeID)
-        {
-            var type = Company.GetById<SurveyType>(typeID);
-            if (type != null)
-            {
-                return  (
-                        from s in Company.Filter<Survey>(i => i.SurveyTypeID == typeID).ToList()
-                        join r in Community.Table<Resource>() on s.ResourceID equals r.ID
-                        select new SurveyModel 
-                        {
-                            ID = s.ID, 
-                            ResourceID = s.ResourceID, 
-                            ResourceName = r.FormatDisplayName(), 
-                            PercentComplete = (int)(Math.Round((decimal)s.Questions.Count / (decimal)type.QuestionTypes.Count, 2) * 100)
-                        }
-                        ).ToList();
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         [Route("surveys/{typeID:int}/questions")]
-        public IQueryable<QuestionType> GetQuestionTypesBySurveyType(int typeID)
+        public HttpResponseMessage GetQuestionTypesBySurveyType(int typeID)
         {
-            return Company.Filter<QuestionType>(i => i.SurveyTypeID == typeID);
+            var list = Company.Filter<QuestionType>(i => i.SurveyTypeID == typeID, i => i.QuestionTypeOptions)
+                .ToList()
+                .Select(i => new
+                {
+                    i.ID,
+                    i.Name,
+                    OptionCount = i.QuestionTypeOptions.Count,
+                    DisplayStyle = i.DisplayStyle.GetDescription()
+                });
+            return Request.CreateResponse(HttpStatusCode.OK, list);
         }
 
         [Route("surveys/{typeID:int}/{type}/{id}/report")]
         public JObject GetSurveyReport(int typeID, SystemObjects type, int id)
         {
-            var sType = type.ToString();
-            var model = Company.Filter<SurveyObjectCache>(i => i.SurveyTypeID == typeID && i.ObjectType == sType && i.ObjectID == id).SingleOrDefault();
-            if (model == null)
-            {
-                return null;
-            }
-            else
-            {
-                var xml = XElement.Parse(model.ReportCache);
-                string json = JsonConvert.SerializeXNode(xml);
-                return JObject.Parse(json);
-            }
+            //var sType = type.ToString();
+            //var model = Company.Filter<SurveyObjectCache>(i => i.SurveyTypeID == typeID && i.ObjectType == sType && i.ObjectID == id).SingleOrDefault();
+            //if (model == null)
+            //{
+            //    return null;
+            //}
+            //else
+            //{
+            //    var xml = XElement.Parse(model.ReportCache);
+            //    string json = JsonConvert.SerializeXNode(xml);
+            //    return JObject.Parse(json);
+            //}
+            return null;
         }
 
         [Route("surveys/{type}/{id}/randomquestion")]
@@ -6088,16 +6020,19 @@ order by    title
         [Route("surveys/randomquestion")]
         public CreateResponse Post(QuestionResponseModel model)
         {
-            var option = Company.Filter<ResponseTypeOption>(i => i.ResponseType.QuestionTypes.Any(q => q.ID == model.QuestionTypeID) && i.Value == model.Value).SingleOrDefault();
-            if (option == null) throw new NotFoundException("Response Option");
+            var survey = Company.Filter<Survey>(i => 
+                i.SurveyTypeID == model.SurveyTypeID && 
+                i.ResourceID == Company.CurrentResourceID && 
+                DateTime.UtcNow.Subtract(i.CreatedOn).Days <= i.SurveyType.ValidForDays
+            ).SingleOrDefault();
 
-            var survey = Company.Filter<Survey>(i => i.SurveyTypeID == model.SurveyTypeID && i.ResourceID == Company.CurrentResourceID).SingleOrDefault();
             if (survey == null)
             {
-                survey = new Survey { ObjectID = model.ObjectID, ObjectType = model.ObjectType.ToString(), ResourceID = Company.CurrentResourceID, SurveyTypeID = model.SurveyTypeID };
+                survey = new Survey { ObjectID = model.ObjectID, Object = model.ObjectType.ToString(), ResourceID = Company.CurrentResourceID, SurveyTypeID = model.SurveyTypeID };
                 Company.Add<Survey>(survey);
             }
-            Company.Add<Question>(new Question { Comment = model.Comment, ResponseTypeOptionID = option.ID, QuestionTypeID = model.QuestionTypeID, SurveyID = survey.ID });
+            var q = new Question { Comment = model.Comment, SurveyID = survey.ID, QuestionTypeOptions = new List<QuestionTypeOption>() };
+            Company.Add(q);
 
             return new CreateResponse { Message = "Created" };
         }

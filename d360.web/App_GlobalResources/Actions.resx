@@ -291,4 +291,10 @@
   <data name="Predicates_Icon" xml:space="preserve">
     <value>map-signs</value>
   </data>
+  <data name="ResponseTypes" xml:space="preserve">
+    <value>Survey Response Types</value>
+  </data>
+  <data name="ResponseTypes_Icon" xml:space="preserve">
+    <value>bullhorn</value>
+  </data>
 </root>

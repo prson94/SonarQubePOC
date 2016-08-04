@@ -12,8 +12,8 @@ namespace d360.core.entities
         [Column(Order = 1), DataMember, Key]
         public int SurveyTypeID { get; set; }
 
-        [Column(Order = 2, TypeName = "varchar"), DataMember, Key, StringLength(25)]
-        public string ObjectType { get; set; }
+        [Column(Order = 2, TypeName = "varchar"), DataMember, Key, StringLength(50)]
+        public string Object { get; set; }
 
         [Column(Order = 3), DataMember, Key]
         public int ObjectID { get; set; }

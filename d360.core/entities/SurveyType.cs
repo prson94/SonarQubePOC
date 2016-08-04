@@ -8,24 +8,30 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class SurveyType : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class SurveyType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired")]
-        [StringLength(250)]
         public string Name { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
-        public string ObjectType { get; set; }
+        [DataMember]
+        public string Description { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SurveyTypeObject_Name", Description = "SurveyTypeObject_Description")]
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        public string Object { get; set; }
+
+        [DataMember]
         public int ObjectID { get; set; }
 
-        public DateTime? UpdatedOn { get; set; }
-        public int? UpdatedBy { get; set; }
+        [DataMember]
+        public int ValidForDays { get; set; }
 
-        #region Navigation Properties
+        public DateTime? CreatedOn { get; set; }
+
+        public int? CreatedBy { get; set; }
+
+        public DateTime? UpdatedOn { get; set; }
+
+        public int? UpdatedBy { get; set; }
 
         [ForeignKey("SurveyTypeID")]
         public virtual ICollection<QuestionType> QuestionTypes { get; set; }
@@ -33,9 +39,5 @@ namespace d360.core.entities
         [ForeignKey("SurveyTypeID")]
         public virtual ICollection<Survey> Surveys { get; set; }
 
-        [ForeignKey("SurveyTypeID")]
-        public virtual ICollection<SurveyObjectCache> SurveyObjectCaches { get; set; }
-
-        #endregion
     }
 }

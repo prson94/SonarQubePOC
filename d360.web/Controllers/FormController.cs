@@ -15238,197 +15238,6 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region QuestionType
-
-        #region Field Generation
-
-        /// <param name="id">SurveyTypeID</param>
-        public JsonResult QuestionType_AddFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "SurveyTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ResponseTypeID", Name = "Response Type", FieldType = DataType.Lookup.ToString(), Items = Company.Table<ResponseType>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">QuestionTypeID</param>
-        public JsonResult QuestionType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<QuestionType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">QuestionTypeID</param>
-        public JsonResult QuestionType_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<QuestionType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ResponseTypeID", Name = "Response Type", FieldType = DataType.Lookup.ToString(), Items = Company.Table<ResponseType>().OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList(), Value = a.ResponseTypeID.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("surveys/{surveyTypeID:int}/questions/add")]
-        public ActionResult AddQuestionType(int surveyTypeID)
-        {
-            var a = Company.GetById<SurveyType>(surveyTypeID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.QuestionType,
-                FieldUri = string.Format("/form/QuestionType_AddFields?id={0}", a.ID),
-                FormTitle = "Add question to " + a.Name,
-                FormUri = "/form/AddQuestionType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddQuestionType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("question");
-
-                int typeID = parseIntField(form, "SurveyTypeID");
-                var type = Company.GetById<SurveyType>(typeID);
-                if (type == null) throw new NotFoundException("survey type");
-
-                var model = new QuestionType
-                {
-                    SurveyTypeID = typeID,
-                    Name = parseTextField(form, "Name", null, true),
-                    Description = parseTextField(form, "Description"),
-                    ResponseTypeID = parseIntField(form, "ResponseTypeID")
-                };
-                Company.Add<QuestionType>(model);
-
-                return jsonSuccess("Question successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("surveys/{surveyTypeID:int}/questions/{questionTypeID:int}/delete")]
-        public ActionResult DeleteQuestionType(int surveyTypeID, int questionTypeID)
-        {
-            var a = Company.GetById<QuestionType>(questionTypeID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.QuestionType,
-                FieldUri = string.Format("/form/QuestionType_DeleteFields?id={0}", a.ID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this question"),
-                FormUri = "/form/DeleteQuestionType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteQuestionType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("question");
-
-                var id = parseIntField(form, "ID");
-                Company.Delete<QuestionType>(i => i.ID == id);
-
-                return jsonSuccess("Question successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("surveys/{surveyTypeID:int}/questions/{questionTypeID:int}/edit")]
-        public ActionResult EditQuestionType(int surveyTypeID, int questionTypeID)
-        {
-            var a = Company.GetById<QuestionType>(questionTypeID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.QuestionType,
-                FieldUri = string.Format("/form/QuestionType_EditFields?id={0}", a.ID),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditQuestionType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditQuestionType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("question");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<QuestionType>(id);
-                if (model == null) throw new NotFoundException("question");
-
-                model.Name = parseTextField(form, "Name", null, true);
-                model.Description = parseTextField(form, "Description");
-                model.ResponseTypeID = parseIntField(form, "ResponseTypeID");
-
-                Company.Update<QuestionType>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region Resolution
 
         #region Field Generation
@@ -16309,18 +16118,65 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region ResponseType
+        #region QuestionType
+
+        #region JSON Feeds
+
+        public JsonNetResult QuestionType_FormData(int surveyTypeID, int id = 0)
+        {
+            QuestionType qt = null;
+            List<QuestionTypeItemEditorModel> items = null;
+
+            var options = QuestionDisplayStyle.Radio.GetResponseTypeDisplayStyleInfoList().Select(i => new KnockoutDisplayItem { title = i.Description, value = ((int)i.ID).ToString() });
+
+            if (id > 0)
+            {
+                qt = Company.GetById<QuestionType>(id, i => i.QuestionTypeOptions);
+
+                if (qt.QuestionTypeOptions != null)
+                {
+                    if (qt.QuestionTypeOptions.Count > 0)
+                    {
+                        items = new List<QuestionTypeItemEditorModel>();
+                        foreach (var i in qt.QuestionTypeOptions)
+                        {
+                            items.Add(new QuestionTypeItemEditorModel
+                            {
+                                ID = i.ID,
+                                Name = i.Name,
+                                Value = i.Value
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                qt = new QuestionType { Name = "", DisplayStyle = QuestionDisplayStyle.Radio, SurveyTypeID = surveyTypeID, Description = ""  };
+            }
+
+            return new JsonNetResult
+            {
+                Data = new QuestionTypeEditorModel
+                {
+                    Name = qt.Name,
+                    Description = qt.Description,
+                    DisplayStyle = qt.DisplayStyle,
+                    SurveyTypeID = surveyTypeID,
+                    DisplayStyleOptions = options.ToList(),
+                    ID = id,
+                    Items = items,
+                    LimitedChangesOnly = false
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        #endregion
 
         #region Field Generation
 
-        public JsonResult ResponseType_AddFields()
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">SurveyTypeID</param>
+        /// <param name="id">ResponseTypeID</param>
         public JsonResult ResponseType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -16328,237 +16184,50 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        /// <param name="id">SurveyTypeID</param>
-        public JsonResult ResponseType_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponseType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         #endregion
 
         #region Form Get/Post
 
-        [Route("responsetypes/add")]
-        public ActionResult AddResponseType()
+        public ActionResult AddQuestionType(int surveyTypeID)
         {
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponseType,
-                FieldUri = "/form/ResponseType_AddFields",
-                FormTitle = "Add Type",
-                FormUri = "/form/AddResponseType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
+            ViewBag.ID = 0;
+            ViewBag.SurveyTypeID = surveyTypeID;
+            return PartialView("QuestionTypeEditForm");
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddResponseType(FormCollection form)
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false)]
+        public JsonResult AddQuestionType(QuestionTypeEditorModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("response type");
+                var val = model.Validation();
 
-                var model = new ResponseType
+                if (!val.Valid)
                 {
-                    Name = parseTextField(form, "Name", null, true),
-                    AllowOptions = true,
-                    AllowValueOverride = false
-                };
-                Company.Add<ResponseType>(model);
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("responsetypes/{id:int}/delete")]
-        public ActionResult DeleteResponseType(int id)
-        {
-            var a = Company.GetById<ResponseType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponseType,
-                FieldUri = string.Format("/form/ResponseType_DeleteFields?id={0}", a.ID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteResponseType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteResponseType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("response type");
-
-                var id = parseIntField(form, "ID");
-                Company.Delete<ResponseType>(i => i.ID == id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("responsetypes/{id:int}/edit")]
-        public ActionResult EditResponseType(int id)
-        {
-            var a = Company.GetById<ResponseType>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponseType,
-                FieldUri = string.Format("/form/ResponseType_EditFields?id={0}", a.ID),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditResponseType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditResponseType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("response type");
-
-                var id = parseIntField(form, "ID");
-                var a = Company.GetById<ResponseType>(id);
-                if (a == null) throw new NotFoundException("response type");
-
-                a.Name = parseTextField(form, "Name", null, true);
-
-                Company.Update<ResponseType>(a);
-
-                return jsonSuccess(a.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region ResponseTypeOption
-
-        #region Field Generation
-
-        public JsonResult ResponseTypeOption_AddFields(int typeID)
-        {
-            var a = new ResponseTypeOption();
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ResponseTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Value", Name = a.GetName(i => i.Value), FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">SurveyTypeID</param>
-        public JsonResult ResponseTypeOption_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">SurveyTypeID</param>
-        public JsonResult ResponseTypeOption_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ResponseTypeOption>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Value", Name = a.GetName(i => i.Value), FieldType = DataType.Number.ToString(), Value = a.Value.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("responsetypes/{typeID:int}/add")]
-        public ActionResult AddResponseTypeOption(int typeID)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponseTypeOption,
-                FieldUri = "/form/ResponseTypeOption_AddFields?typeID=" + typeID,
-                FormTitle = "Add Option",
-                FormUri = "/form/AddResponseTypeOption",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddResponseTypeOption(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("response type option");
-
-                int typeID;
-                if (!int.TryParse(form["ResponseTypeID"], out typeID))
-                {
-                    throw new MissingPropertiesException("ResponseTypeID");
+                    throw new ConflictException("Error Occurred!", val.Message);
                 }
-                var type = Company.GetById<ResponseType>(typeID);
-                if (type == null) throw new NotFoundException("response type");
 
-                var model = new ResponseTypeOption
+                var qt = new QuestionType
                 {
-                    Name = parseTextField(form, "Name", null, true),
-                    Value = parseIntField(form, "Value"),
-                    ResponseTypeID = typeID
+                    Name = model.Name,
+                    SurveyTypeID = model.SurveyTypeID,
+                    DisplayStyle = model.DisplayStyle,
+                    Description = model.Description,
+                    QuestionTypeOptions = new List<QuestionTypeOption>()
                 };
-                Company.Add<ResponseTypeOption>(model);
 
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+                foreach (var item in model.Items)
+                {
+                    var itemVal = item.Validation();
+                    if (itemVal.Valid)
+                    {
+                        qt.QuestionTypeOptions.Add(new QuestionTypeOption { Name = item.Name, Value = item.Value });
+                    }
+                }
+
+                Company.Add(qt);
+
+                return jsonSuccess("Survey question successfully created.", qt.ID.ToString(), ContextList.QuestionType.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -16572,17 +16241,17 @@ order by	D.Name, I.Name";
         }
 
 
-        [Route("responsetypes/{typeID:int}/{id:int}/delete")]
-        public ActionResult DeleteResponseTypeOption(int typeID, int id)
+        [HttpGet]
+        public ActionResult DeleteQuestionType(int id)
         {
-            var a = Company.GetById<ResponseTypeOption>(id);
+            var a = Company.GetById<QuestionType>(id);
             if (a == null) return HttpNotFound();
             var model = new EditableForm
             {
-                Context = ContextList.ResponseTypeOption,
-                FieldUri = string.Format("/form/ResponseTypeOption_DeleteFields?id={0}", a.ID),
+                Context = ContextList.QuestionType,
+                FieldUri = string.Format("/form/QuestionType_DeleteFields?id={0}", a.ID),
                 FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteResponseTypeOption",
+                FormUri = "/form/DeleteQuestionType",
                 FormMethod = "DELETE"
             };
 
@@ -16590,16 +16259,16 @@ order by	D.Name, I.Name";
         }
 
         [HttpDelete]
-        public JsonResult DeleteResponseTypeOption(FormCollection form)
+        public JsonResult DeleteQuestionType(FormCollection form)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("response type option");
+                if (!form.HasKeys()) throw new NoFormDataException("response type");
 
                 var id = parseIntField(form, "ID");
-                Company.Delete<ResponseTypeOption>(i => i.ID == id);
+                Company.Delete<QuestionType>(i => i.ID == id);
 
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+                return jsonSuccess("Survey question successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -16613,40 +16282,77 @@ order by	D.Name, I.Name";
         }
 
 
-        [Route("responsetypes/{typeID:int}/{id:int}/edit")]
-        public ActionResult EditResponseTypeOption(int typeID, int id)
+        [HttpGet]
+        public ActionResult EditQuestionType(int id)
         {
-            var a = Company.GetById<ResponseTypeOption>(id);
+            var a = Company.GetById<QuestionType>(id);
             if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = ContextList.ResponseTypeOption,
-                FieldUri = string.Format("/form/ResponseTypeOption_EditFields?id={0}", a.ID),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditResponseTypeOption",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
+            ViewBag.ID = id;
+            ViewBag.SurveyTypeID = a.SurveyTypeID;
+            return PartialView("QuestionTypeEditForm");
         }
 
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditResponseTypeOption(FormCollection form)
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false)]
+        public JsonResult EditQuestionType(QuestionTypeEditorModel model)
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("response type option");
+                var val = model.Validation();
 
-                var id = parseIntField(form, "ID");
-                var a = Company.GetById<ResponseTypeOption>(id);
-                if (a == null) throw new NotFoundException("response type option");
+                if (!val.Valid)
+                {
+                    throw new ConflictException("Error Occurred!", val.Message);
+                }
 
-                a.Name = parseTextField(form, "Name", null, true);
-                a.Value = parseIntField(form, "Value");
+                var qt = Company.GetById<QuestionType>(model.ID, i => i.QuestionTypeOptions);
 
-                Company.Update<ResponseTypeOption>(a);
+                if (qt == null)
+                    throw new NotFoundException("Question");
 
-                return jsonSuccess(a.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+                qt.Name = model.Name;
+                qt.DisplayStyle = model.DisplayStyle;
+                qt.Description = model.Description;
+
+                //Process new and updated options.
+                foreach (var item in model.Items)
+                {
+                    var itemVal = item.Validation();
+                    if (itemVal.Valid)
+                    {
+                        if (item.ID > 0)
+                        {
+                            if (qt.QuestionTypeOptions.Any(i => i.ID == item.ID))
+                            {
+                                qt.QuestionTypeOptions.Single(i => i.ID == item.ID).Name = item.Name;
+                                qt.QuestionTypeOptions.Single(i => i.ID == item.ID).Value = item.Value;
+                            }
+                        }
+                        else
+                        {
+                            qt.QuestionTypeOptions.Add(new QuestionTypeOption { Name = item.Name, Value = item.Value });
+                        }
+                    }
+                }
+
+                //Process deleted options.
+                var IDs = new List<int>();
+                foreach (var item in qt.QuestionTypeOptions)
+                {
+                    if (!model.Items.Any(i => i.ID == item.ID))
+                    {
+                        IDs.Add(item.ID);
+                    }
+                }
+
+                foreach (var id in IDs)
+                {
+                    var qto = qt.QuestionTypeOptions.Single(i => i.ID == id);
+                    Company.QuestionTypeOptions.Remove(qto);
+                }
+
+                Company.Update(qt);
+
+                return jsonSuccess("Survey question successfully updated.", qt.ID.ToString(), ContextList.QuestionType.ToString(), "update", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -18162,7 +17868,7 @@ where	RT.SourceObjectType = @type
 
         #region Form Get/Post
 
-        [Route("surveys/add")]
+        //[Route("surveys/add")]
         public ActionResult AddSurveyType()
         {
             var model = new EditableForm
@@ -18192,7 +17898,7 @@ where	RT.SourceObjectType = @type
                 var model = new SurveyType
                 {
                     Name = parseTextField(form, "Name", null, true),
-                    ObjectType = ot.ToString(),
+                    Object = ot.ToString(),
                     ObjectID = oid
                 };
                 Company.Add<SurveyType>(model);
@@ -18211,7 +17917,7 @@ where	RT.SourceObjectType = @type
         }
 
 
-        [Route("surveys/{id:int}/delete")]
+        //[Route("surveys/{id:int}/delete")]
         public ActionResult DeleteSurveyType(int id)
         {
             var a = Company.GetById<SurveyType>(id);
@@ -18252,7 +17958,7 @@ where	RT.SourceObjectType = @type
         }
 
 
-        [Route("surveys/{id:int}/edit")]
+        //[Route("surveys/{id:int}/edit")]
         public ActionResult EditSurveyType(int id)
         {
             var a = Company.GetById<SurveyType>(id);

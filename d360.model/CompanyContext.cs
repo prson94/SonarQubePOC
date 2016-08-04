@@ -276,6 +276,8 @@ namespace d360.model
 
         public DbSet<QuestionType> QuestionTypes { get; set; }
 
+        public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
+
         public DbSet<Relationship> Relationships { get; set; }                                              /* VIEW */
 
 
@@ -294,12 +296,6 @@ namespace d360.model
         public DbSet<ResolutionRelation> ResolutionRelations { get; set; }
 
         public DbSet<ResourceGroup> ResourceGroups { get; set; }
-
-        public DbSet<ResourceType> ResourceTypes { get; set; }
-
-        public DbSet<ResponseType> ResponseTypes { get; set; }
-
-        public DbSet<ResponseTypeOption> ResponseTypeOptions { get; set; }
 
         public DbSet<Responsibility> Responsibilities { get; set; }
 
@@ -342,8 +338,6 @@ namespace d360.model
         public DbSet<StatisticTypeCheckOption> StatisticTypeCheckOptions { get; set; }
 
         public DbSet<Survey> Surveys { get; set; }
-
-        public DbSet<SurveyObjectCache> SurveyObjectCaches { get; set; }
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
@@ -2442,7 +2436,10 @@ order by Name", new { workflowType, type, id });
             //{
             //    i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
             //});
-
+            modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
+            {
+                i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
+            });
             modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
             {
                 i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
@@ -2917,26 +2914,6 @@ order by Name", new { workflowType, type, id });
                             break;
                         case EntityState.Modified:
                             if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : ResponseType
-                if (entry.Entity is ResponseType)
-                {
-                    var o = entry.Entity as ResponseType;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ResponseType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ResponseType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }

@@ -196,6 +196,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can add a response type to a survey question.  This response type is available to all surveys, when defining a question..
+        /// </summary>
+        internal static string Add_QuestionType_Directions {
+            get {
+                return ResourceManager.GetString("Add_QuestionType_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
         /// </summary>
         internal static string Add_RelationshipType_Directions {
@@ -561,6 +570,15 @@ namespace Resources {
         internal static string Edit_Policy_Title {
             get {
                 return ResourceManager.GetString("Edit_Policy_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You may update a response type if it is not yet assigned to a question that was already answered..
+        /// </summary>
+        internal static string Edit_QuestionType_Directions {
+            get {
+                return ResourceManager.GetString("Edit_QuestionType_Directions", resourceCulture);
             }
         }
         

@@ -236,11 +236,9 @@
     <Compile Include="entities\EventGroup.cs" />
     <Compile Include="entities\IntersectTypeNode.cs" />
     <Compile Include="entities\Event.cs" />
-    <Compile Include="entities\SurveyObjectCache.cs" />
     <Compile Include="entities\QuestionType.cs" />
     <Compile Include="entities\Question.cs" />
-    <Compile Include="entities\ResponseTypeOption.cs" />
-    <Compile Include="entities\ResponseType.cs" />
+    <Compile Include="entities\QuestionTypeOption.cs" />
     <Compile Include="entities\SurveyType.cs" />
     <Compile Include="entities\Survey.cs" />
     <Compile Include="entities\Fusion.cs" />
@@ -304,6 +302,7 @@
     </Compile>
     <Compile Include="enums\AuthenticationType.cs" />
     <Compile Include="enums\CommentVisibility.cs" />
+    <Compile Include="enums\QuestionDisplayStyle.cs" />
     <Compile Include="enums\FollowType.cs" />
     <Compile Include="enums\FusionRuleType.cs" />
     <Compile Include="enums\PredicateType.cs" />

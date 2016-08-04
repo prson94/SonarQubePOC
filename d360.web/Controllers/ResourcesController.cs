@@ -25,7 +25,6 @@ namespace d360.web.Models
         public int ResponseTypeID { get; set; }
         public int SurveyTypeID { get; set; }
         public int QuestionTypeID { get; set; }
-        public List<ResponseType> ResponseTypes { get; set; }
     }
 }
 
@@ -337,27 +336,6 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             }
             
             return Content(html, "text/html");
-        }
-
-        [Route("responsetypes/{id:int}/options")]
-        public ActionResult _ResponseTypeOptions(int id)
-        {
-            ViewData.Add("id", id);
-            return PartialView();
-        }
-
-        [Route("surveys/{id:int}/entries")]
-        public ActionResult _SurveyTypeEntries(int id)
-        {
-            ViewData.Add("id", id);
-            return PartialView();
-        }
-
-        [Route("surveys/{id:int}/questions")]
-        public ActionResult _SurveyTypeQuestions(int id)
-        {
-            ViewData.Add("id", id);
-            return PartialView();
         }
 
         [Route("templates/tooltip")]

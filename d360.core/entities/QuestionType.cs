@@ -10,49 +10,34 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.QuestionType, "QuestionType")]
-    public class QuestionType : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class QuestionType : BaseIntObject, ICreatedObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
     {
-        #region Properties
-
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "Name_ErrorRequired")]
-        [StringLength(500)]
+        [DataMember, StringLength(500)]
         public string Name { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
+        [DataMember, StringLength(2000)]
         public string Description { get; set; }
 
         [DataMember]
-        public int ResponseTypeID { get; set; }
+        public QuestionDisplayStyle DisplayStyle { get; set; }
 
         [DataMember]
         public int SurveyTypeID { get; set; }
 
+        public DateTime? CreatedOn { get; set; }
+
+        public int? CreatedBy { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
+
         public int? UpdatedBy { get; set; }
 
 
-        #region Related Objects
-
-        [ScriptIgnore]
-        [XmlIgnore()]
-        public virtual ResponseType ResponseType { get; set; }
-
-        [ScriptIgnore]
-        [XmlIgnore()]
+        [ScriptIgnore, XmlIgnore()]
         public virtual SurveyType SurveyType { get; set; }
 
-        #endregion
-
-        #endregion
-
-        #region Collections
 
         [ForeignKey("QuestionTypeID")]
-        public virtual ICollection<Question> Questions { get; set; }
-
-        #endregion
+        public virtual ICollection<QuestionTypeOption> QuestionTypeOptions { get; set; }
     }
 }

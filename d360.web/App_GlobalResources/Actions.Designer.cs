@@ -466,6 +466,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Survey Response Types.
+        /// </summary>
+        internal static string ResponseTypes {
+            get {
+                return ResourceManager.GetString("ResponseTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to bullhorn.
+        /// </summary>
+        internal static string ResponseTypes_Icon {
+            get {
+                return ResourceManager.GetString("ResponseTypes_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to tachometer.
         /// </summary>
         internal static string StatisticType_Icon {

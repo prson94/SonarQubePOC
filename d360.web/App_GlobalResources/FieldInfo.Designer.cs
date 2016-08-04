@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Display Style.
+        /// </summary>
+        internal static string DisplayStyle_Name {
+            get {
+                return ResourceManager.GetString("DisplayStyle_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category.
         /// </summary>
         internal static string FieldTypeCategory_Name {

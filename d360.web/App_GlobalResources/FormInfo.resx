@@ -162,6 +162,9 @@
   <data name="Add_Policy_Title" xml:space="preserve">
     <value>Add Policy to {0}</value>
   </data>
+  <data name="Add_QuestionType_Directions" xml:space="preserve">
+    <value>You can add a response type to a survey question.  This response type is available to all surveys, when defining a question.</value>
+  </data>
   <data name="Add_RelationshipType_Directions" xml:space="preserve">
     <value>When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>
   </data>
@@ -284,6 +287,9 @@
   </data>
   <data name="Edit_Policy_Title" xml:space="preserve">
     <value>Edit Type</value>
+  </data>
+  <data name="Edit_QuestionType_Directions" xml:space="preserve">
+    <value>You may update a response type if it is not yet assigned to a question that was already answered.</value>
   </data>
   <data name="Edit_RelationshipType_Directions" xml:space="preserve">
     <value>When updating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>

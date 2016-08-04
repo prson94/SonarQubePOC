@@ -1161,8 +1161,6 @@
     <Content Include="Views\Parts\Board.cshtml" />
     <Content Include="Views\Parts\Detail.cshtml" />
     <Content Include="Views\Parts\SurveyReport.cshtml" />
-    <Content Include="Views\Resources\_SurveyTypeQuestions.cshtml" />
-    <Content Include="Views\Resources\_SurveyTypeEntries.cshtml" />
     <Content Include="Views\Resources\_EmailTemplates.cshtml" />
     <Content Include="Views\Resources\_TooltipTemplates.cshtml" />
     <Content Include="Views\Parts\Followers.cshtml" />
@@ -1172,7 +1170,6 @@
     <Content Include="Views\Parts\Ownership.cshtml" />
     <Content Include="Views\Shared\EditableForm.cshtml" />
     <Content Include="Views\Parts\Resolutions.cshtml" />
-    <Content Include="Views\Resources\_ResponseTypeOptions.cshtml" />
     <Content Include="Views\Parts\OwnershipForGroup.cshtml" />
     <Content Include="Views\Shared\ImageEditor.cshtml" />
     <Content Include="Views\Shared\SPA.cshtml" />
@@ -1279,6 +1276,7 @@
     <Content Include="Views\Overlays\IntersectRoles.cshtml" />
     <Content Include="Views\Relations\ImpactAnalysisOverlay.cshtml" />
     <Content Include="Views\Workflow\WorkflowActionOverlay_5.cshtml" />
+    <Content Include="Views\Form\QuestionTypeEditForm.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

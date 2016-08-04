@@ -133,6 +133,12 @@ namespace d360.web.Models
         public List<SourcePostEditModel> Edits { get; set; }
     }
 
+    public class KnockoutDisplayItem
+    {
+        public string title { get; set; }
+        public string value { get; set; }
+    }
+
     public class SourcePostAddModel
     {
         public int SourceIntersectID { get; set; }
@@ -651,35 +657,6 @@ namespace d360.web.Models
         public string SaveActionName { get; set; }
     }
 
-    public class FusionAttributeTypeEditorControl
-    {
-        public string Title { get; set; }
-        public List<FusionAttributeType> Types { get; set; }
-        public int? SelectedID { get; set; }
-    }
-
-    public class FusionOwnerEditModel
-    {
-        public string ObjectType { get; set; }
-
-        public int? ObjectID { get; set; }
-
-        public string ParentObjectType { get; set; }
-
-        public int? ParentObjectID { get; set; }
-    }
-
-    public class FusionOwnerEditListModel
-    {
-        public string RelationshipOwnerObjectType { get; set; }
-
-        public int RelationshipOwnerObjectID { get; set; }
-
-        public int FusionID { get; set; }
-
-        public List<FusionOwnerEditModel> Items { get; set; }
-    }
-
     public class FusionOwnerRuleEditorModel
     {
         public bool IsUsed { get; set; }
@@ -714,17 +691,6 @@ namespace d360.web.Models
         public FusionAttributeOwnerRuleItem Item { get; set; }
     }
 
-    public class FusionPromotionEditModel
-    {
-        public string ObjectType { get; set; }
-
-        public int? ObjectID { get; set; }
-
-        public string ParentObjectType { get; set; }
-
-        public int? ParentObjectID { get; set; }
-    }
-
     public class FusionRuleEditorModel
     {
         public int FusionTypeID { get; set; }
@@ -740,40 +706,6 @@ namespace d360.web.Models
         public FusionRule Rule { get; set; }
 
         public List<FusionAttributeType> AttributeTypes { get; set; }        
-    }
-
-    public class FusionPromotionRuleEditorModel
-    {
-        public int FusionTypeID { get; set; }
-
-        public int FusionID { get; set; }
-
-        public string FormUri { get; set; }
-
-        public string FormMethod { get; set; }
-
-        public string FormName { get; set; }
-
-        public FusionAttributePromotionRule Rule { get; set; }
-
-        public List<FusionAttributeType> AttributeTypes { get; set; }
-
-        public int ParentTypeID { get; set; }
-    }
-
-    public class FusionPromotionRuleItemEditorModel
-    {
-        public string FormUri { get; set; }
-
-        public string FormMethod { get; set; }
-
-        public string FormName { get; set; }
-
-        public int FusionID { get; set; }
-
-        public int TargetFusionAttributeTypeID { get; set; }
-
-        public FusionAttributePromotionRuleItem Item { get; set; }
     }
 
     public class FusionRuleItemEditorModel
@@ -819,55 +751,6 @@ namespace d360.web.Models
         public List<SelectListItem> TargetFields { get; set; }
 
         public FusionRuleStepMapping Item { get; set; }
-    }
-
-    public class FusionPromotionRuleMappingEditorModel
-    {
-        public string FormUri { get; set; }
-
-        public string FormMethod { get; set; }
-
-        public string FormName { get; set; }
-
-        public List<SelectListItem> SourceFields { get; set; }
-
-        public List<SelectListItem> TargetFields { get; set; }
-
-        public FusionAttributePromotionRuleMapping Item { get; set; }
-    }
-
-    public class IntersectTypeEditorModel
-    {
-        public int ID { get; set; }
-
-        public string Side1 { get; set; }
-        public string Side1DisplayText { get; set; }
-
-        public string Side2 { get; set; }
-        public string Side2DisplayText { get; set; }
-
-        /// <summary>
-        /// Should certain fields be made read-only based on whether any 
-        /// relationships exist for this type.
-        /// </summary>
-        public bool LimitedChangesOnly { get; set; }
-    }
-
-    public class RelationTypeEditorModel
-    {
-        public int ID { get; set; }
-
-        public string Subject { get; set; }
-
-        public string Object { get; set; }
-
-        public PredicateType PredicateType { get; set; }
-
-        /// <summary>
-        /// Should certain fields be made read-only based on whether any 
-        /// relationships exist for this type.
-        /// </summary>
-        public bool LimitedChangesOnly { get; set; }
     }
 
     public class LoginModel
@@ -919,23 +802,6 @@ namespace d360.web.Models
         public int GroupNumber { get; set; }
     }
 
-    [DataContract(Name = "QuestionResponse", Namespace = constants.NAMESPACE)]
-    public class QuestionResponseModel
-    {
-        [DataMember]
-        public int QuestionTypeID { get; set; }
-        [DataMember]
-        public int SurveyTypeID { get; set; }
-        [DataMember]
-        public SystemObjects ObjectType { get; set; }
-        [DataMember]
-        public int ObjectID { get; set; }
-        [DataMember]
-        public int Value { get; set; }
-        [DataMember]
-        public string Comment { get; set; }
-    }
-
     public class ReportEditorModel : BaseEditorModel
     {
         public string FormDirections { get; set; }
@@ -964,6 +830,84 @@ namespace d360.web.Models
         public List<ReportSchemaModel> SchemaItems { get; set; }
 
         public List<SelectListItem> ObjectTypes { get; set; }
+    }
+
+    [DataContract(Namespace = constants.NAMESPACE)]
+    public class QuestionResponseModel
+    {
+        [DataMember]
+        public int QuestionTypeID { get; set; }
+        [DataMember]
+        public int SurveyTypeID { get; set; }
+        [DataMember]
+        public SystemObjects ObjectType { get; set; }
+        [DataMember]
+        public int ObjectID { get; set; }
+        [DataMember]
+        public int Value { get; set; }
+        [DataMember]
+        public string Comment { get; set; }
+    }
+
+    public class QuestionTypeItemEditorModel
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public int Value { get; set; }
+
+        public FieldValidity Validation()
+        {
+            var prefix = "You are missing a";
+            var valid = new FieldValidity();
+            if (string.IsNullOrEmpty(Name))
+            {
+                valid.Valid = false;
+                valid.Message += $"{prefix} Name.";
+            }
+            //if (Value <= 0)
+            //{
+            //    valid.Valid = false;
+            //    valid.Message += $"{prefix} Value.";
+            //}
+
+            return valid;
+        }
+    }
+
+    public class QuestionTypeEditorModel
+    {
+        public bool LimitedChangesOnly { get; set; }
+
+        public int ID { get; set; }
+        public int SurveyTypeID { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public QuestionDisplayStyle DisplayStyle { get; set; }
+
+        public List<KnockoutDisplayItem> DisplayStyleOptions { get; set; }
+
+        public List<QuestionTypeItemEditorModel> Items { get; set; }
+
+        public FieldValidity Validation()
+        {
+            var valid = new FieldValidity();
+
+            if (Items == null)
+            {
+                valid.Valid = false;
+                valid.Message = "You are missing one or more items.";
+            }
+            else
+            {
+                if (Items.Count == 0)
+                {
+                    valid.Valid = false;
+                    valid.Message = "You are missing one or more items.";
+                }
+            }
+
+            return valid;
+        }
     }
 
     public class StatisticTypeEditorModel : BaseEditorModel

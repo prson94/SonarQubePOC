@@ -245,6 +245,16 @@
               Looks up a localized string similar to bar-chart-o.
             </summary>
         </member>
+        <member name="P:Resources.Actions.ResponseTypes">
+            <summary>
+              Looks up a localized string similar to Survey Response Types.
+            </summary>
+        </member>
+        <member name="P:Resources.Actions.ResponseTypes_Icon">
+            <summary>
+              Looks up a localized string similar to bullhorn.
+            </summary>
+        </member>
         <member name="P:Resources.Actions.StatisticType_Icon">
             <summary>
               Looks up a localized string similar to tachometer.
@@ -405,6 +415,11 @@
         <member name="P:Resources.FieldInfo.DisplayDescription_Name">
             <summary>
               Looks up a localized string similar to Display Description.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.DisplayStyle_Name">
+            <summary>
+              Looks up a localized string similar to Display Style.
             </summary>
         </member>
         <member name="P:Resources.FieldInfo.FieldTypeCategory_Name">
@@ -703,6 +718,11 @@
               Looks up a localized string similar to Add Policy to {0}.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Add_QuestionType_Directions">
+            <summary>
+              Looks up a localized string similar to You can add a response type to a survey question.  This response type is available to all surveys, when defining a question..
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Add_RelationshipType_Directions">
             <summary>
               Looks up a localized string similar to When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear..
@@ -906,6 +926,11 @@
         <member name="P:Resources.FormInfo.Edit_Policy_Title">
             <summary>
               Looks up a localized string similar to Edit Type.
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Edit_QuestionType_Directions">
+            <summary>
+              Looks up a localized string similar to You may update a response type if it is not yet assigned to a question that was already answered..
             </summary>
         </member>
         <member name="P:Resources.FormInfo.Edit_RelationshipType_Directions">
@@ -2895,15 +2920,6 @@
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.QuestionType_AddFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.QuestionType_DeleteFields(System.Int32)">
-            <param name="id">QuestionTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.QuestionType_EditFields(System.Int32)">
-            <param name="id">QuestionTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Resolution_AddFields(d360.core.SystemObjects,System.Int32)">
             <param name="t">ObjectType</param>
             <param name="id">ObjectID</param>
@@ -2930,16 +2946,7 @@
             <param name="id">ResourceTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.ResponseType_DeleteFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponseType_EditFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponseTypeOption_DeleteFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResponseTypeOption_EditFields(System.Int32)">
-            <param name="id">SurveyTypeID</param>
+            <param name="id">ResponseTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Rule_DeleteFields(System.Int32)">
             <param name="id">RuleID</param>
@@ -3056,18 +3063,6 @@
         <member name="P:d360.web.Models.FieldValidationModel.rule">
             <summary>
             required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.IntersectTypeEditorModel.LimitedChangesOnly">
-            <summary>
-            Should certain fields be made read-only based on whether any 
-            relationships exist for this type.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.RelationTypeEditorModel.LimitedChangesOnly">
-            <summary>
-            Should certain fields be made read-only based on whether any 
-            relationships exist for this type.
             </summary>
         </member>
         <member name="M:d360.web.Models.Formatters.IDictionaryExtensions.ToExpando(System.Collections.Generic.IDictionary{System.String,System.Object})">

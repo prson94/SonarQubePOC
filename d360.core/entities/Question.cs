@@ -1,38 +1,22 @@
 ﻿using d360.core.entities.Contracts;
+using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Question, "Question")]
+    [DataContract(Namespace = NAMESPACE)]
     public class Question : BaseIntObject, IIntObject
     {
-        #region Properties
-
-        [DataMember]
-        public int QuestionTypeID { get; set; }
-
-        [DataMember]
-        public int? ResponseTypeOptionID { get; set; }
-
-        [DataMember]
-        public string ResponseValue { get; set; }
-
         [DataMember]
         public int SurveyID { get; set; }
 
         [DataMember]
         public string Comment { get; set; }
 
-        #region Related Objects
-
-        public virtual QuestionType QuestionType { get; set; }
-
-        public virtual ResponseTypeOption ResponseTypeOption { get; set; }
-
         public virtual Survey Survey { get; set; }
 
-        #endregion
 
-        #endregion
+        public virtual ICollection<QuestionTypeOption> QuestionTypeOptions { get; set; }
     }
 }

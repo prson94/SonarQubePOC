@@ -327,13 +327,14 @@ SELECT	'#Admin' as MenuID,
 					                SELECT	'Surveys' AS name, 
 							                '#/surveys/administration' AS url, 
 							                7 as feature,
-							                (
-							                SELECT	'Response Types' AS name, 
-									                '#/surveyresponsetypes/administration' AS url, 
-									                7 as feature,
-									                NULL AS items
-							                FOR XML PATH('nav'), TYPE
-							                ) AS items
+							                NULL as items
+                                            --(
+							                --SELECT	'Response Types' AS name, 
+									        --        '#/surveyresponsetypes/administration' AS url, 
+									        --        7 as feature,
+									        --        NULL AS items
+							                --FOR XML PATH('nav'), TYPE
+							                --) AS items
 									) bg
 							FOR XML PATH('nav'), TYPE
 							) AS items

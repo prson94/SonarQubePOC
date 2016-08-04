@@ -3,16 +3,15 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
     public class Survey : BaseIntObject, IIntObject
     {
-        #region Properties
-
-        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
-        public string ObjectType { get; set; }
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        public string Object { get; set; }
 
         [DataMember]
         public int ObjectID { get; set; }
@@ -23,20 +22,13 @@ namespace d360.core.entities
         [DataMember]
         public int SurveyTypeID { get; set; }
 
-        #region Related Objects
+        [DataMember]
+        public DateTime CreatedOn { get; set; }
 
         [ForeignKey("SurveyTypeID")]
         public virtual SurveyType SurveyType { get; set; }
 
-        #endregion
-
-        #endregion
-
-        #region Collections
-
         [ForeignKey("SurveyID")]
         public virtual ICollection<Question> Questions { get; set; }
-
-        #endregion
     }
 }

@@ -129,6 +129,9 @@
   <data name="DisplayDescription_Name" xml:space="preserve">
     <value>Display Description</value>
   </data>
+  <data name="DisplayStyle_Name" xml:space="preserve">
+    <value>Display Style</value>
+  </data>
   <data name="FieldTypeCategory_Name" xml:space="preserve">
     <value>Category</value>
   </data>
