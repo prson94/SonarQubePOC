@@ -1,15 +1,17 @@
 ﻿CREATE TABLE [dbo].[DomainGroup] (
-    [ID]           INT             IDENTITY (1, 1) NOT NULL,
-    [Name]         NVARCHAR (250)  NOT NULL,
-    [DomainTypeID] INT             NOT NULL,
-    [MasterListID] INT             NULL,
-    [Description]  NVARCHAR (4000) NULL,
-    [UpdatedOn]    DATETIME        NULL,
-    [UpdatedBy]    INT             NULL,
+    [ID]           INT            IDENTITY (1, 1) NOT NULL,
+    [Name]         NVARCHAR (250) NOT NULL,
+    [DomainTypeID] INT            NOT NULL,
+    [MasterListID] INT            NULL,
+    [Description]  NVARCHAR (MAX) NULL,
+    [UpdatedOn]    DATETIME       NULL,
+    [UpdatedBy]    INT            NULL,
     CONSTRAINT [PK_DomainGroup] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_DomainGroup_Domain] FOREIGN KEY ([MasterListID]) REFERENCES [dbo].[Domain] ([ID]),
     CONSTRAINT [FK_DomainGroup_DomainType] FOREIGN KEY ([DomainTypeID]) REFERENCES [dbo].[DomainType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

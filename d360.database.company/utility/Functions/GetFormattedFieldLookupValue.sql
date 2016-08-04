@@ -4,12 +4,12 @@
 	@DisplayFormat nvarchar(250),
 	@LookupObjectType varchar(25),
 	@LookupObjectID int,
-	@Value nvarchar(4000)
+	@Value nvarchar(max)
 )
-RETURNS nvarchar(4000)
+RETURNS nvarchar(max)
 AS
 BEGIN
-	declare @formattedValue nvarchar(4000)
+	declare @formattedValue nvarchar(max)
 
 	if @LookupObjectType is null
 	begin
@@ -17,8 +17,8 @@ BEGIN
 
 		if @Type = 'Link' OR @Type = 'UncLink'
 		begin
-			declare @linkName nvarchar(4000),
-					@linkUrl nvarchar(4000)
+			declare @linkName nvarchar(max),
+					@linkUrl nvarchar(max)
 
 			if charindex('|', @Value, 1) > 0
 				begin
@@ -44,7 +44,7 @@ BEGIN
 	else
 	begin
 		declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
-		declare @fieldValues table(Field nvarchar(100), Value nvarchar(4000), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
+		declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
 
 		set @formattedValue = @DisplayFormat
 	
@@ -122,9 +122,9 @@ BEGIN
 										NULL as LookupDisplayFormat
 								FROM	(
 										SELECT	ID,
-												CAST(Name as nvarchar(4000)) as Name,
-												Description,
-												CAST(TextPath as nvarchar(4000)) as TextPath
+												CAST(Name as nvarchar(max)) as Name,
+												CAST(Description as nvarchar(max)) as Description,
+												CAST(TextPath as nvarchar(max)) as TextPath
 										FROM	Artifact A
 										WHERE	A.ID = CAST(@Value as int)
 												and L.ObjectType = 'Artifact'
@@ -142,9 +142,9 @@ BEGIN
 										NULL as LookupDisplayFormat
 								FROM	(
 										SELECT	ID,
-												CAST(Name as nvarchar(4000)) as Name,
-												Description,
-												CAST(TextPath as nvarchar(4000)) as TextPath
+												CAST(Name as nvarchar(max)) as Name,
+												CAST(Description as nvarchar(max)) as Description,
+												CAST(TextPath as nvarchar(max)) as TextPath
 										FROM	Taxonomy A
 										WHERE	A.ID = CAST(@Value as int)
 												and L.ObjectType = 'Taxonomy'
@@ -162,8 +162,8 @@ BEGIN
 										NULL as LookupDisplayFormat
 								FROM	(
 										SELECT	ID,
-												CAST(Name as nvarchar(4000)) as Name,
-												Description
+												CAST(Name as nvarchar(max)) as Name,
+												CAST(Description as nvarchar(max)) as Description
 										FROM	Domain A
 										WHERE	A.ID = @Value
 												and L.ObjectType = 'Domain'
@@ -181,8 +181,8 @@ BEGIN
 										NULL as LookupDisplayFormat
 								FROM	(
 										SELECT	ID,
-												CAST(Code as nvarchar(4000)) as Code,
-												CAST(Name as nvarchar(4000)) as Name,
+												CAST(Code as nvarchar(max)) as Code,
+												CAST(Name as nvarchar(max)) as Name,
 												Description
 										FROM	DomainItem A
 										WHERE	A.ID = @Value
@@ -201,9 +201,9 @@ BEGIN
 										NULL as LookupDisplayFormat
 								FROM	(
 										SELECT	ResourceID as ID,
-												CAST(FirstName as nvarchar(4000)) as FirstName,
-												CAST(LastName as nvarchar(4000)) as LastName,
-												CAST(Email as nvarchar(4000)) as Email
+												CAST(FirstName as nvarchar(max)) as FirstName,
+												CAST(LastName as nvarchar(max)) as LastName,
+												CAST(Email as nvarchar(max)) as Email
 										FROM	reporting.Global_Resource A
 										WHERE	A.ResourceID = @Value
 												and L.ObjectType = 'Resource'
@@ -225,7 +225,7 @@ BEGIN
 		begin
 			declare @currentToken nvarchar(100) = null,
 					@currentField nvarchar(100) = null,
-					@currentValue nvarchar(4000) = null,
+					@currentValue nvarchar(max) = null,
 					@lkpType nvarchar(250) = null, 
 					@lkpID int = null, 
 					@lkpFormat nvarchar(250) = null

@@ -1,13 +1,15 @@
 ﻿CREATE TABLE [dbo].[Group] (
-    [ID]                       INT             IDENTITY (1, 1) NOT NULL,
-    [Name]                     NVARCHAR (250)  NOT NULL,
-    [Description]              NVARCHAR (4000) NULL,
-    [PrimaryOwnerResourceID]   INT             NULL,
-    [SecondaryOwnerResourceID] INT             NULL,
-    [UpdatedOn]                DATETIME        NULL,
-    [UpdatedBy]                INT             NULL,
+    [ID]                       INT            IDENTITY (1, 1) NOT NULL,
+    [Name]                     NVARCHAR (250) NOT NULL,
+    [Description]              NVARCHAR (MAX) NULL,
+    [PrimaryOwnerResourceID]   INT            NULL,
+    [SecondaryOwnerResourceID] INT            NULL,
+    [UpdatedOn]                DATETIME       NULL,
+    [UpdatedBy]                INT            NULL,
     CONSTRAINT [PK_Group] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

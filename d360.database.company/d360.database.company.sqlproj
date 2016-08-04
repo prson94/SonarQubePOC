@@ -167,7 +167,6 @@
     <Build Include="dbo\Tables\RelatedArtifact.sql" />
     <Build Include="dbo\Tables\DomainType.sql" />
     <Build Include="dbo\Tables\Comment.sql" />
-    <Build Include="dbo\Tables\SurveyObjectCache.sql" />
     <Build Include="dbo\Tables\CommentRelation.sql" />
     <Build Include="dbo\Tables\WorkflowResourceNotification.sql" />
     <Build Include="dbo\Tables\FusionStatusLog.sql" />
@@ -184,7 +183,7 @@
     <Build Include="dbo\Tables\WorkflowTypeRelation.sql" />
     <Build Include="dbo\Tables\TagRelation.sql" />
     <Build Include="dbo\Tables\Report.sql">
-      <AnsiNulls>On</AnsiNulls>
+      <AnsiNulls>Off</AnsiNulls>
     </Build>
     <Build Include="dbo\Tables\FusionType.sql" />
     <Build Include="dbo\Tables\TooltipTemplate.sql" />
@@ -218,7 +217,6 @@
     <Build Include="queue\Tables\BulkLoad.sql" />
     <Build Include="dbo\Tables\Taxonomy.sql" />
     <Build Include="dbo\Tables\ResponsibilityContextItem.sql" />
-    <Build Include="dbo\Tables\ResponseType.sql" />
     <Build Include="dbo\Tables\FusionAttributeType.sql" />
     <Build Include="dbo\Tables\ResponseTypeOption.sql" />
     <Build Include="dbo\Tables\Load.sql" />
@@ -330,10 +328,6 @@
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
     <Build Include="dbo\Stored Procedures\AddMappingDependencies.sql" />
-    <Build Include="dbo\Stored Procedures\ProcessSchedule.sql">
-      <AnsiNulls>On</AnsiNulls>
-      <QuotedIdentifier>On</QuotedIdentifier>
-    </Build>
     <Build Include="dbo\Stored Procedures\ProcessBulkLoad.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeObjectDetails.sql" />
     <Build Include="dbo\Stored Procedures\GetStatisticDetails.sql" />
@@ -361,7 +355,6 @@
     <Build Include="dbo\Stored Procedures\GetAttributeAndIntersectHierarchyByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetFieldsWithRelationsByObject.sql" />
     <Build Include="dbo\Stored Procedures\GetRenderedTemplateBody.sql" />
-    <Build Include="dbo\Stored Procedures\GetAllocationOptions.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedResponsibilityTypesByObject.sql">
       <AnsiNulls>Off</AnsiNulls>
       <QuotedIdentifier>Off</QuotedIdentifier>
@@ -376,7 +369,6 @@
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="utility\Stored Procedures\PromoteFusionAttributes.sql" />
     <Build Include="dbo\Stored Procedures\GetIntersectTypeOptions.sql" />
     <Build Include="dbo\User Defined Types\PreviouslyCheckedIDTable.sql" />
     <Build Include="dbo\User Defined Types\StaticFieldCandidateTable.sql" />
@@ -425,11 +417,9 @@
     <Build Include="dbo\Stored Procedures\AsyncAddObject.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeResponsibilitiesForObject.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
-    <Build Include="utility\Stored Procedures\PromoteFusionAttributesRelations.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationshipTypesBulk.sql" />
     <Build Include="utility\Functions\ShouldPromotionRun.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDefinition.sql" />
-    <Build Include="utility\Stored Procedures\PromoteFusionAttributeLookups.sql" />
     <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject_1.sql" />
     <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect_1.sql" />
     <Build Include="dbo\User Defined Types\RelationshipTypeTable_1.sql" />
@@ -490,6 +480,22 @@
     <Build Include="fusion\Stored Procedures\Rules_1.sql" />
     <Build Include="dbo\Stored Procedures\GetTypeHierarchyByObject.sql" />
     <Build Include="utility\Stored Procedures\GetApproversForWorkflow.sql" />
+    <Build Include="reporting\Tables\Dates.sql" />
+    <Build Include="fusion\Tables\RuleLog.sql" />
+    <Build Include="dbo\Tables\QuestionTypeOption.sql" />
+    <Build Include="dbo\Tables\QuestionOption.sql" />
+    <Build Include="dbo\Tables\MapRuleItemMapRule.sql" />
+    <Build Include="dbo\Tables\MapRuleItemMapItem.sql" />
+    <Build Include="dbo\Tables\MapItemMap.sql" />
+    <Build Include="dbo\Tables\FieldTypeLookup.sql" />
+    <Build Include="dbo\Tables\FieldTypeFilteredLookupDisplayField.sql" />
+    <Build Include="dbo\Tables\FieldTypeFilteredLookupDefinition.sql" />
+    <Build Include="dbo\Views\IntersectTypeDetail.sql" />
+    <Build Include="dbo\Functions\GenerateNgObjectUrl_1.sql" />
+    <Build Include="dbo\Functions\ArtifactNgSiteNavigation_1.sql" />
+    <Build Include="dbo\Functions\GetFusionAttributesByOwningArtifact.sql" />
+    <Build Include="dbo\Stored Procedures\GetTechnicalMapping_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetLineage.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

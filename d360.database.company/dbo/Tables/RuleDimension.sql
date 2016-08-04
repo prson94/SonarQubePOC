@@ -1,14 +1,15 @@
 ﻿
-CREATE TABLE [dbo].[RuleDimension]
-(
-	[ID] INT IDENTITY (1, 1) NOT NULL, 
-    [Name] NVARCHAR(250) NOT NULL, 
-    [Description] NVARCHAR(4000) NULL,
-	[IsSystemDefined] BIT NOT NULL DEFAULT(0),
-    [UpdatedOn] DATETIME NOT NULL DEFAULT getUtcDate(), 
-    [UpdatedBy] INT NOT NULL,
-	CONSTRAINT [PK_RuleDimension] PRIMARY KEY CLUSTERED ([ID] ASC)
-)
+CREATE TABLE [dbo].[RuleDimension] (
+    [ID]              INT            IDENTITY (1, 1) NOT NULL,
+    [Name]            NVARCHAR (250) NOT NULL,
+    [Description]     NVARCHAR (MAX) NULL,
+    [IsSystemDefined] BIT            DEFAULT ((0)) NOT NULL,
+    [UpdatedOn]       DATETIME       DEFAULT (getutcdate()) NOT NULL,
+    [UpdatedBy]       INT            NOT NULL,
+    CONSTRAINT [PK_RuleDimension] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
 go
 
 begin

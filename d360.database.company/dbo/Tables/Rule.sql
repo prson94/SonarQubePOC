@@ -1,15 +1,17 @@
 ﻿CREATE TABLE [dbo].[Rule] (
-    [ID]          INT             IDENTITY (1, 1) NOT NULL,
-    [Name]        NVARCHAR (250)  NOT NULL,
-    [Description] NVARCHAR (4000) NULL,
-    [RuleType]    INT             NOT NULL,
-    [UpdatedOn]   DATETIME        NULL,
-    [UpdatedBy]   INT             NULL,
-    [SourceID]    VARCHAR (250)   NULL,
-    [RuleDimensionID] INT		  NULL, 
+    [ID]              INT            IDENTITY (1, 1) NOT NULL,
+    [Name]            NVARCHAR (250) NOT NULL,
+    [Description]     NVARCHAR (MAX) NULL,
+    [RuleType]        INT            NOT NULL,
+    [UpdatedOn]       DATETIME       NULL,
+    [UpdatedBy]       INT            NULL,
+    [SourceID]        VARCHAR (250)  NULL,
+    [RuleDimensionID] INT            NULL,
     CONSTRAINT [PK_Rule] PRIMARY KEY CLUSTERED ([ID] ASC),
-	CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
+    CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY ([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
 );
+
+
 
 
 

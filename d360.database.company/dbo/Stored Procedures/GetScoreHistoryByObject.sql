@@ -12,8 +12,8 @@ begin
 
 	set @DateEnd = DATEADD(dd, 0, DATEDIFF(dd, 0, GETUTCDATE()))
 	select	@DateStart = coalesce(min(Date), DATEADD(d, -30, @DateEnd)) 
-	from	ObjectVersion 
-	where	ObjectType = @type 
+	from	reporting.Global_Audit
+	where	Object = @type 
 			and ObjectID = @id
 	
 	select @Increment = DATEDIFF(hh, @DateStart, @DateEnd) / @Points

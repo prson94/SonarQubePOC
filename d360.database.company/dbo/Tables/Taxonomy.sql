@@ -3,7 +3,7 @@
     [ParentID]       INT             NULL,
     [TaxonomyTypeID] INT             NOT NULL,
     [Name]           NVARCHAR (250)  NOT NULL,
-    [Description]    NVARCHAR (4000) NULL,
+    [Description]    NVARCHAR (MAX)  NULL,
     [Path]           XML             NULL,
     [TextPath]       NVARCHAR (1000) NULL,
     [Level]          INT             NULL,
@@ -13,6 +13,8 @@
     CONSTRAINT [CK_Taxonomy_IDNotEqualParentID] CHECK ([ID]<>[ParentID]),
     CONSTRAINT [FK_Taxonomy_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

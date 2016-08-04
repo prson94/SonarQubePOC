@@ -2,7 +2,7 @@
     [ID]           INT             IDENTITY (1, 1) NOT NULL,
     [ParentID]     INT             NULL,
     [Name]         NVARCHAR (250)  NOT NULL,
-    [Description]  NVARCHAR (4000) NULL,
+    [Description]  NVARCHAR (MAX)  NULL,
     [TextPath]     NVARCHAR (2000) NULL,
     [UpdatedOn]    DATETIME        NULL,
     [UpdatedBy]    INT             NULL,
@@ -12,6 +12,8 @@
     CONSTRAINT [FK_Policy_ParentPolicy] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Policy] ([ID]),
     CONSTRAINT [FK_Policy_PolicyType] FOREIGN KEY ([PolicyTypeID]) REFERENCES [dbo].[PolicyType] ([ID])
 );
+
+
 
 
 

@@ -1,9 +1,17 @@
 ﻿CREATE TABLE [dbo].[MapRuleItem] (
-    [ID]                      INT IDENTITY (1, 1) NOT NULL,
-    [MapRuleID]               INT NOT NULL,
-    [SourceFusionAttributeID] INT NOT NULL,
-    [TargetFusionAttributeID] INT NOT NULL,
-    CONSTRAINT [PK_MapRuleItem] PRIMARY KEY NONCLUSTERED ([ID] ASC),
-    CONSTRAINT [FK_MapRuleItem_MapRule] FOREIGN KEY ([MapRuleID]) REFERENCES [dbo].[MapRule] ([ID]) ON DELETE CASCADE
+    [ID]                      INT          IDENTITY (1, 1) NOT NULL,
+    [SourceOwner]             VARCHAR (50) NULL,
+    [SourceOwnerID]           INT          NULL,
+    [SourceFusionAttributeID] INT          NOT NULL,
+    [TargetOwner]             VARCHAR (50) NULL,
+    [TargetOwnerID]           INT          NULL,
+    [TargetFusionAttributeID] INT          NULL,
+    [CreatedBy]               INT          NOT NULL,
+    [CreatedOn]               DATETIME     NOT NULL,
+    [UpdatedBy]               INT          NOT NULL,
+    [UpdatedOn]               DATETIME     NOT NULL,
+    CONSTRAINT [PK_MapRuleItem] PRIMARY KEY NONCLUSTERED ([ID] ASC)
 );
+
+
 

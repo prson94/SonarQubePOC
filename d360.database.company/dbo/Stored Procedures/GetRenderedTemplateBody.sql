@@ -194,7 +194,7 @@ BEGIN
 									 from (
 											select count(1) as Cnt
 											from	(
-												select		top 10 
+												select		top 100 percent 
 															[Description]
 												from		DomainItem
 												where		DomainID = @MyDomainID

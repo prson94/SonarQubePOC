@@ -1,14 +1,16 @@
 ﻿CREATE TABLE [dbo].[PolicyType] (
-    [ID]                INT             IDENTITY (50000, 1) NOT NULL,
-    [Name]              NVARCHAR (250)  NOT NULL,
-    [Description]       NVARCHAR (4000) NULL,
-    [PolicyTypeClassID] INT             NULL,
-    [UpdatedOn]         DATETIME        NULL,
-    [UpdatedBy]         INT             NULL,
-    [MaximumDepth]      INT             NULL,
+    [ID]                INT            IDENTITY (50000, 1) NOT NULL,
+    [Name]              NVARCHAR (250) NOT NULL,
+    [Description]       NVARCHAR (MAX) NULL,
+    [PolicyTypeClassID] INT            NULL,
+    [UpdatedOn]         DATETIME       NULL,
+    [UpdatedBy]         INT            NULL,
+    [MaximumDepth]      INT            NULL,
     CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_PolicyType_PolicyTypeClass] FOREIGN KEY ([PolicyTypeClassID]) REFERENCES [dbo].[PolicyTypeClass] ([ID])
 );
+
+
 
 
 

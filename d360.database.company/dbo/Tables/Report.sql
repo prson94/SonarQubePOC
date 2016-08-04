@@ -1,14 +1,19 @@
 ﻿CREATE TABLE [dbo].[Report] (
-    [ID]             INT             IDENTITY (1, 1) NOT NULL,
-    [Name]           NVARCHAR (250)  NOT NULL,
-    [Description]    NVARCHAR (4000) NULL,
-    [ObjectType]     VARCHAR (25)    NOT NULL,
-    [ObjectID]       INT             NOT NULL,
-    [ReportLayoutID] INT             NOT NULL,
-    [UpdatedOn]      DATETIME        NULL,
-    [UpdatedBy]      INT             NULL,
+    [ID]               INT             IDENTITY (1, 1) NOT NULL,
+    [Name]             NVARCHAR (250)  NOT NULL,
+    [Description]      NVARCHAR (4000) NULL,
+    [ObjectType]       VARCHAR (25)    NOT NULL,
+    [ObjectID]         INT             NOT NULL,
+    [ReportLayoutID]   INT             NOT NULL,
+    [UpdatedOn]        DATETIME        NULL,
+    [UpdatedBy]        INT             NULL,
+    [ReportType]       VARCHAR (25)    CONSTRAINT [DF_Report_ReportType] DEFAULT ('legacy') NOT NULL,
+    [PowerBIDatasetID] VARCHAR (50)    NULL,
+    [PowerBIReportID]  VARCHAR (50)    NULL,
     CONSTRAINT [PK_Report] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

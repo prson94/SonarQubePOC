@@ -102,99 +102,106 @@
                 var row = args.row;     // row data.
                 var key = args.key;     // row key.
 
-                $.ajax({
-                    type: "GET",
-                    url: "/api/FusionAttributeType/" + row.ID + "/grid/definition?fusionID=" + id,
-                    async: false,
-                    contentType: 'application/json',
-                    dataType: 'json'
-                }).done(function (definition) {
+                try {
+                    if (row) {
+                        if (row.ID) {
+                            //$('#FusionAttributeTypes').jqxTreeGrid({ disabled: true });
 
-                    definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+                            $.ajax({
+                                type: "GET",
+                                url: "/api/FusionAttributeType/" + row.ID + "/grid/definition?fusionID=" + id,
+                                async: false,
+                                contentType: 'application/json',
+                                dataType: 'json'
+                            }).done(function (definition) {
 
-                    //Refresh Filters
-                    if (fusionAttributeID > 0) {
-                        filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
-                    }
-                    else {
-                        filterVM.setColumns(definition.FilterColumns);
-                    }
+                                $('#ItemsTile').jqxGrid('clear');
+                                //$('#ItemsTile').jqxGrid('destroy');
+
+                                //$('#ItemsTileWrapper').html('<div id="ItemsTile"></div>');
+
+                                definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+
+                                //Refresh Filters
+                                if (fusionAttributeID > 0) {
+                                    filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
+                                }
+                                else {
+                                    filterVM.setColumns(definition.FilterColumns);
+                                }
                     
-                    definition.Columns.forEach(function (item) {
+                                definition.Columns.forEach(function (item) {
 
-                    try {
-                        if (item.filteritems) {
-                            if (item.filteritems.length == 0)
-                                delete item.filteritems;
-                        }
-                    } catch (e) {
+                                try {
+                                    if (item.filteritems) {
+                                        if (item.filteritems.length == 0)
+                                            delete item.filteritems;
+                                    }
+                                } catch (e) {
 
-                    }
+                                }
 
-                    //modify type column
-                    if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
-                });
+                                //modify type column
+                                if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
+                            });
 
-                    definition.Fields.forEach(function (item) {
-                        if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
-                    });
+                                definition.Fields.forEach(function (item) {
+                                    if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
+                                });
 
-                    //add internal type
-                    definition.Fields.push({ name: 'Type', type: 'string' });
+                                //add internal type
+                                definition.Fields.push({ name: 'Type', type: 'string' });
 
-                    FusionAttributeSource.datafields = definition.Fields;
-                    FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
+                                FusionAttributeSource.datafields = definition.Fields;
+                                FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
 
-                    $('#ItemsTile').jqxGrid('destroy');
-
-                    $('#ItemsTileWrapper').html('<div id="ItemsTile"></div>');
-
-                    //$('#ItemsTile').jqxGrid('removesort');
-
-                    $('#ItemsTile').one('bindingcomplete', function (event) {
-                        try {
-                            if (definition.Columns.length > 7) {
-                                $.each(definition.Columns, function () {
-                                    if (this.datafield.indexOf('Parent') > -1) {
-                                        $('#ItemsTile').jqxGrid('pincolumn', this.datafield);
+                                $('#ItemsTile').one('bindingcomplete', function (event) {
+                                    try {
+                                        if (definition.Columns.length > 7) {
+                                            $.each(definition.Columns, function () {
+                                                if (this.datafield.indexOf('Parent') > -1) {
+                                                    $('#ItemsTile').jqxGrid('pincolumn', this.datafield);
+                                                }
+                                            });
+                                            oneBindingComplete();
+                                        }
+                                    } catch (e) {
                                     }
                                 });
-                                oneBindingComplete();
-                            }
-                        } catch (e) {
+
+                                $('#ItemsTile').on('rowselect', itemsRowSelected);
+                                $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
+
+                                $('#ItemsTile').jqxGrid({
+                                    //altrows: true,
+                                    //width: grid_width,
+                                    //autoheight: true,
+                                    //sortable: true,
+                                    //filterable: false,
+                                    //showfilterrow: false,
+                                    //showfiltermenuitems: false,
+                                    //showsortmenuitems: false,
+                                    //pagesizeoptions: ['10', '20', '50'],
+                                    //pagesize: 20,
+                                    //pageable: true,
+                                    //virtualmode: true,
+                                    //rendergridrows: function () {
+                                    //    return FusionAttributeAdapter.records;
+                                    //},
+                                    //columnsresize: true,
+                                    //source: FusionAttributeAdapter,
+                                    //theme: theme,
+                                    columns: definition.Columns
+                                });
+
+                                $('#ItemsTile').jqxGrid('updatebounddata');
+                            });
                         }
-                    });
+                    }
 
-                    $('#ItemsTile').on('rowselect', itemsRowSelected);
-                    $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
-
-                    $('#ItemsTile').jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: false,
-                        showfilterrow: false,
-                        showfiltermenuitems: false,
-                        showsortmenuitems: false,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        pageable: true,
-                        virtualmode: true,
-                        rendergridrows: function () {
-                            return FusionAttributeAdapter.records;
-                        },
-                        columnsresize: true,
-                        source: FusionAttributeAdapter,
-                        theme: theme,
-                        columns: definition.Columns
-                    });
-
-
-
-                    //$('#ItemsTile').jqxGrid({ columns: definition.Columns });
-                    //$('#ItemsTile').jqxGrid('updatebounddata');
-                });
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             function itemsBindingComplete(event) {
@@ -206,26 +213,38 @@
                 } catch (e) {
                     console.log(e);
                 }
+                //$('#FusionAttributeTypes').jqxTreeGrid({ disabled: false });
             }
 
             function itemsRowSelected(event) {
-                var args = event.args;              // event arguments.
-                var rowBoundIndex = args.rowindex;  // row's bound index.
-                var data = args.row;                // row's data
+                try {
+                    var args = event.args;              // event arguments.
+                    var rowBoundIndex = args.rowindex;  // row's bound index.
+                    var data = args.row;                // row's data
 
-                $('#AggregatesTile').fadeIn(500);
-                RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
+                    if (data) {
+                        if (data.ID) {
+                            $('#AggregatesTile').fadeIn(500);
+                            RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
 
-                $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
-                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                            $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
+                            FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             function fusionAttributeRowSelected(data) {
-                $('#AggregatesTile').fadeIn(500);
-                RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
-                //FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
-                AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
-                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                if (data) {
+                    if (data.ID) {
+                        $('#AggregatesTile').fadeIn(500);
+                        RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
+                        AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+                        FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                    }
+                }
             }
 
             function clearFilter() {
@@ -264,16 +283,20 @@
 
                 }
 
-                $('#Export').off('click', exportFusionAttributes);
-                $('#RunFilter').off('click', runFilter);
-                $('#ClearFilter').off('click', clearFilter);
-                $('#FusionAttributeTypes').off('bindingComplete', fusionAttributesTypeBindingComplete);
-                $('#FusionAttributeTypes').off('rowSelect', fusionAttributeTypesRowSelect);
-                $('#ItemsTile').off('rowselect', itemsRowSelected);
-                $("#ItemsTile").off("bindingcomplete", itemsBindingComplete);
-                amplify.unsubscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
-                amplify.unsubscribe("ToolAction", toolAction);
-                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                try {
+                    $('#Export').off('click', exportFusionAttributes);
+                    $('#RunFilter').off('click', runFilter);
+                    $('#ClearFilter').off('click', clearFilter);
+                    $('#FusionAttributeTypes').off('bindingComplete', fusionAttributesTypeBindingComplete);
+                    $('#FusionAttributeTypes').off('rowSelect', fusionAttributeTypesRowSelect);
+                    $('#ItemsTile').off('rowselect', itemsRowSelected);
+                    $("#ItemsTile").off("bindingcomplete", itemsBindingComplete);
+                    amplify.unsubscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
+                    amplify.unsubscribe("ToolAction", toolAction);
+                    amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             //#endregion
@@ -424,12 +447,6 @@
                     amplify.subscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
                     amplify.subscribe("ToolAction", toolAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-                    //$("#ItemsTile").on("sort", function (event) {
-                    //    $('#ItemsTile').one('bindingcomplete', function (event) {
-                    //        oneBindingComplete();
-                    //    });
-                    //});
 
                     //#endregion
 

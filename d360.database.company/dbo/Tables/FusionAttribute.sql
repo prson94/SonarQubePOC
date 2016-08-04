@@ -18,6 +18,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionAttributeTypeID]
     ON [dbo].[FusionAttribute]([FusionAttributeTypeID] ASC);
@@ -53,4 +55,9 @@ CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID-SourceID]
 GO
 CREATE CLUSTERED INDEX [CIX_FusionAttribute]
     ON [dbo].[FusionAttribute]([FusionID] ASC, [FusionAttributeTypeID] ASC, [ParentID] ASC);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_FusionAttribute_FusionID_TextPath]
+    ON [dbo].[FusionAttribute]([FusionID] ASC, [TextPath] ASC);
 

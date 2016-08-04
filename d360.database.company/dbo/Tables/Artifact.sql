@@ -3,7 +3,7 @@
     [ParentID]          INT             NULL,
     [ArtifactTypeID]    INT             NOT NULL,
     [Name]              NVARCHAR (250)  NOT NULL,
-    [Description]       NVARCHAR (4000) NULL,
+    [Description]       NVARCHAR (MAX)  NULL,
     [Status]            NVARCHAR (25)   NOT NULL,
     [TextPath]          NVARCHAR (1000) NULL,
     [Path]              XML             NULL,
@@ -17,6 +17,8 @@
     CONSTRAINT [FK_Artifact_ParentArtifact] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Artifact] ([ID]),
     CONSTRAINT [FK_Artifact_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID])
 );
+
+
 
 
 
@@ -64,7 +66,7 @@ AS
         select 'Delete', [queue].WriteIndexXml('Removed', 'ArtifactType', ArtifactTypeID, coalesce(UpdatedBy, 0)), 'Artifact', ID from deleted;
 
 	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-		select 'Artifact', O.ID, O.TextPath, O.UpdatedBy, O.UpdatedOn, 'Deleted', 'Artifact', O.ID, T.Name, O.TextPath, 'This artifact has been removed.' from deleted O inner join ArtifactType T on T.ID = O.ArtifactTypeID;
+		select 'Artifact', O.ID, O.TextPath, coalesce(O.UpdatedBy, 0), coalesce(O.UpdatedOn, getutcdate()), 'Deleted', 'Artifact', O.ID, T.Name, O.TextPath, 'This artifact has been removed.' from deleted O inner join ArtifactType T on T.ID = O.ArtifactTypeID;
 
 
 

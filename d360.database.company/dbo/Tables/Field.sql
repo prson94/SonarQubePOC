@@ -1,12 +1,14 @@
 ﻿CREATE TABLE [dbo].[Field] (
-    [ObjectType]     VARCHAR (25)    NOT NULL,
-    [ObjectID]       INT             NOT NULL,
-    [FieldTypeID]    INT             NOT NULL,
-    [Value]          NVARCHAR (4000) NULL,
-    [FormattedValue] NVARCHAR (4000) NULL,
+    [ObjectType]     VARCHAR (25)   NOT NULL,
+    [ObjectID]       INT            NOT NULL,
+    [FieldTypeID]    INT            NOT NULL,
+    [Value]          NVARCHAR (MAX) NULL,
+    [FormattedValue] NVARCHAR (MAX) NULL,
     CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED ([ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC),
     CONSTRAINT [FK_Field_FieldType] FOREIGN KEY ([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

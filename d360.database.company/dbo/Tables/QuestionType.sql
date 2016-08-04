@@ -1,14 +1,18 @@
 ﻿CREATE TABLE [dbo].[QuestionType] (
-    [ID]             INT            IDENTITY (50000, 1) NOT NULL,
-    [SurveyTypeID]   INT            NOT NULL,
-    [Name]           NVARCHAR (250) NOT NULL,
-    [Description]    NVARCHAR (500) NULL,
-    [ResponseTypeID] INT            NOT NULL,
-    [UpdatedOn]      DATETIME       NULL,
-    [UpdatedBy]      INT            NULL,
+    [ID]           INT             IDENTITY (50000, 1) NOT NULL,
+    [SurveyTypeID] INT             NOT NULL,
+    [Name]         NVARCHAR (500)  NOT NULL,
+    [Description]  NVARCHAR (2000) NULL,
+    [DisplayStyle] INT             NOT NULL,
+    [CreatedOn]    DATETIME        NULL,
+    [CreatedBy]    INT             NULL,
+    [UpdatedOn]    DATETIME        NULL,
+    [UpdatedBy]    INT             NULL,
     CONSTRAINT [PK_QuestionType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_QuestionType_SurveyType] FOREIGN KEY ([SurveyTypeID]) REFERENCES [dbo].[SurveyType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

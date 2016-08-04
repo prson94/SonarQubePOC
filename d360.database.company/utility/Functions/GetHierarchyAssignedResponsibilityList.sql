@@ -1,9 +1,12 @@
-﻿
-CREATE FUNCTION [utility].[GetHierarchyAssignedResponsibilityList]
+﻿CREATE FUNCTION [utility].[GetHierarchyAssignedResponsibilityList]
 (
+--declare
 	@Object varchar(50),
 	@ObjectID int,
 	@Priority int
+--set @Object = 'Taxonomy'
+--set @ObjectID = 524--226
+--set @Priority = 4;
 )
 RETURNS 
 @tbl TABLE 
@@ -201,10 +204,31 @@ BEGIN
 		end
 	if @Object = 'Taxonomy'
 		begin
+			declare @IDs table (TaxonomyID int, ParentID int, ResponsibilityID int);
+			
+			with C as
+			(
+			select	T.ID,
+					T.ParentID
+			from	Taxonomy T 
+			where	T.ID = @ObjectID
+			union all
+			select	P.ID,
+					P.ParentID
+			from	C
+					inner join Taxonomy P on P.ID = C.ParentID
+			)
+			insert into @IDs
+				select	@ObjectID,
+						C.ID,
+						R.ID 
+				from	C
+						inner join Responsibility R on R.ObjectType = 'Taxonomy' and R.ObjectID = C.ID;
+
 			with ModelHierarchy as
 			(
 			select	R.Visible,
-					T.ID as AssigningItemID,
+					Q.ParentID as AssigningItemID,
 					T.ID,
 					T.ParentID,
 					T.TaxonomyTypeID,
@@ -213,7 +237,9 @@ BEGIN
 					utility.GetResponsibilityContextHash(R.ID) as ContextHash,
 					1 as [Level]
 			from	Taxonomy T 
-					left join Responsibility R on R.ObjectType = 'Taxonomy' and R.ObjectID = T.ID
+					inner join Responsibility R on R.ObjectType = 'Taxonomy' --and R.ObjectID = T.ID
+					inner join @IDs Q on Q.TaxonomyID = T.ID and Q.ResponsibilityID = R.ID
+			--where	T.ID = @ObjectID
 			union all
 			select	COALESCE(R.Visible, P.Visible) as Visible,
 					COALESCE(R.ObjectID, P.AssigningItemID) as AssigningItemID,
@@ -246,10 +272,9 @@ BEGIN
 						ID,
 						ContextHash,
 						[Level]
-				from	ModelHierarchy
-				where	ResponsibilityID is not null;
+				from	ModelHierarchy;
 
-
+			-- Load for taxonomies.
 			insert into @tbl
 				select	'Hierarchy Assigned' as [Source],
 						O.Visible,
@@ -276,7 +301,29 @@ BEGIN
 									) M on M.ResponsibilityTypeID = O.ResponsibilityTypeID and M.[Object] = O.[Object] and M.ObjectID = O.ObjectID and M.ContextHash = O.ContextHash and M.[Level] = O.[Level]
 											and (
 												(O.ObjectID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
-												)
+												);
+			-- Load for artifacts.
+			insert into @tbl
+				select	'Hierarchy Assigned' as [Source],
+						O.Visible,
+						O.ResponsibilityID,
+						O.ResponsibilityTypeID,
+						O.AssigningItem,
+						O.AssigningItemID,
+						'Artifact',
+						A.ID,
+						O.ContextHash,
+						@Priority
+				from	@tblModelHierarchy O
+						inner join Taxonomy T on T.ID = O.ObjectID
+						inner join [Intersect] R on 
+								(R.Subject = O.[Object] and R.SubjectID = O.ObjectID and R.Object = 'Artifact') OR
+								(R.Object = O.[Object] and R.ObjectID = O.ObjectID and R.Subject = 'Artifact')
+						inner join Artifact A on A.ID = case 
+															when R.Object = 'Artifact' then R.ObjectID
+															else R.SubjectID
+														end 
+												and A.TaxonomyTypeID = T.TaxonomyTypeID
 		end
 	RETURN 
 END

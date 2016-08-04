@@ -1,16 +1,18 @@
 ﻿CREATE TABLE [dbo].[ArtifactType] (
-    [ID]                    INT             IDENTITY (1, 1) NOT NULL,
-    [ParentID]              INT             NULL,
-    [Name]                  NVARCHAR (250)  NOT NULL,
-    [Description]           NVARCHAR (4000) NULL,
-    [CanOwnFusion]          BIT             CONSTRAINT [DF_Artifact_CanOwnFusion] DEFAULT ((0)) NOT NULL,
-    [AllowRelatedArtifacts] BIT             NOT NULL,
-    [UpdatedOn]             DATETIME        NULL,
-    [UpdatedBy]             INT             NULL,
-    [AllowHierarchy]        BIT             CONSTRAINT [DF_Artifact_AllowHierarchy] DEFAULT ((0)) NOT NULL,
+    [ID]                    INT            IDENTITY (1, 1) NOT NULL,
+    [ParentID]              INT            NULL,
+    [Name]                  NVARCHAR (250) NOT NULL,
+    [Description]           NVARCHAR (MAX) NULL,
+    [CanOwnFusion]          BIT            CONSTRAINT [DF_Artifact_CanOwnFusion] DEFAULT ((0)) NOT NULL,
+    [AllowRelatedArtifacts] BIT            NOT NULL,
+    [UpdatedOn]             DATETIME       NULL,
+    [UpdatedBy]             INT            NULL,
+    [AllowHierarchy]        BIT            CONSTRAINT [DF_Artifact_AllowHierarchy] DEFAULT ((0)) NOT NULL,
     CONSTRAINT [PK_ArtifactType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_ArtifactType_ParentArtifactType] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[ArtifactType] ([ID])
 );
+
+
 
 
 

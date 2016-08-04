@@ -24,6 +24,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID]
     ON [dbo].[Intersect]([IntersectTypeID] ASC);
@@ -182,6 +184,9 @@ BEGIN
 		exec [cache].[SynchronizeObjectDetails] 'Intersect', @id
 		exec [utility].[AddAuditEntry] @s, @sid, @r, @date, 'Created', 'Intersect', @id
 		exec [utility].[AddAuditEntry] @o, @oid, @r, @date, 'Created', 'Intersect', @id
+
+		exec cache.SynchronizeResponsibilitiesForObject @s, @sid
+		--exec cache.SynchronizeResponsibilitiesForObject @o, @oid
 
 		merge cache.Relationship as T
 		using (

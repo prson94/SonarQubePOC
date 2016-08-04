@@ -1,17 +1,19 @@
 ﻿CREATE TABLE [dbo].[AttributeType] (
-    [ID]                      INT             IDENTITY (50000, 1) NOT NULL,
-    [ParentID]                INT             NULL,
-    [Name]                    NVARCHAR (250)  NOT NULL,
-    [Description]             NVARCHAR (4000) NULL,
-    [TextFormatString]        NVARCHAR (250)  NOT NULL,
-    [AttributeTypeCategoryID] INT             NULL,
-    [UpdatedOn]               DATETIME        NULL,
-    [UpdatedBy]               INT             NULL,
-    [ShowNameInTree]          BIT             DEFAULT ((1)) NOT NULL,
+    [ID]                      INT            IDENTITY (50000, 1) NOT NULL,
+    [ParentID]                INT            NULL,
+    [Name]                    NVARCHAR (250) NOT NULL,
+    [Description]             NVARCHAR (MAX) NULL,
+    [TextFormatString]        NVARCHAR (250) NOT NULL,
+    [AttributeTypeCategoryID] INT            NULL,
+    [UpdatedOn]               DATETIME       NULL,
+    [UpdatedBy]               INT            NULL,
+    [ShowNameInTree]          BIT            DEFAULT ((1)) NOT NULL,
     CONSTRAINT [PK_AttributeType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY ([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory] ([ID]),
     CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[AttributeType] ([ID])
 );
+
+
 
 
 

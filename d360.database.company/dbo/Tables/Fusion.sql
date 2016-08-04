@@ -1,19 +1,21 @@
 ﻿CREATE TABLE [dbo].[Fusion] (
-    [ID]                INT             IDENTITY (1, 1) NOT NULL,
-    [FusionTypeID]      INT             NOT NULL,
-    [Name]              NVARCHAR (250)  NOT NULL,
-    [Description]       NVARCHAR (4000) NULL,
-    [Enabled]           BIT             CONSTRAINT [DF_Fusion_Enabled] DEFAULT ((1)) NOT NULL,
-    [Manual]            BIT             NOT NULL,
-    [LockPromotedItems] BIT             CONSTRAINT [DF_Fusion_LockPromotedItems] DEFAULT ((1)) NOT NULL,
-    [IntervalType]      INT             NULL,
-    [Interval]          INT             NULL,
-    [ForceRefresh]      BIT             NULL,
-    [UpdatedOn]         DATETIME        NULL,
-    [UpdatedBy]         INT             NULL,
+    [ID]                INT            IDENTITY (1, 1) NOT NULL,
+    [FusionTypeID]      INT            NOT NULL,
+    [Name]              NVARCHAR (250) NOT NULL,
+    [Description]       NVARCHAR (MAX) NULL,
+    [Enabled]           BIT            CONSTRAINT [DF_Fusion_Enabled] DEFAULT ((1)) NOT NULL,
+    [Manual]            BIT            NOT NULL,
+    [LockPromotedItems] BIT            CONSTRAINT [DF_Fusion_LockPromotedItems] DEFAULT ((1)) NOT NULL,
+    [IntervalType]      INT            NULL,
+    [Interval]          INT            NULL,
+    [ForceRefresh]      BIT            NULL,
+    [UpdatedOn]         DATETIME       NULL,
+    [UpdatedBy]         INT            NULL,
     CONSTRAINT [PK_Fusion] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Fusion_FusionType] FOREIGN KEY ([FusionTypeID]) REFERENCES [dbo].[FusionType] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

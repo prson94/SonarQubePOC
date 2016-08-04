@@ -14,6 +14,12 @@
 );
 
 
+
+
 GO
 CREATE CLUSTERED INDEX [CIX_QueueTask] ON [queue].[Task] ( [Date] ASC )
 GO
+CREATE NONCLUSTERED INDEX [IX_QueueTask_MachineAssignedNumRetries]
+    ON [queue].[Task]([MachineAssigned] ASC, [NumberOfRetries] ASC)
+    INCLUDE([Date], [ID], [Priority]);
+

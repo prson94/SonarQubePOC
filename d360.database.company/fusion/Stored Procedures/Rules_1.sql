@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [fusion].[Rules]
+﻿CREATE PROCEDURE [fusion].[Rules]
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -19,28 +18,25 @@ BEGIN
 			@NumberOfNewRelations int,
 			@promotionNeedsToRun bit
 	
-
 	set	@NumberOfRules = 0;	
 	set @NumberOfNewTaxonomies = 0;
 	set @NumberOfNewDomainItems = 0;
 	set @NumberOfNewDomains = 0;
 	set @NumberOfNewArtifacts = 0;
-	set @promotionNeedsToRun = 0;
+	set @promotionNeedsToRun = 1;
 
 	--First check if there is anything to do
+	EXEC @promotionNeedsToRun = [utility].[ShouldPromotionRun]
 
-	--EXEC @promotionNeedsToRun = [utility].[ShouldPromotionRun]
-
-	--if(@promotionNeedsToRun <= 0)
-	--BEGIN
-	--	PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
-	--	return;
-	--END;
-
+	if(@promotionNeedsToRun <= 0)
+	BEGIN
+		PRINT 'NO REASON TO RUN THE PROMOTION RULES WAS DETECTED';
+		return;
+	END;
 
 	--Log this run get a new id from the fusion.promotion table
-	--insert into [dbo].[FusionAttributePromotionLogSummary] ( DateStarted ) values ( CURRENT_TIMESTAMP)
-	--select @ExecutionID =  SCOPE_IDENTITY()
+	insert into [fusion].[RuleLog] ( DateStarted ) values ( CURRENT_TIMESTAMP)
+	select @ExecutionID =  SCOPE_IDENTITY()
 
 	IF OBJECT_ID('tempdb..#rules') IS NOT NULL
 		DROP TABLE #rules;
@@ -202,7 +198,9 @@ BEGIN
 				M.TargetFieldName,
 				M.TargetFieldTypeID,
 				case 
-					when M.SourceFieldName = 'Name' then FA.Name					
+					when M.SourceFieldName = 'ID' then cast(FA.ID as nvarchar)
+					when M.SourceFieldName = 'Name' then FA.Name
+					when M.SourceFieldName = 'TextPath' then FA.TextPath
 					when M.IsConstantValue = 1 then M.ConstantValue
 				end				
 		from	[fusion].[RuleStepMapping] M
@@ -355,8 +353,21 @@ from	#rules R
 									and lower(Name) = lower(@name)
 						end
 
-						declare @modelTypeID int
-						select @modelTypeID = min(ID) from TaxonomyType
+						declare @modelTypeID int = null
+						declare @taxonomyTypeValue nvarchar(250)
+
+						select @taxonomyTypeValue = Value from @fields where TargetFieldName = 'TaxonomyTypeID'
+
+--fusion.Rules
+						if (@taxonomyTypeValue <> '' and @taxonomyTypeValue is not null)
+						begin
+							select @modelTypeID = ID from TaxonomyType where Name = ltrim(rtrim(@taxonomyTypeValue))
+						end
+
+						if @taxonomyTypeValue is null
+						begin
+							select @modelTypeID = min(ID) from TaxonomyType
+						end
 
 						if @ResultObjectID is null
 						begin
@@ -365,11 +376,14 @@ from	#rules R
 								set @ParentObjectID = null
 							end
 
-							insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
-							values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
+							if @modelTypeID is not null
+								begin
+									insert into Artifact ( ParentID, ArtifactTypeID, TaxonomyTypeID, Name, Description, Status, UpdatedOn, UpdatedBy )
+									values ( @ParentObjectID, @ObjectTypeIDToPromoteTo, @modelTypeID, @name, @description, 'Draft', getutcdate(), 0 )
 
-							select @ResultObjectID =  SCOPE_IDENTITY()
-							set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
+									select @ResultObjectID =  SCOPE_IDENTITY()
+									set @NumberOfNewArtifacts = @NumberOfNewArtifacts +1;
+								end
 						end
 						else
 						begin
@@ -385,18 +399,21 @@ from	#rules R
 							from	Artifact
 							where	ID = @ResultObjectID
 
-							if (@testArtifactName <> @name) 
-								OR (@testArtifactDescription <> @description) 
-								OR (@testArtifactParentID <> @ParentObjectID) 
-								OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
-							begin
-								update	Artifact
-								set		Name = @name,
-										Description = @description,
-										ParentID = @ParentObjectID,
-										TaxonomyTypeID = @modelTypeID
-								where	ID = @ResultObjectID
-							end
+							if @modelTypeID is not null
+								begin
+									if (@testArtifactName <> @name) 
+										OR (@testArtifactDescription <> @description) 
+										OR (@testArtifactParentID <> @ParentObjectID) 
+										OR (@testArtifactTaxonomyTypeID <> @modelTypeID)
+									begin
+										update	Artifact
+										set		Name = @name,
+												Description = @description,
+												ParentID = @ParentObjectID,
+												TaxonomyTypeID = @modelTypeID
+										where	ID = @ResultObjectID
+									end
+								end
 						end
 					end
 					--END: IF ArtifactType
@@ -522,7 +539,7 @@ from	#rules R
 				select	@FindSearchObjectID		= Value from @settings where Name = 'ObjectID'
 				select	@FindFilterField		= Value from @settings where Name = 'FilterField'
 				select	@FindTargetField		= Value from @settings where Name = 'TargetField'
-				select	@FindParent		= Value from @settings where Name = 'FindParent'
+				select	@FindParent				= Value from @settings where Name = 'FindParent'
 																
 				if @FindSearchType = 'Fusion'
 				begin					
@@ -816,8 +833,8 @@ from	#rules R
 --select @IntersectID
 						if @IntersectID is null
 						begin
-							select	@SubjectType = ObjectType, @SubjectTypeID = ObjectTypeID from ObjectCache where Object = @Subject and ObjectID = @SubjectID
-							select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID from ObjectCache where Object = @Object and ObjectID = @ObjectID
+							select	@SubjectType = ObjectType, @SubjectTypeID = ObjectTypeID from cache.[object] where Object = @Subject and ObjectID = @SubjectID
+							select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID from cache.[object] where Object = @Object and ObjectID = @ObjectID
 
 							select	@SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
 									@ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
@@ -868,6 +885,8 @@ from	#rules R
 
 									exec utility.AddAuditEntry @Subject, @SubjectID, @r, @d, 'Created', 'Intersect', @IntersectID
 									exec utility.AddAuditEntry @Object, @ObjectID, @r, @d, 'Created', 'Intersect', @IntersectID
+													
+									set @NumberOfNewRelations = @NumberOfNewRelations + 1
 																											
 									set @ResultObjectID = @IntersectID
 								end try
@@ -1039,8 +1058,8 @@ from	#rules R
 									@R_ObjectTypeID int = null,
 									@R_ObjectIntersectTypeNodeID int = null
 
-							select	@R_SubjectType = ObjectType, @R_SubjectTypeID = ObjectTypeID from ObjectCache where Object = @R_Subject and ObjectID = @R_SubjectID
-							select	@R_ObjectType = ObjectType, @R_ObjectTypeID = ObjectTypeID from ObjectCache where Object = @R_Object and ObjectID = @R_ObjectID
+							select	@R_SubjectType = ObjectType, @R_SubjectTypeID = ObjectTypeID from cache.[object] where Object = @R_Subject and ObjectID = @R_SubjectID
+							select	@R_ObjectType = ObjectType, @R_ObjectTypeID = ObjectTypeID from cache.[object] where Object = @R_Object and ObjectID = @R_ObjectID
 
 							select	@R_SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
 									@R_ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
@@ -1093,6 +1112,8 @@ from	#rules R
 
 									exec utility.AddAuditEntry @R_Subject, @R_SubjectID, @r, @d, 'Created', 'Intersect', @R_IntersectID
 									exec utility.AddAuditEntry @R_Object, @R_ObjectID, @r, @d, 'Created', 'Intersect', @R_IntersectID
+
+									set @NumberOfNewRelations = @NumberOfNewRelations + 1
 
 									set @ResultObjectID = @R_IntersectID
 								end try
@@ -1262,15 +1283,15 @@ from	#rules R
 
 
 	----Log this run done
-	--update [dbo].[FusionAttributePromotionLogSummary]
-	--set	DateCompleted = CURRENT_TIMESTAMP, 
-	--	[PromotedTaxonomies] = @NumberOfNewTaxonomies, 
-	--	[PromotedDomainItems] = @NumberOfNewDomainItems,  
-	--	[PromotedDomains] = @NumberOfNewDomains,
-	--	[PromotedArtifacts] = @NumberOfNewArtifacts,
-	--	[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
-	--	[AttributesConsidered]= @NumberOfAttributesTotal,
-	--	[NumberOfRules] = @NumberOfRules ,
-	--	[RelationshipsAdded] = @NumberOfNewRelations
-	--where ID = @ExecutionID;
+	update	[fusion].[RuleLog]
+	set		DateCompleted = CURRENT_TIMESTAMP, 
+			[PromotedTaxonomies] = @NumberOfNewTaxonomies, 
+			[PromotedDomainItems] = @NumberOfNewDomainItems,  
+			[PromotedDomains] = @NumberOfNewDomains,
+			[PromotedArtifacts] = @NumberOfNewArtifacts,
+			[TotalNewPromotions] = (@NumberOfNewTaxonomies + @NumberOfNewDomainItems + @NumberOfNewDomains + @NumberOfNewArtifacts),
+			[AttributesConsidered]= @NumberOfAttributesTotal,
+			[NumberOfRules] = @NumberOfRules ,
+			[RelationshipsAdded] = @NumberOfNewRelations
+	where	ID = @ExecutionID;
 END

@@ -1,15 +1,17 @@
 ﻿CREATE TABLE [dbo].[DomainItem] (
-    [ID]          INT             IDENTITY (1, 1) NOT NULL,
-    [Parents]     XML             NULL,
-    [DomainID]    INT             NOT NULL,
-    [Code]        NVARCHAR (50)   NOT NULL,
-    [Name]        NVARCHAR (250)  NOT NULL,
-    [Description] NVARCHAR (4000) NULL,
-    [UpdatedOn]   DATETIME        NULL,
-    [UpdatedBy]   INT             NULL,
+    [ID]          INT            IDENTITY (1, 1) NOT NULL,
+    [Parents]     XML            NULL,
+    [DomainID]    INT            NOT NULL,
+    [Code]        NVARCHAR (50)  NOT NULL,
+    [Name]        NVARCHAR (250) NOT NULL,
+    [Description] NVARCHAR (MAX) NULL,
+    [UpdatedOn]   DATETIME       NULL,
+    [UpdatedBy]   INT            NULL,
     CONSTRAINT [PK_DomainItem] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_DomainItem_Domain] FOREIGN KEY ([DomainID]) REFERENCES [dbo].[Domain] ([ID]) ON DELETE CASCADE
 );
+
+
 
 
 

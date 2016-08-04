@@ -1,19 +1,27 @@
 ﻿CREATE TABLE [dbo].[SurveyType] (
-    [ID]         INT            IDENTITY (50000, 1) NOT NULL,
-    [Name]       NVARCHAR (250) NOT NULL,
-    [ObjectType] VARCHAR (25)   NULL,
-    [ObjectID]   INT            NOT NULL,
-    [UpdatedOn]  DATETIME       NULL,
-    [UpdatedBy]  INT            NULL,
+    [ID]           INT            IDENTITY (50000, 1) NOT NULL,
+    [Name]         NVARCHAR (250) NOT NULL,
+    [Description]  NVARCHAR (MAX) NULL,
+    [Object]       VARCHAR (50)   NOT NULL,
+    [ObjectID]     INT            NOT NULL,
+    [ValidForDays] INT            NOT NULL,
+    [CreatedOn]    DATETIME       NULL,
+    [CreatedBy]    INT            NULL,
+    [UpdatedOn]    DATETIME       NULL,
+    [UpdatedBy]    INT            NULL,
     CONSTRAINT [PK_SurveyType] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_SurveyType_ObjectType-ObjectID]
-    ON [dbo].[SurveyType]([ObjectType] ASC, [ObjectID] ASC);
+    ON [dbo].[SurveyType]([Object] ASC, [ObjectID] ASC);
+
+
 
 
 GO

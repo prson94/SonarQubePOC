@@ -1,11 +1,13 @@
 ﻿CREATE TABLE [dbo].[DomainType] (
-    [ID]          INT             IDENTITY (1, 1) NOT NULL,
-    [Name]        NVARCHAR (250)  NOT NULL,
-    [Description] NVARCHAR (4000) NULL,
-    [UpdatedOn]   DATETIME        NULL,
-    [UpdatedBy]   INT             NULL,
+    [ID]          INT            IDENTITY (1, 1) NOT NULL,
+    [Name]        NVARCHAR (250) NOT NULL,
+    [Description] NVARCHAR (MAX) NULL,
+    [UpdatedOn]   DATETIME       NULL,
+    [UpdatedBy]   INT            NULL,
     CONSTRAINT [PK_DomainType] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 
 

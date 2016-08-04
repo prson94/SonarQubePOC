@@ -1,20 +1,22 @@
 ﻿CREATE TABLE [dbo].[Domain] (
-    [ID]                         INT             IDENTITY (1, 1) NOT NULL,
-    [ParentID]                   INT             NULL,
-    [DomainTypeID]               INT             NOT NULL,
-    [EnforceParentItemSelection] BIT             CONSTRAINT [DF_Domain_EnforceParentItemSelection] DEFAULT ((0)) NOT NULL,
-    [Name]                       NVARCHAR (250)  NOT NULL,
-    [Description]                NVARCHAR (4000) NULL,
-    [DomainGroupID]              INT             NULL,
-    [Path]                       XML             NULL,
-    [UpdatedOn]                  DATETIME        NULL,
-    [UpdatedBy]                  INT             NULL,
-	[SourceArtifactID] INT NULL,
-	[DomainClassificationID] [int] NOT NULL CONSTRAINT [DF_Domain_DomainClassification]  DEFAULT ((1)),
+    [ID]                         INT            IDENTITY (1, 1) NOT NULL,
+    [ParentID]                   INT            NULL,
+    [DomainTypeID]               INT            NOT NULL,
+    [EnforceParentItemSelection] BIT            CONSTRAINT [DF_Domain_EnforceParentItemSelection] DEFAULT ((0)) NOT NULL,
+    [Name]                       NVARCHAR (250) NOT NULL,
+    [Description]                NVARCHAR (MAX) NULL,
+    [DomainGroupID]              INT            NULL,
+    [Path]                       XML            NULL,
+    [UpdatedOn]                  DATETIME       NULL,
+    [UpdatedBy]                  INT            NULL,
+    [SourceArtifactID]           INT            NULL,
+    [DomainClassificationID]     INT            CONSTRAINT [DF_Domain_DomainClassification] DEFAULT ((1)) NOT NULL,
     CONSTRAINT [PK_Domain] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Domain_DomainType] FOREIGN KEY ([DomainTypeID]) REFERENCES [dbo].[DomainType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_Domain_ParentDomain] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Domain] ([ID])
 );
+
+
 
 
 

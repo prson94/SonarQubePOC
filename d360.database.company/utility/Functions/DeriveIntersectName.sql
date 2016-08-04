@@ -8,21 +8,13 @@ BEGIN
 	DECLARE @result nvarchar(500)
 
 	SET @result =	(
-					SELECT	COALESCE(D.TextPath, '') + ' / '
-					FROM	IntersectNode I
-							INNER JOIN IntersectTypeNode IT							ON  I.IntersectTypeNodeID = IT.ID
-							left join cache.ObjectDetails D on D.[Object] = I.ObjectType and D.ObjectID = I.ObjectID
-					WHERE	I.IntersectID = @id
-							AND EXISTS(SELECT 1 FROM IntersectNode WHERE IntersectID = @id)
-							and @@NESTLEVEL < 6
-					ORDER BY IT.[Order]
+					SELECT	COALESCE(S.TextPath, '') + ' / ' + COALESCE(O.TextPath, '')
+					FROM	[Intersect] I
+							left join cache.ObjectDetails S on S.[Object] = I.Subject and S.ObjectID = I.SubjectID
+							left join cache.ObjectDetails O on O.[Object] = I.Object and O.ObjectID = I.ObjectID
+					WHERE	I.ID = @id
 					FOR XML PATH('')
 					)
-
-	IF @Result IS NULL 
-		SET @result = 'Name cannot be resolved'
-	ELSE
-		SET @result = SUBSTRING(@result, 1, LEN(@result) - 2)
 
 	RETURN @result
 END

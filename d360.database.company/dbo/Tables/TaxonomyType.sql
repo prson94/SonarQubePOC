@@ -1,14 +1,16 @@
 ﻿CREATE TABLE [dbo].[TaxonomyType] (
-    [ID]                  INT             IDENTITY (50000, 1) NOT NULL,
-    [Name]                NVARCHAR (250)  NOT NULL,
-    [Description]         NVARCHAR (4000) NULL,
-    [MaximumDepth]        INT             NULL,
-    [TaxonomyTypeClassID] INT             NULL,
-    [UpdatedOn]           DATETIME        NULL,
-    [UpdatedBy]           INT             NULL,
+    [ID]                  INT            IDENTITY (50000, 1) NOT NULL,
+    [Name]                NVARCHAR (250) NOT NULL,
+    [Description]         NVARCHAR (MAX) NULL,
+    [MaximumDepth]        INT            NULL,
+    [TaxonomyTypeClassID] INT            NULL,
+    [UpdatedOn]           DATETIME       NULL,
+    [UpdatedBy]           INT            NULL,
     CONSTRAINT [PK_TaxonomyType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_TaxonomyType_TaxonomyTypeClass] FOREIGN KEY ([TaxonomyTypeClassID]) REFERENCES [dbo].[TaxonomyTypeClass] ([ID])
 );
+
+
 
 
 

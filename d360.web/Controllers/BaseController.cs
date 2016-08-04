@@ -198,13 +198,15 @@ namespace d360.web.Controllers
                     var fieldName = $"Field{f.ID}";
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $"{name}_T.FormattedValue as [{fieldName}], ";
-                    joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
                 }
                 else
                 {
                     if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
                     columns += string.Format("{0}_T.FormattedValue as [{0}], ", name);
-                    joins += string.Format(" left join FieldWithRelation {0}_T on {0}_T.ObjectType = '{2}' and {0}_T.ObjectID = A.ID and {0}_T.FieldTypeID = {1} and {0}_T.IsListable = 1", name, f.ID, type);
+                    joins += $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
                 }
             }
 
@@ -673,7 +675,8 @@ namespace d360.web.Controllers
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                 columns += $"{name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+                joins += $@" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
             }
 
             fields = null;
@@ -708,7 +711,8 @@ namespace d360.web.Controllers
                 if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
 
                 var thisColumn = $", {name}_T.FormattedValue as [{(useFriendlyName ? friendlyName : name)}]";
-                var thisJoin = $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
+                var thisJoin = $@" left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} 
+left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_TT.IsListable = 1";
 
                 columns += thisColumn;
                 joins += thisJoin;

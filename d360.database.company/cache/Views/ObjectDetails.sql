@@ -1,11 +1,18 @@
-﻿CREATE view [cache].[ObjectDetails]
+﻿
+
+
+CREATE view [cache].[ObjectDetails]
 as
 	select	D.[Object],
 			D.[ObjectID],
 			coalesce(O1.Name, O2.Name, O3.Name, O4.Name, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.Name, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.Name, O18.Name, O19.Name, O21.Name, O22.Name, O23.Name, O24.Name, null) as Name,
 			coalesce(O1.TextPath, O2.TextPath, O3.Name, O4.TextPath, O5.Name, O6.Name, O7.Name, O8.Name, O9.Name, O10.Name, O11.Name, O12.Name, O13.TextPath, case when O14.ResourceID is not null then O14.FirstName + ' ' + O14.LastName else null end, O15.Name, O16.Name, O17.TextPath, O18.Name, O19.Name, O21.Name, O22.Name, O23.Name, O24.Name, '') as TextPath,
 			coalesce(O1.Description, O2.Description, O6.Description, O7.Description, O8.Description, O9.Description, O10.Description, O12.Description, O13.Description, O19.Description,  NULL) as Description,
-			dbo.GenerateObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) as Url,
+			case D.[Object]
+				when 'Lookup' then dbo.GenerateObjectUrl('Lookup', O20.LookupTypeID, O20.ID)
+				when 'LookupType' then dbo.GenerateObjectUrl('LookupType', O21.ID, 0)
+				else dbo.GenerateObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) 
+			end as Url,
 			case 
 				when P1.ID is not null then 'Artifact'
 				when P2.ID is not null then 'Taxonomy'
