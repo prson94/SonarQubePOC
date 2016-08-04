@@ -165,8 +165,8 @@ group by	WorkflowType,
                         Name = i.Name,
                         Description = i.Description,
                         Steps = i.ID.GetWorkflowTypeStepsEnumList().Select(s => new WorkflowTypeStepInfoModel { ID = s.ID, Name = s.Name }).ToList()
-                    }).ToList();
-
+                    }).Where(x=> (x.ID != WorkflowType.ChallengeArtifact && x.ID != WorkflowType.WorkIssue)).ToList();
+            
             models.ForEach(t =>
             {
                 t.Steps.ForEach(s =>
