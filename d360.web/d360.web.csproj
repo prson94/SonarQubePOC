@@ -919,6 +919,7 @@
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
+    <Content Include="Scripts\parts\Survey.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
     <Content Include="ui.html" />

@@ -6018,7 +6018,100 @@ order by    title
             return null;
         }
 
-        [Route("surveys/randomquestion")]
+
+        [Route("surveys/{parentType}/{parentId}/{type}/{id}/survey")]
+        public ObjectSurveyModel GetSurvey(SystemObjects parentType, int parentId, SystemObjects type, int id)
+        {
+            //var sql = @"select id, name from surveytype where object= @obj and objectid= @objId";
+
+            var sql = @"
+                        select id, name from surveytype where object= @parObj and objectid= @parObjId and id not in(
+			                    select 
+				                    st.id
+			                    from 
+				                    surveytype st 
+				                    inner join survey s on (s.surveytypeid = st.id and s.resourceid = @resource and s.createdon > DATEADD(day, (st.validfordays*-1), getdate()) and s.[object] = @obj and s.ObjectID = @objId)
+                    )
+            ";
+
+            var surveys = Company.Query<ObjectSurveyModel>(sql, new { parObj = parentType.ToString(), parObjId = parentId, resource = Company.CurrentResourceID, obj = type.ToString(), objId = id }).ToList();
+
+            if (surveys == null || surveys.Count == 0) return null;
+
+            var rand = new Random();
+
+            return surveys[rand.Next(0, surveys.Count - 1)];            
+        }
+
+        [Route("survey/{surveyId}/{objectId}/{type}")]
+        public CreateResponse PostSurveyResponse(int surveyId, int objectId, string type, SurveyResponseModel data)
+        {
+            var survey = new Survey
+            {
+                SurveyTypeID = surveyId,
+                Object = type,
+                ObjectID = objectId,
+                ResourceID = Company.CurrentResourceID,
+                CreatedOn = DateTime.UtcNow                
+            };
+
+            Company.SaveOrUpdate<Survey>(survey);
+
+            foreach (var question in data.Questions)
+            {
+                //insert the question
+                var q = new Question
+                {
+                    SurveyID = survey.ID,
+                    Comment = question.Comments
+                };
+
+                Company.SaveOrUpdate<Question>(q);
+
+                // insert each selected survey value
+
+                var selected = question.Values.Where(x => x.IsChecked);
+
+                foreach (var value in selected)
+                {
+                    //var v = new QuestionTypeOption
+                    // value.ID -- questiontypeoptionid
+                    // q.id -- questionid
+                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
+                }
+            }
+
+            
+            return new CreateResponse { Message = "Created" };
+        }
+
+
+        [Route("surveys/{surveyId}/questions")]
+        public IEnumerable<ObjectSurveyQuestionModel> GetSurveyQuestions(int surveyId)
+        {
+            var sql = @"select 
+	                        ID,
+	                        Name,
+	                        [Description],		
+	                        DisplayStyle
+                        from questiontype where surveytypeid = @id";
+
+            return Company.Query<ObjectSurveyQuestionModel>(sql, new { id = surveyId });            
+        }
+
+        [Route("surveys/question/{questionId}/values")]
+        public IEnumerable<ObjectSurveyQuestionValuesModel> GetSurveyQuestionValues(int questionId)
+        {
+            var sql = @"select 
+	                        ID,
+	                        Name,
+	                        [Value]
+                        from questiontypeoption where questiontypeid = @id order by id";
+
+            return Company.Query<ObjectSurveyQuestionValuesModel>(sql, new { id = questionId });
+        }
+
+        [Route("surveys /randomquestion")]
         public CreateResponse Post(QuestionResponseModel model)
         {
             var survey = Company.Filter<Survey>(i => 

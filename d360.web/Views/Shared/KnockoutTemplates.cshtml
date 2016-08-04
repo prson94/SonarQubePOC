@@ -1932,3 +1932,63 @@
     <!-- /ko-->
 </script>
 
+<script id="surveyQuestionTmpl" type="text/html">
+    <div data-bind="visible: IsLoading()" style="text-align:center">
+        <i class="fa fa-2x fa-spinner fa-spin"></i>
+    </div>
+    <!--ko if: !IsLoading()-->
+    <div class="col s12" data-bind="text: Name"></div>
+    <div class="col s12">
+        <div class="row" style="padding:5px">
+            <!--ko if: DisplayStyle() == 'Radio List'-->
+            <div data-bind="foreach: Values">
+                <div class="col s12" data-bind="text: Name,jqxRadioButton: {checked: Checked, theme: theme, groupName: 'surveyValues' }"></div>
+            </div>
+            <!-- /ko-->
+            <!--ko if: DisplayStyle() == 'Check List'-->
+            <div data-bind="foreach: Values">
+                <div class="col s12" data-bind="text: Name,jqxCheckBox: { checked: Checked, theme: theme,width: field_width, height: field_height}"></div>
+            </div>
+            <!-- /ko-->
+            <div class="col s12" style="padding-top:2px">Comments:</div>
+            <div class="col s12">
+                <textarea  data-bind="value: Comments"></textarea>
+            </div>
+        </div>
+    </div>
+    <!-- /ko-->    
+</script>
+
+<script id="objectSurveyTmpl" type="text/html">
+    <div data-bind="visible: IsLoading()" style="text-align:center">
+        <i class="fa fa-2x fa-spinner fa-spin"></i>
+    </div>
+    <!--ko if: !IsLoading() && !IsCompleted()-->
+    <div class="col s12 FieldName FieldDisplayName" data-bind="text: Name()"></div>
+    <div class="col s12">&nbsp;</div>
+    <div class="row" data-bind="template: {name: 'surveyQuestionTmpl', data: CurrentQuestion() ? CurrentQuestion() : null }"></div>
+    <div class="col s12">
+        <button data-bind="click: prev, enable: isPreviousEnabled">Previous</button>
+        <button data-bind="click: next, enable: isNextEnabled">Next</button>
+        <button data-bind="click: submit,visible: isSubmitEnabled">Submit</button>
+        <i data-bind="text: pagingInfo()"></i>
+    </div>
+    <!-- /ko-->
+    <!-- ko if: IsCompleted()-->
+    <div class="col s12">
+        Thank for filling out the survey your entry has been factored into the sentiment score.  
+    </div>
+    <!-- /ko-->
+</script>
+
+<script id="surveyTmpl" type="text/html">
+    <div data-bind="visible: (Survey() != null)" class="tile tile-detail">
+        <div data-bind="visible: IsLoading()" style="text-align:center">
+            <i class="fa fa-2x fa-spinner fa-spin"></i>
+        </div>
+        <header>Survey</header>
+        <div class="row" data-bind="visible: !IsLoading(), template: {name: 'objectSurveyTmpl', data: Survey }"></div>
+    </div>
+</script>
+
+

@@ -6317,3 +6317,137 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
 
 
 //#endregion
+
+var SurveyQuestionValueViewModel = function (value) {
+    var self = this;
+    self.Value = ko.observable(value.Value);
+    self.Name = ko.observable(value.Name);
+    self.ID = ko.observable(value.ID);
+
+    self.Checked = ko.observable(value);
+
+    self.IsChecked = ko.computed(function () {
+        return (self.Checked() === true);
+    });
+
+
+    return self;
+}
+
+
+var SurveyQuestionViewModel = function (question) {
+    var self = this;
+    self.Name = ko.observable(question.Name);
+    self.Id = ko.observable(question.ID);
+    self.OptionCount = ko.observable(question.OptionCount);
+    self.DisplayStyle = ko.observable(question.DisplayStyle);
+    self.IsAnswered = ko.observable(false);
+    self.IsLoading = ko.observable(true);
+    self.Values = ko.observableArray();
+    self.Comments = ko.observable();
+
+    $.getJSON('/api/surveys/question/' + self.Id() + '/values', function (data) {
+        if (data) {                        
+            data.forEach(function (value) {
+                self.Values.push(new SurveyQuestionValueViewModel(value));
+            });
+        }
+        self.IsLoading(false);
+    });
+
+    return self;
+}
+
+
+var ObjectSurveyViewModel = function (surveyObject, type, id) {
+    var self = this;
+    self.IsLoading = ko.observable(true);
+    self.Name = ko.observable(surveyObject.Name);
+    self.Id = ko.observable(surveyObject.ID);
+    self.Questions = ko.observableArray();
+    self.IsCompleted = ko.observable(false);
+    var _currentQuestionIndex = ko.observable(0);
+
+    self.CurrentQuestion = ko.computed(function () {
+        if (self.Questions() == null) return null;
+        return self.Questions()[_currentQuestionIndex()];
+    });
+
+    self.pagingInfo = ko.computed(function () {
+        if (self.Questions() == null) return '';
+        return 'Question ' + (_currentQuestionIndex() + 1) +' of ' + (self.Questions().length);
+    });
+
+    self.isSubmitEnabled = ko.computed(function () {
+        if (self.Questions() == null) return false;
+        return (_currentQuestionIndex() + 1) == self.Questions().length;
+    });
+
+    self.isPreviousEnabled = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return false;
+        // check if an item was picked
+        return (_currentQuestionIndex() > 0);
+    });
+
+    self.isNextEnabled = ko.computed(function () {
+        if (self.Questions() == null) return false;
+        // check if a item was checked
+        return (_currentQuestionIndex()) < (self.Questions().length -1);
+    });
+
+    function navigate(nrOfSpots) {
+        if (_currentQuestionIndex() + nrOfSpots >= self.Questions().length) { return; }
+        if (_currentQuestionIndex() + nrOfSpots < 0) { return; }
+        _currentQuestionIndex(_currentQuestionIndex() + nrOfSpots);
+    }
+
+    self.next = function () { navigate(1); };
+    self.prev = function () { navigate(-1); };
+
+    self.submit = function () {
+        //submit the survey
+        var data = ko.toJSON(self.Questions);
+        console.log(data);
+        
+        $.ajax("/api/survey/" + self.Id() + "/" + id + "/" + type, {
+            data: ko.toJSON({ Questions: self.Questions }),
+            type: "post", contentType: "application/json",
+            success: function (result) { 
+                //switch to the thank you message
+                self.IsCompleted(true);
+            }
+        });
+
+        
+    }
+
+    //load the questions for this survey    
+    $.getJSON('/api/surveys/' + self.Id() + '/questions', function (data) {
+        if (data) {
+            data.forEach(function (question) {
+                self.Questions.push(new SurveyQuestionViewModel(question));
+            });            
+        }            
+        self.IsLoading(false);
+    });
+
+    return self;
+}
+
+
+var SurveyViewModel = function(type, id, parentType, parentTypeId) {
+    var self = this;
+    self.IsLoading = ko.observable(true);
+    self.IsSurveyAvailable = ko.observable(false);
+    self.Survey = ko.observable();
+    
+    
+    //load surveys
+    $.getJSON('/api/surveys/' + parentType + '/' + parentTypeId + '/' + type + '/' + id + '/survey', function (data) {
+        if(data)
+            self.Survey(new ObjectSurveyViewModel(data, type, id));
+        self.IsLoading(false);
+    })
+
+    return self;
+}

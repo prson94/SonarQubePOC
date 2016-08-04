@@ -715,6 +715,69 @@ namespace d360.web.Models
         public int PercentComplete { get; set; }
     }
 
+
+    [DataContract(Name = "ObjectSurvey", Namespace = constants.NAMESPACE)]
+    public class ObjectSurveyModel
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Name { get; set; }        
+    }
+
+    [DataContract(Name = "ObjectSurveyQuestion", Namespace = constants.NAMESPACE)]
+    public class ObjectSurveyQuestionModel
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string DisplayStyle { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    public class ObjectSurveyQuestionValuesModel
+    {
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    public class SurveyResponseModel
+    {        
+        public List<SurveyResponseQuestionModel> Questions { get; set; }
+    }
+
+    public class SurveyResponseQuestionModel
+    {
+        
+        public int Id { get; set; }
+        
+        public string Name { get; set; }        
+        
+        
+        public string Comments { get; set; }
+        
+        public List<SurveyResponseValueModel> Values { get; set; }
+    }
+
+    public class SurveyResponseValueModel
+    {
+     
+        public int ID { get; set; }
+     
+        public string Name { get; set; }
+     
+        public string Value { get; set; }
+     
+        public bool IsChecked { get; set; }
+    }
+
     [DataContract]
     public class TagSuggestionModel
     {

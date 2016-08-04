@@ -1,12 +1,12 @@
 ﻿function artifacts_item(app, pageViewModel, templatePath, contextList) {
-    app.get('#/artifacts/:typeid/:id', function (context) {
-        //context.spinner();
+    app.get('#/artifacts/:typeid/:id', function (context) {        
         context.app.swap('');
         
         var type = 'Artifact';
         var typeID = context.params['typeid'];
         var id = context.params['id'];
         var permissions = new PermissionsModel();
+        var survey;
         
         $.getJSON('/api/artifact/' + id, function (json) {
 
@@ -81,9 +81,7 @@
                             if (CompanySettings.UseNewRelationships == 'true')
                                 NewLineageDiagram('SourcingTile', type, id, false);
                             else
-                                LineageDiagram('SourcingTile', type, id, false);
-                            //LineageDiagram('SourcingTile', type, id, false);
-                            //NewLineageDiagram('SourcingTile', type, id, false);
+                                LineageDiagram('SourcingTile', type, id, false);                            
                             break;
                         case contextList.Responsibility:                        
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -109,6 +107,7 @@
             }
 
             function unsubscribe(data) {
+                survey = null
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
@@ -125,8 +124,8 @@
 
                     context.contentHeader(pageViewModel);
 
-                    $('#SideIcons').PageTools({ type: type, id: id });
-                    $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
+                    $('#SideIcons').PageTools({ type: type, id: id });                    
+                    survey = new Survey('Survey', type, id, 'ArtifactType', typeID);
                     ObjectDetail('DetailTile', type, id);
 
                     var loadPermissionsDependentTiles = function () {
@@ -169,13 +168,10 @@
                         }
 
                         if (json.AllowPredicateHierarchies) {
-                            CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);
-                            //HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');
-                            // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
+                            CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);                            
                         }
                         else {
-                            $('#StructureTile').hide();
-                            //$('#GroupHierarchyTile').hide();
+                            $('#StructureTile').hide();                            
                         }
                     }
 
