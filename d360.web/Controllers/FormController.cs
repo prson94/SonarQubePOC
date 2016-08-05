@@ -17835,9 +17835,19 @@ where	RT.SourceObjectType = @type
             var list = new List<EditableField>();
 
             var items = new List<SelectListItem>();
+            //artifacts
             items.AddRange(Company.Table<ArtifactType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
+
+            //models
             items.AddRange(Company.Table<TaxonomyType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
-            
+
+            //rules
+            items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });
+            items.Add(new SelectListItem { Text = "Rule Type :: Quality Check", Value = "RuleType|2" });
+            items.Add(new SelectListItem { Text = "Rule Type :: Metric", Value = "RuleType|3" });
+            items.Add(new SelectListItem { Text = "Rule Type :: Profile", Value = "RuleType|4" });
+
+
             //items.AddRange(Community.Table<ResourceType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Resource Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ResourceType.ToString(), i.ID) }));
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });

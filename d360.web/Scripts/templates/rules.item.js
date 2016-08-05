@@ -7,6 +7,7 @@
         var permissions = new PermissionsModel();
         var type = 'Rule';
         var timescale;
+        var survey;
 
         $.getJSON('/api/rule/' + ruleID, function (json) {
             pageViewModel.Title = json.Name
@@ -63,6 +64,7 @@
 
             function unsubscribe(data) {
                 statisticsTileVm = null;
+                survey = null;
 
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
@@ -98,6 +100,7 @@
                     $('#SideIcons').PageTools({ type: type, id: ruleID });
                     statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
                     ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
+                    survey = new Survey('Survey', type, ruleID, 'RuleType', json.TypeID);
 
                     ObjectDetail('DetailTile', type, ruleID);
 
