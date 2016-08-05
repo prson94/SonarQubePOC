@@ -6341,6 +6341,7 @@ var SurveyQuestionViewModel = function (question) {
     self.Id = ko.observable(question.ID);
     self.OptionCount = ko.observable(question.OptionCount);
     self.DisplayStyle = ko.observable(question.DisplayStyle);
+    self.Description = ko.observable(question.Description);
     self.IsAnswered = ko.observable(false);
     self.IsLoading = ko.observable(true);
     self.Values = ko.observableArray();
@@ -6366,10 +6367,11 @@ var ObjectSurveyViewModel = function (surveyObject, type, id) {
     self.Id = ko.observable(surveyObject.ID);
     self.Questions = ko.observableArray();
     self.IsCompleted = ko.observable(false);
+    self.ShouldTileFade = ko.observable(false);
     var _currentQuestionIndex = ko.observable(0);
 
     self.CurrentQuestion = ko.computed(function () {
-        if (self.Questions() == null) return null;
+        if (self.Questions() == null || self.Questions().length == 0) return null;
         return self.Questions()[_currentQuestionIndex()];
     });
 
@@ -6405,16 +6407,16 @@ var ObjectSurveyViewModel = function (surveyObject, type, id) {
     self.prev = function () { navigate(-1); };
 
     self.submit = function () {
-        //submit the survey
-        var data = ko.toJSON(self.Questions);
-        console.log(data);
-        
+        //submit the survey        
         $.ajax("/api/survey/" + self.Id() + "/" + id + "/" + type, {
             data: ko.toJSON({ Questions: self.Questions }),
             type: "post", contentType: "application/json",
             success: function (result) { 
                 //switch to the thank you message
                 self.IsCompleted(true);
+                setInterval(function () {
+                    self.ShouldTileFade(true);                    
+                }, 5000);
             }
         });
 
@@ -6440,13 +6442,12 @@ var SurveyViewModel = function(type, id, parentType, parentTypeId) {
     self.IsLoading = ko.observable(true);
     self.IsSurveyAvailable = ko.observable(false);
     self.Survey = ko.observable();
-    
-    
+        
     //load surveys
     $.getJSON('/api/surveys/' + parentType + '/' + parentTypeId + '/' + type + '/' + id + '/survey', function (data) {
         if(data)
             self.Survey(new ObjectSurveyViewModel(data, type, id));
-        self.IsLoading(false);
+        self.IsLoading(false);    
     })
 
     return self;

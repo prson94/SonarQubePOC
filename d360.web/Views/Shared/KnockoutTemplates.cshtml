@@ -1938,6 +1938,11 @@
     </div>
     <!--ko if: !IsLoading()-->
     <div class="col s12" data-bind="text: Name"></div>
+    <div class="col s12" data-bind="visible: Description() != null" style="color:lightgray;">
+        <div class="row">
+            <div class="col s12" data-bind="html: Description()"></div>
+        </div>
+    </div>
     <div class="col s12">
         <div class="row" style="padding:5px">
             <!--ko if: DisplayStyle() == 'Radio List'-->
@@ -1963,16 +1968,19 @@
     <div data-bind="visible: IsLoading()" style="text-align:center">
         <i class="fa fa-2x fa-spinner fa-spin"></i>
     </div>
-    <!--ko if: !IsLoading() && !IsCompleted()-->
-    <div class="col s12 FieldName FieldDisplayName" data-bind="text: Name()"></div>
+    <!--ko if: !IsLoading() && !IsCompleted() && Questions().length > 0 -->
+    <div class="col s12 FieldName FieldDisplayName" data-bind="text: Name()"></div>    
     <div class="col s12">&nbsp;</div>
-    <div class="row" data-bind="template: {name: 'surveyQuestionTmpl', data: CurrentQuestion() ? CurrentQuestion() : null }"></div>
+    <div class="row" data-bind="template: {name: 'surveyQuestionTmpl', data: CurrentQuestion() ? CurrentQuestion() : null }"></div>    
     <div class="col s12">
-        <button data-bind="click: prev, enable: isPreviousEnabled">Previous</button>
-        <button data-bind="click: next, enable: isNextEnabled">Next</button>
-        <button data-bind="click: submit,visible: isSubmitEnabled">Submit</button>
+        <button class="btn waves-effect waves-light brown lighten-4" style="padding:0 15px 0 15px;" data-bind="click: prev, enable: isPreviousEnabled">Previous</button>
+        <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: next, visible: isNextEnabled">Next</button>
+        <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: submit,visible: isSubmitEnabled">Submit</button>
         <i data-bind="text: pagingInfo()"></i>
     </div>
+    <!-- /ko-->
+    <!-- ko if: Questions().length == 0 && !IsLoading()-->
+    <div class="col s12">Survey has no questions.  Please contact your administrator and ask them to update the survey: <span data-bind="text: Name()" style="font-weight:bold"></span></div>
     <!-- /ko-->
     <!-- ko if: IsCompleted()-->
     <div class="col s12">
@@ -1982,7 +1990,7 @@
 </script>
 
 <script id="surveyTmpl" type="text/html">
-    <div data-bind="visible: (Survey() != null)" class="tile tile-detail">
+    <div data-bind="visible: (Survey() != null), fadeVisible: (!IsLoading() && Survey() != null && !Survey().ShouldTileFade())" class="tile tile-detail">
         <div data-bind="visible: IsLoading()" style="text-align:center">
             <i class="fa fa-2x fa-spinner fa-spin"></i>
         </div>

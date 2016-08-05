@@ -16127,7 +16127,7 @@ order by	D.Name, I.Name";
             QuestionType qt = null;
             List<QuestionTypeItemEditorModel> items = null;
 
-            var options = QuestionDisplayStyle.Radio.GetResponseTypeDisplayStyleInfoList().Select(i => new KnockoutDisplayItem { title = i.Description, value = ((int)i.ID).ToString() });
+            var options = QuestionDisplayStyle.Radio.GetResponseTypeDisplayStyleInfoList().Where(x=>x.ID != QuestionDisplayStyle.Rating).Select(i => new KnockoutDisplayItem { title = i.Description, value = ((int)i.ID).ToString() });
 
             if (id > 0)
             {
@@ -17840,6 +17840,8 @@ where	RT.SourceObjectType = @type
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString()});
+            
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17860,6 +17862,7 @@ where	RT.SourceObjectType = @type
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString(), Value = a.ValidForDays.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17899,7 +17902,8 @@ where	RT.SourceObjectType = @type
                 {
                     Name = parseTextField(form, "Name", null, true),
                     Object = ot.ToString(),
-                    ObjectID = oid
+                    ObjectID = oid,
+                    ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1)
                 };
                 Company.Add<SurveyType>(model);
 
@@ -17987,6 +17991,7 @@ where	RT.SourceObjectType = @type
                 if (model == null) throw new NotFoundException("survey type");
 
                 model.Name = parseTextField(form, "Name", null, true);
+                model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
 
                 Company.Update<SurveyType>(model);
 

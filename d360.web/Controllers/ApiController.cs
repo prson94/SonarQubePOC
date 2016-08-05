@@ -5986,7 +5986,8 @@ order by    title
                     i.ID,
                     i.Name,
                     OptionCount = i.QuestionTypeOptions.Count,
-                    DisplayStyle = i.DisplayStyle.GetDescription()
+                    DisplayStyle = i.DisplayStyle.GetDescription(),
+                    Description = i.Description
                 });
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
@@ -6021,9 +6022,7 @@ order by    title
 
         [Route("surveys/{parentType}/{parentId}/{type}/{id}/survey")]
         public ObjectSurveyModel GetSurvey(SystemObjects parentType, int parentId, SystemObjects type, int id)
-        {
-            //var sql = @"select id, name from surveytype where object= @obj and objectid= @objId";
-
+        {            
             var sql = @"
                         select id, name from surveytype where object= @parObj and objectid= @parObjId and id not in(
 			                    select 
@@ -6040,7 +6039,12 @@ order by    title
 
             var rand = new Random();
 
-            return surveys[rand.Next(0, surveys.Count - 1)];            
+            var randIndex = rand.Next(0, surveys.Count);
+
+            if (randIndex > 0 && randIndex < surveys.Count)
+                return surveys[randIndex];
+
+            return surveys.First();
         }
 
         [Route("survey/{surveyId}/{objectId}/{type}")]
@@ -6074,9 +6078,6 @@ order by    title
 
                 foreach (var value in selected)
                 {
-                    //var v = new QuestionTypeOption
-                    // value.ID -- questiontypeoptionid
-                    // q.id -- questionid
                     Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
                 }
             }
@@ -6084,20 +6085,7 @@ order by    title
             
             return new CreateResponse { Message = "Created" };
         }
-
-
-        [Route("surveys/{surveyId}/questions")]
-        public IEnumerable<ObjectSurveyQuestionModel> GetSurveyQuestions(int surveyId)
-        {
-            var sql = @"select 
-	                        ID,
-	                        Name,
-	                        [Description],		
-	                        DisplayStyle
-                        from questiontype where surveytypeid = @id";
-
-            return Company.Query<ObjectSurveyQuestionModel>(sql, new { id = surveyId });            
-        }
+        
 
         [Route("surveys/question/{questionId}/values")]
         public IEnumerable<ObjectSurveyQuestionValuesModel> GetSurveyQuestionValues(int questionId)

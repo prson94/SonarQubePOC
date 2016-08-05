@@ -724,20 +724,7 @@ namespace d360.web.Models
         [DataMember]
         public string Name { get; set; }        
     }
-
-    [DataContract(Name = "ObjectSurveyQuestion", Namespace = constants.NAMESPACE)]
-    public class ObjectSurveyQuestionModel
-    {
-        [DataMember]
-        public int ID { get; set; }
-        [DataMember]
-        public string Name { get; set; }
-        [DataMember]
-        public string DisplayStyle { get; set; }
-        [DataMember]
-        public string Description { get; set; }
-    }
-
+    
     public class ObjectSurveyQuestionValuesModel
     {
         [DataMember]
