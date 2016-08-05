@@ -6432,7 +6432,7 @@ var ObjectSurveyViewModel = function (surveyObject, type, id) {
         }            
         self.IsLoading(false);
     });
-
+    
     return self;
 }
 
@@ -6442,13 +6442,27 @@ var SurveyViewModel = function(type, id, parentType, parentTypeId) {
     self.IsLoading = ko.observable(true);
     self.IsSurveyAvailable = ko.observable(false);
     self.Survey = ko.observable();
+    self.Type = ko.observable(type);
+    self.Id = ko.observable(id);
+    self.ParentType = ko.observable(parentType);
+    self.ParentTypeId = ko.observable(parentTypeId);
         
-    //load surveys
-    $.getJSON('/api/surveys/' + parentType + '/' + parentTypeId + '/' + type + '/' + id + '/survey', function (data) {
-        if(data)
-            self.Survey(new ObjectSurveyViewModel(data, type, id));
-        self.IsLoading(false);    
-    })
+    self.Load = function() {
+        //load surveys
+        $.getJSON('/api/surveys/' + self.ParentType() + '/' + self.ParentTypeId() + '/' + self.Type() + '/' + self.Id() + '/survey', function (data) {
+            if(data)
+                self.Survey(new ObjectSurveyViewModel(data, self.Type(), self.Id()));
+            self.IsLoading(false);    
+        })
+    };
+
+    self.Clear = function () {
+        if (!self.Survey()) return;
+        self.Survey(null);
+        self.IsLoading(true);
+    }
+
+    self.Load();
 
     return self;
 }

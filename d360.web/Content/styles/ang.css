@@ -19395,24 +19395,6 @@ jqx-grid-column-filterbutton-transparent,
 .jqx-icon-plus-metro {
   background-image: url('images/metro-icon-plus.png');
 }
-.Question {
-  padding: 10px;
-}
-.Question h1 {
-  color: #666;
-}
-.Question textarea {
-  width: 80%;
-}
-.Question .directions {
-  font-size: 11px;
-  margin-top: 15px;
-  clear: both;
-  color: #999;
-}
-.HiddenQuestion {
-  display: none;
-}
 .fa-thumbs-o-up:hover {
   color: #2c77ba;
 }

@@ -6,6 +6,7 @@
         var typeID = context.params['typeid'];
         var selectedID = context.params['id'];
         var permissions = new PermissionsModel();
+        var survey;
 
         $.getJSON('/api/catalogs/' + typeID, function (json) {
 
@@ -148,6 +149,11 @@
                             ObjectStatisticsTile('StatisticsTile', type, selectedID);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, selectedID, '', false);
                             RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
+
+                            
+                            if (survey) survey.ChangeObject(type, selectedID, 'TaxonomyType', typeID);
+                            else survey = new Survey('Survey', type, selectedID, 'TaxonomyType', typeID);
+                            
                         }
 
                         permissions.GetPermissionsForObject(type, selectedID).then(loadPermissionsDependentTiles);
@@ -156,6 +162,7 @@
             }
 
             function unsubscribe(data) {
+                survey = null;
                 $('#AttributesTile').Attributes('destroy');
                 $('#Tree').off('bindingComplete', bindingComplete);
                 amplify.unsubscribe("CommandExecuted", commandExecuted);

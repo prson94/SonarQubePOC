@@ -82,8 +82,6 @@
                     ko.applyBindings(socialTile, document.getElementById('SocialTile'));
                     socialTile.GetStatistics();
 
-                    $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
-
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
                     amplify.subscribe("SaveAction", saveAction);

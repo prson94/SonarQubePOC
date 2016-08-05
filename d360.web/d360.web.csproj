@@ -829,7 +829,6 @@
       <DependentUpon>jqx.plain.css</DependentUpon>
     </None>
     <None Include="Content\styles\jqx.plain.less" />
-    <None Include="Content\styles\d3s.randomsurveyquestion.less" />
     <None Include="Content\styles\d3s.social.less" />
     <None Include="Content\styles\d3s.surveyreport.less" />
     <None Include="Content\styles\jquery.gritter.less" />
@@ -995,7 +994,6 @@
     <None Include="Scripts\d3s.Editor.js" />
     <None Include="Scripts\d3s.FormTools.js" />
     <None Include="Scripts\d3s.PageTools.js" />
-    <None Include="Scripts\d3s.RandomSurveyQuestion.js" />
     <None Include="Scripts\d3s.SurveyReport.js" />
     <Content Include="Scripts\Apps.js" />
     <Content Include="Scripts\Apps.min.js">
