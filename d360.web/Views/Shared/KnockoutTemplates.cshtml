@@ -1938,7 +1938,7 @@
     </div>
     <!--ko if: !IsLoading()-->
     <div class="col s12" data-bind="text: Name" style="font-weight:bold;"></div>
-    <div class="col s12" data-bind="visible: Description() != null" style="color:#b0b2b6;">
+    <div class="col s12" data-bind="visible: Description() != null">
         <div class="row">
             <div class="col s12" data-bind="html: Description()"></div>
         </div>
@@ -1955,7 +1955,7 @@
                 <div class="col s12" data-bind="text: Name,jqxCheckBox: { checked: Checked, theme: theme,width: field_width, height: field_height}"></div>
             </div>
             <!-- /ko-->
-            <div class="col s12" style="padding-top:2px">Comments:</div>
+            <div class="col s12" style="padding-top:2px">Comments (optional):</div>
             <div class="col s12">
                 <textarea  data-bind="value: Comments"></textarea>
             </div>
@@ -1979,9 +1979,9 @@
             <div class="col s12">&nbsp;</div>
             <div class="row" data-bind="template: {name: 'surveyQuestionTmpl', data: CurrentQuestion() ? CurrentQuestion() : null }"></div>
             <div class="col s12">
-                <button class="btn waves-effect waves-light brown lighten-4" style="padding:0 15px 0 15px;" data-bind="click: prev, visible: isPreviousEnabled">Previous</button>
-                <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: next, visible: isNextEnabled">Next</button>
-                <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: submit,visible: isSubmitEnabled">Submit</button>
+                <button class="btn waves-effect waves-light brown lighten-4" style="padding:0 15px 0 15px;" data-bind="click: prev, visible: isPreviousVisible">Previous</button>
+                <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: next, visible: isNextVisible, enable: isNextEnabled">Next</button>
+                <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: submit,visible: isSubmitVisible, enable: isSubmitEnabled">Submit</button>
                 <i data-bind="text: pagingInfo()"></i>
             </div>
             <!-- /ko-->

@@ -6347,6 +6347,12 @@ var SurveyQuestionViewModel = function (question) {
     self.Values = ko.observableArray();
     self.Comments = ko.observable();
 
+    self.HasUserPickedAnAnswer = function () {
+        var result = $.grep(self.Values(), function (e) { return e.IsChecked(); });
+
+        return (result.length != 0);
+    };
+
     $.getJSON('/api/surveys/question/' + self.Id() + '/values', function (data) {
         if (data) {                        
             data.forEach(function (value) {
@@ -6381,20 +6387,31 @@ var ObjectSurveyViewModel = function (surveyObject, type, id) {
     });
 
     self.isSubmitEnabled = ko.computed(function () {
-        if (self.Questions() == null) return false;
+        if (self.Questions() == null || self.Questions().length == 0) return false;
+        if (!self.CurrentQuestion().HasUserPickedAnAnswer()) return false;
         return (_currentQuestionIndex() + 1) == self.Questions().length;
     });
 
-    self.isPreviousEnabled = ko.computed(function () {
+    self.isNextEnabled = ko.computed(function () {
         if (self.Questions() == null || self.Questions().length == 0) return false;
-        // check if an item was picked
+        // check if a item was checked
+        if (!self.CurrentQuestion().HasUserPickedAnAnswer()) return false;
+        return (_currentQuestionIndex()) < (self.Questions().length -1);
+    });
+
+    self.isPreviousVisible = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return false;        
         return (_currentQuestionIndex() > 0);
     });
 
-    self.isNextEnabled = ko.computed(function () {
+    self.isNextVisible = ko.computed(function () {
+        if (self.Questions() == null) return false;        
+        return (_currentQuestionIndex()) < (self.Questions().length - 1);
+    });
+
+    self.isSubmitVisible = ko.computed(function () {
         if (self.Questions() == null) return false;
-        // check if a item was checked
-        return (_currentQuestionIndex()) < (self.Questions().length -1);
+        return (_currentQuestionIndex() + 1) == self.Questions().length;
     });
 
     function navigate(nrOfSpots) {
