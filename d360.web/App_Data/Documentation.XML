@@ -2945,7 +2945,7 @@
         <member name="M:d360.web.Controllers.FormController.ResourceType_EditFields(System.Int32)">
             <param name="id">ResourceTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.ResponseType_DeleteFields(System.Int32)">
+        <member name="M:d360.web.Controllers.FormController.QuestionType_DeleteFields(System.Int32)">
             <param name="id">ResponseTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Rule_DeleteFields(System.Int32)">

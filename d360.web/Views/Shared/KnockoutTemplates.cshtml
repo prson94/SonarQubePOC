@@ -1937,22 +1937,18 @@
         <i class="fa fa-2x fa-spinner fa-spin"></i>
     </div>
     <!--ko if: !IsLoading()-->
-    <div class="col s12" data-bind="text: Name" style="font-weight:bold;"></div>
-    <div class="col s12" data-bind="visible: Description() != null">
-        <div class="row">
-            <div class="col s12" data-bind="html: Description()"></div>
-        </div>
-    </div>
+    <div class="col s12" style="padding-bottom:5px"><span class="FieldName"><span data-bind="text:QuestionNumber"></span>.&nbsp;&nbsp;<span data-bind="text:Name"></span></span><span data-bind="visible: (Description() != null)"> - </span><span data-bind="html: Description()"></span></div>
+    
     <div class="col s12">
-        <div class="row" style="padding:5px">
+        <div class="row">
             <!--ko if: DisplayStyle() == 'Radio List'-->
             <div data-bind="foreach: Values">
-                <div class="col s12" data-bind="text: Name,jqxRadioButton: {checked: Checked, theme: theme, groupName: 'surveyValues' }"></div>
+                <div class="col s12" style="padding:2px" data-bind="text: Name,jqxRadioButton: {checked: Checked, theme: theme, groupName: 'surveyValues' }"></div>
             </div>
             <!-- /ko-->
             <!--ko if: DisplayStyle() == 'Check List'-->
             <div data-bind="foreach: Values">
-                <div class="col s12" data-bind="text: Name,jqxCheckBox: { checked: Checked, theme: theme,width: field_width, height: field_height}"></div>
+                <div class="col s12" style="padding:2px" data-bind="text: Name,jqxCheckBox: { checked: Checked, theme: theme,width: field_width, height: field_height}"></div>
             </div>
             <!-- /ko-->
             <div class="col s12" style="padding-top:2px">Comments (optional):</div>
@@ -1969,16 +1965,14 @@
         <div data-bind="visible: IsLoading()" style="text-align:center">
             <i class="fa fa-2x fa-spinner fa-spin"></i>
         </div>
-        <header>Survey</header>
+        <header>Survey - <span data-bind="text :(Survey() ? Survey().Name : '')"></span></header>
         <div class="row" data-bind="visible: !IsLoading(), with: Survey ">
             <div data-bind="visible: IsLoading()" style="text-align:center">
                 <i class="fa fa-2x fa-spinner fa-spin"></i>
             </div>
-            <!--ko if: !IsLoading() && !IsCompleted() && Questions().length > 0 -->
-            <div class="col s12 FieldName FieldDisplayName" data-bind="text: Name()"></div>
-            <div class="col s12">&nbsp;</div>
+            <!--ko if: !IsLoading() && !IsCompleted() && Questions().length > 0 -->            
             <div class="row" data-bind="template: {name: 'surveyQuestionTmpl', data: CurrentQuestion() ? CurrentQuestion() : null }"></div>
-            <div class="col s12">
+            <div class="col s12" style="padding-top:10px;">
                 <button class="btn waves-effect waves-light brown lighten-4" style="padding:0 15px 0 15px;" data-bind="click: prev, visible: isPreviousVisible">Previous</button>
                 <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: next, visible: isNextVisible, enable: isNextEnabled">Next</button>
                 <button class="btn waves-effect waves-light brown lighten-1" style="padding:0 15px 0 15px;" data-bind="click: submit,visible: isSubmitVisible, enable: isSubmitEnabled">Submit</button>

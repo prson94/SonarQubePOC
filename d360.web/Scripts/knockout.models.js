@@ -19,7 +19,7 @@ ko.bindingHandlers.htmlareasimple = {
         if (ko.isObservable(value)) {
             $(element).redactor({
                 changeCallback: value,
-                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']                
             });
         }
     },
@@ -30,6 +30,30 @@ ko.bindingHandlers.htmlareasimple = {
         }
     }
 };
+
+ko.bindingHandlers.htmlareasimpleNoPara = {
+    init: function (element, valueAccessor) {
+        var value = valueAccessor();
+
+        if (ko.isObservable(value)) {
+            $(element).redactor({
+                changeCallback: value,
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist', 'outdent', 'indent', 'link', 'fontcolor', 'backcolor', 'alignment'],
+                paragraphize: false,
+                replaceDivs: false,
+                linebreaks: true,
+                enterKey: false
+            });
+        }
+    },
+    update: function (element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
+    }
+};
+
 
 ko.bindingHandlers.htmlarea = {
     init: function (element, valueAccessor) {
@@ -6335,7 +6359,7 @@ var SurveyQuestionValueViewModel = function (value) {
 }
 
 
-var SurveyQuestionViewModel = function (question) {
+var SurveyQuestionViewModel = function (question, number) {
     var self = this;
     self.Name = ko.observable(question.Name);
     self.Id = ko.observable(question.ID);
@@ -6346,6 +6370,7 @@ var SurveyQuestionViewModel = function (question) {
     self.IsLoading = ko.observable(true);
     self.Values = ko.observableArray();
     self.Comments = ko.observable();
+    self.QuestionNumber = ko.observable(number);
 
     self.HasUserPickedAnAnswer = function () {
         var result = $.grep(self.Values(), function (e) { return e.IsChecked(); });
@@ -6443,8 +6468,8 @@ var ObjectSurveyViewModel = function (surveyObject, type, id) {
     //load the questions for this survey    
     $.getJSON('/api/surveys/' + self.Id() + '/questions', function (data) {
         if (data) {
-            data.forEach(function (question) {
-                self.Questions.push(new SurveyQuestionViewModel(question));
+            data.forEach(function (question,index) {
+                self.Questions.push(new SurveyQuestionViewModel(question,index+1));
             });            
         }            
         self.IsLoading(false);

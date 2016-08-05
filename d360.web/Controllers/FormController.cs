@@ -16177,7 +16177,7 @@ order by	D.Name, I.Name";
         #region Field Generation
 
         /// <param name="id">ResponseTypeID</param>
-        public JsonResult ResponseType_DeleteFields(int id)
+        public JsonResult QuestionType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
