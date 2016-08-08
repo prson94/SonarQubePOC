@@ -82,7 +82,7 @@ namespace d360.fusion
             ai.Context.Properties["FileName"] = LogFileName;
             ai.Context.Properties["SQLBulkCopyTimeout"] = BulkCopyTimeout.ToString();
             ai.Context.Properties["SQLReadQueryTimeout"] = ReadQueryTimeout.ToString();
-            ai.Context.Properties["SQLBulkTimeout"] = BulkCopyTimeout.ToString();
+            ai.Context.Properties["SQLExecutionTimeout"] = ExecuteQueryTimeout.ToString();
             
             Trace.TraceInformation("====================================================================================================");
             Trace.TraceInformation("STARTING FUSION JOB FOR FUSION ID: {0} COMPANY ID: {1} FILE: {2}", FusionID, CompanyID, LogFileName);            
