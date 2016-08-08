@@ -162,6 +162,12 @@
   <data name="Add_Policy_Title" xml:space="preserve">
     <value>Add Policy to {0}</value>
   </data>
+  <data name="Add_PowerBI_Credentials_Directions" xml:space="preserve">
+    <value>Specify the credentials to be used for Power BI Direct Query type queries.</value>
+  </data>
+  <data name="Add_PowerBI_Credentials_Title" xml:space="preserve">
+    <value>Add Credentials for Power BI Queries</value>
+  </data>
   <data name="Add_QuestionType_Directions" xml:space="preserve">
     <value>You can add a response type to a survey question.  This response type is available to all surveys, when defining a question.</value>
   </data>

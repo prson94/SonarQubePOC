@@ -702,8 +702,9 @@
                             default: //String, Text
                                 //#region Text Field Management                                
                                 addLabel(cpnl, v, false);
+                                
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" autocomplete="off" />');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="' + (v.FieldType == 'Password' ? 'password' : 'text') + '" autocomplete="off" />');
                                 fld.val($('<div/>').html(cleanedValue).text());
 
                                 if (!v.TypeaheadUri) {

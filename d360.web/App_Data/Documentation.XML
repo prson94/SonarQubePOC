@@ -718,6 +718,16 @@
               Looks up a localized string similar to Add Policy to {0}.
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.Add_PowerBI_Credentials_Directions">
+            <summary>
+              Looks up a localized string similar to Specify the credentials to be used for Power BI Direct Query type queries..
+            </summary>
+        </member>
+        <member name="P:Resources.FormInfo.Add_PowerBI_Credentials_Title">
+            <summary>
+              Looks up a localized string similar to Add Credentials for Power BI Queries.
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.Add_QuestionType_Directions">
             <summary>
               Looks up a localized string similar to You can add a response type to a survey question.  This response type is available to all surveys, when defining a question..

@@ -13253,6 +13253,19 @@ order by D.TextPath";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult PowerBICredentials_AddFields()
+        {
+            if (!Company.HasPermission(SystemObjects.Report, 0, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            
+            list.Add(new EditableField { Row = 1, Column = 1, Name= "Username", FieldName = "Username", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Name = "Password", FieldName = "Password", FieldType = DataType.Password.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Form Get/Post
@@ -13454,6 +13467,73 @@ order by    Name
             }
         }
 
+        public ActionResult AddPowerBICredentials()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.PowerBICredentialsSet,
+                FieldUri = "/form/PowerBICredentials_AddFields",
+                FormTitle = Resources.FormInfo.Add_PowerBI_Credentials_Title,
+                FormDescription = Resources.FormInfo.Add_PowerBI_Credentials_Directions,
+                FormUri = "/form/AddPowerBICredentials",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public async Task<JsonResult> AddPowerBICredentials(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
+
+                //var objectType = form["ObjectType"].Split('|').ToArray();
+
+                //get username / password
+                var user = parseTextField(form, "Username");
+                var pwd = parseTextField(form, "Password");
+
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
+                    throw new Exception("Please specify a valid username and password.");
+
+                var companySettings = Community.GetCompanySettings();
+                var workspaceCollectionName = string.Empty;
+                var workspaceId = string.Empty;
+                var accessKey = string.Empty;
+
+                companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
+                companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
+                companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+
+                // if the workspace id is null create a new one and update the companysettings
+                workspaceId = await checkPowerBIValidWorkspace(workspaceId, accessKey, workspaceCollectionName);
+
+
+                if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
+                    throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
+
+                //save password in this workspace for all ds's
+                await PowerBI.UpdateConnectionCredentials(accessKey, workspaceCollectionName, workspaceId, user, pwd);
+
+                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, "", form["_context"], "add", HttpStatusCode.Created);
+                
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
         public ActionResult EditReport(int id)
         {
             var o = Company.GetById<Report>(id);
@@ -13556,20 +13636,10 @@ order by    Name
             }
         }
 
-        private async Task<Microsoft.PowerBI.Api.Beta.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        private async Task<string> checkPowerBIValidWorkspace(string workspaceId, string accessKey, string workspaceCollectionName)
         {
-            var companySettings = Community.GetCompanySettings();
-            var workspaceCollectionName = string.Empty;
-            var workspaceId = string.Empty;
-            var accessKey = string.Empty;
-
-            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
-            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
-            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
-
             workspaceId = (workspaceId ?? "").Trim();
 
-            // if the workspace id is null create a new one and update the companysettings
             if (string.IsNullOrEmpty(workspaceId) && !string.IsNullOrEmpty(accessKey) && !string.IsNullOrEmpty(workspaceCollectionName))
             {
                 var res = await PowerBI.CreateWorkspace(accessKey, workspaceCollectionName);
@@ -13587,8 +13657,26 @@ order by    Name
                     Community.Update<CompanySetting>(workspaceSetting);
                 }
 
-                workspaceId = res.WorkspaceId;
+                return res.WorkspaceId;
             }
+
+            return workspaceId;
+        }
+
+        private async Task<Microsoft.PowerBI.Api.Beta.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        {
+            var companySettings = Community.GetCompanySettings();
+            var workspaceCollectionName = string.Empty;
+            var workspaceId = string.Empty;
+            var accessKey = string.Empty;
+
+            companySettings.TryGetValue("PowerBIWorkspaceCollectionName", out workspaceCollectionName);
+            companySettings.TryGetValue("PowerBIWorkspaceId", out workspaceId);
+            companySettings.TryGetValue("PowerBIAccessKey", out accessKey);
+
+            // if the workspace id is null create a new one and update the companysettings
+            workspaceId = await checkPowerBIValidWorkspace(workspaceId, accessKey, workspaceCollectionName);
+            
 
             if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
                 throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");

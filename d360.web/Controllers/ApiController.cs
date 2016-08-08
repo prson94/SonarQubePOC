@@ -1391,6 +1391,10 @@ where   h.ID <> @t order by h.[Level] desc;
                     //        list.Add(addItem);
                     //    }
                     //}
+                    if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
+                    {
+                        list.Add(new PageActionItem { Context = "PowerBICreds", Icon = "user-secret", Title = "Set PowerBI Credentials", Uri = "/form/AddPowerBICredentials" });
+                    }
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion

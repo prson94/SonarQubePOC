@@ -196,6 +196,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specify the credentials to be used for Power BI Direct Query type queries..
+        /// </summary>
+        internal static string Add_PowerBI_Credentials_Directions {
+            get {
+                return ResourceManager.GetString("Add_PowerBI_Credentials_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Credentials for Power BI Queries.
+        /// </summary>
+        internal static string Add_PowerBI_Credentials_Title {
+            get {
+                return ResourceManager.GetString("Add_PowerBI_Credentials_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You can add a response type to a survey question.  This response type is available to all surveys, when defining a question..
         /// </summary>
         internal static string Add_QuestionType_Directions {
