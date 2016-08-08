@@ -20,7 +20,8 @@ export const AdminRoutes = [
             { path: 'resources', component: admin.AdminResourcesComponent },
             { path: 'responsibilities', component: admin.AdminGovernanceComponent },
             { path: 'rules', component: admin.AdminRulesComponent },
-            { path: 'settings', component: admin.AdminSettingsComponent },            
+            { path: 'settings', component: admin.AdminSettingsComponent },
+            { path: 'surveys', component: admin.AdminSurveysComponent },
             { path: 'taxonomies', component: admin.AdminTaxonomiesComponent },
             { path: 'templates', component: admin.AdminTemplatesComponent },
             { path: 'workflow', component: admin.AdminWorkflowComponent }

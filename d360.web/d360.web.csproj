@@ -1391,6 +1391,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-surveys.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
@@ -1534,6 +1535,7 @@
     <TypeScriptCompile Include="Scripts\app\models\relationship.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rule.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\survey.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
@@ -1575,6 +1577,7 @@
     <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />

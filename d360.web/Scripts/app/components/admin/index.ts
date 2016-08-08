@@ -16,6 +16,7 @@ import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminLoadComponent } from './admin-load.component';
 import { AdminFusionComponent } from './admin-fusion.component';
+import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -40,3 +41,4 @@ export * from './admin-statistics.component';
 export * from './admin-dashboards.component';
 export * from './admin-fusion.component';
 export * from './admin-load.component';
+export * from './admin-surveys.component';
