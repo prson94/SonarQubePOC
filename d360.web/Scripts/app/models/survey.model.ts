@@ -7,3 +7,10 @@
     ValidForDays: number;
 }
 
+export class SurveyQuestionType {
+    ID: number;
+    Name: string;
+    DisplayStyle: string;
+    OptionCount: number;
+    Description: string;
+}

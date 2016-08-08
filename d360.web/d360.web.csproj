@@ -1495,6 +1495,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-layout.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\rule-dimensions.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\structure.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\survey-questions.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
