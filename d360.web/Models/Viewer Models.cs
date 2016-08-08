@@ -792,7 +792,7 @@ namespace d360.web.Models
 
     public class PowerBIReportViewModel
     {
-        public IReport Report { get; set; }
+        public Microsoft.PowerBI.Api.V1.Models.Report Report { get; set; }
 
         public string AccessToken { get; set; }
     }

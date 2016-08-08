@@ -13490,9 +13490,7 @@ order by    Name
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
-
-                //var objectType = form["ObjectType"].Split('|').ToArray();
-
+                
                 //get username / password
                 var user = parseTextField(form, "Username");
                 var pwd = parseTextField(form, "Password");
@@ -13663,7 +13661,7 @@ order by    Name
             return workspaceId;
         }
 
-        private async Task<Microsoft.PowerBI.Api.Beta.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
+        private async Task<Microsoft.PowerBI.Api.V1.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
         {
             var companySettings = Community.GetCompanySettings();
             var workspaceCollectionName = string.Empty;

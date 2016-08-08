@@ -2,8 +2,8 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.PowerBI.Api.Beta;
-using Microsoft.PowerBI.Api.Beta.Models;
+using Microsoft.PowerBI.Api.V1;
+using Microsoft.PowerBI.Api.V1.Models;
 using Microsoft.Rest;
 using System.IO;
 using Microsoft.PowerBI.Security;
@@ -31,9 +31,8 @@ namespace d360.extensions.powerbi
         /// <returns></returns>
         public static async Task<Import> ImportPbix(string accessKey, string workspaceCollectionName, string workspaceId, string datasetName, Stream fileStream)
         {            
-                // Create a dev token for import
-                var devToken = PowerBIToken.CreateDevToken(workspaceCollectionName, workspaceId);
-                using (var client = CreateClient(devToken,accessKey))
+                // Create a dev token for import                
+                using (var client = CreateClient(accessKey))
                 {
                     // Import PBIX file from the file stream
                     var import = await client.Imports.PostImportWithFileAsync(workspaceCollectionName, workspaceId, fileStream, datasetName);
@@ -58,26 +57,23 @@ namespace d360.extensions.powerbi
         /// <param name="datasetId">The Power BI dataset to delete</param>
         /// <returns></returns>
         public static async Task DeleteDataset(string accessKey, string workspaceCollectionName, string workspaceId, string datasetId)
-        {            
-            var devToken = PowerBIToken.CreateDevToken(workspaceCollectionName, workspaceId);
-            using (var client = CreateClient(devToken,accessKey))
+        {           
+            
+            using (var client = CreateClient(accessKey))
             {
                 await client.Datasets.DeleteDatasetByIdAsync(workspaceCollectionName, workspaceId, datasetId);
             }
         }
 
 
-        public static IPowerBIClient CreateClient(PowerBIToken token, string accessKey)
-        {            
-            // Generate a JWT token used when accessing the REST APIs
-            var jwt = token.Generate(accessKey);
-
-            // Create a token credentials with "AppToken" type
-            var credentials = new TokenCredentials(jwt, "AppToken");
+        public static IPowerBIClient CreateClient(string accessKey)
+        {
+            // Create a token credentials with "AppKey" type
+            var credentials = new TokenCredentials(accessKey, "AppKey");
 
             // Instantiate your Power BI client passing in the required credentials
             var client = new PowerBIClient(credentials);
-
+            
             // Override the api endpoint base URL.  Default value is https://api.powerbi.com
             client.BaseUri = new Uri(apiEndpointUri);
 
@@ -86,9 +82,8 @@ namespace d360.extensions.powerbi
         
         public async static Task<Workspace> CreateWorkspace(string accessKey, string workspaceCollectionName)
         {
-            // Create a provision token required to create a new workspace within your collection
-            var provisionToken = PowerBIToken.CreateProvisionToken(workspaceCollectionName);
-            using (var client = CreateClient(provisionToken, accessKey))
+            // Create a provision token required to create a new workspace within your collection            
+            using (var client = CreateClient(accessKey))
             {
                 // Create a new workspace within the specified collection
                 return await client.Workspaces.PostWorkspaceAsync(workspaceCollectionName);
@@ -96,9 +91,8 @@ namespace d360.extensions.powerbi
         }
 
         public static async Task UpdateConnectionCredentials(string accessKey, string workspaceCollectionName, string workspaceId, string username, string password, string connectionString = "")
-        {
-            var devToken = PowerBIToken.CreateDevToken(workspaceCollectionName, workspaceId);
-            using (var client = CreateClient(devToken, accessKey))
+        {            
+            using (var client = CreateClient(accessKey))
             {
                 // Get the newly created dataset from the previous import process
                 var datasets = await client.Datasets.GetDatasetsAsync(workspaceCollectionName, workspaceId);

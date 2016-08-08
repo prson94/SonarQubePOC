@@ -3,8 +3,10 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.model;
 using d360.web.Models;
-using Microsoft.PowerBI.Api.Beta;
+using Microsoft.PowerBI.Api;
+using Microsoft.PowerBI.Api.V1;
 using Microsoft.PowerBI.Security;
+using Microsoft.Rest;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -123,6 +125,16 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
+        private IPowerBIClient CreatePowerBIClient(string accessKey)
+        {
+            var credentials = new TokenCredentials(accessKey, "AppKey");
+            var client = new PowerBIClient(credentials)
+            {
+                BaseUri = new Uri("https://api.powerbi.com")
+            };
+
+            return client;
+        }
 
         public async Task<ActionResult> PowerBIOverlay(string reportId)
         {
@@ -137,9 +149,8 @@ namespace d360.web.Controllers
 
             if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(workspaceId) || string.IsNullOrEmpty(workspaceCollectionName))
                 throw new Exception("ERROR : UNABLE TO FIND ALL POWER BI COMMUNITY SETTINGS.");
-
-            var devToken = PowerBIToken.CreateDevToken(workspaceCollectionName, workspaceId);
-            using (var client = extensions.powerbi.PowerBI.CreateClient(devToken, accessKey))
+            
+            using (var client = CreatePowerBIClient( accessKey))
             {
                 var reportsResponse = await client.Reports.GetReportsAsync(workspaceCollectionName, workspaceId);
                 var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
