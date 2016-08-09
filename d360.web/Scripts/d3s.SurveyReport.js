@@ -96,18 +96,17 @@
                     },
                     function (data) {
                         if (data) {
-                            $obj.append("<h1>" + data.Report.Title + "</h1>");
-                            $obj.append("<div class='Column' id='Col1'></div>");
-                            $obj.append("<div class='Column' id='Col2'></div>");
-                            $obj.append("<div class='Column' id='Col3'></div>");
-                            var col1 = $("#Col1");
-                            var col2 = $("#Col2");
-                            var col3 = $("#Col3");
+                            var row = $("<div class='row'></div>");
+                            $obj.append(row);
+                            $.each(data.Report.Charts.Chart, function (ix, item) {
+                                row.append("<div class='col s4'><div id='Cht" + item.ID + "' style='width: 100%; height: 300px'></div></div>");
+                            });
 
-                            //if (data.Report.Chart)
-                            $.each(data.Report.Charts, function (idx, value) {
-                                loadChart(value, idx, col1, col2, col3);
-                            }); //each
+
+
+                            $.each(data.Report.Charts.Chart, function (idx, value) {
+                                loadChart(value);
+                            });
                         }
                     }
                 );
@@ -122,43 +121,43 @@
         }
     }
 
-    function loadChart(cht, idx, col1, col2, col3) {
+    function loadChart(cht) {
         try {
-            //#region Score Class Decision
-            var scoreClass;
-            if (cht.Score <= 40) {
-                scoreClass = "Low";
-            }
-            else if (cht.Score > 40 && cht.Score <= 80) {
-                scoreClass = "Medium";
-            }
-            else {
-                scoreClass = "High";
-            }
-            //#endregion
-            var responseText = " response";
-            if (cht.TotalResponses > 1) {
-                responseText += "s";
-            }
-            var html = "";
-            html += "<div class='Chart'>";
-            html += "<h1>" + cht.Title + "</h1>";
-            html += "<div class='Score'><h1>Score</h1><div class='" + scoreClass + "'>" + cht.Score + "</div></div>";
-            html += "<div class='Count'>" + cht.TotalResponses + responseText + "</div>";
-            html += "<div class='Graphic' id='Cht" + idx + "'></div>";
-            html += "</div>";
+            ////#region Score Class Decision
+            //var scoreClass;
+            //if (cht.Score <= 40) {
+            //    scoreClass = "Low";
+            //}
+            //else if (cht.Score > 40 && cht.Score <= 80) {
+            //    scoreClass = "Medium";
+            //}
+            //else {
+            //    scoreClass = "High";
+            //}
+            ////#endregion
+            //var responseText = " response";
+            //if (cht.TotalResponses > 1) {
+            //    responseText += "s";
+            //}
+            //var html = "";
+            //html += "<div class='Chart'>";
+            ////html += "<h1>" + cht.Title + "</h1>";
+            //html += "<div class='Score'><h1>Score</h1><div class='" + scoreClass + "'>" + cht.Score + "</div></div>";
+            //html += "<div class='Count'>" + cht.TotalResponses + responseText + "</div>";
+            //html += "<div class='Graphic' id='Cht" + idx + "'></div>";
+            //html += "</div>";
 
-            var mv = idx % 3;
+            //var mv = idx % 3;
 
-            if (mv == 0) {
-                col1.append(html);
-            }
-            else if (mv == 1) {
-                col2.append(html);
-            }
-            else {
-                col3.append(html);
-            }
+            //if (mv == 0) {
+            //    col1.append(html);
+            //}
+            //else if (mv == 1) {
+            //    col2.append(html);
+            //}
+            //else {
+            //    col3.append(html);
+            //}
 
             //#region Build Chart
 
@@ -179,8 +178,9 @@
                         enableAnimations: true,
                         showBorderLine: false,
                         showLegend: true,
-                        height: 200,
-                        width: 200,
+                        title: cht.Title,
+                       // height: 200,
+                        //width: 200,
                         source: dataAdapter,
                         colorScheme: 'scheme01',
                         seriesGroups:
@@ -202,11 +202,11 @@
                                 }
                             ]
                     };
-                    $("#Cht" + idx).jqxChart(settings);
+                    $("#Cht" + cht.ID).jqxChart(settings);
                 }
             }
             else {
-                $("#Cht" + idx).addClass("error").html("No data to display");
+                $("#Cht" + cht.ID).addClass("error").html("No data to display");
             }
             //#endregion
         } catch (e) {

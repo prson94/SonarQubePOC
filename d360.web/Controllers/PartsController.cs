@@ -212,6 +212,8 @@ namespace d360.web.Controllers
         [Route("{type}/{id}/reports/survey/{surveyTypeID}")]
         public ActionResult SurveyReport(SystemObjects type, int id, int surveyTypeID)
         {
+            var surveyType = Company.GetById<SurveyType>(surveyTypeID);
+            ViewData.Add("name", surveyType.Name);
             ViewData.Add("type", type);
             ViewData.Add("id", id);
             ViewData.Add("surveyTypeID", surveyTypeID);

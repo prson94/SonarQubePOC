@@ -915,15 +915,25 @@ from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner jo
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	A.ID,
-		A.ParentID,
-		A.ArtifactTypeID,
-		A.Name,
-		A.Description,
-		A.TextPath,
-		T.Name as ArtifactType
-from	Artifact A
-		inner join ArtifactType T on T.ID = A.ArtifactTypeID";
+select    A.ID,
+                              A.ParentID,
+                              A.ArtifactTypeID,
+                              A.Name,
+                              A.Description,
+                              A.TextPath,
+                              T.Name as ArtifactType,
+                              A.Status,
+                              A.TaxonomyTypeID, 
+                              a.CreatedOn,
+        a.UpdatedOn,
+                              CONVERT(VARCHAR(10), a.CreatedOn, 112) as CreatedOnKey,
+                              CONVERT(VARCHAR(10), a.UpdatedOn, 112) as UpdatedOnKey,
+                              TX.Name as TaxonomyTypeName,
+        dbo.GetObjectStatisticScore('Artifact', A.ID) as CurrentScore,
+                              dbo.GetObjectStatisticScore('Artifact', A.ID) * 100 as CurrentScorePct
+from      Artifact A
+                              inner join ArtifactType T on T.ID = A.ArtifactTypeID
+                              inner join TaxonomyType TX on tx.ID = A.TaxonomyTypeID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -949,15 +959,24 @@ from	Artifact A
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	A.ID,
-		A.ParentID,
-		A.TaxonomyTypeID,
-		A.Name,
-		A.Description,
-		A.TextPath,
-		T.Name as TaxonomyType
-from	Taxonomy A
-		inner join TaxonomyType T on T.ID = A.TaxonomyTypeID";
+SELECT T.[ID]                                                                as [Taxonomy ID]
+      ,T.[ParentID]
+      ,T.[TaxonomyTypeID]                             as [Taxonomy Type id]
+      ,T.[Name]                                                  as [Taxonomy Name]
+      ,T.[Description]                         as [Taxonomy Description]
+      ,T.[Path]
+      ,T.[TextPath]
+      ,T.[Level]                                                    as [Taxonomy Level]
+      ,T.[UpdatedOn]                                        
+      ,T.[UpdatedBy]
+                 , CONVERT(VARCHAR(10), t.UpdatedOn, 112) as UpdatedOnKey
+                 ,TY.Name                                                       as [Taxonomy Type Name]
+                 ,TC.Name                                                       as [Taxonomy Class Name]
+                 ,TL.Name                                                       as [Level Name]
+  FROM [dbo].[Taxonomy] T
+  inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
+  inner join TaxonomyTypeClass TC on TC.ID = TY.[TaxonomyTypeClassID]
+  inner join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = T.[Level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -983,15 +1002,138 @@ from	Taxonomy A
                         viewNames.Add(objectName);
 
                         selectSql = @"
-select	A.ID,
-		A.ParentID,
-		A.PolicyTypeID,
-		A.Name,
-		A.Description,
-		A.TextPath,
-		T.Name as PolicyType
-from	[Policy] A
-		inner join PolicyType T on T.ID = A.PolicyTypeID";
+SELECT p.[ID] as [PolicyID]
+      ,p.[ParentID]
+     ,p.[Name] as [Policy Name]
+      ,p.[Description]  as [Policy Description]
+      ,p.[TextPath] as [Policy TextPath]
+      ,p.[UpdatedOn]
+      ,p.[UpdatedBy]
+      ,p.[PolicyTypeID]
+      ,p.[Level]
+                 ,pt.Name                                         as [Policy Type]
+                 ,ptl.Name                                        as [Policy Level Name]
+                 ,pt.[PolicyTypeClassID]
+                 ,pc.Name                                        as [Policy Classification]
+                 ,CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
+  FROM [dbo].[Policy] p
+  inner Join PolicyType pt on pt.ID = p.[PolicyTypeID]
+  inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = pt.ID and ptl.[Level] = p.[level]
+  inner join PolicyTypeClass pc on pc.ID = pt.[PolicyTypeClassID]
+";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Resources
+
+                        objectName = $"{SCHEMA}.[Resource_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select 
+               '/Resource/' + cast(ResourceID as varchar(250)) as ResourceURI,
+               'Individual' as ResourceType,
+               ResourceID,
+               LastName + ', ' + FirstName as Resourcename
+from reporting.Global_Resource
+Union
+               select 
+               '/Group/' + cast(ID as varchar(250)) as ResourceURI,
+               'Group' as ResourceType,
+               ID as ResourceID,
+               Name as Resourcename
+FROM [dbo].[Group]";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Responsibility
+
+                        objectName = $"{SCHEMA}.[Responsibility_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+SELECT [ResponsibilityID]
+      ,[ResponsibilityTypeID]
+      ,[ResponsibilityType]
+      ,[AssigningItem]
+      ,[AssigningItemID]
+      ,[Object]
+      ,[ObjectID]
+      ,[ResponsibleObject]
+      ,[ResponsibleObjectID]
+      ,[ContextHash]
+      ,[ResponsibilityTypeGroup]
+      ,[Visible]
+      ,[TargetResponsibilityID]
+  FROM [cache].[ResponsibilityItem]
+";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Relationship
+
+                        objectName = $"{SCHEMA}.[Relationship_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+SELECT [IntersectID]
+      ,[SourceIntersectTypeNodeID]
+      ,[SourceObject]
+      ,[SourceObjectID]
+      ,[TargetIntersectTypeNodeID]
+      ,[TargetObject]
+      ,[TargetObjectID]
+      ,[SourceIntersectNodeID]
+      ,[TargetIntersectNodeID]
+  FROM [cache].[Relationship]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

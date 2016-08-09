@@ -676,7 +676,7 @@ where   h.ID <> @t order by h.[Level] desc;
         PageActionItem appendReportMenu(SystemObjects type, int id, SystemObjects objectType, int objectTypeID, bool includeRootTypeReports = false)
         {
             var sType = type.ToString();
-            //var surveys = Company.Filter<SurveyObjectCache>(i => i.ObjectType == sType && i.ObjectID == id, i => i.SurveyType).OrderBy(i => i.SurveyType.Name).ToList();
+            var surveys = Company.Filter<Survey>(i => i.Object == sType && i.ObjectID == id, i => i.SurveyType).OrderBy(i => i.SurveyType.Name).ToList();
 
             var reports = Company.Filter<core.entities.Report>(i => i.ObjectType == sType && i.ObjectID == objectTypeID).OrderBy(i => i.Name).ToList();
 
@@ -690,8 +690,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var reportActionMenu = new PageActionItem { Title = "Dashboards", Icon = Resources.Actions.Report_Icon };
             
-            //surveys.Count > 0 || 
-            if (reports.Count > 0) //|| definitions.Count > 0
+            if (surveys.Count > 0 || reports.Count > 0)
             {
                 addReportMenu = true;
                 
@@ -722,27 +721,29 @@ where   h.ID <> @t order by h.[Level] desc;
                             });
                     }
                 }
-                
+
                 #endregion
 
                 #region Survey Reports
 
-                //foreach (var r in surveys)
-                //{
-                //    reportActionMenu.Items.Add(
-                //        new PageActionItem
-                //        {
-                //            Context = ContextList.ActionGenericReport,
-                //            Icon = Resources.Actions.Report_Icon,
-                //            Title = r.SurveyType.Name,
-                //            CustomData = {
-                //                    new PageActionItemData { Name = "surveyTypeID", Value = r.SurveyTypeID.ToString() }, 
-                //                    new PageActionItemData { Name = "objectType", Value = type.ToString() }, 
-                //                    new PageActionItemData { Name = "objectID", Value = id.ToString() } 
-                //                },
-                //            Uri = string.Format("/parts/{0}/{1}/reports/survey/{2}", type.ToString(), id, r.SurveyTypeID)
-                //        });
-                //}
+                var surveyTypes = surveys.Select(i => new { Name = i.SurveyType.Name, ID = i.SurveyTypeID }).Distinct().OrderBy(i => i.Name);
+
+                foreach (var r in surveyTypes)
+                {
+                    reportActionMenu.Items.Add(
+                        new PageActionItem
+                        {
+                            Context = ContextList.ActionGenericReport,
+                            Icon = Resources.Actions.Report_Icon,
+                            Title = r.Name,
+                            CustomData = {
+                                    new PageActionItemData { Name = "surveyTypeID", Value = r.ID.ToString() },
+                                    new PageActionItemData { Name = "objectType", Value = type.ToString() },
+                                    new PageActionItemData { Name = "objectID", Value = id.ToString() }
+                                },
+                            Uri = string.Format("/parts/{0}/{1}/reports/survey/{2}", type.ToString(), id, r.ID)
+                        });
+                }
 
                 #endregion
             }
@@ -3341,118 +3342,6 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             return Company.GetAllowedIntersectionTypes(type.ToString(), id);
         }
 
-        [Route("{type}/{id:int}/relations")]
-        public IEnumerable<dynamic> GetRelationships(SystemObjects type, int id)
-        {
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
-            //var sType = type.ToString();
-            //return Company.Filter<Relationship>(i => i.SourceObjectType == sType && i.SourceObjectID == id).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName).AsQueryable();
-        }
-
-        [Route("{type}/{id:int}/relations/critical")]
-        public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
-        {
-            return Company.GetCriticalRelationshipsByObject(type, id);
-        }
-
-        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/{criticalOnly:bool=false?}"), HttpGet]
-        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly)
-        { 
-            var sType = type.ToString();
-            var tType = targetType.ToString();
-
-            var joins = "";
-            var columns = "";
-            //var whereClause = "";
-            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
-
-            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
-            foreach (var f in attributesTypes)
-            {
-                var name = $"AttributeType{f.AttributeType.ID}";
-                columns += $"{name}_T.FormattedValue as [{name}], ";
-                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
-            }
-
-
-            var querySql = $@"
-select  {columns} 
-        A.*
-from	(
-select	ID,
-        IntersectTypeID,
-        Object,
-		ObjectID,
-		ObjectName as Name,
-        ObjectUrl as Url,
-		ObjectType as Type,
-		ObjectTypeID as TypeID,
-		ObjectTypeName as TypeName,
-        Classification,
-		T.HasTechnicalRelationships,
-        A.HasAttributes
-from	IntersectDetail I
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-where	Subject ='{type.ToString()}'  and SubjectID = {id}
-		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
-union
-select	ID,
-        IntersectTypeID,
-        Subject as Object,
-		SubjectID as ObjectID,
-		SubjectName as Name,
-        SubjectUrl as Url,
-		SubjectType as Type,
-		SubjectTypeID as TypeID,
-		SubjectTypeName as TypeName,
-        Classification,
-		T.HasTechnicalRelationships,
-        A.HasAttributes
-from	IntersectDetail I
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasTechnicalRelationships
-					from	[Intersect]
-					where	Subject = 'Intersect' and SubjectID = I.ID
-					) T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as HasAttributes
-					from	[Attribute]
-					where	ObjectType = 'Intersect' and ObjectID = I.ID
-					) A
-
-where	Object = '{type.ToString()}' and ObjectID = {id}
-		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
-        ) A {joins}";
-
-            if (criticalOnly)
-                querySql += $" where A.Classification = {(int)IntersectClassification.Critical}";
-
-            querySql += " order by A.Name";
-
-            return Company.Query<dynamic>(querySql);
-        }
-
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
         public SourceRulesViewModel GetSourceRules(string focal, int focalID, string obj, int objID)
         {
@@ -5940,6 +5829,216 @@ order by    title
             return permissions;
         }
 
+        #region NEW Relationship Tile
+
+        [Route("{obj}/{objid:int}/relationships/counts")]
+        public IEnumerable<dynamic> GetRelationshipCountsByObject(SystemObjects obj, int objid)
+        {
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipCounts, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objid });
+        }
+
+        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
+        public HttpResponseMessage GetRelationshipFieldsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
+        {
+            var columns = new List<GridColumn>();
+            var fields = new List<GridField>();
+
+            var IDs = Company.Query<int>(
+                QueryConstants.ObjectRelationshipTypeIDs,
+                new
+                {
+                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+                    objid,
+                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+                    objtypeid = targettypeid
+                }
+            ).ToList();
+
+            var fieldTypes = Company.Filter<FieldTypeWithRelation>(i => 
+                i.Object == "IntersectType" && 
+                IDs.Contains(i.ObjectID) && 
+                i.IsListable
+            ).OrderBy(i => i.SortOrder).ToList();
+
+            columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "100px", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
+
+            fieldTypes.ForEach(f =>
+            {
+                var pfx = $"Field{f.ID}";
+                fields.Add(getGridFieldForColumn(f));
+                columns.Add(getGridColumnForColumn(f, 100, false, false));
+            });
+
+            fields.Add(new GridField { name = "ID", type = "number" });
+            //fields.Add(new GridField { name = "Description", type = "string" });
+            //fields.Add(new GridField { name = "Role", type = "string" });
+            fields.Add(new GridField { name = "Name", type = "string" });
+            fields.Add(new GridField { name = "ObjectID", type = "number" });
+            fields.Add(new GridField { name = "Object", type = "string" });
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Fields = fields,
+                Columns = columns
+            });
+        }
+
+        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}")]
+        public IEnumerable<dynamic> GetRelationshipsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
+        {
+            var IDs = Company.Query<int>(
+                QueryConstants.ObjectRelationshipTypeIDs,
+                new
+                {
+                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+                    objid,
+                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+                    objtypeid = targettypeid
+                }
+            ).ToList();
+            
+            var sql = QueryConstants.ObjectInjectableRelationships;
+
+            var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && IDs.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            var columns = "";
+            var joins = "";
+
+            foreach (var f in fields)
+            {
+                var pfx = $"Field{f.ID}_T";
+                columns += $", {pfx}.FormattedValue as [Field{f.ID}]";
+                joins += $@" 
+left join Field {pfx} on {pfx}.ObjectType = 'Intersect' and {pfx}.ObjectID = A.ID and {pfx}.FieldTypeID = {f.ID} 
+left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListable = 1";
+            }
+
+            sql = string.Format(sql, columns, joins);
+
+            return Company.Query<dynamic>(
+                sql, 
+                new {
+                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+                    objid,
+                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+                    objtypeid = targettypeid
+                }
+            );
+        }
+
+        #endregion
+
+        [Route("{type}/{id:int}/relations")]
+        public IEnumerable<dynamic> GetRelationships(SystemObjects type, int id)
+        {
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+        }
+
+        [Route("{type}/{id:int}/relations/critical")]
+        public IQueryable<CriticalRelationshipsByObject> GetCriticalRelations(SystemObjects type, int id)
+        {
+            return Company.GetCriticalRelationshipsByObject(type, id);
+        }
+
+        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/{criticalOnly:bool=false?}"), HttpGet]
+        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly)
+        {
+            var sType = type.ToString();
+            var tType = targetType.ToString();
+
+            var joins = "";
+            var columns = "";
+            //var whereClause = "";
+            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
+
+            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
+            foreach (var f in attributesTypes)
+            {
+                var name = $"AttributeType{f.AttributeType.ID}";
+                columns += $"{name}_T.FormattedValue as [{name}], ";
+                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
+            }
+
+
+            var querySql = $@"
+select  {columns} 
+        A.*
+from	(
+select	ID,
+        IntersectTypeID,
+        Object,
+		ObjectID,
+		ObjectName as Name,
+        ObjectUrl as Url,
+		ObjectType as Type,
+		ObjectTypeID as TypeID,
+		ObjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+where	Subject ='{type.ToString()}'  and SubjectID = {id}
+		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
+union
+select	ID,
+        IntersectTypeID,
+        Subject as Object,
+		SubjectID as ObjectID,
+		SubjectName as Name,
+        SubjectUrl as Url,
+		SubjectType as Type,
+		SubjectTypeID as TypeID,
+		SubjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+
+where	Object = '{type.ToString()}' and ObjectID = {id}
+		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
+        ) A {joins}";
+
+            if (criticalOnly)
+                querySql += $" where A.Classification = {(int)IntersectClassification.Critical}";
+
+            querySql += " order by A.Name";
+
+            return Company.Query<dynamic>(querySql);
+        }
+
+
         [Route("{type}/{id:int}/statistics")]
         public IQueryable<StatisticDetail> GetStatisticDetails(SystemObjects type, int id)
         {
@@ -5999,19 +6098,63 @@ order by    title
         [Route("surveys/{typeID:int}/{type}/{id}/report")]
         public JObject GetSurveyReport(int typeID, SystemObjects type, int id)
         {
-            //var sType = type.ToString();
-            //var model = Company.Filter<SurveyObjectCache>(i => i.SurveyTypeID == typeID && i.ObjectType == sType && i.ObjectID == id).SingleOrDefault();
-            //if (model == null)
-            //{
-            //    return null;
-            //}
-            //else
-            //{
-            //    var xml = XElement.Parse(model.ReportCache);
-            //    string json = JsonConvert.SerializeXNode(xml);
-            //    return JObject.Parse(json);
-            //}
-            return null;
+            var sql = $@"
+SELECT (
+		SELECT	(
+				SELECT
+					(
+					SELECT		QT.ID,
+								QT.Name AS Title,
+								S.Average/S.Total AS Score,
+								COALESCE(S.Responses, 0) AS TotalResponses,
+								(
+								SELECT	(
+											SELECT		IQTO.Name,
+														COUNT(1) AS Value
+											FROM		Question IQ
+														INNER JOIN QuestionOption IQO ON IQ.ID = IQO.QuestionID
+														INNER JOIN QuestionTypeOption IQTO on IQTO.ID = IQO.QuestionTypeOptionID and IQTO.QuestionTypeID = QT.ID
+														inner join Survey S on S.ID = IQ.SurveyID and S.Object = @Object and S.ObjectID = @ObjectID
+														inner join  SurveyType ST on ST.ID = S.SurveyTypeID and ST.ID = @SurveyTypeID
+											WHERE		IQTO.QuestionTypeID = QT.ID
+											GROUP BY	IQTO.QuestionTypeID, 
+														IQTO.Name
+											ORDER BY	IQTO.QuestionTypeID
+											FOR XML PATH('Result'), Type
+										) FOR XML PATH('Results'), Type
+								)
+					FROM		QuestionType QT
+								LEFT JOIN	(
+											SELECT		QT.ID AS QuestionTypeID,
+														AVG(QTO.Value) AS Average,
+														QTO.Value as Total,
+														COUNT(1) AS Responses
+											FROM		QuestionType QT
+														INNER JOIN QuestionTypeOption QTO on QTO.QuestionTypeID = QT.ID and QT.ID = @SurveyTypeID
+														INNER JOIN QuestionOption QO ON QO.QuestionTypeOptionID = QTO.ID
+														LEFT JOIN Question Q ON Q.ID = QO.QuestionID
+											GROUP BY	QT.ID, QTO.Value
+											) AS S ON S.QuestionTypeID = QT.ID
+					WHERE		QT.SurveyTypeID = ST.ID
+					ORDER BY	QT.ID
+					FOR XML PATH('Chart'), Type
+					)
+				FOR XML PATH('Charts'), Type--as Charts
+				)
+		FROM		SurveyType ST
+					INNER JOIN Survey S ON ST.ID = S.SurveyTypeID AND S.Object = @Object AND S.ObjectID = @ObjectID and getutcdate() between S.CreatedOn and dateadd(dd, ST.[ValidForDays], S.CreatedOn)
+		WHERE		ST.ID = @SurveyTypeID
+		GROUP BY ST.Name, ST.ID
+		FOR XML PATH(''), Type
+		)
+		FOR XML PATH('Report')";
+
+            var sType = type.ToString();
+            var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = type.ToString(), ObjectID = id });
+            var xmlString = string.Join("", models);
+            var xml = XElement.Parse(xmlString);
+            string json = JsonConvert.SerializeXNode(xml);
+            return JObject.Parse(json);
         }
 
         [Route("surveys/{type}/{id}/randomquestion")]

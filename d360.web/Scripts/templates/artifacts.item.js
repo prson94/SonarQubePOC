@@ -130,6 +130,8 @@
 
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
+
+                        //$('#RelationshipsTile').RelationshipsTile({ obj: type, objid: id });
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
 

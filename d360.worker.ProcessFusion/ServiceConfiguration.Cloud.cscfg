@@ -7,9 +7,9 @@
       <Setting name="QueueMessageVisibilityTime" value="3600" />
       <Setting name="QueueName" value="fusion-queue" />
       <Setting name="QueueCheckFrequency" value="60000" />
-      <Setting name="DBExecuteQueryTimeout" value="600" />
+      <Setting name="DBExecuteQueryTimeout" value="5400" />
       <Setting name="DBReadQueryTimeout" value="600" />
-      <Setting name="DBBulkCopyTimeout" value="300" />
+      <Setting name="DBBulkCopyTimeout" value="600" />
       <Setting name="MaximumRetries" value="3" />
       <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="ce8d05fc-1a80-44d5-82e8-102232cffa0d" />
     </ConfigurationSettings>

@@ -231,25 +231,25 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     #endregion
 
+                    #region Verify Subject Area
+
+                    if (load.Object == "ArtifactType")
+                    {
+                        subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                        rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
+                        verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                        if (verifiedSubjectArea != null)
+                        {
+                            subjectAreaColumn.LookupObject = "TaxonomyType";
+                            subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                        }
+                        currentColumnIndex++;
+                    }
+
+                    #endregion
+
                     if (verifiedType != null)
                     {
-                        #region Verify Subject Area
-
-                        if (load.Object == "ArtifactType")
-                        {
-                            subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-                            verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                            if (verifiedSubjectArea != null)
-                            {
-                                subjectAreaColumn.LookupObject = "TaxonomyType";
-                                subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                            }
-                            currentColumnIndex++;
-                        }
-
-                        #endregion
-
                         #region Verify Item
 
                         itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
@@ -257,13 +257,16 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         switch (load.Object)
                         {
                             case "ArtifactType":
-                                verifiedItem = company.Filter<Artifact>(x => 
-                                    x.ArtifactTypeID == verifiedType.ID && 
-                                    x.TaxonomyTypeID == verifiedSubjectArea.ID && 
-                                    x.TextPath.ToLower() == rawItemPath
-                                )
-                                .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
-                                .SingleOrDefault();
+                                if (verifiedSubjectArea != null)
+                                {
+                                    verifiedItem = company.Filter<Artifact>(x =>
+                                        x.ArtifactTypeID == verifiedType.ID &&
+                                        x.TaxonomyTypeID == verifiedSubjectArea.ID &&
+                                        x.TextPath.ToLower() == rawItemPath
+                                    )
+                                    .Select(x => new SimpleTypeModel { Name = "Artifact", ID = x.ID })
+                                    .SingleOrDefault();
+                                }
                                 break;
                             case "DomainType":
                                 verifiedItem = company.Filter<Domain>(x => 
@@ -306,37 +309,34 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         currentColumnIndex++;
 
                         #endregion
-
-                        if (verifiedItem != null)
-                        {
-                            #region Verify Responsibility
-
-                            responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
-                            verifiedResponsibility = responsibilities.SingleOrDefault(i => i.Name == rawResponsibility);
-                            if (verifiedResponsibility != null)
-                            {
-                                responsibilityColumn.LookupObject = "ResponsibilityType";
-                                responsibilityColumn.LookupObjectID = verifiedResponsibility.ID;
-                            }
-                            currentColumnIndex++;
-
-                            #endregion
-
-                            #region Verify Resource
-
-                            resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
-                            rawResource = resourceColumn.Value.Trim().ToLower();
-                            verifiedResource = resources.SingleOrDefault(i => i.Name == rawResource);
-                            if (verifiedResource != null)
-                            {
-                                resourceColumn.LookupObject = rawResource.StartsWith("group:") ? "Group" : "Resource";
-                                resourceColumn.LookupObjectID = verifiedResource.ID;
-                            }
-
-                            #endregion
-                        }
                     }
+
+                    #region Verify Responsibility
+
+                    responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
+                    verifiedResponsibility = responsibilities.SingleOrDefault(i => i.Name == rawResponsibility);
+                    if (verifiedResponsibility != null)
+                    {
+                        responsibilityColumn.LookupObject = "ResponsibilityType";
+                        responsibilityColumn.LookupObjectID = verifiedResponsibility.ID;
+                    }
+                    currentColumnIndex++;
+
+                    #endregion
+
+                    #region Verify Resource
+
+                    resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
+                    rawResource = resourceColumn.Value.Trim().ToLower();
+                    verifiedResource = resources.SingleOrDefault(i => i.Name == rawResource);
+                    if (verifiedResource != null)
+                    {
+                        resourceColumn.LookupObject = rawResource.StartsWith("group:") ? "Group" : "Resource";
+                        resourceColumn.LookupObjectID = verifiedResource.ID;
+                    }
+
+                    #endregion
 
                     if (verifiedItem != null && verifiedResource != null && verifiedResponsibility != null)
                     {
@@ -379,6 +379,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     loadItem.Status = false;
                                     loadItem.StatusMessage = ex.Message;
                                 }
+                            }
+                            else
+                            {
+                                loadItem.Status = true;
+                                loadItem.StatusMessage = $" Responsibility already present on item.";
                             }
                         }
                         else
@@ -454,58 +459,102 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     SimpleTypeModel verifiedSubjectArea = null;
 
+                    var subjectColumnIndex = 2;
+                    var objectColumnIndex = 4;
+
                     #region Look up subject
 
-                    #region Verify Subject Area
-
-                    subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
-                    rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (subjectSubjectAreaColumn != null)
+                    if (subjectType.Type == "Artifact")
                     {
-                        subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                        subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                        subjectColumnIndex = 2;
+
+                        #region Verify Subject Area
+
+                        subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
+                        rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
+                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                        if (verifiedSubjectArea != null)
+                        {
+                            subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
+                            subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                        }
+
+                        #endregion
+
+                        #region Verify Item
+
+                        subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
+                        rawItem = subjectColumn.Value.Trim().ToLower();
+                        LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
+
+                        #endregion
+                    }
+                    else
+                    {
+                        subjectColumnIndex = 1;
+
+                        #region Verify Item
+
+                        subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
+                        rawItem = subjectColumn.Value.Trim().ToLower();
+                        LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
+
+                        #endregion
                     }
 
-                    #endregion
-
-                    #region Verify Item
-
-                    subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
-                    rawItem = subjectColumn.Value.Trim().ToLower();
-                    LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
-
-                    #endregion
 
                     #endregion
 
                     #region Look up object
 
-                    #region Verify Subject Area
+                    int objectItemColumn = 0;
 
-                    objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 3);
-                    rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (objectSubjectAreaColumn != null)
+                    if (objectType.Type == "Artifact")
                     {
-                        objectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                        objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                        objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
+
+                        objectColumnIndex = objectItemColumn + 1;
+
+                        #region Verify Subject Area
+
+                        objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
+                        rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
+                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+                        if (verifiedSubjectArea != null)
+                        {
+                            objectSubjectAreaColumn.LookupObject = "TaxonomyType";
+                            objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+                        }
+
+                        #endregion
+
+                        #region Verify Item
+
+                        objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn+1);
+                        rawItem = objectColumn.Value.Trim().ToLower();
+                        LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
+
+                        #endregion
+                    }
+                    else
+                    {
+                        objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
+
+                        objectColumnIndex = objectItemColumn;
+
+                        #region Verify Item
+
+                        objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
+                        rawItem = objectColumn.Value.Trim().ToLower();
+                        LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
+
+                        #endregion
                     }
 
                     #endregion
 
-                    #region Verify Item
-
-                    objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
-                    rawItem = objectColumn.Value.Trim().ToLower();
-                    LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
-
-                    #endregion
-
-                    #endregion
-
-                    var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
-                    var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
+                    var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectColumnIndex);
+                    var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectColumnIndex);
 
                     Intersect model = null;
 
@@ -536,7 +585,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     else
                     {
                         loadItem.Status = false;
-                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Subject = {@object.Value}].";
+                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Object = {@object.Value}].";
                     }
 
                     company.Update(loadItem);
@@ -1382,6 +1431,14 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                             {
                                 itemColumn.LookupObject = verifiedType.Type;
                                 itemColumn.LookupObjectID = domain.ID;
+                            }
+                            break;
+                        case "Intersect":
+                            var intersect = company.Filter<Intersect>(i => i.IntersectTypeID == verifiedType.ID && i.Name.ToLower() == rawItem).SingleOrDefault();
+                            if (intersect != null)
+                            {
+                                itemColumn.LookupObject = verifiedType.Type;
+                                itemColumn.LookupObjectID = intersect.ID;
                             }
                             break;
                         case "Rule":

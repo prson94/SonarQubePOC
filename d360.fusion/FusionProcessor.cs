@@ -453,13 +453,15 @@ namespace d360.fusion
 				            USING   (
 						            SELECT  sr.IntersectTypeID isectid, 
                                             2 as class, 
-                                            sr.ID as srID
+                                            sr.ID as srID,
+                                            sr.startfusionattributeid as SubjectID,
+                                            sr.endfusionattributeid as ObjectID
 							        FROM    #tempResolvedRel sr							            
 						            ) s
 				            ON      (1 = 0)
 				            WHEN NOT MATCHED THEN
-				            INSERT  (IntersectTypeID, Classification, Description) --, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UdatedBy, UpdatedOn
-				            VALUES  (isectid, class, NULL)
+				            INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID) --, CreatedBy, CreatedOn, UdatedBy, UpdatedOn
+				            VALUES  (isectid, class, NULL, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID)
 				            OUTPUT  INSERTED.ID, s.srID into @IDList;
 
 			            --insert start records into intersect node

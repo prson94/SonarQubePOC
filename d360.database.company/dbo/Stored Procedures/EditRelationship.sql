@@ -15,16 +15,10 @@ as
 begin
 	set nocount on;
 
-	if @IntersectRole = 0 
-	begin
-		set @IntersectRole = null
-	end
-
 	declare @Intersects IDTable
 
 	update	[Intersect]
 	set		Classification = @Classification,
-			IntersectTypeRoleID = @IntersectRole,
 			Description = @Description
 	where	ID = @ID
 

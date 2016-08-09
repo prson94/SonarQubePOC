@@ -11202,7 +11202,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     // regular production queue
-                    Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else

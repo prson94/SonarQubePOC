@@ -680,6 +680,61 @@ where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@se
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 
+
+        public static string ObjectRelationshipCounts = @"
+select	    O.Object,
+		    O.ObjectID,
+		    D.Name,
+		    count(1) as [Count]
+from	    (
+		    select	case 
+					    when I.Subject = @obj and I.SubjectID = @objid then T.Object
+					    else T.Subject
+				    end as Object,
+				    case 
+					    when I.Subject = @obj and I.SubjectID = @objid then T.ObjectID
+					    else T.SubjectID
+				    end as ObjectID
+		    from	[Intersect] I
+				    inner join IntersectType T on T.ID = I.IntersectTypeID
+		    where	(I.Subject = @obj and I.SubjectID = @objid) OR
+				    (I.Object = @obj and I.ObjectID = @objid)
+		    ) O
+		    inner join cache.ObjectDetails D on D.Object = O.Object and D.ObjectID = O.ObjectID
+group by	O.Object, O.ObjectID, D.Name
+order by    D.Name";
+
+        public static string ObjectInjectableRelationships = @"
+select	I.ID,
+		case 
+			when Subject = @obj and SubjectID = @objid then Object
+			else Subject
+		end as Object,
+		case 
+			when Subject = @obj and SubjectID = @objid then ObjectID
+			else SubjectID
+		end as ObjectID, 
+		case 
+			when Subject = @obj and SubjectID = @objid then ObjectName
+			else SubjectName
+		end as Name,
+		case 
+			when Subject = @obj and SubjectID = @objid then ObjectUrl
+			else SubjectUrl
+		end as Url
+        {0}
+from	[IntersectDetail] I
+        {1}
+where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and I.ObjectTypeID = @objtypeid) OR
+		(I.Object = @obj and I.ObjectID = @objid and I.SubjectType = @objtype and I.SubjectTypeID = @objtypeid)";
+
+        public static string ObjectRelationshipTypeIDs = @"
+select	distinct
+        I.IntersectTypeID
+from	[IntersectDetail] I
+where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and I.ObjectTypeID = @objtypeid) OR
+		(I.Object = @obj and I.ObjectID = @objid and I.SubjectType = @objtype and I.SubjectTypeID = @objtypeid)";
+
         public static string ObjectRelationships = @"
 select	ID,
         IntersectTypeID,
