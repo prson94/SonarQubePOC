@@ -16,7 +16,7 @@ import {Button, Editor, InputText, Dropdown, SelectItem, InputMask} from 'primen
                             <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                         </select>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;"
-                            [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >   
+                            [id]="field.FieldName" [type]="'number'" [(ngModel)]="field.Value" >   
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >   
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" [(ngModel)]="field.Value" style="width: 100%;" />

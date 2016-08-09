@@ -4,12 +4,13 @@ import {DataTable, Column} from 'primeng/primeng';
 import { SurveyQuestionType, SurveyType } from '../../models/survey.model';
 import { MessagesService, SurveysService  } from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
+import { DeleteForm } from '../forms/delete.form';
+import { AdminSurveyQuestionEditorEditor } from '../admin/admin-survey-question-editor.component';
 
 
 @Component({
     selector: 'd3s-survey-questions-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm],
+    directives: [DataTable, Column, TileActionsComponent, DeleteForm, AdminSurveyQuestionEditorEditor],
     providers: [SurveysService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Questions
@@ -42,7 +43,8 @@ import {DeleteForm} from '../forms/delete.form';
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the question [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>                 
+                ></delete-form>  
+                <d3s-admin-survey-question-editor *ngIf="showEditor" [questionId]="selected?.ID" [surveyTypeId]="survey?.ID" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
                 `
 })
 
@@ -99,26 +101,14 @@ export class SurveyQuestionsTile implements OnChanges {
             if (question.ID == id) return index;
         }
     }
-
-   /* saveLevel(event) {
-        if (event.action == "new") {
-            this.taxonomiesService.saveTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showEditor = false;
-                    this.levels[this.levels.length] = event.level;
-                    this.selectedLevel = event.level;
-                });
-        }
-        else {
-            this.taxonomiesService.editTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showEditor = false;
-                    this.levels[this.findTaxonomyLevel(event.level.Level)] = event.level;
-                    this.selectedLevel = event.level;
-                });
-
-        }
-    }*/
+    
+    saveQuestion(event) {
+        this.surveysService.saveSurveyTypeQuestion(event.question)
+            .then(result => {
+                this.getQuestions(); // incompatible types reload
+                this.showEditor = false;
+            });
+    }
 }
 
 

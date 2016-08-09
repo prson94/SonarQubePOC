@@ -106,6 +106,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         this.surveysService.deleteSurveyTypeById(id);
         //remove the template with this id from the grid
         this.surveys.splice(this.findSurveyTypeIndex(id), 1);
+        this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
         this.showDelete = false;
     }
 

@@ -509,7 +509,7 @@ namespace d360.web.Controllers
                 case "RULE":
                     return AddRule(form);
                 case "SURVEYTYPE":
-                    return AddSurveyType(form);
+                    return AddSurveyType(form);                
             }
 
             throw new Exception("Invalid / unsupported create type");

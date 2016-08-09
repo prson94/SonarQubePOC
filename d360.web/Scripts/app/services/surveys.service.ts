@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { SurveyType, SurveyQuestionType } from '../models/survey.model';
+import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -25,6 +25,13 @@ export class SurveysService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getSurveyTypeQuestionDetails(id: number, surveyTypeId: number): Promise<SurveyQuestionTypeDetails> {
+        return this.http.get(`form/questiontype_formdata?id=${id}&surveyTypeID=${surveyTypeId}`)
+            .toPromise()
+            .then(response => <SurveyQuestionTypeDetails>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     deleteSurveyTypeById(id: number) {
         return this.deleteDynamic(this.http, 'surveytype', id);
     }
@@ -40,6 +47,37 @@ export class SurveysService extends BaseService {
             return this.postDynamic(this.http, 'surveytype', surveyType);
         }
         return this.putDynamic(this.http, 'surveytype', surveyType);
+    }
+
+    saveSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Promise<JsonResult>{
+        if (surveyQuestion.ID == undefined || !surveyQuestion.ID) {         
+            return this.addSurveyTypeQuestion(surveyQuestion);
+        }        
+        return this.editSurveyTypeQuestion(surveyQuestion);
+    }
+
+    protected addSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Promise<JsonResult> {        
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+
+        return this.http
+            .post('form/AddQuestionType', JSON.stringify(surveyQuestion), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+
+    protected editSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Promise<JsonResult> {        
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+
+        return this.http
+            .put('form/EditQuestionType/', JSON.stringify(surveyQuestion), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
     
 }
