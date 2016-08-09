@@ -9,6 +9,7 @@ import { SurveyQuestionsTile } from '../tiles/survey-questions.tile';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../models/survey.model';
+import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -26,14 +27,15 @@ import { SurveyType } from '../../models/survey.model';
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'25%'}"></p-column>                                                                                        
                             <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>
                                 <p-column [style]="{width:'60px'}">
-                                    <template let-dimension="rowData">
+                                    <template let-survey="rowData">
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                            <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a style="cursor:pointer;" (click)="selected=survey;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            <a style="cursor:pointer;" (click)="selected=survey;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </template>
                                 </p-column>                                                                                    
-                            </p-dataTable>                     
+                            </p-dataTable>  
+                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -62,7 +64,7 @@ import { SurveyType } from '../../models/survey.model';
                </div>               
                 `,
     providers: [SurveysService],
-    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, TileActionsComponent, ObjectDetailTile, SurveyQuestionsTile]
+    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, TileActionsComponent, ObjectDetailTile, SurveyQuestionsTile, DynamicEditorComponent]
 })
 
 export class AdminSurveysComponent extends AdminBaseComponent {
@@ -101,7 +103,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     }
 
     deleteSurveyType(id: number) {
-        //this.surveysService.deleteSurveyTypeById(id);
+        this.surveysService.deleteSurveyTypeById(id);
         //remove the template with this id from the grid
         this.surveys.splice(this.findSurveyTypeIndex(id), 1);
         this.showDelete = false;
@@ -115,10 +117,30 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         }
     }
 
-    addSurveyType(event) {
-        //this.surveysService.saveSurveyType(event.survey);
+    closeEditor() {
         this.showEditor = false;
-        this.surveys[this.surveys.length] = event.template;
+        if (this.selected == null && this.surveys.length > 0)
+            this.selected = this.surveys[0];
+    }
+
+    add() {
+        this.showEditor = true;
+        this.selected = null;
+    }
+
+    saveSurvey(event) {
+        this.surveysService.saveSurveyType(event.item)
+            .then(result => {
+                if (event.item.ID == undefined) {
+                    event.item.ID = Number(result.id);
+                    this.surveys[this.surveys.length] = event.item;
+                }
+                else {
+                    this.surveys[this.findSurveyTypeIndex(event.item.ID)] = event.item;
+                }
+                this.selected = event.item;
+                this.showEditor = false;
+            });
     }
 
 };

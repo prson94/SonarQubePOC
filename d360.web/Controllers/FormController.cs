@@ -341,6 +341,8 @@ namespace d360.web.Controllers
                     return Artifact_EditFields(ID);
                 case "RULE":
                     return Rule_EditFields(ID);
+                case "SURVEYTYPE":
+                    return SurveyType_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -372,6 +374,8 @@ namespace d360.web.Controllers
                     return Attribute_AddFields(typeID.GetValueOrDefault(),objectType,objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields();
+                case "SURVEYTYPE":
+                    return SurveyType_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -417,6 +421,8 @@ namespace d360.web.Controllers
                     return EditArtifact(form);
                 case "RULE":
                     return EditRule(form);
+                case "SURVEYTYPE":
+                    return EditSurveyType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -450,6 +456,10 @@ namespace d360.web.Controllers
                     return DeleteArtifact(form);
                 case "RULE":
                     return DeleteRule(form);
+                case "SURVEYTYPE":
+                    return DeleteSurveyType(form);
+                case "SURVEYQUESTIONTYPE":
+                    return DeleteQuestionType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -498,6 +508,8 @@ namespace d360.web.Controllers
                     return AddAttribute(form);
                 case "RULE":
                     return AddRule(form);
+                case "SURVEYTYPE":
+                    return AddSurveyType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

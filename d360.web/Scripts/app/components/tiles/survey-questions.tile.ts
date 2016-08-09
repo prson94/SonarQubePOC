@@ -18,27 +18,27 @@ import {DeleteForm} from '../forms/delete.form';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="showEditor=true" [(selection)]="selected" >                                                                        
+               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                     <p-column field="DisplayStyle" header="Display Type" [sortable]="true" [filter]="true"></p-column>
                     <p-column [style]="{width:'40px'}">
-                            <template let-template="rowData">
+                            <template let-question="rowData">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                      
+                                    <a style="cursor:pointer;" (click)="selected=question;showEditor=true"><i class="fa fa-pencil"></i></a>                                      
                                 </div>
                             </template>
                     </p-column>                                                
                     <p-column [style]="{width:'40px'}">
-                            <template let-template="rowData">
+                            <template let-question="rowData">
                                 <div class="RowTools">                                    
-                                    <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </template>
                     </p-column>                                                
                </p-dataTable>      
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
-                    [itemId]="selected?.Level"
+                    [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the question [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
@@ -76,7 +76,7 @@ export class SurveyQuestionsTile implements OnChanges {
     }
 
     deleteQuestion(id: number) {
-    //    this.surveysService.deleteTaxonomyLevel(this.survey.ID, id);
+        this.surveysService.deleteSurveyQuestionType(id);
         this.showDelete = false;
         this.questions.splice(this.findQuestionById(id), 1);
     }
