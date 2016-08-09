@@ -9,6 +9,7 @@ import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
+import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 import { AuditComponent} from '../shared/audit.component';
 import { DashboardComponent} from '../shared/dashboard.component';
 import { LineageComponent} from '../shared/lineage.component';
@@ -48,13 +49,13 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <div class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">
-                                <!-- grid -->
+                                <d3s-object-relationships-tile [objectType]="'Artifact'" [objectID]="artifact?.ID"></d3s-object-relationships-tile>
                             </div>
                         </div>
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent, ObjectRelationshipsTile],
     providers: [ArtifactService]
 })
 

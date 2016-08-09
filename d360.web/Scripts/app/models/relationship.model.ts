@@ -31,3 +31,10 @@ export class RelatedItem {
     Type: string;
     ID: number;
 }
+
+export class ObjectRelationshipCount {
+    Object: string;
+    ObjectId: number;
+    Name: string;
+    Count: number;
+}

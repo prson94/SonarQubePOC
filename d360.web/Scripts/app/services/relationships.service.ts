@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem } from '../models/relationship.model';
+import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 
@@ -76,5 +76,13 @@ export class RelationshipsService extends BaseService {
             .toPromise()
             .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getRelationshipCounts(objectType: string, objectId: number): Promise<ObjectRelationshipCount[]> {        
+        return this.http.get(`/api/${objectType}/${objectId}/relationships/counts`)
+            .toPromise()
+            .then(response => <ObjectRelationshipCount[]>response.json())
+            .catch(err => this.handleError(err));
+        
     }
 }

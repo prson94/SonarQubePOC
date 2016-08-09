@@ -1491,6 +1491,8 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships-by-type.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
