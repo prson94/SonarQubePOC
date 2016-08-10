@@ -1516,10 +1516,12 @@
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\challenge.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
@@ -1559,10 +1561,12 @@
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\challenge.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />

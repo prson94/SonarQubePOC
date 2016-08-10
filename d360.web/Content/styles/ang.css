@@ -23168,3 +23168,20 @@ span.breadcrumbs .sep {
   color: #5c5e60;
 }
 /* end admin page header*/
+/* object governance styles*/
+.governance-value {
+  font-weight: bold;
+  font-size: 3.5em;
+  padding: 0 5px;
+  color: #646464;
+}
+.governance-value-warning {
+  color: #FFB230;
+}
+.governance-value-fail {
+  color: #BC1B01;
+}
+.governance-value-pass {
+  color: #02981B;
+}
+/* end object governance styles*/
