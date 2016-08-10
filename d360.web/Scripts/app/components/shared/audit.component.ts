@@ -27,10 +27,6 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                                     </template>
                                 </p-column>
                                 <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
-                                <p-column field="ActionObject" header="Action Object" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                        
                                 <p-column field="Field" header="Field" [sortable]="true" [filter]="true"></p-column>                                
                                 <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true">
                                     <template let-col let-data="rowData">
@@ -42,6 +38,10 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                                         <div [innerHtml]="data?.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>
+                                <p-column field="ActionObject" header="Object" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                                                        
                                 <p-column field="Version" header="Revision #" [sortable]="true" [filter]="true"></p-column>
                             </p-dataTable> 
                         </div>

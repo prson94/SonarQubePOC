@@ -4,11 +4,11 @@ import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { ObjectRelationshipCount } from '../../models/relationship.model';
-import { ObjectRelationshipsByTypeTile } from './object-relationships-by-type.tile';
+import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
 
 @Component({
     selector: 'd3s-object-relationships-tile',
-    directives: [TileActionsComponent, ObjectRelationshipsByTypeTile],
+    directives: [TileActionsComponent, DynamicRelationshipGridComponent],
     providers: [RelationshipsService],
     styles: [`
     div.relationship{
@@ -38,17 +38,22 @@ import { ObjectRelationshipsByTypeTile } from './object-relationships-by-type.ti
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div *ngIf="!isLoading" class="row">
-                    <div class="col s2"><!--left nav-->
+                <div *ngIf="!isLoading && hasRelationships" class="row">
+                    <div class="col l3 s12"><!--left nav-->
                         <div class="row relationship" *ngFor="let rel of relationshipItems; let i = index" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
                             <div class="col s10 name">{{rel.Name}}</div>
                             <div class="col s2 count center">{{rel.Count}}</div>
                         </div>                        
                     </div>
-                    <div class="col s10">
+                    <div class="col l9 s12">
                         <!--Grid-->
-                        <d3s-object-relationships-by-type-tile [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectId"></d3s-object-relationships-by-type-tile>
-                    </div>
+                        <d3s-dynamic-relationship-grid [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>
+                    </div>                    
+                </div>
+                <div class="row" *ngIf="!isLoading && !hasRelationships">
+                        <div class="col s12">
+                            <span class="center">No relationships currently exist for this item.  Use the plus link to add a new relationship.</span>
+                        </div>
                 </div>
                 `,
 })
@@ -59,6 +64,8 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
 
     relationshipItems: ObjectRelationshipCount[] = [];
     selected: ObjectRelationshipCount;
+
+    hasRelationships: boolean;
     
 
     constructor(protected relationshipsService : RelationshipsService) {
@@ -84,6 +91,8 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
             .then(result => {
                 this.relationshipItems = result;
                 this.selected = this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+                this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
+                
                 this.isLoading = false;
             });
     }

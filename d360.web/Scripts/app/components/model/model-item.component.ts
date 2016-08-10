@@ -8,21 +8,33 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { AuditComponent} from '../shared/audit.component';
+import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    directives: [ObjectDefinitionTile, AuditComponent],
+    directives: [ObjectDefinitionTile, AuditComponent, ObjectRelationshipsTile],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
                 <div *ngIf="!isLoading && !isAuditVisible" class="row">
-                        <div class="col s12">
-                            <div class="tile tile-detail">
-                                <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
+                    <div class="col s12">
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
+                                </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-object-relationships-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-relationships-tile>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                   
                 </div>
                 `
 })

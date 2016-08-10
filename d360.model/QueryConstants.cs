@@ -680,12 +680,41 @@ where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@se
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 
-
         public static string ObjectRelationshipCounts = @"
+select [Object], [ObjectID], Name, sum([Count]) as [Count], max( x.IntersectTypeID) as IntersectTypeID from
+((select	
+	OD.ObjectType as [Object]
+	,OD.ObjectTypeID as [ObjectID]
+	,OD.ObjectTypeName as Name
+	,count(1) as [Count]
+	,Max(T.ID) as IntersectTypeID
+	from	[Intersect] I
+		inner join IntersectType T on T.ID = I.IntersectTypeID
+		inner join cache.objectdetails OD on (OD.[Object] = I.[Object] and OD.ObjectID = I.ObjectID)
+	where	(I.[Subject] = @obj and I.SubjectID = @objId)	
+	group by ObjectType,ObjectTypeID,ObjectTypeName
+)
+union all (select	
+	OD.ObjectType as [Object]
+	,OD.ObjectTypeID as [ObjectID]
+	,OD.ObjectTypeName as Name
+	,count(1) as [Count]
+	,max(T.ID) as IntersectTypeID
+	from	[Intersect] I
+		inner join IntersectType T on T.ID = I.IntersectTypeID
+		inner join cache.objectdetails OD on (OD.[Object] = I.[Subject] and OD.ObjectID = I.SubjectID)
+	where	(I.[Object] = @obj and I.ObjectID = @objId)
+	group by ObjectType,ObjectTypeID,ObjectTypeName	
+)) as x
+group by [Object], [ObjectID], x.Name
+";
+
+   /*     public static string ObjectRelationshipCounts = @"
 select	    O.Object,
 		    O.ObjectID,
 		    D.Name,
-		    count(1) as [Count]
+		    count(1) as [Count],
+            max(O.IntersectTypeID) as IntersectTypeID
 from	    (
 		    select	case 
 					    when I.Subject = @obj and I.SubjectID = @objid then T.Object
@@ -694,7 +723,8 @@ from	    (
 				    case 
 					    when I.Subject = @obj and I.SubjectID = @objid then T.ObjectID
 					    else T.SubjectID
-				    end as ObjectID
+				    end as ObjectID,
+                    T.ID as IntersectTypeID
 		    from	[Intersect] I
 				    inner join IntersectType T on T.ID = I.IntersectTypeID
 		    where	(I.Subject = @obj and I.SubjectID = @objid) OR
@@ -702,7 +732,7 @@ from	    (
 		    ) O
 		    inner join cache.ObjectDetails D on D.Object = O.Object and D.ObjectID = O.ObjectID
 group by	O.Object, O.ObjectID, D.Name
-order by    D.Name";
+order by    D.Name";*/
 
         public static string ObjectInjectableRelationships = @"
 select	I.ID,

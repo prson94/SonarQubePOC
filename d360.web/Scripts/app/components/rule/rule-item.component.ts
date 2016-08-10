@@ -8,11 +8,12 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { AuditComponent} from '../shared/audit.component';
 import { RuleDetail } from '../../models/rule.model';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
+import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 
 
 @Component({
     selector: 'd3s-rule-item',
-    directives: [AuditComponent, ObjectDefinitionTile],
+    directives: [AuditComponent, ObjectDefinitionTile, ObjectRelationshipsTile],
     providers: [RulesService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>
@@ -21,8 +22,19 @@ import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
                 </div>
                 <div class="row" *ngIf="!isLoading && !isAuditVisible">                      
                         <div class="col s12">
-                            <div class="tile tile-detail">
-                                <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID"></d3s-object-definition-tile>
+                            <div class="row">
+                                <div class="col s12">
+                                    <div class="tile tile-detail">
+                                        <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID"></d3s-object-definition-tile>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <div class="tile tile-detail">
+                                        <d3s-object-relationships-tile [objectType]="'Rule'" [objectID]="rule?.ID"></d3s-object-relationships-tile>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                 </div>

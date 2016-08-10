@@ -648,6 +648,10 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
     padding: 5px 10px;
 }
 
+.ui-datatable .ui-widget-header{
+    border-color:white;
+}
+
 .ui-paginator-bottom {
     background: #ffffff;
     border-color: #ffffff;    

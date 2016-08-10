@@ -34,7 +34,8 @@ export class RelatedItem {
 
 export class ObjectRelationshipCount {
     Object: string;
-    ObjectId: number;
+    ObjectID: number;
     Name: string;
     Count: number;
+    IntersectTypeID: number;
 }
