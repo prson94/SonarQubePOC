@@ -1481,6 +1481,10 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-challenge.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-health.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ownership.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
@@ -1492,6 +1496,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\object-governance-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
@@ -1548,6 +1553,7 @@
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\classification-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />

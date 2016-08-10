@@ -15,6 +15,7 @@ import { DashboardComponent} from '../shared/dashboard.component';
 import { LineageComponent} from '../shared/lineage.component';
 import { OwnershipComponent} from '../shared/ownership.component';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -33,8 +34,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail">
-                                <!--governance tile-->  
-                                governance tile                                                                                  
+                                <d3s-object-governance-tile [objectType]="'Artifact'" [objectID]="artifact?.ID"></d3s-object-governance-tile>
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent, ObjectRelationshipsTile],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
     providers: [ArtifactService]
 })
 

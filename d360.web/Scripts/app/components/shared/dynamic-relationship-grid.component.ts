@@ -5,24 +5,26 @@ import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
+import { ClassificationTypePipe} from '../../pipes/classification-display.pipe';
 
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',
     directives: [DataTable, Column],
+    pipes: [ClassificationTypePipe],
     providers: [GridDefinitionService, RelationshipsService],
     template: `                   
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
-               <p-dataTable *ngIf="!isLoading && relations.length > 0" scrollable="true" scrollWidth="100%" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data" [(selection)]="selected" >                                                                                                  
+               <p-dataTable *ngIf="!isLoading && relations.length > 0" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data" [(selection)]="selected" >                                                                                                  
                     <p-column field="Name" header="Name" [filter]="true" [sortable]="true" [style]="{'width':'250px'}"></p-column>
-                    <p-column header="Classification" [filter]="true" [sortable]="true" [style]="{'width':'150px'}">
-                        <template let-col let-item="rowData">
-                            <span>{{classificationText(item.Classification)}}</span>
+                    <p-column header="Classification" field="Classification" [filter]="true" [sortable]="true" [style]="{'width':'150px'}">                        
+                        <template let-col let-rowTenant="rowData">
+                            <span>{{rowTenant?.Classification | classificationTypeDisplayValue}}</span>
                         </template>
-                    </p-column>
-                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true" [sortable]="true" [style]="{'width':'250px'}"></p-column>                    
+                    </p-column>           
+                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>                    
                 </p-dataTable>                   
                 `
 })
@@ -70,11 +72,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 if (this.relations.length > 0) this.selected = this.relations[0];                
             });
     }
-
-    classificationText(classificationNumber: number): string {
-        return classificationNumber == 1 ? "Critical" : "Normal";
-    }
-
+    
     private findItemIndex(id: number) {
         var index: number = -1;
         for (var item of this.relations) {

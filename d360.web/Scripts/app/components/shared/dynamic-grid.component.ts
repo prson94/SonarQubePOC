@@ -21,7 +21,7 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
                <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
-                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true" [sortable]="true"></p-column>
+                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable"></p-column>
                     <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                             <template let-item="rowData">
                                 <div class="RowTools">
