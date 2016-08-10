@@ -11,7 +11,7 @@ export class ChallengeService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getChallengeInfo(objectID: number, objectType: string): Promise<Challenge> {
-        if (objectType != 'Artifact') return null;
+        if (objectType != 'Artifact') return Promise.resolve(null);
         return this.http.get(`workflow/ChallengeNotification?id=${objectID}`)
             .toPromise()
             .then(response => <Challenge>response.json())

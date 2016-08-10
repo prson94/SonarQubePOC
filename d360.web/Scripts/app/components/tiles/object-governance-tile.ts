@@ -21,7 +21,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
                         <div class="col l3 s12">                                                        
                             <d3s-object-issues [issueCount]="statistics?.IssueCount"></d3s-object-issues>
                         </div>
-                        <div class="col l3 s12">                                                        
+                        <div class="col l3 s12" *ngIf="objectType == 'Artifact'">                                                        
                             <d3s-object-challenge [objectType]="objectType" [objectID]="objectID"></d3s-object-challenge>
                             
                         </div>

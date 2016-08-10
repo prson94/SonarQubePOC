@@ -16,7 +16,7 @@ import { ChallengeService } from '../../services/index';
             </div>
             <div *ngIf="!hasChallenge()" class="row">
                 <div class="col s12">
-                    No outstanding challenge
+                    No current challenges.
                 </div>                
             </div>
             <div *ngIf="hasChallenge()" class="row governance-value governance-value-fail">
