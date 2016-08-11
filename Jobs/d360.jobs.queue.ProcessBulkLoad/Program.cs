@@ -43,7 +43,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
             logger.WriteLine("Failed to process load, data=" + queueMessage);
         }
 
-        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload-debug")] string queueMessage, TextWriter logger, CancellationToken token)
+        public static void ProcessBulkLoadMessage([QueueTrigger("d3s-bulkload")] string queueMessage, TextWriter logger, CancellationToken token)
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
@@ -189,6 +189,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 var allocations = company.Table<ResponsibilityTypeRelation>().ToList();
 
                 #endregion
+
+                #region For
 
                 foreach (var loadItem in load.LoadItems)
                 {
@@ -416,186 +418,188 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     company.Update(loadItem);
                 }
 
-                load.DateCompleted = DateTime.UtcNow;
-                company.Update(load);
-            }
-            else if (load.Action == "R")    // Relation
-            {
-                #region
-                /*
-                 * Side 1
-                 * Side 2
-                 * 
-                 * OR
-                 * 
-                 * Side 1 Subject Area
-                 * Side 1
-                 * Side 2 Subject Area
-                 * Side 2
-                 */
-                #endregion
-
-                #region Get data to pre-populate
-
-                var relationIntersectTypeDetail = company.Filter<IntersectTypeDetail>(i => i.ID == load.ObjectID).FirstOrDefault();
-                var relationSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
-                var subjectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.SubjectID, Type = relationIntersectTypeDetail.Subject.Replace("Type", ""), Name = relationIntersectTypeDetail.SubjectName };
-                var objectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.ObjectID, Type = relationIntersectTypeDetail.Object.Replace("Type", ""), Name = relationIntersectTypeDetail.ObjectName };
-
-                #endregion
-
-                #region ForEach
-
-                foreach (var loadItem in load.LoadItems)
-                {
-                    var rawSubjectArea = "";
-                    var rawItem = "";
-
-                    LoadItemColumn subjectSubjectAreaColumn = null;
-                    LoadItemColumn subjectColumn = null;
-
-                    LoadItemColumn objectSubjectAreaColumn = null;
-                    LoadItemColumn objectColumn = null;
-
-                    SimpleTypeModel verifiedSubjectArea = null;
-
-                    var subjectColumnIndex = 2;
-                    var objectColumnIndex = 4;
-
-                    #region Look up subject
-
-                    if (subjectType.Type == "Artifact")
-                    {
-                        subjectColumnIndex = 2;
-
-                        #region Verify Subject Area
-
-                        subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
-                        rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
-                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                        if (verifiedSubjectArea != null)
-                        {
-                            subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                            subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                        }
-
-                        #endregion
-
-                        #region Verify Item
-
-                        subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
-                        rawItem = subjectColumn.Value.Trim().ToLower();
-                        LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
-
-                        #endregion
-                    }
-                    else
-                    {
-                        subjectColumnIndex = 1;
-
-                        #region Verify Item
-
-                        subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
-                        rawItem = subjectColumn.Value.Trim().ToLower();
-                        LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
-
-                        #endregion
-                    }
-
-
-                    #endregion
-
-                    #region Look up object
-
-                    int objectItemColumn = 0;
-
-                    if (objectType.Type == "Artifact")
-                    {
-                        objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
-
-                        objectColumnIndex = objectItemColumn + 1;
-
-                        #region Verify Subject Area
-
-                        objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
-                        rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
-                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                        if (verifiedSubjectArea != null)
-                        {
-                            objectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                            objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                        }
-
-                        #endregion
-
-                        #region Verify Item
-
-                        objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn+1);
-                        rawItem = objectColumn.Value.Trim().ToLower();
-                        LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
-
-                        #endregion
-                    }
-                    else
-                    {
-                        objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
-
-                        objectColumnIndex = objectItemColumn;
-
-                        #region Verify Item
-
-                        objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
-                        rawItem = objectColumn.Value.Trim().ToLower();
-                        LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
-
-                        #endregion
-                    }
-
-                    #endregion
-
-                    var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectColumnIndex);
-                    var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectColumnIndex);
-
-                    Intersect model = null;
-
-                    if (!string.IsNullOrEmpty(subject.LookupObject) && subject.LookupObjectID.HasValue && 
-                        !string.IsNullOrEmpty(@object.LookupObject) && @object.LookupObjectID.HasValue)
-                    {
-                        try
-                        {
-                            model = company.AddIntersect(subject.LookupObject, subject.LookupObjectID.Value, @object.LookupObject, @object.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                            if (model != null)
-                            {
-                                loadItem.Status = true;
-                                loadItem.StatusMessage = "Successfully created/updated relationship.";
-                            }
-                            else
-                            {
-                                loadItem.Status = false;
-                                loadItem.StatusMessage = "Unable to create relationship.";
-                            }
-
-                        }
-                        catch (BaseException ex)
-                        {
-                            loadItem.Status = false;
-                            loadItem.StatusMessage += " " + ex.StatusDescription;
-                        }
-                    }
-                    else
-                    {
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Object = {@object.Value}].";
-                    }
-
-                    company.Update(loadItem);
-                }
-
                 #endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
             }
+            //else if (load.Action == "R")    // Relation
+            //{
+            //    #region
+            //    /*
+            //     * Side 1
+            //     * Side 2
+            //     * 
+            //     * OR
+            //     * 
+            //     * Side 1 Subject Area
+            //     * Side 1
+            //     * Side 2 Subject Area
+            //     * Side 2
+            //     */
+            //    #endregion
+
+            //    #region Get data to pre-populate
+
+            //    var relationIntersectTypeDetail = company.Filter<IntersectTypeDetail>(i => i.ID == load.ObjectID).FirstOrDefault();
+            //    var relationSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
+            //    var subjectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.SubjectID, Type = relationIntersectTypeDetail.Subject.Replace("Type", ""), Name = relationIntersectTypeDetail.SubjectName };
+            //    var objectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.ObjectID, Type = relationIntersectTypeDetail.Object.Replace("Type", ""), Name = relationIntersectTypeDetail.ObjectName };
+
+            //    #endregion
+
+            //    #region ForEach
+
+            //    foreach (var loadItem in load.LoadItems)
+            //    {
+            //        var rawSubjectArea = "";
+            //        var rawItem = "";
+
+            //        LoadItemColumn subjectSubjectAreaColumn = null;
+            //        LoadItemColumn subjectColumn = null;
+
+            //        LoadItemColumn objectSubjectAreaColumn = null;
+            //        LoadItemColumn objectColumn = null;
+
+            //        SimpleTypeModel verifiedSubjectArea = null;
+
+            //        var subjectColumnIndex = 2;
+            //        var objectColumnIndex = 4;
+
+            //        #region Look up subject
+
+            //        if (subjectType.Type == "Artifact")
+            //        {
+            //            subjectColumnIndex = 2;
+
+            //            #region Verify Subject Area
+
+            //            subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
+            //            rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
+            //            verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+            //            if (verifiedSubjectArea != null)
+            //            {
+            //                subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
+            //                subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+            //            }
+
+            //            #endregion
+
+            //            #region Verify Item
+
+            //            subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
+            //            rawItem = subjectColumn.Value.Trim().ToLower();
+            //            LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
+
+            //            #endregion
+            //        }
+            //        else
+            //        {
+            //            subjectColumnIndex = 1;
+
+            //            #region Verify Item
+
+            //            subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
+            //            rawItem = subjectColumn.Value.Trim().ToLower();
+            //            LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
+
+            //            #endregion
+            //        }
+
+
+            //        #endregion
+
+            //        #region Look up object
+
+            //        int objectItemColumn = 0;
+
+            //        if (objectType.Type == "Artifact")
+            //        {
+            //            objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
+
+            //            objectColumnIndex = objectItemColumn + 1;
+
+            //            #region Verify Subject Area
+
+            //            objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
+            //            rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
+            //            verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
+            //            if (verifiedSubjectArea != null)
+            //            {
+            //                objectSubjectAreaColumn.LookupObject = "TaxonomyType";
+            //                objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
+            //            }
+
+            //            #endregion
+
+            //            #region Verify Item
+
+            //            objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn+1);
+            //            rawItem = objectColumn.Value.Trim().ToLower();
+            //            LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
+
+            //            #endregion
+            //        }
+            //        else
+            //        {
+            //            objectItemColumn = (subjectType.Type == "Artifact") ? 3 : 2;
+
+            //            objectColumnIndex = objectItemColumn;
+
+            //            #region Verify Item
+
+            //            objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectItemColumn);
+            //            rawItem = objectColumn.Value.Trim().ToLower();
+            //            LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
+
+            //            #endregion
+            //        }
+
+            //        #endregion
+
+            //        var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectColumnIndex);
+            //        var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectColumnIndex);
+
+            //        Intersect model = null;
+
+            //        if (!string.IsNullOrEmpty(subject.LookupObject) && subject.LookupObjectID.HasValue && 
+            //            !string.IsNullOrEmpty(@object.LookupObject) && @object.LookupObjectID.HasValue)
+            //        {
+            //            try
+            //            {
+            //                model = company.AddIntersect(subject.LookupObject, subject.LookupObjectID.Value, @object.LookupObject, @object.LookupObjectID.Value, IntersectClassification.Normal, null, null);
+            //                if (model != null)
+            //                {
+            //                    loadItem.Status = true;
+            //                    loadItem.StatusMessage = "Successfully created/updated relationship.";
+            //                }
+            //                else
+            //                {
+            //                    loadItem.Status = false;
+            //                    loadItem.StatusMessage = "Unable to create relationship.";
+            //                }
+
+            //            }
+            //            catch (BaseException ex)
+            //            {
+            //                loadItem.Status = false;
+            //                loadItem.StatusMessage += " " + ex.StatusDescription;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            loadItem.Status = false;
+            //            loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Object = {@object.Value}].";
+            //        }
+
+            //        company.Update(loadItem);
+            //    }
+
+            //    #endregion
+
+            //    load.DateCompleted = DateTime.UtcNow;
+            //    company.Update(load);
+            //}
             else if (load.Action == "N")    // New Lineage
             {
                 #region

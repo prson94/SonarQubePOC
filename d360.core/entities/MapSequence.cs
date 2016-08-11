@@ -9,7 +9,7 @@ namespace d360.core.entities
     public class MapSequence : BaseIntObject, IIntObject, ICreatedObject, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
-        public int MapID { get; set; }
+        public int MapItemID { get; set; }
 
         [DataMember]
         public int Sequence { get; set; }
@@ -30,7 +30,7 @@ namespace d360.core.entities
         public int? UpdatedBy { get; set; }
 
         [IgnoreDataMember]
-        public virtual Map Map { get; set; }
+        public virtual MapItem MapItem { get; set; }
 
         [DataMember]
         public virtual ICollection<MapSequenceContext> MapSequenceContexts { get; set; }

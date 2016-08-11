@@ -82,7 +82,7 @@ namespace d360.web
 
             RouteTable.Routes.MapMvcAttributeRoutes();  // MVC Routes
 
-            AreaRegistration.RegisterAllAreas();
+            //AreaRegistration.RegisterAllAreas();
 
             RouteTable.Routes.MapRoute(
                 name: "SPA-Fallback",

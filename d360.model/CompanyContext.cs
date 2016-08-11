@@ -252,6 +252,8 @@ namespace d360.model
 
         public DbSet<MapRuleItem> MapRuleItems { get; set; }
 
+        public DbSet<MapRuleItemDetail> MapRuleItemDetails { get; set; }        /* VIEW */
+
         public DbSet<MapRuleItemMapItem> MapRuleItemMapItems { get; set; }
 
         public DbSet<MapSequence> MapSequences { get; set; }

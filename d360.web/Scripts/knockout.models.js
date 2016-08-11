@@ -1998,71 +1998,69 @@ function HierarchyRuleItemModel(data) {
     return self;
 }
 
-function HierarchySourceRuleModel(data, permissions) {
+function MapSequencesModel(data, permissions) {
     var self = this;
 
-    if (data == null) {
-        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
-    }
+    if (data == null) data = { };
     
     //#region Observables
 
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable(data.Name || '');
-    self.Target = ko.observable(data.AppliesToObject || '');
-    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
-    self.Object = ko.observable(data.Object || '');
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || '');
-    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
-    self.ErrorMessages = ko.observableArray([]);
-    self.SaveMessage = ko.observable('');
+    self.MapID = ko.observable(data.MapID || 0);
+    self.MapItemID = ko.observable(data.MapItemID || 0);
 
-    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
-    self.IsTemplate = ko.observable(data.IsTemplate || false);
-    self.IsSaving = ko.observable(false);
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
 
     self.Items = ko.observableArray();
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
+    self.MapItems = ko.observableArray();
 
     //#endregion
     
-    //load Items
-    if (data.Items) {
-        for (var i = 0; i < data.Items.length; i++) {
-            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
-        }
-    }
-
     //#region Functions
 
-    self.SaveRule = function () {
+    self.Load = function () {
+        /*
+        {
+            Contexts: [
+            ],
+            MapItems: [
+                {
+                    MapItemID: 1,
+                    AvailableSources: [
+                        { MapItemID: 1001, Name, "" }
+                    ],
+                    SelectedSources: [
+                        {
+                            MapItemID: 701,
+                            MapSequenceID: 1,
+                            Order: 1,
+                            Description: "",
+                            Contexts: [
+                                { Object: 'DomainItem', ObjectID: 111  }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+         */
+    }
+
+    self.Save = function () {
         if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
             return;
         if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
             return;
-        self.IsSaving(true);
-        self.ErrorMessages([]);
-        if (self.Items().length < 1)
-            self.ErrorMessages.push('Source rule must have at least 1 source item.');
-        if (self.Name().length < 1)
-            self.ErrorMessages.push('Source rule requires a name.');
+        //if (self.Items().length < 1)
+        //    self.ErrorMessages.push('Source rule must have at least 1 source item.');
+        //if (self.Name().length < 1)
+        //    self.ErrorMessages.push('Source rule requires a name.');
 
-        //for (var i = 0; i < self.Items().length; i++) {
-        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-        //    }
+        //if (self.ErrorMessages().length > 0) {
+        //    self.IsSaving(false);
+        //    return;
         //}
 
-        if (self.ErrorMessages().length > 0) {
-            self.IsSaving(false);
-            return;
-        }
-
-        var SourceRule = {
+        var model = {
             ID: self.ID(),
             Name: self.Name(),
             Object: self.Object(),
@@ -2073,21 +2071,13 @@ function HierarchySourceRuleModel(data, permissions) {
             Items: ko.toJS(self.Items())
         }
 
-        var action = (self.ID() > 0) ? 'edit' : 'add';
-
         $.ajax({
             url: '/form/SourceRules/save',
-            data: SourceRule,
+            data: model,
             method: 'POST'
         }).always(function (data) {
-            self.IsSaving(false);
             if (!data.error) {
-                self.ID(data.message);
-                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
-                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
-            } else {
-                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
-                console.log(data.message);
+                amplify.publish("SaveAction", { context: 'sourcerule', action: "add" });
             }        
         });
     }
@@ -2097,27 +2087,18 @@ function HierarchySourceRuleModel(data, permissions) {
     return self;
 }
 
-function HierarchyPanelViewModel(data, permissions) {
+function TimeToGEtRidOfThis(data, permissions) {
     var self = this;
     self.jqxLoaded = false;
-    //#region Observables
-    //console.log(permissions);
+
+    //#region Simple Properties
+
     self.ID = ko.observable(data.ID || 0);
     self.Name = ko.observable('');
     self.Target = ko.observable(data.target || '');
     self.TargetID = ko.observable(data.targetID || 0);
     self.Object = ko.observable(data.object || '');
     self.ObjectID = ko.observable(data.objectID || 0);
-    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.NewRule().Name('New Rule');
-    self.NewRule().Object(self.Object());
-    self.NewRule().ObjectID(self.ObjectID());
-    self.NewRule().Target(self.Target());
-    self.NewRule().TargetID(self.TargetID());
-    self.InProgress = ko.observable(false);
-    self.IsGridLoading = ko.observable(false);
-    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.Mode = ko.observable('add'); 
 
     self.Contexts = ko.observableArray([]);
     self.Items = ko.observableArray();
@@ -2130,26 +2111,60 @@ function HierarchyPanelViewModel(data, permissions) {
     self.SelectedItemIndex = ko.observable(-1);
     self.SelectedSourceIndex = ko.observable(-1);
     self.SelectedRuleIndex = ko.observable(-1);
-   // self.RadioAddChecked = ko.observable(true);
-    //self.RadioEditChecked = ko.observable(false);
+
     self.IsLoadingContexts = ko.observable(false);
     self.HasSourcesOrRules = ko.observable(true);
 
     self.CanAdd = ko.observable(false);
     self.CanUpdate = ko.observable(false);
 
+    //#endregion
+
     if (permissions != null) {
         if (permissions.HasPermission("Relationship", "Create"))
             self.CanAdd(true);
         if (permissions.HasPermission("Relationship", "Update"))
             self.CanUpdate(true);
-
     }
 
+    //#region Computed Properties
+
+    self.IsItemSelected = ko.computed(function () {
+        if (self.SelectedRule() == null)
+            return false;
+        if (self.SelectedRule().SelectedItem() == null)
+            return false;
+        return true;
+    });
+
+    //#endregion
+
+    //#region Subscriptions
+
+    self.SelectedItemIndex.subscribe(function () {
+        if (self.SelectedItemIndex() == -1) {
+            self.IsLoadingContexts(true);
+            return;
+        }
+        self.IsLoadingContexts(false);
+        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        if (self.IsItemSelected())
+            self.CheckUsedContextItems();
+    });
+
+    self.SelectedRuleIndex.subscribe(function () {
+        var rule = self.SourceRules()[self.SelectedRuleIndex()];
+        self.SelectedRule(rule);
+        //self.SelectedItemIndex(-1);
+        self.CheckUsedContextItems();
+    });
+
+    //#endregion
+
+    //#region Functions
 
     self.DeleteSourceRule = function () {
         self.Mode('delete');
-        //console.log('mode delete');
     }
 
     self.DeleteConfirm = function () {
@@ -2204,39 +2219,7 @@ function HierarchyPanelViewModel(data, permissions) {
         self.SelectedRuleIndex(self.SourceRules().length - 1);
     }
 
-
-    self.SelectedItemIndex.subscribe(function () {
-        if (self.SelectedItemIndex() == -1) {
-            self.IsLoadingContexts(true);
-            return;
-        }
-        self.IsLoadingContexts(false);
-        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        if (self.IsItemSelected())
-            self.CheckUsedContextItems();
-    });
-
-    self.SelectedRuleIndex.subscribe(function () {
-        var rule = self.SourceRules()[self.SelectedRuleIndex()];
-        self.SelectedRule(rule);
-        //self.SelectedItemIndex(-1);
-        self.CheckUsedContextItems();
-    });
-
-    self.IsItemSelected = ko.computed(function () {
-        if (self.SelectedRule() == null)
-            return false;
-        if (self.SelectedRule().SelectedItem() == null)
-            return false;
-        return true;
-    });
-
-    //#endregion
- 
-    //#region Functions
-
     self.LoadRules = function () {
-        //console.log('load rules');
         self.InProgress(true);
         $.ajax({
             url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
@@ -2259,7 +2242,6 @@ function HierarchyPanelViewModel(data, permissions) {
                 }
             }
         }).always(function () {
-            //self.SelectRule(self.NewRule());
             self.InProgress(false);
             if (!self.jqxLoaded)
                 self.ApplyJqxBindings();
@@ -2268,7 +2250,6 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.LoadSources = function () {
-      //  console.log('load sources');
         self.InProgress(true);
 
         $.ajax({
@@ -2297,7 +2278,6 @@ function HierarchyPanelViewModel(data, permissions) {
     self.LoadSources();
 
     self.LoadContexts = function () {
-       // console.log('load contexts');
         $.ajax({
             url: '/form/SourceRules/contexts',
             method: 'GET'
@@ -2329,7 +2309,6 @@ function HierarchyPanelViewModel(data, permissions) {
             return;
         if (self.SelectedItemIndex() == -1)
             return;
-        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
         self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedItemIndex(-1);
@@ -2383,7 +2362,6 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.ApplyJqxBindings = function () {
-       // console.log('jqx bindings start');
         $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
             self.OnCellValueChange();
         }).on('bindingcomplete', function () {
@@ -2391,7 +2369,6 @@ function HierarchyPanelViewModel(data, permissions) {
             $(this).jqxGrid('refresh');
         });
         self.jqxLoaded = true;
-       // console.log('jqx bindings end');
     }
 
     self.FindItemByOrder = function (order, array) {

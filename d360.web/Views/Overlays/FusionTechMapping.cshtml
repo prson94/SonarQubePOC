@@ -1,10 +1,7 @@
 ﻿<div class="large-overlay">
     <div class="ui segment" id="HistoryViewer">                
             <div class="left form-header-info">
-                <h4>Fusion Technical Mapping</h4>
-            </div>
-            <div class="right">
-                <button type="button" id="CancelButton" data-bind="click: cancel" class="btn waves-effect waves-light brown lighten-4">Close</button>
+                <h4>Technical Mappings</h4>
             </div>
             <div class="clear"></div>
             <div class="form-instructions"></div>
@@ -66,7 +63,6 @@
 
     function cancelAction(data) {
         try {
-            console.log(data.context);
             switch (data.context) {
                 case _context:
                     switchToViewer();                    
@@ -80,7 +76,6 @@
         
     function saveAction(data) {
         try {
-            console.log(data.context);
             switch (data.context) {
                 case _context:
                     switchToViewer();                    
@@ -94,7 +89,6 @@
 
     function localAction(data) {
         try {
-            console.log(data.context);
             switch (data.context) {
                 case _context:
                     switchToEditor(data.uri);
@@ -114,97 +108,108 @@
             var commit = $("#TechmappingGrid").jqxGrid('deleterow', id);
         }
     }
-    
 
     $(function () {
-        $("#addMapping").click(function (event) {
-            var rowdata = {
-                SourceObject: 'Artifact',
-                TargetObject: 'Artifact'
+        var permissions = new PermissionsModel();
+
+        var loadAfterPermissionsRetrieved = function () {
+
+            $("#addMapping").click(function (event) {
+                var rowdata = {
+                    SourceObject: 'Artifact',
+                    TargetObject: 'Artifact'
+                }
+                $("#TechmappingGrid").jqxGrid('addrow', null, rowdata, 'top');
+                event.preventDefault();
+            });
+
+            gridSource = {
+                dataType: 'json',
+                url: '/api/fusion/technicalmapping',
+                datafields: [
+                    { name: 'MapRuleID', type: 'number' },
+                    { name: 'MapRuleItemID', type: 'number' },
+
+                    { name: 'SourceFusion', type: 'string' },
+                    { name: 'SourceObjectName', type: 'string' },
+                    { name: 'SourceObject', type: 'string' },
+                    { name: 'SourceObjectID', type: 'number' },
+                    { name: 'SourceFusionAttributeTextPath', type: 'string' },
+
+                    { name: 'TargetFusion', type: 'string' },
+                    { name: 'TargetObjectName', type: 'string' },
+                    { name: 'TargetObject', type: 'string' },
+                    { name: 'TargetObjectID', type: 'number' },
+                    { name: 'TargetFusionAttributeTextPath', type: 'string' },
+
+                    { name: 'Transformation', type: 'string' }
+                ]
+            };
+
+            gridDataAdapter = new $.jqx.dataAdapter(gridSource);
+
+            $("#TechmappingGrid").jqxGrid({
+                width: grid_width,
+                source: gridDataAdapter,
+                columnsresize: true,
+                pageable: true,
+                pagerButtonsCount: 10,
+                altRows: true,
+                filterable: true,
+                pagerMode: 'advanced',
+                filterMode: 'simple',
+                theme: list_theme,
+                selectionmode: 'singlerow',
+                autorowheight: true,
+                columns: [
+                    { text: 'Group', datafield: 'MapRuleID', width: '4%' },
+
+                    { text: 'Source Configuration', columntype: 'combobox', datafield: 'SourceFusion', width: '10%' },
+                    { text: 'Source Object', columntype: 'combobox', displayfield: 'SourceObjectName', datafield: 'SourceObjectID', width: '10%' },
+                    { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox' },
+
+                    { text: 'Target Configuration', columntype: 'combobox', datafield: 'TargetFusion', width: '10%' },
+                    { text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '10%' },
+                    { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox' },
+
+                    { text: 'Transformation', datafield: 'Transformation', columntype: 'textbox', width: '16%' },
+
+                    {
+                        text: '',
+                        datafield: '',
+                        width: '5%',
+                        filterable: false,
+                        editable: false,
+                        cellsRenderer: function (index, datafield, value, defaultvalue, column, data) {
+                            var tools = [];
+
+                            if (permissions.HasPermission("Root", "Update")) {
+                                tools.push({ icon: 'pencil', urlprefix: '/form/edittechnicalmapping?id=' + data.MapRuleItemID, title: 'Edit technical mapping' });
+                            }
+                            if (permissions.HasPermission("Root", "Delete")) {
+                                tools.push({ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?id=' + data.MapRuleItemID });
+                            }
+
+                            return renderToolsHtml(value, tools, _context, data);
+                        }
+                    }
+                ]
+            });
+
+            var tools = [];
+            if (permissions.HasPermission("Root", "Create")) {
+                tools.push({ icon: 'plus', uri: "/form/AddTechnicalMapping", context: _context, title: 'Add technical mapping' });
             }
-            $("#TechmappingGrid").jqxGrid('addrow', null, rowdata, 'top');
-            event.preventDefault();
-        });
+            TileTools('#TechMappingTools', tools);
 
-        $("#CancelButton").click(function (event) {
-            amplify.publish("CancelAction", { context: _context + "_close" });
-            event.preventDefault();
-        });
+            amplify.subscribe('CancelAction', cancelAction, 1);
+            amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+            amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
+            amplify.subscribe('SaveAction', saveAction, 1);
+            amplify.subscribe('ToolAction', localAction, 1);
+        }
 
-        $("#SaveButton").click(function (event) {
-            amplify.publish("CancelAction", { context: _context });
-            event.preventDefault();
-        });
-
-        gridSource =
-        {
-          //  localdata: data,
-            dataType: 'json',
-            url: '/api/fusion/technicalmapping',            
-            datafields:
-            [
-                { name: 'Transformation', type: 'string' },
-                { name: 'SourceObjectName', type: 'string' },
-                { name: 'SourceObject', type: 'string' },
-                { name: 'SourceObjectID', type: 'number' },                
-                { name: 'SourceFusionAttributeTextPath', type: 'string' },
-                { name: 'TargetObjectName', type: 'string' },
-                { name: 'TargetObject', type: 'string' },
-                { name: 'TargetObjectID', type: 'number' },
-                { name: 'MapRuleItemID', type: 'number' },
-                { name: 'TargetFusionAttributeTextPath', type: 'string' },
-                { name: 'MapID', type: 'number' }                
-            ]
-        };
-        gridDataAdapter = new $.jqx.dataAdapter(gridSource);
-        // initialize jqxGrid
-        $("#TechmappingGrid").jqxGrid(
-        {
-            width: grid_width,
-            source: gridDataAdapter,
-            columnsresize: true,
-            pageable: true,
-            pagerButtonsCount: 10,
-            altRows: true,
-            filterable: true,
-            pagerMode: 'advanced',            
-            filterMode: 'simple',         
-            theme: list_theme,
-            selectionmode: 'singlerow',            
-            columns: [
-                { text: 'Map ID', datafield: 'MapID', width: '4%' },
-                { text: 'Transformation', datafield: 'Transformation', columntype: 'textbox', width: '16%' },                
-              {
-                  text: 'Source Object', columntype: 'combobox', displayfield:'SourceObjectName', datafield: 'SourceObjectID', width: '20%'
-              },
-              { text: 'Source Fusion Attribute Textpath', datafield: 'SourceFusionAttributeTextPath', columntype: 'textbox', width: '20%' },
-              {
-                  text: 'Target Object', columntype: 'combobox', displayfield: 'TargetObjectName', datafield: 'TargetObjectID', width: '15%'
-              },
-              { text: 'Target Fusion Attribute Textpath', datafield: 'TargetFusionAttributeTextPath', columntype: 'textbox', width: '20%' },              
-              {
-                  text: '', dataField: '', width: '5%', filterable: false, editable : false,
-                  cellsRenderer: function (index, datafield, value, defaultvalue, column, data){                      
-                      var tools = [{ title: 'Remove technical mapping', icon: 'trash-o', urlprefix: 'form/deletetechnicalmapping?id=' + data.MapRuleItemID }];
-
-                      tools.push({ icon: 'pencil', urlprefix: '/form/edittechnicalmapping?id=' + data.MapRuleItemID, title: 'Edit technical mapping' });
-                      
-                      return renderToolsHtml(value, tools, _context, data);                      
-                  }
-              }
-            ]
-        });
-    
-        var tools = [{ icon: 'plus', uri: "/form/AddTechnicalMapping", context: _context, title: 'Add technical mapping' }];
-        
-        TileTools('#TechMappingTools', tools);
-
-        amplify.subscribe('CancelAction', cancelAction, 1);
-        amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-        amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
-        amplify.subscribe('SaveAction', saveAction, 1);
-        amplify.subscribe('ToolAction', localAction, 1);
-
+        permissions.GetPermissionsForObject('FusionType', 0).then(loadAfterPermissionsRetrieved);
 
         $("html, body").animate({ scrollTop: 0 }, "slow");
     });

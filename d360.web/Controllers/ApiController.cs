@@ -2133,13 +2133,12 @@ where   h.ID <> @t order by h.[Level] desc;
                     return null;
             }
         }
-
         
         [Route("fusion/technicalmapping")]
-        public async System.Threading.Tasks.Task<IEnumerable<FusionTechnicalMapppingModel>> GetFusionTechnicalMapping()
+        public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() //async System.Threading.Tasks.Task<IEnumerable<MapRuleItemDetail>>
         {
-            return await Company.QueryAsync<FusionTechnicalMapppingModel>("GetTechnicalMapping");
-            
+            //return await Company.MapRuleItemDetails.;
+            return Company.MapRuleItemDetails.AsQueryable();
         }
 
         [Route("fusion/fusionowningartifacts")]

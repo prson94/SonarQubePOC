@@ -37,5 +37,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual Intersect TargetIntersect { get; set; }
+
+        [DataMember]
+        public virtual ICollection<MapSequence> MapSequences { get; set; }
     }
 }

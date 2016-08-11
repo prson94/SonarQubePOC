@@ -996,6 +996,39 @@ SELECT T.[ID]                                                                as 
 
                         #endregion
 
+                        #region All Responsibility Allocations
+
+                        objectName = $"{SCHEMA}.[ResponsibilityTypeMap]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	R.ResponsibilityTypeID
+		, RT.Name as ResponsibilityName
+		, D.Name as ObjectName
+		, D.Object
+		, D.ObjectID 
+from	ResponsibilityTypeRelation R
+		inner Join [dbo].[ResponsibilityType] RT on RT.ID = R.ResponsibilityTypeID 
+		inner join cache.ObjectDetails D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
                         #region All Policies
 
                         objectName = $"{SCHEMA}.[Policy_All]";

@@ -1,235 +1,160 @@
 ﻿<header id="{{control}}_header">Lineage</header>
 <div id="{{control}}_wrapper_fullscreen" style="z-index:99999;background-color:white;">
-    <div id="{{control}}_overlay" style="display:none; background-color:rgba(0, 0, 0, 0.1); width:100%;height:100%;position:absolute;z-index:999;top:0;left:0;">
-        <div id="overlayModal" style="background-color:white;border-radius:5px;width:40%;min-width:600px;vertical-align:middle;margin:15px auto;padding:25px;box-shadow:10px 10px 5px rgba(0,0,0,.3);border:1px solid lightgray">
-            <div style="width:100%;text-align:center;">
-                <div id="{{control}}_overlay_relationship"></div><br />
-            </div>
-            <div id="{{control}}_overlay_existing" class="row">
-                <div class="col s3">Role:</div>
-                <div class="col s9"><select id="{{control}}_overlay_predicates" style="height:25px; width: 100%;"></select></div>
-
-                <div class="col s3">Business Transformation:</div>
-                <div class="col s9"><textarea id="{{control}}_overlay_transformation" class="htmlArea"></textarea></div>
-
-                <div class="col s9 offset-s3">
-                    <button id="{{control}}_overlay_add" style="display:none;" class="btn white-text" disabled>OK</button>
-                    <button id="{{control}}_overlay_cancel" class="btn red darken-3 white-text">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="{{control}}_popover_sourcerule_editor" style="display:none;position:absolute;background-color:white;z-index:10001;width:500px;border:1px solid #d4d4d4; box-shadow: rgba(0,0,0,.15) 7px 7px 7px;">
-        <div style="width:100%;text-align:right;font-size:1.4em;background-color:#50a5dc;"><a style="text-decoration:none;color:white;padding-right:10px;cursor:pointer;" onclick="$('#{{control}}_popover_sourcerule_editor').hide(200);"><i class="fa fa-remove"></i></a></div>
-        <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'hierarchyRuleEditTmpl' }"></div>
-    </div>
 
     <div id="{{control}}_ribbon_expander" style="width:100%;">
-        <div style="font-size:1.1em;">
+        <div style="font-size:1em;">
             <i class="fa fa-gear"></i> Diagram Controls
         </div>
         <div style="width: 100%;height:120px" id="{{control}}_ribbon">
             <div>
                 <!-- div ribbon container -->
                 <div>
-                    <!-- 0-View -->
                     <table style="width:auto;height:115px;">
-                        <tbody>
-                            <tr style="font-size:.8em;padding-top:2px;height:15px;">
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Overview
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Zoom
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Other
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Edit
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Rules
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="diagramcommands">
-                                    Views
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="lineage">
-                                    Business Lineage
-                                </td>
-                                <td colspan="2" style="padding-left:5px;" class="sourcemapping">
-                                    Mappings
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding:5px;" class="diagramcommands">
-                                    <div style="border: 1px solid #ccc;margin:2px;">
-                                        <div id="{{control}}_overview" style="width:100px;height:80px" class="diagram"></div>
-                                    </div>
-                                </td>
+                        <tr style="font-size:.8em;padding-top:2px;height:15px;">
+                            <td style="padding-left:5px;" class="diagramcommands">Overview</td>
+                            <td colspan="2" style="padding-left:5px;" class="diagramcommands">Zoom</td>
+                            <td colspan="2" style="padding-left:5px;" class="diagramcommands">Other</td>
+                            <td colspan="2" style="padding-left:5px;" class="diagramcommands editcommands">Manage</td>
+                            <td colspan="2" style="padding-left:5px;" class="diagramcommands">Views</td>
+                            <td colspan="2" style="padding-left:5px;" class="diagramcommands">More Info</td>
+                            <td colspan="3" style="padding-left:5px;" class="diagramcommands lineage sourcerule sourcemapping editcommands">Manage</td>
+                        </tr>
+                        <tr>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
-                                <td style="padding:0 5px 0 5px" class="diagramcommands">
-                                    <table style="height:80px;">
-                                        <tbody>
-                                            <tr>
-                                                <td style="text-align: center;">
-                                                    <div id="{{control}}_ribbon_zoom_100" style="display:inline-block;"><i class='fa fa-search'></i> 100%</div>
-                                                    <div id="{{control}}_ribbon_zoom_fit" style="display:inline-block;"><i class="fa fa-expand"></i> Fit</div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <div id="{{control}}_ribbon_zoom_slider"></div>
-                                                    <span id="{{control}}_ribbon_zoom_text" style="display: inline-block;">100%</span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
+                            <td style="padding:5px;" class="diagramcommands">
+                                <div style="border: 1px solid #ccc;margin:2px;">
+                                    <div id="{{control}}_overview" style="width:100px;height:80px" class="diagram"></div>
+                                </div>
+                            </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
-                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
-                                    <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
-                                    <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
-                                </td>
+                            <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                            <td style="padding:0 5px 0 5px" class="diagramcommands">
+                                <table style="height:80px;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="text-align: center;">
+                                                <div id="{{control}}_ribbon_zoom_100" style="display:inline-block;"><i class='fa fa-search'></i> 100%</div>
+                                                <div id="{{control}}_ribbon_zoom_fit" style="display:inline-block;"><i class="fa fa-expand"></i> Fit</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div id="{{control}}_ribbon_zoom_slider"></div>
+                                                <span id="{{control}}_ribbon_zoom_text" style="display: inline-block;">100%</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
-                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
-                                    <button id="{{control}}_ribbon_undo"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
-                                    <button id="{{control}}_ribbon_redo"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
-                                    <!-- not sure why valign top is needed here -->
-                                    <button id="{{control}}_ribbon_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Insert a Node</button>
-                                    <button id="{{control}}_ribbon_remove" style="vertical-align:top;"><i class="fa fa-2x fa-remove"></i><br />Remove</button>
-                                    <button id="{{control}}_ribbon_save" style="vertical-align:top;"><i class="fa fa-2x fa-save"></i><br />Save Changes</button>
-                                    <div id="{{control}}_ribbon_save_spinner" style="border:none; display:none;vertical-align:top;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>
-                                </td>
+                            <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                            <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                <button id="{{control}}_ribbon_fullscreen" style="vertical-align:top;"><i class="fa fa-2x fa-arrows-alt"></i><br />Fullscreen</button>
+                                <button id="{{control}}_ribbon_reset"><i class="fa fa-2x fa-refresh"></i><br />Reset</button>
+                                <button id="{{control}}_ribbon_undo" style="vertical-align: top;"><i class="fa fa-2x fa-undo"></i><br />Undo</button>
+                                <button id="{{control}}_ribbon_redo" style="vertical-align: top;"><i class="fa fa-2x fa-repeat"></i><br />Redo</button>
+                            </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
-                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
-                                    <button id="{{control}}_ribbon_sourcerule_add" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
-                                    <button id="{{control}}_ribbon_maprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
-                                    <button id="{{control}}_ribbon_multimaprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
-                                </td>
+                            <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands editcommands"></td>
+                            <td style="padding:5px;vertical-align:top;" class="diagramcommands editcommands">
+                                <button id="{{control}}_ribbon_lineage" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Business Lineage</button>
+                                <button id="{{control}}_ribbon_sourcerule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
+                                <button id="{{control}}_ribbon_maprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
+                                <button id="{{control}}_ribbon_multimaprule" class="mapping-button" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Technical Mappings</button>
+                            </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
-                                <td style="padding:5px;vertical-align:top;" class="diagramcommands">
-                                    <div id="{{control}}_ribbon_view_1">Business System Flow</div>
-                                    <div id="{{control}}_ribbon_view_2">Business Data Flow</div>
-                                    <div id="{{control}}_ribbon_view_3">Technical Lineage</div>
-                                </td>
+                            <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                            <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                <div id="{{control}}_ribbon_view_1">Business System Flow</div>
+                                <div id="{{control}}_ribbon_view_2">Business Data Flow</div>
+                                <div id="{{control}}_ribbon_view_3">Technical Lineage</div>
+                            </td>
 
-                                <td style="width:1px;border-left:1px solid #ccc;" class="lineage"></td>
-                                <td style="padding:5px;vertical-align:top;" class="lineage">
-                                    <button id="{{control}}_ribbon_lineage_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
-                                    <button id="{{control}}_ribbon_lineage_addItem" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Row</button>
-                                    <button id="{{control}}_ribbon_lineage_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Place on Diagram</button>
-                                </td>
-                                <td style="width:1px;border-left:1px solid #ccc;" class="sourcemapping"></td>
-                                <td style="padding:5px;vertical-align:top;" class="sourcemapping">
-                                    <button id="{{control}}_ribbon_maprule_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
-                                    <button id="{{control}}_ribbon_maprule_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
-                                    <button id="{{control}}_ribbon_maprule_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
-                                </td>
-                            </tr>
-                        </tbody>
+                            <td style="width:1px;border-left:1px solid #ccc;" class="diagramcommands"></td>
+                            <td style="padding:5px;vertical-align:top;" class="diagramcommands">
+                                <button id="{{control}}_view_window0" style="vertical-align: top;"><i class="fa fa-2x fa-info-circle"></i><br />Info</button>
+                                <button id="{{control}}_view_window1" style="vertical-align: top;"><i class="fa fa-2x fa-code-fork"></i><br />Source Rules</button>
+                                <button id="{{control}}_view_window2" style="vertical-align: top;"><i class="fa fa-2x fa-exchange"></i><br />Mapping Rules</button>
+                                <button id="{{control}}_view_window3" style="vertical-align: top;"><i class="fa fa-2x fa-user"></i><br />Roles</button>
+                                <button id="{{control}}_view_window4" style="vertical-align: top;"><i class="fa fa-2x fa-database"></i><br />Fusion</button>
+                                <button id="{{control}}_view_window5" style="vertical-align: top;"><i class="fa fa-2x fa-random"></i><br />Business Xforms</button>
+                            </td>
+
+                            <!-- Business Lineage Command Bar -->
+                            <td style="padding:5px;vertical-align:top;" class="lineage editcommands">
+                                <button id="{{control}}_ribbon_lineage_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                <button id="{{control}}_ribbon_lineage_addItem" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Row</button>
+                                <button id="{{control}}_ribbon_lineage_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
+                            </td>
+
+                            <!-- Source Rule Command Bar -->
+                            <td style="padding:5px;vertical-align:top;" class="sourcerule editcommands">
+                                <button id="{{control}}_ribbon_sourcerule_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                <button id="{{control}}_ribbon_sourcerule_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
+                            </td>
+
+                            <!-- Technical Lineage Command Bar -->
+                            <td style="padding:5px;vertical-align:top;" class="sourcemapping editcommands">
+                                <button id="{{control}}_ribbon_maprule_add" style="vertical-align: top;"><i class="fa fa-2x fa-plus"></i><br />Add Rule</button>
+                                <button id="{{control}}_ribbon_maprule_cancel" style="vertical-align: top;"><i class="fa fa-2x fa-close"></i><br />Cancel</button>
+                                <button id="{{control}}_ribbon_maprule_save" style="vertical-align: top;"><i class="fa fa-2x fa-save"></i><br />Save</button>
+                            </td>
+
+                        </tr>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-    <!--<div style="min-height: 600px">
-        <div id="{{control}}_splitter">
-            <div>-->
-                <table>
-                <tbody>
-                    <tr style="vertical-align:top;height:520px">
-                        <td style="vertical-align:top">
-                <div id="{{control}}_popover_lineage_editor" style="display:none">
-                    <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
-                </div>
-                <div id="{{control}}_popover_maprule_editor" style="display:none">
-                    <header>Manage Mappings</header>
-                    <div id="{{control}}_popover_maprule_editor_body" data-bind="template: {name: 'MapRulesEditTmpl' }"></div>
-                </div>
-                <div id="{{control}}_popover_multimaprule_editor" style="display:none">
-                    <header>Manage Mappings</header>
-                    <div id="{{control}}_popover_multimaprule_editor_body" data-bind="template: {name: 'MultiMapRulesEditTmpl' }"></div>
-                </div>
-                <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
-                    <div id="{{control}}_dgm" style="height:400px; overflow: no-display" class="diagram"></div>
-                    <div id="{{control}}_message" style="background-color:rgba(141, 14, 14, 1);color:white;padding:2px;font-size:.8em; border-radius:3px;display:none;"><i class="fa fa-warning"></i> You have unsaved changes in this diagram!</div>
-                </div>
-            <!--</div>
-            <div>-->
-                </td>
-            <td style="width:350px;vertical-align:top;height:100%">
-                <div id="{{control}}_sidebar" style="height:100%; overflow-y: scroll;">
-                    <div id="{{control}}_info">
-                        <div><i class="fa fa-info-circle"></i> Info</div>
-                        <div style="padding: 10px">
-                            <!--<div id="{{control}}_info_body"></div>
-                        <div id="{{control}}_info_detail_wrapper">-->
-                            <!--<div>
-                            <div style="text-align:right;" id="{{control}}_info_detail_edit"></div>
-                        </div>-->
-                            <div id="{{control}}_info_detail"></div>
-                            <!--</div>-->
-                        </div>
-                    </div>
-                    <div>
-                        <div id="{{control}}_tabs">
-                            <ul>
-                                <li id="{{control}}_sourcerules_tab">
-                                    <i class="fa fa-2x fa-code-fork"></i>
-                                </li>
-                                <li id="{{control}}_mappingrules_tab">
-                                    <i class="fa fa-2x fa-exchange"></i>
-                                </li>
-                                <li id="{{control}}_responsibilities_tab">
-                                    <i class="fa fa-2x fa-user"></i>
-                                </li>
-                                <li id="{{control}}_fusion_tab">
-                                    <i class="fa fa-2x fa-database"></i>
-                                </li>
-                                <li id="{{control}}_transformations_tab">
-                                    <i class="fa fa-2x fa-random"></i>
-                                </li>
-                            </ul>
-                            <div style="padding:10px;">
-                                <h4 style="padding-bottom:3px;">Source Rules</h4>
-                                <div id="{{control}}_sourcerules_content">
-                                </div>
-                            </div>
-                            <div style="padding:10px;">
-                                <h4 style="padding-bottom:3px;">Mapping Rules</h4>
-                                <div id="{{control}}_mappingrules_content">
-                                </div>
-                            </div>
-                            <div style="padding:10px;">
-                                <h4 style="padding-bottom:3px;">Responsibilities</h4>
-                                <div id="{{control}}_responsibilities_content">
-                                </div>
-                            </div>
-                            <div style="padding:10px;">
-                                <h4 style="padding-bottom:3px;">Fusion Relationships</h4>
-                                <div id="{{control}}_fusion_content">
-                                </div>
-                            </div>
-                            <div style="padding:10px;">
-                                <h4 style="padding-bottom:3px;">Business Transformations</h4>
-                                <div id="{{control}}_transformations_content">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                </td>
-                    </tr>
-                </tbody>
-            </table>
-            <!--</div>
-        </div>
+
+    <div id="{{control}}_popover_lineage_editor" style="display:none">
+        <header>Manage Lineage</header>
+        <div id="{{control}}_popover_lineage_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
     </div>
--->
+    <div id="{{control}}_popover_maprule_editor" style="display:none">
+        <header>Manage Mappings</header>
+        <div id="{{control}}_popover_maprule_editor_body" data-bind="template: {name: 'MapRulesEditTmpl' }"></div>
+    </div>
+    <div id="{{control}}_popover_multimaprule_editor" style="display:none">
+        <header>Manage Mappings</header>
+        <div id="{{control}}_popover_multimaprule_editor_body" data-bind="template: {name: 'MultiMapRulesEditTmpl' }"></div>
+    </div>
+    <div id="{{control}}_popover_sourcerule_editor" style="display:none">
+        <header>Manage Lineage</header>
+        <div id="{{control}}_popover_sourcerule_editor_body" data-bind="template: {name: 'lineageEditTmpl' }"></div>
+    </div>
+
+    <div id="{{control}}_wrapper" style="height:420px;resize:vertical; overflow: auto">
+        <div id="{{control}}_dgm" style="height:400px; overflow: no-display" class="diagram"></div>
+    </div>
+
+    <div id="{{control}}_Window0">
+        <div><i class="fa fa-info-circle"></i>Info</div>
+        <div id="{{control}}_info_detail"></div>
+    </div>
+
+    <div id="{{control}}_Window1">
+        <div><i class="fa fa-code-fork"></i>Source Rules</div>
+        <div id="{{control}}_sourcerules_content"></div>
+    </div>
+
+    <div id="{{control}}_Window2">
+        <div><i class="fa fa-exchange"></i>Mapping Rules</div>
+        <div id="{{control}}_mappingrules_content"></div>
+    </div>
+
+    <div id="{{control}}_Window3">
+        <div><i class="fa fa-user"></i>Responsibilities</div>
+        <div id="{{control}}_responsibilities_content"></div>
+    </div>
+
+    <div id="{{control}}_Window4">
+        <div><i class="fa fa-database"></i>Fusion Relationships</div>
+        <div id="{{control}}_fusion_content"></div>
+    </div>
+
+    <div id="{{control}}_Window5">
+        <div><i class="fa fa-random"></i>Business Transformations</div>
+        <div id="{{control}}_transformations_content"></div>
+    </div>
 </div>

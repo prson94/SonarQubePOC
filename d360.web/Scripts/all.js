@@ -17114,7 +17114,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 }( amplify, jQuery ) );
 
 //! moment.js
-//! version : 2.13.0
+//! version : 2.14.3
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -17139,6 +17139,19 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function isArray(input) {
         return input instanceof Array || Object.prototype.toString.call(input) === '[object Array]';
+    }
+
+    function isObject(input) {
+        return Object.prototype.toString.call(input) === '[object Object]';
+    }
+
+    function isObjectEmpty(obj) {
+        var k;
+        for (k in obj) {
+            // even if its not own property I'd still call it non-empty
+            return false;
+        }
+        return true;
     }
 
     function isDate(input) {
@@ -17336,7 +17349,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     function absFloor (number) {
         if (number < 0) {
-            return Math.ceil(number);
+            // -0 -> 0
+            return Math.ceil(number) || 0;
         } else {
             return Math.floor(number);
         }
@@ -17409,10 +17423,6 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
     }
 
-    function isObject(input) {
-        return Object.prototype.toString.call(input) === '[object Object]';
-    }
-
     function locale_set__set (config) {
         var prop, i;
         for (i in config) {
@@ -17444,6 +17454,14 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
                 }
             }
         }
+        for (prop in parentConfig) {
+            if (hasOwnProp(parentConfig, prop) &&
+                    !hasOwnProp(childConfig, prop) &&
+                    isObject(parentConfig[prop])) {
+                // make sure changes to properties don't modify parent config
+                res[prop] = extend({}, res[prop]);
+            }
+        }
         return res;
     }
 
@@ -17469,161 +17487,83 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         };
     }
 
-    // internal storage for locale config files
-    var locales = {};
-    var globalLocale;
+    var defaultCalendar = {
+        sameDay : '[Today at] LT',
+        nextDay : '[Tomorrow at] LT',
+        nextWeek : 'dddd [at] LT',
+        lastDay : '[Yesterday at] LT',
+        lastWeek : '[Last] dddd [at] LT',
+        sameElse : 'L'
+    };
 
-    function normalizeLocale(key) {
-        return key ? key.toLowerCase().replace('_', '-') : key;
+    function locale_calendar__calendar (key, mom, now) {
+        var output = this._calendar[key] || this._calendar['sameElse'];
+        return isFunction(output) ? output.call(mom, now) : output;
     }
 
-    // pick the locale from the array
-    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
-    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
-    function chooseLocale(names) {
-        var i = 0, j, next, locale, split;
+    var defaultLongDateFormat = {
+        LTS  : 'h:mm:ss A',
+        LT   : 'h:mm A',
+        L    : 'MM/DD/YYYY',
+        LL   : 'MMMM D, YYYY',
+        LLL  : 'MMMM D, YYYY h:mm A',
+        LLLL : 'dddd, MMMM D, YYYY h:mm A'
+    };
 
-        while (i < names.length) {
-            split = normalizeLocale(names[i]).split('-');
-            j = split.length;
-            next = normalizeLocale(names[i + 1]);
-            next = next ? next.split('-') : null;
-            while (j > 0) {
-                locale = loadLocale(split.slice(0, j).join('-'));
-                if (locale) {
-                    return locale;
-                }
-                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
-                    //the next array item is better than a shallower substring of this one
-                    break;
-                }
-                j--;
-            }
-            i++;
+    function longDateFormat (key) {
+        var format = this._longDateFormat[key],
+            formatUpper = this._longDateFormat[key.toUpperCase()];
+
+        if (format || !formatUpper) {
+            return format;
         }
-        return null;
+
+        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
+            return val.slice(1);
+        });
+
+        return this._longDateFormat[key];
     }
 
-    function loadLocale(name) {
-        var oldLocale = null;
-        // TODO: Find a better way to register and load all the locales in Node
-        if (!locales[name] && (typeof module !== 'undefined') &&
-                module && module.exports) {
-            try {
-                oldLocale = globalLocale._abbr;
-                require('./locale/' + name);
-                // because defineLocale currently also sets the global locale, we
-                // want to undo that for lazy loaded locales
-                locale_locales__getSetGlobalLocale(oldLocale);
-            } catch (e) { }
-        }
-        return locales[name];
+    var defaultInvalidDate = 'Invalid date';
+
+    function invalidDate () {
+        return this._invalidDate;
     }
 
-    // This function will load locale and then set the global locale.  If
-    // no arguments are passed in, it will simply return the current global
-    // locale key.
-    function locale_locales__getSetGlobalLocale (key, values) {
-        var data;
-        if (key) {
-            if (isUndefined(values)) {
-                data = locale_locales__getLocale(key);
-            }
-            else {
-                data = defineLocale(key, values);
-            }
+    var defaultOrdinal = '%d';
+    var defaultOrdinalParse = /\d{1,2}/;
 
-            if (data) {
-                // moment.duration._locale = moment._locale = data;
-                globalLocale = data;
-            }
-        }
-
-        return globalLocale._abbr;
+    function ordinal (number) {
+        return this._ordinal.replace('%d', number);
     }
 
-    function defineLocale (name, config) {
-        if (config !== null) {
-            config.abbr = name;
-            if (locales[name] != null) {
-                deprecateSimple('defineLocaleOverride',
-                        'use moment.updateLocale(localeName, config) to change ' +
-                        'an existing locale. moment.defineLocale(localeName, ' +
-                        'config) should only be used for creating a new locale');
-                config = mergeConfigs(locales[name]._config, config);
-            } else if (config.parentLocale != null) {
-                if (locales[config.parentLocale] != null) {
-                    config = mergeConfigs(locales[config.parentLocale]._config, config);
-                } else {
-                    // treat as if there is no base config
-                    deprecateSimple('parentLocaleUndefined',
-                            'specified parentLocale is not defined yet');
-                }
-            }
-            locales[name] = new Locale(config);
+    var defaultRelativeTime = {
+        future : 'in %s',
+        past   : '%s ago',
+        s  : 'a few seconds',
+        m  : 'a minute',
+        mm : '%d minutes',
+        h  : 'an hour',
+        hh : '%d hours',
+        d  : 'a day',
+        dd : '%d days',
+        M  : 'a month',
+        MM : '%d months',
+        y  : 'a year',
+        yy : '%d years'
+    };
 
-            // backwards compat for now: also set the locale
-            locale_locales__getSetGlobalLocale(name);
-
-            return locales[name];
-        } else {
-            // useful for testing
-            delete locales[name];
-            return null;
-        }
+    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
+        var output = this._relativeTime[string];
+        return (isFunction(output)) ?
+            output(number, withoutSuffix, string, isFuture) :
+            output.replace(/%d/i, number);
     }
 
-    function updateLocale(name, config) {
-        if (config != null) {
-            var locale;
-            if (locales[name] != null) {
-                config = mergeConfigs(locales[name]._config, config);
-            }
-            locale = new Locale(config);
-            locale.parentLocale = locales[name];
-            locales[name] = locale;
-
-            // backwards compat for now: also set the locale
-            locale_locales__getSetGlobalLocale(name);
-        } else {
-            // pass null for config to unupdate, useful for tests
-            if (locales[name] != null) {
-                if (locales[name].parentLocale != null) {
-                    locales[name] = locales[name].parentLocale;
-                } else if (locales[name] != null) {
-                    delete locales[name];
-                }
-            }
-        }
-        return locales[name];
-    }
-
-    // returns locale data
-    function locale_locales__getLocale (key) {
-        var locale;
-
-        if (key && key._locale && key._locale._abbr) {
-            key = key._locale._abbr;
-        }
-
-        if (!key) {
-            return globalLocale;
-        }
-
-        if (!isArray(key)) {
-            //short-circuit everything else
-            locale = loadLocale(key);
-            if (locale) {
-                return locale;
-            }
-            key = [key];
-        }
-
-        return chooseLocale(key);
-    }
-
-    function locale_locales__listLocales() {
-        return keys(locales);
+    function pastFuture (diff, output) {
+        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
+        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
     }
 
     var aliases = {};
@@ -17654,6 +17594,23 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return normalizedInput;
     }
 
+    var priorities = {};
+
+    function addUnitPriority(unit, priority) {
+        priorities[unit] = priority;
+    }
+
+    function getPrioritizedUnits(unitsObj) {
+        var units = [];
+        for (var u in unitsObj) {
+            units.push({unit: u, priority: priorities[u]});
+        }
+        units.sort(function (a, b) {
+            return a.priority - b.priority;
+        });
+        return units;
+    }
+
     function makeGetSet (unit, keepTime) {
         return function (value) {
             if (value != null) {
@@ -17679,11 +17636,21 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // MOMENTS
 
-    function getSet (units, value) {
-        var unit;
+    function stringGet (units) {
+        units = normalizeUnits(units);
+        if (isFunction(this[units])) {
+            return this[units]();
+        }
+        return this;
+    }
+
+
+    function stringSet (units, value) {
         if (typeof units === 'object') {
-            for (unit in units) {
-                this.set(unit, units[unit]);
+            units = normalizeObjectUnits(units);
+            var prioritized = getPrioritizedUnits(units);
+            for (var i = 0; i < prioritized.length; i++) {
+                this[prioritized[i].unit](units[prioritized[i].unit]);
             }
         } else {
             units = normalizeUnits(units);
@@ -17923,6 +17890,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     addUnitAlias('month', 'M');
 
+    // PRIORITY
+
+    addUnitPriority('month', 8);
+
     // PARSING
 
     addRegexToken('M',    match1to2);
@@ -17954,7 +17925,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
     function localeMonths (m, format) {
         return isArray(this._months) ? this._months[m.month()] :
-            this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
+            this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? 'format' : 'standalone'][m.month()];
     }
 
     var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
@@ -18095,6 +18066,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
                 return this._monthsShortRegex;
             }
         } else {
+            if (!hasOwnProp(this, '_monthsShortRegex')) {
+                this._monthsShortRegex = defaultMonthsShortRegex;
+            }
             return this._monthsShortStrictRegex && isStrict ?
                 this._monthsShortStrictRegex : this._monthsShortRegex;
         }
@@ -18112,6 +18086,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
                 return this._monthsRegex;
             }
         } else {
+            if (!hasOwnProp(this, '_monthsRegex')) {
+                this._monthsRegex = defaultMonthsRegex;
+            }
             return this._monthsStrictRegex && isStrict ?
                 this._monthsStrictRegex : this._monthsRegex;
         }
@@ -18140,6 +18117,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         for (i = 0; i < 12; i++) {
             shortPieces[i] = regexEscape(shortPieces[i]);
             longPieces[i] = regexEscape(longPieces[i]);
+        }
+        for (i = 0; i < 24; i++) {
             mixedPieces[i] = regexEscape(mixedPieces[i]);
         }
 
@@ -18147,6 +18126,873 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         this._monthsShortRegex = this._monthsRegex;
         this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
         this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+    }
+
+    // FORMATTING
+
+    addFormatToken('Y', 0, 0, function () {
+        var y = this.year();
+        return y <= 9999 ? '' + y : '+' + y;
+    });
+
+    addFormatToken(0, ['YY', 2], 0, function () {
+        return this.year() % 100;
+    });
+
+    addFormatToken(0, ['YYYY',   4],       0, 'year');
+    addFormatToken(0, ['YYYYY',  5],       0, 'year');
+    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
+
+    // ALIASES
+
+    addUnitAlias('year', 'y');
+
+    // PRIORITIES
+
+    addUnitPriority('year', 1);
+
+    // PARSING
+
+    addRegexToken('Y',      matchSigned);
+    addRegexToken('YY',     match1to2, match2);
+    addRegexToken('YYYY',   match1to4, match4);
+    addRegexToken('YYYYY',  match1to6, match6);
+    addRegexToken('YYYYYY', match1to6, match6);
+
+    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
+    addParseToken('YYYY', function (input, array) {
+        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
+    });
+    addParseToken('YY', function (input, array) {
+        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
+    });
+    addParseToken('Y', function (input, array) {
+        array[YEAR] = parseInt(input, 10);
+    });
+
+    // HELPERS
+
+    function daysInYear(year) {
+        return isLeapYear(year) ? 366 : 365;
+    }
+
+    function isLeapYear(year) {
+        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    }
+
+    // HOOKS
+
+    utils_hooks__hooks.parseTwoDigitYear = function (input) {
+        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
+    };
+
+    // MOMENTS
+
+    var getSetYear = makeGetSet('FullYear', true);
+
+    function getIsLeapYear () {
+        return isLeapYear(this.year());
+    }
+
+    function createDate (y, m, d, h, M, s, ms) {
+        //can't just apply() to create a date:
+        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
+        var date = new Date(y, m, d, h, M, s, ms);
+
+        //the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
+            date.setFullYear(y);
+        }
+        return date;
+    }
+
+    function createUTCDate (y) {
+        var date = new Date(Date.UTC.apply(null, arguments));
+
+        //the Date.UTC function remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
+            date.setUTCFullYear(y);
+        }
+        return date;
+    }
+
+    // start-of-first-week - start-of-year
+    function firstWeekOffset(year, dow, doy) {
+        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
+            fwd = 7 + dow - doy,
+            // first-week day local weekday -- which local weekday is fwd
+            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+
+        return -fwdlw + fwd - 1;
+    }
+
+    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7,
+            weekOffset = firstWeekOffset(year, dow, doy),
+            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+            resYear, resDayOfYear;
+
+        if (dayOfYear <= 0) {
+            resYear = year - 1;
+            resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+            resYear = year + 1;
+            resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+            resYear = year;
+            resDayOfYear = dayOfYear;
+        }
+
+        return {
+            year: resYear,
+            dayOfYear: resDayOfYear
+        };
+    }
+
+    function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+            resWeek, resYear;
+
+        if (week < 1) {
+            resYear = mom.year() - 1;
+            resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+            resWeek = week - weeksInYear(mom.year(), dow, doy);
+            resYear = mom.year() + 1;
+        } else {
+            resYear = mom.year();
+            resWeek = week;
+        }
+
+        return {
+            week: resWeek,
+            year: resYear
+        };
+    }
+
+    function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy),
+            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
+    }
+
+    // FORMATTING
+
+    addFormatToken('w', ['ww', 2], 'wo', 'week');
+    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+
+    // ALIASES
+
+    addUnitAlias('week', 'w');
+    addUnitAlias('isoWeek', 'W');
+
+    // PRIORITIES
+
+    addUnitPriority('week', 5);
+    addUnitPriority('isoWeek', 5);
+
+    // PARSING
+
+    addRegexToken('w',  match1to2);
+    addRegexToken('ww', match1to2, match2);
+    addRegexToken('W',  match1to2);
+    addRegexToken('WW', match1to2, match2);
+
+    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
+        week[token.substr(0, 1)] = toInt(input);
+    });
+
+    // HELPERS
+
+    // LOCALES
+
+    function localeWeek (mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+
+    var defaultLocaleWeek = {
+        dow : 0, // Sunday is the first day of the week.
+        doy : 6  // The week that contains Jan 1st is the first week of the year.
+    };
+
+    function localeFirstDayOfWeek () {
+        return this._week.dow;
+    }
+
+    function localeFirstDayOfYear () {
+        return this._week.doy;
+    }
+
+    // MOMENTS
+
+    function getSetWeek (input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    function getSetISOWeek (input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    // FORMATTING
+
+    addFormatToken('d', 0, 'do', 'day');
+
+    addFormatToken('dd', 0, 0, function (format) {
+        return this.localeData().weekdaysMin(this, format);
+    });
+
+    addFormatToken('ddd', 0, 0, function (format) {
+        return this.localeData().weekdaysShort(this, format);
+    });
+
+    addFormatToken('dddd', 0, 0, function (format) {
+        return this.localeData().weekdays(this, format);
+    });
+
+    addFormatToken('e', 0, 0, 'weekday');
+    addFormatToken('E', 0, 0, 'isoWeekday');
+
+    // ALIASES
+
+    addUnitAlias('day', 'd');
+    addUnitAlias('weekday', 'e');
+    addUnitAlias('isoWeekday', 'E');
+
+    // PRIORITY
+    addUnitPriority('day', 11);
+    addUnitPriority('weekday', 11);
+    addUnitPriority('isoWeekday', 11);
+
+    // PARSING
+
+    addRegexToken('d',    match1to2);
+    addRegexToken('e',    match1to2);
+    addRegexToken('E',    match1to2);
+    addRegexToken('dd',   function (isStrict, locale) {
+        return locale.weekdaysMinRegex(isStrict);
+    });
+    addRegexToken('ddd',   function (isStrict, locale) {
+        return locale.weekdaysShortRegex(isStrict);
+    });
+    addRegexToken('dddd',   function (isStrict, locale) {
+        return locale.weekdaysRegex(isStrict);
+    });
+
+    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
+        var weekday = config._locale.weekdaysParse(input, token, config._strict);
+        // if we didn't get a weekday name, mark the date as invalid
+        if (weekday != null) {
+            week.d = weekday;
+        } else {
+            getParsingFlags(config).invalidWeekday = input;
+        }
+    });
+
+    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
+        week[token] = toInt(input);
+    });
+
+    // HELPERS
+
+    function parseWeekday(input, locale) {
+        if (typeof input !== 'string') {
+            return input;
+        }
+
+        if (!isNaN(input)) {
+            return parseInt(input, 10);
+        }
+
+        input = locale.weekdaysParse(input);
+        if (typeof input === 'number') {
+            return input;
+        }
+
+        return null;
+    }
+
+    function parseIsoWeekday(input, locale) {
+        if (typeof input === 'string') {
+            return locale.weekdaysParse(input) % 7 || 7;
+        }
+        return isNaN(input) ? null : input;
+    }
+
+    // LOCALES
+
+    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
+    function localeWeekdays (m, format) {
+        return isArray(this._weekdays) ? this._weekdays[m.day()] :
+            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
+    }
+
+    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
+    function localeWeekdaysShort (m) {
+        return this._weekdaysShort[m.day()];
+    }
+
+    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
+    function localeWeekdaysMin (m) {
+        return this._weekdaysMin[m.day()];
+    }
+
+    function day_of_week__handleStrictParse(weekdayName, format, strict) {
+        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._minWeekdaysParse = [];
+
+            for (i = 0; i < 7; ++i) {
+                mom = create_utc__createUTC([2000, 1]).day(i);
+                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
+                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
+                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
+            }
+        }
+
+        if (strict) {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        }
+    }
+
+    function localeWeekdaysParse (weekdayName, format, strict) {
+        var i, mom, regex;
+
+        if (this._weekdaysParseExact) {
+            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
+        }
+
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._minWeekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._fullWeekdaysParse = [];
+        }
+
+        for (i = 0; i < 7; i++) {
+            // make the regex if we don't have it already
+
+            mom = create_utc__createUTC([2000, 1]).day(i);
+            if (strict && !this._fullWeekdaysParse[i]) {
+                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
+                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
+                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+            }
+            if (!this._weekdaysParse[i]) {
+                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
+                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
+            }
+            // test the regex
+            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
+                return i;
+            }
+        }
+    }
+
+    // MOMENTS
+
+    function getSetDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
+        if (input != null) {
+            input = parseWeekday(input, this.localeData());
+            return this.add(input - day, 'd');
+        } else {
+            return day;
+        }
+    }
+
+    function getSetLocaleDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
+        return input == null ? weekday : this.add(input - weekday, 'd');
+    }
+
+    function getSetISODayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+
+        // behaves the same as moment#day except
+        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
+        // as a setter, sunday should belong to the previous week.
+
+        if (input != null) {
+            var weekday = parseIsoWeekday(input, this.localeData());
+            return this.day(this.day() % 7 ? weekday : weekday - 7);
+        } else {
+            return this.day() || 7;
+        }
+    }
+
+    var defaultWeekdaysRegex = matchWord;
+    function weekdaysRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysStrictRegex;
+            } else {
+                return this._weekdaysRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                this._weekdaysRegex = defaultWeekdaysRegex;
+            }
+            return this._weekdaysStrictRegex && isStrict ?
+                this._weekdaysStrictRegex : this._weekdaysRegex;
+        }
+    }
+
+    var defaultWeekdaysShortRegex = matchWord;
+    function weekdaysShortRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysShortStrictRegex;
+            } else {
+                return this._weekdaysShortRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysShortRegex')) {
+                this._weekdaysShortRegex = defaultWeekdaysShortRegex;
+            }
+            return this._weekdaysShortStrictRegex && isStrict ?
+                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+        }
+    }
+
+    var defaultWeekdaysMinRegex = matchWord;
+    function weekdaysMinRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysMinStrictRegex;
+            } else {
+                return this._weekdaysMinRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysMinRegex')) {
+                this._weekdaysMinRegex = defaultWeekdaysMinRegex;
+            }
+            return this._weekdaysMinStrictRegex && isStrict ?
+                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+        }
+    }
+
+
+    function computeWeekdaysParse () {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+
+        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
+            i, mom, minp, shortp, longp;
+        for (i = 0; i < 7; i++) {
+            // make the regex if we don't have it already
+            mom = create_utc__createUTC([2000, 1]).day(i);
+            minp = this.weekdaysMin(mom, '');
+            shortp = this.weekdaysShort(mom, '');
+            longp = this.weekdays(mom, '');
+            minPieces.push(minp);
+            shortPieces.push(shortp);
+            longPieces.push(longp);
+            mixedPieces.push(minp);
+            mixedPieces.push(shortp);
+            mixedPieces.push(longp);
+        }
+        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+        // will match the longer piece.
+        minPieces.sort(cmpLenRev);
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        for (i = 0; i < 7; i++) {
+            shortPieces[i] = regexEscape(shortPieces[i]);
+            longPieces[i] = regexEscape(longPieces[i]);
+            mixedPieces[i] = regexEscape(mixedPieces[i]);
+        }
+
+        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+        this._weekdaysShortRegex = this._weekdaysRegex;
+        this._weekdaysMinRegex = this._weekdaysRegex;
+
+        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
+    }
+
+    // FORMATTING
+
+    function hFormat() {
+        return this.hours() % 12 || 12;
+    }
+
+    function kFormat() {
+        return this.hours() || 24;
+    }
+
+    addFormatToken('H', ['HH', 2], 0, 'hour');
+    addFormatToken('h', ['hh', 2], 0, hFormat);
+    addFormatToken('k', ['kk', 2], 0, kFormat);
+
+    addFormatToken('hmm', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('hmmss', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    addFormatToken('Hmm', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('Hmmss', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    function meridiem (token, lowercase) {
+        addFormatToken(token, 0, 0, function () {
+            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
+        });
+    }
+
+    meridiem('a', true);
+    meridiem('A', false);
+
+    // ALIASES
+
+    addUnitAlias('hour', 'h');
+
+    // PRIORITY
+    addUnitPriority('hour', 13);
+
+    // PARSING
+
+    function matchMeridiem (isStrict, locale) {
+        return locale._meridiemParse;
+    }
+
+    addRegexToken('a',  matchMeridiem);
+    addRegexToken('A',  matchMeridiem);
+    addRegexToken('H',  match1to2);
+    addRegexToken('h',  match1to2);
+    addRegexToken('HH', match1to2, match2);
+    addRegexToken('hh', match1to2, match2);
+
+    addRegexToken('hmm', match3to4);
+    addRegexToken('hmmss', match5to6);
+    addRegexToken('Hmm', match3to4);
+    addRegexToken('Hmmss', match5to6);
+
+    addParseToken(['H', 'HH'], HOUR);
+    addParseToken(['a', 'A'], function (input, array, config) {
+        config._isPm = config._locale.isPM(input);
+        config._meridiem = input;
+    });
+    addParseToken(['h', 'hh'], function (input, array, config) {
+        array[HOUR] = toInt(input);
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('Hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken('Hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+    });
+
+    // LOCALES
+
+    function localeIsPM (input) {
+        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
+        // Using charAt should be more compatible.
+        return ((input + '').toLowerCase().charAt(0) === 'p');
+    }
+
+    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
+    function localeMeridiem (hours, minutes, isLower) {
+        if (hours > 11) {
+            return isLower ? 'pm' : 'PM';
+        } else {
+            return isLower ? 'am' : 'AM';
+        }
+    }
+
+
+    // MOMENTS
+
+    // Setting the hour should keep the time, because the user explicitly
+    // specified which hour he wants. So trying to maintain the same hour (in
+    // a new timezone) makes sense. Adding/subtracting hours does not follow
+    // this rule.
+    var getSetHour = makeGetSet('Hours', true);
+
+    var baseConfig = {
+        calendar: defaultCalendar,
+        longDateFormat: defaultLongDateFormat,
+        invalidDate: defaultInvalidDate,
+        ordinal: defaultOrdinal,
+        ordinalParse: defaultOrdinalParse,
+        relativeTime: defaultRelativeTime,
+
+        months: defaultLocaleMonths,
+        monthsShort: defaultLocaleMonthsShort,
+
+        week: defaultLocaleWeek,
+
+        weekdays: defaultLocaleWeekdays,
+        weekdaysMin: defaultLocaleWeekdaysMin,
+        weekdaysShort: defaultLocaleWeekdaysShort,
+
+        meridiemParse: defaultLocaleMeridiemParse
+    };
+
+    // internal storage for locale config files
+    var locales = {};
+    var globalLocale;
+
+    function normalizeLocale(key) {
+        return key ? key.toLowerCase().replace('_', '-') : key;
+    }
+
+    // pick the locale from the array
+    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
+    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
+    function chooseLocale(names) {
+        var i = 0, j, next, locale, split;
+
+        while (i < names.length) {
+            split = normalizeLocale(names[i]).split('-');
+            j = split.length;
+            next = normalizeLocale(names[i + 1]);
+            next = next ? next.split('-') : null;
+            while (j > 0) {
+                locale = loadLocale(split.slice(0, j).join('-'));
+                if (locale) {
+                    return locale;
+                }
+                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
+                    //the next array item is better than a shallower substring of this one
+                    break;
+                }
+                j--;
+            }
+            i++;
+        }
+        return null;
+    }
+
+    function loadLocale(name) {
+        var oldLocale = null;
+        // TODO: Find a better way to register and load all the locales in Node
+        if (!locales[name] && (typeof module !== 'undefined') &&
+                module && module.exports) {
+            try {
+                oldLocale = globalLocale._abbr;
+                require('./locale/' + name);
+                // because defineLocale currently also sets the global locale, we
+                // want to undo that for lazy loaded locales
+                locale_locales__getSetGlobalLocale(oldLocale);
+            } catch (e) { }
+        }
+        return locales[name];
+    }
+
+    // This function will load locale and then set the global locale.  If
+    // no arguments are passed in, it will simply return the current global
+    // locale key.
+    function locale_locales__getSetGlobalLocale (key, values) {
+        var data;
+        if (key) {
+            if (isUndefined(values)) {
+                data = locale_locales__getLocale(key);
+            }
+            else {
+                data = defineLocale(key, values);
+            }
+
+            if (data) {
+                // moment.duration._locale = moment._locale = data;
+                globalLocale = data;
+            }
+        }
+
+        return globalLocale._abbr;
+    }
+
+    function defineLocale (name, config) {
+        if (config !== null) {
+            var parentConfig = baseConfig;
+            config.abbr = name;
+            if (locales[name] != null) {
+                deprecateSimple('defineLocaleOverride',
+                        'use moment.updateLocale(localeName, config) to change ' +
+                        'an existing locale. moment.defineLocale(localeName, ' +
+                        'config) should only be used for creating a new locale ' +
+                        'See http://momentjs.com/guides/#/warnings/define-locale/ for more info.');
+                parentConfig = locales[name]._config;
+            } else if (config.parentLocale != null) {
+                if (locales[config.parentLocale] != null) {
+                    parentConfig = locales[config.parentLocale]._config;
+                } else {
+                    // treat as if there is no base config
+                    deprecateSimple('parentLocaleUndefined',
+                            'specified parentLocale is not defined yet. See http://momentjs.com/guides/#/warnings/parent-locale/');
+                }
+            }
+            locales[name] = new Locale(mergeConfigs(parentConfig, config));
+
+            // backwards compat for now: also set the locale
+            locale_locales__getSetGlobalLocale(name);
+
+            return locales[name];
+        } else {
+            // useful for testing
+            delete locales[name];
+            return null;
+        }
+    }
+
+    function updateLocale(name, config) {
+        if (config != null) {
+            var locale, parentConfig = baseConfig;
+            // MERGE
+            if (locales[name] != null) {
+                parentConfig = locales[name]._config;
+            }
+            config = mergeConfigs(parentConfig, config);
+            locale = new Locale(config);
+            locale.parentLocale = locales[name];
+            locales[name] = locale;
+
+            // backwards compat for now: also set the locale
+            locale_locales__getSetGlobalLocale(name);
+        } else {
+            // pass null for config to unupdate, useful for tests
+            if (locales[name] != null) {
+                if (locales[name].parentLocale != null) {
+                    locales[name] = locales[name].parentLocale;
+                } else if (locales[name] != null) {
+                    delete locales[name];
+                }
+            }
+        }
+        return locales[name];
+    }
+
+    // returns locale data
+    function locale_locales__getLocale (key) {
+        var locale;
+
+        if (key && key._locale && key._locale._abbr) {
+            key = key._locale._abbr;
+        }
+
+        if (!key) {
+            return globalLocale;
+        }
+
+        if (!isArray(key)) {
+            //short-circuit everything else
+            locale = loadLocale(key);
+            if (locale) {
+                return locale;
+            }
+            key = [key];
+        }
+
+        return chooseLocale(key);
+    }
+
+    function locale_locales__listLocales() {
+        return keys(locales);
     }
 
     function checkOverflow (m) {
@@ -18289,157 +19135,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         'moment construction falls back to js Date. This is ' +
         'discouraged and will be removed in upcoming major ' +
         'release. Please refer to ' +
-        'https://github.com/moment/moment/issues/1407 for more info.',
+        'http://momentjs.com/guides/#/warnings/js-date/ for more info.',
         function (config) {
             config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
         }
     );
-
-    function createDate (y, m, d, h, M, s, ms) {
-        //can't just apply() to create a date:
-        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
-        var date = new Date(y, m, d, h, M, s, ms);
-
-        //the date constructor remaps years 0-99 to 1900-1999
-        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
-            date.setFullYear(y);
-        }
-        return date;
-    }
-
-    function createUTCDate (y) {
-        var date = new Date(Date.UTC.apply(null, arguments));
-
-        //the Date.UTC function remaps years 0-99 to 1900-1999
-        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
-            date.setUTCFullYear(y);
-        }
-        return date;
-    }
-
-    // FORMATTING
-
-    addFormatToken('Y', 0, 0, function () {
-        var y = this.year();
-        return y <= 9999 ? '' + y : '+' + y;
-    });
-
-    addFormatToken(0, ['YY', 2], 0, function () {
-        return this.year() % 100;
-    });
-
-    addFormatToken(0, ['YYYY',   4],       0, 'year');
-    addFormatToken(0, ['YYYYY',  5],       0, 'year');
-    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-
-    // ALIASES
-
-    addUnitAlias('year', 'y');
-
-    // PARSING
-
-    addRegexToken('Y',      matchSigned);
-    addRegexToken('YY',     match1to2, match2);
-    addRegexToken('YYYY',   match1to4, match4);
-    addRegexToken('YYYYY',  match1to6, match6);
-    addRegexToken('YYYYYY', match1to6, match6);
-
-    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
-    addParseToken('YYYY', function (input, array) {
-        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
-    });
-    addParseToken('YY', function (input, array) {
-        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
-    });
-    addParseToken('Y', function (input, array) {
-        array[YEAR] = parseInt(input, 10);
-    });
-
-    // HELPERS
-
-    function daysInYear(year) {
-        return isLeapYear(year) ? 366 : 365;
-    }
-
-    function isLeapYear(year) {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    }
-
-    // HOOKS
-
-    utils_hooks__hooks.parseTwoDigitYear = function (input) {
-        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
-    };
-
-    // MOMENTS
-
-    var getSetYear = makeGetSet('FullYear', true);
-
-    function getIsLeapYear () {
-        return isLeapYear(this.year());
-    }
-
-    // start-of-first-week - start-of-year
-    function firstWeekOffset(year, dow, doy) {
-        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
-            fwd = 7 + dow - doy,
-            // first-week day local weekday -- which local weekday is fwd
-            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
-
-        return -fwdlw + fwd - 1;
-    }
-
-    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
-    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
-        var localWeekday = (7 + weekday - dow) % 7,
-            weekOffset = firstWeekOffset(year, dow, doy),
-            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
-            resYear, resDayOfYear;
-
-        if (dayOfYear <= 0) {
-            resYear = year - 1;
-            resDayOfYear = daysInYear(resYear) + dayOfYear;
-        } else if (dayOfYear > daysInYear(year)) {
-            resYear = year + 1;
-            resDayOfYear = dayOfYear - daysInYear(year);
-        } else {
-            resYear = year;
-            resDayOfYear = dayOfYear;
-        }
-
-        return {
-            year: resYear,
-            dayOfYear: resDayOfYear
-        };
-    }
-
-    function weekOfYear(mom, dow, doy) {
-        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
-            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
-            resWeek, resYear;
-
-        if (week < 1) {
-            resYear = mom.year() - 1;
-            resWeek = week + weeksInYear(resYear, dow, doy);
-        } else if (week > weeksInYear(mom.year(), dow, doy)) {
-            resWeek = week - weeksInYear(mom.year(), dow, doy);
-            resYear = mom.year() + 1;
-        } else {
-            resYear = mom.year();
-            resWeek = week;
-        }
-
-        return {
-            week: resWeek,
-            year: resYear
-        };
-    }
-
-    function weeksInYear(year, dow, doy) {
-        var weekOffset = firstWeekOffset(year, dow, doy),
-            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
-        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
-    }
 
     // Pick the first defined of two or three arguments.
     function defaults(a, b, c) {
@@ -18637,9 +19337,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         }
 
         // clear _12h flag if hour is <= 12
-        if (getParsingFlags(config).bigHour === true &&
-                config._a[HOUR] <= 12 &&
-                config._a[HOUR] > 0) {
+        if (config._a[HOUR] <= 12 &&
+            getParsingFlags(config).bigHour === true &&
+            config._a[HOUR] > 0) {
             getParsingFlags(config).bigHour = undefined;
         }
 
@@ -18765,11 +19465,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             return new Moment(checkOverflow(input));
         } else if (isArray(format)) {
             configFromStringAndArray(config);
-        } else if (format) {
-            configFromStringAndFormat(config);
         } else if (isDate(input)) {
             config._d = input;
-        } else {
+        } else if (format) {
+            configFromStringAndFormat(config);
+        }  else {
             configFromInput(config);
         }
 
@@ -18810,6 +19510,11 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             strict = locale;
             locale = undefined;
         }
+
+        if ((isObject(input) && isObjectEmpty(input)) ||
+                (isArray(input) && input.length === 0)) {
+            input = undefined;
+        }
         // object construction must be done this way.
         // https://github.com/moment/moment/issues/1423
         c._isAMomentObject = true;
@@ -18827,19 +19532,19 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     var prototypeMin = deprecate(
-         'moment().min is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
-         function () {
-             var other = local__createLocal.apply(null, arguments);
-             if (this.isValid() && other.isValid()) {
-                 return other < this ? this : other;
-             } else {
-                 return valid__createInvalid();
-             }
-         }
-     );
+        'moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/',
+        function () {
+            var other = local__createLocal.apply(null, arguments);
+            if (this.isValid() && other.isValid()) {
+                return other < this ? this : other;
+            } else {
+                return valid__createInvalid();
+            }
+        }
+    );
 
     var prototypeMax = deprecate(
-        'moment().max is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
+        'moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/',
         function () {
             var other = local__createLocal.apply(null, arguments);
             if (this.isValid() && other.isValid()) {
@@ -19258,7 +19963,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
             var dur, tmp;
             //invert the arguments, but complain about it
             if (period !== null && !isNaN(+period)) {
-                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period).');
+                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period). ' +
+                'See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.');
                 tmp = val; val = period; period = tmp;
             }
 
@@ -19298,20 +20004,24 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     var add_subtract__add      = createAdder(1, 'add');
     var add_subtract__subtract = createAdder(-1, 'subtract');
 
-    function moment_calendar__calendar (time, formats) {
-        // We want to compare the start of today, vs this.
-        // Getting start-of-today depends on whether we're local/utc/offset or not.
-        var now = time || local__createLocal(),
-            sod = cloneWithOffset(now, this).startOf('day'),
-            diff = this.diff(sod, 'days', true),
-            format = diff < -6 ? 'sameElse' :
+    function getCalendarFormat(myMoment, now) {
+        var diff = myMoment.diff(now, 'days', true);
+        return diff < -6 ? 'sameElse' :
                 diff < -1 ? 'lastWeek' :
                 diff < 0 ? 'lastDay' :
                 diff < 1 ? 'sameDay' :
                 diff < 2 ? 'nextDay' :
                 diff < 7 ? 'nextWeek' : 'sameElse';
+    }
 
-        var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+    function moment_calendar__calendar (time, formats) {
+        // We want to compare the start of today, vs this.
+        // Getting start-of-today depends on whether we're local/utc/offset or not.
+        var now = time || local__createLocal(),
+            sod = cloneWithOffset(now, this).startOf('day'),
+            format = utils_hooks__hooks.calendarFormat(this, sod) || 'sameElse';
+
+        var output = formats && (isFunction(formats[format]) ? formats[format].call(this, now) : formats[format]);
 
         return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
     }
@@ -19528,27 +20238,27 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         // the following switch intentionally omits break keywords
         // to utilize falling through the cases.
         switch (units) {
-        case 'year':
-            this.month(0);
-            /* falls through */
-        case 'quarter':
-        case 'month':
-            this.date(1);
-            /* falls through */
-        case 'week':
-        case 'isoWeek':
-        case 'day':
-        case 'date':
-            this.hours(0);
-            /* falls through */
-        case 'hour':
-            this.minutes(0);
-            /* falls through */
-        case 'minute':
-            this.seconds(0);
-            /* falls through */
-        case 'second':
-            this.milliseconds(0);
+            case 'year':
+                this.month(0);
+                /* falls through */
+            case 'quarter':
+            case 'month':
+                this.date(1);
+                /* falls through */
+            case 'week':
+            case 'isoWeek':
+            case 'day':
+            case 'date':
+                this.hours(0);
+                /* falls through */
+            case 'hour':
+                this.minutes(0);
+                /* falls through */
+            case 'minute':
+                this.seconds(0);
+                /* falls through */
+            case 'second':
+                this.milliseconds(0);
         }
 
         // weeks are a special case
@@ -19590,7 +20300,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     }
 
     function toDate () {
-        return this._offset ? new Date(this.valueOf()) : this._d;
+        return new Date(this.valueOf());
     }
 
     function toArray () {
@@ -19661,6 +20371,12 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     addUnitAlias('weekYear', 'gg');
     addUnitAlias('isoWeekYear', 'GG');
+
+    // PRIORITY
+
+    addUnitPriority('weekYear', 1);
+    addUnitPriority('isoWeekYear', 1);
+
 
     // PARSING
 
@@ -19737,6 +20453,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     addUnitAlias('quarter', 'Q');
 
+    // PRIORITY
+
+    addUnitPriority('quarter', 7);
+
     // PARSING
 
     addRegexToken('Q', match1);
@@ -19752,65 +20472,14 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // FORMATTING
 
-    addFormatToken('w', ['ww', 2], 'wo', 'week');
-    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-
-    // ALIASES
-
-    addUnitAlias('week', 'w');
-    addUnitAlias('isoWeek', 'W');
-
-    // PARSING
-
-    addRegexToken('w',  match1to2);
-    addRegexToken('ww', match1to2, match2);
-    addRegexToken('W',  match1to2);
-    addRegexToken('WW', match1to2, match2);
-
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
-        week[token.substr(0, 1)] = toInt(input);
-    });
-
-    // HELPERS
-
-    // LOCALES
-
-    function localeWeek (mom) {
-        return weekOfYear(mom, this._week.dow, this._week.doy).week;
-    }
-
-    var defaultLocaleWeek = {
-        dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
-    };
-
-    function localeFirstDayOfWeek () {
-        return this._week.dow;
-    }
-
-    function localeFirstDayOfYear () {
-        return this._week.doy;
-    }
-
-    // MOMENTS
-
-    function getSetWeek (input) {
-        var week = this.localeData().week(this);
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    function getSetISOWeek (input) {
-        var week = weekOfYear(this, 1, 4).week;
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    // FORMATTING
-
     addFormatToken('D', ['DD', 2], 'Do', 'date');
 
     // ALIASES
 
     addUnitAlias('date', 'D');
+
+    // PRIOROITY
+    addUnitPriority('date', 9);
 
     // PARSING
 
@@ -19831,332 +20500,14 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // FORMATTING
 
-    addFormatToken('d', 0, 'do', 'day');
-
-    addFormatToken('dd', 0, 0, function (format) {
-        return this.localeData().weekdaysMin(this, format);
-    });
-
-    addFormatToken('ddd', 0, 0, function (format) {
-        return this.localeData().weekdaysShort(this, format);
-    });
-
-    addFormatToken('dddd', 0, 0, function (format) {
-        return this.localeData().weekdays(this, format);
-    });
-
-    addFormatToken('e', 0, 0, 'weekday');
-    addFormatToken('E', 0, 0, 'isoWeekday');
-
-    // ALIASES
-
-    addUnitAlias('day', 'd');
-    addUnitAlias('weekday', 'e');
-    addUnitAlias('isoWeekday', 'E');
-
-    // PARSING
-
-    addRegexToken('d',    match1to2);
-    addRegexToken('e',    match1to2);
-    addRegexToken('E',    match1to2);
-    addRegexToken('dd',   function (isStrict, locale) {
-        return locale.weekdaysMinRegex(isStrict);
-    });
-    addRegexToken('ddd',   function (isStrict, locale) {
-        return locale.weekdaysShortRegex(isStrict);
-    });
-    addRegexToken('dddd',   function (isStrict, locale) {
-        return locale.weekdaysRegex(isStrict);
-    });
-
-    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
-        var weekday = config._locale.weekdaysParse(input, token, config._strict);
-        // if we didn't get a weekday name, mark the date as invalid
-        if (weekday != null) {
-            week.d = weekday;
-        } else {
-            getParsingFlags(config).invalidWeekday = input;
-        }
-    });
-
-    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
-        week[token] = toInt(input);
-    });
-
-    // HELPERS
-
-    function parseWeekday(input, locale) {
-        if (typeof input !== 'string') {
-            return input;
-        }
-
-        if (!isNaN(input)) {
-            return parseInt(input, 10);
-        }
-
-        input = locale.weekdaysParse(input);
-        if (typeof input === 'number') {
-            return input;
-        }
-
-        return null;
-    }
-
-    // LOCALES
-
-    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-    function localeWeekdays (m, format) {
-        return isArray(this._weekdays) ? this._weekdays[m.day()] :
-            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
-    }
-
-    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
-    function localeWeekdaysShort (m) {
-        return this._weekdaysShort[m.day()];
-    }
-
-    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
-    function localeWeekdaysMin (m) {
-        return this._weekdaysMin[m.day()];
-    }
-
-    function day_of_week__handleStrictParse(weekdayName, format, strict) {
-        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
-        if (!this._weekdaysParse) {
-            this._weekdaysParse = [];
-            this._shortWeekdaysParse = [];
-            this._minWeekdaysParse = [];
-
-            for (i = 0; i < 7; ++i) {
-                mom = create_utc__createUTC([2000, 1]).day(i);
-                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
-                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
-                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
-            }
-        }
-
-        if (strict) {
-            if (format === 'dddd') {
-                ii = indexOf.call(this._weekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else if (format === 'ddd') {
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else {
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            }
-        } else {
-            if (format === 'dddd') {
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else if (format === 'ddd') {
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else {
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            }
-        }
-    }
-
-    function localeWeekdaysParse (weekdayName, format, strict) {
-        var i, mom, regex;
-
-        if (this._weekdaysParseExact) {
-            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
-        }
-
-        if (!this._weekdaysParse) {
-            this._weekdaysParse = [];
-            this._minWeekdaysParse = [];
-            this._shortWeekdaysParse = [];
-            this._fullWeekdaysParse = [];
-        }
-
-        for (i = 0; i < 7; i++) {
-            // make the regex if we don't have it already
-
-            mom = create_utc__createUTC([2000, 1]).day(i);
-            if (strict && !this._fullWeekdaysParse[i]) {
-                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
-                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
-                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
-            }
-            if (!this._weekdaysParse[i]) {
-                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
-                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
-            }
-            // test the regex
-            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
-                return i;
-            }
-        }
-    }
-
-    // MOMENTS
-
-    function getSetDayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
-        if (input != null) {
-            input = parseWeekday(input, this.localeData());
-            return this.add(input - day, 'd');
-        } else {
-            return day;
-        }
-    }
-
-    function getSetLocaleDayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
-        return input == null ? weekday : this.add(input - weekday, 'd');
-    }
-
-    function getSetISODayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        // behaves the same as moment#day except
-        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
-        // as a setter, sunday should belong to the previous week.
-        return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
-    }
-
-    var defaultWeekdaysRegex = matchWord;
-    function weekdaysRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysStrictRegex;
-            } else {
-                return this._weekdaysRegex;
-            }
-        } else {
-            return this._weekdaysStrictRegex && isStrict ?
-                this._weekdaysStrictRegex : this._weekdaysRegex;
-        }
-    }
-
-    var defaultWeekdaysShortRegex = matchWord;
-    function weekdaysShortRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysShortStrictRegex;
-            } else {
-                return this._weekdaysShortRegex;
-            }
-        } else {
-            return this._weekdaysShortStrictRegex && isStrict ?
-                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
-        }
-    }
-
-    var defaultWeekdaysMinRegex = matchWord;
-    function weekdaysMinRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysMinStrictRegex;
-            } else {
-                return this._weekdaysMinRegex;
-            }
-        } else {
-            return this._weekdaysMinStrictRegex && isStrict ?
-                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
-        }
-    }
-
-
-    function computeWeekdaysParse () {
-        function cmpLenRev(a, b) {
-            return b.length - a.length;
-        }
-
-        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
-            i, mom, minp, shortp, longp;
-        for (i = 0; i < 7; i++) {
-            // make the regex if we don't have it already
-            mom = create_utc__createUTC([2000, 1]).day(i);
-            minp = this.weekdaysMin(mom, '');
-            shortp = this.weekdaysShort(mom, '');
-            longp = this.weekdays(mom, '');
-            minPieces.push(minp);
-            shortPieces.push(shortp);
-            longPieces.push(longp);
-            mixedPieces.push(minp);
-            mixedPieces.push(shortp);
-            mixedPieces.push(longp);
-        }
-        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
-        // will match the longer piece.
-        minPieces.sort(cmpLenRev);
-        shortPieces.sort(cmpLenRev);
-        longPieces.sort(cmpLenRev);
-        mixedPieces.sort(cmpLenRev);
-        for (i = 0; i < 7; i++) {
-            shortPieces[i] = regexEscape(shortPieces[i]);
-            longPieces[i] = regexEscape(longPieces[i]);
-            mixedPieces[i] = regexEscape(mixedPieces[i]);
-        }
-
-        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
-        this._weekdaysShortRegex = this._weekdaysRegex;
-        this._weekdaysMinRegex = this._weekdaysRegex;
-
-        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
-        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
-        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
-    }
-
-    // FORMATTING
-
     addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
 
     // ALIASES
 
     addUnitAlias('dayOfYear', 'DDD');
+
+    // PRIORITY
+    addUnitPriority('dayOfYear', 4);
 
     // PARSING
 
@@ -20177,136 +20528,15 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
 
     // FORMATTING
 
-    function hFormat() {
-        return this.hours() % 12 || 12;
-    }
-
-    function kFormat() {
-        return this.hours() || 24;
-    }
-
-    addFormatToken('H', ['HH', 2], 0, 'hour');
-    addFormatToken('h', ['hh', 2], 0, hFormat);
-    addFormatToken('k', ['kk', 2], 0, kFormat);
-
-    addFormatToken('hmm', 0, 0, function () {
-        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
-    });
-
-    addFormatToken('hmmss', 0, 0, function () {
-        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
-            zeroFill(this.seconds(), 2);
-    });
-
-    addFormatToken('Hmm', 0, 0, function () {
-        return '' + this.hours() + zeroFill(this.minutes(), 2);
-    });
-
-    addFormatToken('Hmmss', 0, 0, function () {
-        return '' + this.hours() + zeroFill(this.minutes(), 2) +
-            zeroFill(this.seconds(), 2);
-    });
-
-    function meridiem (token, lowercase) {
-        addFormatToken(token, 0, 0, function () {
-            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
-        });
-    }
-
-    meridiem('a', true);
-    meridiem('A', false);
-
-    // ALIASES
-
-    addUnitAlias('hour', 'h');
-
-    // PARSING
-
-    function matchMeridiem (isStrict, locale) {
-        return locale._meridiemParse;
-    }
-
-    addRegexToken('a',  matchMeridiem);
-    addRegexToken('A',  matchMeridiem);
-    addRegexToken('H',  match1to2);
-    addRegexToken('h',  match1to2);
-    addRegexToken('HH', match1to2, match2);
-    addRegexToken('hh', match1to2, match2);
-
-    addRegexToken('hmm', match3to4);
-    addRegexToken('hmmss', match5to6);
-    addRegexToken('Hmm', match3to4);
-    addRegexToken('Hmmss', match5to6);
-
-    addParseToken(['H', 'HH'], HOUR);
-    addParseToken(['a', 'A'], function (input, array, config) {
-        config._isPm = config._locale.isPM(input);
-        config._meridiem = input;
-    });
-    addParseToken(['h', 'hh'], function (input, array, config) {
-        array[HOUR] = toInt(input);
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('hmm', function (input, array, config) {
-        var pos = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos));
-        array[MINUTE] = toInt(input.substr(pos));
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('hmmss', function (input, array, config) {
-        var pos1 = input.length - 4;
-        var pos2 = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos1));
-        array[MINUTE] = toInt(input.substr(pos1, 2));
-        array[SECOND] = toInt(input.substr(pos2));
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('Hmm', function (input, array, config) {
-        var pos = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos));
-        array[MINUTE] = toInt(input.substr(pos));
-    });
-    addParseToken('Hmmss', function (input, array, config) {
-        var pos1 = input.length - 4;
-        var pos2 = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos1));
-        array[MINUTE] = toInt(input.substr(pos1, 2));
-        array[SECOND] = toInt(input.substr(pos2));
-    });
-
-    // LOCALES
-
-    function localeIsPM (input) {
-        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
-        // Using charAt should be more compatible.
-        return ((input + '').toLowerCase().charAt(0) === 'p');
-    }
-
-    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
-    function localeMeridiem (hours, minutes, isLower) {
-        if (hours > 11) {
-            return isLower ? 'pm' : 'PM';
-        } else {
-            return isLower ? 'am' : 'AM';
-        }
-    }
-
-
-    // MOMENTS
-
-    // Setting the hour should keep the time, because the user explicitly
-    // specified which hour he wants. So trying to maintain the same hour (in
-    // a new timezone) makes sense. Adding/subtracting hours does not follow
-    // this rule.
-    var getSetHour = makeGetSet('Hours', true);
-
-    // FORMATTING
-
     addFormatToken('m', ['mm', 2], 0, 'minute');
 
     // ALIASES
 
     addUnitAlias('minute', 'm');
+
+    // PRIORITY
+
+    addUnitPriority('minute', 14);
 
     // PARSING
 
@@ -20325,6 +20555,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // ALIASES
 
     addUnitAlias('second', 's');
+
+    // PRIORITY
+
+    addUnitPriority('second', 15);
 
     // PARSING
 
@@ -20370,6 +20604,10 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // ALIASES
 
     addUnitAlias('millisecond', 'ms');
+
+    // PRIORITY
+
+    addUnitPriority('millisecond', 16);
 
     // PARSING
 
@@ -20420,7 +20658,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     momentPrototype__proto.fromNow           = fromNow;
     momentPrototype__proto.to                = to;
     momentPrototype__proto.toNow             = toNow;
-    momentPrototype__proto.get               = getSet;
+    momentPrototype__proto.get               = stringGet;
     momentPrototype__proto.invalidAt         = invalidAt;
     momentPrototype__proto.isAfter           = isAfter;
     momentPrototype__proto.isBefore          = isBefore;
@@ -20435,7 +20673,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     momentPrototype__proto.max               = prototypeMax;
     momentPrototype__proto.min               = prototypeMin;
     momentPrototype__proto.parsingFlags      = parsingFlags;
-    momentPrototype__proto.set               = getSet;
+    momentPrototype__proto.set               = stringSet;
     momentPrototype__proto.startOf           = startOf;
     momentPrototype__proto.subtract          = add_subtract__subtract;
     momentPrototype__proto.toArray           = toArray;
@@ -20495,7 +20733,6 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     momentPrototype__proto.parseZone            = setOffsetToParsedOffset;
     momentPrototype__proto.hasAlignedHourOffset = hasAlignedHourOffset;
     momentPrototype__proto.isDST                = isDaylightSavingTime;
-    momentPrototype__proto.isDSTShifted         = isDaylightSavingTimeShifted;
     momentPrototype__proto.isLocal              = isLocal;
     momentPrototype__proto.isUtcOffset          = isUtcOffset;
     momentPrototype__proto.isUtc                = isUtc;
@@ -20509,7 +20746,8 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     momentPrototype__proto.dates  = deprecate('dates accessor is deprecated. Use date instead.', getSetDayOfMonth);
     momentPrototype__proto.months = deprecate('months accessor is deprecated. Use month instead', getSetMonth);
     momentPrototype__proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
-    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. https://github.com/moment/moment/issues/1779', getSetZone);
+    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', getSetZone);
+    momentPrototype__proto.isDSTShifted = deprecate('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', isDaylightSavingTimeShifted);
 
     var momentPrototype = momentPrototype__proto;
 
@@ -20521,143 +20759,46 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return local__createLocal.apply(null, arguments).parseZone();
     }
 
-    var defaultCalendar = {
-        sameDay : '[Today at] LT',
-        nextDay : '[Tomorrow at] LT',
-        nextWeek : 'dddd [at] LT',
-        lastDay : '[Yesterday at] LT',
-        lastWeek : '[Last] dddd [at] LT',
-        sameElse : 'L'
-    };
-
-    function locale_calendar__calendar (key, mom, now) {
-        var output = this._calendar[key];
-        return isFunction(output) ? output.call(mom, now) : output;
-    }
-
-    var defaultLongDateFormat = {
-        LTS  : 'h:mm:ss A',
-        LT   : 'h:mm A',
-        L    : 'MM/DD/YYYY',
-        LL   : 'MMMM D, YYYY',
-        LLL  : 'MMMM D, YYYY h:mm A',
-        LLLL : 'dddd, MMMM D, YYYY h:mm A'
-    };
-
-    function longDateFormat (key) {
-        var format = this._longDateFormat[key],
-            formatUpper = this._longDateFormat[key.toUpperCase()];
-
-        if (format || !formatUpper) {
-            return format;
-        }
-
-        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
-            return val.slice(1);
-        });
-
-        return this._longDateFormat[key];
-    }
-
-    var defaultInvalidDate = 'Invalid date';
-
-    function invalidDate () {
-        return this._invalidDate;
-    }
-
-    var defaultOrdinal = '%d';
-    var defaultOrdinalParse = /\d{1,2}/;
-
-    function ordinal (number) {
-        return this._ordinal.replace('%d', number);
-    }
-
     function preParsePostFormat (string) {
         return string;
     }
 
-    var defaultRelativeTime = {
-        future : 'in %s',
-        past   : '%s ago',
-        s  : 'a few seconds',
-        m  : 'a minute',
-        mm : '%d minutes',
-        h  : 'an hour',
-        hh : '%d hours',
-        d  : 'a day',
-        dd : '%d days',
-        M  : 'a month',
-        MM : '%d months',
-        y  : 'a year',
-        yy : '%d years'
-    };
-
-    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
-        var output = this._relativeTime[string];
-        return (isFunction(output)) ?
-            output(number, withoutSuffix, string, isFuture) :
-            output.replace(/%d/i, number);
-    }
-
-    function pastFuture (diff, output) {
-        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
-    }
-
     var prototype__proto = Locale.prototype;
 
-    prototype__proto._calendar       = defaultCalendar;
     prototype__proto.calendar        = locale_calendar__calendar;
-    prototype__proto._longDateFormat = defaultLongDateFormat;
     prototype__proto.longDateFormat  = longDateFormat;
-    prototype__proto._invalidDate    = defaultInvalidDate;
     prototype__proto.invalidDate     = invalidDate;
-    prototype__proto._ordinal        = defaultOrdinal;
     prototype__proto.ordinal         = ordinal;
-    prototype__proto._ordinalParse   = defaultOrdinalParse;
     prototype__proto.preparse        = preParsePostFormat;
     prototype__proto.postformat      = preParsePostFormat;
-    prototype__proto._relativeTime   = defaultRelativeTime;
     prototype__proto.relativeTime    = relative__relativeTime;
     prototype__proto.pastFuture      = pastFuture;
     prototype__proto.set             = locale_set__set;
 
     // Month
     prototype__proto.months            =        localeMonths;
-    prototype__proto._months           = defaultLocaleMonths;
     prototype__proto.monthsShort       =        localeMonthsShort;
-    prototype__proto._monthsShort      = defaultLocaleMonthsShort;
     prototype__proto.monthsParse       =        localeMonthsParse;
-    prototype__proto._monthsRegex      = defaultMonthsRegex;
     prototype__proto.monthsRegex       = monthsRegex;
-    prototype__proto._monthsShortRegex = defaultMonthsShortRegex;
     prototype__proto.monthsShortRegex  = monthsShortRegex;
 
     // Week
     prototype__proto.week = localeWeek;
-    prototype__proto._week = defaultLocaleWeek;
     prototype__proto.firstDayOfYear = localeFirstDayOfYear;
     prototype__proto.firstDayOfWeek = localeFirstDayOfWeek;
 
     // Day of Week
     prototype__proto.weekdays       =        localeWeekdays;
-    prototype__proto._weekdays      = defaultLocaleWeekdays;
     prototype__proto.weekdaysMin    =        localeWeekdaysMin;
-    prototype__proto._weekdaysMin   = defaultLocaleWeekdaysMin;
     prototype__proto.weekdaysShort  =        localeWeekdaysShort;
-    prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
     prototype__proto.weekdaysParse  =        localeWeekdaysParse;
 
-    prototype__proto._weekdaysRegex      = defaultWeekdaysRegex;
     prototype__proto.weekdaysRegex       =        weekdaysRegex;
-    prototype__proto._weekdaysShortRegex = defaultWeekdaysShortRegex;
     prototype__proto.weekdaysShortRegex  =        weekdaysShortRegex;
-    prototype__proto._weekdaysMinRegex   = defaultWeekdaysMinRegex;
     prototype__proto.weekdaysMinRegex    =        weekdaysMinRegex;
 
     // Hours
     prototype__proto.isPM = localeIsPM;
-    prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
     prototype__proto.meridiem = localeMeridiem;
 
     function lists__get (format, index, field, setter) {
@@ -20986,6 +21127,18 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
         return substituteTimeAgo.apply(null, a);
     }
 
+    // This function allows you to set the rounding function for relative time strings
+    function duration_humanize__getSetRelativeTimeRounding (roundingFunction) {
+        if (roundingFunction === undefined) {
+            return round;
+        }
+        if (typeof(roundingFunction) === 'function') {
+            round = roundingFunction;
+            return true;
+        }
+        return false;
+    }
+
     // This function allows you to set a threshold for relative time strings
     function duration_humanize__getSetRelativeTimeThreshold (threshold, limit) {
         if (thresholds[threshold] === undefined) {
@@ -21118,7 +21271,7 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.13.0';
+    utils_hooks__hooks.version = '2.14.3';
 
     setHookCallback(local__createLocal);
 
@@ -21145,7 +21298,9 @@ amplify.subscribe( "request.before.ajax", function( resource, settings, ajaxSett
     utils_hooks__hooks.locales               = locale_locales__listLocales;
     utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
     utils_hooks__hooks.normalizeUnits        = normalizeUnits;
+    utils_hooks__hooks.relativeTimeRounding = duration_humanize__getSetRelativeTimeRounding;
     utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
+    utils_hooks__hooks.calendarFormat        = getCalendarFormat;
     utils_hooks__hooks.prototype             = momentPrototype;
 
     var _moment = utils_hooks__hooks;
@@ -43128,7 +43283,7 @@ ko.bindingHandlers.htmlareasimple = {
         if (ko.isObservable(value)) {
             $(element).redactor({
                 changeCallback: value,
-                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist','orderedlist','outdent','indent','link','fontcolor','backcolor','alignment']                
             });
         }
     },
@@ -43139,6 +43294,30 @@ ko.bindingHandlers.htmlareasimple = {
         }
     }
 };
+
+ko.bindingHandlers.htmlareasimpleNoPara = {
+    init: function (element, valueAccessor) {
+        var value = valueAccessor();
+
+        if (ko.isObservable(value)) {
+            $(element).redactor({
+                changeCallback: value,
+                buttons: ['formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist', 'outdent', 'indent', 'link', 'fontcolor', 'backcolor', 'alignment'],
+                paragraphize: false,
+                replaceDivs: false,
+                linebreaks: true,
+                enterKey: false
+            });
+        }
+    },
+    update: function (element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor()) || '';
+        if (value !== $(element).redactor('get')) {
+            $(element).redactor('set', value);
+        }
+    }
+};
+
 
 ko.bindingHandlers.htmlarea = {
     init: function (element, valueAccessor) {
@@ -45083,71 +45262,69 @@ function HierarchyRuleItemModel(data) {
     return self;
 }
 
-function HierarchySourceRuleModel(data, permissions) {
+function MapSequencesModel(data, permissions) {
     var self = this;
 
-    if (data == null) {
-        data = { ID: -1, Name: '', Target: '', TargetID: '', Object: '', ObjectID: '', Description: '' };
-    }
+    if (data == null) data = { };
     
     //#region Observables
 
-    self.ID = ko.observable(data.ID || 0);
-    self.Name = ko.observable(data.Name || '');
-    self.Target = ko.observable(data.AppliesToObject || '');
-    self.TargetID = ko.observable(data.AppliesToObjectID || 0);
-    self.Object = ko.observable(data.Object || '');
-    self.ObjectID = ko.observable(data.ObjectID || 0);
-    self.Description = ko.observable(data.Description || '');
-    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
-    self.ErrorMessages = ko.observableArray([]);
-    self.SaveMessage = ko.observable('');
+    self.MapID = ko.observable(data.MapID || 0);
+    self.MapItemID = ko.observable(data.MapItemID || 0);
 
-    self.SourceRuleID = ko.observable(data.SourceRuleID || -1);
-    self.IsTemplate = ko.observable(data.IsTemplate || false);
-    self.IsSaving = ko.observable(false);
+    self.SelectedItem = ko.observable(new HierarchyRuleItemModel(null));
 
     self.Items = ko.observableArray();
-
-    self.Value = ko.computed(function () {
-        return self.Object() + '|' + self.ObjectID().toString();
-    });
+    self.MapItems = ko.observableArray();
 
     //#endregion
     
-    //load Items
-    if (data.Items) {
-        for (var i = 0; i < data.Items.length; i++) {
-            self.Items.push(new HierarchyRuleItemModel(data.Items[i]));
-        }
-    }
-
     //#region Functions
 
-    self.SaveRule = function () {
+    self.Load = function () {
+        /*
+        {
+            Contexts: [
+            ],
+            MapItems: [
+                {
+                    MapItemID: 1,
+                    AvailableSources: [
+                        { MapItemID: 1001, Name, "" }
+                    ],
+                    SelectedSources: [
+                        {
+                            MapItemID: 701,
+                            MapSequenceID: 1,
+                            Order: 1,
+                            Description: "",
+                            Contexts: [
+                                { Object: 'DomainItem', ObjectID: 111  }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+         */
+    }
+
+    self.Save = function () {
         if (!permissions.HasPermission("Relationship", "Create") && self.ID() == 0)
             return;
         if (!permissions.HasPermission("Relationship", "Update") && self.ID() != 0)
             return;
-        self.IsSaving(true);
-        self.ErrorMessages([]);
-        if (self.Items().length < 1)
-            self.ErrorMessages.push('Source rule must have at least 1 source item.');
-        if (self.Name().length < 1)
-            self.ErrorMessages.push('Source rule requires a name.');
+        //if (self.Items().length < 1)
+        //    self.ErrorMessages.push('Source rule must have at least 1 source item.');
+        //if (self.Name().length < 1)
+        //    self.ErrorMessages.push('Source rule requires a name.');
 
-        //for (var i = 0; i < self.Items().length; i++) {
-        //    if (self.Items()[i].Contexts().length < 1 && self.Items()[i].Description().length < 1) {
-        //        self.ErrorMessages.push('The source "' + self.Items()[i].Name() + '" is missing a context and/or description.');
-        //    }
+        //if (self.ErrorMessages().length > 0) {
+        //    self.IsSaving(false);
+        //    return;
         //}
 
-        if (self.ErrorMessages().length > 0) {
-            self.IsSaving(false);
-            return;
-        }
-
-        var SourceRule = {
+        var model = {
             ID: self.ID(),
             Name: self.Name(),
             Object: self.Object(),
@@ -45158,21 +45335,13 @@ function HierarchySourceRuleModel(data, permissions) {
             Items: ko.toJS(self.Items())
         }
 
-        var action = (self.ID() > 0) ? 'edit' : 'add';
-
         $.ajax({
             url: '/form/SourceRules/save',
-            data: SourceRule,
+            data: model,
             method: 'POST'
         }).always(function (data) {
-            self.IsSaving(false);
             if (!data.error) {
-                self.ID(data.message);
-                self.SaveMessage('<span style="color:green"><i class="fa fa-check-circle"></i> Changes saved successfully.</span>')
-                amplify.publish("SaveAction", { context: 'sourcerule', action: action, object: self.Object(), objectid: self.ObjectID() });
-            } else {
-                self.SaveMessage('<span style="color:maroon"><i class="fa fa-exclaimation-circle"></i> An error occurred while saving the hierarchy rules.</span>');
-                console.log(data.message);
+                amplify.publish("SaveAction", { context: 'sourcerule', action: "add" });
             }        
         });
     }
@@ -45182,27 +45351,18 @@ function HierarchySourceRuleModel(data, permissions) {
     return self;
 }
 
-function HierarchyPanelViewModel(data, permissions) {
+function TimeToGEtRidOfThis(data, permissions) {
     var self = this;
     self.jqxLoaded = false;
-    //#region Observables
-    //console.log(permissions);
+
+    //#region Simple Properties
+
     self.ID = ko.observable(data.ID || 0);
     self.Name = ko.observable('');
     self.Target = ko.observable(data.target || '');
     self.TargetID = ko.observable(data.targetID || 0);
     self.Object = ko.observable(data.object || '');
     self.ObjectID = ko.observable(data.objectID || 0);
-    self.NewRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.NewRule().Name('New Rule');
-    self.NewRule().Object(self.Object());
-    self.NewRule().ObjectID(self.ObjectID());
-    self.NewRule().Target(self.Target());
-    self.NewRule().TargetID(self.TargetID());
-    self.InProgress = ko.observable(false);
-    self.IsGridLoading = ko.observable(false);
-    self.SelectedRule = ko.observable(new HierarchySourceRuleModel(null, permissions));
-    self.Mode = ko.observable('add'); 
 
     self.Contexts = ko.observableArray([]);
     self.Items = ko.observableArray();
@@ -45215,26 +45375,60 @@ function HierarchyPanelViewModel(data, permissions) {
     self.SelectedItemIndex = ko.observable(-1);
     self.SelectedSourceIndex = ko.observable(-1);
     self.SelectedRuleIndex = ko.observable(-1);
-   // self.RadioAddChecked = ko.observable(true);
-    //self.RadioEditChecked = ko.observable(false);
+
     self.IsLoadingContexts = ko.observable(false);
     self.HasSourcesOrRules = ko.observable(true);
 
     self.CanAdd = ko.observable(false);
     self.CanUpdate = ko.observable(false);
 
+    //#endregion
+
     if (permissions != null) {
         if (permissions.HasPermission("Relationship", "Create"))
             self.CanAdd(true);
         if (permissions.HasPermission("Relationship", "Update"))
             self.CanUpdate(true);
-
     }
 
+    //#region Computed Properties
+
+    self.IsItemSelected = ko.computed(function () {
+        if (self.SelectedRule() == null)
+            return false;
+        if (self.SelectedRule().SelectedItem() == null)
+            return false;
+        return true;
+    });
+
+    //#endregion
+
+    //#region Subscriptions
+
+    self.SelectedItemIndex.subscribe(function () {
+        if (self.SelectedItemIndex() == -1) {
+            self.IsLoadingContexts(true);
+            return;
+        }
+        self.IsLoadingContexts(false);
+        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
+        if (self.IsItemSelected())
+            self.CheckUsedContextItems();
+    });
+
+    self.SelectedRuleIndex.subscribe(function () {
+        var rule = self.SourceRules()[self.SelectedRuleIndex()];
+        self.SelectedRule(rule);
+        //self.SelectedItemIndex(-1);
+        self.CheckUsedContextItems();
+    });
+
+    //#endregion
+
+    //#region Functions
 
     self.DeleteSourceRule = function () {
         self.Mode('delete');
-        //console.log('mode delete');
     }
 
     self.DeleteConfirm = function () {
@@ -45289,39 +45483,7 @@ function HierarchyPanelViewModel(data, permissions) {
         self.SelectedRuleIndex(self.SourceRules().length - 1);
     }
 
-
-    self.SelectedItemIndex.subscribe(function () {
-        if (self.SelectedItemIndex() == -1) {
-            self.IsLoadingContexts(true);
-            return;
-        }
-        self.IsLoadingContexts(false);
-        self.SelectedRule().SelectedItem(self.SelectedRule().Items()[self.SelectedItemIndex()]);
-        if (self.IsItemSelected())
-            self.CheckUsedContextItems();
-    });
-
-    self.SelectedRuleIndex.subscribe(function () {
-        var rule = self.SourceRules()[self.SelectedRuleIndex()];
-        self.SelectedRule(rule);
-        //self.SelectedItemIndex(-1);
-        self.CheckUsedContextItems();
-    });
-
-    self.IsItemSelected = ko.computed(function () {
-        if (self.SelectedRule() == null)
-            return false;
-        if (self.SelectedRule().SelectedItem() == null)
-            return false;
-        return true;
-    });
-
-    //#endregion
- 
-    //#region Functions
-
     self.LoadRules = function () {
-        //console.log('load rules');
         self.InProgress(true);
         $.ajax({
             url: '/form/SourceRules/' + self.Target() + '/' + self.TargetID() + '/' + self.Object() + '/' + self.ObjectID(),
@@ -45344,7 +45506,6 @@ function HierarchyPanelViewModel(data, permissions) {
                 }
             }
         }).always(function () {
-            //self.SelectRule(self.NewRule());
             self.InProgress(false);
             if (!self.jqxLoaded)
                 self.ApplyJqxBindings();
@@ -45353,7 +45514,6 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.LoadSources = function () {
-      //  console.log('load sources');
         self.InProgress(true);
 
         $.ajax({
@@ -45382,7 +45542,6 @@ function HierarchyPanelViewModel(data, permissions) {
     self.LoadSources();
 
     self.LoadContexts = function () {
-       // console.log('load contexts');
         $.ajax({
             url: '/form/SourceRules/contexts',
             method: 'GET'
@@ -45414,7 +45573,6 @@ function HierarchyPanelViewModel(data, permissions) {
             return;
         if (self.SelectedItemIndex() == -1)
             return;
-        //console.log(ko.toJS(self.SelectedRule().Items()[self.SelectedItemIndex()]));
         self.Sources.push(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedRule().Items.remove(self.SelectedRule().Items()[self.SelectedItemIndex()]);
         self.SelectedItemIndex(-1);
@@ -45468,7 +45626,6 @@ function HierarchyPanelViewModel(data, permissions) {
     }
 
     self.ApplyJqxBindings = function () {
-       // console.log('jqx bindings start');
         $('#hierarchyRuleContextGrid').on('cellvaluechanged', function () {
             self.OnCellValueChange();
         }).on('bindingcomplete', function () {
@@ -45476,7 +45633,6 @@ function HierarchyPanelViewModel(data, permissions) {
             $(this).jqxGrid('refresh');
         });
         self.jqxLoaded = true;
-       // console.log('jqx bindings end');
     }
 
     self.FindItemByOrder = function (order, array) {
@@ -49426,6 +49582,174 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
 
 
 //#endregion
+
+var SurveyQuestionValueViewModel = function (value) {
+    var self = this;
+    self.Value = ko.observable(value.Value);
+    self.Name = ko.observable(value.Name);
+    self.ID = ko.observable(value.ID);
+
+    self.Checked = ko.observable(value);
+
+    self.IsChecked = ko.computed(function () {
+        return (self.Checked() === true);
+    });
+
+
+    return self;
+}
+
+
+var SurveyQuestionViewModel = function (question, number) {
+    var self = this;
+    self.Name = ko.observable(question.Name);
+    self.Id = ko.observable(question.ID);
+    self.OptionCount = ko.observable(question.OptionCount);
+    self.DisplayStyle = ko.observable(question.DisplayStyle);
+    self.Description = ko.observable(question.Description);
+    self.IsAnswered = ko.observable(false);
+    self.IsLoading = ko.observable(true);
+    self.Values = ko.observableArray();
+    self.Comments = ko.observable();
+    self.QuestionNumber = ko.observable(number);
+
+    self.HasUserPickedAnAnswer = function () {
+        var result = $.grep(self.Values(), function (e) { return e.IsChecked(); });
+
+        return (result.length != 0);
+    };
+
+    $.getJSON('/api/surveys/question/' + self.Id() + '/values', function (data) {
+        if (data) {                        
+            data.forEach(function (value) {
+                self.Values.push(new SurveyQuestionValueViewModel(value));
+            });
+        }
+        self.IsLoading(false);
+    });
+
+    return self;
+}
+
+
+var ObjectSurveyViewModel = function (surveyObject, type, id) {
+    var self = this;
+    self.IsLoading = ko.observable(true);
+    self.Name = ko.observable(surveyObject.Name);
+    self.Id = ko.observable(surveyObject.ID);
+    self.Questions = ko.observableArray();
+    self.IsCompleted = ko.observable(false);
+    self.ShouldTileFade = ko.observable(false);
+    var _currentQuestionIndex = ko.observable(0);
+
+    self.CurrentQuestion = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return null;
+        return self.Questions()[_currentQuestionIndex()];
+    });
+
+    self.pagingInfo = ko.computed(function () {
+        if (self.Questions() == null) return '';
+        return 'Question ' + (_currentQuestionIndex() + 1) +' of ' + (self.Questions().length);
+    });
+
+    self.isSubmitEnabled = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return false;
+        if (!self.CurrentQuestion().HasUserPickedAnAnswer()) return false;
+        return (_currentQuestionIndex() + 1) == self.Questions().length;
+    });
+
+    self.isNextEnabled = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return false;
+        // check if a item was checked
+        if (!self.CurrentQuestion().HasUserPickedAnAnswer()) return false;
+        return (_currentQuestionIndex()) < (self.Questions().length -1);
+    });
+
+    self.isPreviousVisible = ko.computed(function () {
+        if (self.Questions() == null || self.Questions().length == 0) return false;        
+        return (_currentQuestionIndex() > 0);
+    });
+
+    self.isNextVisible = ko.computed(function () {
+        if (self.Questions() == null) return false;        
+        return (_currentQuestionIndex()) < (self.Questions().length - 1);
+    });
+
+    self.isSubmitVisible = ko.computed(function () {
+        if (self.Questions() == null) return false;
+        return (_currentQuestionIndex() + 1) == self.Questions().length;
+    });
+
+    function navigate(nrOfSpots) {
+        if (_currentQuestionIndex() + nrOfSpots >= self.Questions().length) { return; }
+        if (_currentQuestionIndex() + nrOfSpots < 0) { return; }
+        _currentQuestionIndex(_currentQuestionIndex() + nrOfSpots);
+    }
+
+    self.next = function () { navigate(1); };
+    self.prev = function () { navigate(-1); };
+
+    self.submit = function () {
+        //submit the survey        
+        $.ajax("/api/survey/" + self.Id() + "/" + id + "/" + type, {
+            data: ko.toJSON({ Questions: self.Questions }),
+            type: "post", contentType: "application/json",
+            success: function (result) { 
+                //switch to the thank you message
+                self.IsCompleted(true);
+                setInterval(function () {
+                    self.ShouldTileFade(true);                    
+                }, 5000);
+            }
+        });
+
+        
+    }
+
+    //load the questions for this survey    
+    $.getJSON('/api/surveys/' + self.Id() + '/questions', function (data) {
+        if (data) {
+            data.forEach(function (question,index) {
+                self.Questions.push(new SurveyQuestionViewModel(question,index+1));
+            });            
+        }            
+        self.IsLoading(false);
+    });
+    
+    return self;
+}
+
+
+var SurveyViewModel = function(type, id, parentType, parentTypeId) {
+    var self = this;
+    self.IsLoading = ko.observable(true);
+    self.IsSurveyAvailable = ko.observable(false);
+    self.Survey = ko.observable();
+    self.Type = ko.observable(type);
+    self.Id = ko.observable(id);
+    self.ParentType = ko.observable(parentType);
+    self.ParentTypeId = ko.observable(parentTypeId);
+        
+    self.Load = function() {
+        //load surveys
+        $.getJSON('/api/surveys/' + self.ParentType() + '/' + self.ParentTypeId() + '/' + self.Type() + '/' + self.Id() + '/survey', function (data) {
+            if(data)
+                self.Survey(new ObjectSurveyViewModel(data, self.Type(), self.Id()));
+            self.IsLoading(false);    
+        })
+    };
+
+    self.Clear = function () {
+        if (!self.Survey()) return;
+        self.Survey(null);
+        self.IsLoading(true);
+    }
+
+    self.Load();
+
+    return self;
+}
+
 var theme = 'd3s'; //metro
 var list_theme = 'd3s'; //lists
 var grid_width = '100%';
@@ -51203,8 +51527,9 @@ function renderSearchTypesDropdown(controlID) {
                             default: //String, Text
                                 //#region Text Field Management                                
                                 addLabel(cpnl, v, false);
+                                
 
-                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="text" ' + (v.TypeaheadUri ? '  autocomplete="off"' : '') +'/>');
+                                fld = $('<input id="' + v.FieldName + '" name="' + v.FieldName + '" type="' + (v.FieldType == 'Password' ? 'password' : 'text') + '" autocomplete="off" />');
                                 fld.val($('<div/>').html(cleanedValue).text());
 
                                 if (!v.TypeaheadUri) {
@@ -51245,6 +51570,76 @@ function renderSearchTypesDropdown(controlID) {
                                         }
                                     });
                                 }
+
+                                if (v.SimilarItemsUri) {
+
+                                    var delay = (function () {
+                                        var timer = 0;
+                                        return function (callback, ms) {
+                                            clearTimeout(timer);
+                                            timer = setTimeout(callback, ms);
+                                        };
+                                    })();
+
+                                    fld.on('keyup', function () {
+
+                                        delay(function () {
+                                            var val = fld.val();
+                                            
+                                            if (val.length > 2 && val.trim(' ').length > 0) {
+                                                $.ajax({
+                                                    url: v.SimilarItemsUri + val,
+                                                    method: 'GET',
+                                                    dataType: 'json'
+                                                }).complete(function (data) {
+                                                    data = data.responseJSON;
+                                                    $('#Similar_' + v.FieldName).remove();
+                                                    fld.css('border-color', '');
+                                                    if (data && data.length > 0) {
+
+                                                        fld.css('border-color', '#f6ab00');
+                                                        var warning = '<div id="Similar_' + v.FieldName + '"><span style="color:#f6ab00">The following items with similar names already exist: </span><br/>';
+                                                        var items = [];
+
+                                                        for (var i = 0; i < data.length; i++) {
+                                                            var item = '<a id="Similar_' + v.FieldName + '_item_' + i + '" href="' + data[i].Url + '">' + data[i].Name + '</a>';
+                                                            items.push(item);
+                                                        }
+
+                                                        warning += items.join(', ');
+                                                        fld.after(warning);
+
+                                                        for (var i = 0; i < items.length; i++) {
+                                                            $('#Similar_' + v.FieldName + '_item_' + i).qtip({
+                                                                content: {
+                                                                    text: data[i].Description,
+                                                                    position: {
+                                                                        at: 'bottom center',
+                                                                        my: 'top center',
+                                                                        viewport: $(window),
+                                                                        effect: false
+                                                                    }
+                                                                },
+                                                                style: {
+                                                                    classes: 'qtip-blue qtip-rounded'
+                                                                }
+                                                            });
+                                                        }
+
+                                                    } else {
+                                                        $('#Similar_' + v.FieldName).remove();
+                                                        fld.css('border-color', '');
+                                                    }
+                                                });
+                                            } else {
+                                                $('#Similar_' + v.FieldName).remove();
+                                                fld.css('border-color', '');
+                                            }
+                                        }, 200);
+
+                                    });
+                                }
+
                                 addValidator(v, validatorRules);
 
                                 cpnl.append(fld);
@@ -51588,18 +51983,17 @@ function renderSearchTypesDropdown(controlID) {
                     },
                     function (data) {
                         if (data) {
-                            $obj.append("<h1>" + data.Report.Title + "</h1>");
-                            $obj.append("<div class='Column' id='Col1'></div>");
-                            $obj.append("<div class='Column' id='Col2'></div>");
-                            $obj.append("<div class='Column' id='Col3'></div>");
-                            var col1 = $("#Col1");
-                            var col2 = $("#Col2");
-                            var col3 = $("#Col3");
+                            var row = $("<div class='row'></div>");
+                            $obj.append(row);
+                            $.each(data.Report.Charts.Chart, function (ix, item) {
+                                row.append("<div class='col s4'><div id='Cht" + item.ID + "' style='width: 100%; height: 300px'></div></div>");
+                            });
 
-                            //if (data.Report.Chart)
-                            $.each(data.Report.Charts, function (idx, value) {
-                                loadChart(value, idx, col1, col2, col3);
-                            }); //each
+
+
+                            $.each(data.Report.Charts.Chart, function (idx, value) {
+                                loadChart(value);
+                            });
                         }
                     }
                 );
@@ -51614,43 +52008,43 @@ function renderSearchTypesDropdown(controlID) {
         }
     }
 
-    function loadChart(cht, idx, col1, col2, col3) {
+    function loadChart(cht) {
         try {
-            //#region Score Class Decision
-            var scoreClass;
-            if (cht.Score <= 40) {
-                scoreClass = "Low";
-            }
-            else if (cht.Score > 40 && cht.Score <= 80) {
-                scoreClass = "Medium";
-            }
-            else {
-                scoreClass = "High";
-            }
-            //#endregion
-            var responseText = " response";
-            if (cht.TotalResponses > 1) {
-                responseText += "s";
-            }
-            var html = "";
-            html += "<div class='Chart'>";
-            html += "<h1>" + cht.Title + "</h1>";
-            html += "<div class='Score'><h1>Score</h1><div class='" + scoreClass + "'>" + cht.Score + "</div></div>";
-            html += "<div class='Count'>" + cht.TotalResponses + responseText + "</div>";
-            html += "<div class='Graphic' id='Cht" + idx + "'></div>";
-            html += "</div>";
+            ////#region Score Class Decision
+            //var scoreClass;
+            //if (cht.Score <= 40) {
+            //    scoreClass = "Low";
+            //}
+            //else if (cht.Score > 40 && cht.Score <= 80) {
+            //    scoreClass = "Medium";
+            //}
+            //else {
+            //    scoreClass = "High";
+            //}
+            ////#endregion
+            //var responseText = " response";
+            //if (cht.TotalResponses > 1) {
+            //    responseText += "s";
+            //}
+            //var html = "";
+            //html += "<div class='Chart'>";
+            ////html += "<h1>" + cht.Title + "</h1>";
+            //html += "<div class='Score'><h1>Score</h1><div class='" + scoreClass + "'>" + cht.Score + "</div></div>";
+            //html += "<div class='Count'>" + cht.TotalResponses + responseText + "</div>";
+            //html += "<div class='Graphic' id='Cht" + idx + "'></div>";
+            //html += "</div>";
 
-            var mv = idx % 3;
+            //var mv = idx % 3;
 
-            if (mv == 0) {
-                col1.append(html);
-            }
-            else if (mv == 1) {
-                col2.append(html);
-            }
-            else {
-                col3.append(html);
-            }
+            //if (mv == 0) {
+            //    col1.append(html);
+            //}
+            //else if (mv == 1) {
+            //    col2.append(html);
+            //}
+            //else {
+            //    col3.append(html);
+            //}
 
             //#region Build Chart
 
@@ -51671,8 +52065,9 @@ function renderSearchTypesDropdown(controlID) {
                         enableAnimations: true,
                         showBorderLine: false,
                         showLegend: true,
-                        height: 200,
-                        width: 200,
+                        title: cht.Title,
+                       // height: 200,
+                        //width: 200,
                         source: dataAdapter,
                         colorScheme: 'scheme01',
                         seriesGroups:
@@ -51694,11 +52089,11 @@ function renderSearchTypesDropdown(controlID) {
                                 }
                             ]
                     };
-                    $("#Cht" + idx).jqxChart(settings);
+                    $("#Cht" + cht.ID).jqxChart(settings);
                 }
             }
             else {
-                $("#Cht" + idx).addClass("error").html("No data to display");
+                $("#Cht" + cht.ID).addClass("error").html("No data to display");
             }
             //#endregion
         } catch (e) {
@@ -51707,196 +52102,6 @@ function renderSearchTypesDropdown(controlID) {
     }
 
     //#endregion
-
-})(jQuery);
-(function ($) {
-
-    amplify.request.define("RandomSurveyQuestion", "ajax", { url: '/api/surveys/{type}/{id}/randomquestion', type: 'GET' });
-    amplify.request.define("SubmitRandomSurveyQuestion", "ajax", { url: '/api/surveys/randomquestion', type: 'POST' }); //{type}/{id}/
-
-    var methods = {
-        init: function (options) {
-            var defaults = {
-                objectType: null,
-                objectID: null
-            };
-
-            options = $.extend(defaults, options);           // extending default with any options that were provided
-
-            return this.each(function () {
-
-                var $this = $(this),
-                    data = $this.data('RandomSurveyQuestion');
-
-                $this.addClass("Question");
-
-                if (!data) {
-
-                    if (options.objectType && options.objectID) {
-                        loadQuestion($this, options);
-                    }
-
-                    $(this).data('RandomSurveyQuestion', {
-                        Target: $this,
-                        Options: options
-                    });
-
-                }
-
-                //$(window).bind('resize.tooltip', methods.someMethodName); //events with namespacing
-            });
-        },
-        reload: function (objectType, objectID) {
-            return this.each(function () {
-                var $this = $(this),
-                    data = $this.data('RandomSurveyQuestion'),
-                    options = data.Options;
-
-                options.objectType = objectType;
-                options.objectID = objectID;
-
-                load($this, options);
-            });
-        },
-        destroy: function () {
-            return this.each(function () {
-                var $this = $(this),
-                    data = $this.data('RandomSurveyQuestion');
-
-                $this.removeData('RandomSurveyQuestion');
-                //$(window).unbind('.tooltip');
-            });
-        }
-    };
-
-    $.fn.RandomSurveyQuestion = function (method) {
-
-        // Method calling logic
-        if (methods[method]) {
-            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-        } else if (typeof method === 'object' || !method) {
-            return methods.init.apply(this, arguments);
-        } else {
-            $.error('Method ' + method + ' does not exist on d3s.RandomSurveyQuestion');
-        }
-
-    };
-
-    function loadQuestion($obj, options) {
-        try {
-            //return $obj.each(function () {
-            var $this = $obj;//,//$(this),
-                    //data = $this.data('RandomSurveyQuestion'),
-                    //options = data.Options;
-
-                if (options.objectType && options.objectID) {
-
-                    //#region Report
-
-                    $this.html('');
-                    var okToAsk = true;
-                    var storeValues = amplify.store("DateLastAskedSurveyQuestion");
-                    if (storeValues) {
-                        var fiveDaysAgo = moment().subtract('days', 2).calendar();
-                        $(storeValues).each(function (idx, val) {
-                            if (val.ObjectType == options.objectType && val.ObjectID == options.objectID && fiveDaysAgo >= val.Date) {
-                                okToAsk = false;
-                            }
-                        });
-                    }
-
-                    if (okToAsk) {
-                        amplify.request("RandomSurveyQuestion",
-                            {
-                                type: options.objectType,
-                                id: options.objectID
-                            },
-                            function (data) {
-                                if (data.Question) {
-
-                                    $this.show();
-
-                                    if (data.Question.Description) {
-                                        $this.append("<header>" + data.Question.Description + "</header>");
-                                    }
-                                    else {
-                                        $this.append("<header>How would you rate " + data.Question.Name + " for " + data.Question.ObjectName + "?</header>");
-                                    }
-                                    /*
-                                    <form action="/artifacts/EditArtifact?id=7" data-ajax="true" data-ajax-begin="OnStarting" data-ajax-failure="OnFailed" data-ajax-method="POST" data-ajax-success="OnSuccess" data-ajax-url="/api/Artifacts/EditArtifact?id=7" method="post">
-                                    */
-                                    $this.append("<div id='RandomQuestionRating'></div>");
-                                    $this.append("<div class='directions'>Optionally add a comment.</div>");
-                                    $this.append("<div><textarea id='RandomQuestionComment'></textarea></div>");
-                                    $this.append("<div><input type='button' id='SubmitRandomQuestion' value='Rate' /></div>");
-                                    var c = data.Question.Option.length;
-                                    $('#RandomQuestionRating').jqxRating({ theme: theme, count: c, itemHeight: 20, itemWidth: 20 });
-                                    //$('#RandomQuestionComment').elastic();
-                                    $("#SubmitRandomQuestion").jqxButton({ theme: theme, height: 25 });
-                                    $("#SubmitRandomQuestion").click(function () {
-                                        amplify.request("SubmitRandomSurveyQuestion",
-                                            {
-                                                ObjectType: options.objectType,
-                                                ObjectID: options.objectID,
-                                                QuestionTypeID: data.Question.ID,
-                                                SurveyTypeID: data.Question.SurveyTypeID,
-                                                Value: $('#RandomQuestionRating').jqxRating('getValue'),
-                                                Comment: $('#RandomQuestionComment').val()
-                                            },
-                                            function (innerdata) {
-                                                if (innerdata.Message == "Created") {
-                                                    var store = amplify.store("DateLastAskedSurveyQuestion")
-                                                    if (!store) {
-                                                        store = [];
-                                                    }
-                                                    store.push({
-                                                        ObjectType: options.objectType,
-                                                        ObjectID: options.objectID,
-                                                        Date: new Date()
-                                                    });
-                                                    amplify.store("DateLastAskedSurveyQuestion", store);
-                                                    $this.fadeOut(500);
-                                                    $this.hide();
-                                                }
-                                            }
-                                        );
-                                    });
-                                    /*
-                                    $.each(data.Question.Option, function (idx, value) {
-        
-                                        var html = "";
-                                        html += "<div class='Chart'>";
-                                        html += "<h1>" + value.Title + "</h1>";
-                                        html += "<div class='Score'><h1>Score</h1><div class='" + scoreClass + "'>" + value.Score + "</div></div>";
-                                        html += "<div class='Count'>" + value.TotalResponses + responseText + "</div>";
-                                        html += "<div class='Graphic' id='Cht" + idx + "'></div>";
-                                        html += "</div>";
-        
-                                        qsn.append(html);
-        
-                                    }); */
-                                }
-                            }
-                        );
-                    }
-                    else {
-                        $this.addClass("HiddenQuestion");
-                    }
-
-                    //#endregion
-                }
-                else {
-                    $this.html('');
-                }
-
-                if ($this.html() == '') {
-                    $this.hide();
-                }
-            //});
-        } catch (e) {
-            logError("RandomSurveyQuestion.js : loadQuestion", e);
-        }
-    }
 
 })(jQuery);
 (function ($) {
@@ -57610,6 +57815,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID).html(tmpl({ control: controlID }));
 
     var lineageModel;
+    var sourceRuleModel;
     var mapRulesModel;
     var transformationModel;
 
@@ -57618,39 +57824,25 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var ribbon_button_width = 58;
     var ribbon_button_height = "90%";
 
-    var controlID_splitter = controlID + '_splitter';
-
     var controlID_header = controlID + "_header";
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
     var controlID_palette = controlID + '_palette';
     var controlID_overview = controlID + '_overview';
-    var controlID_sidebar = controlID + '_sidebar';
-    var controlID_overlay = controlID + '_overlay';
+
+    //var controlID_sidebar_ribbon = controlID + '_sidebar_ribbon';
     var controlID_ribbon = controlID + '_ribbon';
     var controlID_wrapper_fullscreen = controlID + '_wrapper_fullscreen';
-    var controlID_message = controlID + '_message';
 
     var controlID_controls = controlID + '_controls';
 
-    var controlID_info = controlID + '_info';
+    var controlID_view_window_base = controlID + '_view_window';
+    var controlID_window_base = controlID + '_Window';
+
     var controlID_info_body = controlID + '_info_body';
     var controlID_info_detail = controlID + '_info_detail';
     var controlID_info_detail_wrapper = controlID + '_info_detail_wrapper';
     var controlID_info_detail_edit = controlID + '_info_detail_edit';
-
-    //var controlID_add_search_text = controlID + '_add_search_text';
-    //var controlID_add_search = controlID + '_add_search';
-    //var controlID_add_artifact_type = controlID + '_add_artifact_type';
-    //var controlID_add_search_message = controlID + '_add_search_message';
-
-    var controlID_overlay_existing = controlID + '_overlay_existing';
-    var controlID_overlay_new = controlID + '_overlay_new';
-    var controlID_overlay_relationship = controlID + '_overlay_relationship';
-    var controlID_overlay_predicates = controlID + '_overlay_predicates';
-    var controlID_overlay_transformation = controlID + '_overlay_transformation';
-    var controlID_overlay_cancel = controlID + '_overlay_cancel';
-    var controlID_overlay_add = controlID + '_overlay_add';
 
     var controlID_ribbon_spacer = controlID + '_ribbon_spacer';
     var controlID_ribbon_content = controlID + '_ribbon_content';
@@ -57664,15 +57856,14 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_ribbon_reset = controlID + '_ribbon_reset';
     var controlID_ribbon_fullscreen = controlID + '_ribbon_fullscreen';
 
-    var controlID_ribbon_save = controlID + '_ribbon_save';
-    var controlID_ribbon_save_spinner = controlID + '_ribbon_save_spinner';
-    var controlID_ribbon_add = controlID + '_ribbon_add';
     var controlID_ribbon_undo = controlID + '_ribbon_undo';
     var controlID_ribbon_redo = controlID + '_ribbon_redo';
-    var controlID_ribbon_remove = controlID + '_ribbon_remove';
-    var controlID_ribbon_sourcerule_add = controlID + '_ribbon_sourcerule_add';
 
-    //var controlID_ribbon_lineage = controlID + '_ribbon_lineage';
+    var controlID_ribbon_sourcerule = controlID + '_ribbon_sourcerule';
+    var controlID_ribbon_sourcerule_cancel = controlID + '_ribbon_sourcerule_cancel';
+    var controlID_ribbon_sourcerule_save = controlID + '_ribbon_sourcerule_save';
+
+    var controlID_ribbon_lineage = controlID + '_ribbon_lineage';
     var controlID_ribbon_lineage_add = controlID + '_ribbon_lineage_add';
     var controlID_ribbon_lineage_addItem = controlID + '_ribbon_lineage_addItem';
     var controlID_ribbon_lineage_cancel = controlID + '_ribbon_lineage_cancel';
@@ -57699,23 +57890,18 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     var controlID_popover_multimaprule_editor = controlID + '_popover_multimaprule_editor';
     var controlID_popover_multimaprule_editor_body = controlID_popover_multimaprule_editor + '_body';
 
-    var controlID_tabs = controlID + '_tabs';
-    var controlID_fusion_tab = controlID + '_fusion_tab';
-    var controlID_sourcerules_tab = controlID + '_sourcerules_tab';
-    var controlID_mappingrules_tab = controlID + '_mappingrules_tab';
-    var controlID_responsibilities_tab = controlID + '_responsibilities_tab';
-    var controlID_transformations_tab = controlID + '_transformations_tab';
     var controlID_fusion_content = controlID + '_fusion_content';
     var controlID_sourcerules_content = controlID + '_sourcerules_content';
     var controlID_mappingrules_content = controlID + '_mappingrules_content';
     var controlID_responsibilities_content = controlID + '_responsibilities_content';
 
     var tabs = {
-        "sourcerules": 0,
-        "mappingrules": 1,
-        "responsibilities": 2,
-        "fusion": 3,
-        "transformations": 4
+        "info": 0,
+        "sourcerules": 1,
+        "mappingrules": 2,
+        "responsibilities": 3,
+        "fusion": 4,
+        "transformations": 5
     };
 
     var defaultTabContent = '<div style="height:100px;text-align:center;padding:25px;"><i class="fa fa-2x fa-spinner fa-spin"></i></div>';
@@ -57724,25 +57910,49 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#region Control instantiation
 
-    //$('#' + controlID_splitter).jqxSplitter({ theme: theme, width: '100%', height: '100%', panels: [ { size: '80%', collapsible: false } ]});
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon({ width: '100%', height: '100%', mode: "popup", theme: theme, position: "right", selectionMode: "click", animationType: "fade" });
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["info"], "near", 700, 250);
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["sourcerules"], "near", 700, 400);
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["mappingrules"], "near", 700, 400);
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["responsibilities"], "near", 700, 400);
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["fusion"], "near", 700, 400);
+    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["transformations"], "near", 700, 400);
 
-    $("#" + controlID_tabs).jqxTabs({ theme: theme, animationType: 'fade', selectionTracker: true }).on('tabclick',function(event) {
-        var index = event.args.item;
-        loadTab(index);
-    });
-    
+    $("#" + controlID_view_window_base + '0').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+    $("#" + controlID_view_window_base + '1').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+    $("#" + controlID_view_window_base + '2').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+    $("#" + controlID_view_window_base + '3').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+    $("#" + controlID_view_window_base + '4').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+    $("#" + controlID_view_window_base + '5').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
+
+    var windowSettings = {
+        height: 'auto', width: 300,
+        autoOpen: false,
+        zIndex: 100001,
+        minWidth: 400, minHeight: 300,
+        maxWidth: 900, maxHeight: 500
+    };
+
+    $("#" + controlID_window_base + '0').jqxWindow(windowSettings);
+    $("#" + controlID_window_base + '1').jqxWindow(windowSettings);
+    $("#" + controlID_window_base + '2').jqxWindow(windowSettings);
+    $("#" + controlID_window_base + '3').jqxWindow(windowSettings);
+    $("#" + controlID_window_base + '4').jqxWindow(windowSettings);
+    $("#" + controlID_window_base + '5').jqxWindow(windowSettings);
+   
     $("#" + controlID_ribbon_zoom_100).jqxButton({ theme: theme, height: "100%", width: "40%" });
     $("#" + controlID_ribbon_zoom_fit).jqxButton({ theme: theme, height: "100%", width: "40%" });
-    $("#" + controlID_ribbon_save).jqxButton({ theme: theme, height: "100%", width: 64, disabled: true });
     $("#" + controlID_ribbon_reset).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_fullscreen).jqxButton({ theme: theme, height: "100%", width: 64 });
-    $("#" + controlID_ribbon_add).jqxButton({ theme: theme, height: "100%", width: 64, disabled: false });
-    $("#" + controlID_ribbon_remove).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_lineage).jqxButton({ theme: theme, height: "100%", width: 64, disabled: false });
     $("#" + controlID_ribbon_undo).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_redo).jqxButton({ theme: theme, height: "100%", width: 64 });
     $("#" + controlID_ribbon_zoom_slider).jqxSlider({ theme: theme, width: 150, showButtons: true, min: 750, max: 2250, value: 1500, showTicks: false });
 
-    $("#" + controlID_ribbon_sourcerule_add).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $("#" + controlID_ribbon_sourcerule).jqxButton({ theme: theme, height: "100%", width: 64 }).hide();
+    $('#' + controlID_ribbon_sourcerule_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
+    $('#' + controlID_ribbon_sourcerule_save).jqxButton({ theme: theme, height: "100%", width: 64 });
+
 
     $('#' + controlID_ribbon_lineage_cancel).jqxButton({ theme: theme, height: "100%", width: 64 });
     $('#' + controlID_ribbon_lineage_addItem).jqxButton({ theme: theme, height: "100%", width: 64 });
@@ -57755,12 +57965,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID_ribbon_maprule_save).jqxButton({ theme: theme, height: "100%", width: 64 });
 
     $('.lineage').hide();
+    $('.sourcerule').hide();
     $('.sourcemapping').hide();
 
-    $("#" + controlID_info).jqxExpander({ theme: theme }).jqxExpander('collapse');
     $("#" + controlID_ribbon_expander).jqxExpander({ theme: theme }).jqxExpander('collapse');
-
-    //$('#' + controlID_info_detail).MapItems();
 
     $('#' + controlID_ribbon_view_1).jqxRadioButton({ theme: theme, checked: true });
     $('#' + controlID_ribbon_view_2).jqxRadioButton({ theme: theme, checked: false });
@@ -57768,15 +57976,31 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#endregion
 
-    //#region Event Handlers
+    $("#" + controlID_view_window_base + '0').on('click', function () {
+        $("#" + controlID_window_base + '0').jqxWindow('open');
+    });
+    $("#" + controlID_view_window_base + '1').on('click', function () {
+        $("#" + controlID_window_base + '1').jqxWindow('open');
+    });
+    $("#" + controlID_view_window_base + '2').on('click', function () {
+        $("#" + controlID_window_base + '2').jqxWindow('open');
+    });
+    $("#" + controlID_view_window_base + '3').on('click', function () {
+        $("#" + controlID_window_base + '3').jqxWindow('open');
+    });
+    $("#" + controlID_view_window_base + '4').on('click', function () {
+        $("#" + controlID_window_base + '4').jqxWindow('open');
+    });
+    $("#" + controlID_view_window_base + '5').on('click', function () {
+        $("#" + controlID_window_base + '5').jqxWindow('open');
+    });
 
-    $('#' + controlID_ribbon_expander).on('expanded', toggleRibbon);
-    $('#' + controlID_ribbon_expander).on('collapsed', toggleRibbon);
 
-    $("#" + controlID_ribbon_add).on('click', function () {
+    //#region Manage Command Handlers
+
+    $("#" + controlID_ribbon_lineage).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
-        //$('#' + controlID_popover_add).toggle(200).css('left', $(this).position().left).css('top', $(this).position().top + 80);
 
         var data = {
             object: type,
@@ -57795,19 +58019,20 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         $('.lineage').show();
     });
 
-    $("#" + controlID_ribbon_sourcerule_add).on('click', function () {
-                if ($(this).jqxButton('disabled'))
+    $("#" + controlID_ribbon_sourcerule).on('click', function () {
+        if ($(this).jqxButton('disabled'))
             return;
+        
         var selected = myDiagram.selection;
+        
         if (selected == null)
             return;
-        var selected = selected.first().data;
-        if (selected == null)
-            return;
-        //console.log(selected);
-        $('#' + controlID_popover_sourcerule_editor).toggle(200).css('left', $(this).position().left + 1).css('top', $(this).position().top + 80);
 
-        //TODO: logic for nothing selected
+        var selected = selected.first().data;
+
+        if (selected == null)
+            return;
+
         var data = {
             target: type,
             targetID: id,
@@ -57817,10 +58042,15 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             controlID: controlID
         };
 
-        var model = new HierarchyPanelViewModel(data, permissions);
+        $('#' + controlID_wrapper).hide();
+        $('.diagramcommands').hide();
+
+        sourceRuleModel = new MapSequencesModel(data, permissions);
         ko.cleanNode($('#' + controlID_popover_sourcerule_editor_body)[0]);
-        ko.applyBindings(model, $('#' + controlID_popover_sourcerule_editor_body)[0]);
-        //model.ApplyJqxBindings();
+        ko.applyBindings(sourceRuleModel, $('#' + controlID_popover_sourcerule_editor_body)[0]);
+
+        $('#' + controlID_popover_sourcerule_editor).show();
+        $('.sourcerule').show();
     });
 
     $("#" + controlID_ribbon_maprule).on('click', function () {
@@ -57888,6 +58118,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         $('.sourcemapping').show();
     });
 
+    //#endregion
+
+    //#region Business Lineage Command Bar Handlers
+
     $('#' + controlID_ribbon_lineage_cancel).on('click', function () {
         $('.lineage').fadeOut();
         $('.diagramcommands').show();
@@ -57901,32 +58135,40 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     $('#' + controlID_ribbon_lineage_save).on('click', function () {
         lineageModel.Save().then(function (data) {
-            $.each(data, function (ix, n) {
-                var d = createNodeModel();
-
-                d.back = "#000";
-                d.fore = "#fff";
-                d.obj = n.Intersect.Subject;
-                d.objid = n.Intersect.SubjectID;
-                d.name = htmlDecode(n.Name);
-
-                d.typeName = htmlDecode(n.Intersect.SubjectTypeName);
-                d.url = n.Intersect.SubjectUrl;
-                d.template = "Artifact";
-                //d.objecttype = n.Intersect.SubjectType;
-                //d.objecttypeid = n.Intersect.SubjectTypeID;
-                d.key = generateRandomLineageKey(25);
-                //d.isDeletable = true;
-                d.intersectId = n.IntersectID;
-
-                myDiagram.model.addNodeData(d);
-            });
             $('.lineage').fadeOut();
             $('.diagramcommands').show();
             $('#' + controlID_popover_lineage_editor).hide();
             $('#' + controlID_wrapper).show();
+
+            populateDiagram();  //refresh the diagram.
         });
     });
+
+    //#endregion
+
+    //#region Source Rule Command Bar Handlers
+
+    $('#' + controlID_ribbon_sourcerule_cancel).on('click', function () {
+        $('.lineage').fadeOut();
+        $('.diagramcommands').show();
+        $('#' + controlID_popover_lineage_editor).hide();
+        $('#' + controlID_wrapper).show();
+    });
+
+    $('#' + controlID_ribbon_sourcerule_save).on('click', function () {
+        sourceRuleModel.Save().then(function (data) {
+            $('.sourcerule').fadeOut();
+            $('.diagramcommands').show();
+            $('#' + controlID_popover_sourcerule_editor).hide();
+            $('#' + controlID_wrapper).show();
+
+            populateDiagram();  //refresh the diagram.
+        });
+    });
+
+    //#endregion
+
+    //#region Technical Lineage Command Bar Handlers
 
     $('#' + controlID_ribbon_maprule_add).on('click', function () {
         mapRulesModel.AddRule();
@@ -57950,38 +58192,14 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         });
     });
 
-    amplify.subscribe("NoFusionAvailable", function () {
-        $('#' + controlID_popover_maprule_editor).height(300);
-        $('#' + controlID_ribbon_maprule_add).hide();
-        $('#' + controlID_ribbon_maprule_save).hide();
-    });
+    //#endregion
 
-    //#region General ribbon commands
+    //#region General Ribbon Command Handlers
 
     $('#' + controlID_ribbon_fullscreen).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
         toggleFullscreen();
-    });
-
-    $('#' + controlID_ribbon_save).on('click', function () {
-        if ($(this).jqxButton('disabled'))
-            return;
-        saveChanges();
-
-        //var message = $('<p />', { text: 'Are you sure you want to save changes?' }),
-        //     ok = $('<button />', {
-        //         text: 'Save',
-        //         'class': 'btn qtip-blue qtip-btn-inline',
-        //     }),
-        //     cancel = $('<button />', {
-        //         text: 'Cancel',
-        //         'class': 'btn qtip-blue qtip-btn-inline',
-        //     });
-
-        //var content = "<p>Are you sure you want to save changes?</p>"
-
-        //confirmDialog(message.add(ok).add(cancel), 'Save Changes?', 'Save', saveChanges);
     });
 
     $('#' + controlID_ribbon_undo).on('click', function () {
@@ -58020,31 +58238,11 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     $('#' + controlID_ribbon_reset).on('click', function () {
         if ($(this).jqxButton('disabled'))
             return;
-        //type = originalObject;
-        //id = originalObjectID;
-        //populateDiagram();
-        if (checkModified()) {
-            var message = $('<p />', { text: 'Are you sure you want to reset the diagram? You have unsaved changes' }),
-             ok = $('<button />', {
-                 text: 'Reset',
-                 'class': 'btn qtip-blue qtip-btn-inline'
-             }),
-             cancel = $('<button />', {
-                 text: 'Cancel',
-                 'class': 'btn qtip-blue qtip-btn-inline'
-             });
-            confirmDialog(message.add(ok).add(cancel), 'Reset Diagram?', 'Reset', function () {
-                type = originalObject;
-                id = originalObjectID;
-                populateDiagram();
-            });
-        } else {
-            type = originalObject;
-            id = originalObjectID;
-            populateDiagram();
-        }
-    });
 
+        type = originalObject;
+        id = originalObjectID;
+        populateDiagram();
+    });
 
     $('#' + controlID_ribbon_view_1).on('change', function (event) {
         var isChecked = event.args.checked;
@@ -58082,16 +58280,10 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#endregion
 
-    $('#' + controlID_overlay_predicates).on('change', function (e) {
-        var checked = true;//$('#' + controlID_overlay_radio_existing).jqxRadioButton('checked');
-        if (checked) {
-            if ($(this).val() == 0) {
-                $('#' + controlID_overlay_add).prop('disabled', true);
-            } else {
-                $('#' + controlID_overlay_add).prop('disabled', false);
-            }
-        }
-    });
+    //#region Event Handlers
+
+    $('#' + controlID_ribbon_expander).on('expanded', toggleRibbon);
+    $('#' + controlID_ribbon_expander).on('collapsed', toggleRibbon);
 
     $('#' + controlID_wrapper).on('mouseup', function () {
         var height = $('#' + controlID_wrapper).height();
@@ -58105,15 +58297,12 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         }
     });
-    $('#' + controlID_overlay_cancel).on('click', cancelAddLink);
-    $('#' + controlID_overlay_add).on('click', addRelationship);
 
     //#endregion
 
     var oldHeight = $('#' + controlID_wrapper).height();
     var oldWidth = $('#' + controlID_wrapper).width();
 
-    var deletedNodes = [];
     var initialLinks = [];
     var initialNodes = [];
     var newLink = null;
@@ -58316,146 +58505,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#endregion
 
-    //#region methods
-
-    function addRelationship() {
-
-        var intersectRoleId = $('#' + controlID_overlay_predicates).val();
-        var transformation = $('#' + controlID_overlay_transformation).redactor('get');
-        var text = $('#' + controlID_overlay_predicates).text();
-
-        myDiagram.startTransaction("nameRelationship");
-
-        if (overlayEditLinkKey != null) {
-            var link = findLinkDataForKey(overlayEditLinkKey);
-            myDiagram.model.setDataProperty(link, 'text', text);
-            myDiagram.model.setDataProperty(link, 'intersectRoleId', intersectRoleId);
-            myDiagram.model.setDataProperty(link, 'transformation', transformation);
-
-            //get the id if possible (if link is deleted and re-added)
-            for (var i = 0; i < initialLinks.length; i++) {
-                if (initialLinks[i].from == link.from && initialLinks[i].to == link.to) {
-                    link.id = initialLinks[i].id;
-                    myDiagram.model.setDataProperty(link, 'id', initialLinks[i].id);
-                }
-            }
-        } else {
-            newLink.intersectRoleId = intersectRoleId;
-            newLink.text = text;
-            newLink.diagramObjectType = "Link";
-            //newLink.isDeletable = true;
-            newLink.id = overlayEditLinkKey;
-            newLink.key = overlayEditLinkKey;
-            if (newLink.id == null) {
-                for (var i = 0; i < initialLinks.length; i++) {
-                    if (initialLinks[i].from == newLink.from && initialLinks[i].to == newLink.to) {
-                        //newLink.id = initialLinks[i].id;
-                        //newLink.key = initialLinks[i].key;
-                    }
-                }
-            }
-
-            var index = -1;
-
-            for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
-                if (myDiagram.model.linkDataArray[i].from == newLink.from && myDiagram.model.linkDataArray[i].to == newLink.to) {
-                    myDiagram.model.removeLinkData(myDiagram.model.linkDataArray[i]);
-                    break;
-                }
-            }
-
-            myDiagram.model.addLinkData(newLink);
-        }
-
-        myDiagram.commitTransaction("nameRelationship");
-
-        $('#' + controlID_overlay).hide();
-        newLink = null;
-        overlayEditLinkKey = null;
-
-        resetOverlay();
-    };
-
-    function mappingBindingComplete(event) {
-        $('#' + controlID_mappingrules_content).jqxGrid('autoresizecolumns');
-    }
-
-    function cancelAddLink() {
-        if (newLink != null) {
-            if (overlayEditLinkKey != null) {
-                overlayEditLinkKey = null;
-            } else {
-                myDiagram.startTransaction("removeLink");
-                myDiagram.model.removeLinkData(newLink);
-                myDiagram.commitTransaction("removeLink");
-            }
-            newLink = null;
-        }
-
-        resetOverlay();
-        $('#' + controlID_overlay).hide();
-    };
-
-    function checkModified() {
-        var nodes = getNodeChanges();
-        var links = getLinkChanges();
-
-        if (readonly) {
-            $('#' + controlID_message).hide();
-        } else if (nodes.deleted.length > 0 ||
-            nodes.added.length > 0 ||
-            nodes.modified.length > 0 ||
-            links.added.length > 0 ||
-            links.deleted.length > 0 ||
-            links.modified.length > 0) {
-
-            $('#' + controlID_message).show();
-            $('#' + controlID_ribbon_save).jqxButton({ disabled: false })
-            return true;
-        } else {
-            $('#' + controlID_message).hide();
-            $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
-            return false;
-        }
-    }
-
-    function confirmDialog(content, title, id, func) {
-        $('<div />').qtip({
-            content: {
-                text: content,
-                title: title
-            },
-            position: {
-                my: 'center', at: 'center',
-                target: $(window)
-            },
-            show: {
-                ready: true,
-                modal: {
-                    on: true,
-                    blur: false
-                }
-            },
-            hide: false,
-            style: {
-                classes: 'qtip-blue qtip-rounded'
-            },
-            events: {
-                render: function (event, api) {
-                    $('button', api.elements.content).click(function (e) {
-                        api.hide(e);
-                        if ($(this).text() == id) {
-                            $(this).prop('disabled', true);
-                            func();
-                        }
-
-                    });
-                },
-                hide: function (event, api) { api.destroy(); }
-            }
-        })
-    }
-
     //#region Model Creation
 
     function createLinkModel() {
@@ -58515,6 +58564,49 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
     //#endregion
 
+    //#region methods
+
+    function mappingBindingComplete(event) {
+        $('#' + controlID_mappingrules_content).jqxGrid('autoresizecolumns');
+    }
+
+    function confirmDialog(content, title, id, func) {
+        $('<div />').qtip({
+            content: {
+                text: content,
+                title: title
+            },
+            position: {
+                my: 'center', at: 'center',
+                target: $(window)
+            },
+            show: {
+                ready: true,
+                modal: {
+                    on: true,
+                    blur: false
+                }
+            },
+            hide: false,
+            style: {
+                classes: 'qtip-blue qtip-rounded'
+            },
+            events: {
+                render: function (event, api) {
+                    $('button', api.elements.content).click(function (e) {
+                        api.hide(e);
+                        if ($(this).text() == id) {
+                            $(this).prop('disabled', true);
+                            func();
+                        }
+
+                    });
+                },
+                hide: function (event, api) { api.destroy(); }
+            }
+        })
+    }
+
     function findLinkDataForKey(key) {
         for (var i = 0; i < myDiagram.model.linkDataArray.length; i++) {
             if (myDiagram.model.linkDataArray[i].key == key)
@@ -58562,119 +58654,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             }
         }
         return parents;
-    }
-
-    function getLinkChanges() {
-        var changes = {
-            added: [],
-            modified: [],
-            deleted: []
-        };
-        var links = myDiagram.model.linkDataArray;
-
-        for (var i = 0; i < links.length; i++) {
-            var found = false;
-            for (var j = 0; j < initialLinks.length; j++) {
-                if (initialLinks[j].to == links[i].to && initialLinks[j].from == links[i].from) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                changes.added.push(links[i]);
-            }
-        }
-
-        for (var i = 0; i < initialLinks.length; i++) {
-            var found = false;
-            for (var j = 0; j < links.length; j++) {
-                if (initialLinks[i].to == links[j].to && initialLinks[i].from == links[j].from) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                changes.deleted.push(initialLinks[i]);
-            }
-        }
-
-        for (var i = 0; i < initialLinks.length; i++) {
-            var found = false;
-            for (var j = 0; j < links.length; j++) {
-                if (initialLinks[i].from == links[j].from && initialLinks[i].to == links[j].to) {
-
-                    var l1 = (initialLinks[i].intersectRoleId || '').toString();
-                    var l2 = (links[j].intersectRoleId || '').toString();
-
-                    if (l1 != l2) {
-                        found = true;
-                    }
-
-                    break;
-                }
-            }
-
-            if (found) {
-                changes.modified.push(links[j]);
-            }
-        }
-
-        return changes;
-    }
-
-    //We May not care about this.  Possible removal.
-    function getNodeChanges() {
-        var changes = {
-            added: [],
-            modified: [],
-            deleted: []
-        };
-
-        var nodes = myDiagram.model.nodeDataArray;
-
-        //added
-        for (var i = 0; i < nodes.length; i++) {
-            var found = false;
-            for (var j = 0; j < initialNodes.length; j++) {
-                if (initialNodes[j].key == nodes[i].key) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                changes.added.push(nodes[i]);
-            }
-        }
-
-        //deleted
-        for (var i = 0; i < initialNodes.length; i++) {
-            var found = false;
-            for (var j = 0; j < nodes.length; j++) {
-                if (initialNodes[i].key == nodes[j].key) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                changes.deleted.push(initialNodes[i]);
-            }
-        }
-
-        //modified
-        for (var i = 0; i < nodes.length; i++) {
-            for (var j = 0; j < initialNodes.length; j++) {
-                //if (initialNodes[j].id == nodes[i].id) {
-                    if (initialNodes[j].key === nodes[i].key) {
-                        //changes.modified.push(nodes[i]);
-                        break;
-                    }
-                //}
-            }
-        }
-
-        //console.log(changes);
-        return changes;
-
     }
 
     function htmlDecode(s) {
@@ -58780,42 +58759,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         return iconPanel;
     }
 
-    function markForDeletion(set) {
-        myDiagram.startTransaction("markSelection");
-
-        //get a deep copy of the set as an array
-        var sel = $.extend(true, [], set.toArray());
-
-        for (var i = 0; i < sel.length; i++) {
-            var obj = sel[i].data;
-
-            if (obj == null)
-                continue;
-
-            if (obj.diagramObjectType == 'Node') {
-                var affectedLinks = [];
-                for (var j = 0; j < myDiagram.model.linkDataArray.length; j++) {
-                    var link = myDiagram.model.linkDataArray[j];
-                    //console.log(link);
-                    if (link.to == obj.key || link.from == obj.key) {
-                        affectedLinks.push(link);
-                    }
-                }
-
-                for (var j = 0; j < affectedLinks.length; j++) {
-                    myDiagram.model.removeLinkData(affectedLinks[j]);
-                }
-
-                myDiagram.model.removeNodeData(obj);
-            } else if (obj.diagramObjectType == 'Link') {
-                myDiagram.model.removeLinkData(obj);
-            }
-
-        }
-        myDiagram.commitTransaction("markSelection");
-        refreshControls(null);
-    }
-
     function mouseEnter(e, node) {
         node.isShadowed = true;
     };
@@ -58823,43 +58766,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     function mouseLeave(e, node) {
         node.isShadowed = false;
     };
-
-    function onDoubleClick(e) {
-
-        var obj = e.diagram.selection.first().data;
-        if (obj != null) {
-            if (obj.diagramObjectType == 'Node') {
-
-
-                var message = $('<p />', { text: 'You are about to navigate to a different lineage diagram. You will lose any unsaved changes. Continue?' }),
-                 ok = $('<button />', {
-                     text: 'Okay',
-                     'class': 'btn qtip-blue qtip-btn-inline',
-                 }),
-                 cancel = $('<button />', {
-                     text: 'Cancel',
-                     'class': 'btn qtip-blue qtip-btn-inline',
-                 });
-                if (checkModified()) {
-                    confirmDialog(message.add(ok).add(cancel), 'Confirm Navigation', 'Okay', function () {
-                        type = obj.obj;
-                        id = obj.objid;
-                        populateDiagram();
-                    });
-                } else {
-                    type = obj.obj;
-                    id = obj.objid;
-
-                    populateDiagram();
-                    $('#' + controlID_ribbon_remove).hide(200);
-                }
-            }
-            //else if (obj.diagramObjectType == 'Link' && !readonly) {
-            //    overlayEditLinkKey = obj.key;
-            //    showRelationshipOverlay(obj);
-            //}
-        }
-    }
 
     function refreshControls(data) {
         toggleButtons(data);
@@ -58887,14 +58793,11 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
             $('#' + controlID_wrapper).height(wrapperHeight - ribbonHeight);
             $('#' + controlID_diagram).height(wrapperHeight - ribbonHeight);
-
-            $('#' + controlID_sidebar).height(wrapperHeight - ribbonHeight);
         } else {
             $('#' + controlID_ribbon_fullscreen).html(defaultHtml);
             $('#' + controlID_wrapper_fullscreen).attr('style', 'z-index:1000000;background-color:white;');
             $('#' + controlID_wrapper).height(520);
             $('#' + controlID_diagram).height(520);
-            $('#' + controlID_sidebar).height(520);
         }
         myDiagram.requestUpdate();
         //force this to queue behind browser layout updates
@@ -58906,42 +58809,24 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     }
 
     function toggleTabs(data) {
-        var first = -1;
+
         var delay = 0;
         var defaultInfo = '<div style="color:#999;height:25px;text-align:center">Nothing selected</div>';
         var errorInfo = '<div style="color:maroon;height:100px;text-align:center">An error occurred</div>';
 
-        $("#" + controlID_info).jqxExpander('expand');
-
-        if (data == null) {
-            //$("#" + controlID_info).jqxExpander('collapse');
-            //$("#" + controlID_info_body).html(defaultInfo);
-            //$("#" + controlID_info_detail_wrapper).hide();
+        if (!data || data == null) {
             $("#" + controlID_info_detail).html('');
-
-            $('#' + controlID_tabs).hide(delay);
-            for (var i = 0; i < tabs.length; i++) {
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + i + ")").css("display", "none");
-            }
-
         } else {
-            $('#' + controlID_tabs).show(delay);
-
             if (data.diagramObjectType == 'Node') {
-                first = tabs["responsibilities"];
 
-                //$("#" + controlID_info_detail_wrapper).hide();
                 $("#" + controlID_info_detail).html('');
 
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "block");
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "block");
-
                 try {
-                    technicalRelationsSource.url = null;
+                    technicalRelationsSource.url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + data.obj + '&tID=' + data.objid;
                     $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
                 } catch (e) { }
                 try {
-                    lineageResponsibilitySource.url = null;
+                    lineageResponsibilitySource.url = '/api/' + data.obj + '/' + data.objid + '/ownership?showHidden=false';
                     $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
                 } catch (e) { }
 
@@ -58955,27 +58840,22 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     async: true
                 }).done(function (data) {
                     $('#' + controlID_info_detail).html(data);
-                    $("#" + controlID_info).jqxExpander('expand');
                 }).fail(function () {
-                    $('#' + controlID_info_body).html(errorInfo);
-                    $("#" + controlID_info).jqxExpander('collapse');
+                    $('#' + controlID_info_detail).html(errorInfo);
                 });
 
-                if (data.hasMappingRules) {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
-                    first = tabs["mappingrules"];
-                } else { 
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
-                }
+                $.ajax({
+                    url: '/api/' + type + '/' + id + '/sources/' + data.obj + '/' + data.objid + '/rules',
+                    async: true
+                }).done(function (data) {
+                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                    $('#' + controlID_sourcerules_content).html(sourceTemplate(data));
+                }).fail(function () {
+                    $('#' + controlID_sourcerules_content).html(defaultTabContent);
+                });
 
-                if (data.hasSourceRules) {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
-                    $("#" + controlID_sourcerules_content).html(defaultTabContent);
-                    first = tabs["sourcerules"];
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
-                }
+                mapItemsSource.url = null;
+                $('#' + controlID_mappingrules_content).jqxGrid('updatebounddata');
 
                 var tranCount = 0;
 
@@ -58988,35 +58868,28 @@ function NewLineageDiagram(controlID, type, id, readonly) {
             } else if (data.diagramObjectType == 'Link') {
                 var from = myDiagram.model.findNodeDataForKey(data.from);
                 var to = myDiagram.model.findNodeDataForKey(data.to);
-                first = -1;//tabs["fusion"];
 
                 var selectedMapID = data.id;
 
-                //$('#' + controlID_info_body).html(data);
-                //$("#" + controlID_info).jqxExpander('expand');
-
-                //$('#' + controlID_info_detail).show();
-                //$('#' + controlID_info_detail).hide();
-                //ObjectDetail(controlID_info_detail, 'Map', selectedMapID, true);
-                //$('#' + controlID_info_detail).MapItems('reload', selectedMapID, false, false);
-
-
-                //if (permissions.HasPermission("Root", "Update") && intersectId != 0) {
-                //    TileTools("#" + controlID_info_detail_edit, [
-                //        { icon: 'pencil', uri: '/form/EditRelationship?id=' + intersectId, context: 'intersectform', title: 'Edit Relationship' }
-                //    ]);
-                //    $('#' + controlID_info_detail_edit).on('click', function () { if (fullscreen) toggleFullscreen(); })
-                //} else {
-                //    $("#" + controlID_info_detail_edit).html('');
-                //}
+                $.ajax({
+                    url: '/api/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/rules',
+                    async: true
+                }).done(function (data) {
+                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
+                    $('#' + controlID_sourcerules_content).html(sourceTemplate(data));
+                }).fail(function () {
+                    $('#' + controlID_sourcerules_content).html(defaultTabContent);
+                });
 
 
-                $("#" + controlID_info_detail_wrapper).show();
-                
+                if (from.template !== "Fusion" && to.template !== "Fusion") {
+                    mapItemsSource.url = '/api/maps/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/mapitems';
+                }
+                else {
+                    mapItemsSource.url = null;
+                }
+                $('#' + controlID_mappingrules_content).jqxGrid('updatebounddata');
 
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["responsibilities"] + ")").css("display", "none");
-                $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["fusion"] + ")").css("display", "none");
-                
 
                 try {
                     technicalRelationsSource.url = null;
@@ -59032,124 +58905,7 @@ function NewLineageDiagram(controlID, type, id, readonly) {
                     mapItemsSource.url = '/api/maps/' + selectedMapID + '/mapitems';
                     $('#' + controlID_info_detail).jqxGrid('updatebounddata');
                 } catch (e) { }
-
-               // if (data.hasMappingRules) {
-
-                    first = tabs["mappingrules"];
-
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "block");
-                    //$("#" + controlID_mappingrules_content).html(defaultTabContent);
-                    first = tabs["mappingrules"];
-                //} else {
-                //    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["mappingrules"] + ")").css("display", "none");
-                //}
-
-                if (to.hasSourceRules) {
-                    if (first == -1)
-                        first = tabs["sourcerules"];
-
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "block");
-                    $("#" + controlID_sourcerules_content).html(defaultTabContent);
-                    first = tabs["sourcerules"];
-                } else {
-                    $("#" + controlID_tabs + " .jqx-tabs-title:eq(" + tabs["sourcerules"] + ")").css("display", "none");
-                }
             }
-        }
-
-        if (first == -1)
-            $("#" + controlID_tabs).hide(delay);
-        else
-        {
-            $("#" + controlID_tabs).jqxTabs('select', first);
-            loadTab(first);
-        }
-    }
-
-    function loadTab(index) {
-        if (index < 0 || index > tabs.length || selectedData == null)
-            return;
-
-        var from = null;
-        var to = null;
-        var url = '';
-
-        if (selectedData.diagramObjectType == 'Node') {
-
-        } else {
-            from = myDiagram.model.findNodeDataForKey(selectedData.from);
-            to = myDiagram.model.findNodeDataForKey(selectedData.to);
-        }
-
-        switch(index)
-        {
-            case tabs["fusion"]:
-                url = '/relations/ChildRelationshipsBySourceAndTarget?s=' + type + '&sID=' + id + '&t=' + selectedData.obj + '&tID=' + selectedData.objid;
-                try {
-                    technicalRelationsSource.url = url;
-                    $('#' + controlID_fusion_content).jqxGrid('updatebounddata');
-                }
-                catch (e) {
-                }
-                break;
-            case tabs["responsibilities"]:
-                if (lineageResponsibilitySource.url != null)
-                    return;
-
-                        try {
-                            lineageResponsibilitySource.url = '/api/' + selectedData.obj + '/' + selectedData.objid + '/ownership?showHidden=false';
-                            $('#' + controlID_responsibilities_content).jqxGrid('updatebounddata');
-                        } catch (e) { }
-                break;
-            case tabs["sourcerules"]:
-                if ($("#" + controlID_sourcerules_content).html().toString() != defaultTabContent) {
-                    return;
-                }
-
-                url = '/api/' + type + '/' + id + '/sources/' + selectedData.obj + '/' + selectedData.objid + '/rules';
-                if (selectedData.diagramObjectType != 'Node') {
-                    url = '/api/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/rules';
-                }
-                $.ajax({
-                    url: url,
-                    async: true
-                }).done(function (data) {
-                    var sourceTemplate = Handlebars.getTemplate('LineageDiagramSourceRules');
-                    $('#' + controlID_sourcerules_content).html(sourceTemplate(data));
-                }).fail(function () {
-                    $('#' + controlID_sourcerules_content).html(defaultTabContent);
-                });
-                break;
-            case tabs["mappingrules"]:
-
-                if (from.template !== "Fusion" && to.template !== "Fusion") {
-                    mapItemsSource.url = '/api/maps/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/mapitems';
-                }
-                else {
-                    mapItemsSource.url = null;
-                }
-                $('#' + controlID_mappingrules_content).jqxGrid('updatebounddata');
-
-                //if ($("#" + controlID_mappingrules_content).html().toString() != defaultTabContent) {
-                //    return;
-                //}
-                //url = '/form/sourcetarget/load/' + type + '/' + id + '/' + selectedData.obj + '/' + selectedData.objid + '/' + selectedData.obj + '/' + selectedData.objid;
-                //if (selectedData.diagramObjectType != 'Node') {
-                //    url = '/form/sourcetarget/load/' + type + '/' + id + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid;
-                //}
-
-                //$.ajax({
-                //    url: url
-                //}).done(function (data) {
-                //    for (var i = 0; i < data.items.length; i++) {
-                //        data.items[i].index = i + 1;
-                //    }
-                //    var sourceTemplate = Handlebars.getTemplate('LineageDiagramMappingRules');
-                //    $('#' + controlID_mappingrules_content).html(sourceTemplate(data));
-                //}).fail(function () {
-                //    $('#' + controlID_mappingrules_content).html(defaultTabContent);
-                //});
-                break;
         }
     }
 
@@ -59157,37 +58913,32 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         var delay = 200;
 
         if (!readonly) {
-            $("#" + controlID_ribbon_add).show(delay);
+            $("#" + controlID_ribbon_lineage).show(delay);
         } else {
-            $("#" + controlID_ribbon_add).hide(delay);
+            $("#" + controlID_ribbon_lineage).hide(delay);
         }
         if (data == null) {
-            $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+            $("#" + controlID_ribbon_sourcerule).hide(delay);
             $("#" + controlID_ribbon_multimaprule).show(delay);
             $("#" + controlID_ribbon_maprule).hide(delay);
-            $("#" + controlID_ribbon_remove).hide(delay);
         } else {
             $("#" + controlID_ribbon_multimaprule).hide(delay);
 
             if (data.diagramObjectType == 'Node') {
                 if (!readonly) {
                     //$("#" + controlID_ribbon_maprule).show(delay);
-                    $("#" + controlID_ribbon_sourcerule_add).show(delay);
-                    $("#" + controlID_ribbon_remove).show(delay);
+                    $("#" + controlID_ribbon_sourcerule).show(delay);
                 } else {
                     //$("#" + controlID_ribbon_maprule).hide(delay);
-                    $("#" + controlID_ribbon_sourcerule_add).hide(delay);
-                    $("#" + controlID_ribbon_remove).hide(delay);
+                    $("#" + controlID_ribbon_sourcerule).hide(delay);
                 }
             } else {
-                $("#" + controlID_ribbon_sourcerule_add).hide(delay);
+                $("#" + controlID_ribbon_sourcerule).hide(delay);
 
                 if (!readonly) {
                     $("#" + controlID_ribbon_maprule).show(delay);
-                    $("#" + controlID_ribbon_remove).show(delay);
                 } else {
                     $("#" + controlID_ribbon_maprule).hide(delay);
-                    $("#" + controlID_ribbon_remove).hide(delay);
                 }
             }
         }
@@ -59205,157 +58956,9 @@ function NewLineageDiagram(controlID, type, id, readonly) {
 
         $('#' + controlID_wrapper).height(wrapperHeight - ribbonHeight);
         $('#' + controlID_diagram).height(wrapperHeight - ribbonHeight);
-        $('#' + controlID_sidebar).height(wrapperHeight - ribbonHeight);
 
         myDiagram.focus();
         myDiagram.requestUpdate();
-    }
-
-    function onSelectionChange(e) {
-        selection = e.diagram.selection;
-
-        if (selection.count == 0) {
-            selectedData = null;
-        } else {
-            //get a deep copy of the selection as an array
-            var sel = $.extend(true, [], selection.toArray());
-
-            if (sel != null && sel.length != 0) {
-                selectedData = sel[0].data;
-            }
-        }
-
-        refreshControls(selectedData);
-    }
-
-    function onViewportBoundsChanged() {
-        var s = myDiagram.scale;
-        var h = 500;
-        if (s > 1) {
-            h = h * s;
-        }
-        //console.log('vpchanged');
-        $('#' + controlID_ribbon_zoom_text).text(Math.round(myDiagram.scale * 100) + '%');
-        $('#' + controlID_ribbon_zoom_slider).val(Math.round(myDiagram.scale * 1500));
-
-        //console.log(myDiagram.div.style.height);
-    };
-
-    function onLinkDrawn(e) {
-        overlayEdit = false;
-
-        newLink = e.subject.data;
-        newLink.diagramObjectType = "Link";
-        var fromNode = myDiagram.model.findNodeDataForKey(e.subject.data.from);
-        var toNode = myDiagram.model.findNodeDataForKey(e.subject.data.to);
-
-        newLink.fromIntersectId = fromNode.intersectId;
-        newLink.toIntersectId = toNode.intersectId;
-
-        //var results = $.ajax({
-        //    url: '/form/Lineage_IntersectRoles',
-        //    data: null
-        //}).done(function (data, status, xhr) {
-        //    if (data.length > 0) {
-        //        $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-        //            + (fromNode.fore || 'black')
-        //            + ';background-color: '
-        //            + (fromNode.back || 'white')
-        //            + ';" >'
-        //            + fromNode.typeName
-        //            + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-        //            + (toNode.fore || 'black')
-        //            + ';background-color: '
-        //            + (toNode.back || 'white')
-        //            + ';">'
-        //            + toNode.typeName + '</span>');
-
-        //        $('#' + controlID_overlay_add).show();
-
-        //        populateIntersectRoles(data);
-
-        //        $('#' + controlID_overlay).show();
-        //    }
-        //    else {
-        //        amplify.publish('ShowMessage', { type: 'error', title: 'Not allowed', message: 'No roles defined.  Please go to Administration / MetaModel / Relationships to add roles.' });
-        //        e.diagram.remove(e.subject);
-        //    }
-        //});
-
-        //Four lines below are here b/c section above is commented out.
-        myDiagram.startTransaction("nameRelationship");
-        myDiagram.model.addLinkData(newLink);
-        myDiagram.commitTransaction("nameRelationship");
-        newLink = null;
-    }
-
-    function showRelationshipOverlay(linkData) {
-
-        var deferred = $.Deferred();
-
-        newLink = linkData;
-
-        newLink.diagramObjectType = "Link";
-        var fromNode = myDiagram.model.findNodeDataForKey(linkData.from);
-        var toNode = myDiagram.model.findNodeDataForKey(linkData.to);
-
-        var results = $.ajax({
-            url: '/form/Lineage_IntersectRoles',
-            data: null
-        }).done(function (data, status, xhr) {
-            if (data.length > 0) {
-                $('#' + controlID_overlay_relationship).html('<span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (fromNode.fore || 'black')
-                    + ';background-color: '
-                    + (fromNode.back || 'white')
-                    + ';" >'
-                    + fromNode.typeName
-                    + '</span><span style="font-size:1.5rem;font-weight:800;color:grey">&#8594;</span><span style="padding:3px; border: 0 solid transparent; border-radius:3px;color: '
-                    + (toNode.fore || 'black')
-                    + ';background-color: '
-                    + (toNode.back || 'white')
-                    + ';">'
-                    + toNode.typeName + '</span>');
-
-                populateIntersectRoles(data);
-
-                $('#' + controlID_overlay_predicates).val(newLink.intersectRoleId);
-                $('#' + controlID_overlay_add).show();
-                if (newLink.intersectRoleId) {
-                    $('#' + controlID_overlay_add).removeAttr('disabled');
-                }
-                $('#' + controlID_overlay_transformation).val(newLink.transformation);
-
-                $('#' + controlID_overlay).show();
-                return true;
-            }
-            else {
-                return false;
-            }
-        });
-        
-        return deferred.promise();
-    }
-
-    function onChange(e) {
-        checkModified();
-    }
-
-    function onDeleting(e) {
-        if (readonly) {
-            e.cancel = true;
-            return;
-        }
-        markForDeletion(selection);
-        $('#' + controlID_ribbon_expander).jqxExpander('expand');
-    };
-
-    function onDeleted(e) {
-        selection = null;
-    }
-
-    function onDrop(e) {
-        $('#' + controlID_popover_add).hide();
     }
 
     function parseData(data) {
@@ -59366,7 +58969,6 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         initialLinks = [];
         var modelList = [];
         var linkList = [];
-        $('#' + controlID_message).hide();
         if (data.nodes) {
             for (var i = 0; i < data.nodes.length; i++) {
 
@@ -59467,134 +59069,58 @@ function NewLineageDiagram(controlID, type, id, readonly) {
         });
     }
 
-    function populateIntersectRoles(roles, selectedValue) {
-        var output = [];
-
-        output.push('<option value="0"></option>');
-        for (var i = 0; i < roles.length; i++) {
-            output.push('<option value="' + roles[i].value + '">' + roles[i].title + '</option>');
-        }
-        $('#' + controlID_overlay_predicates).html(output.join(''));
-
-    }
-
     function reOrderLayout() {
         myDiagram.layout.invalidateLayout();
         myDiagram.requestUpdate();
-    }
-
-    function resetOverlay() {
-        $('#' + controlID_overlay_predicates).val(0);
-        $('#' + controlID_overlay_add).prop('disabled', true);
-    }
-
-    function saveChanges() {
-
-        if (readonly) return;
-
-        $('#' + controlID_ribbon_save).jqxButton({ disabled: true });
-
-        var nodeChanges = getNodeChanges();
-        var linkChanges = getLinkChanges();
-
-        var model = {
-            Adds: [],
-            Deletes: [],
-            Edits: []
-        };
-
-        for (var i = 0; i < nodeChanges.deleted.length; i++) {
-            var node = nodeChanges.deleted[i];
-            $.each(node.mapItems, function () {
-                model.Deletes.push({
-                    MapID: this.MapID
-                });
-            });
-        }
-
-        //#region Link Processing
-
-        for (var i = 0; i < linkChanges.added.length; i++) {
-            var link = linkChanges.added[i];
-            model.Adds.push({
-                SourceKey: link.from,
-                SourceIntersectID: link.fromIntersectId,
-                TargetKey: link.to,
-                TargetIntersectID: link.toIntersectId,
-                IntersectRoleID: link.intersectRoleId,
-                Transformation: link.transformation
-            });
-        }
-
-        for (var i = 0; i < linkChanges.deleted.length; i++) {
-            var link = linkChanges.deleted[i];
-            model.Deletes.push({
-                MapID: link.id
-            });
-        }
-
-        for (var i = 0; i < linkChanges.modified.length; i++) {
-            var link = linkChanges.modified[i];
-            model.Edits.push({
-                MapID: link.id,
-                IntersectRoleID: link.intersectRoleId,
-                Transformation: link.transformation
-            });
-        }
-
-        //#endregion
-
-        $.ajax({
-            url: '/form/Lineage_Update',
-            async: true,
-            data: JSON.stringify(model),
-            processData: false,
-            type: 'POST',
-            contentType: "application/json; charset=utf-8",
-            dataType: "json"
-        }).fail(function (data) {
-            amplify.publish("ShowMessage", { title: 'An error occurred while saving changes.', message: data.message, success: false });
-        }).done(function () {
-            amplify.publish("ShowMessage", { title: 'Success', message: 'Updated lineage diagram.', success: true });
-            deletedNodes = [];
-            populateDiagram();
-            $('#' + controlID_ribbon_save_spinner).hide();
-        });
     }
 
     //#endregion
 
     //#region Constructor Logic
 
-    $("#" + controlID_message).hide();
-
     if (readonly) {
-        $('#' + controlID_ribbon_undo).hide();
-        $('#' + controlID_ribbon_redo).hide();
-        $('#' + controlID_ribbon_add).hide();
-        $('#' + controlID_ribbon_remove).hide();
-        $('#' + controlID_ribbon_save).hide();
-    } else {
-        $("#" + controlID_ribbon_remove).jqxButton({ theme: theme });
-        $("#" + controlID_ribbon_remove).on('click', function () {
-            if ($(this).jqxButton('disabled'))
-                return;
-            markForDeletion(selection);
-            $("#" + controlID_ribbon_remove).hide(200);
-        });
+        $('.editcommands').hide();
     }
 
     var g = go.GraphObject.make;
     var myDiagram = initializeDiagram();
 
-    myDiagram.addDiagramListener('ViewportBoundsChanged', onViewportBoundsChanged);
-    myDiagram.addDiagramListener('ChangedSelection', onSelectionChange);
-    myDiagram.addDiagramListener('ObjectDoubleClicked', onDoubleClick);
-    myDiagram.addDiagramListener('LinkDrawn', onLinkDrawn);
-    myDiagram.addDiagramListener('SelectionDeleting', onDeleting);
-    myDiagram.addDiagramListener('SelectionDeleted', onDeleted);
-    myDiagram.addDiagramListener('ExternalObjectsDropped', onDrop);
-    myDiagram.model.addChangedListener(onChange);
+    myDiagram.addDiagramListener('ViewportBoundsChanged', function () {
+        var s = myDiagram.scale;
+        var h = 500;
+        if (s > 1) {
+            h = h * s;
+        }
+        $('#' + controlID_ribbon_zoom_text).text(Math.round(myDiagram.scale * 100) + '%');
+        $('#' + controlID_ribbon_zoom_slider).val(Math.round(myDiagram.scale * 1500));
+    });
+    myDiagram.addDiagramListener('ChangedSelection', function (e) {
+        selection = e.diagram.selection;
+
+        if (selection.count == 0) {
+            selectedData = null;
+        } else {
+            //get a deep copy of the selection as an array
+            var sel = $.extend(true, [], selection.toArray());
+
+            if (sel != null && sel.length != 0) {
+                selectedData = sel[0].data;
+            }
+        }
+
+        refreshControls(selectedData);
+    });
+    myDiagram.addDiagramListener('ObjectDoubleClicked', function (e) {
+        var obj = e.diagram.selection.first().data;
+        if (obj != null) {
+            if (obj.diagramObjectType == 'Node') {
+                type = obj.obj;
+                id = obj.objid;
+
+                populateDiagram();
+            }
+        }
+    });
 
     myDiagram.grid.visible = false;
     myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -60100,6 +59626,12 @@ function NewLineageDiagram(controlID, type, id, readonly) {
     //#endregion
 
     //#region Amplify Subscribes
+
+    amplify.subscribe("NoFusionAvailable", function () {
+        $('#' + controlID_popover_maprule_editor).height(300);
+        $('#' + controlID_ribbon_maprule_add).hide();
+        $('#' + controlID_ribbon_maprule_save).hide();
+    });
 
     amplify.subscribe("SaveAction", function (data) {
         try {
@@ -61581,6 +61113,46 @@ function StatisticTypeAllocationGrid(controlID, contextList, permissions, id) {
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 
     //#endregion
+}
+var Survey = function(controlID, type, id, parentType, parentTypeId) {
+    var self = this;
+    var surveyVm;
+        
+    surveyVm = new SurveyViewModel(type, id, parentType, parentTypeId);
+
+    try {        
+        ko.applyBindings(surveyVm, document.getElementById(controlID));
+    }
+    catch (e) {
+        console.log(e);
+    }
+
+    //region Event Handlers
+
+    function unsubscribe(data) {        
+        surveyVm = null;
+        amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+    }
+
+    self.ChangeObject = function (type, id, parentType, parentTypeId) {
+        surveyVm.Clear();
+        surveyVm.Type(type);
+        surveyVm.Id(id);
+        surveyVm.ParentType(parentType);
+        surveyVm.ParentTypeId(parentTypeId);
+
+        surveyVm.Load();
+    }
+
+    //#endregion
+    
+    //#region Event Registration
+
+    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+    //#endregion
+
+    return self;
 }
 function TaxonomyTypeLevelsGrid(controlID, contextList, permissions, id) {
 
@@ -63078,14 +62650,14 @@ function artifacts_admin(app, pageViewModel, templatePath, contextList) {
     });
 }
 function artifacts_item(app, pageViewModel, templatePath, contextList) {
-    app.get('#/artifacts/:typeid/:id', function (context) {
-        //context.spinner();
+    app.get('#/artifacts/:typeid/:id', function (context) {        
         context.app.swap('');
         
         var type = 'Artifact';
         var typeID = context.params['typeid'];
         var id = context.params['id'];
         var permissions = new PermissionsModel();
+        var survey;
         
         $.getJSON('/api/artifact/' + id, function (json) {
 
@@ -63160,9 +62732,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                             if (CompanySettings.UseNewRelationships == 'true')
                                 NewLineageDiagram('SourcingTile', type, id, false);
                             else
-                                LineageDiagram('SourcingTile', type, id, false);
-                            //LineageDiagram('SourcingTile', type, id, false);
-                            //NewLineageDiagram('SourcingTile', type, id, false);
+                                LineageDiagram('SourcingTile', type, id, false);                            
                             break;
                         case contextList.Responsibility:                        
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -63188,6 +62758,7 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
             }
 
             function unsubscribe(data) {
+                survey = null
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
@@ -63204,12 +62775,14 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
 
                     context.contentHeader(pageViewModel);
 
-                    $('#SideIcons').PageTools({ type: type, id: id });
-                    $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
+                    $('#SideIcons').PageTools({ type: type, id: id });                    
+                    survey = new Survey('Survey', type, id, 'ArtifactType', typeID);
                     ObjectDetail('DetailTile', type, id);
 
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
+
+                        //$('#RelationshipsTile').RelationshipsTile({ obj: type, objid: id });
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
 
@@ -63248,13 +62821,10 @@ function artifacts_item(app, pageViewModel, templatePath, contextList) {
                         }
 
                         if (json.AllowPredicateHierarchies) {
-                            CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);
-                            //HierarchyTile('GroupHierarchyTile', contextList, permissions, type, id, 4, 'Groupings');
-                            // HierarchyTile('ParentHierarchyTile', contextList, permissions, type, id, 5, 'Parent/Child Hierarchy');
+                            CollapsibleTypeHierarchyTile('StructureTile', contextList, permissions, type, id);                            
                         }
                         else {
-                            $('#StructureTile').hide();
-                            //$('#GroupHierarchyTile').hide();
+                            $('#StructureTile').hide();                            
                         }
                     }
 
@@ -65725,99 +65295,106 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                 var row = args.row;     // row data.
                 var key = args.key;     // row key.
 
-                $.ajax({
-                    type: "GET",
-                    url: "/api/FusionAttributeType/" + row.ID + "/grid/definition?fusionID=" + id,
-                    async: false,
-                    contentType: 'application/json',
-                    dataType: 'json'
-                }).done(function (definition) {
+                try {
+                    if (row) {
+                        if (row.ID) {
+                            //$('#FusionAttributeTypes').jqxTreeGrid({ disabled: true });
 
-                    definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+                            $.ajax({
+                                type: "GET",
+                                url: "/api/FusionAttributeType/" + row.ID + "/grid/definition?fusionID=" + id,
+                                async: false,
+                                contentType: 'application/json',
+                                dataType: 'json'
+                            }).done(function (definition) {
 
-                    //Refresh Filters
-                    if (fusionAttributeID > 0) {
-                        filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
-                    }
-                    else {
-                        filterVM.setColumns(definition.FilterColumns);
-                    }
+                                $('#ItemsTile').jqxGrid('clear');
+                                //$('#ItemsTile').jqxGrid('destroy');
+
+                                //$('#ItemsTileWrapper').html('<div id="ItemsTile"></div>');
+
+                                definition.Fields.push({ name: 'FusionAttributeTypeID', type: 'number' });
+
+                                //Refresh Filters
+                                if (fusionAttributeID > 0) {
+                                    filterVM.setColumns(definition.FilterColumns, "ID", fusionAttributeID);
+                                }
+                                else {
+                                    filterVM.setColumns(definition.FilterColumns);
+                                }
                     
-                    definition.Columns.forEach(function (item) {
+                                definition.Columns.forEach(function (item) {
 
-                    try {
-                        if (item.filteritems) {
-                            if (item.filteritems.length == 0)
-                                delete item.filteritems;
-                        }
-                    } catch (e) {
+                                try {
+                                    if (item.filteritems) {
+                                        if (item.filteritems.length == 0)
+                                            delete item.filteritems;
+                                    }
+                                } catch (e) {
 
-                    }
+                                }
 
-                    //modify type column
-                    if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
-                });
+                                //modify type column
+                                if (item.datafield && item.datafield.toUpperCase() === 'TYPE') item.datafield = '_type';
+                            });
 
-                    definition.Fields.forEach(function (item) {
-                        if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
-                    });
+                                definition.Fields.forEach(function (item) {
+                                    if (item.name && item.name.toUpperCase() === 'TYPE') item.name = '_type';
+                                });
 
-                    //add internal type
-                    definition.Fields.push({ name: 'Type', type: 'string' });
+                                //add internal type
+                                definition.Fields.push({ name: 'Type', type: 'string' });
 
-                    FusionAttributeSource.datafields = definition.Fields;
-                    FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
+                                FusionAttributeSource.datafields = definition.Fields;
+                                FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
 
-                    $('#ItemsTile').jqxGrid('destroy');
-
-                    $('#ItemsTileWrapper').html('<div id="ItemsTile"></div>');
-
-                    //$('#ItemsTile').jqxGrid('removesort');
-
-                    $('#ItemsTile').one('bindingcomplete', function (event) {
-                        try {
-                            if (definition.Columns.length > 7) {
-                                $.each(definition.Columns, function () {
-                                    if (this.datafield.indexOf('Parent') > -1) {
-                                        $('#ItemsTile').jqxGrid('pincolumn', this.datafield);
+                                $('#ItemsTile').one('bindingcomplete', function (event) {
+                                    try {
+                                        if (definition.Columns.length > 7) {
+                                            $.each(definition.Columns, function () {
+                                                if (this.datafield.indexOf('Parent') > -1) {
+                                                    $('#ItemsTile').jqxGrid('pincolumn', this.datafield);
+                                                }
+                                            });
+                                            oneBindingComplete();
+                                        }
+                                    } catch (e) {
                                     }
                                 });
-                                oneBindingComplete();
-                            }
-                        } catch (e) {
+
+                                $('#ItemsTile').on('rowselect', itemsRowSelected);
+                                $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
+
+                                $('#ItemsTile').jqxGrid({
+                                    //altrows: true,
+                                    //width: grid_width,
+                                    //autoheight: true,
+                                    //sortable: true,
+                                    //filterable: false,
+                                    //showfilterrow: false,
+                                    //showfiltermenuitems: false,
+                                    //showsortmenuitems: false,
+                                    //pagesizeoptions: ['10', '20', '50'],
+                                    //pagesize: 20,
+                                    //pageable: true,
+                                    //virtualmode: true,
+                                    //rendergridrows: function () {
+                                    //    return FusionAttributeAdapter.records;
+                                    //},
+                                    //columnsresize: true,
+                                    //source: FusionAttributeAdapter,
+                                    //theme: theme,
+                                    columns: definition.Columns
+                                });
+
+                                $('#ItemsTile').jqxGrid('updatebounddata');
+                            });
                         }
-                    });
+                    }
 
-                    $('#ItemsTile').on('rowselect', itemsRowSelected);
-                    $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
-
-                    $('#ItemsTile').jqxGrid({
-                        altrows: true,
-                        width: grid_width,
-                        autoheight: true,
-                        sortable: true,
-                        filterable: false,
-                        showfilterrow: false,
-                        showfiltermenuitems: false,
-                        showsortmenuitems: false,
-                        pagesizeoptions: ['10', '20', '50'],
-                        pagesize: 20,
-                        pageable: true,
-                        virtualmode: true,
-                        rendergridrows: function () {
-                            return FusionAttributeAdapter.records;
-                        },
-                        columnsresize: true,
-                        source: FusionAttributeAdapter,
-                        theme: theme,
-                        columns: definition.Columns
-                    });
-
-
-
-                    //$('#ItemsTile').jqxGrid({ columns: definition.Columns });
-                    //$('#ItemsTile').jqxGrid('updatebounddata');
-                });
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             function itemsBindingComplete(event) {
@@ -65829,26 +65406,38 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                 } catch (e) {
                     console.log(e);
                 }
+                //$('#FusionAttributeTypes').jqxTreeGrid({ disabled: false });
             }
 
             function itemsRowSelected(event) {
-                var args = event.args;              // event arguments.
-                var rowBoundIndex = args.rowindex;  // row's bound index.
-                var data = args.row;                // row's data
+                try {
+                    var args = event.args;              // event arguments.
+                    var rowBoundIndex = args.rowindex;  // row's bound index.
+                    var data = args.row;                // row's data
 
-                $('#AggregatesTile').fadeIn(500);
-                RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
+                    if (data) {
+                        if (data.ID) {
+                            $('#AggregatesTile').fadeIn(500);
+                            RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
 
-                $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
-                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                            $('#ItemAttributesTile').Attributes('reload', 'FusionAttribute', data.ID, false);
+                            FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             function fusionAttributeRowSelected(data) {
-                $('#AggregatesTile').fadeIn(500);
-                RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
-                //FusionRelationshipChartTile('AggregatesTile', 'FusionAttribute', data.ID);
-                AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
-                FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                if (data) {
+                    if (data.ID) {
+                        $('#AggregatesTile').fadeIn(500);
+                        RelationshipAggregatesTile('AggregatesTile', 'FusionAttribute', data.ID, permissions);
+                        AttributesTile('ItemAttributesTile', contextList, permissions, 'FusionAttribute', data.ID, 'Technical Attributes for ' + data.Name)
+                        FusionAttributeDetailTile('FusionAttributeDetailsTile', 'FusionAttribute', data.ID);
+                    }
+                }
             }
 
             function clearFilter() {
@@ -65887,16 +65476,20 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
 
                 }
 
-                $('#Export').off('click', exportFusionAttributes);
-                $('#RunFilter').off('click', runFilter);
-                $('#ClearFilter').off('click', clearFilter);
-                $('#FusionAttributeTypes').off('bindingComplete', fusionAttributesTypeBindingComplete);
-                $('#FusionAttributeTypes').off('rowSelect', fusionAttributeTypesRowSelect);
-                $('#ItemsTile').off('rowselect', itemsRowSelected);
-                $("#ItemsTile").off("bindingcomplete", itemsBindingComplete);
-                amplify.unsubscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
-                amplify.unsubscribe("ToolAction", toolAction);
-                amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                try {
+                    $('#Export').off('click', exportFusionAttributes);
+                    $('#RunFilter').off('click', runFilter);
+                    $('#ClearFilter').off('click', clearFilter);
+                    $('#FusionAttributeTypes').off('bindingComplete', fusionAttributesTypeBindingComplete);
+                    $('#FusionAttributeTypes').off('rowSelect', fusionAttributeTypesRowSelect);
+                    $('#ItemsTile').off('rowselect', itemsRowSelected);
+                    $("#ItemsTile").off("bindingcomplete", itemsBindingComplete);
+                    amplify.unsubscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
+                    amplify.unsubscribe("ToolAction", toolAction);
+                    amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                } catch (e) {
+                    console.log(e);
+                }
             }
 
             //#endregion
@@ -66047,12 +65640,6 @@ function fusion_item(app, pageViewModel, templatePath, contextList) {
                     amplify.subscribe('FusionAttributeRowSelected', fusionAttributeRowSelected);
                     amplify.subscribe("ToolAction", toolAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-                    //$("#ItemsTile").on("sort", function (event) {
-                    //    $('#ItemsTile').one('bindingcomplete', function (event) {
-                    //        oneBindingComplete();
-                    //    });
-                    //});
 
                     //#endregion
 
@@ -66760,8 +66347,6 @@ function groups_item(app, pageViewModel, templatePath, contextList) {
                     
                     ko.applyBindings(socialTile, document.getElementById('SocialTile'));
                     socialTile.GetStatistics();
-
-                    $("#RandomQuestion").RandomSurveyQuestion({ objectType: type, objectID: id });
 
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
@@ -69175,6 +68760,7 @@ function rules_item(app, pageViewModel, templatePath, contextList) {
         var permissions = new PermissionsModel();
         var type = 'Rule';
         var timescale;
+        var survey;
 
         $.getJSON('/api/rule/' + ruleID, function (json) {
             pageViewModel.Title = json.Name
@@ -69231,6 +68817,7 @@ function rules_item(app, pageViewModel, templatePath, contextList) {
 
             function unsubscribe(data) {
                 statisticsTileVm = null;
+                survey = null;
 
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
@@ -69266,6 +68853,7 @@ function rules_item(app, pageViewModel, templatePath, contextList) {
                     $('#SideIcons').PageTools({ type: type, id: ruleID });
                     statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
                     ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
+                    survey = new Survey('Survey', type, ruleID, 'RuleType', json.TypeID);
 
                     ObjectDetail('DetailTile', type, ruleID);
 
@@ -69807,6 +69395,9 @@ function surveys_admin(app, pageViewModel, templatePath, contextList) {
 
         var permissions = new PermissionsModel();
 
+        var QuestionTypesSource;
+        var QuestionTypesAdapter;
+
         var SurveyTypesSource;
         var SurveyTypesAdapter;
 
@@ -69828,9 +69419,18 @@ function surveys_admin(app, pageViewModel, templatePath, contextList) {
             if (data) {
                 amplify.publish(AmplifyActions.TileUnsubscribe, {});
                 $('#SideIcons').PageTools("reload", type, data.ID);
-                DetailTile('DetailTile', contextList, permissions, type, data.ID);
-                $('#QuestionsTile').load('/resources/surveys/' + data.ID + '/questions');
-                $('#EntriesTile').load('/resources/surveys/' + data.ID + '/entries');
+                ObjectDetail('DetailTile', type, data.ID);
+
+                $('#QuestionTools').html('');
+
+                var tools = [];
+                if (permissions.HasPermission("Root", "Create")) {
+                    tools.push({ icon: 'plus', uri: '/form/AddQuestionType?surveyTypeID=' + data.ID, context: contextList.SurveyType, title: 'Add survey' });
+                }
+                TileTools('#QuestionTools', tools);
+
+                QuestionTypesSource.url = '/api/surveys/' + data.ID + '/questions'
+                $('#QuestionsTile').jqxGrid('updatebounddata');
             }
         }
 
@@ -69838,14 +69438,20 @@ function surveys_admin(app, pageViewModel, templatePath, contextList) {
             try {
                 switch (data.context) {
                     case contextList.SurveyType:
-                        DetailTile('DetailTile', contextList, permissions, type, data.id);
+                        ObjectDetail('DetailTile', type, data.id);
                         $('#List').jqxGrid('updatebounddata');
+                        break;
+                    case contextList.QuestionType:
+                        $('#QuestionsTile').jqxGrid('updatebounddata');
                         break;
                 }
             } catch (e) { }
         }
 
         function unsubscribe(data) {
+            QuestionTypesAdapter = null;
+            QuestionTypesSource = null;
+
             SurveyTypesAdapter = null;
             SurveyTypesSource = null;
 
@@ -69865,62 +69471,125 @@ function surveys_admin(app, pageViewModel, templatePath, contextList) {
 
                 $('#SideIcons').PageTools({ type: type, id: 0 });
 
-                permissions.GetPermissionsForObject(type, 0);
+                var loadAfterPermissionsRetrieved = function () {
 
-                //#region Grid
+                    var tools = [];
+                    if (permissions.HasPermission("Root", "Create")) {
+                        tools.push({ icon: 'plus', uri: '/form/AddSurveyType', context: contextList.SurveyType, title: 'Add survey' });
+                    }
+                    TileTools('#ListTools', tools);
 
-                SurveyTypesSource = {
-                    datatype: 'json',
-                    url: '/api/surveys',
-                    datafields: [
-                        { name: 'ID', type: 'number' },
-                        { name: 'Name', type: 'string' },
-                        { name: 'AllowMultiple' },
-                        { name: 'ObjectType', type: 'string' }
-                    ]
+                    //#region SurveyType Grid
+
+                    SurveyTypesSource = {
+                        datatype: 'json',
+                        url: '/api/surveys',
+                        datafields: [
+                            { name: 'ID', type: 'number' },
+                            { name: 'Name', type: 'string' },
+                            { name: 'ObjectType', type: 'string' }
+                        ]
+                    };
+
+                    SurveyTypesAdapter = new $.jqx.dataAdapter(SurveyTypesSource);
+
+                    $("#List").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        source: SurveyTypesAdapter,
+                        theme: theme,
+                        columns: [
+                            { datafield: "Name", text: "Name" },
+                            {
+                                datafield: "ID",
+                                text: "",
+                                filterable: false,
+                                sortable: false,
+                                width: 80,
+                                cellsrenderer: function (row, column, value) {
+                                    var tools = [
+                                        { icon: 'pencil', urlprefix: '/form/EditSurveyType?id={0}' },
+                                        { icon: 'trash-o', urlprefix: '/form/DeleteSurveyType?id={0}' }
+                                    ];
+                                    return renderToolsHtml(value, tools, contextList.SurveyType);
+                                }
+                            }
+                        ]
+                    });
+
+                    //#endregion
+
+                    //#region QuestionType Grid
+
+                    QuestionTypesSource = {
+                        datatype: 'json',
+                        url: null,
+                        datafields:
+                        [
+                            { name: 'ID', type: 'number' },
+                            { name: 'Name', type: 'string' },
+                            { name: 'OptionCount', type: 'number' },
+                            { name: 'DisplayStyle', type: 'string' }
+                        ]
+                    };
+
+                    QuestionTypesAdapter = new $.jqx.dataAdapter(QuestionTypesSource);
+
+                    $("#QuestionsTile").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        pageable: true,
+                        //columnresize: true,
+                        source: QuestionTypesAdapter,
+                        theme: list_theme,
+                        columns: [
+                            { datafield: "Name", text: "Name" },
+                            { datafield: "OptionCount", text: "# Options", width: '10%' },
+                            { datafield: "DisplayStyle", text: "Display", width: '10%' },
+                            {
+                                datafield: "ID",
+                                text: "",
+                                width: 80,
+                                filterable: false,
+                                sortable: false,
+                                cellsrenderer: function (row, column, value) {
+                                    var tools = [
+                                        { icon: 'pencil', urlprefix: '/form/EditQuestionType?id={0}' },
+                                        { icon: 'trash-o', urlprefix: '/form/DeleteQuestionType?id={0}' }
+                                    ];
+                                    return renderToolsHtml(value, tools, contextList.QuestionType);
+                                }
+                            }
+                        ]
+                    });
+
+                    //#endregion
+
+                    //#region Event Subscriptions
+
+                    $("#List").on("bindingcomplete", listBindingComplete);
+                    $('#List').on('rowselect', listRowSelect);
+                    amplify.subscribe("SaveAction", saveAction);
+                    amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+
+                    //#endregion
+
                 };
 
-                SurveyTypesAdapter = new $.jqx.dataAdapter(SurveyTypesSource);
-
-                $("#List").jqxGrid({
-                    altrows: true,
-                    width: grid_width,
-                    pagesizeoptions: ['10', '20', '50'],
-                    pagesize: 20,
-                    autoheight: true,
-                    sortable: true,
-                    filterable: true,
-                    showfilterrow: true,
-                    pageable: true,
-                    source: SurveyTypesAdapter,
-                    theme: theme,
-                    columns: [
-                        { datafield: "Name", text: "Name" },
-                        {
-                            datafield: "ID",
-                            text: "",
-                            width: 80,
-                            cellsrenderer: function (row, column, value) {
-                                var tools = [
-                                    { icon: 'pencil', urlprefix: '/form/surveys/{0}/edit' },
-                                    { icon: 'trash-o', urlprefix: '/form/surveys/{0}/delete' }
-                                ];
-                                return renderToolsHtml(value, tools, contextList.SurveyType);
-                            }
-                        }
-                    ]
-                });
-
-                //#endregion
-
-                //#region Event Subscriptions
-
-                $("#List").on("bindingcomplete", listBindingComplete);
-                $('#List').on('rowselect', listRowSelect);
-                amplify.subscribe("SaveAction", saveAction);
-                amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
-
-                //#endregion
+                permissions.GetPermissionsForObject(type, 0).then(loadAfterPermissionsRetrieved);
             });
     });
 }
@@ -70246,6 +69915,7 @@ function taxonomies_list(app, pageViewModel, templatePath, contextList) {
         var typeID = context.params['typeid'];
         var selectedID = context.params['id'];
         var permissions = new PermissionsModel();
+        var survey;
 
         $.getJSON('/api/catalogs/' + typeID, function (json) {
 
@@ -70388,6 +70058,11 @@ function taxonomies_list(app, pageViewModel, templatePath, contextList) {
                             ObjectStatisticsTile('StatisticsTile', type, selectedID);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, selectedID, '', false);
                             RelationshipAggregatesTile('AggregatesTileContainer', type, selectedID, permissions);
+
+                            
+                            if (survey) survey.ChangeObject(type, selectedID, 'TaxonomyType', typeID);
+                            else survey = new Survey('Survey', type, selectedID, 'TaxonomyType', typeID);
+                            
                         }
 
                         permissions.GetPermissionsForObject(type, selectedID).then(loadPermissionsDependentTiles);
@@ -70396,6 +70071,7 @@ function taxonomies_list(app, pageViewModel, templatePath, contextList) {
             }
 
             function unsubscribe(data) {
+                survey = null;
                 $('#AttributesTile').Attributes('destroy');
                 $('#Tree').off('bindingComplete', bindingComplete);
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
@@ -73345,278 +73021,507 @@ function workflow_item_status(app, pageViewModel, templatePath, contextList) {
         }
     })();
 });
-(function (powerbi) {
-    'use strict';
+/*! powerbi-client v1.1.0 | (c) 2016 Microsoft Corporation MIT */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
+/******/
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
 
-    powerbi.Embed = Embed;
+	var core_1 = __webpack_require__(1);
+	/**
+	 * Make PowerBi available on global object for use in apps without module loading support.
+	 * Save class to allow creating an instance of the service.
+	 * Create instance of class with default config for normal usage.
+	 */
+	window.Powerbi = core_1.PowerBi;
+	window.powerbi = new core_1.PowerBi();
 
-    function Embed() { }
 
-    Embed.prototype = {
-        init: function () {
-            var embedUrl = this.getEmbedUrl();
-            var iframeHtml = '<iframe style="width:100%;height:100%;border-style:none;" src="' + embedUrl + '" scrolling="no" allowfullscreen="true"></iframe>';
-            this.element.innerHTML = iframeHtml;
-            this.iframe = this.element.childNodes[0];
-            this.iframe.addEventListener('load', this.load.bind(this), false);
-        },
-        load: function () {
-            var computedStyle = window.getComputedStyle(this.element);
-            var accessToken = this.getAccessToken();
-            
-            var initEventArgs = {
-                message: {
-                    action: this.options.loadAction,
-                    accessToken: accessToken,
-                    width: computedStyle.width,
-                    height: computedStyle.height
-                }
-            };
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
 
-            powerbi.utils.raiseCustomEvent(this.element, 'embed-init', initEventArgs);
-            this.iframe.contentWindow.postMessage(JSON.stringify(initEventArgs.message), '*');
-        },
-        getAccessToken: function () {
-            var accessToken = this.element.getAttribute('powerbi-access-token');
+	var embed_1 = __webpack_require__(2);
+	var report_1 = __webpack_require__(4);
+	var tile_1 = __webpack_require__(5);
+	var util_1 = __webpack_require__(3);
+	var PowerBi = (function () {
+	    function PowerBi(config) {
+	        if (config === void 0) { config = {}; }
+	        this.embeds = [];
+	        window.addEventListener('message', this.onReceiveMessage.bind(this), false);
+	        // TODO: Change when Object.assign is available.
+	        this.config = util_1.Utils.assign({}, PowerBi.defaultConfig, config);
+	        if (this.config.autoEmbedOnContentLoaded) {
+	            this.enableAutoEmbed();
+	        }
+	    }
+	    /**
+	     * Handler for DOMContentLoaded which searches DOM for elements having 'powerbi-embed-url' attribute
+	     * and automatically attempts to embed a powerbi component based on information from the attributes.
+	     * Only runs if `config.autoEmbedOnContentLoaded` is true when the service is created.
+	     */
+	    PowerBi.prototype.init = function (container) {
+	        var _this = this;
+	        container = (container && container instanceof HTMLElement) ? container : document.body;
+	        var elements = Array.prototype.slice.call(container.querySelectorAll("[" + embed_1.Embed.embedUrlAttribute + "]"));
+	        elements.forEach(function (element) { return _this.embed(element); });
+	    };
+	    /**
+	     * Given an html element embed component based on configuration.
+	     * If component has already been created and attached to element re-use component instance and existing iframe,
+	     * otherwise create a new component instance
+	     */
+	    PowerBi.prototype.embed = function (element, config) {
+	        if (config === void 0) { config = {}; }
+	        var component;
+	        var powerBiElement = element;
+	        if (powerBiElement.powerBiEmbed) {
+	            component = this.embedExisting(powerBiElement, config);
+	        }
+	        else {
+	            component = this.embedNew(powerBiElement, config);
+	        }
+	        return component;
+	    };
+	    /**
+	     * Given an html element embed component base configuration.
+	     * Save component instance on element for later lookup.
+	     */
+	    PowerBi.prototype.embedNew = function (element, config) {
+	        var _this = this;
+	        var componentType = config.type || element.getAttribute(embed_1.Embed.typeAttribute);
+	        if (!componentType) {
+	            throw new Error("Attempted to embed using config " + JSON.stringify(config) + " on element " + element.outerHTML + ", but could not determine what type of component to embed. You must specify a type in the configuration or as an attribute such as '" + embed_1.Embed.typeAttribute + "=\"" + report_1.Report.name.toLowerCase() + "\"'.");
+	        }
+	        // Save type on configuration so it can be referenced later at known location
+	        config.type = componentType;
+	        var Component = util_1.Utils.find(function (component) { return componentType === component.name.toLowerCase(); }, PowerBi.components);
+	        if (!Component) {
+	            throw new Error("Attempted to embed component of type: " + componentType + " but did not find any matching component.  Please verify the type you specified is intended.");
+	        }
+	        // TODO: Consider removing in favor of passing reference to `this` in constructor
+	        // The getGlobalAccessToken function is only here so that the components (Tile | Report) can get the global access token without needing reference
+	        // to the service that they are registered within becaues it creates circular dependencies
+	        config.getGlobalAccessToken = function () { return _this.accessToken; };
+	        var component = new Component(element, config);
+	        element.powerBiEmbed = component;
+	        this.embeds.push(component);
+	        return component;
+	    };
+	    PowerBi.prototype.embedExisting = function (element, config) {
+	        var component = util_1.Utils.find(function (x) { return x.element === element; }, this.embeds);
+	        if (!component) {
+	            throw new Error("Attempted to embed using config " + JSON.stringify(config) + " on element " + element.outerHTML + " which already has embedded comopnent associated, but could not find the existing comopnent in the list of active components. This could indicate the embeds list is out of sync with the DOM, or the component is referencing the incorrect HTML element.");
+	        }
+	        component.load(config, true);
+	        return component;
+	    };
+	    /**
+	     * Adds event handler for DOMContentLoaded which finds all elements in DOM with attribute powerbi-embed-url
+	     * then attempts to initiate the embed process based on data from other powerbi-* attributes.
+	     * (This is usually only useful for applications rendered on by the server since all the data needed will be available by the time the handler is called.)
+	     */
+	    PowerBi.prototype.enableAutoEmbed = function () {
+	        var _this = this;
+	        window.addEventListener('DOMContentLoaded', function (event) { return _this.init(document.body); }, false);
+	    };
+	    /**
+	     * Returns instance of component associated with element.
+	     */
+	    PowerBi.prototype.get = function (element) {
+	        var powerBiElement = element;
+	        if (!powerBiElement.powerBiEmbed) {
+	            throw new Error("You attempted to get an instance of powerbi component associated with element: " + element.outerHTML + " but there was no associated instance.");
+	        }
+	        return powerBiElement.powerBiEmbed;
+	    };
+	    /**
+	     * Given an html element which has component embedded within it, remove the component from list of embeds, remove association with component, and remove the iframe.
+	     */
+	    PowerBi.prototype.reset = function (element) {
+	        var powerBiElement = element;
+	        if (!powerBiElement.powerBiEmbed) {
+	            return;
+	        }
+	        /** Remove component from internal list */
+	        util_1.Utils.remove(function (x) { return x === powerBiElement.powerBiEmbed; }, this.embeds);
+	        /** Delete property from html element */
+	        delete powerBiElement.powerBiEmbed;
+	        /** Remove iframe from element */
+	        var iframe = element.querySelector('iframe');
+	        if (iframe) {
+	            iframe.remove();
+	        }
+	    };
+	    /**
+	     * Handler for window message event.
+	     * Parses event data as json and if it came from an iframe that matches one from an existing embeded component re-dispatches the event on the iframe's parent element
+	     * to simulate the event bubbling through the two separate windows / DOMs.
+	     *
+	     * If an error occurs when parsing event.data call error handler provided during configuration.
+	     */
+	    PowerBi.prototype.onReceiveMessage = function (event) {
+	        if (!event) {
+	            return;
+	        }
+	        try {
+	            // Only raise the event on the embed that matches the post message origin
+	            var embed = util_1.Utils.find(function (embed) { return event.source === embed.iframe.contentWindow; }, this.embeds);
+	            if (embed) {
+	                var messageData = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+	                util_1.Utils.raiseCustomEvent(embed.element, PowerBi.eventMap[messageData.event], messageData);
+	            }
+	        }
+	        catch (e) {
+	            if (typeof this.config.onError === 'function') {
+	                this.config.onError.call(window, e);
+	            }
+	            else {
+	                throw e;
+	            }
+	        }
+	    };
+	    /**
+	     * List of components this service can embed.
+	     */
+	    PowerBi.components = [
+	        tile_1.Tile,
+	        report_1.Report
+	    ];
+	    /**
+	     * Mapping of event names from iframe postMessage to their name percieved by parent DOM.
+	     * Example: User clicks on embeded report which is inside iframe. The iframe code resends
+	     * event as postMessage with { event: 'reportClicked', ... } and this name is converted to hyphenated
+	     * name and dispatched from the parent element of the iframe to simulate the event bubbling through two
+	     * different windows / DOMs
+	     */
+	    PowerBi.eventMap = {
+	        'tileClicked': 'tile-click',
+	        'tileLoaded': 'tile-load',
+	        'reportPageLoaded': 'report-load'
+	    };
+	    /**
+	     * Default configuration for service.
+	     */
+	    PowerBi.defaultConfig = {
+	        autoEmbedOnContentLoaded: false,
+	        onError: function () {
+	            var args = [];
+	            for (var _i = 0; _i < arguments.length; _i++) {
+	                args[_i - 0] = arguments[_i];
+	            }
+	            return console.log(args[0], args.slice(1));
+	        }
+	    };
+	    return PowerBi;
+	}());
+	exports.PowerBi = PowerBi;
+	// export default PowerBi; 
 
-            if (!accessToken) {
-                accessToken = powerbi.accessToken;
-                
-                if (!accessToken) {
-                    throw new Error("No access token was found for element. You must specify an access token directly on the element using attribute 'powerbi-access-token' or specify a global token at: powerbi.accessToken.");
-                }
-            }
 
-            return accessToken;
-        },
-        getEmbedUrl: function () {
-            return this.element.getAttribute('powerbi-embed');
-        },
-        fullscreen: function () {
-            var elem = this.iframe;
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
 
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.msRequestFullscreen) {
-                elem.msRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) {
-                elem.mozRequestFullScreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            }
-        },
-        exitFullscreen: function () {
-            if (!this.isFullscreen()) {
-                return;
-            }
+	var util_1 = __webpack_require__(3);
+	var Embed = (function () {
+	    function Embed(element, options) {
+	        var _this = this;
+	        this.element = element;
+	        // TODO: Change when Object.assign is available.
+	        this.options = util_1.Utils.assign({}, Embed.defaultOptions, options);
+	        this.options.accessToken = this.getAccessToken();
+	        this.options.embedUrl = this.getEmbedUrl();
+	        var iframeHtml = "<iframe style=\"width:100%;height:100%;\" src=\"" + this.options.embedUrl + "\" scrolling=\"no\" allowfullscreen=\"true\"></iframe>";
+	        this.element.innerHTML = iframeHtml;
+	        this.iframe = this.element.childNodes[0];
+	        this.iframe.addEventListener('load', function () { return _this.load(_this.options, false); }, false);
+	    }
+	    /**
+	     * Handler for when the iframe has finished loading the powerbi placeholder page.
+	     * This is used to inject configuration options such as access token, loadAction, etc
+	     * which allow iframe to load the actual report with authentication.
+	     */
+	    Embed.prototype.load = function (options, requireId, message) {
+	        if (requireId === void 0) { requireId = false; }
+	        if (message === void 0) { message = null; }
+	        if (!message) {
+	            throw new Error("You called load without providing message properties from the concrete embeddable class.");
+	        }
+	        var baseMessage = {
+	            accessToken: options.accessToken
+	        };
+	        util_1.Utils.assign(message, baseMessage);
+	        var event = {
+	            message: message
+	        };
+	        util_1.Utils.raiseCustomEvent(this.element, event.message.action, event);
+	        this.iframe.contentWindow.postMessage(JSON.stringify(event.message), '*');
+	    };
+	    /**
+	     * Get access token from first available location: options, attribute, global.
+	     */
+	    Embed.prototype.getAccessToken = function () {
+	        var accessToken = this.options.accessToken || this.element.getAttribute(Embed.accessTokenAttribute) || this.options.getGlobalAccessToken();
+	        if (!accessToken) {
+	            throw new Error("No access token was found for element. You must specify an access token directly on the element using attribute '" + Embed.accessTokenAttribute + "' or specify a global token at: powerbi.accessToken.");
+	        }
+	        return accessToken;
+	    };
+	    /**
+	     * Get embed url from first available location: options, attribute.
+	     */
+	    Embed.prototype.getEmbedUrl = function () {
+	        var embedUrl = this.options.embedUrl || this.element.getAttribute(Embed.embedUrlAttribute);
+	        if (typeof embedUrl !== 'string' || embedUrl.length === 0) {
+	            throw new Error("Embed Url is required, but it was not found. You must provide an embed url either as part of embed configuration or as attribute '" + Embed.embedUrlAttribute + "'.");
+	        }
+	        return embedUrl;
+	    };
+	    /**
+	     * Request the browser to make the components iframe fullscreen.
+	     */
+	    Embed.prototype.fullscreen = function () {
+	        var requestFullScreen = this.iframe.requestFullscreen || this.iframe.msRequestFullscreen || this.iframe.mozRequestFullScreen || this.iframe.webkitRequestFullscreen;
+	        requestFullScreen.call(this.iframe);
+	    };
+	    /**
+	     * Exit fullscreen.
+	     */
+	    Embed.prototype.exitFullscreen = function () {
+	        if (!this.isFullscreen(this.iframe)) {
+	            return;
+	        }
+	        var exitFullscreen = document.exitFullscreen || document.mozCancelFullScreen || document.webkitExitFullscreen || document.msExitFullscreen;
+	        exitFullscreen.call(document);
+	    };
+	    /**
+	     * Return true if iframe is fullscreen,
+	     * otherwise return false
+	     */
+	    Embed.prototype.isFullscreen = function (iframe) {
+	        var options = ['fullscreenElement', 'webkitFullscreenElement', 'mozFullscreenScreenElement', 'msFullscreenElement'];
+	        return options.some(function (option) { return document[option] === iframe; });
+	    };
+	    Embed.embedUrlAttribute = 'powerbi-embed-url';
+	    Embed.accessTokenAttribute = 'powerbi-access-token';
+	    Embed.typeAttribute = 'powerbi-type';
+	    /**
+	     * Default options for embeddable component.
+	     */
+	    Embed.defaultOptions = {
+	        filterPaneEnabled: true
+	    };
+	    return Embed;
+	}());
+	exports.Embed = Embed;
 
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-        },
-        isFullscreen: function () {
-            var options = ['fullscreenElement', 'webkitFullscreenElement', 'mozFullscreenScreenElement', 'msFullscreenElement'];
-            for (var i = 0; i < options.length; i++) {
-                if (document[options[i]] === this.iframe) {
-                    return true;
-                }
-            }
 
-            return false;
-        }
-    };
-} (window.powerbi = window.powerbi || {}));
-(function(powerbi){
-    'use strict';
-    
-    powerbi.Tile = Tile;
-    powerbi.Tile.prototype = powerbi.Embed.prototype;
-    
-    function Tile(element, options) {
-        var me = this;
-        
-        this.element = element;
-        this.options = options || {};
-        this.options.loadAction = 'loadTile';
-        this.getEmbedUrl = getEmbedUrl;
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
 
-        this.init();
+	var Utils = (function () {
+	    function Utils() {
+	    }
+	    Utils.raiseCustomEvent = function (element, eventName, eventData) {
+	        var customEvent;
+	        if (typeof CustomEvent === 'function') {
+	            customEvent = new CustomEvent(eventName, {
+	                detail: eventData,
+	                bubbles: true,
+	                cancelable: true
+	            });
+	        }
+	        else {
+	            customEvent = document.createEvent('CustomEvent');
+	            customEvent.initCustomEvent(eventName, true, true, eventData);
+	        }
+	        element.dispatchEvent(customEvent);
+	        if (customEvent.defaultPrevented || !customEvent.returnValue) {
+	            return;
+	        }
+	        // TODO: Remove this? Should be better way to handle events than using eval?
+	        // What is use case? <div powerbi-type="report" onload="alert('loaded');"></div>
+	        var inlineEventAttr = 'on' + eventName.replace('-', '');
+	        var inlineScript = element.getAttribute(inlineEventAttr);
+	        if (inlineScript) {
+	            eval.call(element, inlineScript);
+	        }
+	    };
+	    Utils.findIndex = function (predicate, xs) {
+	        if (!Array.isArray(xs)) {
+	            throw new Error("You attempted to call find with second parameter that was not an array. You passed: " + xs);
+	        }
+	        var index;
+	        xs.some(function (x, i) {
+	            if (predicate(x)) {
+	                index = i;
+	                return true;
+	            }
+	        });
+	        return index;
+	    };
+	    Utils.find = function (predicate, xs) {
+	        var index = Utils.findIndex(predicate, xs);
+	        return xs[index];
+	    };
+	    Utils.remove = function (predicate, xs) {
+	        var index = Utils.findIndex(predicate, xs);
+	        xs.splice(index, 1);
+	    };
+	    // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+	    // TODO: replace in favor of using polyfill
+	    Utils.assign = function () {
+	        var args = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            args[_i - 0] = arguments[_i];
+	        }
+	        var target = args[0];
+	        'use strict';
+	        if (target === undefined || target === null) {
+	            throw new TypeError('Cannot convert undefined or null to object');
+	        }
+	        var output = Object(target);
+	        for (var index = 1; index < arguments.length; index++) {
+	            var source = arguments[index];
+	            if (source !== undefined && source !== null) {
+	                for (var nextKey in source) {
+	                    if (source.hasOwnProperty(nextKey)) {
+	                        output[nextKey] = source[nextKey];
+	                    }
+	                }
+	            }
+	        }
+	        return output;
+	    };
+	    return Utils;
+	}());
+	exports.Utils = Utils;
 
-        ///////////////////////////////
 
-        function getEmbedUrl() {
-            var embedUrl = powerbi.Embed.prototype.getEmbedUrl.call(me);
-            if (!embedUrl) {
-                var dashboardId = me.element.getAttribute('powerbi-dashboard');
-                var tileId = me.element.getAttribute('powerbi-tile');
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
 
-                if (!(dashboardId && tileId)) {
-                    throw new Error('dashboardId & tileId are required');
-                }
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var embed_1 = __webpack_require__(2);
+	var Report = (function (_super) {
+	    __extends(Report, _super);
+	    function Report() {
+	        _super.apply(this, arguments);
+	    }
+	    Report.prototype.getEmbedUrl = function () {
+	        var embedUrl = _super.prototype.getEmbedUrl.call(this);
+	        // TODO: Need safe way to add url parameters.
+	        // We are assuming embedUrls use query parameters to supply id of visual
+	        // so must prefix with '&'.
+	        if (!this.options.filterPaneEnabled) {
+	            embedUrl += "&filterPaneEnabled=false";
+	        }
+	        return embedUrl;
+	    };
+	    Report.prototype.load = function (options, requireId) {
+	        if (requireId === void 0) { requireId = false; }
+	        if (requireId && typeof options.id !== 'string') {
+	            throw new Error("id must be specified when loading reports on existing elements.");
+	        }
+	        var message = {
+	            action: 'loadReport',
+	            reportId: options.id,
+	            accessToken: null
+	        };
+	        _super.prototype.load.call(this, options, requireId, message);
+	    };
+	    Report.name = "Report";
+	    return Report;
+	}(embed_1.Embed));
+	exports.Report = Report;
 
-                embedUrl = 'https://app.powerbi.com/embed?dashboardId=' + dashboardId + '&tileId=' + tileId;
-            }
 
-            return embedUrl;
-        }
-    }
-}(window.powerbi = window.powerbi || {}));
-(function(powerbi){
-    'use strict';
-    
-    powerbi.Report = Report;
-    powerbi.Report.prototype = powerbi.Embed.prototype;
-    
-    function Report(element, options) {
-        var me = this;
-        
-        this.element = element;
-        this.options = options || {};
-        this.options.loadAction = 'loadReport';
-        this.getEmbedUrl = getEmbedUrl;
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
 
-        this.init();
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var embed_1 = __webpack_require__(2);
+	var Tile = (function (_super) {
+	    __extends(Tile, _super);
+	    function Tile() {
+	        _super.apply(this, arguments);
+	    }
+	    Tile.prototype.getEmbedUrl = function () {
+	        var embedUrl = _super.prototype.getEmbedUrl.call(this);
+	        return embedUrl;
+	    };
+	    Tile.prototype.load = function (options, requireId) {
+	        if (requireId === void 0) { requireId = false; }
+	        if (requireId && typeof options.id !== 'string') {
+	            throw new Error("id must be specified when loading reports on existing elements.");
+	        }
+	        var message = {
+	            action: 'loadTile',
+	            tileId: options.id,
+	            accessToken: null
+	        };
+	        _super.prototype.load.call(this, options, requireId, message);
+	    };
+	    Tile.name = "Tile";
+	    return Tile;
+	}(embed_1.Embed));
+	exports.Tile = Tile;
 
-        ///////////////////////////////
 
-        function getEmbedUrl() {
-            var embedUrl = powerbi.Embed.prototype.getEmbedUrl.call(me);
-            if (!embedUrl) {
-                var reportId = me.element.getAttribute('powerbi-report');
-
-                if (!reportId) {
-                    throw new Error('reportId is required');
-                }
-
-                embedUrl = 'https://embedded.powerbi.com/appTokenReportEmbed?reportId=' + reportId;
-            }
-
-            return embedUrl;
-        }
-    }
-}(window.powerbi = window.powerbi || {}));
-(function (powerbi) {
-    'use strict';
-    
-    powerbi.utils = {
-        raiseCustomEvent: raiseCustomEvent
-    };
-
-    function raiseCustomEvent(element, eventName, eventData) {
-        var customEvent;
-        if (typeof (window.CustomEvent) === 'function') {
-            customEvent = new CustomEvent(eventName, {
-                detail: eventData,
-                bubbles: true,
-                cancelable: true
-            });
-        } else {
-            customEvent = document.createEvent('CustomEvent');
-            customEvent.initCustomEvent(eventName, true, true, eventData);
-        }
-
-        element.dispatchEvent(customEvent);
-        if (customEvent.defaultPrevented || !customEvent.returnValue) {
-            return;
-        }
-
-        var inlineEventAttr = 'on' + eventName.replace('-', '');
-        var inlineScript = element.getAttribute(inlineEventAttr);
-        if (inlineScript) {
-            eval.call(element, inlineScript);
-        }
-    }
-} (window.powerbi = window.powerbi || {}));
-(function (powerbi) {
-    'use strict';
-
-    var embeds = [];
-    var componentTypes = [];
-
-    powerbi.get = get;
-    powerbi.embed = embed;
-    powerbi.init = init;
-
-    activate();
-    
-    //////////////////////////////////    
-    
-    function activate() {
-        window.addEventListener('DOMContentLoaded', init, false);
-        window.addEventListener('message', onReceiveMessage, false);
-
-        componentTypes = [
-            { type: 'powerbi-tile', component: powerbi.Tile },
-            { type: 'powerbi-report', component: powerbi.Report }
-        ];
-    }
-
-    var EmbedEventMap = {
-        'tileClicked': 'tile-click',
-        'tileLoaded': 'tile-load',
-        'reportPageLoaded': 'report-load'
-    };
-
-    function init(container) {
-        container = (container && container instanceof HTMLElement) ? container : document.body;
-        
-        var components = container.querySelectorAll('[powerbi-embed]');
-        for (var i = 0; i < components.length; i++) {
-            embed(components[i]);
-        }
-    }
-
-    function get(element) {
-        return element.powerBIEmbed || embed(element);
-    }
-
-    function embed(element) {
-        var instance;
-
-        if (element.powerBIEmbed) {
-            return element.powerBIEmbed;
-        }
-
-        for (var j = 0; j < componentTypes.length; j++) {
-            var componentType = componentTypes[j];
-
-            if (element.getAttribute(componentType.type) !== null) {
-                instance = new componentType.component(element);
-                element.powerBIEmbed = instance;
-                embeds.push(instance);
-                break;
-            }
-        }
-
-        return instance;
-    }
-
-    function onReceiveMessage(event) {
-        if (!event) {
-            return;
-        }
-
-        try {
-            var messageData = JSON.parse(event.data);
-            for (var i = 0; i < embeds.length; i++) {
-                var embed = embeds[i];
-
-                // Only raise the event on the embed that matches the post message origin
-                if (event.source === embed.iframe.contentWindow) {
-                    powerbi.utils.raiseCustomEvent(embed.element, EmbedEventMap[messageData.event], messageData);
-                }
-            }
-        }
-        catch (e) {
-            if (typeof (window.powerbi.onError) === 'function') {
-                window.powerbi.onError.call(window, e);
-            }
-        }
-    }
-} (window.powerbi = window.powerbi || {}));
+/***/ }
+/******/ ]);
+//# sourceMappingURL=powerbi.js.map

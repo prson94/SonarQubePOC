@@ -31,8 +31,5 @@ namespace d360.core.entities
 
         [DataMember]
         public virtual ICollection<MapItem> MapItems { get; set; }
-
-        [DataMember]
-        public virtual ICollection<MapSequence> MapSequences { get; set; }
     }
 }
