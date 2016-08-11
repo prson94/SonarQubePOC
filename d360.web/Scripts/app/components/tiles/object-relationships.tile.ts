@@ -12,7 +12,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
     providers: [RelationshipsService],
     styles: [`
     div.relationship-container{
-        max-height: 400px;min-height:200px;
+        max-height: 360px;min-height:200px;
         overflow: auto;
     }
     div.relationship{
