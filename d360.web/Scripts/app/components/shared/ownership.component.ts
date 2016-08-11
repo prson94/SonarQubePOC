@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 
 @Component({
@@ -10,6 +10,9 @@ import {Component} from '@angular/core';
 })
 
 export class OwnershipComponent {
+    @Input() objectID: number = 0;
+    @Input() objectType: string;
+    @Input() objectName: string;
 
     constructor() {
 

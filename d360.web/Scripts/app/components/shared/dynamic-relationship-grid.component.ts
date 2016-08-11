@@ -26,10 +26,16 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
                         </template>
                     </p-column>           
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>                                                               
-                    <p-column  [style]="{width:'40px'}">
+                    <p-column  [style]="{width:'30px'}">
                             <template let-item="rowData">
                                 <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                                                           
+                                </div>
+                            </template>
+                    </p-column>                   
+                    <p-column  [style]="{width:'30px'}">
+                            <template let-item="rowData">
+                                <div class="RowTools">                                                    
                                     <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>

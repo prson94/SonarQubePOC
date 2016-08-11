@@ -1,4 +1,5 @@
-﻿import { provideRouter, RouterConfig } from '@angular/router';
+﻿import { Routes, RouterModule } from '@angular/router';
+import { provideRouter, RouterConfig } from '@angular/router';
 import { HomeComponent} from './components/index';
 import { AdminRoutes} from './components/admin/admin.routes';
 import { HomeRoutes} from './components/home/home.routes';
@@ -26,7 +27,4 @@ export const routes: RouterConfig = [
     ...CommunityRoutes,
 ];
 
-
-export const APP_ROUTER_PROVIDERS = [
-    provideRouter(routes)
-];
+export const routing = RouterModule.forRoot(routes);
