@@ -5987,6 +5987,8 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.ruleObjectID = ruleObjectID;
     self.ruleObjectType = ruleObjectType;
 
+    self.parentObjectType = -1;
+
     self.fusionID = fusionID;
 
     self.searchTypes = ko.observableArray([
@@ -5994,6 +5996,7 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         { value: "ResultFromStep", text: "Result From Step" },
         { value: "FusionOwner", text: "Fusion Owner" },
         { value: "Fusion", text: "Fusion" },
+        { value: "Promotion", text: "Previous Promotion" }
     ]);
 
     self.findObjectTypes = ko.observableArray([
@@ -6008,7 +6011,10 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.fusionOwnerRules = ko.observableArray();
     self.steps = ko.observableArray();
     self.fusionAttributes = ko.observableArray();
-    
+    self.promotionSearchObjects = ko.observableArray();
+    self.fieldValueObjects = ko.observableArray();
+    self.fusionAttributeTypeSearchObjects = ko.observableArray();
+
     self.selectedFindSearchTypeIndex = ko.observable(-1);
     self.selectedFindObjectTypeIndex = ko.observable(-1);
     self.selectedFindObjectIndex = ko.observable(-1);
@@ -6017,8 +6023,12 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.selectedTargetFieldIndex = ko.observable(-1);
     self.selectedFusionOwnerRuleIndex = ko.observable(-1);
     self.selectedFusionAttributeIndex = ko.observable(-1);
+    self.selectedPromotionSearchIndex = ko.observable(-1);
+    self.selectedFieldValueSearchIndex = ko.observable(-1);
+    self.selectedFusionAttributeTypeSearchIndex = ko.observable(-1);
         
     self.resultFromStepParent = ko.observable(false);
+    self.disabledFusionAttributeType = ko.observable(false);
 
     //initial values    
     self.initialFindStepValue = ko.observable("");
@@ -6027,10 +6037,16 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
     self.initialTargetField = "";
     self.initialOwnerRule = "";
     self.initialFusionAttribute = "";
+    self.initialFusionAttributeTypeID = -1;
+    self.initialPromotionRuleStepID = -1;
 
-    // computed    
-    self.showFusionAttributeSearch = ko.computed(function () {
-        return (self.selectedFindSearchTypeIndex() == 3);
+    // computed  
+    self.showFieldValueSearch = ko.computed(function () {
+        return (self.selectedFindSearchTypeIndex() == 5);
+    });
+
+    self.showPromotionSearch = ko.computed(function () {
+        return (self.selectedFindSearchTypeIndex() == 4);
     });
 
     self.showFusionAttributeSearch = ko.computed(function () {
@@ -6049,7 +6065,7 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         return (self.selectedFindSearchTypeIndex() == 0);
     });
 
-    self.SetInitialValues = function (searchType, objectType, objectID, filterField,targetField,findParent) {
+    self.SetInitialValues = function (searchType, objectType, objectID, filterField, targetField, findParent, fusionAttributeTypeID, promotionStepID) {
         if (searchType.toUpperCase() == "GLOSSARY") {
             self.selectedFindSearchTypeIndex(0);
             self.initialFindObject = objectID;
@@ -6077,6 +6093,13 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         else if (searchType.toUpperCase() == 'FUSION') {
             self.selectedFindSearchTypeIndex(3);
             self.initialFusionAttribute = objectID;
+        } else if (searchType.toUpperCase() == 'PROMOTION') {
+            self.initialFindField = filterField;
+            self.initialTargetField = targetField;
+            self.selectedFindSearchTypeIndex(4);
+            self.LoadAttributeTypes();
+            self.initialFusionAttributeTypeID = fusionAttributeTypeID;
+            self.initialPromotionRuleStepID = promotionStepID;
         }
     }
 
@@ -6089,7 +6112,10 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         }
         else if (self.selectedFindSearchTypeIndex() == 3) { //fusion
             self.LoadFusionAttributes();
-        }        
+        }
+        else if (self.selectedFindSearchTypeIndex() == 4) { // previous promotion
+            self.LoadAttributeTypes();
+        }
     })
 
     self.selectedFindObjectTypeIndex.subscribe(function () {        
@@ -6111,6 +6137,89 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
         var item = self.findObjects()[self.selectedFindObjectIndex()];
         self.LoadTargetFields(type.value, item.value);
     })
+
+
+    self.selectedFindFieldIndex.subscribe(function () {
+        var itemId = self.sourceFields()[self.selectedFindFieldIndex()].value;
+        self.disabledFusionAttributeType(false);
+        if (itemId && itemId == -2) {
+            $.ajax({
+                url: 'services/fusion/rules/parent/' + self.ruleID,
+                method: 'GET'
+            }).done(function (data) {
+                if (data.length < 1) {
+                    self.parentObjectType = 0;
+                } else {
+                    self.parentObjectType = data[0].ID;
+
+                    for (var i = 0; i < self.fusionAttributeTypeSearchObjects().length; i++) {
+                        if (self.fusionAttributeTypeSearchObjects()[i].ID == self.parentObjectType) {
+                            self.selectedFusionAttributeTypeSearchIndex(i);
+                             self.disabledFusionAttributeType(true);
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    self.selectedFusionAttributeTypeSearchIndex.subscribe(function () {
+        self.LoadPreviousPromotions();
+    });
+
+
+    self.selectedPromotionSearchIndex.subscribe(function () {
+        if (self.selectedFieldValueSearchIndex() != 1 && self.selectedPromotionSearchIndex() >= 0) {
+            self.LoadTargetFields('FusionAttributeType', self.fusionAttributeTypeSearchObjects()[self.selectedFusionAttributeTypeSearchIndex()].ID);
+        }
+    });
+
+
+    self.LoadAttributeTypes = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: 'services/fusion/attributetypes',
+            method: 'GET'
+        }).done(function (data) {
+            self.fusionAttributeTypeSearchObjects(data);
+            if (self.initialFusionAttributeTypeID != -1) {
+                for (var i = 0; i < self.fusionAttributeTypeSearchObjects().length; i++) {
+                    if (self.fusionAttributeTypeSearchObjects()[i].ID == self.initialFusionAttributeTypeID) {
+                        self.selectedFusionAttributeTypeSearchIndex(i);
+                        break;
+                    }
+                }
+                self.initialFusionAttributeTypeID = -1;
+            }
+        });
+    }
+
+    self.LoadPreviousPromotions = function () {
+        self.IsLoading(true);
+        $.ajax({
+            url: 'services/fusion/promotions/' + self.fusionAttributeTypeSearchObjects()[self.selectedFusionAttributeTypeSearchIndex()].ID,
+            method: 'GET'
+        }).done(function (data) {
+            self.promotionSearchObjects(data);
+
+            if (self.initialPromotionRuleStepID != -1) {
+                for (var i = 0; i < self.promotionSearchObjects().length; i++) {
+                    if (self.promotionSearchObjects()[i].id == self.initialPromotionRuleStepID) {
+                        self.selectedPromotionSearchIndex(i);
+                        break;
+                    }
+                }
+                self.initialPromotionRuleStepID = -1;
+            } else if (data.length == 1) {
+                self.selectedPromotionSearchIndex(0);
+            }
+            else {
+                self.selectedPromotionSearchIndex(-1);
+            }
+        });
+
+    }
 
     self.LoadFusionAttributes = function () {
         self.IsLoading(true);
@@ -6137,12 +6246,16 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
             async: true
         }).done(function (data) {
             self.sourceFields([]);
-            self.sourceFields.push({ value: '0', text: 'Name' });            
+            self.sourceFields.push({ value: '0', text: 'Name' });
+            self.sourceFields.push({ value: '-2', text: 'ParentID' });
+
             if ('0' == self.initialFindField || self.initialFindField == '') self.selectedFindFieldIndex(0);
+            if (self.initialFindField == '-2') self.selectedFindFieldIndex(1);         
+
             $.each(data, function (idx, val) {
                 self.sourceFields.push({ value: val.ID, text: val.FriendlyName });                
-                if (val.ID == self.initialFindField) {                    
-                    self.selectedFindFieldIndex(idx+1);
+                if (val.ID == self.initialFindField) {
+                    self.selectedFindFieldIndex(idx+2);
                 }
             })
         }).always(function () {
@@ -6258,7 +6371,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
         { text: 'Promote', value: 'Promote' },
         { text: 'Find', value: 'Find' },
         { text: 'Lineage', value: 'Lineage' },
-        { text: 'Relate', value: 'Relate' }
+        { text: 'Relate', value: 'Relate' },
     ]);
 
     //settings for various actions
@@ -6266,7 +6379,7 @@ var promotionStepActionViewModel = function (fusionID, fusionTypeID, ruleID, rul
     self.actionPromoteSettings = ko.observable(new promotionStepPromoteActionViewModel(self.fusionID, self.fusionTypeID, self.ruleID, self.ruleStepID));
     self.actionFindSettings = ko.observable(new promotionStepFindActionViewModel(self.ruleID, self.ruleStepID, self.ruleObjectID, self.ruleObjectType, self.fusionID));
     self.actionLineageSettings = ko.observable(new promotionStepLineageActionViewModel(self.ruleID, self.ruleStepID, self.fusionID));
-    
+
 
     self.selectedActionIndex = ko.observable(-1);
 

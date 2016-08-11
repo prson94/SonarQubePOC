@@ -23,6 +23,9 @@
     var predicate = Model.RuleStep.GetSettingValueByName("Predicate");
     var findParent = Model.RuleStep.GetSettingValueByName("FindParent");
 
+    var promotionFusionAttributeTypeID = Model.RuleStep.GetSettingValueByName("PromotionFusionAttributeTypeID");
+    var promotionStepID = Model.RuleStep.GetSettingValueByName("PromotionStepID");
+
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -66,7 +69,7 @@
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
-            ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)');
+            ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)', '@(promotionFusionAttributeTypeID)', '@(promotionStepID)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {

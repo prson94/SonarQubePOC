@@ -7345,6 +7345,42 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     Value = parseTextField(form, $"{area}{target}FusionAttribute")
                 });
             }
+            else if (searchUpper == "PROMOTION")
+            {
+                var filterField = parseTextField(form, "FindSearchField");
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "FilterField",
+                    Value = filterField
+                });
+
+                if (filterField != "-2")
+                {
+                    fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = "TargetField",
+                        Value = parseTextField(form, "TargetSearchField")
+                    });
+                }
+
+
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "PromotionStepID",
+                    Value = parseTextField(form, "PromotionStepName")
+                });
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "PromotionFusionAttributeTypeID",
+                    Value = parseTextField(form, "FusionAttributeTypeName")
+                });
+            }
         }
 
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]

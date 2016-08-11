@@ -55,6 +55,18 @@ namespace d360.web.Controllers.Services
             return Company.Filter<FusionAttributeType>(i => i.FusionTypeID == id).AsQueryable();
         }
 
+        [Route("attributetypes")]
+        public IQueryable<dynamic> GetFusionAttributeTypes()
+        {
+            return Company.FusionAttributeTypes.Select(i =>
+            new {
+                ID = i.ID,
+                ParentID = i.ParentID,
+                TextPath = i.TextPath,
+                Name = i.Name
+            }).AsQueryable();
+        }
+
         /// <summary>
         /// Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
         /// </summary>
@@ -688,6 +700,34 @@ where A.FusionTypeID = @id", columns, joins);
         public IQueryable<PromotionHistoryApiModel> GetPromotionHistory()
         {
             return Company.Query<PromotionHistoryApiModel>(QueryConstants.PromotionHistoryList).AsQueryable();
+        }
+
+
+        [Route("promotions/{typeID:int}")]
+        public IQueryable<dynamic> GetPromotionsByAttributeType(int typeID)
+        {
+            var sql = @"select 
+	                        s.id, r.Description + ' - ' + s.[Description] as Name, t.Name as AttributeName, t.TextPath, t.ID as AttributeID, t.ParentID 
+                        from 
+	                        fusion.rulestep s
+                        join fusion.[rule] r on r.id = s.ruleid
+                        join fusionattributetype t on t.id = r.objectid
+                        where s.Action = 'Promote'
+                        and r.objectid = @typeID";
+
+            return Company.Query<dynamic>(sql, new { typeID }).AsQueryable();
+        }
+
+        [Route("rules/parent/{ruleID:int}")]
+        public IQueryable<FusionAttributeType> GetParentTypeByRule(int ruleID)
+        {
+            var sql = @"
+                    select t2.* from fusion.[rule] r
+                    join fusionattributetype t on t.id = r.objectid
+                    join fusionattributetype t2 on t2.id = t.parentid
+                    where r.id = @ruleID";
+
+            return Company.Query<FusionAttributeType>(sql, new { ruleID }).AsQueryable();
         }
     }
 }

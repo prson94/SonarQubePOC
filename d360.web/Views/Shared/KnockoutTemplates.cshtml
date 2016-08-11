@@ -1743,6 +1743,20 @@
         <div class="FieldNameRequired">Search Type</div>
         <div name="FindSearchType" id="FindSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindSearchTypeIndex}"></div>
     </div>
+    <div data-bind="visible: showPromotionSearch">
+        <div>
+            <div class="FieldNameRequired">Fusion Attribute Type</div>
+            <div name="FusionAttributeTypeName" id="FusionAttributeTypeName" data-bind="jqxDropDownList: { source: fusionAttributeTypeSearchObjects, width: field_width, height: field_height, displayMember: 'TextPath', valueMember: 'ID', theme: theme, selectedIndex: selectedFusionAttributeTypeSearchIndex, disabled: disabledFusionAttributeType }"></div>
+        </div>
+        <div data-bind="visible: selectedFusionAttributeTypeSearchIndex() != -1">
+            <div class="FieldNameRequired">Promotion Step</div>
+            <div name="PromotionStepName" id="PromotionStepName" data-bind="jqxDropDownList: { source: promotionSearchObjects, autoDropDownHeight: true, width: field_width, displayMember: 'Name', valueMember: 'id', theme: theme, selectedIndex: selectedPromotionSearchIndex }"></div>
+        </div>
+    </div>
+    <div data-bind="visible: showFieldValueSearch">
+        <div class="FieldNameRequired">Field Value</div>
+        <div data-bind="jqxDropDownList: { source: fieldValueObjects, autoDropDownHeight: true, width: field_width, displayMember: 'Description', valueMember: 'ID', theme: theme, selectedIndex: selectedFieldValueSearchIndex }"></div>
+    </div>
     <div data-bind="visible: selectedFindSearchTypeIndex() == 0">
         <div class="FieldNameRequired">Type</div>
         <div name="FindTypeName" id="FindTypeName" data-bind="jqxDropDownList: {placeHolder: 'Choose an object type:',source: findObjectTypes, autoDropDownHeight: true, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectTypeIndex}"></div>
@@ -1751,7 +1765,7 @@
         <div class="FieldNameRequired">Item</div>
         <div name="FindTypeID" id="FindTypeID" data-bind="jqxDropDownList: {placeHolder: 'Choose an object:',source: findObjects,  height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindObjectIndex}"></div>
     </div>
-    <div data-bind="visible: selectedFindObjectIndex() > 0 && showResultDirect()">
+    <div data-bind="visible: (selectedFindObjectIndex() > 0 && showResultDirect()) || (selectedPromotionSearchIndex() >= 0 && selectedFindFieldIndex() != 1)">
         <div class="FieldNameRequired">Target Matching Field</div>
         <div name="TargetSearchField" id="TargetSearchField" data-bind="jqxDropDownList: {placeHolder: 'Choose a target field:',source: targetFields, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedTargetFieldIndex}"></div>
     </div>
@@ -1769,7 +1783,7 @@
     </div>
     <div data-bind="visible: showFusionAttributeSearch()">
         <div class="FieldNameRequired">Fusion Attribute</div>
-        <div name="FindObjectFusionAttribute" id="FindObjectFusionAttribute" data-bind="jqxDropDownList: {placeHolder: 'Choose a attribute:',source: fusionAttributes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionAttributeIndex}"></div>
+        <div name="FindObjectFusionAttribute" id="FindObjectFusionAttribute" data-bind="jqxDropDownList: {placeHolder: 'Choose a attribute:',source: fusionAttributes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFusionAttributeIndex }"></div>
     </div>
 </script>
 
