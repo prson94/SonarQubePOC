@@ -5833,7 +5833,7 @@ order by    title
         [Route("{obj}/{objid:int}/relationships/counts")]
         public IEnumerable<dynamic> GetRelationshipCountsByObject(SystemObjects obj, int objid)
         {
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipCounts, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objid });
+            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objid });
         }
 
         [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]

@@ -9,7 +9,7 @@ import { Subscription }   from 'rxjs/Subscription';
     styles: [`
     .sidebar{
         position:absolute;
-        width:50px;
+        width:75px;
         right:5px; 
         
     }

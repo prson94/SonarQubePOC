@@ -12,15 +12,20 @@ import {Button, Editor, InputText, Dropdown, SelectItem, InputMask} from 'primen
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >                    
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [(ngModel)]="field.Value" [id]="field.FieldName"></p-editor>                                                                                                             
-                        <select [id]="field.FieldName" [formControlName]="field.FieldName" *ngSwitchCase="'Lookup'" [(ngModel)]="field.Value" style="height:auto;">
-                            <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                        </select>
+                        <div *ngSwitchCase="'Lookup'">
+                            <select [id]="field.FieldName" [formControlName]="field.FieldName" [(ngModel)]="field.Value" style="height:auto;width:100%;">
+                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                            </select>
+                        </div>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'number'" [(ngModel)]="field.Value" >   
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;"
                             [id]="field.FieldName" [type]="'string'" [(ngModel)]="field.Value" >   
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" [(ngModel)]="field.Value" style="width: 100%;" />
-                        <input *ngSwitchCase="'Boolean'" type="checkbox" [(ngModel)]="field.Value" [formControlName]="field.FieldName" />
+                        <input *ngSwitchCase="'Boolean'" type="checkbox" [(ngModel)]="field.Value" [formControlName]="field.FieldName" />                        
+                        <div *ngSwitchCase="'Date'">
+                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar>
+                        </div>
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div>                   
                 </div>

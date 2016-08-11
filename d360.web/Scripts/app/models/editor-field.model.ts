@@ -3,7 +3,7 @@
     FieldType: string;
     FieldDescription: string;
     Name: string;
-    Value: string;
+    Value: any;
     ReadOnly: boolean;
     Required: boolean;
     Items: string[];

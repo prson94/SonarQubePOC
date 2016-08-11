@@ -343,6 +343,8 @@ namespace d360.web.Controllers
                     return Rule_EditFields(ID);
                 case "SURVEYTYPE":
                     return SurveyType_EditFields(ID);
+                case "INTERSECTTYPE":
+                    return Relationship_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -376,6 +378,17 @@ namespace d360.web.Controllers
                     return Rule_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
+        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectID}/{targetType}/{targetID}")]
+        public JsonResult DynamicEditorAddRelationFields(string objectType, int objectID, SystemObjects targetType, int targetID)
+        {
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "INTERSECTTYPE":
+                    return Relationship_AddFields(objectID, targetType, targetID);                
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -423,6 +436,8 @@ namespace d360.web.Controllers
                     return EditRule(form);
                 case "SURVEYTYPE":
                     return EditSurveyType(form);
+                case "INTERSECT":
+                    return EditRelationship(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -459,7 +474,7 @@ namespace d360.web.Controllers
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);
+                    return DeleteQuestionType(form);                
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -509,7 +524,9 @@ namespace d360.web.Controllers
                 case "RULE":
                     return AddRule(form);
                 case "SURVEYTYPE":
-                    return AddSurveyType(form);                
+                    return AddSurveyType(form);
+                case "INTERSECT":
+                    return AddRelationship(form);              
             }
 
             throw new Exception("Invalid / unsupported create type");

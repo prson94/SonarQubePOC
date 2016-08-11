@@ -17,7 +17,7 @@ import * as _ from 'lodash';
                     <form (ngSubmit)="onSubmit()" [formGroup]="form">
                         
                         <div class="row" *ngFor="let row of rows">
-                            <div  *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()">
+                            <div  *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
                             </div>
                         </div>
@@ -42,6 +42,8 @@ export class DynamicEditorComponent {
     @Input() objectType: string;
     @Input() createUri: string;
     @Input() editUri: string;
+    @Input() targetType: string;
+    @Input() targetTypeID: number;
     
 
     @Output() closeClick = new EventEmitter();
@@ -73,11 +75,14 @@ export class DynamicEditorComponent {
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID)
+        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID)
             .then(result => {
                 this.fields = result;
 
                 this.fields.forEach(f => {
+                    if (f.FieldType && f.Value && f.FieldType.toUpperCase() == 'BOOLEAN')
+                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false); //checkbox doesnt work binding to a string
+
                     let r = this.rows.find(r => r.Row == (f.Row||0));
                     if (r)
                         r.Fields.push(f);
@@ -89,7 +94,6 @@ export class DynamicEditorComponent {
                     }
                 });
                 
-                console.log(this.fields);
                 this.form = this.editorDefinitionService.toFormGroup(this.fields);
             });
     }   
