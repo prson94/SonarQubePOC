@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
+import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import {DataTable, Column} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
@@ -18,21 +18,28 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
-               <p-dataTable *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor()" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
+               <p-dataTable #dt *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor()" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                     <p-column field="Name" header="Name" [filter]="true" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                     <p-column header="Classification" field="Classification" [filter]="true" [sortable]="true" [style]="{'width':'150px'}">                        
                         <template let-col let-rowTenant="rowData">
                             <span>{{rowTenant?.Classification | classificationTypeDisplayValue}}</span>
                         </template>
                     </p-column>           
-                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>                    
+                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>                                                               
+                    <p-column  [style]="{width:'40px'}">
+                            <template let-item="rowData">
+                                <div class="RowTools">                                
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </template>
+                    </p-column>                   
                 </p-dataTable>   
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="'Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
-                <div class="row" *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
-                        <div class="col s12">
-                            <span class="center">No relationships exist to this object type.  Use the plus link in the upper left of this tile to setup new relationships.</span>
-                        </div>
-                </div>
+                <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
+                    <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.  Use the plus link in the upper left of this tile to setup new relationships.</h5>                    
+                </div>                                                   
+                
                 `
 })
 
@@ -53,7 +60,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     
     selected: any = null;
     showEditor: boolean = false;
-    
+
+    @ViewChild('dt') datatable;
     
 
     constructor(private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService) {
@@ -100,6 +108,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         return this.addRelationship || this.showEditor;
     }
 
+    public export() {
+        if (this.datatable)
+            this.datatable.exportCSV();
+    }
+
     closeEditor() {
         this.showEditor = false;
         if (this.addRelationship) {
@@ -109,11 +122,19 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }    
 
     saveRelationship(event) {        
-        if (event.item.id == undefined)
+        if (event.item.id != undefined && event.item.id == 0)
             this.relationshipAdded.emit();
 
         this.getData();        
         this.closeEditor();
+    }
+
+    deleteItem(item) {
+        this.relationshipsService.deleteRelationshipItem(item.ID);
+
+        this.relations.splice(this.findItemIndex(item.ID), 1);
+
+        this.relationshipRemoved.emit();
     }
     
 }

@@ -12,13 +12,19 @@ import {DataTable} from 'primeng/primeng';
     .spacer {
         
     }
+
+    .disabled {
+        color:#d3d5d8;
+        pointer-events: none;
+        cursor: default;
+    }
   `],
     template: `
                 <div id="FieldsTile_tools" class="TileTools">
-                    <a *ngIf="hasAdd" class="waves-effect waves-teal btn-flat" (click)="addClick.emit(null)">
+                    <a *ngIf="hasAdd" class="waves-effect waves-teal btn-flat" (click)="addClick.emit(null)" [ngClass]="{'disabled':!addEnabled}">
                         <i class="fa fa-plus" [title]="addTitle"></i>
                     </a>                    
-                    <a *ngIf="hasExport" class="waves-effect waves-teal btn-flat" (click)="exportClick.emit(null)">
+                    <a *ngIf="hasExport" class="waves-effect waves-teal btn-flat" (click)="exportClick.emit(null)" [ngClass]="{'disabled':!exportEnabled}">
                         <i class="fa fa-download" [title]="exportTitle"></i>
                     </a>
                     <a *ngIf="grid" class="waves-effect waves-teal btn-flat" (click)="doGridExport()">
@@ -37,6 +43,9 @@ export class TileActionsComponent {
     @Input() addTitle: string = "Add";
     @Input() exportTitle: string = "Export";
     @Input() grid: DataTable;
+
+    @Input() exportEnabled: boolean = true;
+    @Input() addEnabled: boolean = true;
 
     private doGridExport() {
         this.grid.exportCSV();

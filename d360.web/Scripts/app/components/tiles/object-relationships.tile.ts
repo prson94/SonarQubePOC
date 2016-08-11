@@ -1,15 +1,17 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';
 import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { ObjectRelationshipCount } from '../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
+import { TechnicalNameToDisplayValuePipe } from '../../pipes/technical-to-display.pipe';
 
 @Component({
     selector: 'd3s-object-relationships-tile',
     directives: [TileActionsComponent, DynamicRelationshipGridComponent],
     providers: [RelationshipsService],
+    pipes: [TechnicalNameToDisplayValuePipe],
     styles: [`
     div.relationship-container{
         max-height: 360px;min-height:200px;
@@ -43,7 +45,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
   `],
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="true" [hasExport]="true" [addTitle]="'Add Relationship'" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="true" [addTitle]="'Add Relationship'" [exportEnabled]="enableExport()" (exportClick)="export()" (addClick)="add()"></d3s-tile-actions>                            
                 </header>
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -51,8 +53,8 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
                 <div *ngIf="!isLoading && hasRelationships" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
                         <div class="row relationship" *ngFor="let rel of relationshipItems; let i = index" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
-                            <div class="col s10 name">{{rel.Name}}</div>
-                            <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count > 0}">{{rel.Count}}</div>
+                            <div class="col s10 name" [title]="rel.Object | technicalNameToDisplayValue">{{rel.Name}}</div>
+                            <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
                         </div>                        
                     </div>
                     <div class="col l9 s12">                        
@@ -76,6 +78,8 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
 
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
+
+    @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
     
     constructor(protected relationshipsService : RelationshipsService) {
         super();
@@ -110,6 +114,11 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
         this.showAddRelationship = true;
     }
 
+    export() {
+        if (this.relGrid)
+            this.relGrid.export();
+    }
+
     addRelationship() {
         if (!this.selected) return;
         this.selected.Count++;
@@ -118,6 +127,11 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
     removeRelationship() {
         if (!this.selected) return;
         this.selected.Count--;
+    }
+
+    enableExport() {
+        if (!this.selected) return false;
+        return this.selected.Count > 0;
     }
 
     isSelected(item: ObjectRelationshipCount): boolean {        

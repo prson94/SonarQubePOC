@@ -94,4 +94,13 @@ export class RelationshipsService extends BaseService {
             .then(response => <ObjectRelationshipCount[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    deleteRelationshipItem(id : number) {
+        let url = `/api/relationships/${id}`;
+
+        return this.http
+            .delete(url)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
 }
