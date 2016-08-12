@@ -15,7 +15,7 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div class="row" *ngIf="!isAuditVisible">
+                <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail" *ngIf="!isLoading">   
                             <header *ngIf="!isLoading">Audit History for {{objectName}}</header>       
@@ -66,19 +66,12 @@ export class AuditComponent {
     filters: GridFilterExpression[] = [];
 
 
-    constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
-      
-    }
+    constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) { }
+    
 
-    ngOnInit() {        
-     //   this.getData(this.currentPageNumber);
-    }
-
-    private getData() {
-        //    this.isLoading = true;
+    private getData() {        
         this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
-            .then(result => {
-         //       this.isLoading = false;
+            .then(result => {         
                 this.audits = result.results;
                 this.totalRecords = result.total;
             });

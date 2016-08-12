@@ -13,7 +13,7 @@ import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 import { AuditComponent} from '../shared/audit.component';
 import { DashboardComponent} from '../shared/dashboard.component';
 import { LineageComponent} from '../shared/lineage.component';
-import { OwnershipComponent} from '../shared/ownership.component';
+import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
 
@@ -26,7 +26,7 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                         </div>
                     </div>
                 </div>
-                <d3s-ownership *ngIf="!isLoading && isOwnershipVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-ownership>
+                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-ownership-tab>
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-dashboard *ngIf="!isLoading && isDashboardVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
@@ -55,7 +55,7 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipTabComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
     providers: [ArtifactService]
 })
 
