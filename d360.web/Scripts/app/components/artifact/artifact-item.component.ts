@@ -64,8 +64,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
     private isDashboardVisible: boolean = false;
     private isLineageVisible: boolean = false;    
-    private isOwnershipVisible: boolean = false;
-
+    
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
@@ -75,11 +74,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         headerBreadcrumbService: HeaderBreadcrumbService) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService);
 
-        this.setCommonRightSideBar();
+        this.setCommonRightSideBar(true, true);
 
         this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));
-        this.rightSidebarService.showItem(new RightSidebarItem('Dashboard', 'dashboards'));
-        this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Dashboard', 'dashboards'));        
     }
 
     ngOnInit() {
@@ -118,8 +116,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
         // put logic to show hide lineage / dashboard / ownership here
         if (activatedItem.tag == 'dashboards') this.isDashboardVisible = !this.isDashboardVisible;
-        else if (activatedItem.tag == 'lineage') this.isLineageVisible = !this.isLineageVisible;
-        else if (activatedItem.tag == 'ownership') this.isOwnershipVisible = !this.isOwnershipVisible;
+        else if (activatedItem.tag == 'lineage') this.isLineageVisible = !this.isLineageVisible;        
     }
 
 

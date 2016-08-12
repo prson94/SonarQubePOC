@@ -10,16 +10,18 @@ import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { AuditComponent} from '../shared/audit.component';
 import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
+import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    directives: [ObjectDefinitionTile, AuditComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
+    directives: [ObjectDefinitionTile, AuditComponent, ObjectRelationshipsTile, ObjectGovernanceTile, OwnershipTabComponent],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>
+                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-ownership-tab>
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div *ngIf="!isLoading && !isAuditVisible" class="row">
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible" class="row">
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
@@ -61,7 +63,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
 
-        this.setCommonRightSideBar();
+        this.setCommonRightSideBar(true, true);
     }
 
     ngOnInit() {

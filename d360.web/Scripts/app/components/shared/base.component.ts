@@ -10,6 +10,7 @@ export class BaseComponent {
     sidebarSubscription: Subscription;
 
     isAuditVisible: boolean = false;
+    isOwnershipVisible: boolean = false;
 
     constructor(protected rightSidebarService?: RightSidebarService) {  }
 
@@ -18,15 +19,18 @@ export class BaseComponent {
     }
 
 
-    setCommonRightSideBar(hasAudit?: boolean) {
+    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean) {
         if (this.rightSidebarService) {
-            this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
+            if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
+            if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership'));
 
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
                     if (item.tag == 'audit')
                         this.isAuditVisible = !this.isAuditVisible;
+                    else if (item.tag == 'ownership')
+                        this.isOwnershipVisible = !this.isOwnershipVisible;
                     else
                         this.showHideBreadcrumbItem(item);
                 });

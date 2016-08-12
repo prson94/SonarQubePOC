@@ -26,21 +26,6 @@ export class ArtifactBaseComponent extends BaseComponent {
         tileService.setTitle(`D3S - ${area}`);
     }
 
-    setCommonRightSideBar(hasAudit?: boolean) {
-        if (this.rightSidebarService) {
-            this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
-
-
-            this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
-                item => {                    
-                    if (item.tag == 'audit')
-                        this.isAuditVisible = !this.isAuditVisible;
-                    else
-                        this.showHideBreadcrumbItem(item);
-                });
-        }
-    }
-
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         console.log('show/hide ' + activatedItem);
     }

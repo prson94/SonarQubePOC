@@ -10,18 +10,20 @@ import { RuleDetail } from '../../models/rule.model';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
+import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 
 
 @Component({
     selector: 'd3s-rule-item',
-    directives: [AuditComponent, ObjectDefinitionTile, ObjectRelationshipsTile],
+    directives: [AuditComponent, ObjectDefinitionTile, ObjectRelationshipsTile, OwnershipTabComponent],
     providers: [RulesService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>
+                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-ownership-tab>
                 <div *ngIf="isLoading">
                             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible">                      
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                      
                         <div class="col s12">
                             <div class="row">
                                 <div class="col s12">
@@ -59,7 +61,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             rightSidebarService: RightSidebarService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
 
-        this.setCommonRightSideBar();
+        this.setCommonRightSideBar(true, true);
     }
 
     ngOnInit() {
