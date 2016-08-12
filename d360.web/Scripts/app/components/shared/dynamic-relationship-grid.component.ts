@@ -128,8 +128,13 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }    
 
     saveRelationship(event) {        
-        if (event.item.id != undefined && event.item.id == 0)
-            this.relationshipAdded.emit();
+        if (event.item.id != undefined && event.item.id == 0) {
+            let count = 1;
+            if (event.values && event.values.Items) {                
+                count = event.values.Items.split(',').length;
+            }
+            this.relationshipAdded.emit({ count: count });
+        }
 
         this.getData();        
         this.closeEditor();

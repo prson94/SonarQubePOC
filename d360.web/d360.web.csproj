@@ -1504,6 +1504,7 @@
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\classification-display.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\dropdown-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />

@@ -220,6 +220,7 @@ export class ArtifactGridComponent implements OnChanges {
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.getData();
                 this.showEditor = false;
+                this.isLoading = false;
             });
     }
 

@@ -1,7 +1,7 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES, FormControl } from '@angular/forms';
 import {Button, Editor, InputText} from 'primeng/primeng';
 import { EditorDefinitionService, UriBasedService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
@@ -93,17 +93,57 @@ export class DynamicEditorComponent {
                         this.rows.push(n);
                     }
                 });
-                
-                this.form = this.editorDefinitionService.toFormGroup(this.fields);
+                                
+                this.form = this.toFormGroup(this.fields);
             });
     }   
+
+    toFormGroup(editorField: EditorField[]) {
+        let group: any = {};
+
+        editorField.forEach(field => {
+            //if its a link we need to add two fields a link and name            
+            if (field.FieldType == "Link") {
+                let parts = (field.Value ? field.Value.split("|") : []);
+                let url = "";
+                let name = "";
+                if (parts.length == 2) {
+                    name = parts[0];
+                    url = parts[1];
+                }
+                group[field.FieldName + '_Name'] = field.Required ? new FormControl(name || '', Validators.required)
+                    : new FormControl(name || '');
+                group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
+                    : new FormControl(url || '');
+            }
+            else {
+                group[field.FieldName] = field.Required ? new FormControl(field.Value || '', Validators.required)
+                    : new FormControl(field.Value || '');
+            }
+        });        
+        return new FormGroup(group);
+    }
     
     onSubmit() {
         let action = (this.selection == null ? "new" : "edit");
+        let values: any = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in this.form.value) {
+            if (this.form.value.hasOwnProperty(p)) {
+                if (Array.isArray(this.form.value[p])) {
+                    values[p] = this.form.value[p].join();
+                }                
+                else {
+                    values[p] = this.form.value[p];
+                }                
+            }
+        }
+        
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
-            this.uriBasedService.saveItem(this.createUri, this.editUri, this.form.value)
+            this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .then(result => {
-                    this.saveClick.emit({ item: result, action: action});    
+                    this.saveClick.emit({ item: result, action: action, values: values});    
                 });
         } else {
             //console.log(JSON.stringify(this.form.value));

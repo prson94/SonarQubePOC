@@ -4,7 +4,6 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { EditorField } from '../models/editor-field.model';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Injectable()
 export class EditorDefinitionService extends BaseService {
@@ -14,10 +13,7 @@ export class EditorDefinitionService extends BaseService {
     getEditorDefinition(ID: number, objectID: number, objectType: string, parentID?: number, targetType?: string, targetTypeID?: number): Promise<EditorField[]> {
         let uri = "";
 
-        if (ID == undefined) {
-            console.log(parentID);
-            console.log(targetType);
-            console.log(targetTypeID);
+        if (ID == undefined) {            
             if (parentID)
                 uri = `form/dynamiceditor/new/${objectType}/${objectID}/${parentID}`;
             else if (targetType && targetTypeID)
@@ -33,15 +29,5 @@ export class EditorDefinitionService extends BaseService {
             .toPromise()
             .then(response => <EditorField[]>response.json())
             .catch(err => this.handleError(err));
-    }
-
-    toFormGroup(editorField: EditorField[]) {
-        let group: any = {};
-
-        editorField.forEach(field => {
-            group[field.FieldName] = field.Required ? new FormControl(field.Value || '', Validators.required)
-                : new FormControl(field.Value || '');
-        });
-        return new FormGroup(group);
-    }
+    }    
 }

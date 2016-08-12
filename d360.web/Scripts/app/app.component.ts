@@ -23,7 +23,7 @@ import 'rxjs/Rx';
                             </div>  
                         </div>                                                
                     </div>                    
-                    <d3s-right-sidebar [(visible)]="showRightSideBar" [titleHeight]="0"></d3s-right-sidebar>                        
+                    <d3s-right-sidebar [titleHeight]="0"></d3s-right-sidebar>                        
                 </main>
                 <d3s-messages></d3s-messages>
               `,
@@ -31,28 +31,19 @@ import 'rxjs/Rx';
     providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService]
 })
 
-export class AppComponent implements AfterViewInit, OnInit {
-    showRightSideBar: boolean = false;
+export class AppComponent implements AfterViewInit, OnInit {    
     @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;
-
-  //  @ViewChild('pageheader') pageheader;
     
     constructor(private pageHeader: PageHeader) {
         
     }
-
-    toggleRightSidebar() {
-        this.showRightSideBar = !this.showRightSideBar;
-    }
-
+    
     ngOnInit() {
-        //this.pageheaderList.changes.subscribe(changes => console.log(changes));
+        
     }
     
     ngAfterViewInit() {
-        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                     
-      //  console.log(this.pageheader);
-      //  this.rightSidebarComponent.setTop(this.pageheader.nativeElement.clientHeight);
+        this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                           
     }
 
     private initializeQtipTooltips() {

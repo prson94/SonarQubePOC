@@ -56,7 +56,7 @@ gulp.task('bundle-release', ['compile'], function (done) {
             .buildStatic(`${app}/main.js`, bundleFilename, {
                 normalize: true,
                 minify: true,
-                mangle: true,
+                mangle: false,
                 runtime: false
             });
     })

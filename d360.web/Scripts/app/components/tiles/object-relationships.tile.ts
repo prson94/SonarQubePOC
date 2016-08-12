@@ -58,7 +58,7 @@ import { TechnicalNameToDisplayValuePipe } from '../../pipes/technical-to-displa
                         </div>                        
                     </div>
                     <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship()" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        
+                        <d3s-dynamic-relationship-grid [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        
                     </div>                    
                 </div>
                 <div class="row" *ngIf="!isLoading && !hasRelationships">
@@ -119,9 +119,9 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
             this.relGrid.export();
     }
 
-    addRelationship() {
+    addRelationship(event) {
         if (!this.selected) return;
-        this.selected.Count++;
+        this.selected.Count = this.selected.Count + event.count;
     }
 
     removeRelationship() {

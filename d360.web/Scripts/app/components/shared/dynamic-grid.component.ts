@@ -108,8 +108,7 @@ export class DynamicGridComponent implements OnChanges {
             .then(result => {
                 this.items = result;                
                 this.isLoading = false;
-                if (this.items.length > 0) this.selected = this.items[0];
-                console.log(this.items);
+                if (this.items.length > 0) this.selected = this.items[0];                
             });
     }  
 
@@ -133,10 +132,10 @@ export class DynamicGridComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .then(result => {                                
+            .then(result => {                                        
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
+                this.showEditor = false;                
                 this.getData();                
-                this.showEditor = false;
             });
     }
 }
