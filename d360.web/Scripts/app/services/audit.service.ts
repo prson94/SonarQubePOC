@@ -32,4 +32,8 @@ export class AuditService extends BaseService {
             .then(response => <AuditResults>response.json())
             .catch(err => this.handleError(err));
     }
+
+    exportToExcel(objectID: number, objectType: string) {
+        window.location.assign(`overlays/${objectType}/${objectID}/download/excel/audit.xls`)
+    }
 }

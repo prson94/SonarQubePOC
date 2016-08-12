@@ -55,8 +55,7 @@ export class ObjectChallengeComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
         this.challengeService.getChallengeInfo(this.objectID, this.objectType)
             .then(result => {
-                this.challenge = result;
-                console.log(this.challenge);
+                this.challenge = result;                
                 this.isLoading = false;
             });
     }

@@ -6,10 +6,11 @@ import { Audit } from '../../models/audit.model';
 import { DataTable, Column, LazyLoadEvent} from 'primeng/primeng';
 import { SortOrder } from '../../models/enums.model';
 import { GridFilterExpression } from '../../models/grid-definition.model';
+import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 @Component({
     selector: 'd3s-audit',
-    directives: [DataTable, Column],
+    directives: [DataTable, Column, TileActionsComponent],
     providers: [AuditService],
     template: `
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -18,31 +19,31 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail" *ngIf="!isLoading">   
-                            <header *ngIf="!isLoading">Audit History for {{objectName}}</header>       
-                            <p-dataTable  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
-                                <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true"></p-column>                                                                                    
-                                <p-column field="Date" header="Date" [sortable]="true" [filter]="true">
+                            <header *ngIf="!isLoading">Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>       
+                            <p-dataTable scrollable="true" scrollWidth="100%"  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
+                                <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true" [style]="{'width':'150px'}"></p-column>                                                                                    
+                                <p-column field="Date" header="Date" [sortable]="true" [filter]="true" [style]="{'width':'200px'}">
                                     <template let-col let-data="rowData">
                                         <span>{{data.Date | date: 'medium'}}</span>
                                     </template>
                                 </p-column>
-                                <p-column field="Action" header="Action" [sortable]="true" [filter]="true"></p-column>                                                            
-                                <p-column field="Field" header="Field" [sortable]="true" [filter]="true"></p-column>                                
-                                <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true">
+                                <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>                                                            
+                                <p-column field="Field" header="Field" [sortable]="true" [filter]="true" [style]="{'width':'200px'}"></p-column>                                
+                                <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true" [style]="{'width':'250px'}">
                                     <template let-col let-data="rowData">
                                         <div [innerHtml]="data?.NewValue"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="PreviousValue" header="Previous Value" [sortable]="true" [filter]="true">
+                                <p-column field="PreviousValue" header="Previous Value" [sortable]="true" [filter]="true" [style]="{'width':'250px'}">
                                     <template let-col let-data="rowData">
                                         <div [innerHtml]="data?.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="ActionObject" header="Object" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true"></p-column>
-                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true"></p-column>                                                                                        
-                                <p-column field="Version" header="Revision #" [sortable]="true" [filter]="true"></p-column>
+                                <p-column field="ActionObject" header="Object" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>
+                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>
+                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>
+                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [filter]="true" [style]="{'width':'250px'}"></p-column>                                                                                        
+                                <p-column field="Version" header="Revision" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>
                             </p-dataTable> 
                         </div>
                     </div>
@@ -56,7 +57,7 @@ export class AuditComponent {
     @Input() objectName: string;
 
     totalRecords: number;
-    rowsPerPage: number = 20;
+    rowsPerPage: number = 10;
     audits: Audit[] = [];
     isLoading: boolean = false;
     selected: Audit;
@@ -101,5 +102,9 @@ export class AuditComponent {
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;        
         this.getData();
+    }
+
+    private export() {
+        this.auditService.exportToExcel(this.objectID, this.objectType);
     }
 }

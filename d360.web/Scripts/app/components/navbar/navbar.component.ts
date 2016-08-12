@@ -57,9 +57,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.items = new Array<NavBarItem>();
                 
                 this.siteMenu = result;
-
-                console.log(result);
-                                
+                
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
                 this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Policy'));                

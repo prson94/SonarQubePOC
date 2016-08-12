@@ -5,6 +5,9 @@ using d360.web.Models;
 using d360.core.entities;
 using d360.model;
 using System.Diagnostics;
+using SpreadsheetLight;
+using System.IO;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -138,6 +141,87 @@ namespace d360.web.Controllers
             var query = Company.Query<dynamic>(sql, dbArgs);
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        
+        [Route("{type}/{id:int}/download/excel/audit.xls"), FileDownload, HttpGet]
+        public FileResult GetAuditToExcel(SystemObjects type, int id)
+        {
+            var querySql = @"select
+									ga.[Date],   
+									ga.[Action],
+									ga.ActionObject,
+									ga.ActionObjectTypeName,
+									ga.ActionObjectName,     
+	                                 ga.ActionDescription,
+                                     R.FirstName + ' ' + R.LastName as ResourceName, 
+                                     fa.FieldName as Field, 
+                                     fa.Value as NewValue, 
+                                     fa.[Version] as 'Version',	                            
+	                                 ( select			
+				                            top 1 fa_sub.value as 'value'			                            
+			                            from reporting.global_fieldaudit fa_sub
+				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId ) as 'PreviousValue'
+			
+                            from reporting.global_fieldaudit fa
+	                            inner join reporting.global_audit ga on ( fa.auditid = ga.id) 
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";
+                        
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            var dbArgs = new Dapper.DynamicParameters();
+            dbArgs.Add("objType", type.ToString());
+            dbArgs.Add("objId", id);
+                                    
+            var query = Company.Query<dynamic>(sql, dbArgs);
+            
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+                        
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "User");
+            document.SetCellValue(1, 2, "Date");
+            document.SetCellValue(1, 3, "Action");
+            document.SetCellValue(1, 4, "Field");
+            document.SetCellValue(1, 5, "New Value");
+            document.SetCellValue(1, 6, "Previous Value");
+            document.SetCellValue(1, 7, "Object");
+            document.SetCellValue(1, 8, "Type");
+            document.SetCellValue(1, 9, "Item");
+            document.SetCellValue(1, 10, "Audit Description");
+            document.SetCellValue(1, 11, "Revision");
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in query)
+            {
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, 1, row.ResourceName);
+                document.SetCellValue(rowIndex, 2, row.Date.ToString());
+                document.SetCellValue(rowIndex, 3, row.Action);
+                document.SetCellValue(rowIndex, 4, row.Field);
+                document.SetCellValue(rowIndex, 5, row.NewValue ?? "");
+                document.SetCellValue(rowIndex, 6, row.PreviousValue ?? "");
+                document.SetCellValue(rowIndex, 7, row.ActionObject);
+                document.SetCellValue(rowIndex, 8, row.ActionObjectTypeName);
+                document.SetCellValue(rowIndex, 9, row.ActionObjectName);
+                document.SetCellValue(rowIndex, 10, row.ActionDescription);
+                document.SetCellValue(rowIndex, 11, row.Version);
+            }
+
+            #endregion
+
+            var detail = Company.GetObjectDetail(type.ToString(), id);
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Audit details for {detail.Name} as of {System.DateTime.Now.ToShortDateString()}.xlsx");
         }
 
 
