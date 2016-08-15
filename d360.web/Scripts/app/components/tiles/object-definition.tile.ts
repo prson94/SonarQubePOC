@@ -7,13 +7,13 @@ import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../..
 import { SynonymsTile } from '../tiles/synonyms.tile';
 import { AttributesTile } from '../tiles/attributes.tile';
 import { SimpleAccordion } from '../parts/simple-accordion.part';
-
+import { StructureTile } from '../tiles/structure.tile';
 declare var CompanySettings;
 
 
 @Component({
     selector: 'd3s-object-definition-tile',
-    directives: [DataTable, Column, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile, SimpleAccordion],
+    directives: [DataTable, Column, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile, SimpleAccordion, StructureTile],
     templateUrl: 'scripts/app/components/tiles/object-definition.tile.html',
     providers: [ObjectDetailService],
 })

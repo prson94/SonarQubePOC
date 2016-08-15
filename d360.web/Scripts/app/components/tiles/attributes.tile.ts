@@ -107,7 +107,7 @@ export class AttributesTile implements OnInit {
                     this.selectedRow = this.items[0];
                     this.loadMenu();
                 }
-                console.log(this.items);
+                //console.log(this.items);
                 this.isLoading = false; 
             });
     }
@@ -138,6 +138,8 @@ export class AttributesTile implements OnInit {
         if (!this.selectedRow)
             return;
 
+        this.formMode = FormMode.Default;
+
         let type = this.selectedRow.data.ObjectType;
         let id = this.selectedRow.data.ObjectID;
         let attributeID = null;
@@ -161,7 +163,8 @@ export class AttributesTile implements OnInit {
         this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID).
             then(d => {
                 this.menuItems = FormHelper.convertToolBarToMenuItem(d);
-                this.updateMenuItems(this.menuItems);                
+                this.updateMenuItems(this.menuItems);
+                //console.log(this.menuItems);
             });
     }
 
@@ -174,14 +177,16 @@ export class AttributesTile implements OnInit {
                     let startix = items[i].url.indexOf('typeID=') + 'typeID='.length;
                     let endix = items[i].url.indexOf('&objectType=');
 
-                    this.typeID = items[i].url.substr(startix, endix - startix);
+                    var t = items[i].url.substr(startix, endix - startix);
                     //console.log(this.typeID);
+                    //console.log(items[i].url); 
+
                     items[i].command = (e) => {
                         this.formMode = FormMode.Adding;
-                        console.log(this.typeID);
+                       // console.log(e);
                         
-
                     }
+
                 } else if (items[i].url.toLowerCase().indexOf('editattribute') > -1) {
                     items[i].command = (e) => {
                         this.formMode = FormMode.Editing;
@@ -197,3 +202,4 @@ export class AttributesTile implements OnInit {
     }
 
 }
+

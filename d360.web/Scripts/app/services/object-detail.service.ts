@@ -17,6 +17,7 @@ import {
     AttributeHeirarchyItem,
     ToolbarItem
 } from '../models/object-detail.model';
+import { HierarchyModel, PredicateType } from '../models/relations.model';
 
 @Injectable()
 export class ObjectDetailService extends BaseService implements IObjectDetailService {
@@ -80,4 +81,18 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
             .then(response => <ToolbarItem[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getRelationsHierarchy(predicateType: PredicateType, type: string, id: number): Promise<HierarchyModel[]> {
+        return this.http.get(`relations/hierarchy/${predicateType}/${type}/${id}`)
+            .toPromise()
+            .then(response => <HierarchyModel[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelationsHierarchyTree(predicateType: PredicateType, type: string, id: number): Promise<TreeNode[]> {
+        return this.getRelationsHierarchy(predicateType, type, id).then(result => {
+            return FormHelper.formTree(result,  'UID', 'ParentID');
+        });
+    }
+
 }
