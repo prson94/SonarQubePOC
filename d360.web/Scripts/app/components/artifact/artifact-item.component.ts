@@ -11,7 +11,7 @@ import { Title } from '@angular/platform-browser';
 import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
 import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
 import { AuditComponent} from '../shared/audit.component';
-import { DashboardComponent} from '../shared/dashboard.component';
+import { DashboardTabComponent} from '../shared/dashboard-tab.component';
 import { LineageComponent} from '../shared/lineage.component';
 import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
@@ -28,7 +28,7 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                 </div>
                 <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-ownership-tab>
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
-                <d3s-dashboard *ngIf="!isLoading && isDashboardVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard>
+                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
                 <div *ngIf="!isLoading && !isTabVisible()">
                     <div class="row">
@@ -55,15 +55,15 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardComponent, LineageComponent, OwnershipTabComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
+    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardTabComponent, LineageComponent, OwnershipTabComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
     providers: [ArtifactService]
 })
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
-    private sub: any;
-    private isDashboardVisible: boolean = false;
+    private sub: any;    
     private isLineageVisible: boolean = false;    
+    private artifactTypeId: number;
     
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
@@ -74,17 +74,16 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         headerBreadcrumbService: HeaderBreadcrumbService) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService);
 
-        this.setCommonRightSideBar(true, true);
+        this.setCommonRightSideBar(true, true, true);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));
-        this.rightSidebarService.showItem(new RightSidebarItem('Dashboard', 'dashboards'));        
+        this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));           
     }
 
     ngOnInit() {
 
         this.sub = this.route.params.subscribe(params => {            
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
-            let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+            this.artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
             this.artifactService.getArtifact(artifactId)
                 .then(artifact => {
@@ -94,7 +93,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     for (let breadcrumb of this.artifact.Breadcrumbs) {
                         index++;
                         if (index == this.artifact.Breadcrumbs.length)
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', artifactTypeId));
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', this.artifactTypeId));
                         else
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));                                
                     }             

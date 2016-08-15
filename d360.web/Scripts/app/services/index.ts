@@ -37,6 +37,7 @@ import { ModelsService } from './models.service';
 import { SurveysService } from './surveys.service';
 import { ObjectStatisticsService } from './object-statistics.service';
 import { ChallengeService } from './challenge.service';
+import { DashboardService } from './dashboard.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -77,3 +78,4 @@ export * from './models.service';
 export * from './surveys.service';
 export * from './object-statistics.service';
 export * from './challenge.service';
+export * from './dashboard.service';

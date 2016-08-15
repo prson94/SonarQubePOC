@@ -1426,7 +1426,8 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\powerbi-viewer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
@@ -1470,6 +1471,7 @@
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\challenge.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\dashboard.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
@@ -1518,6 +1520,7 @@
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\challenge.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />

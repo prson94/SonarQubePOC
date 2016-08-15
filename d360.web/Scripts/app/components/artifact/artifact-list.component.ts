@@ -1,31 +1,33 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader } from '../../services/index';
+import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { DataTable, Column} from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
+import { DashboardTabComponent } from '../shared/dashboard-tab.component';
 
 
 @Component({
     selector: 'd3s-artifact-list',
     template: ` 
+                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
                 <div class="row">
                     <div class="col s12">
                         <div *ngIf="isLoading">
                             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                         </div>
-                        <div class="tile tile-detail" *ngIf="!isLoading">
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible">
                             <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
                 </div>
                 `,
     providers: [ArtifactTypeService],
-    directives: [ArtifactGridComponent]
+    directives: [ArtifactGridComponent, DashboardTabComponent]
 })
 
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
@@ -37,8 +39,11 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         private artifactTypeService: ArtifactTypeService,        
         pageHeader: PageHeader,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title) {
-        super(headerBreadcrumbService, pageHeader);                   
+        private titleService: Title,
+        rightSidebarService: RightSidebarService) {
+        super(headerBreadcrumbService, pageHeader, rightSidebarService);      
+
+        this.setCommonRightSideBar(false, false, true);
     }
 
     ngOnInit() {
@@ -60,6 +65,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.clearSidebar();
     }
 
 };
