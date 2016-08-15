@@ -95,6 +95,12 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, criticalOnly?: boolean){
+        criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
+
+        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls`);        
+    }
+
     deleteRelationshipItem(id : number) {
         let url = `/api/relationships/${id}`;
 

@@ -23,6 +23,8 @@ using d360.workflow;
 using System.Runtime.Serialization;
 using System.Dynamic;
 using System.Web;
+using System.IO;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers
 {
@@ -6037,6 +6039,171 @@ where	Object = '{type.ToString()}' and ObjectID = {id}
             return Company.Query<dynamic>(querySql);
         }
 
+        [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
+        public HttpResponseMessage RelationshipsForObjectByTargetTypeExportExcel(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
+        {
+            var sType = type.ToString();
+            var tType = targetType.ToString();
+
+            var joins = "";
+            var columns = "";
+            //var whereClause = "";
+            getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
+
+            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
+            foreach (var f in attributesTypes)
+            {
+                var name = $"AttributeType{f.AttributeType.ID}";
+                columns += $"{name}_T.FormattedValue as [{name}], ";
+                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
+            }
+
+
+            var querySql = $@"
+select  {columns} 
+        A.*
+from	(
+select	ID,
+        IntersectTypeID,
+        Object,
+		ObjectID,
+		ObjectName as Name,
+        ObjectUrl as Url,
+		ObjectType as Type,
+		ObjectTypeID as TypeID,
+		ObjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+where	Subject ='{type.ToString()}'  and SubjectID = {id}
+		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
+union
+select	
+		ID,
+        IntersectTypeID,
+        Subject as Object,
+		SubjectID as ObjectID,
+		SubjectName as Name,
+        SubjectUrl as Url,
+		SubjectType as Type,
+		SubjectTypeID as TypeID,
+		SubjectTypeName as TypeName,
+        Classification,
+		T.HasTechnicalRelationships,
+        A.HasAttributes	        
+from	IntersectDetail I
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasAttributes
+					from	[Attribute]
+					where	ObjectType = 'Intersect' and ObjectID = I.ID
+					) A
+
+where	Object = '{type.ToString()}' and ObjectID = {id}
+		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
+        ) A {joins}";
+
+           
+            querySql += " order by A.Name";
+            
+            var results =  Company.Query<dynamic>(querySql);                        
+            
+            //get the fields for the spreadsheet
+            var fields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "IntersectType" && i.ObjectID == intersectTypeID && i.IsListable).ToList().OrderBy(x=>x.SortOrder);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            var colIndex = 0;
+
+            document.SetCellValue(1, ++colIndex, "Name");
+            document.SetCellValue(1, ++colIndex, "Critical");
+
+            
+            //add fields for this relation
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
+            }
+
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in results)
+            {
+                var dataColIndex = 0;
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Critical == 1 ? "Critical" : "Normal");
+
+                var rowDict = ((IDictionary<string, object>)row);
+                foreach (var field in fields)
+                {
+                    var fieldKey = $"Field{field.ID}";
+
+                    if (rowDict.ContainsKey(fieldKey))
+                    {                        
+                        if(rowDict[fieldKey] != null)
+                            document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());                        
+                    }
+                }
+                              
+            }
+
+            #endregion
+
+            var detail = Company.GetObjectDetail(type.ToString(), id);
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+          //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")            
+            {
+                FileName = $"{detail.Name} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
 
         [Route("{type}/{id:int}/statistics")]
         public IQueryable<StatisticDetail> GetStatisticDetails(SystemObjects type, int id)

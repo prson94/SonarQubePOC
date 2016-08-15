@@ -115,8 +115,10 @@ export class ObjectRelationshipsTile extends BaseComponent implements OnChanges 
     }
 
     export() {
-        if (this.relGrid)
-            this.relGrid.export();
+        //if (this.relGrid)
+        //  this.relGrid.export();
+        if (!this.selected) return;
+        this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, false);
     }
 
     addRelationship(event) {

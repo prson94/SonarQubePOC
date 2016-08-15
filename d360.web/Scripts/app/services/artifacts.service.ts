@@ -66,7 +66,7 @@ export class ArtifactService extends BaseService {
     }   
 
     getArtifactsXls(artifactType: ArtifactType) {                
-        window.location.assign(`artifacts/download/excel/${artifactType.ID}.xls`)        
+        window.location.assign(`artifacts/download/excel/${artifactType.ID}.xls`);        
     }
 
     getArtifact(id: number): Promise<Artifact> {
