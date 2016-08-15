@@ -42,7 +42,7 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                         <div class="col s12">
                             <div class="tile tile-detail">
                                <!-- <object-detail [objectType]="'Artifact'" [objectID]="artifact?.ID"></object-detail> -->
-                                <d3s-object-definition-tile [objectType]="'Artifact'" [objectID]="artifact?.ID"></d3s-object-definition-tile>
+                                <d3s-object-definition-tile [objectID]="artifact?.ID" [objectType]="'Artifact'"></d3s-object-definition-tile>
                             </div>
                         </div>
                     </div>

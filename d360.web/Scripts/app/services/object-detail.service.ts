@@ -15,7 +15,8 @@ import {
     SynonymEditorModel,
     SynonymEditModel,
     AttributeHeirarchyItem,
-    ToolbarItem
+    ToolbarItem,
+    ObjectDetail
 } from '../models/object-detail.model';
 import { HierarchyModel, PredicateType } from '../models/relations.model';
 
@@ -31,11 +32,18 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
             .catch(err=>this.handleError(err));
     }
 
+    getObject(objectID: number, objectType: string): Promise<ObjectDetail> {
+        return this.http.get(`api/${objectType}/${objectID}`)
+            .toPromise()
+            .then(response => <ObjectDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getObjectSynonyms(objectID: number, objectType: string): Promise<Synonym[]> {
         return this.http.get(`api/${objectType}/${objectID}/synonyms`)
             .toPromise()
-            .then(response => <Synonym[]>response.json()).
-            catch(err => this.handleError(err));
+            .then(response => <Synonym[]>response.json())
+            .catch(err => this.handleError(err));
     }
 
     getSynonymOptions(objectID: number, objectType: string): Promise<SynonymEditorModel> {

@@ -27,6 +27,9 @@ import {DataTable} from 'primeng/primeng';
                     <a *ngIf="hasExport" class="waves-effect waves-teal btn-flat" (click)="exportClick.emit(null)" [ngClass]="{'disabled':!exportEnabled}">
                         <i class="fa fa-download" [title]="exportTitle"></i>
                     </a>
+                    <a *ngIf="hasEdit" class="waves-effect waves-teal btn-flat" (click)="editClick.emit(null)" [ngClass]="{'disabled':!editEnabled}">
+                        <i class="fa fa-pencil" [title]="editTitle"></i>
+                    </a>
                     <a *ngIf="grid" class="waves-effect waves-teal btn-flat" (click)="doGridExport()">
                         <i class="fa fa-download" [title]="exportTitle"></i>
                     </a>
@@ -37,15 +40,19 @@ import {DataTable} from 'primeng/primeng';
 export class TileActionsComponent {
     @Output() addClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
+    @Output() editClick = new EventEmitter();
 
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
+    @Input() hasEdit: boolean = false;
     @Input() addTitle: string = "Add";
     @Input() exportTitle: string = "Export";
+    @Input() editTitle: string = "Edit";
     @Input() grid: DataTable;
 
     @Input() exportEnabled: boolean = true;
     @Input() addEnabled: boolean = true;
+    @Input() editEnabled: boolean = true;
 
     private doGridExport() {
         this.grid.exportCSV();

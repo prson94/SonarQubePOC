@@ -3,16 +3,36 @@
 </div>
 <div *ngIf="!isLoading">
 
-    <simple-accordion header="Definition" [active]="true">
-        <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
-    </simple-accordion>
-    <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false">
-        <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-synonyms-tile>
-    </simple-accordion>
-    <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false">
-        <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-attributes-tile>
-    </simple-accordion>
-    <simple-accordion header="Structure" [active]="false">
-        <d3s-structure-tile [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-structure-tile>
-    </simple-accordion>
+    <div [ngSwitch]="formMode">
+        <div *ngSwitchDefault>
+            <header>&nbsp;<d3s-tile-actions [hasEdit]="true" (editClick)="formMode = FormMode.Editing"></d3s-tile-actions></header>
+            <simple-accordion header="Definition" [active]="true">
+                <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
+            </simple-accordion>
+            <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false">
+                <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-synonyms-tile>
+            </simple-accordion>
+            <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false">
+                <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-attributes-tile>
+            </simple-accordion>
+            <simple-accordion header="Structure" [active]="false">
+                <d3s-structure-tile [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-structure-tile>
+            </simple-accordion>
+        </div>
+        <div *ngSwitchCase="FormMode.Editing">
+            <d3s-dynamic-editor 
+                                [objectID]="objectID" 
+                                [parentID]="object?.ParentID" 
+                                [objectType]="objectType" 
+                                [selection]="object"
+                                [editUri]="'form/dynamicedit/edit/' + objectType"
+                                [title]="object?.Name + ' Item'" 
+                                (saveClick)="save($event)" 
+                                (closeClick)="close()">
+            </d3s-dynamic-editor>
+        </div>
+    </div>
+
+
+
 </div>

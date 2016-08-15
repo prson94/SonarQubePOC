@@ -8,44 +8,56 @@ import { SynonymsTile } from '../tiles/synonyms.tile';
 import { AttributesTile } from '../tiles/attributes.tile';
 import { SimpleAccordion } from '../parts/simple-accordion.part';
 import { StructureTile } from '../tiles/structure.tile';
-declare var CompanySettings;
+import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { FormMode } from '../../models/form.model';
+import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { ObjectDetail } from '../../models/object-detail.model';
 
 
 @Component({
     selector: 'd3s-object-definition-tile',
-    directives: [DataTable, Column, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile, SimpleAccordion, StructureTile],
+    directives: [DataTable, Column, Accordion, AccordionTab, ObjectDetailTile, SynonymsTile, AttributesTile, SimpleAccordion, StructureTile, TileActionsComponent, DynamicEditorComponent],
     templateUrl: 'scripts/app/components/tiles/object-definition.tile.html',
     providers: [ObjectDetailService],
 })
 
 export class ObjectDefinitionTile implements OnChanges {
-    @Input() objectType: string = 'Artifact';
     @Input() objectID: number;
+    @Input() objectType: string;
 
+    private object: ObjectDetail = null;
 
+    private formMode: FormMode = FormMode.Default;
+    FormMode = FormMode;
     private isLoading = false;
 
     constructor(private objectDetailService: ObjectDetailService) {
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
-
-        }
 
         this.load();
     }
 
     load(): void {
 
-        if (this.objectID == null || this.objectType == null)
+        if (this.objectType == null || this.objectID == null)
             return;
 
-        this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
-            .then(d => {
-                //console.log(d);
-            });
+        this.isLoading = true;
 
-        this.isLoading = false;
+        this.objectDetailService.getObject(this.objectID, this.objectType)
+            .then(r => {
+                this.object = r;
+                this.isLoading = false;
+            });
+    }
+
+    save(e): void {
+        this.formMode = FormMode.Default;
+    }
+    close(): void {
+        this.formMode = FormMode.Default;
     }
 }

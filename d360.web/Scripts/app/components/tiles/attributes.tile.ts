@@ -4,14 +4,28 @@ import { NgSwitch, NgSwitchDefault, NgSwitchCase } from '@angular/common';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeTable, TreeNode, Column, Menubar, MenuItem, Header } from 'primeng/primeng';
+import { TreeTable, TreeNode, Column, Header } from 'primeng/primeng';
 import { ObjectDetailTile } from './object-detail.tile';
 import { DeleteForm } from '../forms/delete.form';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
+import { MenuPart, MenuPartItem } from '../parts/menu.part';
 
 
 @Component({
     selector: 'd3s-attributes-tile',
+    styles: [
+        `
+        .menu-bar-item {
+            font-size:1.3em;
+            padding:5px;
+            cursor:pointer;
+        }
+
+        .menu-bar-item:hover {
+            background-color:white;
+        }
+        `
+    ],
     template: `
 <div *ngIf="isLoading">
     <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
@@ -33,17 +47,24 @@ import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
             </p-treeTable>
         </div>
         <div *ngIf="!readonly" class="col l7 m7 s6">
-            <p-menubar [model]="menuItems"></p-menubar>
+            <div style="background-color:#ccc; padding:5px;">          
+                <div *ngFor="let item of menuBarItems" style="display: inline;">
+                    <d3s-menu *ngIf="item.isMenu" [items]="item.menuItems" (onItemClick)="menuClick($event)"><span style="font-size:1.3em;"><i [class]="'fa fa-' + item.icon"></i></span></d3s-menu>
+                    <span *ngIf="!item.isMenu" class="menu-bar-item" (click)="barClick(item)"><i [class]="'fa fa-' + item.icon"></i></span>
+                </div>
+            </div>
+            
             <div [ngSwitch]="formMode">
                 <div *ngSwitchDefault>
                     <object-detail *ngIf="detailType == 'Attribute'" [objectType]="detailType" [objectID]="detailID"></object-detail>
                 </div>
                 <div *ngSwitchCase="FormMode.Adding">
+                adding
                 <d3s-dynamic-editor [selection]="null"
                                     [objectID]="0"
                                     [objectType]="'Attribute'"
                                     [title]="'Attribute'"
-                                    [createUri]="'dynamiceditor/new/'+objectType+'/'+objectID+'/0/' + typeID"
+                                    [createUri]="'dynamiceditor/new/' + objectType + '/' + objectID + '/0/' + typeID"
                                     [editUri]="null"
                                     (closeClick)="formMode = FormMode.Default;"
                                     (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
@@ -59,7 +80,7 @@ import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
     </div>
 </div>
 `,
-    directives: [NgSwitch, NgSwitchCase, NgSwitchDefault, TreeTable, Column, Menubar, Header, ObjectDetailTile, DeleteForm, DynamicEditorComponent],
+    directives: [NgSwitch, NgSwitchCase, NgSwitchDefault, TreeTable, Column, Header, ObjectDetailTile, DeleteForm, DynamicEditorComponent, MenuPart],
     providers: [ObjectDetailService],
 })
 
@@ -81,7 +102,9 @@ export class AttributesTile implements OnInit {
     private detailUrl: string = '';
     private typeID: string = null;
 
-    private menuItems: MenuItem[];
+   // private menuItems: MenuItem[];
+   // private menuPartItems: MenuPartItem[] = new Array<MenuPartItem>();
+    private menuBarItems: MenuBarItem[] = new Array<MenuBarItem>();
 
     constructor(private objectDetailService: ObjectDetailService) {
     }
@@ -134,7 +157,6 @@ export class AttributesTile implements OnInit {
     }
 
     loadMenu() {
-        this.menuItems = [];
         if (!this.selectedRow)
             return;
 
@@ -159,47 +181,61 @@ export class AttributesTile implements OnInit {
             this.detailID = id;
         }
 
-
         this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID).
             then(d => {
-                this.menuItems = FormHelper.convertToolBarToMenuItem(d);
-                this.updateMenuItems(this.menuItems);
-                //console.log(this.menuItems);
+                //console.log(d);
+                this.setMenuItems(d);
+
             });
     }
 
-    updateMenuItems(items: MenuItem[]) {
-        for (var i = 0; i < items.length; i++) {
+    setMenuItems(items: any[]) {
 
-            //TODO: need to modify server side to pass this correctly when we finalize control library choice rather than this nonsense
-            if (items[i].url) {
-                if (items[i].url.toLowerCase().indexOf('addattribute') > -1) {
-                    let startix = items[i].url.indexOf('typeID=') + 'typeID='.length;
-                    let endix = items[i].url.indexOf('&objectType=');
+        this.menuBarItems = new Array<MenuBarItem>();
 
-                    var t = items[i].url.substr(startix, endix - startix);
-                    //console.log(this.typeID);
-                    //console.log(items[i].url); 
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            let barItem = new MenuBarItem();
+            barItem.icon = item.Icon;
+            barItem.uri = item.Uri;
+            if (item.Items.length > 0) {
+                barItem.isMenu = true;
+                for (let j = 0; j < item.Items.length; j++) {
+                    let subItem = item.Items[j];
+                    let menuItem = new MenuPartItem();
 
-                    items[i].command = (e) => {
-                        this.formMode = FormMode.Adding;
-                       // console.log(e);
-                        
-                    }
+                    menuItem.icon = item.icon;
+                    menuItem.text = subItem.Title;
+                    menuItem.data = subItem.Uri;
 
-                } else if (items[i].url.toLowerCase().indexOf('editattribute') > -1) {
-                    items[i].command = (e) => {
-                        this.formMode = FormMode.Editing;
-                    }
+                    barItem.menuItems.push(menuItem);
                 }
             }
+            this.menuBarItems.push(barItem);
+        }        
+    }
 
-            items[i].url = null;
+    menuClick(item: MenuPartItem) {
+        this.add();
+        console.log(item);
+    }
 
-            if (items[i].items && items[i].items.length > 0)
-                this.updateMenuItems(items[i].items);
+    barClick(item: MenuBarItem) {
+        if (item.uri.toLowerCase().indexOf('editattribute')) {
+            this.edit();
+        } else if (item.uri.toLowerCase().indexOf('deleteattribute')) {
+            this.delete();
         }
+        console.log(item);
     }
 
 }
+
+export class MenuBarItem {
+    icon: string;
+    uri: string;
+    menuItems: MenuPartItem[] = new Array<MenuPartItem>();
+    isMenu: boolean = false;
+}
+
 

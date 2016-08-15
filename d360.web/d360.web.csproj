@@ -858,6 +858,7 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\shared\lineage.component.html" />
     <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
@@ -870,6 +871,7 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\parts\NewLineageDiagram.js" />
+    <Content Include="Scripts\parts\NewLineageDiagram2.js" />
     <Content Include="Scripts\parts\Survey.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
@@ -1404,6 +1406,7 @@
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\index.ts" />
@@ -1473,6 +1476,7 @@
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />

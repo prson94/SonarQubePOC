@@ -100,3 +100,19 @@ export class ToolbarItem {
     Items: ToolbarItem[];
     Uri: string;
 }
+
+export class ObjectDetail {
+    ID: number;
+    Name: string;
+    TextPath: string;
+    Description: string;
+    ParentID: number;
+    ParentType: string;
+    Url: string;
+    TypeID: number;
+    Type: string;
+    TypeName: string;
+    IconBackColor: string;
+    IconForeColor: string;
+    IconText: string;
+}
