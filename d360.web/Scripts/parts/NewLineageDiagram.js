@@ -20,7 +20,7 @@
     var ribbon_button_width = 58;
     var ribbon_button_height = "90%";
 
-    var controlID_header = controlID + "_header";
+    var controlID_header = controlID + '_header';
     var controlID_wrapper = controlID + '_wrapper';
     var controlID_diagram = controlID + '_dgm';
     var controlID_palette = controlID + '_palette';
@@ -105,14 +105,6 @@
     //#endregion
 
     //#region Control instantiation
-
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon({ width: '100%', height: '100%', mode: "popup", theme: theme, position: "right", selectionMode: "click", animationType: "fade" });
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["info"], "near", 700, 250);
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["sourcerules"], "near", 700, 400);
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["mappingrules"], "near", 700, 400);
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["responsibilities"], "near", 700, 400);
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["fusion"], "near", 700, 400);
-    //$("#" + controlID_sidebar_ribbon).jqxRibbon('setPopupLayout', tabs["transformations"], "near", 700, 400);
 
     $("#" + controlID_view_window_base + '0').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();
     $("#" + controlID_view_window_base + '1').jqxButton({ theme: theme, height: "100%", width: 64 });//.hide();

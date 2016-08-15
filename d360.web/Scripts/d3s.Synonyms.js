@@ -12,6 +12,10 @@
             { name: 'IntersectID' },
             { name: 'Object' },
             { name: 'ObjectID' },
+            { name: 'SubjectArea' },
+            { name: 'ParentID' },
+            { name: 'ParentName' },
+            { name: 'ParentUrl' },
             { name: 'Name' },
             { name: 'Description' },
             { name: 'ObjectTypeName' },
@@ -194,14 +198,15 @@
                     autorowheight: true,
                     sortable: true,
                     altrows: true,
-                    showfilterrow: false,
+                    showfilterrow: true,
                     filterable: true,
                     pageable: false,
                     theme: 'flat',
+                    columnsresize: true,
                     autoshowloadelement: false,
                     selectionmode: 'none',
                     columns: [
-                        { datafield: "ObjectTypeName", text: "Type", width: '200px' },
+                        { datafield: "ObjectTypeName", text: "Type", width: '200px', filtertype: 'checkedlist' },
                         {
                             datafield: "Name",
                             text: "Name",
@@ -209,7 +214,17 @@
                                 return previewLinkRenderer(data.Object, data.ObjectID, data.Url, data.Name);
                             }
                         },
-                        //{ datafield: "Description", text: "Description" },
+                        {
+                            datafield: "ParentName",
+                            text: "Parent",
+                            cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
+                                if (data.ParentName)
+                                    return previewLinkRenderer("Artifact", data.ParentID, data.ParentUrl, data.ParentName);
+                                else
+                                    return "";
+                            }
+                        },
+                        { datafield: "SubjectArea", text: CompanySettings.ArtifactType_TaxonomyTypeID, width: '200px', filtertype: 'checkedlist' },
                         {
                             datafield: "IntersectID",
                             text: "",

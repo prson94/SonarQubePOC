@@ -1003,13 +1003,17 @@ order by	D.ObjectTypeName,
 select	I.ID as IntersectID,
 		D.Object,
 		D.ObjectID,
-		D.TextPath as Name,
+		TT.Name as SubjectArea,
+		AP.Name as ParentID,
+        dbo.GenerateObjectUrl('Artifact', AP.ArtifactTypeID, AP.ID) as ParentUrl,
+        AP.Name as ParentName,
+		D.Name,
         D.ObjectTypeName,
 		D.Description,
 		D.Url
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID 
-        inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+		inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
         inner join cache.ObjectDetails D on D.Object = case 
 															when I.Subject = @type and I.SubjectID = @id then I.Object 
 															else I.Subject
@@ -1018,6 +1022,9 @@ from	[Intersect] I
 																when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
 																else I.SubjectID 
 															 end
+        left join Artifact A on A.ID = D.ObjectID
+        left join Artifact AP on AP.ID = A.ParentID
+		left join TaxonomyType TT on TT.ID = A.TaxonomyTypeID
 where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)";
 
         public static string TaxonomySettingsItem = @"

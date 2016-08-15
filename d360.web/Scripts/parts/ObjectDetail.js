@@ -43,6 +43,14 @@
                 "' data-context='" + f.TooltipContext +
                 "' data-id='" + f.TooltipID + "'>" +
                 f.Value + "</a>");
+
+            if (f.Value == '' || !f.Value) {
+                $(valueID).closest('div[data-category]').data("hidden", true);
+                $(valueID).closest('div[data-category]').hide();
+            }
+            else {
+                $(valueID).closest('div[data-category]').data("hidden", false);
+            }
         }
         else if (f.LookupGridUrl) {
             $.getJSON(f.LookupGridUrl, function (data) {
@@ -124,15 +132,11 @@
                                 $(valueID).jqxGrid('autoresizecolumns');
                         }
                     });
-
-                    //$(valueID).on('bindingcomplete', relationGridBindComplete);
-                    //amplify.subscribe(AmplifyActions.Unsubscribe, relationGridUnsubscribe);
-                    //amplify.subscribe(AmplifyActions.TileUnsubscribe, relationGridUnsubscribe);
                 }
                 else {
-                    //$(labelID).hide();
                     $(valueID).closest('div[data-category]').hide();
-                    //$('#' + 'Row' + fix).hide();
+
+                    amplify.publish("DetailLazyDataLoaded", { fieldID: valueID, hidden: true });
                 }
 
             });
@@ -151,6 +155,14 @@
             }
             else
                 $(valueID).html(f.Value);
+
+            if (f.Value == '' || !f.Value) {
+                $(valueID).closest('div[data-category]').data("hidden", true);
+                $(valueID).closest('div[data-category]').hide();
+            }
+            else {
+                $(valueID).closest('div[data-category]').data("hidden", false);
+            }
         }
 
         //#endregion
@@ -193,14 +205,33 @@
 
                 $('#' + catID).css('margin', '10px');
                 $('#' + catID).jqxExpander({ theme: theme, expanded: false });
+                $('#' + catID).data("count", 0);
+                $('#' + catID).data("hidecount", 0);
+                $('#' + catID).data("categoryname", c);
 
                 $('#' + controlID + ' .row').each(function (rix, r) {
-                    if ($(r).data('category') === c) {
+                    if ($(r).data('category') === c && !$(r).data('hidden')) {
                         $(r).appendTo('#' + catContentID);
+                        $('#' + catID).data("count", $('#' + catID).data("count")+1);
                     }
                 });
             });
         }
 
+    });
+
+    amplify.subscribe("DetailLazyDataLoaded", function (fieldData) {
+        if (fieldData.hidden) {
+            var c = $(fieldData.fieldID).closest('div[data-category]').data("category");
+            var panel = $(fieldData.fieldID).closest('div[data-category]').parent().parent(); //$(fieldData.fieldID).closest("div[data-categoryname='" + c + "']");
+            if (panel) {
+                panel.data("hidecount", panel.data("hidecount") + 1);
+                var hiddenFieldCount = panel.data("hidecount");
+                var fieldCount = panel.data("count");
+                if (hiddenFieldCount >= fieldCount) {
+                    panel.fadeOut();
+                }
+            }
+        }
     });
 }

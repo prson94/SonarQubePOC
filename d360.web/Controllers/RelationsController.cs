@@ -1439,6 +1439,20 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
             return PartialView();
         }
 
+        public ActionResult Lineage(SystemObjects type, int id)
+        {
+            try
+            {
+                ViewBag.Object = type.ToString();
+                ViewBag.ObjectID = id;
+            }
+            catch
+            {
+            }
+            //var model = Company.GetObjectDetail(type, id);
+            return PartialView();
+        }
+
         public ActionResult RelationOverlay(SystemObjects type, int id)
         {
             try 

@@ -78,9 +78,7 @@
                             ObjectDetail('DetailTile', type, id);
                             break;
                         case contextList.SourceToTarget:
-                            if (CompanySettings.UseNewRelationships == 'true')
-                                NewLineageDiagram('SourcingTile', type, id, false);
-                            else
+                            if (CompanySettings.UseNewRelationships != 'true')
                                 LineageDiagram('SourcingTile', type, id, false);                            
                             break;
                         case contextList.Responsibility:                        
@@ -106,9 +104,20 @@
                 }
             }
 
+            function showLineage() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Lineage?type=Artifact&id=' + id);
+            }
+
             function unsubscribe(data) {
                 survey = null
                 $('#AttributesTile').Attributes('destroy');
+                if (CompanySettings.UseNewRelationships == 'true') {
+                    $('#ShowLineage').off('click', showLineage);
+                }
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -128,17 +137,25 @@
                     survey = new Survey('Survey', type, id, 'ArtifactType', typeID);
                     ObjectDetail('DetailTile', type, id);
 
+                    if (CompanySettings.UseNewRelationships == 'true') {
+                        $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
+                        $('#ShowLineage').on('click', showLineage);
+                    }
+                    else {
+                        $('#PanelButtonsTile').hide();
+                    }
+
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
 
-                        //$('#RelationshipsTile').RelationshipsTile({ obj: type, objid: id });
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
 
-                        if (CompanySettings.UseNewRelationships == 'true')
-                            NewLineageDiagram('SourcingTile', type, id, false);
-                        else
+                        if (CompanySettings.UseNewRelationships != 'true') {
+                            $('#SourcingTile').addClass("tile");
+                            $('#SourcingTile').addClass("tile-detail");
                             LineageDiagram('SourcingTile', type, id, false);
+                        }
 
                         CertificationNotificationTile('CertificationNotification', id);
                         ChallengeNotificationTile('ChallengeNotification', contextList, id);
@@ -180,6 +197,8 @@
                     permissions.GetPermissionsForObject(type, id).then(loadPermissionsDependentTiles);
 
                     //#region Event Subscriptions
+
+                    
 
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);

@@ -72,6 +72,7 @@
     <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
     <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
+    <script type="text/javascript"  src="/Scripts/powerbi.js"></script>
 </head>
 <body>
     <div style="position: fixed; left: 0px; top: 0px; width: 50px; height: 100%; z-index: 0" class="grey darken-2"></div>
@@ -84,6 +85,13 @@
             <td class="d3s-contentarea">
                 <div id="ContentHeader"></div>
                 <div id="main"></div>
+                <div id="Panel" style="display:none">
+                    <div class="row">
+                        <div class="col s12">
+                            <div id="PanelContent" class="tile tile-detail"></div>
+                        </div>
+                    </div>
+                </div>
             </td>
         </tr>
     </table>
@@ -271,6 +279,9 @@
 
             this.before(function(){
                 amplify.publish(AmplifyActions.Unsubscribe, { });
+                $('#Panel').hide();
+                $('#PanelContent').html('');
+                $('#main').show();
             });
 
             this.after(function () {
@@ -551,6 +562,12 @@
                 } catch (e) {
                     logError("SPA : CancelAction", e);
                 }
+            });
+
+            amplify.subscribe('ClosePanel', function(data){
+                $('#Panel').hide();
+                $('#PanelContent').html('');
+                $('#main').fadeIn();
             });
 
             amplify.subscribe("SaveAction", function (data) {                
