@@ -1,29 +1,27 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
 @Component({
-    selector: 'd3s-fusion-list',    
+    selector: 'd3s-reference-list',   
+   
     template: ` 
-                `
+               `
 })
 
-export class FusionListComponent extends BaseComponent implements OnInit {
-    results: any[] = [];
-    result: any;
-
+export class ReferenceListComponent extends BaseComponent implements OnInit {    
+    
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Fusion');
+        this.setBrowserTitle(this.titleService, 'Reference');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));        
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
     }
-    
 };

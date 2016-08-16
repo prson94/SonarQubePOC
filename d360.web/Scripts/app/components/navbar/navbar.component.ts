@@ -60,7 +60,8 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
-                this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Policy'));                
+                this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Policy'));     
+                this.loadReferenceMenu(this.siteMenu.find(i => i.MenuID == '#Domains'));           
                 this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
                 this.loadMonitorMenu();                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
@@ -72,6 +73,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
         if (fusionMenu == null || !fusionMenu.ShouldDisplay) return;
 
         let fusion = this.addNavItem('Fusion', 'database', 'a/fusion');
+    }
+
+    loadReferenceMenu(referenceMenu: SiteMenu) {
+        if (referenceMenu == null ) return;
+
+        let fusion = this.addNavItem('Reference', 'cubes', 'a/reference');
     }
 
     loadGlossaryMenu(glossaryMenu: SiteMenu) {
@@ -111,7 +118,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadAdminMenu(adminMenu: SiteMenu) {
         if (adminMenu == null) return;
 
-        let admin = this.addNavItem('Administration', 'book', null);
+        let admin = this.addNavItem('Administration', 'cogs', null);
 
         // these are ordered by alpha a-Z...
 

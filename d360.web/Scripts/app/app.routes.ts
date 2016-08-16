@@ -12,6 +12,7 @@ import { ResourceRoutes } from './components/resource/resource.routes';
 import { RuleRoutes } from './components/rule/rule.routes';
 import { MonitorRoutes } from './components/monitor/monitor.routes';
 import { CommunityRoutes } from './components/community/community.routes';
+import { ReferenceRoutes } from './components/reference/reference.routes';
 
 export const routes: RouterConfig = [
     ...AdminRoutes,
@@ -25,6 +26,7 @@ export const routes: RouterConfig = [
     ...RuleRoutes,
     ...MonitorRoutes,
     ...CommunityRoutes,
+    ...ReferenceRoutes,
 ];
 
 export const routing = RouterModule.forRoot(routes);
