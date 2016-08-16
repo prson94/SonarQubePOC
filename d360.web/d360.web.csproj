@@ -375,6 +375,7 @@
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
+    <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\WorkflowController.cs" />
     <Compile Include="Controllers\OfficeAppsController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
@@ -1514,6 +1515,7 @@
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\classification-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\dropdown-to-selectitem.pipe.ts" />
@@ -1570,6 +1572,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\powerbi.d.ts" />

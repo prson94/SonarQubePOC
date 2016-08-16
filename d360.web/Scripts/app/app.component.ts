@@ -2,7 +2,7 @@
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService  } from './services/index';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 declare var $: JQueryStatic;
 import 'rxjs/Rx';
@@ -28,7 +28,7 @@ import 'rxjs/Rx';
                 <d3s-messages></d3s-messages>
               `,
     directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, RightSidebarComponent],
-    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService]
+    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService, WebAnalyticsService]
 })
 
 export class AppComponent implements AfterViewInit, OnInit {    

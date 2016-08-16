@@ -1,5 +1,5 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService  } from '../../services/index';
 import { Title } from '@angular/platform-browser';
 import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs/Subscription';
@@ -17,8 +17,8 @@ export class ArtifactBaseComponent extends BaseComponent {
 
     isAuditVisible: boolean = false;
 
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected pageHeader: PageHeader, protected rightSidebarService?: RightSidebarService) {
-        super();
+    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected pageHeader: PageHeader, rightSidebarService?: RightSidebarService, webAnalyticsService?: WebAnalyticsService) {
+        super(rightSidebarService, webAnalyticsService);
         pageHeader.description = "";
     }        
 

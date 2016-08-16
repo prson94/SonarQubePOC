@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService } from '../../services/index';
+import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { DataTable, Column} from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
@@ -41,8 +41,9 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         private objectActionsService: ObjectActionsService,
+        webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
-        super(headerBreadcrumbService, pageHeader, rightSidebarService);      
+        super(headerBreadcrumbService, pageHeader, rightSidebarService, webAnalyticsService );      
 
         
     }
@@ -52,6 +53,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
+            this.logAction('open', 'ArtifactType', artifactTypeId);
             this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
                 .then(artifactType => {
                     this.artifactType = artifactType;

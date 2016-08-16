@@ -1,7 +1,8 @@
 ﻿import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarService  } from '../../services/index';
+import { RightSidebarService, WebAnalyticsService  } from '../../services/index';
 import { Subscription }   from 'rxjs/Subscription';
+
 
 export class BaseComponent {    
     protected isLoading = false;
@@ -14,10 +15,20 @@ export class BaseComponent {
     isOwnershipVisible: boolean = false;
     isDashboardVisible: boolean = false;
 
-    constructor(protected rightSidebarService?: RightSidebarService) {  }
+    constructor(protected rightSidebarService?: RightSidebarService, protected webAnalyticsService?: WebAnalyticsService) { }
 
     protected setBrowserTitle(tileService: Title, area: string) {
         tileService.setTitle(`D3S - ${area}`);
+    }
+
+    logAction(actionName: string, objectName: string, objectId: number) {        
+        if (this.webAnalyticsService) {            
+            this.webAnalyticsService.logActivity({
+                Activity: actionName,
+                ObjectId: objectId,
+                ObjectName: objectName
+            });
+        }
     }
 
 

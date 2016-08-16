@@ -2,7 +2,7 @@
 import {Component, Input, OnChanges, SimpleChange, ViewChildren, ElementRef, AfterViewInit, QueryList} from '@angular/core';
 import * as pbi from 'powerbi-client';
 import { BaseComponent } from '../shared/base.component';
-import { DashboardService } from '../../services/index';
+import { DashboardService, WebAnalyticsService } from '../../services/index';
 import { Dashboard, DashboardTokens } from '../../models/dashboard.model'
 
 @Component({
@@ -26,8 +26,8 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     private powerBIDetails: DashboardTokens;
     private shouldRender: boolean = false;
 
-    constructor(protected el: ElementRef, protected dashboardService: DashboardService) {
-        super();            
+    constructor(protected el: ElementRef, protected dashboardService: DashboardService, webAnalyticsService: WebAnalyticsService) {
+        super(undefined, webAnalyticsService);            
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -48,6 +48,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
             else {
                 this.shouldRender = false;
                 window.powerbi.embed(this.biContainer.first.nativeElement);
+                this.logAction('open', 'Report', this.dashboard.ID);
             }
         }
     }
