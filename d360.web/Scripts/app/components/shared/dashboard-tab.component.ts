@@ -4,6 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { MessagesService, DashboardService } from '../../services/index';
 import { Dashboard } from '../../models/dashboard.model'
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
+import {Button} from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-dashboard-tab',
@@ -18,11 +19,13 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
                         <div class="row">
                             <div class="col s12">
                                 <span style="padding:0 10px;">Dashboard:</span>
-                                <select [(ngModel)]="selected" style="width:300px;">
+                                <select [(ngModel)]="dashboard" style="width:300px;">
                                     <option></option>
                                     <option *ngFor="let dashboard of dashboards" [ngValue]="dashboard">{{dashboard.Name}}</option>
-                                </select>
-                            </div>
+                                </select>                                
+                                
+                                <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
+                            </div>                            
                         </div>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="selected">
@@ -34,13 +37,13 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
                         </div>                    
                     </div>
                     <div class="tile tile-detail" *ngIf="!selected">
-                        <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above to view the specified dashboards content.</h4>
+                        <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press render to view the specified dashboards content.</h4>
                     </div>
                 </div>
             </div>
         `,
     providers: [DashboardService],
-    directives: [PowerBIViewerComponent],
+    directives: [PowerBIViewerComponent, Button],
 })
 
 export class DashboardTabComponent extends BaseComponent implements OnInit {
@@ -49,6 +52,7 @@ export class DashboardTabComponent extends BaseComponent implements OnInit {
     @Input() objectName: string;
 
     dashboards: Dashboard[] = [];
+    dashboard: Dashboard;
     selected: Dashboard;
  //   openedDashboards: MenuItem[] = [];
 

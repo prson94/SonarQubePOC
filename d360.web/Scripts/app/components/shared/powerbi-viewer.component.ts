@@ -24,6 +24,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     @Input() dashboard: Dashboard;
     @ViewChildren("biContainer") biContainer: QueryList<ElementRef>;
     private powerBIDetails: DashboardTokens;
+    private shouldRender: boolean = false;
 
     constructor(protected el: ElementRef, protected dashboardService: DashboardService) {
         super();            
@@ -39,20 +40,23 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     }
 
     initPowerBi() {
-        if (this.biContainer && this.biContainer.length > 0) {            
+        if (this.biContainer && this.biContainer.length > 0 && this.shouldRender) {            
             if (!this.biContainer.first)
                 console.log("ERROR: FIRST BICONTAINER ELEMENT IS NULL!");
             else if (!this.biContainer.first.nativeElement)
                 console.log("ERROR: FIRST BICONTAINER NATIVE ELEMENT IS NULL!");
-            else
+            else {
+                this.shouldRender = false;
                 window.powerbi.embed(this.biContainer.first.nativeElement);
+            }
         }
     }
 
     loadTokens() {        
         this.isLoading = true;
         this.dashboardService.getPowerBIReportTokens(this.dashboard.PowerBIReportID)
-            .then(result => {                
+            .then(result => { 
+                this.shouldRender = true;    // make sure only one call to power bi per load of this.           
                 this.powerBIDetails = result;      
                 this.isLoading = false;             
             });
