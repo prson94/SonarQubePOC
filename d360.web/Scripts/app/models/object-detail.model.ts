@@ -116,3 +116,9 @@ export class ObjectDetail {
     IconForeColor: string;
     IconText: string;
 }
+
+
+export class ObjectAction {
+    Name: string;
+    Value: boolean;
+}

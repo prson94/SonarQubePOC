@@ -830,6 +830,22 @@ where   h.ID <> @t order by h.[Level] desc;
             }
         }
 
+        [Route("{type}/{id:int}/angularactions/{context=default}")]
+        public dynamic GetAngularObjectActions(SystemObjects type, int id, string context)
+        {
+            dynamic actionsObj = new ExpandoObject();
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    //check for dashboards
+                    bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
+                    actionsObj.HasDashboards = hasDashboards;                    
+                    break;
+            }
+
+            return actionsObj;
+        }
+
         [Route("{type}/{id:int}/actions/{context=default}")]
         public List<PageActionItem> GetObjectActions(SystemObjects type, int id, string context)
         {
@@ -1713,6 +1729,13 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("TypeName", a.ArtifactType.Name);
             model.Add("AllowRelatedArtifacts", a.ArtifactType.AllowRelatedArtifacts);
             model.Add("Status", a.Status);
+
+            if(isNg)
+            {
+                //check if this object has dashboards             
+                bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();                
+                model.Add("HasDashboards", hasDashboards);
+            }
 
             try
             {

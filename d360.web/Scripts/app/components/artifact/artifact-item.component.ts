@@ -74,9 +74,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         headerBreadcrumbService: HeaderBreadcrumbService) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService);
 
-        this.setCommonRightSideBar(true, true, true);
-
-        this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));           
     }
 
     ngOnInit() {
@@ -98,6 +95,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));                                
                     }             
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
+
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards);
+                                        
+                    this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));           
                     this.isLoading = false;
                 });
         });

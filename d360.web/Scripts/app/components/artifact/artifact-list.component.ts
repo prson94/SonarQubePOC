@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService } from '../../services/index';
+import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { DataTable, Column} from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
@@ -26,7 +26,7 @@ import { DashboardTabComponent } from '../shared/dashboard-tab.component';
                     </div>
                 </div>
                 `,
-    providers: [ArtifactTypeService],
+    providers: [ArtifactTypeService, ObjectActionsService],
     directives: [ArtifactGridComponent, DashboardTabComponent]
 })
 
@@ -40,10 +40,11 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         pageHeader: PageHeader,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
+        private objectActionsService: ObjectActionsService,
         rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService);      
 
-        this.setCommonRightSideBar(false, false, true);
+        
     }
 
     ngOnInit() {
@@ -58,7 +59,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));   
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, null));
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
+                                        
                     this.isLoading = false;
+                });
+            this.objectActionsService.getObjectActions(artifactTypeId, 'ArtifactType', 'list')
+                .then(actions => {                     
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(false, false, actions.HasDashboards);
                 });
         });
     }

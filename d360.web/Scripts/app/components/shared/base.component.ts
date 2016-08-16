@@ -46,10 +46,13 @@ export class BaseComponent {
         console.log(activatedItem);
     }
 
-    clearSidebar() {
+    clearSidebar(unsubscribe?: boolean) {
         if (this.rightSidebarService) {
             this.rightSidebarService.clearItems();
-            this.sidebarSubscription.unsubscribe();
+            if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {
+                console.log("DEV INFO - UNSUBSCRIBING FROM RIGHT SIDE BAR SUBSCRIPTION");
+                this.sidebarSubscription.unsubscribe();
+            }
         }
     }
 }

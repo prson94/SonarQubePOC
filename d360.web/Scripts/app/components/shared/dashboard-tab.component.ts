@@ -25,7 +25,8 @@ import {Button} from 'primeng/primeng';
                                 </select>                                
                                 
                                 <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
-                            </div>                            
+                            </div>  
+                            <div class="col s12" [innerHtml]="dashboard?.Description"></div>                          
                         </div>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="selected">

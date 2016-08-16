@@ -10,6 +10,7 @@ export class Artifact {
     AllowPredicateHierarchies: boolean;
     AllowRelatedArtifacts: boolean;
     AllowSynonyms: boolean;
+    HasDashboards: boolean;
     Description: string;
     ID: number;
     Name: string;
