@@ -101,6 +101,15 @@ export class ToolbarItem {
     Uri: string;
 }
 
+export class ToolbarItemNg {
+    Icon: string;
+    Title: string;
+    Description: string;
+    Action: string;
+    Params: any;
+    Items: ToolbarItemNg[];
+}
+
 export class ObjectDetail {
     ID: number;
     Name: string;

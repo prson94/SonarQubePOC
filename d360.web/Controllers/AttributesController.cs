@@ -161,6 +161,86 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult AttributeActionsNg(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
+        {
+            Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
+
+            var permissions = Company.GetPermissions(owner, ownerID).ToList();
+
+            var list = new List<ToolbarItemNg>();
+
+            if (attributeID.HasValue)
+            {
+                var p = new
+                {
+                    attributeID = attributeID.Value
+                };
+
+                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Update, ClaimObject.Attribute))
+                    list.Add(new ToolbarItemNg { Title = "edit attribute", Icon = "pencil",  Action = "edit", Params = p });
+                if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Delete, ClaimObject.Attribute))
+                    list.Add(new ToolbarItemNg { Title = "delete attribute", Icon = "trash-o", Action = "delete", Params = p });
+            }
+
+            IQueryable<AttributeType> types = null;
+            if (Company.HasClaimInCurrentPermissionList(permissions, Claim.Create, ClaimObject.Attribute))
+            {
+                if (type == SystemObjects.Attribute)
+                {
+                    types = Company.GetById<core.entities.Attribute>(id, i => i.AttributeType).AttributeType.Children.OrderBy(i => i.Name).AsQueryable();
+                    //types= (
+                    //       from t in Company.AttributeTypes
+                    //       join a in Company.Attributes on t.ParentID equals a.AttributeTypeID
+                    //       where a.ID == id
+                    //       select t
+                    //       ).OrderBy(i => i.Name).AsQueryable();
+                }
+                else
+                {
+                    var detail = Company.GetObjectDetail(type, id);
+                    var sType = type.ToString();
+                    int _id = id;
+
+                    if (detail != null)
+                    {
+                        _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
+                    }
+
+
+                    var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
+
+                    if (!sType.EndsWith("Type")) sType += "Type";
+                    types = Company.Filter<AttributeTypeRelation>(r => r.ObjectType == sType && r.ObjectID == _id && (r.AllowMultipleEntries || !usedIDs.Contains(r.AttributeTypeID))).Select(r => r.AttributeType).OrderBy(t => t.Name);
+                }
+
+                if (types.Count() > 0)
+                {
+                    var addItem = new ToolbarItemNg { Icon = "plus", Title = "" };
+                    foreach (var t in types)
+                    {
+                        var p = new
+                        {
+                            typeID = t.ID,
+                            objectType = owner,
+                            objectID = ownerID,
+                            parentID = attributeID ?? 0
+                        };
+
+                        var uri = string.Format("/form/AddAttribute?typeID={0}&objectType={1}&objectID={2}", t.ID, owner, ownerID);
+                        if (attributeID.HasValue) uri += "&parentID=" + attributeID.Value;
+                        var a = new ToolbarItemNg { Title = "Add " + t.Name, Icon = "plus", Action = "add", Params = p };
+                        addItem.Items.Add(a);
+                    }
+                    if (addItem.Items.Count > 0)
+                    {
+                        list.Add(addItem);
+                    }
+                }
+            }
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
         [Route("fulltypes")]
         public JsonNetResult GetFullTypes()
         {

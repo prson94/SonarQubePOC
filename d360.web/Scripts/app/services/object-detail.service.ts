@@ -15,7 +15,7 @@ import {
     SynonymEditorModel,
     SynonymEditModel,
     AttributeHeirarchyItem,
-    ToolbarItem,
+    ToolbarItemNg,
     ObjectDetail
 } from '../models/object-detail.model';
 import { HierarchyModel, PredicateType } from '../models/relations.model';
@@ -83,10 +83,10 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
 
     }
 
-    getAttributeActions(objectID: number, objectType: string, ownerID: number, ownerType: string, attributeID: number = null): Promise<ToolbarItem[]> {
-        return this.http.get(`attributes/AttributeActions?id=${objectID}&type=${objectType}&ownerID=${ownerID}&owner=${ownerID}&attributeID=${attributeID}`)
+    getAttributeActions(objectID: number, objectType: string, ownerID: number, ownerType: string, attributeID: number = null): Promise<ToolbarItemNg[]> {
+        return this.http.get(`attributes/AttributeActionsNg?id=${objectID}&type=${objectType}&ownerID=${ownerID}&owner=${ownerID}&attributeID=${attributeID}`)
             .toPromise()
-            .then(response => <ToolbarItem[]>response.json())
+            .then(response => <ToolbarItemNg[]>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -101,6 +101,17 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
         return this.getRelationsHierarchy(predicateType, type, id).then(result => {
             return FormHelper.formTree(result,  'UID', 'ParentID');
         });
+    }
+
+    testDynamicParams(): Promise<any> {
+        var params = [];
+        params.push(1);
+        params.push('bob');
+        params.push(3);
+        params.push(4);
+        return this.http.post('form/dynamiceditor/new/attribute', params)
+            .toPromise()
+            .then(result => <any>result.json());
     }
 
 }

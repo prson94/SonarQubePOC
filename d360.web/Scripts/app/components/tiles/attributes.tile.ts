@@ -4,11 +4,12 @@ import { NgSwitch, NgSwitchDefault, NgSwitchCase } from '@angular/common';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeTable, TreeNode, Column, Header } from 'primeng/primeng';
+import { TreeTable, TreeNode, Column, Header, Tooltip } from 'primeng/primeng';
 import { ObjectDetailTile } from './object-detail.tile';
 import { DeleteForm } from '../forms/delete.form';
 import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { MenuPart, MenuPartItem } from '../parts/menu.part';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -24,6 +25,32 @@ import { MenuPart, MenuPartItem } from '../parts/menu.part';
         .menu-bar-item:hover {
             background-color:white;
         }
+
+        .menu-bar {
+            background-color:#ccc;
+            padding: 2px;
+        }
+
+        .menu-item {
+            cursor: pointer;
+            padding:5px 10px 5px 10px;
+            border:1px solid #aaa;
+            display: inline-block;   
+            background-color: #ddd;
+            transition: all .5s;     
+        }
+
+        .menu-item:hover {
+            background-color: #fff;
+        }
+
+        .menu-item.disabled:hover {
+            background-color: #ddd;
+        }
+
+        .menu-item.disabled {
+            cursor: default;
+        }
         `
     ],
     template: `
@@ -32,7 +59,7 @@ import { MenuPart, MenuPartItem } from '../parts/menu.part';
 </div>
 <div *ngIf="!isLoading">
     <div class="row">
-        <div class="col l5 m5 s6" [class]="readonly ? 'col s12' : 'col l5 m5 s6'">
+        <div [class]="readonly ? 'col s12' : 'col s6'">
             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="loadMenu();">
                 <p-column>
                     <template let-item="rowData">
@@ -46,11 +73,12 @@ import { MenuPart, MenuPartItem } from '../parts/menu.part';
                 </p-column>
             </p-treeTable>
         </div>
-        <div *ngIf="!readonly" class="col l7 m7 s6">
-            <div style="background-color:#ccc; padding:5px;">          
-                <div *ngFor="let item of menuBarItems" style="display: inline;">
-                    <d3s-menu *ngIf="item.isMenu" [items]="item.menuItems" (onItemClick)="menuClick($event)"><span style="font-size:1.3em;"><i [class]="'fa fa-' + item.icon"></i></span></d3s-menu>
-                    <span *ngIf="!item.isMenu" class="menu-bar-item" (click)="barClick(item)"><i [class]="'fa fa-' + item.icon"></i></span>
+        <div *ngIf="!readonly" class="col s6">
+            <div class="menu-bar">          
+                <div *ngFor="let item of menuBarItems" style="display:inline;">
+                    <d3s-menu *ngIf="item.isMenu" [items]="item.menuItems" (onItemClick)="menuClick($event)"><span><i [class]="'fa fa-' + item.icon"></i></span></d3s-menu>
+                    <div *ngIf="!item.isMenu" class="menu-item" (click)="barClick(item)" pToolTip="item.text" tooltipPosition="top"><i [class]="'fa fa-' + item.icon"></i></div>
+
                 </div>
             </div>
             
@@ -59,28 +87,41 @@ import { MenuPart, MenuPartItem } from '../parts/menu.part';
                     <object-detail *ngIf="detailType == 'Attribute'" [objectType]="detailType" [objectID]="detailID"></object-detail>
                 </div>
                 <div *ngSwitchCase="FormMode.Adding">
-                adding
                 <d3s-dynamic-editor [selection]="null"
                                     [objectID]="0"
                                     [objectType]="'Attribute'"
                                     [title]="'Attribute'"
-                                    [createUri]="'dynamiceditor/new/' + objectType + '/' + objectID + '/0/' + typeID"
+                                    [createUri]="'dynamiceditor/new/' + objectType"
+                                    [createParams]="createParams"
                                     [editUri]="null"
                                     (closeClick)="formMode = FormMode.Default;"
                                     (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
                 </div>
                 <div *ngSwitchCase="FormMode.Editing">
-                    editing
-                </div>
+                <d3s-dynamic-editor [selection]="selectedRowCopy"
+                                    [objectID]="attributeID"
+                                    [objectType]="'Attribute'"
+                                    [title]="'Attribute'"
+                                    [createUri]="null"
+                                    [editUri]="'dynamiceditor/edit/' + objectType + '/' + attributeID"
+                                    (closeClick)="formMode = FormMode.Default;"
+                                    (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
+                </div> 
                 <div *ngSwitchCase="FormMode.Deleting">
-                    deleting
+                    <delete-form
+                        [uri]="'form/DeleteAttributeByID?id=' + attributeID"
+                        [method]="'delete'"
+                        [prompt]="'Are you sure you want to remove this attribute?'"
+                        (onCancel)="formMode = FormMode.Default"
+                        (onDeleteSuccess)="formMode = FormMode.Default">
+                    </delete-form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 `,
-    directives: [NgSwitch, NgSwitchCase, NgSwitchDefault, TreeTable, Column, Header, ObjectDetailTile, DeleteForm, DynamicEditorComponent, MenuPart],
+    directives: [NgSwitch, NgSwitchCase, NgSwitchDefault, TreeTable, Column, Header, ObjectDetailTile, DeleteForm, DynamicEditorComponent, MenuPart, Tooltip],
     providers: [ObjectDetailService],
 })
 
@@ -101,6 +142,9 @@ export class AttributesTile implements OnInit {
     private detailID: number = null;
     private detailUrl: string = '';
     private typeID: string = null;
+    private createParams = [];
+    private attributeID: number = null;
+    private selectedRowCopy = null;
 
    // private menuItems: MenuItem[];
    // private menuPartItems: MenuPartItem[] = new Array<MenuPartItem>();
@@ -181,8 +225,8 @@ export class AttributesTile implements OnInit {
             this.detailID = id;
         }
 
-        this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID).
-            then(d => {
+        this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID)
+            .then(d => {
                 //console.log(d);
                 this.setMenuItems(d);
 
@@ -197,7 +241,9 @@ export class AttributesTile implements OnInit {
             let item = items[i];
             let barItem = new MenuBarItem();
             barItem.icon = item.Icon;
-            barItem.uri = item.Uri;
+            barItem.text = item.Title;
+            barItem.params = item.Params;
+            barItem.action = item.Action;
             if (item.Items.length > 0) {
                 barItem.isMenu = true;
                 for (let j = 0; j < item.Items.length; j++) {
@@ -206,7 +252,10 @@ export class AttributesTile implements OnInit {
 
                     menuItem.icon = item.icon;
                     menuItem.text = subItem.Title;
-                    menuItem.data = subItem.Uri;
+                    menuItem.data = {
+                        action: subItem.Action,
+                        params: subItem.Params
+                    };
 
                     barItem.menuItems.push(menuItem);
                 }
@@ -216,26 +265,42 @@ export class AttributesTile implements OnInit {
     }
 
     menuClick(item: MenuPartItem) {
-        this.add();
-        console.log(item);
+        this.createParams = [];
+        this.createParams = _.concat(
+            item.data.params.typeID,
+            item.data.params.objectType,
+            item.data.params.typeID,
+            item.data.params.parentID);
+
+        if (item.data.action == 'add')
+            this.add();
     }
 
     barClick(item: MenuBarItem) {
-        if (item.uri.toLowerCase().indexOf('editattribute')) {
+        if (item.action == 'edit') {
+            this.attributeID = item.params.attributeID;
+            this.selectedRowCopy = _.cloneDeep(this.selectedRow.data);
+            this.selectedRowCopy.ID = this.selectedRowCopy.ID.split('|')[1];
+
+            //console.log(this.attributeID);
+            //console.log(this.selectedRow);
             this.edit();
-        } else if (item.uri.toLowerCase().indexOf('deleteattribute')) {
+        } else if (item.action == 'delete') {
+            this.attributeID = item.params.attributeID;
             this.delete();
         }
-        console.log(item);
+        //console.log(item);
     }
 
 }
 
 export class MenuBarItem {
     icon: string;
-    uri: string;
+    action: string;
+    text: string;
     menuItems: MenuPartItem[] = new Array<MenuPartItem>();
     isMenu: boolean = false;
+    params: any;
 }
 
 

@@ -678,6 +678,12 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             };
         }
 
+        [HttpPost, Route("hierarchy/artifacts")]
+        public JsonNetResult GetHierarchyArtifactsNg(HierarchyArtifactsModel model)
+        {
+            return GetHierarchyArtifacts(model);
+        }
+
         [HttpGet, Route("hierarchy/artifacts")]
         public JsonNetResult GetHierarchyArtifacts(HierarchyArtifactsModel model)
         {

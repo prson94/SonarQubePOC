@@ -57,7 +57,7 @@ export class ObjectDefinitionTile implements OnChanges {
     save(e): void {
         this.formMode = FormMode.Default;
     }
-    close(): void {
+    close(): void { 
         this.formMode = FormMode.Default;
     }
 }

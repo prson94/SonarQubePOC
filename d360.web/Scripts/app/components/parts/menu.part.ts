@@ -30,30 +30,41 @@ import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
             left: 0;
             top: 0;
         }
-
-        .menu-button {
-            padding: 5px;
+        
+        .menu-item {
             cursor: pointer;
-        }
-        
-        .menu-button:hover {
-            background-color: #fff;
-            color:black;
+            padding:5px 10px 5px 10px;
+            border:1px solid #aaa;
+            display: inline-block;   
+            background-color: #ddd;
+            box-shadow: none;
+            transition: all .5s;     
         }
 
-        .menu-button.active {
-            box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.25);
+        .menu-item:hover {
             background-color: #fff;
-            color:black;
         }
-        
+
+        .menu-item.disabled:hover {
+            background-color: #ddd;
+        }
+
+        .menu-item.disabled {
+            cursor: default;
+        }
+
+        .menu-item.active {
+            border:1px solid #fff;
+            background-color:#fff;
+            box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.25);
+        }
         `
     ],
     template: `
         <div>
-            <span class="menu-button" [class.active]="showMenu" (click)="toggle()" >
+            <div class="menu-item" [class.active]="showMenu" (click)="toggle()" >
                 <ng-content></ng-content>
-            </span>
+            </div>
             <div *ngIf="showMenu" class="menu-anchor" (mouseleave)="showMenu = false">
                 <ul>
                     <li *ngFor="let item of items" (click)="handleClick(item)">
@@ -61,7 +72,6 @@ import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
                     </li>
                 </ul>
             </div>
-
         </div>
     `
 })

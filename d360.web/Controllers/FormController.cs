@@ -318,6 +318,28 @@ namespace d360.web.Controllers
 
         #region Dynamic Editor Field Type Information For Angular2
 
+        [HttpPost, Route("dynamiceditor/new/{objectType}")]
+        public JsonResult DynamicEditorAddFields(string objectType, object[] param)
+        {
+            switch ((objectType ?? "").ToUpper())
+            {
+                case "ATTRIBUTE":
+                    return Attribute_AddFields((int)param[0], param[1].ToString(), (int)param[2], (int)param[3]);
+
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
+        [HttpPost, Route("dynamiceditor/edit/{objectType}")]
+        public JsonResult DynamicEditorEditFields(string objectType, object[] param)
+        {
+            switch ((objectType ?? "").ToUpper())
+            {
+                default: break;
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
         [HttpGet, Route("dynamiceditor/edit/{objectType}/{ID:int}")]
         public JsonResult DynamicEditorEditFields(string objectType, int ID)
         {
@@ -345,6 +367,8 @@ namespace d360.web.Controllers
                     return SurveyType_EditFields(ID);
                 case "INTERSECTTYPE":
                     return Relationship_EditFields(ID);
+                case "ATTRIBUTE":
+                    return Attribute_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -372,8 +396,6 @@ namespace d360.web.Controllers
                     return Fusion_AddFields(objectID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
-                case "ATTRIBUTE":
-                    return Attribute_AddFields(typeID.GetValueOrDefault(),objectType,objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields();
                 case "SURVEYTYPE":
@@ -1754,6 +1776,14 @@ namespace d360.web.Controllers
             };
 
             return PartialView("AttributeDeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteAttributeById(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteAttribute(form);
         }
 
         [HttpDelete]

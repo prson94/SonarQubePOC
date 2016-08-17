@@ -28,3 +28,12 @@ export enum PredicateType {
     Synonym = 6,
     Simple = 7
 }
+
+export class HierarchyArtifactsModel {
+    ID: number;
+    IntersectMapID: number;
+    MapType: PredicateType;
+    Type: string;
+    GroupNumber: number;
+    IsAddingParent: boolean;
+}

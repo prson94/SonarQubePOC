@@ -100,4 +100,15 @@ namespace d360.web.Models
 
         public List<ToolbarItem> Items { get; set; }
     }
+
+    public class ToolbarItemNg
+    {
+        public string Icon { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Action { get; set; }
+        public dynamic Params { get; set; }
+
+        public List<ToolbarItemNg> Items { get; set; } = new List<ToolbarItemNg>();
+    }
 }

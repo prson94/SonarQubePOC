@@ -87,7 +87,7 @@ export class DeleteForm {
                 break;
             case 'delete':
                 if (this.model)
-                    console.log('WARN: model passed to delete-generic will be ignored with DELETE method.');
+                    console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');
                 this.http.delete(this.uri)
                     .map(data => data.json())
                     .subscribe(
@@ -109,7 +109,7 @@ export class DeleteForm {
                     );
                 break;
             default:
-                console.log('method ' + this.method + ' not implemented');
+                console.warn('Method \'' + this.method + '\' not implemented');
                 this.isLoading = false;
                 break;
         }

@@ -6,6 +6,7 @@ import { BaseService } from './base.service';
 import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
+import { HierarchyArtifactsModel } from '../models/relations.model';
 
 @Injectable()
 export class RelationshipsService extends BaseService {
@@ -107,6 +108,19 @@ export class RelationshipsService extends BaseService {
         return this.http
             .delete(url)
             .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
+    deleteHierarchyItem(id: number) {
+        return this.http.delete(`relations/hierarchy/delete/${id}`)
+            .toPromise()
+            .catch(err => this.handleError(err));
+    }
+
+    getHierarchyArtifacts(model: HierarchyArtifactsModel): Promise<any[]> {
+        return this.http.post('relations/hierarchy/artifacts', model)
+            .toPromise()
+            .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
 }
