@@ -680,6 +680,86 @@ where c.object = @type and c.objecttypeid = @id and lower(c.name) like lower(@se
 	WHERE	FT.LookupObjectType = @type
             AND FT.LookupObjectID = @id";
 
+        public static string MapItemsForMapSequenceManagement = @"
+declare @objects table (Type varchar(50), ID int)
+
+insert into @objects values (@type, @id)
+
+if not exists(
+	select	MI.ID
+	from	MapItem MI
+			inner join IntersectDetail SI on SI.ID = MI.SourceIntersectID
+			inner join IntersectDetail TI ON TI.ID = MI.TargetIntersectID
+	where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+			OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+)
+begin
+	insert into @objects
+		select	case 
+					when I.Subject = @type and I.SubjectID = @id then I.Object
+					else I.Subject
+				end,
+				case 
+					when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+					else I.SubjectID 
+				end
+		from	[Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID 
+				inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+		where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+end
+
+declare @points table ( ID int, SourceIntersectID int, TargetIntersectID int )
+
+-- get all items directly tied to the focal object.
+insert into @points
+	select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+	from	MapItem MI
+			inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+			inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+			inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+										( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+
+-- get all items not directly tied to the focal object, but still tied to maps involved above.
+insert into @points
+	select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+	from	MapItem MI
+			inner join	(
+						select	ID.MapItemID
+						from	MapItemMap DM
+								inner join @points D on D.ID = DM.MapItemID
+								inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																										select ID from @points
+																										)
+						) O on O.MapItemID = MI.ID;
+
+with cte as (
+	select	ID,
+			SourceIntersectID,
+			TargetIntersectID,
+			1 as [Level]
+	from	@points
+	union all
+	select	S.ID,
+			S.SourceIntersectID,
+			S.TargetIntersectID,
+			T.[Level] + 1 as [Level]
+	from	MapItem S
+			inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
+	where	T.[Level] <= 25
+)
+insert into @points
+	select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @points)
+
+select	O.ID,
+		O.SourceIntersectID,
+		SI.SubjectName + ' ' + coalesce(SI.PredicateName, 'stores') + ' ' + SI.ObjectName as [Source],
+		O.TargetIntersectID,
+		TI.SubjectName + ' ' + coalesce(TI.PredicateName, 'stores') + ' ' + TI.ObjectName as [Target]
+from	@points O
+		inner join IntersectDetail SI on SI.ID = O.SourceIntersectID
+		inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID";
+
         public static string ObjectRelationshipAllCountsWithZero = @"
             (select 
 	            IT.ID as IntersectTypeID	           
@@ -921,37 +1001,49 @@ from    cache.Responsibilities r
 where   r.objectid = @ObjectID and r.[object] = @ObjectType";
 
         public static string SourceRuleList = @"
-select	J.IntersectMapID,
-		J.SourceRuleID,
-		S.Name,
-		R.SourceObject,
-		R.SourceObjectID,
-		R.SourceObjectName,
-		R.SourceTypeName,
-		J.Description,
+select	R.SubjectName + ' ' + coalesce(R.PredicateName, 'stores') + ' ' + R.ObjectName as SubjectName,
+		R.SubjectID,
+		R.SubjectUrl,
+		R.SubjectTypeName,
+		MS.Description,
 		(
 		select substring(
 						(
 						SELECT  ', ' + D.TextPath AS 'data()' 
-						from	SourceRuleContext JI
-								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.SourceRuleID = J.ID
+						from	MapSequenceContext MSC
+								inner join cache.ObjectDetails D on MSC.Object = D.Object and MSC.ObjectID = D.ObjectID and MSC.MapSequenceID = MS.ID
 						FOR		XML PATH('')
 						), 2, 2500)
-		) as RuleContexts,
+		) as Contexts,
+		MS.Sequence
+from	MapItem MI
+		inner join MapSequence MS on MS.MapItemID = MI.ID
+		inner join IntersectDetail R on R.ID = MI.SourceIntersectID
+where	(
+			@focal + cast(@focalID as varchar) <> @obj + cast(@objID as varchar) and 
+			MI.TargetIntersectID in 
+			( 
+				select	ID 
+				from	[Intersect] 
+				where	( 
+						(Subject = @focal and SubjectID = @focalID and Object = @obj and ObjectID = @objID) OR 
+						(Subject = @obj and SubjectID = @objID and Object = @focal and ObjectID = @focalID) 
+						) 
+			)
+		) OR
 		(
-		select substring(
-						(
-						SELECT  ', ' + D.TextPath AS 'data()' 
-						from	IntersectMapSourceRuleContext JI
-								inner join cache.ObjectDetails D on JI.Object = D.Object and JI.ObjectID = D.ObjectID and JI.IntersectMapSourceRuleID = J.ID
-						FOR		XML PATH('')
-						), 2, 2500)
-		) as ItemContexts,
-		J.SortOrder
-from	IntersectMapSourceRule J
-		inner join SourceRule S on S.ID = J.SourceRuleID and S.AppliesToObject = @focal and S.AppliesToObjectID = @focalID 
-		inner join IntersectMap M on J.IntersectMapID = M.ID
-		inner join cache.Relationships R on R.SourceIntersectNodeID = M.SubjectIntersectNodeID and R.TargetObject = @obj and R.TargetObjectID = @objID";
+			@focal + cast(@focalID as varchar) = @obj + cast(@objID as varchar) and 
+			MI.TargetIntersectID in 
+			( 
+				select	ID 
+				from	[Intersect] 
+				where	( 
+						(Subject = @focal and SubjectID = @focalID) OR 
+						(Object = @focal and ObjectID = @focalID) 
+						) 
+			)
+		)
+order by MS.Sequence";
 
         public static string StatisticTypeDetailList = @"
 select	S.*,

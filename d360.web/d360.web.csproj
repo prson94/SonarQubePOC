@@ -930,6 +930,7 @@
     <None Include="Properties\PublishProfiles\d3s-ui-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Alternate Production - North Central.pubxml" />
+    <None Include="Properties\PublishProfiles\UI - Client Development - EU North.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - Central.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Nightly.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - East.pubxml" />

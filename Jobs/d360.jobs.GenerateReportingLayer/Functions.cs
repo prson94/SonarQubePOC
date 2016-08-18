@@ -1186,6 +1186,65 @@ SELECT [IntersectID]
 
                         #endregion
 
+
+                        #region All Workflows
+
+                        objectName = $"{SCHEMA}.[Workflows_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	w.ID,
+		case w.WorkflowType
+			when 1 then 'Propose' 
+			when 2 then 'Certify' 
+			when 3 then 'Issue' 
+			when 4 then 'Challange' 
+			when 5 then 'Propose' 
+		end as [WorkflowTypeName],
+		right(convert(varchar(10),W.dateStarted,103),7) as MonYear,
+		case  
+			when cast(datename(dayofyear,GETDATE()) as int) - cast  (datename(dayofyear,W.[DateStarted]) as int) between -99999999 and 0 then 'Prior Yrs' 
+			when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 0 and 60 then '0 - 60'
+			when  cast(datename(dayofyear,GETDATE()) as int) - cast (datename(dayofyear,W.[DateStarted]) as int) between 61 and 90 then '61 - 90'
+			else ' > 90 Days'
+		END as DaysElapsed, 
+		W.DateStarted,
+		CONVERT(varchar(8),CAST(W.[DateStarted] AS DATE),112) as DateStartedKey,
+		W.DateCompleted,
+		CONVERT(varchar(8),CAST(W.[DateCompleted] AS DATE),112) as DateCompletedKey,
+		case isNULL(W.DateCompleted,'') 
+			when ''  then 'False' 
+			else 'True' 
+		end as isCompleted,
+		coalesce(Ax.Name, A.ArtifactType) as ArtifactType,
+		coalesce(T.Name, A.taxonomyTypeName)  as TaxonomyTypeName,
+		'/Resource/' + cast(R.ResourceID as varchar(200)) as ResourceURI
+from	Workflow W
+		inner join [dbo].[WorkflowResource] r on R.WorkflowID = W.ID 
+		left join ArtifactType ax on ax.ID = w.data.value('(/fields/ArtifactTypeID)[1]', 'int') and w.data.value('(/fields/ArtifactTypeID)[1]', 'int') is not null
+		left join TaxonomyType T on T.ID = w.data.value('(/fields/VocabularyID)[1]', 'int') and w.data.value('(/fields/VocabularyID)[1]', 'int')  is not null
+		left join [CommentRelation] cr on CR.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR.ObjectType = 'Artifact' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
+		left join [CommentRelation] cr1 on CR1.CommentID = w.data.value('(/fields/CommentID)[1]', 'int') and CR1.ObjectType = 'Resource' and w.data.value('(/fields/CommentID)[1]', 'int') is not null
+		left join [reporting].[Glossary_All] A on A.ID = coalesce(w.data.value('(/fields/ArtifactID)[1]', 'int'), CR.ObjectID)";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
                         prefix = "Global";
 
                         #region InterRelationships

@@ -29,6 +29,12 @@ namespace d360.web.Models
         public bool IsUsed { get; set; }
     }
 
+    public class BaseObjectModel
+    {
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
     public abstract class BaseResponsibilityEditorModel : BaseEditorModel
     {
         public BaseResponsibilityEditorModel()

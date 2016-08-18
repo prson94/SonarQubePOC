@@ -1,6 +1,4 @@
 ﻿<div class="rule-list">
-    {{#each Rules}}
-    <div class="rule-name" style="float: left; width: 92%">{{Name}}</div>
     <table>
         <thead>
             <tr>
@@ -9,13 +7,13 @@
             </tr>
         </thead>
         <tbody>
-            {{#each Items}}
+            {{#each this}}
             <tr class="rule-item-name">
-                <td class="rule-item" rowspan="3" style="text-align:center">{{SortOrder}}</td>
-                <td class="rule-item">{{SourceTypeName}} : {{SourceObjectName}}</td>
+                <td class="rule-item" rowspan="3" style="text-align:center">{{Sequence}}</td>
+                <td class="rule-item">{{SubjectTypeName}} : {{SubjectName}}</td>
             </tr>
             <tr>
-                <td><i>Contexts: </i>{{{ItemContexts}}}</td>
+                <td><i>Contexts: </i>{{{Contexts}}}</td>
             </tr>
             <tr>
                 <td><i>Description: </i>{{{Description}}}</td>
@@ -23,6 +21,4 @@
             {{/each}}
         </tbody>
     </table>
-    <div style="height:20px"></div>
-    {{/each}}
 </div>

@@ -3367,38 +3367,17 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         }
 
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
-        public SourceRulesViewModel GetSourceRules(string focal, int focalID, string obj, int objID)
+        public HttpResponseMessage GetSourceRules(string focal, int focalID, string obj, int objID)
         {
-            var rules = new SourceRulesViewModel { Rules = new List<SourceRuleViewModel>() };
-            var rawItems = Company.Query<RawSourceRuleItem>(QueryConstants.SourceRuleList, new { focal = new Dapper.DbString { Value = focal, IsAnsi = true }, focalID, obj = new Dapper.DbString { Value = obj, IsAnsi = true }, objID }).OrderBy(i => i.Name).ThenBy(i => i.SortOrder).ToList();
-
-            rawItems.Select(r => new { r.Name, r.SourceRuleID, r.RuleContexts }).Distinct().ToList().ForEach(r => {
-                var ruleModel = new SourceRuleViewModel { Name = r.Name, SourceRuleID = r.SourceRuleID, RuleContexts = r.RuleContexts, Items = new List<SourceRuleItemViewModel>() };
-                rawItems.Where(i => i.SourceRuleID == r.SourceRuleID).OrderBy(i => i.SortOrder).ToList().ForEach(i =>
-                {
-                    ruleModel.Items.Add(new SourceRuleItemViewModel {
-                        Description = i.Description,
-                        IntersectMapID = i.IntersectMapID,
-                        ItemContexts = i.ItemContexts,
-                        SortOrder = i.SortOrder,
-                        SourceObject = i.SourceObject,
-                        SourceObjectID = i.SourceObjectID,
-                        SourceObjectName = i.SourceObjectName,
-                        SourceTypeName = i.SourceTypeName
-                    });
-                });
-                rules.Rules.Add(ruleModel);
-            });
-
-            return rules;
-        }
-
-        [HttpGet, Route("{focal}/{focalID:int}/{source}/{sourceID:int}/{target}/{targetID:int}/rules")]
-        public SourceRulesViewModel GetSourceRulesForRelationship(string focal, int focalID, string source, int sourceID, string target, int targetID)
-        {
-            var model = GetSourceRules(focal, focalID, target, targetID);
-            model.Rules = model.Rules.Where(r => r.Items.Count(i => i.SourceObject == source && i.SourceObjectID == sourceID) > 0).ToList();
-            return model;
+            return Request.CreateResponse(HttpStatusCode.OK, 
+                Company.Query<dynamic>(QueryConstants.SourceRuleList, 
+                new {
+                    focal = new Dapper.DbString { Value = focal, IsAnsi = true },
+                    focalID,
+                    obj = new Dapper.DbString { Value = obj, IsAnsi = true },
+                    objID
+                })
+            );
         }
 
         [Route("relationships/{id:int}"), HttpDelete]

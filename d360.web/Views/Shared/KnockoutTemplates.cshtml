@@ -1,114 +1,67 @@
-﻿<script id="hierarchyRuleContextEditTmpl" type="text/html">
-    <tr style="margin-bottom: 10px">
-        <td style="vertical-align: top">
-            <div data-bind="jqxDropDownList: {
-                  width: field_width98,
-                 height: field_height,
-                 theme: theme,
-                 filterable: true,
-                 selectedIndex: ObjectIndex,
-                 source: Side1Options,
-                 displayMember: 'title',
-                 valueMember: 'value',
-                 searchMode: 'containsignorecase'
-                 }"></div>
-        </td>
-        <td style="vertical-align: top">
-            <div data-bind="jqxDropDownList: {
-                  width: field_width98,
-                 height: field_height,
-                 theme: theme,
-                 filterable: true,
-                 selectedIndex: ObjectIDIndex,
-                 source: ObjectIDOptions,
-                 disabled: ObjectOnly,
-                 displayMember: 'title',
-                 valueMember: 'value',
-                 searchMode: 'containsignorecase'
-                 }"></div>
-        </td>
-        <td style="width: 20px; text-align: right; vertical-align: top">
-            <a style="padding: 0 .5rem;" class="waves-effect waves-teal btn-flat" title="Remove this context item" data-bind="click:$parent.deleteItem"><i class="fa fa-trash"></i></a>
-        </td>
-    </tr>
-</script>
-<script id="hierarchyRuleItemEditTmpl" type="text/html">
-    <div class="row">
-        <div class="col s3 FieldNameRequired">Order</div>
-        <div class="col s9">
-            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme }, value: Order"></div>
+﻿<script id="mapSequencesTmpl" type="text/html">
+    <div class="row" data-bind="foreach: MapSequenceModels">
+        <div style="margin-top: 25px" class="col s12" data-bind="visible: Visible">
+            <h4 data-bind="text: Name"></h4>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s3 FieldNameRequired">Name</div>
-        <div class="col s9">
-            <div data-bind="jqxListBox: { width: field_width98, height: field_height, theme: theme }, value: Name"></div>
+        <div class="col s3" data-bind="visible: Visible">
+            <table class="responsive-table striped">
+                <thead>
+                    <tr>
+                        <th>1. Available Sources</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: Available">
+                    <tr>
+                        <td data-bind="text: Name"></td>
+                        <td style="width: 25px">
+                            <i data-bind="click: $parent.Add" class="fa fa-lg fa-plus blue-text"></i>
+                            @*<div data-bind="jqxButton: {theme: theme, width: 20 }, click: $parent.Add"><i class="fa fa-plus blue-text"></i></div>*@
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s3 FieldName">Description</div>
-        <div class="col s9">
-            <input type="text" data-bind="jqxInput: { width: field_width98, height: 300, theme: theme, disabled: (SelectedItemIndex() > -1) }, value: Description" />
-        </div>
-    </div>
-</script>
-<script id="hierarchyRuleEditTmpl" type="text/html">
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName">Mapped Items</div>
-            <div data-bind="jqxDropDownList: {
-                     source: MapItems,
-                     displayMember: 'Name',
-                     valueMember: 'Value',
-                     theme: theme }">
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col l3 m6 s6">
-            <div class="FieldName">Available Sources</div>
-            <div data-bind="jqxListBox: {
-                     source: Sources,
-                     displayMember: 'Name',
-                     valueMember: 'Value',
-                     theme: theme,
-                     selectedIndex: SelectedSourceIndex,
-                     height: 125 }">
-            </div>
-        </div>
-        <div class="col l3 m6 s6">
-            <div class="FieldName">Referenced Sources</div>
-            <div data-bind="jqxListBox: {
-                     source: SelectedRule().Items,
-                     theme: theme,
-                     selectedIndex: SelectedItemIndex,
-                     displayMember: 'RuleName',
-                     valueMember: 'Value',
-                     height: 125 }">
-            </div>
-        </div>
-        <div class="col l3 m6 s6">
-            <div class="FieldName">Contexts</div>
-            <div data-bind="jqxGrid: {
-                     source: Contexts,
-                     theme: theme,
-                     width: '100%',
-                     height: 150,
-                     showfilterrow: true,
-                     filterable: true,
-                     editable: CanUpdate(),
-                     disabled: (IsLoadingContexts() || SelectedItemIndex() == -1),
-                     columns: [
-                        { text: '', dataField: 'Checked', columntype: 'checkbox', width: 25, editable: true, filtertype: 'bool', filterable: true },
-                        { text: 'Category', dataField: 'Category', width: 100, filtertype: 'checkedlist', editable: false },
-                        { text: 'Type', dataField: 'Type', width: 100, filtertype: 'checkedlist', editable: false },
-                        { text: 'Name', dataField: 'Name', editable: false }
-                     ]}">
-            </div>
-        </div>
-        <div class="col l3 m6 s6">
-            <div class="FieldName">Description</div>
-            <textarea data-bind="value: SelectedItem().Description, enable: (SelectedItemIndex() != -1 && CanUpdate())" rows="3"></textarea>
+        <div class="col s9" data-bind="visible: Visible">
+            <table class="responsive-table striped">
+                <thead>
+                    <tr style="vertical-align: top">
+                        <th style="width: 30%">2. Referenced Sources</th>
+                        <th style="width: 60px; padding-right: 5px">Sequence</th>
+                        <th style="width: 30%">Context</th>
+                        <th>Translation</th>
+                        <th style="width: 30px"></th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: Selected">
+                    <tr>
+                        <td style="vertical-align: top" data-bind="text: SourceName"></td>
+                        <td style="vertical-align: top" data-bind="text: Sequence"></td>
+                        <td style="vertical-align: top">
+                            <div data-bind="jqxListBox: {
+                                    source: Contexts,
+                                    theme: theme,
+                                    filterable: true,
+                                    searchMode: 'containsignorecase',
+                                    checkboxes: true,
+                                    displayMember: 'Path',
+                                    valueMember: 'ID',
+                                    height: 150,
+                                    width: field_width }">
+                            </div>
+                        </td>
+                        <td style="vertical-align: top">
+                            <textarea data-bind="htmlarea150: Description" style="width: 98%"></textarea>
+                        </td>
+                        <td style="vertical-align: top; text-align: center; width: 25px">
+                            <i data-bind="click: $parent.Remove" class="fa fa-lg fa-trash red-text"></i>
+                            <i data-bind="click: $parent.MoveUp" class="fa fa-lg fa-arrow-up black-text"></i>
+                            <i data-bind="click: $parent.MoveDown" class="fa fa-lg fa-arrow-down black-text"></i>
+                            @*<div data-bind="jqxButton: {theme: theme, width: 20 }, "></div>*@
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </script>

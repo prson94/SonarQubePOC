@@ -17021,235 +17021,58 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region SourceRule
+        #region MapSequence
 
-        [HttpGet, Route("SourceRules/{id:int}")]
-        public JsonNetResult GetSourceRule(int id)
+        public class MapItemsSequenceEditModel
         {
-            var sr = Company.GetById<SourceRule>(id, i => i.Contexts, i => i.Items);
-            //var srItems = Company.Filter<IntersectMapSourceRule>(i => i.SourceRuleID == id).ToList();
-
-
-            var srItems = Company.Query<dynamic>(@"select r.ID, d.Name, r.Description, r.SortOrder, d.IconForeColor, d.IconBackColor from intersectmapsourcerule r
-                                    join intersectmap m on m.id = r.intersectmapid
-                                    join intersectnode n1 on n1.id = m.subjectintersectnodeid
-                                    join cache.objectdetails d on d.object = n1.objecttype and d.objectid = n1.objectid
-                                    where r.SourceRuleID = @id", new { id = id }).ToList();
-            //srItems.ForEach(i})
-
-            srItems.ForEach(i =>
-            {
-                int myID = i.ID;
-                i.Contexts = Company.Filter<IntersectMapSourceRuleContext>(j => j.IntersectMapSourceRuleID == myID).ToList();
-            });
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    sr.Name,
-                    sr.Object,
-                    sr.ObjectID,
-                    Contexts = sr.Contexts.Select(i => new { i.Object, i.ObjectID }),
-                    Items = srItems.Select(i => new { i.Name, i.SortOrder, i.Description, i.Contexts })
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+            public List<MapItemSequenceEditModel> Items { get; set; }
         }
 
-        [HttpGet, Route("SourceRules/{target}/{targetId:int}/{type}/{id:int}")]
-        public JsonNetResult GetSourceRules(string target, int targetId, string type, int id)
+        public class MapItemSequenceEditModel
         {
-            var items = Company.Filter<SourceRule>(s => s.Object == type && s.ObjectID == id && s.AppliesToObject.ToString() == target && s.AppliesToObjectID == targetId).ToList();
-
-            items.ForEach(i =>
+            public MapItemSequenceEditModel()
             {
-                int myID = i.ID;
-                var newItems = Company.Query<IntersectMapSourceRule>(@"select r.*,n.objecttype as Object, n.ObjectID, d.Name, d.IconForeColor, d.IconBackColor
-                                                                from intersectmapsourcerule r
-                                                                join intersectmap m on m.id = r.intersectmapid
-                                                                join intersectnode n on n.id = m.subjectintersectnodeid 
-                                                                join cache.objectdetails d on d.object = n.objecttype and d.objectid = n.objectid
-                                                                where r.sourceruleid = @id"
-                                                                , new { id = myID }).ToList();
-                i.Contexts = new List<SourceRuleContext>();
+                Contexts = new List<BaseObjectModel>();
+            }
+            public int ID { get; set; }
+            public int MapItemID { get; set; }
+            public string Description { get; set; }
+            public int Sequence { get; set; }
+            public List<BaseObjectModel> Contexts { get; set; }
+        }
 
-                foreach (IntersectMapSourceRule r in i.Items)
+        [HttpGet, Route("mapsequence/{type}/{id:int}/mapitems")]
+        public JsonNetResult GetMapItemsForMapSequenceManagement(string type, int id)
+        {
+            var availableItems = Company.Query<dynamic>(
+                QueryConstants.MapItemsForMapSequenceManagement,
+                new
                 {
-                    var newItem = newItems.Where(j => j.ID == r.ID).FirstOrDefault();
-                    //var contexts = Company.IntersectMapSourceRuleContexts.Where(c => c.IntersectMapSourceRuleID == r.ID).ToList();
-                    var contexts = Company.Query<IntersectMapSourceRuleContext>(@"select intersectmapsourceruleid, d.[object] + cast(d.objectid as varchar(10)) as ID, d.[Object], d.ObjectID, cast(1 as bit) as Checked, case when objecttype = 'ArtifactType' then 'Glossary' else 'Model' end as Category, ObjectTypeName as Type, Name from cache.ObjectDetails d
-                                            join intersectmapsourcerulecontext r on r.object = d.object and r.objectid = d.objectid
-                                            where r.intersectmapsourceruleid = @id", new { id = r.ID }).ToList();
-                    r.Object = newItem.Object;
-                    r.ObjectID = newItem.ObjectID;
-                    r.Name = newItem.Name;
-                    r.IconBackColor = newItem.IconBackColor;
-                    r.IconForeColor = newItem.IconForeColor;
-                    r.Contexts.Clear();
-                    r.Contexts = contexts;
-                    if (r.Contexts == null)
-                        r.Contexts = new List<IntersectMapSourceRuleContext>();
-                    // if (r.Contexts.Count > 0)
-                    //     r.Contexts.ToList();
+                    type = new Dapper.DbString { IsAnsi = true, Value = type },
+                    id
                 }
+            );
+
+            var availableIDs = availableItems.Select(i => (int)i.ID).ToList();
+
+            var referencedItems =  Company.Filter<MapSequence>(i =>
+                availableIDs.Contains(i.MapItemID),
+                i => i.MapSequenceContexts,
+                i => i.MapItem
+            )
+            .OrderBy(i => i.Sequence)
+            .Select(i => new
+            {
+                i.ID,
+                i.MapItemID,
+                i.MapItem.TargetIntersectID,
+                i.Sequence,
+                i.Description,
+                Contexts = i.MapSequenceContexts.Select(c => new { c.Object, c.ObjectID }).ToList()
             });
 
-            return new JsonNetResult
-            {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
 
-        [HttpGet, Route("SourceRules/sources/{target}/{targetId:int}/{type}/{id:int}")]
-        public JsonNetResult GetAvailableSources(string target, int targetId, string type, int id)
-        {
-            #region Old Sql
-            //string sql = @"	
-            //                select *, row_number() over (order by [Object]) as SortOrder
-            //                from
-            //                (
-            //                select	distinct
-            //       M.ID as IntersectMapID,
-            //       R.SourceTypeName as TypeName,
-            //       R.SourceObjectName as Name,
-            //                null as Description,
-            //       R.SourceObject as [Object],
-            //       R.SourceObjectID as ObjectID,
-            //       SD.[IconBackColor],
-            //       SD.[IconForeColor]
-            //     from	IntersectMap M
-            //       inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-            //       inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-            //       inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-            //       inner join Predicate P on P.ID = M.PredicateID
-            //       inner join [cache].[Relationship] SR on SR.SourceObject = @target and SR.SourceObjectID = @targetId and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-            //       inner join [cache].[Relationship] TR on TR.SourceObject = @target and TR.SourceObjectID = @targetId and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-            //     where r.targetObject = @type and r.targetObjectID = @id) z
-            //        where z.intersectmapid not in (select intersectmapid from intersectmapsourcerule r join sourcerule s on s.id = r.sourceruleid where s.object= @target and s.objectid = @targetId)";
-
-            #endregion
-
-            #region Sql
-            string sql = @"select 
-	row_number() over (order by SourceObject) as SortOrder,
-	ID as IntersectMapID,
-	SourceTypeName as TypeName,
-	SourceObjectName as Name,
-	null as [Description],
-	SourceObject as [Object],
-	SourceObjectID as ObjectID,
-	SourceIconBackColor as IconBackColor,
-	SourceIconForeColor as IconForeColor
- from (
-	select	distinct
-			R.IntersectID,
-			M.ID,
-			M.SubjectIntersectNodeID,
-			R.SourceTypeName,
-			R.SourceType,
-			R.SourceTypeID,
-			R.SourceObjectName,
-			R.SourceObject,
-			R.SourceObjectID,
-			SD.[IconBackColor] as SourceIconBackColor,
-			SD.[IconForeColor] as SourceIconForeColor,
-			M.ObjectIntersectNodeID,
-			R.TargetTypeName,
-			R.TargetType,
-			R.TargetTypeID,
-			R.TargetObjectName,
-			R.TargetObject,
-			R.TargetObjectID,
-			TD.[IconBackColor] as TargetIconBackColor,
-			TD.[IconForeColor] as TargetIconForeColor,
-			M.PredicateID,
-			P.Name as Predicate
-	from	IntersectMap M
-			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and M.[Type] = 1
-			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			inner join Predicate P on P.ID = M.PredicateID
-			inner join [cache].[Relationship] SR on SR.SourceObject = @type and SR.SourceObjectID = @id and SR.TargetObject = R.SourceObject and SR.TargetObjectID = R.SourceObjectID
-			inner join [cache].[Relationship] TR on TR.SourceObject = @type and TR.SourceObjectID = @id and TR.TargetObject = R.TargetObject and TR.TargetObjectID = R.TargetObjectID
-	union
-	select	distinct
-			R.IntersectID,
-			M.ID,
-			M.SubjectIntersectNodeID,
-			R.SourceTypeName,
-			R.SourceType,
-			R.SourceTypeID,
-			R.SourceObjectName,
-			R.SourceObject,
-			R.SourceObjectID,
-			SD.[IconBackColor] as SourceIconBackColor,
-			SD.[IconForeColor] as SourceIconForeColor,
-			M.ObjectIntersectNodeID,
-			R.TargetTypeName,
-			R.TargetType,
-			R.TargetTypeID,
-			R.TargetObjectName,
-			R.TargetObject,
-			R.TargetObjectID,
-			TD.[IconBackColor] as TargetIconBackColor,
-			TD.[IconForeColor] as TargetIconForeColor,
-			M.PredicateID,
-			P.Name as Predicate
-	from	IntersectMap M
-			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.SourceObject = @type and R.SourceObjectID = @id and M.[Type] = 1
-			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			inner join Predicate P on P.ID = M.PredicateID
-	union
-	select	distinct
-			R.IntersectID,
-			M.ID,
-			M.SubjectIntersectNodeID,
-			R.SourceTypeName,
-			R.SourceType,
-			R.SourceTypeID,
-			R.SourceObjectName,
-			R.SourceObject,
-			R.SourceObjectID,
-			SD.[IconBackColor] as SourceIconBackColor,
-			SD.[IconForeColor] as SourceIconForeColor,
-			M.ObjectIntersectNodeID,
-			R.TargetTypeName,
-			R.TargetType,
-			R.TargetTypeID,
-			R.TargetObjectName,
-			R.TargetObject,
-			R.TargetObjectID,
-			TD.[IconBackColor] as TargetIconBackColor,
-			TD.[IconForeColor] as TargetIconForeColor,
-			M.PredicateID,
-			P.Name as Predicate
-	from	IntersectMap M
-			inner join [cache].[Relationships] R on M.SubjectIntersectNodeID = R.SourceIntersectNodeID and M.ObjectIntersectNodeID = R.TargetintersectNodeID and R.TargetObject = @type and R.TargetObjectID = @id and M.[Type] = 1
-			inner join [cache].ObjectDetails SD on SD.[Object] = R.SourceObject and SD.ObjectID = R.SourceObjectID
-			inner join [cache].ObjectDetails TD on TD.[Object] = R.TargetObject and TD.ObjectID = R.TargetObjectID
-			inner join Predicate P on P.ID = M.PredicateID
-			) z
-			where z.targetobject = @target and z.targetobjectid = @targetId";
-            #endregion
-
-            var results = Company.Query<dynamic>(sql, new { target = target, targetId = targetId, type = type, id = id }).ToList();
-
-            return new JsonNetResult
-            {
-                Data = results,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpGet, Route("SourceRules/contexts")]
-        public JsonNetResult GetContexts()
-        {
-            var countAll = Company.Query<int>(@"select (select count(*) from artifact) + (select count(*) from taxonomy)").SingleOrDefault();
-
-            var items = Company.Query<dynamic>(@"select * from
+            var contexts = Company.Query<dynamic>(@"select * from
                                                 (
                                                 select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
                                                 join artifacttype t on t.id = a.artifacttypeid
@@ -17258,216 +17081,66 @@ order by	D.Name, I.Name";
                                                 join taxonomytype t on t.id = x.taxonomytypeid
                                                 ) z
                                                 order by name").ToList();
+
             return new JsonNetResult
             {
-                Data = new { count = countAll, items = items },
+                Data = new {
+                    Available = availableItems,
+                    Referenced = referencedItems,
+                    Contexts = contexts
+                },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
 
-        [HttpGet, Route("SourceRules/contexts/{phrase}")]
-        public JsonNetResult GetContexts(string phrase)
+        [HttpPost, Route("mapsequence/{type}/{id:int}/mapitems")]
+        public JsonResult SetMapItemsForMapSequenceManagement(SystemObjects type, int id, MapItemsSequenceEditModel model)
         {
-            //var countAll = Company.Query<int>(@"select count(*) from cache.ObjectDetails where objecttype in ('ArtifactType','TaxonomyType')").SingleOrDefault();
-            phrase = '%' + phrase.Trim('%') + '%';
-            var items = Company.Query<dynamic>(@"select * from
-                                                (
-                                                select a.Name, 'Artifact|' + cast(a.id as varchar(10)) as ID, 'Glossary' as Category, t.name as Type, cast(0 as bit) as Checked from artifact a
-                                                join artifacttype t on t.id = a.artifacttypeid
-                                                union all
-                                                select x.Name, 'Taxonomy|' + cast(x.id as varchar(10)) as ID, 'Model' as Category, t.name as Type, cast(0 as bit) as Checked from taxonomy x
-                                                join taxonomytype t on t.id = x.taxonomytypeid
-                                                ) z
-                                                where name like @phrase
-                                                order by name", new { phrase = phrase }).ToList();
-            return new JsonNetResult
-            {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("SourceRules/save"), ValidateInput(false)]
-        public JsonNetResult SaveRule(SourceRule rule)
-        {
-
-            var message = "";
-            var error = false;
-
-            var items = rule.Items.ToList();
-            rule.Items = null;
-            if (rule.ID <= 0)
-                rule.ID = 0;
-            else
-                rule = Company.GetById<SourceRule>(rule.ID);
-
-            SystemObjects obj = SystemObjects.Artifact;
-
             try
             {
-                obj = (SystemObjects)Enum.Parse(typeof(SystemObjects), rule.AppliesToObject);
+                if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                model.Items.ForEach(m =>
+                {
+                    MapSequence mapSequence = null;
+                    if (m.ID > 0) {
+                        mapSequence = Company.GetById<MapSequence>(m.ID, i => i.MapSequenceContexts);
+                    }
+
+                    if (mapSequence == null)
+                    {
+                        mapSequence = new MapSequence { };
+                    }
+
+                    mapSequence.Description = m.Description;
+                    mapSequence.MapItemID = m.MapItemID;
+                    mapSequence.Sequence = m.Sequence;
+
+                    if (m.Contexts.Count > 0) {
+                        m.Contexts.ForEach(c => {
+                            mapSequence.MapSequenceContexts.Add(
+                                new MapSequenceContext {
+                                    Object = c.Object,
+                                    ObjectID = c.ObjectID
+                                }
+                            );
+                        });
+                    }
+
+                    Company.SaveOrUpdate<MapSequence>(mapSequence);
+                });
+
+                return jsonSuccess("Source Conditions successfully created.", "0", "MapSequence", "add", HttpStatusCode.Created, null);
             }
-            catch
+            catch (BaseException ex)
             {
-                error = true;
-                message += $"[{DateTime.Now}] An error occurred while trying to determine the focal object type.\n";
-                return new JsonNetResult
-                {
-                    Data = new { error, message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
             }
-
-            bool canCreate = Company.HasPermission(obj, rule.AppliesToObjectID, Claim.Create);
-            bool canUpdate = Company.HasPermission(obj, rule.AppliesToObjectID, Claim.Update);
-
-            if (rule.ID == 0 && !canCreate)
+            catch (Exception ex)
             {
-                error = true;
-                message += $"[{DateTime.Now}] You do not have permission to create a source rule on this item.\n";
-            }
-
-            if (!error && (canUpdate || canCreate))
-                foreach (var i in items)
-                {
-                    if (i.ID < 0)
-                        i.ID = 0;
-                    if (i.Contexts == null)
-                        i.Contexts = new List<IntersectMapSourceRuleContext>();
-                    if (i.Description == null)
-                        i.Description = "";
-                    var ctx = i.Contexts.ToList();
-                    i.Contexts = null;
-                    i.SourceRuleID = rule.ID;
-                    i.SourceRule = rule;
-
-                    try
-                    {
-                        Company.SaveOrUpdate(i);
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while attempting to save the intersect map source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-                        continue;
-                    }
-
-                    var contexts = Company.Filter<IntersectMapSourceRuleContext>(c => c.IntersectMapSourceRuleID == i.ID).ToList();
-                    foreach (var c in ctx)
-                    {
-                        c.IntersectMapSourceRuleID = i.ID;
-                        c.IntersectMapSourceRule = i;
-                        if (contexts.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                            Company.Set<IntersectMapSourceRuleContext>().Add(c);
-                    }
-
-                    foreach (var c in contexts)
-                    {
-                        if (ctx.Count(r => r.Object == c.Object && r.ObjectID == c.ObjectID) < 1)
-                            Company.Set<IntersectMapSourceRuleContext>().Remove(c);
-                    }
-                    try
-                    {
-                        Company.SaveChanges();
-                        message = rule.ID.ToString();
-                    }
-                    catch (Exception ex)
-                    {
-                        error = true;
-                        message += $"[{DateTime.Now}] An error occurred while attempting to add or remove source rule contexts: {ex.Message}\n{ex.StackTrace}\n\n";
-                    }
-
-                }
-
-            if (!error)
-            {
-                try
-                {
-                    Company.SaveOrUpdate(rule);
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"[{DateTime.Now}] An error occurred while attempting to save changes to the source rule: {ex.Message}\n{ex.StackTrace}\n\n";
-                }
-                //delete rule items which no longer exist
-                var ids = Company.Query<int>("select id from intersectmapsourcerule where sourceruleid = @id", new { id = rule.ID });
-                foreach (var i in ids.Where(j => !rule.Items.Select(k => k.ID).Contains(j)))
-                {
-                    //delete contexts first
-
-                    Company.Filter<IntersectMapSourceRuleContext>(r => r.IntersectMapSourceRuleID == i).ToList().ForEach(j =>
-                    {
-                        Company.Set<IntersectMapSourceRuleContext>().Remove(j);
-                    });
-                    Company.Delete(Company.GetById<IntersectMapSourceRule>(i));
-                }
-            }
-
-            return new JsonNetResult
-            {
-                Data = new { error, message },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpDelete, Route("SourceRules/delete"), ValidateInput(false)]
-        public JsonNetResult DeleteSourceRule(int id)
-        {
-            var rule = Company.GetById<SourceRule>(id);
-            var message = "";
-            var error = false;
-
-            if (rule == null)
-            {
-                message += "An error occurred, source rule id not found.";
-                error = true;
-                return new JsonNetResult
-                {
-                    Data = new { error, message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-            else
-            {
-                try
-                {
-                    var contexts = Company.Filter<SourceRuleContext>(c => c.SourceRuleID == rule.ID);
-                    var intersectSourceRules = Company.Filter<IntersectMapSourceRule>(i => i.SourceRuleID == rule.ID).ToList();
-
-
-
-
-                    var imContexts = new List<IntersectMapSourceRuleContext>();
-
-
-                    foreach(var i in intersectSourceRules)
-                    {
-                        imContexts.AddRange(Company.Filter<IntersectMapSourceRuleContext>(c => c.IntersectMapSourceRuleID == i.ID));
-                    }
-                   
-
-                    Company.SourceRuleContexts.RemoveRange(contexts);
-                    Company.IntersectMapSourceRuleContexts.RemoveRange(imContexts);
-                    Company.IntersectMapSourceRules.RemoveRange(intersectSourceRules);
-                    Company.SaveChanges();
-                    
-                    Company.Delete(rule);
-                    
-                }
-                catch (Exception ex)
-                {
-                    error = true;
-                    message += $"An error occurred: {ex.Message}\n\n{ex.StackTrace}";
-                }
-                return new JsonNetResult
-                {
-                    Data = new { error, message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 

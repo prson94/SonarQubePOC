@@ -12,10 +12,10 @@ namespace d360.core.entities
         public string Name { get; set; }
 
         [DataMember]
-        public int DatabaseServerID { get; set; }
+        public string Status { get; set; }
 
         [DataMember]
-        public string Status { get; set; }
+        public int DatabaseServerID { get; set; }
 
         [DataMember]
         public bool SynchAgentLog { get; set; }
@@ -28,6 +28,9 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("CompanyID")]
         public virtual ICollection<CompanyDomainSetting> CompanyDomainSettings { get; set; }
+
+        [IgnoreDataMember, ForeignKey("CompanyID")]
+        public virtual ICollection<CompanyFeature> CompanyFeatures { get; set; }
 
         [IgnoreDataMember, ForeignKey("CompanyID")]
         public virtual ICollection<CompanySetting> CompanySettings { get; set; }

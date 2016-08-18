@@ -21761,15 +21761,13 @@ fieldset legend {
 }
 .container-fluid {
   clear: both;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 .panel-heading .fa {
   font-size: 1.33333333em;
   color: #51a6dc;
   margin-right: 10px;
-}
-.container-fluid {
-  padding-left: 0px !important;
-  padding-right: 0px !important;
 }
 .panel-grid-body {
   padding: 0px !important;

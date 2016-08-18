@@ -29,7 +29,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
             config.Queues.MaxDequeueCount = 5;
             config.Queues.MaxPollingInterval = TimeSpan.FromSeconds(15);
 #else
-            config.Queues.BatchSize = 8;
+            config.Queues.BatchSize = 3;
             config.Queues.MaxDequeueCount = 3;
             config.Queues.MaxPollingInterval = TimeSpan.FromSeconds(30);
 #endif
