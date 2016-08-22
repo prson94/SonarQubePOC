@@ -5692,19 +5692,24 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             list.Add(new EditableField { FieldName = "FusionTypeID", FieldType = DataType.Hidden.ToString(), Value = ft.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = fusion.GetName(i => i.Name), FieldDescription = fusion.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
 
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Manual", Name = fusion.GetName(i => i.Manual), FieldDescription = fusion.GetDescription(i => i.Manual), FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Enabled", Name = fusion.GetName(i => i.Enabled), FieldDescription = fusion.GetDescription(i => i.Enabled), FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 3, FieldName = "LockPromotedItems", Name = fusion.GetName(i => i.LockPromotedItems), FieldDescription = fusion.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = fusion.GetName(i => i.Description), FieldDescription = fusion.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
+
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Manual", Name = fusion.GetName(i => i.Manual), FieldDescription = fusion.GetDescription(i => i.Manual), FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, FieldName = "Enabled", Name = fusion.GetName(i => i.Enabled), FieldDescription = fusion.GetDescription(i => i.Enabled), FieldType = DataType.Boolean.ToString() });
 
             var intervalTypes = new List<SelectListItem>();
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });
             //intervalTypes.Add(new SelectListItem { Text = "Day(s)", Value = "1" });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "IntervalType", Name = fusion.GetName(i => i.IntervalType), FieldDescription = fusion.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes });
-            list.Add(new EditableField { Row = 3, Column = 2, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 1, FieldName = "IntervalType", Name = fusion.GetName(i => i.IntervalType), FieldDescription = fusion.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes });
+            list.Add(new EditableField { Row = 4, Column = 2, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString() });
 
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "Description", Name = fusion.GetName(i => i.Description), FieldDescription = fusion.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, ft).ToList(), 5);
+            list.Add(new EditableField { Row = 5, Column = 3, FieldName = "LockPromotedItems", Name = fusion.GetName(i => i.LockPromotedItems), FieldDescription = fusion.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString() });
+
+            var owners = Company.GetFusionOwnerOptions().Select(i => new SelectListItem { Text = i.Name, Value = $"{i.ID}", Selected = false }).ToList();
+            list.Add(new EditableField { Row = 6, Column = 1, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
+            
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, ft).ToList(), 7);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -5724,24 +5729,35 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         public JsonResult Fusion_EditFields(int id)
         {
             var list = new List<EditableField>();
-            var a = Company.GetById<Fusion>(id);
+            var a = Company.GetById<Fusion>(id, i => i.FusionOwners);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = a.GetName(i => i.Name), FieldDescription = a.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Manual", Name = a.GetName(i => i.Manual), FieldDescription = a.GetDescription(i => i.Manual), FieldType = DataType.Boolean.ToString(), Value = a.Manual.ToString().ToLower() });
-            list.Add(new EditableField { Row = 2, Column = 2, FieldName = "Enabled", Name = a.GetName(i => i.Enabled), FieldDescription = a.GetDescription(i => i.Enabled), FieldType = DataType.Boolean.ToString(), Value = a.Enabled.ToString().ToLower() });
-            list.Add(new EditableField { Row = 2, Column = 3, FieldName = "LockPromotedItems", Name = a.GetName(i => i.LockPromotedItems), FieldDescription = a.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString(), Value = a.LockPromotedItems.ToString().ToLower() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Manual", Name = a.GetName(i => i.Manual), FieldDescription = a.GetDescription(i => i.Manual), FieldType = DataType.Boolean.ToString(), Value = a.Manual.ToString().ToLower() });
+            list.Add(new EditableField { Row = 3, Column = 2, FieldName = "Enabled", Name = a.GetName(i => i.Enabled), FieldDescription = a.GetDescription(i => i.Enabled), FieldType = DataType.Boolean.ToString(), Value = a.Enabled.ToString().ToLower() });
 
             var intervalTypes = new List<SelectListItem>();
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "IntervalType", Name = a.GetName(i => i.IntervalType), FieldDescription = a.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes, Value = a.IntervalType.HasValue ? ((int)a.IntervalType.Value).ToString() : "" });
-            list.Add(new EditableField { Row = 3, Column = 2, FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") });
-            list.Add(new EditableField { Row = 3, Column = 3, FieldName = "ForceRefresh", Name = "Force Refresh on Next Run?", FieldDescription = "Force the local agent to perform a full refresh of this configuration on the next run.", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 1, FieldName = "IntervalType", Name = a.GetName(i => i.IntervalType), FieldDescription = a.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes, Value = a.IntervalType.HasValue ? ((int)a.IntervalType.Value).ToString() : "" });
+            list.Add(new EditableField { Row = 4, Column = 2, FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") });
 
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "Description", Name = a.GetName(i => i.Description), FieldDescription = a.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField { Row = 5, Column = 1, FieldName = "ForceRefresh", Name = "Force Refresh on Next Run?", FieldDescription = "Force the local agent to perform a full refresh of this configuration on the next run.", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 5, Column = 2, FieldName = "LockPromotedItems", Name = a.GetName(i => i.LockPromotedItems), FieldDescription = a.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString(), Value = a.LockPromotedItems.ToString().ToLower() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 5);
+            var owners = Company.GetFusionOwnerOptions()
+                .Select(i => new SelectListItem
+                {
+                    Text = i.Name,
+                    Value = $"{i.ID}",
+                    Selected = a.FusionOwners.Any(c => c.ID == i.ID)
+                }).ToList();
+            list.Add(new EditableField { Row = 6, Column = 1, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
+
+
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, a.FusionTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Fusion, id).ToList(), 7);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -5757,6 +5773,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             if (type == null) return HttpNotFound();
             var model = new EditableForm
             {
+                FormSize = "small",
                 Context = ContextList.Fusion,
                 FieldUri = string.Format("/form/Fusion_AddFields?ft={0}", typeID),
                 FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, type.Name),
@@ -5779,6 +5796,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var type = Company.GetById<FusionType>(typeID);
                 if (type == null) throw new NotFoundException("fusion type");
 
+                var rawOwners = parseTextField(form, "Owners");
+                if (string.IsNullOrEmpty(rawOwners))
+                    return jsonException("No selected owners", HttpStatusCode.BadRequest);
+
+                var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
+
+                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+
                 var model = new Fusion
                 {
                     FusionType = type,
@@ -5789,7 +5814,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     IntervalType = (JobIntervalType)Enum.Parse(typeof(JobIntervalType), form["IntervalType"]),
                     Interval = parseIntField(form, "Interval"),
                     Manual = parseBooleanField(form, "Manual"),
-                    Name = parseTextField(form, "Name", null, true)//,
+                    Name = parseTextField(form, "Name", null, true),
+                    FusionOwners = ownerArtifacts
                 };
 
                 // Dynamic fields
@@ -5876,6 +5902,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             if (a == null) return HttpNotFound();
             var model = new EditableForm
             {
+                FormSize = "small",
                 Context = ContextList.Fusion,
                 FieldUri = string.Format("/form/Fusion_EditFields?id={0}", id),
                 FormTitle = "Edit " + a.Name,
@@ -5893,8 +5920,16 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             {
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
 
-                var model = Company.GetById<Fusion>(parseIntField(form, "ID"));
+                var model = Company.GetById<Fusion>(parseIntField(form, "ID"), i => i.FusionOwners);
                 if (model == null) throw new NotFoundException("configuration");
+
+                var rawOwners = parseTextField(form, "Owners");
+                if (string.IsNullOrEmpty(rawOwners))
+                    return jsonException("No selected owners", HttpStatusCode.BadRequest);
+
+                var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
+
+                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
 
                 model.Description = parseTextField(form, "Description");
                 model.Enabled = parseBooleanField(form, "Enabled");
@@ -5905,6 +5940,30 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 model.Interval = parseIntField(form, "Interval");
                 model.ForceRefresh = parseBooleanField(form, "ForceRefresh");
 
+                #region  See which ones to add.
+                ownerArtifacts.ForEach(no =>
+                {
+                    if (!model.FusionOwners.Any(co => co.ID == no.ID))
+                    {
+                        model.FusionOwners.Add(no);
+                    }
+                });
+                #endregion
+
+                #region See which ones to delete.
+                var ownersToRemove = new List<Artifact>();
+                foreach(var co in model.FusionOwners)
+                {
+                    if (!ownerArtifacts.Any(no => no.ID == co.ID))
+                    {
+                        ownersToRemove.Add(co);
+                    }
+                }
+                ownersToRemove.ForEach(o =>
+                {
+                    model.FusionOwners.Remove(o);
+                });
+                #endregion
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
@@ -5912,206 +5971,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Company.SaveOrUpdate<Fusion>(model, fields);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditTechnicalMapping(int id)
-        {
-            var a = Company.GetById<MapRuleItem>(id);
-            if (a == null) return HttpNotFound();
-
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionTechnicalMapping,
-                FieldUri = string.Format("/form/FusionTechnicalMapping_EditMapping?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Technical Mapping"),
-                FormUri = "/form/EditTechnicalMapping",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditTechnicalMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-
-                var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("configuration");
-
-                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
-
-                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
-
-                var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
-                var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
-
-                var sourceFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == sourceFusionTextPath).FirstOrDefault();
-                var targetFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == targetFusionTextPath).FirstOrDefault();
-
-                if (sourceFusionAttribute == null || targetFusionAttribute == null) throw new Exception("Invalid fusion textpath specified");
-
-                var sourceArtifactID = parseNullableIntField(form, "SourceArtifact");
-
-                if (sourceArtifactID.HasValue)
-                {
-                    model.SourceOwner = "Artifact";
-                    model.SourceOwnerID = sourceArtifactID.GetValueOrDefault();
-                }
-
-                model.SourceFusionAttributeID = sourceFusionAttribute.ID;
-
-                var targetArtifactID = parseNullableIntField(form, "TargetArtifact");
-                
-                if (targetArtifactID.HasValue)
-                {                    
-                    model.TargetOwner = "Artifact";
-                    model.TargetOwnerID = targetArtifactID.GetValueOrDefault();
-                }
-                                
-                model.TargetFusionAttributeID = targetFusionAttribute.ID;
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-                
-                Company.SaveOrUpdate<MapRuleItem>(model);
-
-                //delete old mapruleitemmaprule records
-                Company.Query<int>(@"delete [dbo].[mapruleitemmaprule] where [mapruleitemid] = @id", new { id = model.ID });
-
-                //add new ones
-                foreach (var rule in existingRuleArray)
-                {
-                    // add mapping
-                    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
-                }
-
-                return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult AddTechnicalMapping()
-        {            
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionTechnicalMapping,
-                FieldUri = string.Format("/form/FusionTechnicalMapping_AddMapping"),
-                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Technical Mapping"),
-                FormUri = "/form/AddTechnicalMapping",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-        
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddTechnicalMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                                
-                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
-
-                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
-
-                var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
-                var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
-
-                var sourceFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == sourceFusionTextPath).FirstOrDefault();
-                var targetFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == targetFusionTextPath).FirstOrDefault();
-
-                if (sourceFusionAttribute == null || targetFusionAttribute == null) throw new Exception("Invalid fusion textpath specified");
-
-                var model = new MapRuleItem
-                {
-                    SourceOwner = "Artifact",
-                    SourceOwnerID = parseIntField(form, "SourceArtifact"),
-                    SourceFusionAttributeID = sourceFusionAttribute.ID,
-                    TargetOwner = "Artifact",
-                    TargetOwnerID = parseIntField(form, "TargetArtifact"),
-                    TargetFusionAttributeID = targetFusionAttribute.ID,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.SaveOrUpdate<MapRuleItem>(model);
-
-                foreach (var rule in existingRuleArray)
-                {
-                    // add mapping
-                    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
-                }                
-
-                return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteTechnicalMapping(int id)
-        {
-            var a = Company.GetById<MapRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "FusionTechnicalMapping",
-                FieldUri = string.Format("/form/FusionTechincalMapping_DeleteFields?ID={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "the selected mapping"),
-                FormUri = "/form/DeleteTechnicalMapping",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteTechnicalMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-
-                var mapRuleItemId = parseIntField(form, "ID");
-
-                var model = Company.GetById<MapRuleItem>(mapRuleItemId);
-                if (model == null) throw new NotFoundException("configuration");
-
-                //delete the map rule item map rule record
-                Company.Query<int>(@"delete [dbo].[mapruleitemmaprule] where [mapruleitemid] = @id", new { id = model.ID });
-                                
-                //delete the map rule item
-                Company.Delete<MapRuleItem>(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -6158,61 +6017,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Data = types,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
-        }
-                
-        public JsonResult FusionTechincalMapping_DeleteFields(int ID)
-        {
-            var list = new List<EditableField>();
-
-           // if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
-             //   return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = ID.ToString() });
-            
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        public JsonResult FusionTechnicalMapping_EditMapping(int id)
-        {
-            var a = Company.GetById<MapRuleItem>(id);
-            if (a == null) throw new Exception("Error cannot find technical mapping.");
-
-            var list = new List<EditableField>();
-
-            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            types.Insert(0, new SelectListItem { Text = "", Value = "" });
-                        
-            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation??"N/A"), Value = i.ID.ToString(), Selected = a.MapRules.Any(c=>c.ID == i.ID) }).ToList();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.SourceOwner == "Artifact" ? a.SourceOwnerID.ToString() : "") });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.SourceFusionAttribute.TextPath, TypeaheadUri = "/api/fusion/textpathautocomplete" });
-
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.TargetOwner == "Artifact" ? a.TargetOwnerID.ToString() : "") });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.TargetFusionAttribute.TextPath, TypeaheadUri = "/api/fusion/textpathautocomplete" });
-            
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        public JsonResult FusionTechnicalMapping_AddMapping()
-        {
-            var list = new List<EditableField>();
-
-            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-
-            var rules = Company.MapRules.OrderBy(x=>x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}",i.ID, i.Transformation ?? "N/A"), Value = i.ID.ToString() }).ToList();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString(), TypeaheadUri= "/api/fusion/textpathautocomplete" });
-
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), TypeaheadUri = "/api/fusion/textpathautocomplete" });
-                        
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult FusionFilter_DeleteFields(int f, int a)
@@ -11759,6 +11563,459 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
         }
 
         #endregion
+
+        #endregion
+
+        #region MapRule
+
+        #region Field Generation
+
+        public JsonResult MapRule_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            // if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
+            //   return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult MapRule_EditFields(int id)
+        {
+            var a = Company.GetById<MapRule>(id);
+            if (a == null) throw new Exception("Error cannot find rule.");
+
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Html.ToString(), Value = a.Transformation });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult MapRule_AddFields()
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Transformation", Name = "Transformation", FieldType = DataType.Html.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult AddMapRule()
+        {
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRule,
+                FieldUri = $"/form/MapRule_AddFields",
+                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Rule"),
+                FormUri = "/form/AddMapRule",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddMapRule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var transformation = parseTextField(form, "Transformation");
+
+                var model = new MapRule
+                {
+                    Transformation = transformation
+                };
+
+                Company.SaveOrUpdate<MapRule>(model);
+
+                return jsonSuccess("successfully created rule.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeleteMapRule(int id)
+        {
+            var a = Company.GetById<MapRule>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRule,
+                FieldUri = $"/form/MapRule_DeleteFields?id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule"),
+                FormUri = "/form/DeleteMapRule",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteMapRule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var mapRuleID = parseIntField(form, "ID");
+
+                var model = Company.GetById<MapRule>(mapRuleID);
+                if (model == null) throw new NotFoundException("configuration");
+
+                //delete the map rule item map rule record
+                Company.Query<int>(@"delete MapRuleItemMapRule where MapRuleID = @id", new { id = model.ID });
+                Company.Query<int>(@"delete MapRuleMap where MapRuleID = @id", new { id = model.ID });
+
+                //delete the map rule item
+                Company.Delete<MapRule>(model);
+
+                return jsonSuccess("Rule successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditMapRule(int id)
+        {
+            var a = Company.GetById<MapRule>(id);
+            if (a == null) return HttpNotFound();
+
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRule,
+                FieldUri = $"/form/MapRule_EditFields?id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Rule"),
+                FormUri = "/form/EditMapRule",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditMapRule(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("rule");
+
+                var model = Company.GetById<MapRule>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("rule");
+
+                var transformation = parseTextField(form, "Transformation");
+                model.Transformation = transformation;
+
+                Company.SaveOrUpdate<MapRule>(model);
+
+                return jsonSuccess("Successfully updated rule.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        #endregion
+
+        #region MapRuleItem
+
+        #region Field Generation
+
+        public JsonResult MapRuleItem_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            // if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Delete))
+            //   return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult MapRuleItem_EditFields(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) throw new Exception("Error cannot find technical mapping.");
+
+            var list = new List<EditableField>();
+
+            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+            types.Insert(0, new SelectListItem { Text = "", Value = "" });
+
+            var rules = Company.MapRules.OrderBy(x => x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation ?? "N/A"), Value = i.ID.ToString(), Selected = a.MapRules.Any(c => c.ID == i.ID) }).ToList();
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.SourceOwner == "Artifact" ? a.SourceOwnerID.ToString() : "") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.SourceFusionAttribute.TextPath, TypeaheadUri = "/api/fusion/textpathautocomplete" });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types, Value = (a.TargetOwner == "Artifact" ? a.TargetOwnerID.ToString() : "") });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), Value = a.TargetFusionAttribute.TextPath, TypeaheadUri = "/api/fusion/textpathautocomplete" });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult MapRuleItem_AddFields(int id)
+        {
+            var list = new List<EditableField>();
+
+            var types = Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true).OrderBy(i => i.Name).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+
+            var rules = Company.MapRules.OrderBy(x => x.Transformation).AsEnumerable().Select(i => new SelectListItem { Text = string.Format("ID:{0} - Transformation Name:{1}", i.ID, i.Transformation ?? "N/A"), Value = i.ID.ToString() }).ToList();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "SourceArtifact", Name = "Source Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "SourceFusionAttribute", Name = "Source Fusion Attribute", FieldType = DataType.Text.ToString(), TypeaheadUri = "/api/fusion/textpathautocomplete" });
+
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "TargetArtifact", Name = "Target Artifact", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TargetFusionAttribute", Name = "Target Fusion Attribute", FieldType = DataType.Text.ToString(), TypeaheadUri = "/api/fusion/textpathautocomplete" });
+
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "TargetRule", Name = "Map Rule", FieldType = DataType.Lookup.ToString(), Items = rules, MultiSelect = true, Value = id.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">The ID of the Map Rule we are adding this item to.</param>
+        /// <returns></returns>
+        public ActionResult AddMapRuleItem(int id)
+        {            
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRuleItem,
+                FieldUri = $"/form/MapRuleItem_AddFields?id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Add_Generic_Title, "Rule Item"),
+                FormUri = "/form/AddMapRuleItem",
+                FormMethod = "POST"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+        
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddMapRuleItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+                                
+                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
+
+                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
+
+                var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
+                var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
+
+                var sourceFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == sourceFusionTextPath).FirstOrDefault();
+                var targetFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == targetFusionTextPath).FirstOrDefault();
+
+                if (sourceFusionAttribute == null || targetFusionAttribute == null) throw new Exception("Invalid fusion textpath specified");
+
+                var model = new MapRuleItem
+                {
+                    SourceOwner = "Artifact",
+                    SourceOwnerID = parseIntField(form, "SourceArtifact"),
+                    SourceFusionAttributeID = sourceFusionAttribute.ID,
+                    TargetOwner = "Artifact",
+                    TargetOwnerID = parseIntField(form, "TargetArtifact"),
+                    TargetFusionAttributeID = targetFusionAttribute.ID,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                Company.SaveOrUpdate<MapRuleItem>(model);
+
+                foreach (var rule in existingRuleArray)
+                {
+                    // add mapping
+                    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
+                }                
+
+                return jsonSuccess("successfully created mapping.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult DeleteMapRuleItem(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) return HttpNotFound();
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRuleItem,
+                FieldUri = $"/form/MapRuleItem_DeleteFields?id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "Rule Item"),
+                FormUri = "/form/DeleteMapRuleItem",
+                FormMethod = "DELETE"
+            };
+
+            return PartialView("DeleteForm", model);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteMapRuleItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var mapRuleItemId = parseIntField(form, "ID");
+
+                var model = Company.GetById<MapRuleItem>(mapRuleItemId);
+                if (model == null) throw new NotFoundException("configuration");
+
+                //delete the map rule item map rule record
+                Company.Query<int>(@"delete MapRuleItemMapRule where MapRuleItemID = @id", new { id = model.ID });
+                Company.Query<int>(@"delete MapRuleItemMapItem where MapRuleItemID = @id", new { id = model.ID });
+
+                //delete the map rule item
+                Company.Delete<MapRuleItem>(model);
+                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public ActionResult EditMapRuleItem(int id)
+        {
+            var a = Company.GetById<MapRuleItem>(id);
+            if (a == null) return HttpNotFound();
+
+            var model = new EditableForm
+            {
+                Context = ContextList.MapRuleItem,
+                FieldUri = $"/form/MapRuleItem_EditFields?id={id}",
+                FormTitle = string.Format(Resources.FormInfo.Edit_Generic_Title, "Rule Item"),
+                FormUri = "/form/EditMapRuleItem",
+                FormMethod = "PUT"
+            };
+
+            return PartialView("EditableForm", model);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditMapRuleItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("configuration");
+
+                var model = Company.GetById<MapRuleItem>(parseIntField(form, "ID"));
+                if (model == null) throw new NotFoundException("configuration");
+
+                var existingRuleArray = parseTextField(form, "TargetRule").Split(',').Select(Int32.Parse).ToList();
+
+                if (!existingRuleArray.Any()) throw new Exception("Invalid Rule");
+
+                var sourceFusionTextPath = parseTextField(form, "SourceFusionAttribute");
+                var targetFusionTextPath = parseTextField(form, "TargetFusionAttribute");
+
+                var sourceFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == sourceFusionTextPath).FirstOrDefault();
+                var targetFusionAttribute = Company.Filter<FusionAttribute>(i => i.TextPath == targetFusionTextPath).FirstOrDefault();
+
+                if (sourceFusionAttribute == null || targetFusionAttribute == null) throw new Exception("Invalid fusion textpath specified");
+
+                var sourceArtifactID = parseNullableIntField(form, "SourceArtifact");
+
+                if (sourceArtifactID.HasValue)
+                {
+                    model.SourceOwner = "Artifact";
+                    model.SourceOwnerID = sourceArtifactID.GetValueOrDefault();
+                }
+
+                model.SourceFusionAttributeID = sourceFusionAttribute.ID;
+
+                var targetArtifactID = parseNullableIntField(form, "TargetArtifact");
+                
+                if (targetArtifactID.HasValue)
+                {                    
+                    model.TargetOwner = "Artifact";
+                    model.TargetOwnerID = targetArtifactID.GetValueOrDefault();
+                }
+                                
+                model.TargetFusionAttributeID = targetFusionAttribute.ID;
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+                
+                Company.SaveOrUpdate<MapRuleItem>(model);
+
+                //delete old mapruleitemmaprule records
+                //Company.Query<int>(@"delete [dbo].[mapruleitemmaprule] where [mapruleitemid] = @id", new { id = model.ID });
+
+                //add new ones
+                //foreach (var rule in existingRuleArray)
+                //{
+                //    // add mapping
+                //    Company.Query<int>(@"insert [dbo].[mapruleitemmaprule] (mapruleid,mapruleitemid) values(@ruleId, @itemId)", new { itemId = model.ID, ruleId = rule });
+                //}
+
+                return jsonSuccess("Successfully updated rule item.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         #endregion
 

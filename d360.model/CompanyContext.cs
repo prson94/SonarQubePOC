@@ -2438,17 +2438,18 @@ order by Name", new { workflowType, type, id });
             //{
             //    i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
             //});
-            modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
-            {
+
+            modelBuilder.Entity<Fusion>().HasMany<Artifact>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
+                i.MapLeftKey("FusionID").MapRightKey("ArtifactID").ToTable("FusionOwner");
+            });
+            modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i => {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
             });
-            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
-            {
+            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i => {
                 i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
             });
 
-            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i =>
-            {
+            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i => {
                 i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 

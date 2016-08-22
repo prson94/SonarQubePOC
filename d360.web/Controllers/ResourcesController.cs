@@ -15,6 +15,8 @@ using System.Net;
 using Newtonsoft.Json;
 using d360.core.enums;
 using d360.core.entities.Views;
+using SpreadsheetLight;
+using System.IO;
 
 namespace d360.web.Models
 {
@@ -89,6 +91,96 @@ namespace d360.web.Controllers
             }
 
             return Redirect(string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), size));
+        }
+
+        #endregion
+
+        #region Exports
+
+        [Route("{resourceID:int}/following/{type}/{id:int}.xlsx")]
+        public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
+        {
+            var list = Company.Query<dynamic>(@"
+select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
+from FollowDetail
+where ResourceID = @r and Type = @t and TypeID = @i
+order by Name", new { r = resourceID, t = new Dapper.DbString { Value = type, IsAnsi = true }, i = id });
+
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            int r = 1;
+
+            #region Header
+
+            document.SetCellValue(r, 1, "Name");
+            document.SetCellValue(r, 2, "Current Score");
+
+            #endregion
+
+
+            foreach (var item in list)
+            {
+                r++;
+                document.SetCellValue(r, 1, item.Name);
+                document.SetCellValue(r, 2, (item.CurrentScore != null) ? item.CurrentScore.ToString() : "");
+            }
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Followed Items.xlsx");
+        }
+
+        [Route("{resourceID:int}/ownership/{type}/{id:int}.xlsx")]
+        public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id)
+        {
+            List<ResponsibilityDetailForResource> list = null;
+
+            if (type == "Policy" || type == "Rule")
+            {
+                list = Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type).OrderBy(i => i.ObjectName).ToList();
+            }
+            else
+            {
+                list = Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type && i.ObjectTypeID == id).OrderBy(i => i.ObjectName).ToList();
+            }
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            int r = 1;
+
+            #region Header
+
+            document.SetCellValue(r, 1, "Type");
+            document.SetCellValue(r, 2, "Name");
+            document.SetCellValue(r, 3, "Role");
+            document.SetCellValue(r, 4, "Score");
+
+            #endregion
+
+
+            foreach (var item in list)
+            {
+                r++;
+                document.SetCellValue(r, 1, item.ObjectTypeName);
+                document.SetCellValue(r, 2, item.ObjectName);
+                document.SetCellValue(r, 3, item.Role);
+                document.SetCellValue(r, 4, item.CurrentScore.HasValue ? item.CurrentScore.Value.ToString() : "");
+            }
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Owned Items.xlsx");
         }
 
         #endregion

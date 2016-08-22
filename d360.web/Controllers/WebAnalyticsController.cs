@@ -1,4 +1,6 @@
 ﻿using d360.model;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,22 +30,49 @@ namespace d360.web.Controllers
 
         #endregion
 
-        public class WebActivityModel
+        public class WebActivityEntity : TableEntity
         {
+
             public string Activity { get; set; }
+
             public int ObjectId { get; set; }
+
             public string ObjectName { get; set; }
+
+            public int ResourceID { get; set; }
+
+            public DateTime Date { get; set; }
+
+            public string IP { get; set; }
         }
 
         
         [Route("LogActivity"), HttpPost()]
-        public async Task PostLogActivity(WebActivityModel value)
+        public async Task PostLogActivity(WebActivityEntity value)
         {
             //write the activity somewhere
             //Company.CurrentResourceID - current user
             //Company.CurrentCompanyID - current company
             //DateTime.UtcNow - current time
             //GetClientIp - client IP Address
+
+            value.ResourceID = Company.CurrentResourceID;
+            value.Date = DateTime.UtcNow;
+            value.IP = GetClientIp(Request);
+
+            var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
+
+            var tableClient = storageAccount.CreateCloudTableClient();
+
+            var table = tableClient.GetTableReference($"WebLogs_{Company.CurrentCompanyID}");
+            table.CreateIfNotExists();
+
+            var insertOperation = TableOperation.Insert(value);
+
+            await table.ExecuteAsync(insertOperation);
+
+            //var retrieveOperation = TableOperation.Retrieve<customerentity>("Harp", "Walter");
+            //var result = await table.ExecuteAsync(retrieveOperation);
         }
 
         private string GetClientIp(HttpRequestMessage request = null)

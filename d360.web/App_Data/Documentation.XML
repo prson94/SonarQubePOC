@@ -2397,6 +2397,19 @@
         <member name="M:d360.web.Controllers.FormController.LookupType_EditFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.AddMapRule">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.AddMapRuleItem(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="id">The ID of the Map Rule we are adding this item to.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Policy_DeleteFields(System.Int32)">
             <param name="id">PolicyID</param>
         </member>
@@ -2545,6 +2558,12 @@
             </summary>
             <param name="id">The Configuration ID</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.FusionController.GetConfigurationsByType(System.Int32)">
+            <summary>
+            Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>A list of available fusion configurations.</returns>
         </member>
         <member name="T:d360.web.Controllers.RelationsController.HierarchyViewModel">
             <summary>

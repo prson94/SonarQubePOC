@@ -69,6 +69,9 @@ namespace d360.core.entities
         [ForeignKey("ParentID"), IgnoreDataMember]
         public virtual ICollection<Artifact> Children { get; set; }
 
+        [IgnoreDataMember]
+        public virtual ICollection<Fusion> OwnedFusions { get; set; }
+
         #endregion
 
         public DateTime? UpdatedOn { get; set; }

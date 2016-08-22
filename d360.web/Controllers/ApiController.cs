@@ -626,18 +626,20 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", width = calculateStaticColumnWidth(23, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled", width = calculateStaticColumnWidth(8, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = "Owners", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.COLUMN_TYPE_STRING, datafield = "Owners", width = calculateStaticColumnWidth(30, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "Enabled", type = "boolean" });
+                    fields.Add(new GridField { name = "Owners", type = "string" });
                     break;
                     #endregion
                 case SystemObjects.ResourceType:
                     #region
-                    staticFieldCount = 5;
-                    remainingWidth = 34;
+                    staticFieldCount = 6;
+                    remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName", width = calculateStaticColumnWidth(13, dynamicFieldWidth, remainingWidth, staticFieldCount) });
@@ -645,9 +647,11 @@ where   h.ID <> @t order by h.[Level] desc;
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.DateLastLoggedIn_Name, datafield = "DateLastLoggedIn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
+                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, width = calculateStaticColumnWidth(7, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() { "Active", "Disabled" }, width = calculateStaticColumnWidth(4, dynamicFieldWidth, remainingWidth, staticFieldCount) });
 
-                    fields.Add(new GridField { name = "ResourceID", type = "number" });
+                    fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
+                    fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Email", type = "string" });
                     fields.Add(new GridField { name = "FirstName", type = "string" });
                     fields.Add(new GridField { name = "LastName", type = "string" });
@@ -1170,7 +1174,7 @@ where   h.ID <> @t order by h.[Level] desc;
                             var fusion = Company.GetById<Fusion>(id, i => i.FusionType.FusionAttributeTypes);
                             //list.Add(new PageActionItem { Context = "FusionConfigurationFilters", Icon = "filter", Title = "Filters", Uri = string.Format("/overlays/FusionConfigurationFilters?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "history", Title = "History", Uri = string.Format("/overlays/FusionConfigurationHistory?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
-                            list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "bolt", Title = "Ownership Rules", Uri = string.Format("/overlays/FusionConfigurationOwnershipRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
+                            //list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "bolt", Title = "Ownership Rules", Uri = string.Format("/overlays/FusionConfigurationOwnershipRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //old promotion to be removed
                             //list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
@@ -2163,7 +2167,7 @@ where   h.ID <> @t order by h.[Level] desc;
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() //async System.Threading.Tasks.Task<IEnumerable<MapRuleItemDetail>>
         {
             //return await Company.MapRuleItemDetails.;
-            return Company.MapRuleItemDetails.AsQueryable();
+            return Company.Table<MapRuleItemDetail>();
         }
 
         [Route("fusion/fusionowningartifacts")]
@@ -3666,17 +3670,41 @@ order by    title
         }
 
         [Route("resources/{typeID:int}")]
-        public IQueryable<GlobalReportingResource> GetResourcesByType(int typeID)
+        public HttpResponseMessage GetResourcesByType(int typeID)
         {
-            var query = Company.Table<GlobalReportingResource>();
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(typeID, "Resource", out joins, out columns, false, false);
+
+            var querySql = $@"
+select  A.FirstName,
+		A.LastName,
+        A.Email,
+		A.DateLastLoggedIn,
+        A.Status,
+        A.IsAdministrator,
+        {columns}
+		A.ID
+from    (
+        select	FirstName,
+		        LastName,
+                Email,
+		        DateLastLoggedIn,
+                Status,
+                IsAdministrator,
+                ResourceID as ID
+        from	reporting.Global_Resource
+        ) A 
+        {joins}";
+
             if (HideData3SixtyUsers())
             {
-                return query.Where(i => !i.Email.Contains("data3sixty.com"));
+                querySql += " where A.Email not like '%@data3sixty.com'";
             }
-            else
-            {
-                return query;
-            }
+
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, new { id = typeID }));
         }
 
         [Route("resources/{typeID:int}/{id:int}")]

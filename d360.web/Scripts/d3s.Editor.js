@@ -487,16 +487,17 @@
                             case 'Boolean':
                                 //#region Boolean Field Management
 
+                                addLabel(cpnl, v, false);
+
                                 var b = false;
                                 if (cleanedValue == true || cleanedValue == "true" || cleanedValue == "1" || cleanedValue == "True") b = true;
-                                var checkboxHtml = '<input type="checkbox" id="' + v.FieldName + '" name="' + v.FieldName + '"';
+                                var checkboxHtml = '<br/><input type="checkbox" id="' + v.FieldName + '" name="' + v.FieldName + '"';
                                 if (b) checkboxHtml += ' checked="checked"';
                                 checkboxHtml += ' />';
                                 fld = $(checkboxHtml);
-
+                                //cpnl.append("");
                                 cpnl.append(fld);
 
-                                addLabel(cpnl, v, true);
                                 break;
 
                                 //#endregion

@@ -24,6 +24,7 @@
 
     var tools = [];
     if (permissions.HasPermission("Root", "Update")) {
+        tools.push({ icon: 'cloud-download', uri: '/domains/' + domainID + '.xlsx', context: contextList.ActionExport, title: 'Export items' });
         tools.push({ icon: 'plus', uri: '/form/AddDomainItem?typeID=' + typeID + '&listID=' + domainID, context: contextList.DomainItem, title: 'Add domain item' });
     }
     TileTools(toolsControlID, tools);
@@ -69,6 +70,7 @@
     });
 
 
+
     function itemSelect(evt) {
         var args = evt.args;
         var row = args.row;
@@ -94,6 +96,16 @@
 
     //#region Event Subscriptions
 
+    function toolAction(data) {
+        switch (data.context) {
+            case contextList.ActionExport:
+                $.fileDownload(data.uri, {
+                    httpMethod: "GET"
+                });
+                break;
+        }
+    }
+
     function saveAction(data) {
         try {
             switch (data.context) {
@@ -110,12 +122,14 @@
         srcDomainItemsGrid = null;
         adapterDomainItemsGrid = null;
 
+        amplify.unsubscribe(AmplifyActions.Tool, toolAction);
         amplify.unsubscribe("SaveAction", saveAction);
         amplify.unsubscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
 
     amplify.subscribe("SaveAction", saveAction);
+    amplify.subscribe(AmplifyActions.Tool, toolAction);
     amplify.subscribe(AmplifyActions.TileUnsubscribe, unsubscribe);
     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
 

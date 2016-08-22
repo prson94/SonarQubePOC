@@ -72,7 +72,7 @@
 
                         data.Columns.push({
                             text: '',
-                            dataField: 'ResourceID',
+                            dataField: 'ID',
                             width: 160,
                             sortable: false,
                             filterable: false,

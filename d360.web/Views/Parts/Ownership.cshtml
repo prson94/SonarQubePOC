@@ -4,27 +4,55 @@
     var objectType = (string)ViewData["ObjectType"];
     var objectTypeID = (int?)ViewData["ObjectTypeID"];
     var IsAdmin = (bool)ViewData["IsAdmin"];
+    var exportUrl = string.Format("/resources/{0}/ownership", Model.ObjectID);
     var url = string.Format("/api/resources/{0}/ownership", Model.ObjectID);
     if (!string.IsNullOrEmpty(objectType) && objectTypeID.HasValue)
     {
         url += string.Format("/{0}/{1}", objectType, objectTypeID.Value);
+        exportUrl += string.Format("/{0}/{1}", objectType, objectTypeID.Value);
     }
+    exportUrl += ".xlsx";
     url += "?$orderby=ObjectName";
 }
 <div class="container medium-overlay">
-    <div class="ui segment">
-        <div class="ui form message">
-            <div class="ui large header">@(title)</div>
-        </div>
-        <div id="OwnershipPart"></div>
+    <div class="tile tile-detail">
+        <header>
+            @(title)
+            <div class="TileTools" style="right: 5px; top: 5px; z-index: 1003">
+                <div id="OverlayTools" style="border: none !important; background-color: transparent !important">
+                    <ul>
+                        <li data-action="export">
+                            <i class="fa fa-2x fa-cloud-download" title="Export"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div style="margin-top: 30px" id="OwnershipPart"></div>
     </div>
 </div>
 <script type="text/javascript">
     var IsAdmin = @(IsAdmin ? "true" : "false");
-
+    var exportUri = "@exportUrl";
     $(function () {
 
         var ownershipUrl = '@(url)';
+
+        $('#OverlayTools').jqxMenu({ theme: 'flat', mode: 'horizontal', height: 50 });
+        $('#OverlayTools').on('itemclick', function(event){
+            var li = event.args;
+            var offset = $(li).offset();
+            switch($(li).data('action')) {
+                case 'export':
+                    //#region
+                    $.fileDownload(exportUri, {
+                        httpMethod: "GET"
+                    });                    
+                    break;
+                    //#endregion
+            }
+        });
+
 
         //#region Grid
 
@@ -54,44 +82,29 @@
             filterable: true,
             selectionmode: 'multiplerows',
             filtermode: 'excel',
-            //showfilterrow: true,
             pageable: false,
             height: '250px',
             scrollmode: 'logical',
             scrollbarsize: 10,
             width: grid_width,
             columns: [
-                //{ datafield: "ObjectTypeName", text: "Type", width: '125px' },
-                { 
-                    datafield: "ObjectName", 
-                    text: "Name", 
+                {
+                    datafield: "ObjectName",
+                    text: "Name",
                     cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
                         var html = previewLinkRenderer(data.ObjectType, data.ObjectID, data.ObjectUrl, data.ObjectName);
                         data = null;
                         return html;
-                    } 
+                    }
                 },
                 { datafield: "Role", text: "Role" },
-                { 
-                    datafield: "CurrentScore", 
-                    text: "Score", 
-                    width: '60px', 
-                    cellsrenderer: currentScoreRenderer 
+                {
+                    datafield: "CurrentScore",
+                    text: "Score",
+                    width: '60px',
+                    cellsrenderer: currentScoreRenderer
                 }
             ]
-        });
-
-        amplify.subscribe("SaveAction", function (data) {
-            try {
-                switch (data.context) {
-                    case "AlertFlag":
-                        $('#OwnershipPart').jqxGrid('updatebounddata');
-                        break;
-                }
-
-            } catch (e) {
-                logError("Detail", e);
-            }
         });
 
         //#endregion

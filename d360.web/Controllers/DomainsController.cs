@@ -8,6 +8,9 @@ using d360.core;
 using d360.core.entities;
 using System.Net;
 using d360.model;
+using d360.web.Models.Attributes;
+using SpreadsheetLight;
+using System.IO;
 
 namespace d360.web.Controllers
 {
@@ -58,5 +61,47 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
+        #region Exports
+
+
+        [Route("{id:int}.xlsx"), FileDownload, HttpGet]
+        public FileResult ToExcel(int id)
+        {
+            var domain = Company.GetById<Domain>(id, i => i.Items);
+            //var items = Company.Filter<DomainItem>(i => i.DomainID == id);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            int r = 1;
+
+            #region Header
+
+            document.SetCellValue(r, 1, "Name");
+            document.SetCellValue(r, 2, "Code");
+            document.SetCellValue(r, 3, "Description");
+
+            #endregion
+
+            
+            foreach(var item in domain.Items.OrderBy(i => i.Name))
+            {
+                r++;
+                document.SetCellValue(r, 1, item.Name);
+                document.SetCellValue(r, 2, item.Code);
+                document.SetCellValue(r, 3, item.Description);
+            }
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{domain.Name} - Items.xlsx");
+        }
+
+        #endregion
     }
 }

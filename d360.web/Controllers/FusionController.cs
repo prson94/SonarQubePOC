@@ -1198,6 +1198,48 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             return Json(model, JsonRequestBehavior.AllowGet);
         }
 
+
+        /// <summary>
+        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// </summary>
+        /// <returns>A list of available fusion configurations.</returns>
+        [Route("{id:int}/configurations")]
+        public JsonNetResult GetConfigurationsByType(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return new JsonNetResult { Formatting = Formatting.Indented, Data = new { message = "You do not have permissions to view configurations." } };
+
+            var joins = "";
+            var columns = "";
+            getDynamicFieldJoinStatements(id, "Fusion", out joins, out columns, false, false);
+
+            var querySql = string.Format(@"select	A.ID,
+		A.Name,
+		A.Description,
+        A.FusionTypeID,
+		T.Name as FusionType,
+		substring(
+        (
+            select	',' + IA.Name  AS [text()]
+            from	FusionOwner [IO]
+					inner join Artifact IA on IA.ID = [IO].ArtifactID and [IO].FusionID = A.ID
+            ORDER BY IA.Name
+            For XML PATH ('')
+        ), 2, 1000) as Owners,
+        {0}
+		A.Enabled
+from	Fusion A {1} 
+left join FusionType T on T.ID = A.FusionTypeID
+where A.FusionTypeID = @id", columns, joins);
+
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+            return new JsonNetResult {
+                Formatting = Formatting.None,
+                Data = Company.Query<dynamic>(sql, new { id = id })
+            };
+        }
+
         #endregion
     }
 }

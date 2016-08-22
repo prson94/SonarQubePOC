@@ -51,5 +51,8 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("FusionID")]
         public virtual ICollection<FusionFilter> FusionFilters { get; set; }
+
+        [IgnoreDataMember]
+        public virtual ICollection<Artifact> FusionOwners { get; set; }
     }
 }

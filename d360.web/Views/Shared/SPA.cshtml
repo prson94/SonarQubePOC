@@ -142,6 +142,9 @@
             self.Lookup = "@(ContextList.Lookup)";
             self.LookupType = "@(ContextList.LookupType)";
 
+            self.MapRule = "@(ContextList.MapRule)";
+            self.MapRuleItem = "@(ContextList.MapRuleItem)";
+
             self.Policy = "@(ContextList.Policy)";
             self.PolicyType = "@(ContextList.PolicyType)";
             self.PolicyTypeClass = "@(ContextList.PolicyTypeClass)";
@@ -546,6 +549,8 @@
                         case contextList.ActionEditRelate:
                         case contextList.ActionResponsibility:
                         case contextList.IntersectSourcingResponsibility:
+                        case contextList.MapRule:
+                        case contextList.MapRuleItem:
                         case contextList.PolicyTypeClass:
                         case contextList.Predicate:
                         case contextList.ResponseType:
@@ -591,6 +596,8 @@
                         case contextList.IntersectSourcingResponsibility:
                         case contextList.ResponsibilityTransformation:
                         case contextList.AttributeTypeCategory:
+                        case contextList.MapRule:
+                        case contextList.MapRuleItem:
                         case contextList.PolicyTypeClass:
                         case contextList.Predicate:
                         case contextList.ResponseType:
@@ -682,6 +689,8 @@
                             case contextList.ResponsibilityTypeHierarchy:
                             case contextList.SourceToTarget:
                             case contextList.TaxonomyTypeClass:
+                            case contextList.MapRule:
+                            case contextList.MapRuleItem:
                             case contextList.Workflow:
                                 break;
                             default:

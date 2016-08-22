@@ -2,18 +2,44 @@
 @{
     var title = (string)ViewData["Title"];
     var resourceID = (int)ViewData["ResourceID"];
+    var exportUrl = string.Format("/resources/{0}/following/{1}/{2}.xlsx", resourceID, Model.ObjectType, Model.ObjectID);
     var isCurrentUser = (bool)ViewData["IsCurrentUser"];
 }
 <div class="container medium-overlay">
-    <div class="ui segment">
-        <div class="ui form message">
-            <div class="ui large header">@(title)</div>
-        </div>
-        <div id="FollowingPart"></div>
+    <div class="tile tile-detail">
+        <header>
+            @(title)
+            <div class="TileTools" style="right: 5px; top: 5px; z-index: 1003">
+                <div id="OverlayTools" style="border: none !important; background-color: transparent !important">
+                    <ul>
+                        <li data-action="export">
+                            <i class="fa fa-2x fa-cloud-download" title="Export"></i>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div style="margin-top: 30px" id="FollowingPart"></div>
     </div>
 </div>
 <script type="text/javascript">
     var followingUrl = '/queries/FollowingByResourceByType?resourceID=@(resourceID)&type=@(Model.ObjectType)&id=@(Model.ObjectID)';
+    var exportUri = "@exportUrl";
+
+    $('#OverlayTools').jqxMenu({ theme: 'flat', mode: 'horizontal', height: 50 });
+    $('#OverlayTools').on('itemclick', function (event) {
+        var li = event.args;
+        var offset = $(li).offset();
+        switch ($(li).data('action')) {
+            case 'export':
+                //#region
+                $.fileDownload(exportUri, {
+                    httpMethod: "GET"
+                });
+                break;
+                //#endregion
+        }
+    });
 
     var UnFollow = function (row) {
         var data = $('#FollowingPart').jqxGrid('getrowdata', row);
@@ -80,7 +106,7 @@
                          return previewLinkRenderer(data.ObjectType, data.ObjectID, data.Url, data.Name);
                      }
                  }
-                 ,{
+                 , {
                      datafield: "CurrentScore",
                      text: "Score",
                      width: '60px',
@@ -95,19 +121,6 @@
 
         amplify.subscribe("CommandExecuted", function (data) {
             $('#FollowingPart').jqxGrid('updatebounddata');
-        });
-
-        amplify.subscribe("SaveAction", function (data) {
-            try {
-                switch (data.context) {
-                    case "AlertFlag":
-                        $('#FollowingPart').jqxGrid('updatebounddata');
-                        break;
-                }
-
-            } catch (e) {
-                logError("Detail", e);
-            }
         });
     });
 </script>
