@@ -22,6 +22,7 @@ import {
     MultiSelectModule,
     SpinnerModule,
     EditorModule,
+    TooltipModule,
 } from 'primeng/primeng';
 
 import {
@@ -352,6 +353,7 @@ import {
         MultiSelectModule,
         SpinnerModule,
         EditorModule,
+        TooltipModule,
 
     ],
     bootstrap: [AppComponent],
