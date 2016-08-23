@@ -1,22 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
-import { ClaimsTile } from '../tiles/claims.tile';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
+import { AdminBaseComponent } from './admin-base.component';
 import { PolicyType } from '../../models/policy.model';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-policies-component',
-    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile, DynamicEditorComponent, DeleteForm, FieldDefinitionTile, ObjectDetailTile, AuditComponent],
     providers: [PoliciesService],
     template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'PolicyType'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">

@@ -1,17 +1,14 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-import { ClassificationTypePipe} from '../../pipes/classification-display.pipe';
-import { DynamicEditorComponent } from './dynamic-editor.component';
+import { ClassificationTypePipe } from '../../pipes/classification-display.pipe';
 
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',
-    directives: [DataTable, Column, DynamicEditorComponent],
     pipes: [ClassificationTypePipe],
     providers: [GridDefinitionService, RelationshipsService],
     template: `                   

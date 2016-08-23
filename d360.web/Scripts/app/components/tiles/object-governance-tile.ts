@@ -1,10 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { ObjectHealthComponent } from '../shared/object-health.component';
-import { ObjectBoardComponent } from '../shared/object-board.component';
-import { ObjectIssuesComponent } from '../shared/object-issues.component';
-import { ObjectChallengeComponent } from '../shared/object-challenge.component';
 import { ObjectStatisticsService } from '../../services/index';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 
@@ -30,7 +26,6 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
                         </div>
                     </div>
                 `,
-    directives: [ObjectHealthComponent, ObjectBoardComponent, ObjectIssuesComponent, ObjectChallengeComponent],
     providers: [ObjectStatisticsService]
 })
 

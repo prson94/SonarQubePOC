@@ -1,17 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
+import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService} from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
-import { DynamicEditorComponent } from './dynamic-editor.component';
+import { MessagesService, GridDefinitionService, UriBasedService } from '../../services/index';
 
 
 @Component({
     selector: 'd3s-dynamic-grid',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent],
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}

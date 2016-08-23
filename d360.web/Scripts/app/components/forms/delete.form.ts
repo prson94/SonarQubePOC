@@ -1,15 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Input, Output, Component, EventEmitter } from '@angular/core';
+import { Input, Output, Component, EventEmitter } from '@angular/core';
 import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
 import { FormMessage, JsonResult } from '../../models/form.model';
-import { FormMessagePart } from '../parts/form-message.part';
-import { Button } from 'primeng/primeng';
 
 @Component({
     selector: 'delete-form',
     templateUrl: 'scripts/app/components/forms/delete.form.html',
     viewProviders: [HTTP_PROVIDERS],
-    directives: [FormMessagePart, Button],
 })
 
 export class DeleteForm {

@@ -1,14 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
-import {  NavBarItem, NavBarItemComponent } from '../navbar/navbar-item.component';
+import {  Router, NavigationEnd } from '@angular/router';
+import {  NavBarItem } from '../navbar/navbar-item.component';
 import { SiteMenuService } from '../../services/index';
 import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-navbar', 
-    directives: [ROUTER_DIRECTIVES, NavBarItemComponent], 
     providers: [SiteMenuService],
     template: `
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">

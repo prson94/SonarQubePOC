@@ -3,14 +3,11 @@ import { Component, Input, ElementRef, ViewChildren, AfterViewInit } from '@angu
 import { Router }       from '@angular/router';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import {AutoComplete} from 'primeng/primeng';
-import { ROUTER_DIRECTIVES } from '@angular/router';
 import { TypeaheadSearchService } from '../../services/index';
 import { TypeaheadSearchResult } from '../../models/typeahead-search-result.model';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
-    directives: [ROUTER_DIRECTIVES, AutoComplete],
     providers: [TypeaheadSearchService],    
     host: {
         '(document:click)': 'onClick($event)',

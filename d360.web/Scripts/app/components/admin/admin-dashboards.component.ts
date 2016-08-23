@@ -1,22 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnDestroy, OnInit} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { AdminBaseComponent } from './admin-base.component';
 import { Report, ReportType } from '../../models/report.model';
-import { DeleteForm } from '../forms/delete.form';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { ReportItemsTile } from '../tiles/report-items.tile';
-import { ReportLayoutTile } from '../tiles/report-layout.tile';
-import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, ObjectDetailTile, ReportItemsTile, ReportLayoutTile, AdminDashboardsEditor, AuditComponent],
     providers: [ReportsService],
     template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Report'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">

@@ -1,9 +1,8 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import {Button, Editor, InputText, Dropdown, SelectItem, Spinner} from 'primeng/primeng';
-import {TaxonomiesService, ObjectStyleService} from '../../services/index';
-import {Taxonomy, TaxonomyClassification, TaxonomyLevel} from '../../models/taxonomy.model';
+import { SelectItem } from 'primeng/primeng';
+import { TaxonomiesService, ObjectStyleService } from '../../services/index';
+import { Taxonomy, TaxonomyClassification, TaxonomyLevel } from '../../models/taxonomy.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -31,7 +30,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [TaxonomiesService],
-    directives: [Button, Editor, InputText, Dropdown]
 })
 
 export class AdminTaxonomyLevelEditorComponent {

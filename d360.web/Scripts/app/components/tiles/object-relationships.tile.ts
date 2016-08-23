@@ -2,14 +2,12 @@
 import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { ObjectRelationshipCount } from '../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
 import { TechnicalNameToDisplayValuePipe } from '../../pipes/technical-to-display.pipe';
 
 @Component({
     selector: 'd3s-object-relationships-tile',
-    directives: [TileActionsComponent, DynamicRelationshipGridComponent],
     providers: [RelationshipsService],
     pipes: [TechnicalNameToDisplayValuePipe],
     styles: [`

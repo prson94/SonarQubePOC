@@ -1,11 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { Template } from '../../models/template.model';
-import {DataTable, Column, Editor, InputText, Dropdown} from 'primeng/primeng';
-import {DeleteForm} from '../forms/delete.form';
-import {AdminTemplateEditorComponent} from './admin-template-editor';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 
@@ -75,7 +71,6 @@ import { Title } from '@angular/platform-browser';
                </div>               
                 `,
     providers: [TemplatesService],
-    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, AdminTemplateEditorComponent, TileActionsComponent]
 })
 
 export class AdminTemplatesComponent extends AdminBaseComponent {    

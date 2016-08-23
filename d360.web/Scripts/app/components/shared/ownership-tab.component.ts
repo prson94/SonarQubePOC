@@ -1,7 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component, Input, OnInit} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 
 @Component({
     selector: 'd3s-ownership-tab',
@@ -14,7 +13,6 @@ import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.til
                     </div>
                 </div>
         `,
-    directives: [PeopleResponsibilitiesTile]
 })
 
 export class OwnershipTabComponent extends BaseComponent {

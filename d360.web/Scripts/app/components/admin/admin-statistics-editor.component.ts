@@ -1,11 +1,9 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
-import {Button, Editor, InputText, Dropdown, SelectItem, Spinner} from 'primeng/primeng';
-import { StatisticService} from '../../services/index';
-import { StatisticType, StatisticCheckTypes} from '../../models/statistic.model';
-import { AdminStatisticCheckTypeInput} from './admin-statistic-checktype-input';
+import { NgForm } from '@angular/forms';
+import { SelectItem } from 'primeng/primeng';
+import { StatisticService } from '../../services/index';
+import { StatisticType, StatisticCheckTypes } from '../../models/statistic.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -57,7 +55,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [StatisticService],
-    directives: [Button, Editor, InputText, Dropdown, Spinner, REACTIVE_FORM_DIRECTIVES, AdminStatisticCheckTypeInput]
 })
 
 export class AdminStatisticEditor {

@@ -1,19 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { StatisticType } from '../../models/statistic.model';
-import { AdminStatisticEditor } from './admin-statistics-editor.component';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { DeleteForm } from '../forms/delete.form';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-statistics-component',
-    directives: [DataTable, Column, TileActionsComponent, ObjectDetailTile, AdminStatisticEditor, DeleteForm, AuditComponent],
     providers: [StatisticService],
     template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'StatisticType'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">

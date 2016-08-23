@@ -1,38 +1,15 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone, OnDestroy } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { DomainType, IDomainService } from '../../models/domain.model';
 import { DomainService, HeaderBreadcrumbService, PageHeader, RightSidebarService } from '../../services/index';
-import { DataTable, Column } from 'primeng/primeng';
 import { AdminBaseComponent} from './admin-base.component';
 import { FormMode } from '../../models/form.model';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
-import { DeleteForm } from '../forms/delete.form';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'admin-domain',
     providers: [DomainService],
-    directives: [
-        ObjectDetailTile,
-        FieldDefinitionTile,
-        PeopleResponsibilitiesTile,
-        DataTable,
-        Column,
-        NgSwitch,
-        NgSwitchCase,
-        NgSwitchDefault,
-        TileActionsComponent,
-        DynamicEditorComponent,
-        DeleteForm,
-        AuditComponent
-    ],
     templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
 })
 

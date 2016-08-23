@@ -1,15 +1,9 @@
 ﻿import { Component } from '@angular/core';
-import {DataTable, Column, Editor, InputText, Dropdown} from 'primeng/primeng';
-import {DeleteForm} from '../forms/delete.form';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader, SurveysService  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
-import { SurveyQuestionsTile } from '../tiles/survey-questions.tile';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../models/survey.model';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -64,7 +58,6 @@ import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
                </div>               
                 `,
     providers: [SurveysService],
-    directives: [DataTable, Column, DeleteForm, Editor, InputText, Dropdown, TileActionsComponent, ObjectDetailTile, SurveyQuestionsTile, DynamicEditorComponent]
 })
 
 export class AdminSurveysComponent extends AdminBaseComponent {

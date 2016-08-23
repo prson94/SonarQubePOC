@@ -1,7 +1,6 @@
 ﻿import { Component, Input, ElementRef, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { RightSidebarService  } from '../../services/index';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
@@ -20,7 +19,6 @@ import { Subscription }   from 'rxjs/Subscription';
                     </div>
                 </div>
               `,
-    directives: [RightSidebarItemComponent]
 })
 
 export class RightSidebarComponent implements OnChanges {

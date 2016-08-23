@@ -1,17 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import {DataTable, Column, Button} from 'primeng/primeng';
 import { RelationshipsService  } from '../../services/index';
-import { TileActionsComponent } from './tile-actions.component';
 import { Relationship } from '../../models/relationship.model';
-import { DeleteForm } from '../forms/delete.form';
-import { AdminRelationshipsEditor } from '../admin/admin-relationships-editor.component';
 import { RelationshipSearchPipe } from '../../pipes/relationship-search.pipe';
 
 
 @Component({
     selector: 'd3s-relationships-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, AdminRelationshipsEditor, Button],
     providers: [RelationshipsService],
     pipes: [RelationshipSearchPipe],
     template: `

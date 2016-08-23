@@ -6,16 +6,10 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
-import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
-import { AuditComponent} from '../shared/audit.component';
-import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
-import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
-import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    directives: [ObjectDefinitionTile, AuditComponent, ObjectRelationshipsTile, ObjectGovernanceTile, OwnershipTabComponent],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>
                 <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-ownership-tab>
                 <div *ngIf="isLoading">

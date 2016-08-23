@@ -1,18 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { Column, TreeTable, TreeNode, Button, InputText } from 'primeng/primeng';
+import { TreeNode } from 'primeng/primeng';
 import { FusionAttributeType, FusionType } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';
-import { TileActionsComponent } from './tile-actions.component';
-import { FieldDefinitionTile } from './field-definition.tile';
-import { FieldTypeForm } from '../forms/field-type.form';
-import { DeleteForm } from '../forms/delete.form';
 import { FormMode } from '../../models/form.model';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-attributes-tile',
-    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, Button, InputText, DeleteForm],
     templateUrl: 'scripts/app/components/tiles/fusion-attributes.tile.html',
     providers: [FusionService]
 })

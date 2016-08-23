@@ -1,17 +1,15 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
 import { MessagesService } from '../../services/messages.service';
 import { SiteMessage } from '../../models/site-message.model';
 import { Subscription }   from 'rxjs/Subscription';
-import {Message} from 'primeng/primeng';
-import {Growl} from 'primeng/primeng';
+import { Message } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-messages',
     template: `
             <p-growl [value]="msgs"></p-growl>
-        `,
-    directives: [Growl]
+        `
 })
 
 export class MessagesComponent {

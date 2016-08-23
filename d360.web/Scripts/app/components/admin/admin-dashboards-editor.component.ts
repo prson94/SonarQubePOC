@@ -1,10 +1,9 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
-import {Button, Editor, InputText, Dropdown, SelectItem} from 'primeng/primeng';
+import { NgForm } from '@angular/forms';
+import { SelectItem } from 'primeng/primeng';
 import { ReportsService} from '../../services/index';
-import { Report, ReportType} from '../../models/report.model';
+import { Report, ReportType } from '../../models/report.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
 import * as _ from 'lodash';
@@ -68,7 +67,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [ReportsService],
-    directives: [Button, Editor, InputText, Dropdown, REACTIVE_FORM_DIRECTIVES]
 })
 
 export class AdminDashboardsEditor {

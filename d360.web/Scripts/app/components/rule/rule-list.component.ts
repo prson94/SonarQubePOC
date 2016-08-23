@@ -2,19 +2,14 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import {DataTable, Column} from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 
 @Component({
     selector: 'd3s-rule-list',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent],
     providers: [RulesService],
     template: ` 
                 <div class="row">

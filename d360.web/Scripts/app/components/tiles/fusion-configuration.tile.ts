@@ -1,28 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { NgSwitch, NgSwitchDefault, NgSwitchCase } from '@angular/common';
-import { Column, DataTable } from 'primeng/primeng';
 import { FusionConfiguration, FusionType, FusionFilter } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';
-import { TileActionsComponent } from './tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
 import { GridColumn } from '../../models/grid-definition.model';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
-import { FusionFiltersTile } from './fusion-filters.tile';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
-    directives: [
-        DataTable,
-        Column,
-        TileActionsComponent,
-        NgSwitch,
-        NgSwitchDefault,
-        NgSwitchCase,
-        DynamicEditorComponent,
-        FusionFiltersTile,
-        DeleteForm,
-    ],
     templateUrl: 'scripts/app/components/tiles/fusion-configuration.tile.html',
     providers: [FusionService]
 })

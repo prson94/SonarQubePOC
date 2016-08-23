@@ -955,7 +955,6 @@
     <Content Include="Scripts\Apps.min.js">
       <DependentUpon>Apps.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\app\app.js" />
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
     <Content Include="Scripts\app\components\forms\delete.form.html" />
@@ -1358,6 +1357,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-base.component.ts" />
@@ -1379,7 +1379,9 @@
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\forms.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
@@ -1392,6 +1394,7 @@
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\index.ts" />
@@ -1406,9 +1409,12 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\parts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\index.ts" />
@@ -1447,7 +1453,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\ownership-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
@@ -1458,6 +1466,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-governance-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\ownership-tab.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
@@ -1468,6 +1477,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />

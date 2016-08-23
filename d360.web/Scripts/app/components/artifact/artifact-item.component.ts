@@ -3,19 +3,11 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angu
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
-import { DataTable, Column, Accordion, AccordionTab } from 'primeng/primeng';
 import { ArtifactGridComponent } from './artifact-grid.component';
-import { ArtifactBaseComponent} from './artifact-base.component';
+import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
-import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
-import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
-import { AuditComponent} from '../shared/audit.component';
-import { DashboardTabComponent} from '../shared/dashboard-tab.component';
-import { LineageComponent} from '../shared/lineage.component';
-import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -55,7 +47,6 @@ import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
                     </div>
                 </div>                
                 `,
-    directives: [ObjectDefinitionTile, Accordion, AccordionTab, AuditComponent, DashboardTabComponent, LineageComponent, OwnershipTabComponent, ObjectRelationshipsTile, ObjectGovernanceTile],
     providers: [ArtifactService]
 })
 

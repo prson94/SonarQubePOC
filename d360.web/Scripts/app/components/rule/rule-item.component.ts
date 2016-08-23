@@ -5,17 +5,11 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { AuditComponent} from '../shared/audit.component';
 import { RuleDetail } from '../../models/rule.model';
-import { ObjectDefinitionTile } from '../tiles/object-definition.tile';
-import { ObjectRelationshipsTile } from '../tiles/object-relationships.tile';
-import { ObjectGovernanceTile } from '../tiles/object-governance-tile';
-import { OwnershipTabComponent} from '../shared/ownership-tab.component';
 
 
 @Component({
     selector: 'd3s-rule-item',
-    directives: [AuditComponent, ObjectDefinitionTile, ObjectRelationshipsTile, OwnershipTabComponent],
     providers: [RulesService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>

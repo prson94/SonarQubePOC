@@ -1,11 +1,9 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import {DataTable, Column} from 'primeng/primeng';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ModelsService } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model } from '../../models/model.model';
 import { ModelTypePipe } from '../../pipes/model-type.pipe';
@@ -13,7 +11,6 @@ import { ModelTypePipe } from '../../pipes/model-type.pipe';
 @Component({
     selector: 'd3s-model-list',
     providers: [ModelsService],
-    directives: [DataTable, Column, TileActionsComponent],
     pipes: [ModelTypePipe],
     template: `                 
                 <div class="row">

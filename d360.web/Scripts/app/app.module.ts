@@ -1,17 +1,358 @@
 ﻿import { NgModule }       from '@angular/core';
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
-import { FormsModule }    from '@angular/forms';
+import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
 
+import {
+    GrowlModule,
+    InputTextModule,
+    InputMaskModule,
+    DataTableModule,
+    TreeTableModule,
+    ButtonModule,
+    DropdownModule,
+    CheckboxModule,
+    CalendarModule,
+    MenuModule,
+    AccordionModule,
+    SelectButtonModule,
+    AutoCompleteModule,
+    MultiSelectModule,
+    SpinnerModule,
+    EditorModule,
+} from 'primeng/primeng';
+
+import {
+    AdminArtifactsComponent,
+    AdminComponent,
+    AdminAttributesComponent,
+    AdminDashboardsComponent,
+    AdminDomainComponent,
+    AdminFusionComponent,
+    AdminGovernanceComponent,
+    AdminGroupsComponent,
+    AdminLoadComponent,
+    AdminLookupsComponent,
+    AdminPoliciesComponent,
+    AdminRelationshipsComponent,
+    AdminResourcesComponent,
+    AdminRulesComponent,
+    AdminSettingsComponent,
+    AdminStatisticsComponent,
+    AdminSurveysComponent,
+    AdminTaxonomiesComponent,
+    AdminTemplatesComponent,
+    AdminWorkflowComponent,
+    AdminAttributeTypeEditor,
+    AdminDashboardsEditor,
+    AdminLookupTypeEditorComponent,
+    AdminRelationshipsEditor,
+    AdminStatisticEditor,
+    AdminSurveyQuestionEditorEditor,
+    AdminTaxonomyDetailComponent,
+    AdminTaxonomyEditorComponent,
+    AdminTaxonomyLevelEditorComponent,
+    AdminTemplateEditorComponent,
+    AdminStatisticCheckTypeInput,
+} from './components/admin/index';
+
+import {
+    ArtifactBaseComponent,
+    ArtifactColumnFilterComponent,
+    ArtifactComponent,
+    ArtifactDefnintionComponent,
+    ArtifactGridComponent,
+    ArtifactItemComponent,
+    ArtifactListComponent,
+} from './components/artifact/index';
+
+import {
+    CommunityComponent,
+    CommunitySummaryComponent,
+} from './components/community/index';
+
+import {
+    DiagnosticComponent,
+    DiagnosticIncorrectTextpathComponent,    
+} from './components/diagnostic/index';
+
+import {
+    ArtifactTypeForm,
+    DeleteForm,
+    FieldTypeForm,
+    GroupForm,
+    LoadForm,
+    ResponsibilityItemForm,
+    ResponsibilityTypeForm,
+    WorkflowItemForm,
+} from './components/forms/index';
+
+import {
+    FusionComponent,
+    FusionItemComponent,
+    FusionListComponent, 
+} from './components/fusion/index';
+
+import {
+    HeaderActionsComponent,
+    HeaderBreadcrumbComponent,
+    HeaderBreadcrumbItemComponent,
+    HeaderComponent,
+    HeaderTypeaheadSearchComponent
+} from './components/header/index';
+
+import {
+    HomeComponent
+} from './components/home/home.component';
+
+import {
+    ModelComponent,
+    ModelItemComponent,
+    ModelListComponent,
+} from './components/model/index';
+
+import {
+    MonitorComponent,
+    MonitorListComponent,
+} from './components/monitor/index';
+
+import { NavBarComponent } from './components/navbar/navbar.component';
+import { NavBarItemComponent } from './components/navbar/navbar-item.component';
+
+import {
+    ActionBar,
+    SimpleAccordion,
+    ClaimsMatrixPart,
+    FormMessagePart,
+    MenuPartItem,
+    MenuPart,
+    SimpleDropdown,
+} from './components/parts/index';
+
+import {
+    PolicyComponent,
+    PolicyItemComponent,  
+} from './components/policy/index';
+
+import {
+    ReferenceComponent,
+    ReferenceListComponent,
+} from './components/reference/index';
+
+import {
+    ResourceComponent,
+    ResourceItemComponent,
+} from './components/resource/index';
+
+import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
+import { RightSidebarItemComponent } from './components/rightsidebar/right-sidebar-item.component';
+
+import {
+    RuleComponent,
+    RuleItemComponent,
+    RuleListComponent,
+} from './components/rule/index';
+
+import {
+    AuditComponent,
+    BaseComponent,
+    DashboardTabComponent,
+    DynamicEditorComponent,
+    DynamicFieldComponent,
+    DynamicGridComponent,
+    DynamicRelationshipGridComponent,
+    LineageComponent,
+    MessagesComponent,
+    ObjectBoardComponent,
+    ObjectChallengeComponent,
+    ObjectHealthComponent,
+    ObjectIssuesComponent,
+    OwnershipTabComponent,
+    PageLinksComponent,
+    PowerBIViewerComponent,
+    TooltipComponent,
+} from './components/shared/index';
+
+import {
+    AttributesTile,
+    FusionAttributesTile,
+    TileActionsComponent,
+    ClaimsTile,
+    FieldDefinitionTile,
+    FusionConfigurationTile,
+    FusionFiltersTile,
+    GroupMembersTile,
+    LoadItemTile,
+    MenuBarItem,
+    ModelLevelTile,
+    ObjectDefinitionTile,
+    ObjectDetailTile,
+    ObjectGovernanceTile,
+    ObjectRelationshipsTile,
+    PeopleResponsibilitiesTile,
+    PredicatesTile,
+    RelationshipsTile,
+    ReportItemsTile,
+    ReportLayoutTile,
+    RuleDimensionsTile,
+    StructureTile,
+    SurveyQuestionsTile,
+    SynonymsTile,
+} from './components/tiles/index';
+
+
 @NgModule({
-    declarations: [AppComponent],
+    declarations: [
+        AppComponent,
+        AdminArtifactsComponent,
+        AdminComponent,
+        AdminAttributesComponent,
+        AdminDashboardsComponent,
+        AdminDomainComponent,
+        AdminFusionComponent,
+        AdminGovernanceComponent,
+        AdminGroupsComponent,
+        AdminLoadComponent,
+        AdminLookupsComponent,
+        AdminPoliciesComponent,
+        AdminRelationshipsComponent,
+        AdminResourcesComponent,
+        AdminRulesComponent,
+        AdminSettingsComponent,
+        AdminStatisticsComponent,
+        AdminSurveysComponent,
+        AdminTaxonomiesComponent,
+        AdminTemplatesComponent,
+        AdminWorkflowComponent,
+        AdminAttributeTypeEditor,
+        AdminDashboardsEditor,
+        AdminLookupTypeEditorComponent,
+        AdminRelationshipsEditor,
+        AdminStatisticEditor,
+        AdminSurveyQuestionEditorEditor,
+        AdminTaxonomyDetailComponent,
+        AdminTaxonomyEditorComponent,
+        AdminTaxonomyLevelEditorComponent,
+        AdminTemplateEditorComponent,
+        AdminStatisticCheckTypeInput,
+        ArtifactColumnFilterComponent,
+        ArtifactComponent,
+        ArtifactDefnintionComponent,
+        ArtifactGridComponent,
+        ArtifactItemComponent,
+        ArtifactListComponent,
+        CommunityComponent,
+        CommunitySummaryComponent,
+        DiagnosticComponent,
+        DiagnosticIncorrectTextpathComponent,
+        ArtifactTypeForm,
+        DeleteForm,
+        FieldTypeForm,
+        GroupForm,
+        LoadForm,
+        ResponsibilityItemForm,
+        ResponsibilityTypeForm,
+        WorkflowItemForm,
+        FusionComponent,
+        FusionItemComponent,
+        FusionListComponent,
+        HeaderActionsComponent,
+        HeaderBreadcrumbComponent,
+        HeaderBreadcrumbItemComponent,
+        HeaderComponent,
+        HeaderTypeaheadSearchComponent,
+        HomeComponent,
+        ModelComponent,
+        ModelItemComponent,
+        ModelListComponent,
+        MonitorComponent,
+        MonitorListComponent,
+        NavBarComponent,
+        NavBarItemComponent,
+        ActionBar,
+        SimpleAccordion,
+        ClaimsMatrixPart,
+        FormMessagePart,
+        MenuPart,
+        SimpleDropdown,
+        PolicyComponent,
+        PolicyItemComponent,
+        ReferenceComponent,
+        ReferenceListComponent,
+        ResourceComponent,
+        ResourceItemComponent,
+        RightSidebarComponent,
+        RightSidebarItemComponent,
+        RuleComponent,
+        RuleItemComponent,
+        RuleListComponent,
+        AuditComponent,
+        DashboardTabComponent,
+        DynamicEditorComponent,
+        DynamicFieldComponent,
+        DynamicGridComponent,
+        DynamicRelationshipGridComponent,
+        LineageComponent,
+        MessagesComponent,
+        ObjectBoardComponent,
+        ObjectChallengeComponent,
+        ObjectHealthComponent,
+        ObjectIssuesComponent,
+        OwnershipTabComponent,
+        PageLinksComponent,
+        PowerBIViewerComponent,
+        TooltipComponent,
+        AttributesTile,
+        FusionAttributesTile,
+        TileActionsComponent,
+        ClaimsTile,
+        FieldDefinitionTile,
+        FusionConfigurationTile,
+        FusionFiltersTile,
+        GroupMembersTile,
+        LoadItemTile,
+        ModelLevelTile,
+        ObjectDefinitionTile,
+        ObjectDetailTile,
+        ObjectGovernanceTile,
+        ObjectRelationshipsTile,
+        PeopleResponsibilitiesTile,
+        PredicatesTile,
+        RelationshipsTile,
+        ReportItemsTile,
+        ReportLayoutTile,
+        RuleDimensionsTile,
+        StructureTile,
+        SurveyQuestionsTile,
+        SynonymsTile, 
+    ],
     imports: [
         BrowserModule,
         FormsModule,
+        ReactiveFormsModule,
         routing,
         HttpModule,
+
+        //primeng
+        GrowlModule,
+        InputTextModule,
+        InputMaskModule,
+        DataTableModule,
+        TreeTableModule,
+        ButtonModule,
+        DropdownModule,
+        CheckboxModule,
+        CalendarModule,
+        MenuModule,
+        AccordionModule,
+        SelectButtonModule,
+        AutoCompleteModule,
+        MultiSelectModule,
+        SpinnerModule,
+        EditorModule,
+
     ],
     bootstrap: [AppComponent],
     providers: [Title],

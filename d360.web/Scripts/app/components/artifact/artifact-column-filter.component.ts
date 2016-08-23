@@ -1,7 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
-import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
-import { Button, MultiSelect, SelectItem, SelectButton  } from 'primeng/primeng';
+import { SelectItem  } from 'primeng/primeng';
 import { ArtifactService, RelationshipsService, AttributeTypeService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { GridFilterExpression, GridFilterColumn, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
@@ -10,7 +9,6 @@ import { AttributeType } from '../../models/attribute-type.model';
 
 @Component({
     selector: 'd3s-artifact-column-filter',
-    directives: [Button, MultiSelect, SelectButton],
     providers: [RelationshipsService, AttributeTypeService],
     styles: [`
         div.filter {

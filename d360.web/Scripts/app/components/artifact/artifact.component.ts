@@ -1,6 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
-import { ROUTER_DIRECTIVES } from '@angular/router';
 
 import 'rxjs/Rx';
 
@@ -11,7 +10,6 @@ import 'rxjs/Rx';
                     <router-outlet></router-outlet>
                 </div>
              ` ,   
-    directives: [ROUTER_DIRECTIVES]
 })
 
 export class ArtifactComponent {

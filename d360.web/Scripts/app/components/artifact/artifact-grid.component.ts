@@ -1,22 +1,16 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
-import {DataTable, Column, LazyLoadEvent, Button} from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService} from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
-import { TooltipComponent } from '../shared/tooltip.component';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { SortOrder } from '../../models/enums.model';
-import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
 import { Router, ActivatedRoute }       from '@angular/router';
 
 
 @Component({
     selector: 'd3s-artifact-grid',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent, Button, ArtifactColumnFilterComponent, TooltipComponent],
     providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}

@@ -1,4 +1,6 @@
 ﻿import * as admin from './index'
+import { RouterModule } from '@angular/router';
+
 
 export const AdminRoutes = [
     {
@@ -28,3 +30,5 @@ export const AdminRoutes = [
         ]
     }
 ];
+
+export const routing = RouterModule.forChild(AdminRoutes);

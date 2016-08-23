@@ -1,16 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { DataTable, Column, Button, Dropdown } from 'primeng/primeng';
 import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { GroupService } from '../../services/group.service';
 import { TileActionsComponent } from './tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
 import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-group-members-tile',
-    directives: [DataTable, Column, DeleteForm, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, Button, Dropdown, DeleteForm ],
     templateUrl: 'scripts/app/components/tiles/group-members.tile.html',
     providers: [GroupService]
 })

@@ -1,8 +1,8 @@
 ﻿import { Component, Input } from '@angular/core';
-import { FormGroup, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../models/editor-field.model';
-import {Button, Editor, InputText, Dropdown, SelectItem, InputMask, MultiSelect} from 'primeng/primeng';
-import { DropdownItemToSelectItemPipe} from '../../pipes/dropdown-to-selectitem.pipe';
+import { SelectItem } from 'primeng/primeng';
+import { DropdownItemToSelectItemPipe } from '../../pipes/dropdown-to-selectitem.pipe';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -11,12 +11,12 @@ import { DropdownItemToSelectItemPipe} from '../../pipes/dropdown-to-selectitem.
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
                         <div class="FieldName">{{field.Name}}</div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'" >                    
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}"></p-editor>                                                                                                             
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl></p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
                             <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;">
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>
-                            <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}"></p-multiSelect>
+                            <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'number'">   
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'">   
@@ -35,7 +35,6 @@ import { DropdownItemToSelectItemPipe} from '../../pipes/dropdown-to-selectitem.
                   </div>                   
                 </div>
                 `,
-    directives: [REACTIVE_FORM_DIRECTIVES, Button, Editor, Dropdown, MultiSelect],
     pipes: [DropdownItemToSelectItemPipe]
 })
 export class DynamicFieldComponent {

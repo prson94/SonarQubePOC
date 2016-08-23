@@ -1,20 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
-import {Taxonomy} from '../../models/taxonomy.model';
+import { Taxonomy} from '../../models/taxonomy.model';
 import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
+import { AdminBaseComponent} from './admin-base.component';
 import { FieldDefinition } from '../../models/fields.model';
-import {AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
-import {AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
-import {DeleteForm} from '../forms/delete.form';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-models-component',    
-    directives: [DataTable, Column, TileActionsComponent, AdminTaxonomyDetailComponent, AdminTaxonomyEditorComponent, DeleteForm, AuditComponent],
     providers: [TaxonomiesService, FieldsService],
     template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">

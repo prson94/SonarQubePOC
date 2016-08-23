@@ -1,10 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
-import { ROUTER_DIRECTIVES } from '@angular/router';
 
 @Component({
     selector: 'd3s-navbar-item',   
-    directives: [ROUTER_DIRECTIVES, NavBarItemComponent],
     styles: [`
     a.group, a.topgroup {
         display:inline;        

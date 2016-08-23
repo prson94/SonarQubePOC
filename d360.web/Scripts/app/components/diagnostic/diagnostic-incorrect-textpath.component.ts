@@ -1,7 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService, PageHeader, DiagnosticService } from '../../services/index';
-import { DataTable, Column} from 'primeng/primeng';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { BaseComponent } from '../shared/base.component';
@@ -9,7 +8,6 @@ import { DiagnosticInvalidTextPath } from '../../models/diagnostic.model';
 
 @Component({
     selector: 'd3s-diagnostic-incorrect-textpath',
-    directives: [DataTable, Column],
     template: `                 
                 <div class="tile tile-detail">                                              
                     <header *ngIf="!isLoading">Objects with Invalid Textpaths values</header>           

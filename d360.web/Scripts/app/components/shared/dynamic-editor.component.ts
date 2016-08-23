@@ -1,11 +1,9 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, REACTIVE_FORM_DIRECTIVES, FormControl } from '@angular/forms';
-import {Button, Editor, InputText} from 'primeng/primeng';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService, UriBasedService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
-import {DynamicFieldComponent} from './dynamic-field.component';
 
 import * as _ from 'lodash';
 
@@ -30,7 +28,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [EditorDefinitionService, UriBasedService],
-    directives: [Button, Editor, InputText, REACTIVE_FORM_DIRECTIVES, DynamicFieldComponent]
 })
 
 export class DynamicEditorComponent {

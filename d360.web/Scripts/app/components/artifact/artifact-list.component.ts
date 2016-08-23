@@ -3,12 +3,9 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angu
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { DataTable, Column} from 'primeng/primeng';
-import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
-import { DashboardTabComponent } from '../shared/dashboard-tab.component';
 
 
 @Component({
@@ -27,7 +24,6 @@ import { DashboardTabComponent } from '../shared/dashboard-tab.component';
                 </div>
                 `,
     providers: [ArtifactTypeService, ObjectActionsService],
-    directives: [ArtifactGridComponent, DashboardTabComponent]
 })
 
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {

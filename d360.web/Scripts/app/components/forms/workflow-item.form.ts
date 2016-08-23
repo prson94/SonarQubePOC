@@ -2,22 +2,17 @@
 import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { SelectItem, FormMessage } from '../../models/form.model';
-import { FormMessagePart } from '../parts/form-message.part';
 import { CompanySettings as cs } from '../../models/company-settings.model';
-import { Dropdown, Calendar, Checkbox, Button } from 'primeng/primeng';
 import { WorkflowService } from '../../services/workflow.service';
 import * as _ from 'lodash';
 
 
-//will use CompanySettings js object globally declared on page
-//not sure if this will cause collisions in other components yet
 declare var CompanySettings: cs;
 
 @Component({
     selector: 'workflow-item-form',
     templateUrl: 'scripts/app/components/forms/workflow-item.form.html',
     providers: [WorkflowService],
-    directives: [FormMessagePart, Dropdown, Calendar, Checkbox, Button ]
 })
 
 export class WorkflowItemForm implements OnInit {

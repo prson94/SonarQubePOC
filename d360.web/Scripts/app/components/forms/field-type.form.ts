@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { NgForm } from '@angular/common';
-import { Button, Editor, Header, InputText, Checkbox, Dropdown, SelectItem, MultiSelect } from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import * as _ from 'lodash';
@@ -10,7 +10,6 @@ import * as _ from 'lodash';
     selector: 'd3s-field-type-form',
     templateUrl: 'scripts/app/components/forms/field-type.form.html',
     providers: [FieldsService],
-    directives: [Button, Editor, Header, InputText, Checkbox, Dropdown, MultiSelect],
 })
 
 export class FieldTypeForm implements OnInit, OnChanges {

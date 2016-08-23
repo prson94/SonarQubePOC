@@ -1,20 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
+import { Component } from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, RulesService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
-import { ClaimsTile } from '../tiles/claims.tile';
-import { RuleDimensionsTile } from '../tiles/rule-dimensions.tile';
+import {AdminBaseComponent } from './admin-base.component';
 import { RuleType } from '../../models/rule.model';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 import { Title } from '@angular/platform-browser';
 
 
 @Component({
     selector: 'd3s-admin-rules-component',
-    directives: [DataTable, Column, TileActionsComponent, PeopleResponsibilitiesTile, ClaimsTile, RuleDimensionsTile ],
     providers: [RulesService],
     template: `<div class="row">
                     <div class="col l4 s12">                    

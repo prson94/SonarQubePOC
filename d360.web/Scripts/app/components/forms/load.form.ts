@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { NgForm } from '@angular/common';
-import { Button, Editor, Header, InputText, Dropdown, SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import { LoadDetail, LoadFilePostModel } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
 import { FormEvents, FormHelper } from '../../models/form.model';
@@ -11,7 +11,6 @@ import * as _ from 'lodash';
     selector: 'd3s-load-form',
     templateUrl: 'scripts/app/components/forms/load.form.html',
     providers: [LoadService],
-    directives: [Button, Editor, Header, InputText, Dropdown],
 })
 
 export class LoadForm implements OnInit, OnChanges, FormEvents {

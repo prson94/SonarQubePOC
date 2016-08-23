@@ -3,14 +3,12 @@ import {Component, Input} from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, AuditService  } from '../../services/index';
 import { Audit } from '../../models/audit.model';
-import { DataTable, Column, LazyLoadEvent} from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
 import { SortOrder } from '../../models/enums.model';
 import { GridFilterExpression } from '../../models/grid-definition.model';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 @Component({
     selector: 'd3s-audit',
-    directives: [DataTable, Column, TileActionsComponent],
     providers: [AuditService],
     template: `
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">

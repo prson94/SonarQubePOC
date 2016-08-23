@@ -2,12 +2,10 @@
 import { Input, Component, OnInit } from '@angular/core';
 import { FormMessage, MessageType } from '../../models/form.model';
 import { ClaimsMatrixDisplayModel, Claim, ClaimObject, ClaimsMatrixEditorItemModel } from '../../models/claims.model';
-import { Button } from 'primeng/primeng';
 import { ClaimsService } from '../../services/claims.service';
 
 @Component({
     selector: 'd3s-claims-matrix',
-    directives: [Button],
     providers: [ClaimsService],
     template: `
 <div *ngIf="isLoading">

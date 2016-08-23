@@ -1,9 +1,7 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import {Button, Editor, InputText} from 'primeng/primeng';
-import {LookupService} from '../../services/index';
-import {Lookup} from '../../models/lookup.model';
+import { LookupService } from '../../services/index';
+import { Lookup } from '../../models/lookup.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -23,7 +21,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [LookupService],
-    directives: [Button, Editor, InputText]
 })
 
 export class AdminLookupTypeEditorComponent {    

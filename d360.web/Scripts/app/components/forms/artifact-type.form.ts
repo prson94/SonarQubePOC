@@ -1,7 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { NgForm } from '@angular/common';
-import { Button, Editor, Header, InputText, Checkbox } from 'primeng/primeng';
 import { ArtifactType, ArtifactTypeEditorModel } from '../../models/artifact-type.model';
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import * as _ from 'lodash';
@@ -10,7 +9,6 @@ import * as _ from 'lodash';
     selector: 'd3s-artifact-type-form',
     templateUrl: 'scripts/app/components/forms/artifact-type.form.html',
     providers: [ArtifactTypeService],
-    directives: [Button, Editor, Header, InputText, Checkbox],
 })
 
 export class ArtifactTypeForm implements OnInit, OnChanges {

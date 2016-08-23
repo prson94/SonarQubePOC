@@ -1,11 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, OnInit } from '@angular/core';
 import { ActionBarItem } from '../../models/action-bar.model';
-import { MenuItem, Menu } from 'primeng/primeng';
+import { MenuItem } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-action-bar',
-    directives: [Menu],
     template: `
             <ul>
                 <li *ngFor="let action of actions">

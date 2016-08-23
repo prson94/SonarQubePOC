@@ -1,10 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component, Input, OnInit} from '@angular/core';
+import { Component, Input, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { MessagesService, DashboardService } from '../../services/index';
 import { Dashboard } from '../../models/dashboard.model'
-import { PowerBIViewerComponent } from './powerbi-viewer.component';
-import {Button} from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-dashboard-tab',
@@ -44,7 +42,6 @@ import {Button} from 'primeng/primeng';
             </div>
         `,
     providers: [DashboardService],
-    directives: [PowerBIViewerComponent, Button],
 })
 
 export class DashboardTabComponent extends BaseComponent implements OnInit {

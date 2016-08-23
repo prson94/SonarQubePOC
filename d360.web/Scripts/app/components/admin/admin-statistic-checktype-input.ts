@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { FormGroup, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { StatisticType, StatisticCheckTypes} from '../../models/statistic.model';
-import {Button, Editor, InputText, Dropdown, SelectItem, InputMask, MultiSelect} from 'primeng/primeng';
-import { StatisticService} from '../../services/index';
+import { SelectItem } from 'primeng/primeng';
+import { StatisticService } from '../../services/index';
 
 @Component({
     selector: 'd3s-admin-statistic-checktype-input',
@@ -69,8 +69,7 @@ import { StatisticService} from '../../services/index';
                             
                         </div>
                   </span>                                   
-                `,
-    directives: [REACTIVE_FORM_DIRECTIVES, Button, Editor, Dropdown, MultiSelect]
+                `
 })
     
 

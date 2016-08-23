@@ -1,14 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DataTable, Column } from 'primeng/primeng';
 import { ClaimItem } from '../../models/claims.model';
-import { ClaimsMatrixPart } from '../parts/claims-matrix.part';
 import { ClaimsService } from '../../services/claims.service';
 
 
 @Component({
     selector: 'd3s-claims-tile',
-    directives: [DataTable, Column, ClaimsMatrixPart],
     templateUrl: 'scripts/app/components/tiles/claims.tile.html',
     providers: [ClaimsService]
 })

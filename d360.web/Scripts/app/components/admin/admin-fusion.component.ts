@@ -1,42 +1,16 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone, OnDestroy } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { DataTable, Column, InputText, Editor, Header, Button } from 'primeng/primeng';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, PageHeader, FusionService, RightSidebarService  } from '../../services/index';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
 import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { FusionType, ObjectStyle } from '../../models/fusion.model';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { FusionAttributesTile } from '../tiles/fusion-attributes.tile';
-import { FusionConfigurationTile } from '../tiles/fusion-configuration.tile';
 import { Title } from '@angular/platform-browser';
-import { DeleteForm } from '../forms/delete.form';
-import { AuditComponent} from '../shared/audit.component';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-fusion',
     providers: [FusionService],
-    directives: [
-        DataTable,
-        Column,
-        Editor,
-        Header,
-        Button,
-        InputText,
-        TileActionsComponent,
-        PeopleResponsibilitiesTile,
-        FusionConfigurationTile,
-        FusionAttributesTile,
-        ObjectDetailTile,
-        FieldDefinitionTile,
-        DeleteForm,
-        AuditComponent
-    ],
     templateUrl: 'scripts/app/components/admin/admin-fusion.component.html',
 })
 

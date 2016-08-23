@@ -1,27 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { NgSwitch, NgSwitchDefault, NgSwitchCase } from '@angular/common';
-import { Column, DataTable, InputText, Button, SelectItem, Dropdown } from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import { FusionFilter, FusionAttributeType } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';
-import { TileActionsComponent } from './tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
 import { FormMode, FormHelper } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-fusion-filters-tile',
-    directives: [
-        DataTable,
-        Column,
-        TileActionsComponent,
-        NgSwitch,
-        NgSwitchDefault,
-        NgSwitchCase,
-        DeleteForm,
-        InputText,
-        Button,
-        Dropdown,
-    ],
     templateUrl: 'scripts/app/components/tiles/fusion-filters.tile.html',
     providers: [FusionService]
 })

@@ -1,6 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DataTable, Column } from 'primeng/primeng';
 import { LoadDetail } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
 import { GridColumn } from '../../models/grid-definition.model';
@@ -8,7 +7,6 @@ import { GridColumn } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-load-item-tile',
-    directives: [DataTable, Column ],
     templateUrl: 'scripts/app/components/tiles/load-item.tile.html',
     providers: [LoadService]
 })

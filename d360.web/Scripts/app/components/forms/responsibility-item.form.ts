@@ -2,8 +2,7 @@
 import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../models/responsibility.model';
 import { FormMessage, FormHelper } from '../../models/form.model';
-import { FormMessagePart } from '../parts/form-message.part';
-import { Dropdown, Button, MultiSelect, Checkbox, SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import { ResponsibilityService } from '../../services/responsibility.service';
 import * as _ from 'lodash';
 
@@ -11,7 +10,6 @@ import * as _ from 'lodash';
     selector: 'd3s-responsibility-item-form',
     templateUrl: 'scripts/app/components/forms/responsibility-item.form.html',
     providers: [ ResponsibilityService ],
-    directives: [ FormMessagePart, Dropdown, Button, Checkbox, MultiSelect ]
 })
 
 export class ResponsibilityItemForm implements OnInit {

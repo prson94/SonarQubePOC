@@ -31,7 +31,7 @@
         <div class="row">
             <div class="col s6">
                 <div id='TypeTip' class="FieldNameRequired">Input Type<span class="FieldNameError" data-bind="visible: DataTypeInvalid">*</span></div>
-                <p-dropdown required name="datatype" [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel"></p-dropdown>
+                <p-dropdown required name="datatype" [options]="lookups.DataTypes" [(ngModel)]="model.FieldType.Type" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadDataType($event.value)" #dataType="ngModel" ngDefaultControl></p-dropdown>
                 <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
             </div>
             <div class="col s6">
@@ -46,7 +46,7 @@
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
             <div class="col s6">
                 <div id='LookupDisplayFormatTip' class="FieldNameRequired">Type of List</div>
-                <p-dropdown name="lookup" [options]="lookups.Lookups" [(ngModel)]="model.selectedLookup" [style]="{ 'width': '98%' }" (onChange)="loadTokens($event.value)"></p-dropdown>
+                <p-dropdown name="lookup" [options]="lookups.Lookups" [(ngModel)]="model.selectedLookup" [style]="{ 'width': '98%' }" (onChange)="loadTokens($event.value)" ngDefaultControl></p-dropdown>
             </div>
             <div class="col s3">
                 <div id='LookupDisplayFormatTip' class="FieldNameRequired">List Display Format</div><!--<span class="FieldNameError" data-bind="visible: LookupDisplayFormatInvalid">*</span></div>-->
@@ -54,7 +54,7 @@
             </div>
             <div class="col s3">
                 <div class="FieldName">&nbsp;</div>
-                <p-dropdown name="lookupTokens" [options]="model.LookupTokens" (onChange)="selectToken($event.value)" [disabled]="model.LookupTokens?.length < 1" [style]="{'width':'98%'}"></p-dropdown>
+                <p-dropdown name="lookupTokens" [options]="model.LookupTokens" (onChange)="selectToken($event.value)" [disabled]="model.LookupTokens?.length < 1" [style]="{'width':'98%'}" ngDefaultControl></p-dropdown>
             </div>
         </div>
         <div class="row" *ngIf="model.FieldType.Type == 'Text'">
@@ -64,7 +64,7 @@
             </div>
             <div class="col s3">
                 <div class="FieldName">&nbsp;</div>
-                <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }"></p-dropdown>
+                <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
             </div>
             <div class="col s3">
                 <div id='MinimumLengthTip' class="FieldName">Minimum Length</div>
@@ -88,7 +88,7 @@
         <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
             <div class="col s12">
                 <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
-                <p-editor name="validationDesc" [(ngModel)]="model.FieldType.ValidationDescription" [style]="{'height':'150px'}"></p-editor>
+                <p-editor name="validationDesc" [(ngModel)]="model.FieldType.ValidationDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
             </div>
         </div>
         <div class="row" *ngIf="model.FieldType.Type == 'FusionLookup'">
@@ -212,11 +212,11 @@
         <div class="row">
             <div class="col s6">
                 <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
-                <p-editor name="desc" [(ngModel)]="model.FieldType.DisplayDescription" [style]="{'height':'150px'}"></p-editor>
+                <p-editor name="desc" [(ngModel)]="model.FieldType.DisplayDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
             </div>
             <div class="col s6">
                 <div id='FormDescriptionTip' class="FieldName">Form Description</div>
-                <p-editor name="formDesc" [(ngModel)]="model.FieldType.FormDescription" [style]="{'height':'150px'}"></p-editor>
+                <p-editor name="formDesc" [(ngModel)]="model.FieldType.FormDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
             </div>
         </div>
         <div class="row">

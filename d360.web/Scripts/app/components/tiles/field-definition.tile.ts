@@ -1,15 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DataTable, Column } from 'primeng/primeng';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
-import { TileActionsComponent } from './tile-actions.component';
-import { FieldTypeForm } from '../forms/field-type.form';
-import { DeleteForm } from '../forms/delete.form';
 
 @Component({
     selector: 'd3s-field-definition-tile',
-    directives: [DataTable, Column, FieldTypeForm, DeleteForm, TileActionsComponent ],
     templateUrl: 'scripts/app/components/tiles/field-definition.tile.html',
     providers: [ FieldsService ]
 })

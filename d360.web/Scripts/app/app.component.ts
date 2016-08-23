@@ -1,7 +1,6 @@
 ///<reference path="./es6-shim.d.ts"/>
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit } from '@angular/core';
-import { ROUTER_DIRECTIVES } from '@angular/router';
-import { HomeComponent, AdminComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
+import {  HomeComponent, HeaderComponent, NavBarComponent, MessagesComponent } from './components/index';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 declare var $: JQueryStatic;
@@ -16,7 +15,7 @@ import 'rxjs/Rx';
                 <main>
                     <div class="row PageHeader" #pageheader>                                             
                     </div>
-                    <div class="row">
+                    <div class="row"> 
                         <div class="col s12">
                             <div class="maincontent">                                            
                                 <router-outlet></router-outlet>                                                
@@ -27,7 +26,7 @@ import 'rxjs/Rx';
                 </main>
                 <d3s-messages></d3s-messages>
               `,
-    directives: [ROUTER_DIRECTIVES, HeaderComponent, NavBarComponent, MessagesComponent, RightSidebarComponent],
+    directives: [ HeaderComponent, NavBarComponent, MessagesComponent, RightSidebarComponent],
     providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService, WebAnalyticsService]
 })
 

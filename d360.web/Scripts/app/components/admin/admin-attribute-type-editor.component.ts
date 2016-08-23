@@ -1,8 +1,6 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
-import {Button, Editor, InputText} from 'primeng/primeng';
+import { NgForm } from '@angular/forms';
 import { AttributeTypeService, FieldsService } from '../../services/index';
 import { AttributeType } from '../../models/attribute-type.model';
 import { DropdownOption } from '../../models/dropdown.model';
@@ -63,7 +61,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [AttributeTypeService, FieldsService],
-    directives: [Button, Editor, REACTIVE_FORM_DIRECTIVES]
 })
 
 export class AdminAttributeTypeEditor {

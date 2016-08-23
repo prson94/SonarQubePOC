@@ -1,19 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, AttributeTypeService, RightSidebarService  } from '../../services/index';
-import { AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
+import { AdminBaseComponent } from './admin-base.component';
 import { AttributeType } from '../../models/attribute-type.model';
-import { TreeTable, TreeNode, Column, Header, InputText } from 'primeng/primeng';
-import { DeleteForm } from '../forms/delete.form';
-import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
-import { AuditComponent} from '../shared/audit.component';
+import { TreeNode } from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
 
 @Component({
-    selector: 'd3s-admin-attributes-component',
-    directives: [TreeTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, AdminAttributeTypeEditor, AuditComponent],    
+    selector: 'd3s-admin-attributes-component',  
     providers: [AttributeTypeService],
     template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.data?.ID" [objectName]="selected?.data?.Name" [objectType]="'AttributeType'"></d3s-audit>
                 <div class="row" *ngIf="!isAuditVisible">

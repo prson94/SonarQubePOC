@@ -1,22 +1,13 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, LookupService, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
-import {Lookup} from '../../models/lookup.model';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
-import { DynamicGridComponent } from '../shared/dynamic-grid.component';
-import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
+import { AdminBaseComponent } from './admin-base.component';
+import { Lookup } from '../../models/lookup.model';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
-
 
 
 @Component({
     selector: 'd3s-admin-lookups-component',
-    directives: [DataTable, Column, TileActionsComponent, FieldDefinitionTile, DeleteForm, DynamicGridComponent, AdminLookupTypeEditorComponent, AuditComponent ],
     providers: [LookupService],
     template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selectedLookup?.ID" [objectName]="selectedLookup?.Name" [objectType]="'LookupType'"></d3s-audit>
                 <div class="row" *ngIf="!isAuditVisible">

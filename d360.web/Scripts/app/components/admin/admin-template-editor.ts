@@ -1,9 +1,8 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { TemplatesService } from '../../services/templates.service';
 import { Template } from '../../models/template.model';
-import {Button, Editor, InputText, Dropdown, SelectItem} from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import * as _ from 'lodash';
 
 @Component({
@@ -35,7 +34,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [TemplatesService],
-    directives: [Button, Editor, InputText, Dropdown]
 })
     
 export class AdminTemplateEditorComponent {    

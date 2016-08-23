@@ -2,7 +2,7 @@
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { HierarchyModel, PredicateType } from '../../models/relations.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeTable, TreeNode, Header, Column, Tooltip } from 'primeng/primeng';
+import { TreeNode } from 'primeng/primeng';
 import { RelationshipsService } from '../../services/relationships.service';
 
 
@@ -77,7 +77,6 @@ import { RelationshipsService } from '../../services/relationships.service';
                 </div>
                 `,
     providers: [ObjectDetailService, RelationshipsService],
-    directives: [TreeTable, Header, Column, Tooltip]
 })
 
 export class StructureTile implements OnChanges {

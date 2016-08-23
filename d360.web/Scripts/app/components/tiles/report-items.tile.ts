@@ -1,15 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { Report, ReportTile } from '../../models/report.model';
 import { MessagesService, ReportsService  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import {DeleteForm} from '../forms/delete.form';
 
 
 @Component({
     selector: 'd3s-report-item-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm],
     providers: [ReportsService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Tiles on this Dashboard

@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { NgForm } from '@angular/common';
-import { Button, Editor, Header, InputText,  Dropdown, SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/primeng';
 import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { FormEvents, FormHelper, JsonResult } from '../../models/form.model';
 import { GroupService } from '../../services/group.service';
@@ -11,7 +11,6 @@ import * as _ from 'lodash';
     selector: 'd3s-group-form',
     templateUrl: 'scripts/app/components/forms/group.form.html',
     providers: [GroupService],
-    directives: [Button, Editor, Header, InputText, Dropdown],
 })
 
 export class GroupForm implements OnInit, OnChanges, FormEvents { 

@@ -1,10 +1,9 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm, REACTIVE_FORM_DIRECTIVES } from '@angular/forms';
-import {Button, Editor, InputText, Dropdown, SelectItem, MultiSelect} from 'primeng/primeng';
-import { RelationshipsService} from '../../services/index';
-import { RelationshipDetail} from '../../models/relationship.model';
+import { NgForm } from '@angular/forms';
+import { SelectItem } from 'primeng/primeng';
+import { RelationshipsService } from '../../services/index';
+import { RelationshipDetail } from '../../models/relationship.model';
 import { DropdownOption } from '../../models/dropdown.model';
 
 import * as _ from 'lodash';
@@ -55,7 +54,6 @@ import * as _ from 'lodash';
                 </div>
                 `,
     providers: [RelationshipsService],
-    directives: [Button, Editor, InputText, Dropdown, REACTIVE_FORM_DIRECTIVES, MultiSelect]
 })
 
 export class AdminRelationshipsEditor {

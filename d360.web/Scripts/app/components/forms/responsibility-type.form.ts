@@ -3,16 +3,13 @@ import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange
 import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelation } from '../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { FormMessage, FormHelper } from '../../models/form.model';
-import { FormMessagePart } from '../parts/form-message.part';
-import { Dropdown, Button, MultiSelect, Checkbox, SelectItem, InputText, Editor } from 'primeng/primeng';
-//import { ResponsibilityService } from '../../services/responsibility.service';
+import { SelectItem } from 'primeng/primeng';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-responsibility-type-form',
     templateUrl: 'scripts/app/components/forms/responsibility-type.form.html',
     providers: [ResponsibilityTypeService],
-    directives: [FormMessagePart, Dropdown, Button, MultiSelect, Editor, InputText]
 })
 
 export class ResponsibilityTypeForm implements OnInit {

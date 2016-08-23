@@ -1,14 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnInit } from '@angular/core';
-import { NgSwitch, NgSwitchDefault, NgSwitchCase } from '@angular/common';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeTable, TreeNode, Column, Header, Tooltip } from 'primeng/primeng';
-import { ObjectDetailTile } from './object-detail.tile';
-import { DeleteForm } from '../forms/delete.form';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
-import { MenuPart, MenuPartItem } from '../parts/menu.part';
+import { TreeNode } from 'primeng/primeng';
+import { MenuPartItem } from '../parts/menu.part';
 import * as _ from 'lodash';
 
 
@@ -121,7 +117,6 @@ import * as _ from 'lodash';
     </div>
 </div>
 `,
-    directives: [NgSwitch, NgSwitchCase, NgSwitchDefault, TreeTable, Column, Header, ObjectDetailTile, DeleteForm, DynamicEditorComponent, MenuPart, Tooltip],
     providers: [ObjectDetailService],
 })
 

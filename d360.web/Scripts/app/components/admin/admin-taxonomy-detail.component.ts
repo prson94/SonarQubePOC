@@ -1,18 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { Taxonomy } from '../../models/taxonomy.model';
 import { MessagesService } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
-import { ModelLevelTile } from '../tiles/model-level.tile';
-import { ClaimsTile } from '../tiles/claims.tile';
-import { PeopleResponsibilitiesTile } from '../tiles/people-responsibilities.tile';
 
 
 @Component({
     selector: 'd3s-admin-model-detail-component',
-    directives: [DataTable, Column, TileActionsComponent, ClaimsTile, FieldDefinitionTile, PeopleResponsibilitiesTile, ModelLevelTile],    
     template: `
                     <div class="tile tile-detail">                                              
                         <d3s-field-definition-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>

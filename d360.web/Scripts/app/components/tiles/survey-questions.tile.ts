@@ -1,16 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { SurveyQuestionType, SurveyType } from '../../models/survey.model';
 import { MessagesService, SurveysService  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
-import { AdminSurveyQuestionEditorEditor } from '../admin/admin-survey-question-editor.component';
 
 
 @Component({
     selector: 'd3s-survey-questions-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, AdminSurveyQuestionEditorEditor],
     providers: [SurveysService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Questions

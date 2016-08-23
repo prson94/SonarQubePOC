@@ -18,7 +18,17 @@ import { AdminLoadComponent } from './admin-load.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
-
+import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
+import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
+import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
+import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
+import { AdminStatisticEditor } from './admin-statistics-editor.component';
+import { AdminSurveyQuestionEditorEditor } from './admin-survey-question-editor.component';
+import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
+import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
+import { AdminTaxonomyLevelEditorComponent } from './admin-taxonomy-level-editor.component';
+import { AdminTemplateEditorComponent } from './admin-template-editor';
+import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
 
 
 export * from './admin-governance.component';
@@ -42,3 +52,14 @@ export * from './admin-dashboards.component';
 export * from './admin-fusion.component';
 export * from './admin-load.component';
 export * from './admin-surveys.component';
+export * from './admin-attribute-type-editor.component';
+export * from './admin-dashboards-editor.component';
+export * from './admin-lookup-type-editor.component';
+export * from './admin-relationships-editor.component';
+export * from './admin-statistics-editor.component';
+export * from './admin-survey-question-editor.component';
+export * from './admin-taxonomy-editor.component';
+export * from './admin-taxonomy-detail.component';
+export * from './admin-taxonomy-level-editor.component';
+export * from './admin-template-editor';
+export * from './admin-statistic-checktype-input';

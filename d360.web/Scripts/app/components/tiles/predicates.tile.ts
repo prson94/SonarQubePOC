@@ -1,16 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
-import { DataTable, Column} from 'primeng/primeng';
 import { Predicate } from '../../models/predicate.model';
 import { MessagesService, PredicatesService  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 
 @Component({
     selector: 'd3s-predicates-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, DynamicEditorComponent],
     providers: [PredicatesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Predicates

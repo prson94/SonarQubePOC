@@ -1,9 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, ElementRef } from '@angular/core';
-import {AutoComplete} from 'primeng/primeng';
 import { TypeaheadSearchService } from '../../services/index';
 import { TypeaheadSearchResult } from '../../models/typeahead-search-result.model';
-import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
     selector: 'd3s-header-typeahead-search',
@@ -23,7 +22,6 @@ import { ROUTER_DIRECTIVES, Router, NavigationEnd } from '@angular/router';
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>
                 <span>`,
-    directives: [AutoComplete],
     providers: [TypeaheadSearchService]
 })
 

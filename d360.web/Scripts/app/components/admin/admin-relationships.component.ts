@@ -1,17 +1,12 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent} from './admin-base.component';
-import { PredicatesTile } from '../tiles/predicates.tile';
-import { FieldDefinitionTile } from '../tiles/field-definition.tile';
+import { AdminBaseComponent } from './admin-base.component';
 import { Relationship } from '../../models/relationship.model';
-import { RelationshipsTile } from '../tiles/relationships.tile';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
-    directives: [PredicatesTile, FieldDefinitionTile, RelationshipsTile, AuditComponent],
     template: `<d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="[selected?.SourceName] + ' / ' + [selected?.TargetName]" [objectType]="'IntersectType'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l6 s12">                    

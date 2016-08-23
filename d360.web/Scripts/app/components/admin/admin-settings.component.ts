@@ -7,12 +7,10 @@ import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, 
 import { CompanySettingsService } from '../../services/settings.service';
 import { AdminBaseComponent } from './admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 
 @Component({
     selector: 'admin-settings',
     providers: [CompanySettingsService],
-    directives: [TileActionsComponent],
     templateUrl: 'scripts/app/components/admin/admin-settings.component.html',
     styleUrls: ['scripts/app/components/admin/admin-settings.component.css']
 })

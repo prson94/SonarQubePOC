@@ -1,13 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { DataTable, Column, Button, Dropdown } from 'primeng/primeng';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { Synonym, SynonymItem, SynonymEditModel } from '../../models/object-detail.model';
 import { FormMode, FormHelper } from '../../models/form.model';
-import { TileActionsComponent } from './tile-actions.component';
-import { DeleteForm } from '../forms/delete.form';
-import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
 
 
 @Component({
@@ -60,7 +55,6 @@ import { DynamicEditorComponent } from '../shared/dynamic-editor.component';
     </div>
 </div>
 `,
-    directives: [DataTable, Column, TileActionsComponent, NgSwitch, NgSwitchCase, NgSwitchDefault, Button, DeleteForm, DynamicEditorComponent],
     providers: [ObjectDetailService],
 })
 

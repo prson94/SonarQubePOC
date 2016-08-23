@@ -1,34 +1,15 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, NgZone, OnDestroy } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { ObjectDetailTile } from '../tiles/object-detail.tile';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, PageHeader } from '../../services/index';
-import { DataTable, Column } from 'primeng/primeng';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../models/responsibility-type.model';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
 import { FormMode } from '../../models/form.model';
-import { ResponsibilityTypeForm } from '../forms/responsibility-type.form';
-import { DeleteForm } from '../forms/delete.form';
-import { AdminBaseComponent} from './admin-base.component';
+import { AdminBaseComponent } from './admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { AuditComponent} from '../shared/audit.component';
 
 @Component({
     selector: 'admin-governance',
     providers: [ResponsibilityTypeService],
-    directives: [
-        ObjectDetailTile,
-        DataTable,
-        Column,
-        TileActionsComponent,
-        NgSwitch,
-        NgSwitchCase,
-        NgSwitchDefault,
-        ResponsibilityTypeForm,
-        DeleteForm,
-        AuditComponent
-    ],
     templateUrl: 'scripts/app/components/admin/admin-governance.component.html',
 })
 

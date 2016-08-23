@@ -1,16 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {DataTable, Column} from 'primeng/primeng';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
 import { MessagesService, TaxonomiesService  } from '../../services/index';
-import { TileActionsComponent } from '../tiles/tile-actions.component';
-import { AdminTaxonomyLevelEditorComponent } from '../admin/admin-taxonomy-level-editor.component';
-import {DeleteForm} from '../forms/delete.form';
 
 
 @Component({
     selector: 'd3s-model-level-tile',
-    directives: [DataTable, Column, TileActionsComponent, DeleteForm, AdminTaxonomyLevelEditorComponent],
     providers: [TaxonomiesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Levels
