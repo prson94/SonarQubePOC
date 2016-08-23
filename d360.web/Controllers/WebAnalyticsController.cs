@@ -31,8 +31,8 @@ namespace d360.web.Controllers
         #endregion
 
         public class WebActivityEntity : TableEntity
-        {
-
+        {           
+            
             public string Activity { get; set; }
 
             public int ObjectId { get; set; }
@@ -40,10 +40,12 @@ namespace d360.web.Controllers
             public string ObjectName { get; set; }
 
             public int ResourceID { get; set; }
-
-            public DateTime Date { get; set; }
-
+            public string ResourceName { get; set; }
             public string IP { get; set; }
+            public string UserAgent { get; set; }            
+            public string Path { get; set; }
+            public string Host { get; set; }
+            public string BrowserLanguages { get; set; }
         }
 
         
@@ -55,21 +57,34 @@ namespace d360.web.Controllers
             //Company.CurrentCompanyID - current company
             //DateTime.UtcNow - current time
             //GetClientIp - client IP Address
-
-            value.ResourceID = Company.CurrentResourceID;
-            value.Date = DateTime.UtcNow;
+                        
+            value.ResourceID = Company.CurrentResourceID;            
+            
             value.IP = GetClientIp(Request);
+            value.UserAgent = HttpContext.Current.Request.UserAgent;
+            value.Host = HttpContext.Current.Request.UrlReferrer.Host;
+            value.Path = HttpContext.Current.Request.UrlReferrer.AbsolutePath;
+            value.BrowserLanguages = string.Join(",",HttpContext.Current.Request.UserLanguages);
+            value.RowKey = Guid.NewGuid().ToString();
+            value.PartitionKey = value.ResourceID.ToString();
 
-            var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
+            try
+            {
+                var storageAccount = CloudStorageAccount.Parse(d360.core.constants.WEBJOBS_STORAGE_CONNECTION);
 
-            var tableClient = storageAccount.CreateCloudTableClient();
+                var tableClient = storageAccount.CreateCloudTableClient();
 
-            var table = tableClient.GetTableReference($"WebLogs_{Company.CurrentCompanyID}");
-            table.CreateIfNotExists();
+                var table = tableClient.GetTableReference($"WebLogs{Company.CurrentCompanyID}");
+                table.CreateIfNotExists();
 
-            var insertOperation = TableOperation.Insert(value);
+                var insertOperation = TableOperation.Insert(value);
 
-            await table.ExecuteAsync(insertOperation);
+                await table.ExecuteAsync(insertOperation);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             //var retrieveOperation = TableOperation.Retrieve<customerentity>("Harp", "Walter");
             //var result = await table.ExecuteAsync(retrieveOperation);

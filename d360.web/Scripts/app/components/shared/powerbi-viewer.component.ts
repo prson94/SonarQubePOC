@@ -48,6 +48,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
             else {
                 this.shouldRender = false;
                 window.powerbi.embed(this.biContainer.first.nativeElement);
+                console.log("DEV: RENDERING POWER BI REPORT");
                 this.logAction('open', 'Report', this.dashboard.ID);
             }
         }
