@@ -8,7 +8,7 @@ import { ChallengeService } from '../../services/index';
     selector: 'd3s-object-challenge',
     providers: [ChallengeService],
     template: `
-            <header>Challenge</header>
+            <header>Challenge</header>            
             <div *ngIf="!hasChallenge()" class="row governance-value governance-value-pass">
                 <div class="col s12">
                     <i class="fa fa-circle-o" aria-hidden="true"></i>                
@@ -19,15 +19,19 @@ import { ChallengeService } from '../../services/index';
                     No current challenges.
                 </div>                
             </div>
-            <div *ngIf="hasChallenge()" class="row governance-value governance-value-fail">
+            <div class="row">
                 <div class="col s12">
-                    <i class="fa fa-circle" aria-hidden="true"></i>                
-                </div>                
-            </div>
-            <div *ngIf="hasChallenge()" class="row">
-                <div class="col s12">
-                    Outstanding challenge: <span [innerHtml]="challenge?.Reason"></span>
-                </div>                
+                    <div *ngIf="hasChallenge()" class="row governance-value governance-value-fail">
+                        <div class="col s12">
+                            <i class="fa fa-circle" aria-hidden="true"></i>                
+                        </div>                
+                    </div>
+                    <div *ngIf="hasChallenge()" class="row">
+                        <div class="col s12">
+                            Outstanding challenge: <span [innerHtml]="challenge?.Reason"></span>
+                        </div>                
+                    </div>
+                </div>
             </div>
             
         `

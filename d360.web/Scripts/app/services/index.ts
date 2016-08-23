@@ -40,6 +40,8 @@ import { ChallengeService } from './challenge.service';
 import { DashboardService } from './dashboard.service';
 import { ObjectActionsService } from './object-actions.service';
 import { WebAnalyticsService } from './web-analytics.service';
+import { IssuesService} from './issues.service';
+import { ScoreService } from './score.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -83,3 +85,5 @@ export * from './challenge.service';
 export * from './dashboard.service';
 export * from './object-actions.service';
 export * from './web-analytics.service';
+export * from './issues.service';
+export * from './score.service';

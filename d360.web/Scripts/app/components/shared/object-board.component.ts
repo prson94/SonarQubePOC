@@ -1,21 +1,30 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component, Input} from '@angular/core';
+import {Component, Input, Output, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-object-board',
     template: `
-            <header>Board</header>
-            <span class="governance-value">{{commentCount}}</span>
-            
+            <div (click)="toggleDetails()" >
+                <header>Board</header>
+                <span class="governance-value">{{commentCount}}</span>
+            </div>            
         `
 })
 
 export class ObjectBoardComponent extends BaseComponent {    
     @Input() commentCount: number = 0;
 
+    @Input() showDetails: boolean = false;
+    @Output() showDetailsChange = new EventEmitter();
+
     constructor() {
         super();
+    }
+
+    toggleDetails() {
+        this.showDetails = !this.showDetails;
+        this.showDetailsChange.emit(this.showDetails);
     }
     
 }

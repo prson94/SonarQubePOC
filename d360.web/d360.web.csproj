@@ -1439,6 +1439,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-board-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-issue-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\powerbi-viewer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
@@ -1491,6 +1494,7 @@
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\issue.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
@@ -1499,6 +1503,7 @@
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
@@ -1540,6 +1545,7 @@
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\issues.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-actions.service.ts" />
@@ -1547,6 +1553,7 @@
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\score.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />

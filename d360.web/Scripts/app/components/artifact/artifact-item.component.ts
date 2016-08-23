@@ -26,7 +26,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail">
-                                <d3s-object-governance-tile [objectType]="'Artifact'" [objectID]="artifact?.ID"></d3s-object-governance-tile>
+                                <d3s-object-governance-tile [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-object-governance-tile>
                             </div>
                         </div>
                     </div>

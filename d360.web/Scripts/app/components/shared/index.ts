@@ -15,6 +15,10 @@ import { ObjectIssuesComponent } from './object-issues.component';
 import { OwnershipTabComponent } from './ownership-tab.component';
 import { PageLinksComponent } from './page-links.component';
 import { TooltipComponent } from './tooltip.component';
+import { ObjectIssueDetailsComponent } from './object-issue-details.component';
+import { ObjectBoardDetailsComponent } from './object-board-details.component';
+import { ObjectHealthDetailsComponent } from './object-health-details.component';
+
 
 export * from './messages.component';
 export * from './audit.component';
@@ -33,4 +37,6 @@ export * from './object-issues.component';
 export * from './ownership-tab.component';
 export * from './page-links.component';
 export * from './tooltip.component';
-
+export * from './object-issue-details.component';
+export * from './object-board-details.component';
+export * from './object-health-details.component';
