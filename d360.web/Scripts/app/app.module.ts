@@ -207,6 +207,10 @@ import {
 } from './components/tiles/index';
 
 
+import {
+    WorkflowIssueEditorComponent
+} from './components/workflow/index';
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -334,6 +338,7 @@ import {
         StructureTile,
         SurveyQuestionsTile,
         SynonymsTile, 
+        WorkflowIssueEditorComponent,
     ],
     imports: [
         BrowserModule,

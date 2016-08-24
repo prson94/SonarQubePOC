@@ -4,4 +4,5 @@
     ResourceID: number;
     ActivityName: string;
     DateStarted: string;
+    WorkflowID: string;
 }

@@ -42,6 +42,7 @@ import { ObjectActionsService } from './object-actions.service';
 import { WebAnalyticsService } from './web-analytics.service';
 import { IssuesService} from './issues.service';
 import { ScoreService } from './score.service';
+import { ResourcesService } from './resources.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -87,3 +88,4 @@ export * from './object-actions.service';
 export * from './web-analytics.service';
 export * from './issues.service';
 export * from './score.service';
+export * from './resources.service';

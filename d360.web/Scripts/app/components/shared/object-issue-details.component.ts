@@ -6,10 +6,11 @@ import { IssuesService } from '../../services/index';
 @Component({
     selector: 'd3s-object-issue-details',
     template: `
-            <div class="row" *ngIf="!isLoading && issues.length > 0">
+            <d3s-workflow-issue-editor *ngIf="!isLoading && showEditor" [issue]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-issue-editor>
+            <div class="row" *ngIf="!isLoading && issues.length > 0 && !showEditor">
                 <header>Open Issues</header>
-                <div class="col s12">
-                    <p-dataTable  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected">
+                <div class="col s12">                    
+                    <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="Issue" header="Issue" [sortable]="true" [style]="{'width':'250px'}">
                             <template let-col let-issue="rowData">
                                 <span [innerHtml]="issue?.Issue"></span>
@@ -22,9 +23,16 @@ import { IssuesService } from '../../services/index';
                             </template>
                         </p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
+                        <p-column  [style]="{width:'40px'}">
+                            <template let-issue="rowData">
+                                <div class="RowTools" *ngIf="issue.Activity > 0">                                
+                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
+                                </div>
+                            </template>
+                        </p-column>                            
                     </p-dataTable>   
                 </div>
-            </div>
+            </div>            
             <div class="row" *ngIf="!isLoading && issues.length == 0">
                 <div class="col s12 center">
                     No issues exist.
@@ -38,6 +46,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
     private issues: any[] = [];
     private selected: any;
     private loaded: boolean = false;
+    private showEditor: boolean = false;
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -61,5 +70,14 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
                 this.isLoading = false;
                 this.loaded = true;
             });
+    }
+
+    private handleSave() {
+        this.showEditor = false;
+        this.loadIssues();
+    }
+
+    private handleRowDblClick() {
+        if (this.selected.Activity > 0) this.showEditor = true;
     }
 }

@@ -1459,6 +1459,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
@@ -1503,6 +1505,7 @@
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\resource.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
@@ -1553,6 +1556,7 @@
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\resources.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\score.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
