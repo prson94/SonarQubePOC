@@ -10,7 +10,7 @@
     <h4 id="FormTitle"></h4>
 </div>
 <div class="right">
-    <button type="button" id="SaveButton" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Save</button>
+    <button type="button" id="SaveButtonIssue" class="btn waves-effect waves-light brown lighten-1 saveButton" data-context="Workflow">Save</button>
 </div>
 <div class="clear"></div>
 <div id="FormDescription" class="form-instructions"></div>
@@ -31,20 +31,20 @@
             By clicking Save above, you are assigning yourself to this issue.  Please provide a comment below.  As you are working on this issue,
             you may also comment on the issue where it is listed on your Board.
         </div>
-        <div id="ActionArea" class="row">
-            <div class="col s12 m4 l4" id="Action1Wrapper">
+        <div id="IssueActionArea" class="row">
+            <div class="col s12 m4 l4" id="IssueAction1Wrapper">
                 <input type="radio" id="Action1" name="Action" value="assign" checked="checked" />
                 <label for="Action1">Accept Assignment</label>
             </div>
-            <div class="col s12 m4 l4" id="Action2Wrapper">
+            <div class="col s12 m4 l4" id="IssueAction2Wrapper">
                 <input type="radio" id="Action2" name="Action" value="reassign" />
                 <label for="Action2">Re-assign</label>
                 <div class="FieldName">Re-assign To:</div>
                 <div id="ReassignTo"></div>
             </div>
-            <div class="col s12 m4 l4" id="Action3Wrapper">
-                <input type="radio" id="Action3" name="Action" value="close" />
-                <label for="Action3">Close</label>
+            <div class="col s12 m4 l4" id="IssueAction3Wrapper">
+                <input type="radio" id="IssueAction3" name="Action" value="close" />
+                <label for="IssueAction3">Close</label>
             </div>
         </div>
         <div id="CommentArea">
@@ -81,14 +81,14 @@
                         $('#IssueValue').html(data.Issue);
                         $('#RequestorValue').html('<a data-context="Preview" data-type="Resource" data-id="' + data.ResourceID + '" href="' + data.ResourceUrl + '">' + data.ResourceName + '</a>');
                         $('#DateValue').html(moment.utc(data.DateStarted).local().format('dddd, MMMM Do YYYY, h:mm:ss a'));
-
-                        if (data.Activity == 3) {
-                            $('#Action2Wrapper').hide();
-                            $('#Action3Wrapper').hide();                            
+                        
+                        if (data.Activity == 3) {                            
+                            $('#IssueAction2Wrapper').hide();                            
+                            $('#IssueAction3Wrapper').hide();                            
                         }
                         else {
-                            $('#Action1Wrapper').hide();
-                            $('#Action3').attr('checked', 'checked');
+                            $('#IssueAction1Wrapper').hide();
+                            $('#IssueAction3').attr('checked', 'checked');
 
                             var reassignSource = {
                                 datatype: "json",
@@ -111,7 +111,7 @@
                             });
                         }
 
-                        $('#SaveButton').on('click', function () {
+                        $('#SaveButtonIssue').on('click', function () {                            
                             $('#progress').html('<i class="fa fa-spinner fa-spin fa-4x"></i>');
 
                             $.ajax('/services/workflow/tasks/' + workflowID, {
@@ -119,7 +119,7 @@
                                 contentType: "application/json; charset=utf-8",
                                 type: 'POST',
                                 data: JSON.stringify({
-                                    WorkflowAction: $('input[name=Action]:checked', '#ActionArea').val(),
+                                    WorkflowAction: $('input[name=Action]:checked', '#IssueActionArea').val(),
                                     AssignTo: $('#ReassignTo').jqxDropDownList('val'),
                                     Comment: $('#Comment').val()
                                 })

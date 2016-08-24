@@ -3685,6 +3685,7 @@ select  A.FirstName,
         A.IsAdministrator,
         {columns}
 		A.ID,
+        A.ID as ResourceID,
         A.FirstName + ' ' + A.LastName as FullName 
 from    (
         select	FirstName,
