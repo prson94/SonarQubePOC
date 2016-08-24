@@ -14,7 +14,7 @@ import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
                 <ng-content></ng-content>
             </div>
         </div>
-    `,
+    `
 })
 
 export class SimpleAccordion implements OnInit {

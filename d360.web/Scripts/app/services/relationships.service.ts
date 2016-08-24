@@ -6,7 +6,7 @@ import { BaseService } from './base.service';
 import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { HierarchyArtifactsModel } from '../models/relations.model';
+import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
 
 @Injectable()
 export class RelationshipsService extends BaseService {
@@ -117,10 +117,17 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getHierarchyArtifacts(model: HierarchyArtifactsModel): Promise<any[]> {
+    getHierarchyArtifacts(model: HierarchyArtifactsModel): Promise<HierarchyArtifactItem[]> {
         return this.http.post('relations/hierarchy/artifacts', model)
             .toPromise()
-            .then(response => <any[]>response.json())
+            .then(response => <HierarchyArtifactItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postHierarchy(model: HierarchyPostModel): Promise<any> {
+        return this.http.post('relations/hierarchy/save', model)
+            .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 }

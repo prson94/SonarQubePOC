@@ -37,3 +37,28 @@ export class HierarchyArtifactsModel {
     GroupNumber: number;
     IsAddingParent: boolean;
 }
+
+export class HierarchyArtifactItem {
+    DisplayName: string;
+    Name: string;
+    Object: string;
+    ObjectID: number;
+    ObjectTypeName: string;
+}
+
+
+export class HierarchyPostModel {
+    IntersectMapID: number;
+    HierarchyType: PredicateType;
+    PredicateID: number;
+    IsAddingParent: boolean = false;
+    ObjectID: number;
+    Object: string;
+    ObjectType: string;
+    ObjectTypeID: number;
+    SubjectID: number;
+    Subject: string;
+    SubjectType: string;
+    SubjectTypeID: number;
+    GroupNumber: number = -1;
+}

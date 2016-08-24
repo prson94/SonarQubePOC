@@ -5,6 +5,7 @@ import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TreeNode } from 'primeng/primeng';
 import { MenuPartItem } from '../parts/menu.part';
+import { ActionBarItem } from '../parts/action-bar.part'; 
 import * as _ from 'lodash';
 
 
@@ -70,13 +71,9 @@ import * as _ from 'lodash';
             </p-treeTable>
         </div>
         <div *ngIf="!readonly" class="col s6">
-            <div class="menu-bar">          
-                <div *ngFor="let item of menuBarItems" style="display:inline;">
-                    <d3s-menu *ngIf="item.isMenu" [items]="item.menuItems" (onItemClick)="menuClick($event)"><span><i [class]="'fa fa-' + item.icon"></i></span></d3s-menu>
-                    <div *ngIf="!item.isMenu" class="menu-item" (click)="barClick(item)" pToolTip="item.text" tooltipPosition="top"><i [class]="'fa fa-' + item.icon"></i></div>
-
-                </div>
-            </div>
+            <div style="float:right">
+                <d3s-action-bar [items]="actions" (onClick)="action($event)" (onMenuClick)="menuAction($event)"></d3s-action-bar>
+            </div>        
             
             <div [ngSwitch]="formMode">
                 <div *ngSwitchDefault>
@@ -141,9 +138,7 @@ export class AttributesTile implements OnInit {
     private attributeID: number = null;
     private selectedRowCopy = null;
 
-   // private menuItems: MenuItem[];
-   // private menuPartItems: MenuPartItem[] = new Array<MenuPartItem>();
-    private menuBarItems: MenuBarItem[] = new Array<MenuBarItem>();
+    private actions: ActionBarItem[] = new Array<ActionBarItem>();
 
     constructor(private objectDetailService: ObjectDetailService) {
     }
@@ -222,44 +217,61 @@ export class AttributesTile implements OnInit {
 
         this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID)
             .then(d => {
-                //console.log(d);
                 this.setMenuItems(d);
-
             });
     }
 
     setMenuItems(items: any[]) {
+        this.actions = new Array<ActionBarItem>();
 
-        this.menuBarItems = new Array<MenuBarItem>();
+        let disable = (this.selectedRow == null);
 
-        for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            let barItem = new MenuBarItem();
-            barItem.icon = item.Icon;
-            barItem.text = item.Title;
-            barItem.params = item.Params;
-            barItem.action = item.Action;
-            if (item.Items.length > 0) {
-                barItem.isMenu = true;
-                for (let j = 0; j < item.Items.length; j++) {
-                    let subItem = item.Items[j];
-                    let menuItem = new MenuPartItem();
+        items.forEach(i => {
+            let action = new ActionBarItem();
+            action.icon = i.Icon;
+            action.key = i.Action;
+            action.title = i.Title;
+            action.data = i.Params;
+            action.disabled = ((action.key || '').toLowerCase() == 'add') ? false : disable;
 
-                    menuItem.icon = item.icon;
-                    menuItem.text = subItem.Title;
-                    menuItem.data = {
-                        action: subItem.Action,
-                        params: subItem.Params
+            if (i.Items.length > 0) {
+                action.disabled = false;
+                action.menu = new Array<MenuPartItem>();
+                i.Items.forEach(j => {
+                    let sub = new MenuPartItem();
+                    sub.icon = j.Icon;
+                    sub.data = {
+                        action: j.Action,
+                        params: j.Params
                     };
+                    sub.text = j.Title;
 
-                    barItem.menuItems.push(menuItem);
-                }
+                    action.menu.push(sub);
+                });
             }
-            this.menuBarItems.push(barItem);
-        }        
+            this.actions.push(action);
+        });
     }
 
-    menuClick(item: MenuPartItem) {
+    action(item: ActionBarItem) {
+        console.log(item);
+        switch ((item.key || '').toLowerCase().trim()) {
+            case 'edit':
+                this.attributeID = item.data.attributeID;
+                this.selectedRowCopy = _.cloneDeep(this.selectedRow.data);
+                this.selectedRowCopy.ID = this.selectedRowCopy.ID.split('|')[1];
+                this.edit();
+                break;
+            case 'delete':
+                this.attributeID = item.data.attributeID;
+                this.delete();
+                break;
+            default:
+                break;
+        }
+    }
+
+    menuAction(item: MenuPartItem) {
         this.createParams = [];
         this.createParams = _.concat(
             item.data.params.typeID,
@@ -270,23 +282,6 @@ export class AttributesTile implements OnInit {
         if (item.data.action == 'add')
             this.add();
     }
-
-    barClick(item: MenuBarItem) {
-        if (item.action == 'edit') {
-            this.attributeID = item.params.attributeID;
-            this.selectedRowCopy = _.cloneDeep(this.selectedRow.data);
-            this.selectedRowCopy.ID = this.selectedRowCopy.ID.split('|')[1];
-
-            //console.log(this.attributeID);
-            //console.log(this.selectedRow);
-            this.edit();
-        } else if (item.action == 'delete') {
-            this.attributeID = item.params.attributeID;
-            this.delete();
-        }
-        //console.log(item);
-    }
-
 }
 
 export class MenuBarItem {

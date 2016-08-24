@@ -6,10 +6,27 @@ import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
     selector: 'd3s-menu',
     styles: [
         `
-        ul {
-            position: absolute;
+        ul.bottom-right {
             left: 0;
             top: 0;
+        }
+        
+        ul.bottom-left {
+            right: 0;
+            top: 0;
+        }
+
+        ul.top-right {
+            left: 0;
+            bottom: 0;
+        }
+        ul.top-left{
+            right: 0;
+            bottom: 0;
+        }
+
+        ul {
+            position: absolute;
             z-index: 1000;
             background-color: #fff;
             box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.25);
@@ -33,40 +50,18 @@ import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
         
         .menu-item {
             cursor: pointer;
-            padding:5px 10px 5px 10px;
-            border:1px solid #aaa;
-            display: inline-block;   
-            background-color: #ddd;
-            box-shadow: none;
-            transition: all .5s;     
         }
 
-        .menu-item:hover {
-            background-color: #fff;
-        }
 
-        .menu-item.disabled:hover {
-            background-color: #ddd;
-        }
-
-        .menu-item.disabled {
-            cursor: default;
-        }
-
-        .menu-item.active {
-            border:1px solid #fff;
-            background-color:#fff;
-            box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.25);
-        }
         `
     ],
     template: `
         <div>
-            <div class="menu-item" [class.active]="showMenu" (click)="toggle()" >
+            <div class="menu-item" (click)="toggle()" >
                 <ng-content></ng-content>
             </div>
             <div *ngIf="showMenu" class="menu-anchor" (mouseleave)="showMenu = false">
-                <ul>
+                <ul [class]="menuPosition" [style.width]="width">
                     <li *ngFor="let item of items" (click)="handleClick(item)">
                         <span *ngIf="item.icon != ''"><i [class]="'fa fa-' + item.icon"></i></span> {{item.text}}
                     </li>
@@ -78,6 +73,8 @@ import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 
 export class MenuPart implements OnInit {
     @Input() items: MenuPartItem[];
+    @Input() menuPosition: string = "bottom-right";
+    @Input() width: string = "200px";
     @Output() onItemClick: EventEmitter<MenuPartItem> = new EventEmitter<MenuPartItem>();
 
     showMenu = false;
