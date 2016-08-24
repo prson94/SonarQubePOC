@@ -3684,7 +3684,8 @@ select  A.FirstName,
         A.Status,
         A.IsAdministrator,
         {columns}
-		A.ID
+		A.ID,
+        A.FirstName + ' ' + A.LastName as FullName 
 from    (
         select	FirstName,
 		        LastName,
