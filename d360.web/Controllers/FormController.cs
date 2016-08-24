@@ -924,6 +924,79 @@ namespace d360.web.Controllers
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<Artifact>(model, fields);
 
+
+                #region Add Comment
+
+                try
+                {
+                    var comment = new Comment
+                    {
+                        Body = $"I updated the definition.",
+                        CreatingResourceID = model.UpdatedBy.HasValue ? model.UpdatedBy.Value : Company.CurrentResourceID,
+                        OwnerObjectType = "Artifact",
+                        OwnerObjectID = model.ID,
+                        CommentTypeID = CommentType.Governance,
+                        DateCreated = DateTime.UtcNow,
+                        Relations = new List<CommentRelation>()
+                    };
+                    comment.Relations.Add(new CommentRelation { ObjectType = "Artifact", ObjectID = model.ID, Date = DateTime.UtcNow });
+                    comment.Relations.Add(new CommentRelation { ObjectType = "Resource", ObjectID = Company.CurrentResourceID, Date = DateTime.UtcNow });
+                    Company.Add<Comment>(comment);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                #endregion
+
+                #region Create Certify Workflow
+
+                try
+                {
+                    var workflowSettings = Company.Filter<WorkflowTypeRelation>(i =>
+                        i.Object == "ArtifactType" &&
+                        i.ObjectID == model.ArtifactTypeID &&
+                        i.WorkflowType == WorkflowType.CertifyArtifact &&
+                        i.Enabled
+                        ).ToList();
+
+                    if (model.Status == "Certified" && workflowSettings.Count > 0)
+                    {
+                        var specificWorkflow = workflowSettings.FirstOrDefault(i => i.ParentID == model.TaxonomyTypeID);
+
+                        if (specificWorkflow == null)
+                        {
+                            specificWorkflow = workflowSettings.FirstOrDefault(i => !i.ParentID.HasValue);
+                        }
+
+                        var workflow = Company.GetMostRecentCertificationWorkflowByArtifact(id);
+                        bool shouldProceed = (workflow != null) ? (workflow.DateCompleted.HasValue) : true;
+
+                        if (shouldProceed)
+                        {
+                            int daysGivenToComplete = (specificWorkflow.Fields.ContainsKey("DaysGivenToCompleteCertification")) ? int.Parse(specificWorkflow.Fields["DaysGivenToCompleteCertification"]) : 7;
+
+                            var processor = new Processor();
+                            var dictionary = new Dictionary<string, object>();
+                            dictionary.Add("CompanyID", Company.CurrentCompanyID);
+                            dictionary.Add("requestInfo", new CertifyArtifactRequest
+                            {
+                                ArtifactID = model.ID,
+                                DueDate = DateTime.UtcNow.AddDays(daysGivenToComplete),
+                                StartDate = DateTime.UtcNow,
+                                SendMailFromWorkflow = true
+                            });
+                            processor.CreateNewWorkflowInstance(WorkflowVersionMap.CertifyArtifactIdentity_vCurrent, dictionary);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                #endregion
+
                 return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
@@ -8780,7 +8853,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             //var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
             var models = Company.Table<Predicate>()
                 .ToList()
-                .Where(i => !i.Type.AsInfoModel().ReadOnly)
+                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment)
                 .Select(i => new {
                     title = $"{i.Name} <span style='color: #999; font-size: 85%'>({i.Type.AsInfoModel().Name})</span>",
                     value = i.ID
@@ -8846,6 +8919,27 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Company.ValidateIntersectType(0, nodes);
 
                 var predicate = form["Predicate"];
+                int? predicateID = null;
+
+                if (!string.IsNullOrEmpty(predicate))
+                {
+                    predicateID = int.Parse(predicate);
+
+                    var predicateModel = Company.GetById<Predicate>(predicateID.Value);
+
+                    if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
+                    }
+                    if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+                    }
+                    if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+                    }
+                }
 
                 var model = new IntersectType {
                     Nodes = nodes,
@@ -8854,33 +8948,10 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     Object = side2Info[0],
                     ObjectID = int.Parse(side2Info[1]),
                     IsSystem = false,
-                    PredicateID = int.Parse(predicate)
+                    PredicateID = predicateID
                 };
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
-
-                //if (!string.IsNullOrEmpty(form["Predicates[]"]))
-                //{
-                //    var predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-
-                //    predicates.ForEach(p => {
-                //        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                //    });
-                //    Company.SaveChanges();
-                //}
-
-                //if (!string.IsNullOrEmpty(form["Predicates"]))
-                //{
-                //    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
-                //    if (!string.IsNullOrEmpty(vals))
-                //    {
-                //        var predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                //        predicates.ForEach(p => {
-                //            Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                //        });
-                //        Company.SaveChanges();
-                //    }                    
-                //}
 
                 return jsonSuccess(model.Name + " successfully created.", id.ToString(), ContextList.IntersectType, "add", HttpStatusCode.Created);
             }
@@ -8988,6 +9059,27 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 nodes.Add(side2Node);
 
                 var predicate = form["Predicate"];
+                int? predicateID = null;
+
+                if (!string.IsNullOrEmpty(predicate))
+                {
+                    predicateID = int.Parse(predicate);
+
+                    var predicateModel = Company.GetById<Predicate>(predicateID.Value);
+
+                    if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
+                    }
+                    if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+                    }
+                    if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+                    }
+                }
 
                 // Validation
                 Company.ValidateIntersectType(id, nodes);
@@ -9014,40 +9106,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 Company.Update<IntersectType>(model);
                 Company.Update<IntersectTypeNode>(existingSide1Node);
                 Company.Update<IntersectTypeNode>(existingSide2Node);
-
-                //List<PredicateType> predicates = null;
-                //if (!string.IsNullOrEmpty(form["Predicates[]"]))
-                //{
-                //    predicates = form["Predicates[]"].Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                //}
-
-                //if (!string.IsNullOrEmpty(form["Predicates"]))
-                //{
-                //    var vals = form["Predicates"].TrimStart('[').TrimEnd(']');
-                //    if (!string.IsNullOrEmpty(vals))
-                //        predicates = vals.Split(',').Select(i => (PredicateType)Enum.Parse(typeof(PredicateType), i)).ToList();
-                //    else
-                //        predicates = new List<PredicateType>();
-                //}
-
-                //var invalidPredicates = model.IntersectTypePredicates.Select(i => i.PredicateType).Except(predicates).ToList();
-                //invalidPredicates.ForEach(p => {
-                //    var ip = model.IntersectTypePredicates.FirstOrDefault(i => i.PredicateType == p);
-                //    if (ip != null)
-                //    {
-                //        Company.Set<IntersectTypePredicate>().Remove(ip);
-                //    }
-                //});
-                //if (invalidPredicates.Count > 0)
-                //{
-                //    Company.SaveChanges();
-                //}
-
-                //predicates.ForEach(p => {
-                //    if (!model.IntersectTypePredicates.Any(i => i.PredicateType == p))
-                //        Company.Set<IntersectTypePredicate>().Add(new IntersectTypePredicate() { IntersectTypeID = id, PredicateType = p });
-                //});
-                //Company.SaveChanges();
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
             }
@@ -10501,19 +10559,14 @@ for json path");
                             #endregion
                             case "IntersectType":
                                 #region
-                                var intersectType = Company.Query<dynamic>(@"select	O.Subject, SD.Name as SubjectName, O.Object, TD.Name as ObjectName
-                                from	IntersectType O
-                                        inner join cache.ObjectDetails SD on SD.[Object] = O.Subject and SD.ObjectID = O.SubjectID
-                                        inner join cache.ObjectDetails TD on TD.[Object] = O.Object and TD.ObjectID = O.ObjectID
-                                where   O.ID = @id", new { id }).SingleOrDefault();
+                                var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
                                 if (intersectType != null)
                                 {
-                                    //Do fields backwards, because of insert at 0.
-
                                     fieldTypeNames.Insert(0, intersectType.ObjectName);
 
                                     if (intersectType.Object == "ArtifactType")
                                         fieldTypeNames.Insert(0, $"{intersectType.ObjectName} Subject Area");
+
 
                                     fieldTypeNames.Insert(0, intersectType.SubjectName);
 
@@ -10606,7 +10659,15 @@ union
 select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' + T.Name  + ' - ' + D.Name as title from Domain D inner join DomainType T on T.ID = D.DomainTypeID
 ) O order by title";
                     break;
-                    #endregion
+                #endregion
+                case "W":   // Propose Promotion
+                    #region
+                    sql = @"
+select 'ArtifactType|' + cast(A.ID as varchar(10)) as value, 'Glossary: ' + A.Name as title 
+from ArtifactType A
+	inner join WorkflowTypeRelation WTR on WTR.Object = 'ArtifactType' and WTR.ObjectID = A.ID and WTR.Enabled = 1 and WTR.WorkflowType = 1";
+                    break;
+                #endregion
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
@@ -10976,7 +11037,6 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
 
         public ActionResult AddLoad()
         {
-
             return PartialView();
         }
 
@@ -11086,10 +11146,10 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 {
                     Company.Add<Load>(load);
                     // use bulkloaddev queue to debug bulk load web job
-                    //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     // regular production queue
-                    Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    //Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
@@ -12997,7 +13057,7 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                 FormMethod = "POST"
             };
 
-            return PartialView("OVerlayEditableForm", model);
+            return PartialView("OverlayEditableForm", model);
         }
 
         [ValidateHttpAntiForgeryToken]
@@ -13018,6 +13078,17 @@ select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' +
                     Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
                     IsSystem = false
                 };
+
+                if (a.Type.AsInfoModel().ReadOnly)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a predicate of this type.");
+                }
+                if (!a.Type.AsInfoModel().AllowMultiplePredicates)
+                {
+                    var any = Company.Predicates.Any(i => i.Type == a.Type);
+                    if (any)
+                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add another predicate of this type. Only one may exist.");
+                }
 
                 Company.Add<Predicate>(a);
 

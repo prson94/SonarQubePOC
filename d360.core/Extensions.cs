@@ -10,6 +10,11 @@ namespace d360.core
 {
     public static class StringExtensions
     {
+        public static bool In<T>(this T t, params T[] values)
+        {
+            return values.Contains(t);
+        }
+
         public static string FormatBooleanReadOnlyValue(this bool b)
         {
             return b ? Values.BooleanTrue : Values.BooleanFalse;

@@ -123,6 +123,7 @@
         if (CompanySettings.UseNewRelationships == "true") {
             self.ActionOptions = ko.observableArray([
                 { title: 'Promotion', value: 'P' },
+                { title: 'Promotion (via Propose Workflow)', value: 'W' },
                 { title: 'Relation', value: 'R' },
                 { title: 'Responsibilities', value: 'O' },
                 { title: 'Unrelation', value: 'U' },
@@ -134,6 +135,7 @@
         else {
             self.ActionOptions = ko.observableArray([
                 { title: 'Promotion', value: 'P' },
+                { title: 'Promotion (via Propose Workflow)', value: 'W' },
                 { title: 'Relation', value: 'R' },
                 { title: 'Responsibilities', value: 'O' },
                 { title: 'Unrelation', value: 'U' },

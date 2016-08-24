@@ -21,7 +21,7 @@
 
         if (permissions.HasPermission("Relationship", "Update")) {
             TileTools(toolsControlID, [
-                { icon: 'level-up', uri: '/relations/ImpactAnalysisOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'See Impact' },
+                //{ icon: 'level-up', uri: '/relations/ImpactAnalysisOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'See Impact' },
                 { icon: 'pencil', uri: '/relations/RelationOverlay?type=' + type + '&id=' + id, context: contextList.Intersect, title: 'Manage Relationships' }
             ]);
         }

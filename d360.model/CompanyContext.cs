@@ -749,6 +749,7 @@ from	DomainType
             when 'O' then 'Responsibilities'
             when 'T' then 'Lineage : Technical'
             when 'S' then 'Synonyms'
+			when 'W' then 'Promotion (via Propose Workflow)'
 		end as [Action],
         S.C as Success,
         E.C as Error,
@@ -2466,7 +2467,6 @@ order by Name", new { workflowType, type, id });
 
         public bool SaveOrUpdate<T>(T entity, List<Field> fields) where T : BaseIntObject
         {
-            //var count = SaveOrUpdate<T>(entity);
             var returnValue = false;
 
             if (IsPersistent(entity))

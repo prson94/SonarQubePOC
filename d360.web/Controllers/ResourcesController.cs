@@ -97,90 +97,195 @@ namespace d360.web.Controllers
 
         #region Exports
 
+        string getSqlStatement(int resourceID, string type, int id, bool follow)
+        {
+            var joins = "";
+            var columns = "";
+            string sql = "";
+
+            SystemObjects enumValueValidation;
+            if (Enum.TryParse<SystemObjects>(type, out enumValueValidation))
+            {
+                getDynamicFieldJoinStatements(id, type.Replace("Type", ""), out joins, out columns, false, true);
+                string followOrOwnSql = "";
+                string lastColumn = (follow) ? "FD.OpenEventCount" : "FD.[Role], FD.ContextItems as [Context]";
+
+                switch (type)
+                {
+                    case "Artifact":
+                    case "ArtifactType":
+                        #region
+                        followOrOwnSql = (follow) ?
+                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
+                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
+
+                        sql = $@"
+select	A.ID,
+		A.Name,
+		A.Description,
+		A.TextPath,
+		A.Status,
+		V.Name as SubjectArea,
+        {columns}
+        FD.CurrentScore,
+        {lastColumn}
+from	Artifact A 
+        {followOrOwnSql} 
+        inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.ArtifactTypeID = {id} 
+        {joins}";
+                        break;
+                    #endregion
+                    case "Domain":
+                    case "DomainType":
+                        #region
+                        followOrOwnSql = (follow) ?
+                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
+                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
+
+                        sql = $@"
+select	A.ID,
+		A.Name,
+		A.Description,
+		A.Code,
+        {columns}
+        FD.CurrentScore,
+        {lastColumn}
+from	Domain A 
+        {followOrOwnSql} and A.DomainTypeID = {id} 
+        {joins}";
+                        break;
+                    #endregion
+                    case "Taxonomy":
+                    case "TaxonomyType":
+                        #region
+                        followOrOwnSql = (follow) ?
+                            $"inner join FollowDetail FD on FD.ResourceID = {resourceID} and FD.Type = '{type.Replace("'", "''")}' and FD.TypeID = {id} and FD.ObjectID = A.ID" :
+                            $"inner join ResponsibilityDetailForResource FD on FD.ResponsibleObjectType = 'Resource' and FD.ResponsibleObjectID = {resourceID} and FD.ObjectType = '{type.Replace("'", "''")}' and FD.ObjectTypeID = {id} and FD.ObjectID = A.ID";
+
+                        sql = $@"
+select	A.ID,
+		A.Name,
+		A.Description,
+		A.TextPath,
+        {columns}
+        FD.CurrentScore,
+        {lastColumn}
+from	Taxonomy A 
+        {followOrOwnSql} and A.TaxonomyTypeID = {id} 
+        {joins}";
+                        break;
+                    #endregion
+                    default:
+                        #region
+                        sql = (follow) ? 
+                            $"select  Name, TextPath, Description, TypeName, CurrentScore, OpenEventCount from FollowDetail where ResourceID = {resourceID} and Type = '{type.Replace("'", "''")}' and TypeID = {id}" :
+                            $"select ObjectName as Name, ObjectTypeName as Type, [Role], ContextItems as [Context], CurrentScore from ResponsibilityDetailForResource FD where ResponsibleObjectType = 'Resource' and ResponsibleObjectID = {resourceID} and ObjectType = '{type.Replace("'", "''")}' and ObjectTypeID = {id}";
+                        break;
+                        #endregion
+                }
+            }
+
+            return sql;
+        }
+
         [Route("{resourceID:int}/following/{type}/{id:int}.xlsx")]
         public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
         {
-            var list = Company.Query<dynamic>(@"
-select ObjectType, ObjectID, Name, ID, Url, CurrentScore, OpenEventCount
-from FollowDetail
-where ResourceID = @r and Type = @t and TypeID = @i
-order by Name", new { r = resourceID, t = new Dapper.DbString { Value = type, IsAnsi = true }, i = id });
-
-
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            #region Create the list sheet
+            string sql = getSqlStatement(resourceID, type, id, true);
 
-            int r = 1;
-
-            #region Header
-
-            document.SetCellValue(r, 1, "Name");
-            document.SetCellValue(r, 2, "Current Score");
-
-            #endregion
-
-
-            foreach (var item in list)
+            if (!string.IsNullOrEmpty(sql))
             {
-                r++;
-                document.SetCellValue(r, 1, item.Name);
-                document.SetCellValue(r, 2, (item.CurrentScore != null) ? item.CurrentScore.ToString() : "");
-            }
+                // The data reader.
+                var query = Company.Read(sql);
+                var metafields = query.GetSchemaTable();
 
-            #endregion
+                #region Create the list sheet
+
+                #region Header
+
+                for (int i = 0; i < metafields.Rows.Count; i++)
+                {
+                    document.SetCellValue(1, i, (string)metafields.Rows[i]["ColumnName"]);
+                }
+
+                #endregion
+
+                int r = 1;
+                while (query.Read())
+                {
+                    r++;
+                    for (int i = 0; i < metafields.Rows.Count; i++)
+                    {
+                        document.SetCellValue(r, i, query[i].ToString());
+                    }
+                }
+
+                metafields = null;
+                query.Dispose();
+
+                #endregion
+            }
+            else
+            {
+                document.SetCellValue(1, 1, "Invalid value for type parameter. Please check your URI.");
+            }
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Followed Items.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Followed Items as of {DateTime.Now.ToShortDateString()}.xlsx");
         }
 
         [Route("{resourceID:int}/ownership/{type}/{id:int}.xlsx")]
         public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id)
         {
-            List<ResponsibilityDetailForResource> list = null;
-
-            if (type == "Policy" || type == "Rule")
-            {
-                list = Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type).OrderBy(i => i.ObjectName).ToList();
-            }
-            else
-            {
-                list = Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type && i.ObjectTypeID == id).OrderBy(i => i.ObjectName).ToList();
-            }
-
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            #region Create the list sheet
+            string sql = getSqlStatement(resourceID, type, id, false);
 
-            int r = 1;
-
-            #region Header
-
-            document.SetCellValue(r, 1, "Type");
-            document.SetCellValue(r, 2, "Name");
-            document.SetCellValue(r, 3, "Role");
-            document.SetCellValue(r, 4, "Score");
-
-            #endregion
-
-
-            foreach (var item in list)
+            if (!string.IsNullOrEmpty(sql))
             {
-                r++;
-                document.SetCellValue(r, 1, item.ObjectTypeName);
-                document.SetCellValue(r, 2, item.ObjectName);
-                document.SetCellValue(r, 3, item.Role);
-                document.SetCellValue(r, 4, item.CurrentScore.HasValue ? item.CurrentScore.Value.ToString() : "");
-            }
+                // The data reader.
+                var query = Company.Read(sql);
+                var metafields = query.GetSchemaTable();
 
-            #endregion
+                #region Create the list sheet
+
+                #region Header
+
+                for (int i = 0; i < metafields.Rows.Count; i++)
+                {
+                    document.SetCellValue(1, i, (string)metafields.Rows[i]["ColumnName"]);
+                }
+
+                #endregion
+
+                int r = 1;
+                while (query.Read())
+                {
+                    r++;
+                    for (int i = 0; i < metafields.Rows.Count; i++)
+                    {
+                        document.SetCellValue(r, i, query[i].ToString());
+                    }
+                }
+
+                metafields = null;
+                query.Dispose();
+
+                #endregion
+            }
+            else
+            {
+                document.SetCellValue(1, 1, "Invalid value for type parameter. Please check your URI.");
+            }
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"Owned Items.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Owned Items as of {DateTime.Now.ToShortDateString()}.xlsx");
         }
 
         #endregion

@@ -67,19 +67,19 @@
                             ObjectStatisticsTile('MicroWidget1', type, id);
                             break;
                         case contextList.Synonym:
-                            RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
+                            RelationshipAggregatesTile('AggregatesTile', type, id, permissions); 
                             break;
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                             PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
                             break;
                         case "RequestCertification":
-                        case "Workflow":
                             ObjectDetail('DetailTile', type, id);
                             break;
-                        case contextList.SourceToTarget:
-                            if (CompanySettings.UseNewRelationships != 'true')
-                                LineageDiagram('SourcingTile', type, id, false);                            
+                        case "Workflow":
+                        case "OwnerCertificationWorkflow":
+                            ObjectDetail('DetailTile', type, id);
+                            $('#CertificationNotification').fadeOut();
                             break;
                         case contextList.Responsibility:                        
                             $('#SideIcons').PageTools("reload", data.custom.ObjectType, data.custom.ObjectID, "default");
@@ -112,6 +112,14 @@
                     .load('/relations/Lineage?type=Artifact&id=' + id);
             }
 
+            function showImpact() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Impact?type=Artifact&id=' + id);
+            }
+
             function unsubscribe(data) {
                 survey = null
                 $('#AttributesTile').Attributes('destroy');
@@ -138,6 +146,8 @@
                     ObjectDetail('DetailTile', type, id);
 
                     if (CompanySettings.UseNewRelationships == 'true') {
+                        $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                        $('#ShowImpact').on('click', showImpact);
                         $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
                         $('#ShowLineage').on('click', showLineage);
                     }

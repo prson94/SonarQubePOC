@@ -334,8 +334,13 @@
                 dataType: 'json',
                 method: method
             }).done(function (data, status, xhr) {
-                amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
-                amplify.publish("ShowMessage", { type: "confirm", title: "Success!", message: 'Mappings successfully created.' });
+                if (data.type == "error") {
+                    amplify.publish("ShowMessage", { type: data.type, title: data.title, message: data.message });
+                }
+                else {
+                    amplify.publish("SaveAction", { context: self.Context(), action: 'add', id: 0, custom: {} });
+                    amplify.publish("ShowMessage", { type: "confirm", title: data.title, message: data.message });                
+                }
             }).fail(function (xhr, status, error) {
                 amplify.publish("ShowMessage", { type: "error", title: "Error!", message: error });
             }).always(function (data, status, error) {

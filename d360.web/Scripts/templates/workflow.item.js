@@ -19,6 +19,7 @@
             try {
                 switch (data.context) {
                     case "Workflow":
+                    case "OwnerCertificationWorkflow":
                         location.assign('/#/');
                         break;
                 }

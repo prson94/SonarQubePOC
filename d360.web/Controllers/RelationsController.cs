@@ -1445,6 +1445,19 @@ and O.[ObjectType] = @o and O.ObjectID = @oid",
             return PartialView();
         }
 
+        public ActionResult Impact(SystemObjects type, int id)
+        {
+            try
+            {
+                ViewBag.Object = type.ToString();
+                ViewBag.ObjectID = id;
+            }
+            catch
+            {
+            }
+            return PartialView();
+        }
+
         public ActionResult Lineage(SystemObjects type, int id)
         {
             try

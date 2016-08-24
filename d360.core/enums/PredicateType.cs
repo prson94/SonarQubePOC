@@ -12,7 +12,8 @@ namespace d360.core.enums
             Name("Lineage"), 
             Graph("Lineage"), 
             Description("Allows you to define source paths between objects."), 
-            ReadOnly(false), 
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -22,7 +23,8 @@ namespace d360.core.enums
             Name("Source To Target"), 
             Graph("Lineage"), 
             Description("The most common mapping that allows you to set sources and targets across types contained in the system."), 
-            ReadOnly(true), 
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(false),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -32,7 +34,8 @@ namespace d360.core.enums
             Name("Type Hierarchy"), 
             Graph("Glossary"), 
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-            ReadOnly(false), 
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(false), 
             AllowDifferentSubjectObject(false), 
             ForceDifferentSubjectObject(false)
@@ -42,7 +45,8 @@ namespace d360.core.enums
             Name("Group Hierarchy"), 
             Graph("Glossary"), 
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
-            ReadOnly(true), 
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(false),
             AllowMultiplePredicates(false), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(true)
@@ -53,6 +57,7 @@ namespace d360.core.enums
             Graph("Glossary"), 
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing a different artifact types at each level."), 
             ReadOnly(true), 
+            AllowIntersectTypeAssignment(false),
             AllowMultiplePredicates(false), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(true)
@@ -62,7 +67,8 @@ namespace d360.core.enums
             Name("Synonym"), 
             Graph("Glossary"), 
             Description("Allows you to establish synonyms between two objects that are synonyms of each other."), 
-            ReadOnly(true), 
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(false), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -72,7 +78,8 @@ namespace d360.core.enums
             Name("Simple"), 
             Graph("Glossary"), 
             Description(""), 
-            ReadOnly(false), 
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
@@ -86,6 +93,7 @@ namespace d360.core.enums
         public string Name { get; set; }
         public string Description { get; set; }
         public string Graph { get; set; }
+        public bool AllowIntersectTypeAssignment { get; set; }
         public bool AllowMultiplePredicates { get; set; }
         public bool AllowDifferentSubjectObject { get; set; }
         public bool ForceDifferentSubjectObject { get; set; }
@@ -123,6 +131,7 @@ namespace d360.core.enums
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         Graph = ((GraphAttribute)tm.GetCustomAttribute(typeof(GraphAttribute))).Graph,
                         ID = (PredicateType)Enum.Parse(typeof(PredicateType), tm.Name),
+                        AllowIntersectTypeAssignment = ((AllowIntersectTypeAssignmentAttribute)tm.GetCustomAttribute(typeof(AllowIntersectTypeAssignmentAttribute))).Allowed,
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
@@ -144,6 +153,7 @@ namespace d360.core.enums
                     Description = ((DescriptionAttribute)t.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                     Graph = ((GraphAttribute)t.GetCustomAttribute(typeof(GraphAttribute))).Graph,
                     ID = type,
+                    AllowIntersectTypeAssignment = ((AllowIntersectTypeAssignmentAttribute)t.GetCustomAttribute(typeof(AllowIntersectTypeAssignmentAttribute))).Allowed,
                     AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)t.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                     AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                     ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,

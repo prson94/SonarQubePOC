@@ -281,6 +281,25 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
+    public class BulkLoadCacheEntryModel : BaseObject
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Object { get; set; }
+
+        [DataMember]
+        public int TypeID { get; set; }
+
+        [DataMember]
+        public int GroupID { get; set; }
+
+        [DataMember]
+        public int ObjectID { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
     public class SimpleTypeModel : BaseObject
     {
         [DataMember]

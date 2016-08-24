@@ -1229,6 +1229,7 @@
     <Content Include="Views\Workflow\WorkflowActionOverlay_5.cshtml" />
     <Content Include="Views\Form\QuestionTypeEditForm.cshtml" />
     <Content Include="Views\Relations\Lineage.cshtml" />
+    <Content Include="Views\Relations\Impact.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
