@@ -32,7 +32,8 @@
     "systemjs": "^0.19.32",
     "systemjs-builder": "^0.15.23",
     "typings": "^0.7.12",
-    "zone.js": "^0.6.12"    
+    "zone.js": "^0.6.12",
+    "angular2-highcharts": "0.2.1"    
   },
   "devDependencies": {
     "typescript": "^1.8.10",

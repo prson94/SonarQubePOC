@@ -4,6 +4,7 @@ import { AppComponent }   from './app.component';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
+import { CHART_DIRECTIVES } from 'angular2-highcharts'; 
 
 import {
     GrowlModule,
@@ -339,6 +340,7 @@ import {
         SurveyQuestionsTile,
         SynonymsTile, 
         WorkflowIssueEditorComponent,
+        CHART_DIRECTIVES
     ],
     imports: [
         BrowserModule,
