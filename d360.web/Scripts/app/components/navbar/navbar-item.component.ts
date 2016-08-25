@@ -1,5 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
+import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 
 @Component({
     selector: 'd3s-navbar-item',   
@@ -54,19 +55,4 @@ export class NavBarItemComponent implements OnInit {
     }
 
 
-}
-export class NavBarItem {
-    icon: string;
-    name: string;
-    route: string;
-    expanded = false;
-    active = false;
-    subItems: NavBarItem[];
-    parent: NavBarItem;
-    url: string;
-
-    public isRootItem(): boolean
-    {        
-        return this.parent == undefined;
-    }
 }

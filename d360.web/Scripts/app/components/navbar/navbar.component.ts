@@ -1,44 +1,116 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import {  Router, NavigationEnd } from '@angular/router';
-import {  NavBarItem } from '../navbar/navbar-item.component';
-import { SiteMenuService } from '../../services/index';
+import { transition, style, animate, trigger, state } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
+import { SiteMenuService } from '../../services/index';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { FavoritesService } from '../../services/favorites.service';
+import { Favorite } from '../../models/favorite.model';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-navbar', 
-    providers: [SiteMenuService],
+    styles: [
+        `
+            .menu-flex {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;    
+            }
+        
+            .navbar-menu {
+                position: fixed;
+                width:100%;
+                bottom: -50px;
+            }
+
+            .navbar-favorite {
+                padding: 7px 0 7px 0;
+                font-size: 1em;
+                color:white;
+                
+            }
+
+            .navbar-message {
+                font-size: 1em;
+                color: white;
+                margin: 12px;
+                text-align: center;
+            }
+            
+            .navbar-favorite:hover, .navbar-favorite.active {
+                background-color: #F8F3EF;
+            }
+
+            .navbar-favorite:hover a, .navbar-favorite.active a {
+                color: #444;
+            }
+
+        `
+        ],
+    providers: [SiteMenuService, FavoritesService],
     template: `
-    <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
+    <ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
         <li class="logo" [routerLink]="'a/home'"></li> 
-        <li *ngFor="let item of items">
-            <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
+
+        <template [ngIf]="mode == NavBarMode.Default">
+            <li *ngFor="let item of items">
+                <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
+            </li>
+        </template>
+        <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
+            <li *ngFor="let fav of favItems" class="navbar-favorite" [class.active]="fav.active">
+                <a [routerLink]="[fav.route]">{{fav.name}}</a>
+            </li>
+        </template>
+        <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0">
+            <li class="navbar-message">You don't have any favorites. Click the <i class="fa fa-star"></i> on the header of any page to add it to your favorites.</li>        
+        </template>
+        <template [ngIf]="mode == NavBarMode.Edit">
+            <li>edit</li>
+        </template>
+
+        <li style="margin-top: auto;">
+            <d3s-navbar-menu [(mode)]="mode"></d3s-navbar-menu>
         </li>
     </ul>
- 
-` 
+
+`
 })
 
 export class NavBarComponent implements OnInit, OnDestroy { 
     private sub: any;
+    private subFavorites: any;
     private currentRoute = "";
     private navItems: NavBarItem[];
-    private siteMenu : SiteMenu[] = [];
+    private siteMenu: SiteMenu[] = [];
+    private favItems: NavBarItem[] = new Array<NavBarItem>();
+    private mode = NavBarMode.Default;
+    NavBarMode = NavBarMode;
 
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
 
-    constructor(private router: Router, private siteMenuService: SiteMenuService) {
+    constructor(private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService) {
     }
 
     ngOnInit() {
         this.loadMenu();
+        this.loadFavorites();
+
+        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(s => {
+            this.loadFavorites(s);
+        });
 
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.currentRoute = _.trimStart(e.url, '/');
+
                 let item = this.activateRoute(this.currentRoute);
-                if(item) this.expandRoute(item);                
+                if (item) this.expandRoute(item); 
+
+                this.activateRoute(this.currentRoute, this.favItems);
             }
         });
     }
@@ -49,6 +121,33 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 item.expanded = false;
         }
     }
+
+    loadFavorites(favorites: Favorite[] = null) {
+        if (favorites) {
+            this.favItems = [];
+            for (let f of favorites) {
+                let i = new NavBarItem();
+                i.name = f.Name;
+                i.route = f.Route;
+                this.favItems.push(i);
+            }
+            this.activateRoute(this.currentRoute, this.favItems);
+        }
+        else {
+            this.favoritesService.getFavorites().then(fav => {
+                this.favItems = [];
+                for (let f of fav) {
+                    let i = new NavBarItem();
+                    i.name = f.Name;
+                    i.route = f.Route;
+                    this.favItems.push(i);
+                }
+                this.activateRoute(this.currentRoute, this.favItems);
+            });
+        }
+
+    }
+
 
     loadMenu() {
         this.siteMenuService.getMenu()
@@ -172,6 +271,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.subFavorites.unsubscribe();
     }
 
     addNavItem(name: string, icon: string, route: string): NavBarItem {
@@ -241,3 +341,4 @@ export class NavBarComponent implements OnInit, OnDestroy {
         return r;
     }
 }
+

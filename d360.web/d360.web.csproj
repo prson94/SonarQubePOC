@@ -1393,6 +1393,7 @@
     <TypeScriptCompile Include="Scripts\app\components\header\header-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header-favorites.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\index.ts" />
@@ -1409,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
@@ -1496,9 +1498,11 @@
     <TypeScriptCompile Include="Scripts\app\models\dashboard.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\issue.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />
@@ -1548,6 +1552,7 @@
     <TypeScriptCompile Include="Scripts\app\services\challenge.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\issues.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />

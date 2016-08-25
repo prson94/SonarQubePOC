@@ -527,6 +527,7 @@
     <None Include="dbo\Functions\ArtifactNgSiteNavigation.sql" />
     <None Include="dbo\Functions\GenerateNgObjectUrl.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalMapping.sql" />
+    <None Include="dbo\Tables\Favorite.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

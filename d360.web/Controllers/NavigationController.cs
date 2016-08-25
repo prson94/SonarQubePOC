@@ -717,6 +717,45 @@ SELECT	'#Admin' as MenuID,
             return nodes;
         }
 
+
+        #region Favorites
+        [Authorize, HttpPut]
+        public JsonNetResult ToggleFavorite(Favorite favorite)
+        {
+
+            favorite.ResourceID = Company.CurrentResourceID;
+
+            var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
+
+            if (existing == null)
+                Company.Add(favorite);
+            else
+                Company.Delete(existing);
+
+            return new JsonNetResult
+            {
+                Data = new { success = true },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [Authorize, HttpGet]
+        public JsonNetResult GetFavorites()
+        {
+            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID).ToList();
+
+            return new JsonNetResult
+            {
+                Data = favorites,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+        #endregion  
+
+
+
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
         {
             var items = new List<NavigationItem>();

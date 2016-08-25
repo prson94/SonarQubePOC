@@ -126,6 +126,8 @@ namespace d360.model
 
         public DbSet<EventGroup> EventGroups { get; set; }
 
+        public DbSet<Favorite> Favorites { get; set; }
+
         public DbSet<Field> Fields { get; set; }
 
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
