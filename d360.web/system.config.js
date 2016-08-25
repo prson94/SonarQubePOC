@@ -1,11 +1,15 @@
 ﻿System.config({
+    baseURL: "/",
     transpiler: 'typescript',
     typescriptOptions: { emitDecoratorMetadata: true },
     map: {
         'rxjs': './node_modules/rxjs',
         '@angular': './node_modules/@angular',
         'lodash': './node_modules/lodash',
-        'primeng': './node_modules/primeng'
+        'primeng': './node_modules/primeng',
+        'powerbi-client': './node_modules/powerbi-client',
+        'angular2-highcharts': './node_modules/angular2-highcharts/dist',
+        'highcharts/highstock.src': './node_modules/highcharts/highstock.js'
     },    
     packages: {
         'scripts/app': {
@@ -24,10 +28,9 @@
         '@angular/common': { main: '/bundles/common.umd.js', defaultExtension: 'js' },
         '@angular/compiler': { main: '/bundles/compiler.umd.js', defaultExtension: 'js' },
         '@angular/platform-browser': { main: '/bundles/platform-browser.umd.js', defaultExtension: 'js' },
-        '@angular/platform-browser-dynamic': { main: '/bundles/platform-browser-dynamic.umd.js', defaultExtension: 'js' },
-
-
-
-        'primeng': { defaultExtension: 'js' }
+        '@angular/platform-browser-dynamic': { main: '/bundles/platform-browser-dynamic.umd.js', defaultExtension: 'js' },      
+        'primeng': { defaultExtension: 'js' },
+        'powerbi-client': { main: '/dist/powerbi.js', defaultExtension: 'js' },
+        'angular2-highcharts': { main: 'index', format: 'cjs', defaultExtension: 'js' }
     },
 });

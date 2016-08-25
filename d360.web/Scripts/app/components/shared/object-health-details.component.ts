@@ -102,12 +102,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         },
                         min: 0,
                     },
+                    credits: {
+                        enabled: false
+                    },
                     legend: {
                         enabled: false
                     },
                     plotOptions: {
                         area: {
-                            fillColor: {
+                            /*fillColor: {
                                 linearGradient: {
                                     x1: 0,
                                     y1: 0,
@@ -118,7 +121,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     [0, Highcharts.getOptions().colors[0]],
                                     [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
                                 ]
-                            },
+                            },*/
                             marker: {
                                 radius: 2
                             },
@@ -135,7 +138,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     series: [{
                         type: 'area',
                         name: 'Governance Score',
-                        data: data
+                        data: data,
+                        color: '#426A84'
                     }]
                 };
             });        
@@ -172,6 +176,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 align: 'center',
                 verticalAlign: 'middle',
                 //y: 40
+            },
+            credits: {
+                enabled: false
             },
             yAxis: {
                 title: {

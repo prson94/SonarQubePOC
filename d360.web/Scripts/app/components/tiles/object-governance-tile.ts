@@ -12,7 +12,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
                     </div>       
                     <div class="row" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
                         <div class="col l4 s12" [ngClass]="{'inactive': (hasActiveTab() && !showHealthDetails), 'active':showHealthDetails}">                                                        
-                            <d3s-object-health [score]="statistics?.Score" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
+                            <d3s-object-health [score]="statistics?.Score" [objectType]="objectType" [objectID]="objectID" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
                         </div>
                         <div class="col l4 s12" [ngClass]="{'inactive': (hasActiveTab() && !showIssueDetails), 'active':showIssueDetails}">                                                        
                             <d3s-object-issues [issueCount]="statistics?.IssueCount" [showDetails]="showIssueDetails" (showDetailsChange)="showIssueDetails=$event;showHealthDetails=false;showBoardDetails=false;"></d3s-object-issues>
