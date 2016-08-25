@@ -9,11 +9,11 @@ import { Highcharts } from 'angular2-highcharts';
     selector: 'd3s-object-health-details',
     template: `
             <div class="row">
-                <div class="col l6 s12">
+                <div class="col l6 m12 s12">
                     <header>Score History</header>
                     <chart [options]="scoreHistory"></chart>
                 </div>
-                <div class="col l6 s12">
+                <div class="col l6 m12 s12">
                     <div class="row">
                         <div class="col s12">
                             <header>Point Breakdown</header>
@@ -27,10 +27,11 @@ import { Highcharts } from 'angular2-highcharts';
                             </p-dataTable>  
                         </div>
                     </div>
+                    <div class="row">&nbsp;</div>
                     <div class="row">
-                        <div class="col s6">
-                            <header>Average Score</header>
-                            <chart [options]="scoreAverage"></chart>
+                        <div class="col s12">
+                            <header>Score</header>
+                            <chart [options]="scorePie"></chart>
                         </div>                        
                     </div>
                 </div>
@@ -46,9 +47,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @Input() objectName: string;
 
     scoreHistory: Object;
-    scoreAverage: Object;
-    scoreCurrent: Object;
-
+    scorePie: Object;
+    
     private pointBreakdown: PointBreakdown[] = [];
 
     constructor(protected scoreService: ScoreService) {
@@ -80,19 +80,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     return [Date.parse(val.Date), val.Score];
                 });
 
-                this.scoreHistory = {
-                    
+                this.scoreHistory = {                    
                     chart: {
                         zoomType: 'x'
                     },
-                    title: {
-                      //  text: 'Score History'
+                    title: {                      
                         text:''
-                    },
-                    /*subtitle: {
-                        text: document.ontouchstart === undefined ?
-                            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-                    },*/
+                    },                    
                     xAxis: {
                         type: 'datetime'
                     },
@@ -109,19 +103,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         enabled: false
                     },
                     plotOptions: {
-                        area: {
-                            /*fillColor: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
-                                stops: [
-                                    [0, Highcharts.getOptions().colors[0]],
-                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-                                ]
-                            },*/
+                        area: {                           
                             marker: {
                                 radius: 2
                             },
@@ -148,8 +130,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadScores() {
         this.scoreService.getAverageScore(this.objectID, this.objectType)
             .then(res => {
-                this.scoreAverage = this.getKpi("Average Score", res.AverageScore, 100 - res.AverageScore, true);
-               // this.scoreCurrent = this.getKpi("Score", (-res.ObjectScore), 100 - (-res.ObjectScore), true);
+                this.scorePie = this.getKpi((+res.ObjectScore), 100 - (+res.ObjectScore), res.AverageScore, 100 - res.AverageScore, true);               
             });
     }
 
@@ -164,26 +145,26 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
 
-    private getKpi(title: string, score: number, remaining: number, isPercent?: boolean) {
+    private getKpi(score: number, remaining: number, average: number, remainingAvg: number, isPercent?: boolean) {
         console.log(score);
         console.log(remaining);
+        console.log(average);
+        console.log(remainingAvg);
         return {
             chart: {
-                type: 'pie'
+                type: 'pie',
+                backgroundColor: 'transparent',
+                height: 300,
+                width: 500
             },
             title: {
-                text: score + (isPercent ? '%' : ''),
-                align: 'center',
-                verticalAlign: 'middle',
-                //y: 40
-            },
+                text: null
+            },         
             credits: {
                 enabled: false
             },
-            yAxis: {
-                title: {
-                    text: 'Total percent market share'
-                }
+            yAxis: {                
+                max: 1.0                
             },
             plotOptions: {
                 pie: {
@@ -192,20 +173,24 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             },
             tooltip: {
                 formatter: function () {
-                    if (!this.point.name) return '';
+                    if (!this.point.name) return null;
                     return '<b>' + this.point.name + '</b>: ' + this.y + ' %';
                 }
             },
             series: [{
-                name: 'Score',
-                data: [{ name: "Score", y: score }, { name: "", y: remaining, color: "white" }],
-                size: '50%',
-                innerSize: '80%',
-                showInLegend: false,
-                dataLabels: {
-                    enabled: false
+                    name: 'Score',
+                    data: [{ name: "Current Score", y: score, color: '#84745C' }, { name: "", y: remaining, color: "white" }],
+                    showInLegend: false,
+                    innerSize: '55%',
+                    size: '80%',
+                },
+                {                    
+                    size: '55%',
+                    name: 'Average',
+                    showInLegend: false,
+                    data: [{ name: "Average Score", y: average, color: '#C4AC89' }, { name: "", y: remainingAvg, color: "white" }],
                 }
-            }]
+            ]
         };
     }
 }

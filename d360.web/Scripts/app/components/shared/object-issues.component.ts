@@ -8,6 +8,11 @@ import { BaseComponent } from '../shared/base.component';
             <div (click)="toggleDetails()" >
                 <header>Issues</header>
                 <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}">{{issueCount}}</div>            
+                <div class="row">
+                    <div class="col s12">
+                        <!--Last issue raised xxx days ago--> &nbsp;
+                    </div>
+                </div>
             </div>
         `
 })

@@ -11,14 +11,19 @@ import { Highcharts } from 'angular2-highcharts';
             <header>Health</header>
             <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">
                 <div class="row">
-                    <div class="col l4 s12">
-                        {{score}}%
-                    </div>
-                    <div class="col l8 s12">
-                        <div style="width:120;height:50;">
-                        <chart [options]="smallChart"></chart>
-                        </div>
-                    </div>
+                    <div class="col s12">
+                        <table>
+                            <tr>
+                                <td>{{scoreValue()}} <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i><i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i></td>                                
+                                <td><chart [options]="smallChart"></chart></td>
+                            </tr>
+                        </table>
+                    </div>                                
+                </div>                
+            </div>
+            <div class="row">
+                <div class="col s12">
+                 {{lastCalculatedMessage()}}
                 </div>
             </div>
         `,
@@ -26,14 +31,20 @@ import { Highcharts } from 'angular2-highcharts';
 })
 
 export class ObjectHealthComponent extends BaseComponent implements OnInit {    
-    @Input() score: number = 0;
+    @Input() score: any = 0;
 
     @Input() showDetails: boolean = false;    
     @Input() objectID: number;
     @Input() objectType: string;
     @Output() showDetailsChange = new EventEmitter();
 
+    private lastCalculatedDate: number;
+
     smallChart: Object;
+
+    averageScore: AverageScore;
+
+   
 
     constructor(private scoreService: ScoreService) {
         super();
@@ -41,6 +52,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.loadSeriesData();
+        this.loadScoreData();
     }
 
     private isWarning(): boolean {
@@ -60,10 +72,64 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
         this.showDetailsChange.emit( this.showDetails );
     }
 
+    private scoreValue() {
+        if (this.score) return this.score + '%';
+        return 'N/A';
+    }
+
+    private lastCalculatedMessage() {
+        if (!this.lastCalculatedDate) {
+            return "Score not yet calculated";
+        }
+        
+        var diff = new Date(Date.now() - this.lastCalculatedDate);
+
+        var years = diff.getUTCFullYear() - 1970;
+
+        if (years > 0) return "Last calculated " + years + " years ago.";
+        
+        var months = diff.getUTCMonth();
+
+        if (months > 0) return "Last calculated " + months + " months ago.";
+        
+        var days = diff.getUTCDate() - 1;
+                
+        if (days > 0) return "Last calculated " + days + " days ago.";
+                
+        var hours = diff.getHours();
+
+        if (hours > 0) return "Last calculated " + hours + " hours ago.";
+
+        var minutes = diff.getMinutes();
+
+        if (minutes > 0) return "Last calculated " + minutes + " minutes ago.";
+
+        return "Last calculated a few seconds ago.";
+    }
+
+    private isTrend(direction: string): boolean{
+        if (!this.averageScore || !this.score) return false;
+
+        if (direction == 'up')
+            return this.averageScore.AverageScore < (+this.averageScore.ObjectScore);
+
+        if (direction == 'down')
+            return this.averageScore.AverageScore > (+this.averageScore.ObjectScore);
+    }
+
+    private loadScoreData() {
+        this.isLoading = true;
+        this.scoreService.getAverageScore(this.objectID, this.objectType).
+            then(res => {
+                this.averageScore = res;
+                this.isLoading = false;
+            });
+    }
 
     private loadSeriesData() {
         this.scoreService.getScoreHistory(this.objectID, this.objectType).
             then(res => {
+                this.lastCalculatedDate = res.length > 0 ? Date.parse(res[res.length-1].Date) : null;
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];
                 });
@@ -71,7 +137,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
                 this.smallChart = {
 
                     chart: {
-                        backgroundColor: null,
+                        backgroundColor: 'transparent',
                         borderWidth: 0,
                         type: 'area',
                         margin: [2, 0, 2, 0],
@@ -87,8 +153,9 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
                     },                    
                     credits: {
                         enabled: false
-                    },
+                    },                    
                     xAxis: {
+                        type: 'datetime',
                         labels: {
                             enabled: false
                         },

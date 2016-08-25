@@ -8,6 +8,11 @@ import { BaseComponent } from '../shared/base.component';
             <div (click)="toggleDetails()" >
                 <header>Board</header>
                 <span class="governance-value">{{commentCount}}</span>
+                <div class="row">
+                    <div class="col s12">
+                        <!--Last discussion was xxx days ago-->&nbsp;
+                    </div>
+                </div>
             </div>            
         `
 })
