@@ -23344,6 +23344,7 @@ span.breadcrumbs .sep {
   font-weight: bold;
   font-size: 3.5em;
   padding: 0 5px;
+  cursor: pointer;
   color: #646464;
 }
 .governance-value-warning {

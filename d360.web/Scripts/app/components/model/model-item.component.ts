@@ -19,8 +19,8 @@ import { Model, ModelHierarchy } from '../../models/model.model';
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
-                                 <div class="tile tile-detail">
-                                    <d3s-object-governance-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-governance-tile>
+                                 <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
+                                    <d3s-object-governance-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-governance-tile>
                                 </div>
                             </div>
                         </div>

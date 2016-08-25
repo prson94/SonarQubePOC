@@ -27,7 +27,7 @@ import { Highcharts } from 'angular2-highcharts';
                 </div>
             </div>
         `,
-    providers: [ScoreService]
+    providers: [ScoreService],    
 })
 
 export class ObjectHealthComponent extends BaseComponent implements OnInit {    
@@ -222,6 +222,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
                         name: 'Governance Score',
                         data: data,
                         color: '#426A84',
+                        marker: { enabled: false },
                     }]
                 };
             });

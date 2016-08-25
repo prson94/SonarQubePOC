@@ -201,6 +201,9 @@ namespace d360.core.entities
         public string CommentUrl { get; set; }
 
         [DataMember]
+        public DateTime? CommentLast { get; set; }
+
+        [DataMember]
         public int Score { get; set; }
 
         [DataMember]
@@ -211,7 +214,11 @@ namespace d360.core.entities
 
         [DataMember]
         public string IssueUrl { get; set; }
-        
+
+
+        [DataMember]
+        public DateTime? IssueLast { get; set; }
+
         [DataMember]
         public List<ObjectStatisticTileItemModel> Items { get; set; }
     }
@@ -243,6 +250,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Url { get; set; }
+
+        [DataMember]
+        public DateTime? MostRecent { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]

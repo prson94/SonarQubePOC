@@ -29,7 +29,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <d3s-artifact-column-filter [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable"  [style]="{'width':'250px'}">
+                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData">
                                         <div [innerHtml]="item[column.datafield]"></div>
                                 </template>

@@ -25,7 +25,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div *ngIf="!isLoading && !isTabVisible()">
                     <div class="row">
                         <div class="col s12">
-                             <div class="tile tile-detail">
+                             <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                                 <d3s-object-governance-tile [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-object-governance-tile>
                             </div>
                         </div>

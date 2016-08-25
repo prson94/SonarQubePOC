@@ -11,7 +11,7 @@ import * as _ from 'lodash';
     providers: [SiteMenuService],
     template: `
     <ul class="side-nav fixed" style="overflow: auto; transform: translateX(0px);">
-        <li class="logo"></li> 
+        <li class="logo" [routerLink]="'a/home'"></li> 
         <li *ngFor="let item of items">
             <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
         </li>

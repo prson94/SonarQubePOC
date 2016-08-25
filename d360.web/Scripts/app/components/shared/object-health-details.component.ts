@@ -145,11 +145,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
 
-    private getKpi(score: number, remaining: number, average: number, remainingAvg: number, isPercent?: boolean) {
-        console.log(score);
-        console.log(remaining);
-        console.log(average);
-        console.log(remainingAvg);
+    private getKpi(score: number, remaining: number, average: number, remainingAvg: number, isPercent?: boolean) {        
         return {
             chart: {
                 type: 'pie',

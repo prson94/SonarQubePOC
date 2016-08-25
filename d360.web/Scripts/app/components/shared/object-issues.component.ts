@@ -10,7 +10,7 @@ import { BaseComponent } from '../shared/base.component';
                 <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}">{{issueCount}}</div>            
                 <div class="row">
                     <div class="col s12">
-                        <!--Last issue raised xxx days ago--> &nbsp;
+                        {{lastIssueMessage()}}
                     </div>
                 </div>
             </div>
@@ -19,6 +19,7 @@ import { BaseComponent } from '../shared/base.component';
 
 export class ObjectIssuesComponent extends BaseComponent {
     @Input() issueCount: number = 0;
+    @Input() lastIssueDate: string;
 
     @Input() showDetails: boolean = false;
     @Output() showDetailsChange = new EventEmitter();
@@ -42,5 +43,36 @@ export class ObjectIssuesComponent extends BaseComponent {
     toggleDetails() {        
         this.showDetails = !this.showDetails;        
         this.showDetailsChange.emit(this.showDetails);
+    }
+
+    private lastIssueMessage() {
+        if (!this.lastIssueDate) {
+            return "No issues raised.";
+        }
+        let lastDate = Date.parse(this.lastIssueDate);
+
+        var diff = new Date(Date.now() - lastDate);
+
+        var years = diff.getUTCFullYear() - 1970;
+
+        if (years > 0) return "Last issue came in " + years + " years ago.";
+
+        var months = diff.getUTCMonth();
+
+        if (months > 0) return "Last issue came in " + months + " months ago.";
+
+        var days = diff.getUTCDate() - 1;
+
+        if (days > 0) return "Last issue came in " + days + " days ago.";
+
+        var hours = diff.getHours();
+
+        if (hours > 0) return "Last issue came in " + hours + " hours ago.";
+
+        var minutes = diff.getMinutes();
+
+        if (minutes > 0) return "Last issue came in " + minutes + " minutes ago.";
+
+        return "Last issue came in a few seconds ago.";
     }
 }

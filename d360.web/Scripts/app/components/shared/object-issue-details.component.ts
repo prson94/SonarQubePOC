@@ -33,11 +33,10 @@ import { IssuesService } from '../../services/index';
                     </p-dataTable>   
                 </div>
             </div>            
-            <div class="row" *ngIf="!isLoading && issues.length == 0">
-                <div class="col s12 center">
-                    No issues exist.
-                </div>
+            <div style="min-height:100px" *ngIf="!isLoading && issues.length == 0">
+                <h4>No issues currently exist for <b>{{objectName}}</b>.</h4>
             </div>
+            
         `,
     providers: [IssuesService]
 })
