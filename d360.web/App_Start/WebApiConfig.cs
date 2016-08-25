@@ -10,7 +10,7 @@ using System.Web.Http.OData.Extensions;
 using d360.media.formatters;
 using d360.web.Models.Attributes;
 using System.Web.Http.ExceptionHandling;
-
+using System.Net.Http.Formatting;
 
 namespace d360.web
 {
@@ -34,6 +34,8 @@ namespace d360.web
             config.EnableCors();
             config.Formatters.Add(new DictionaryXmlMediaTypeFormatter());
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true, "application/json"));
+
             config.EnsureInitialized();
         }
     }
