@@ -24,6 +24,7 @@ import {
     SpinnerModule,
     EditorModule,
     TooltipModule,
+    DataScrollerModule
 } from 'primeng/primeng';
 
 import {
@@ -181,6 +182,10 @@ import {
     PowerBIViewerComponent,
     TooltipComponent,
 } from './components/shared/index';
+
+import {
+    SocialBoardComponent
+} from './components/social/index';
 
 import {
     AttributesTile,
@@ -344,7 +349,8 @@ import {
         SurveyQuestionsTile,
         SynonymsTile, 
         WorkflowIssueEditorComponent,
-        CHART_DIRECTIVES
+        CHART_DIRECTIVES,
+        SocialBoardComponent
     ],
     imports: [
         BrowserModule,
@@ -371,7 +377,7 @@ import {
         SpinnerModule,
         EditorModule,
         TooltipModule,
-
+        DataScrollerModule,
     ],
     bootstrap: [AppComponent],
     providers: [Title],

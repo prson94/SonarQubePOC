@@ -1461,6 +1461,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\social\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\social\social-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
@@ -1513,6 +1515,7 @@
     <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
@@ -1565,6 +1568,7 @@
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\score.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />

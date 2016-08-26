@@ -79,4 +79,9 @@ export class BaseService {
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
     }
+
+    protected addRequestVerificationHeaders(headers: Headers) {
+        headers.append('RequestVerificationToken', (<HTMLInputElement>document.getElementById('antiForgeryToken')).value);
+        headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
 }
