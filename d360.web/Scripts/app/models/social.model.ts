@@ -6,7 +6,7 @@
 
 export class SocialComment {
     Body: string;
-    Comments: string;
+    Comments: SocialComment[];
     CommentTypeID: number;
     CreatorIsOwner: boolean;
     CreatingResourceID: number;
