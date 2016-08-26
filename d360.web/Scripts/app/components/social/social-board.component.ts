@@ -63,12 +63,13 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     loadComments() {
         this.isLoading = true;
-        this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, this.pageNumber++, this.rowCount)
+        this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount)
             .then(res => {
                 this.isLoading = false;
                 this.comments = this.comments.concat(res);
                 this.hasMore = (res.length && res.length > 0);
             });
+        this.pageNumber++;
     }
     
 };
