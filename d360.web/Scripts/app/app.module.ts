@@ -102,7 +102,8 @@ import {
     HeaderBreadcrumbComponent,
     HeaderBreadcrumbItemComponent,
     HeaderComponent,
-    HeaderTypeaheadSearchComponent
+    HeaderTypeaheadSearchComponent,
+    HeaderFavoritesComponent,
 } from './components/header/index';
 
 import {
@@ -122,6 +123,7 @@ import {
 
 import { NavBarComponent } from './components/navbar/navbar.component';
 import { NavBarItemComponent } from './components/navbar/navbar-item.component';
+import { NavBarMenuComponent } from './components/navbar/navbar-menu.component';
 
 import {
     ActionBar,
@@ -272,6 +274,7 @@ import {
         HeaderBreadcrumbItemComponent,
         HeaderComponent,
         HeaderTypeaheadSearchComponent,
+        HeaderFavoritesComponent,
         HomeComponent,
         ModelComponent,
         ModelItemComponent,
@@ -280,6 +283,7 @@ import {
         MonitorListComponent,
         NavBarComponent,
         NavBarItemComponent,
+        NavBarMenuComponent,
         ActionBar,
         SimpleAccordion,
         ClaimsMatrixPart,
