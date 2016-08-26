@@ -53,7 +53,7 @@ import * as _ from 'lodash';
     providers: [SiteMenuService, FavoritesService],
     template: `
     <ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
-        <li class="logo" [routerLink]="'a/home'"></li> 
+        <li class="logo" [routerLink]="'a'"></li> 
 
         <template [ngIf]="mode == NavBarMode.Default">
             <li *ngFor="let item of items">

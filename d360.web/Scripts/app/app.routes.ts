@@ -16,6 +16,7 @@ import { ReferenceRoutes } from './components/reference/reference.routes';
 
 export const routes: RouterConfig = [
     //{ path: 'a/admin', component: AdminComponent }
+    { path: 'a', redirectTo: 'a/home', pathMatch: 'full' },
     ...AdminRoutes,
     ...HomeRoutes,
     ...ArtifactRoutes,
