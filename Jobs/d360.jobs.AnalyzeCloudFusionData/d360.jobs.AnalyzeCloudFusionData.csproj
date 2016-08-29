@@ -136,6 +136,7 @@
     <Compile Include="eagle\messagecenter\BloombergMapList.cs" />
     <Compile Include="eagle\messagecenter\BloombergRelationshipMapping.cs" />
     <Compile Include="eagle\messagecenter\Constants.cs" />
+    <Compile Include="eagle\messagecenter\CSVMapList.cs" />
     <Compile Include="eagle\messagecenter\IRelationshipMapping.cs" />
     <Compile Include="eagle\messagecenter\MapList.cs" />
     <Compile Include="eagle\messagecenter\MapListCreator.cs" />

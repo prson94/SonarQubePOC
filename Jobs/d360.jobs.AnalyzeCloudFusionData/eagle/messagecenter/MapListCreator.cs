@@ -16,6 +16,7 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
             switch (format)
             {
                 case MapFormat.CSV:
+                    list = new CSVMapList();
                     break;
                 case MapFormat.Bloomberg:
                     list = new BloombergMapList();

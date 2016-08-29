@@ -104,7 +104,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
 
             // if it is not a bloomberg input stream ignore it             
 
-            if (formatValue.ToUpper() != "BLOOMBERG" || directionValue.ToUpper() != "I")
+            if ((formatValue.ToUpper() != "BLOOMBERG" && formatValue.ToUpper() != "CSV") || directionValue.ToUpper() != "I")
             {
                 Console.WriteLine("Ignoring Message Stream:[{0}] Client:[{1}] Format:[{2}] Direction:[{3}]", stream.Name, companyID, formatValue, directionValue);
 

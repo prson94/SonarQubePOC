@@ -16,7 +16,7 @@ namespace d360.jobs.AnalyzeCloudFusionData
             {
                 var companies = GetActiveCompanyIDs();
 #if DEBUG
-                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();
+                companies = GetActiveCompanyIDs().Where(i => i == 4).ToList();                
 #endif
                 var domainPrefixes = GetCompanyDomainPrefixes();
 
