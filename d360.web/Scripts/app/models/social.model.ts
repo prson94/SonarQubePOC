@@ -4,6 +4,13 @@
     TextPath: string;
 }
 
+export class SocialVote {
+    CommentID: number;
+    ResourceID: number;
+    Vote: number;
+    ID: number;
+}
+
 export class SocialComment {
     Body: string;
     Comments: SocialComment[];
@@ -24,5 +31,5 @@ export class SocialComment {
     ResourceEmail: string;
     ResourceName: string;
     Tags: SocialCommentTag[];
-    Votes: any[];
+    Votes: SocialVote[];
 }

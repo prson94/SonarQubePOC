@@ -24,7 +24,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
                         <d3s-object-health-details *ngIf="showHealthDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName"></d3s-object-health-details>                    
                         <d3s-object-issue-details *ngIf="showIssueDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName"></d3s-object-issue-details>
-                        <d3s-object-board-details *ngIf="showBoardDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName" [daysToLookBack]="-1"></d3s-object-board-details>
+                        <d3s-object-board-details *ngIf="showBoardDetails" [objectType]="objectType" [objectID]="objectID" [objectName]="objectName"></d3s-object-board-details>
                     </div>
                 `,
     styles: [`

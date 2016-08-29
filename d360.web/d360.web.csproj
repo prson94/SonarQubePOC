@@ -1463,6 +1463,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\social\social-comment.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />

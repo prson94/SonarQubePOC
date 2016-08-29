@@ -184,7 +184,8 @@ import {
 } from './components/shared/index';
 
 import {
-    SocialBoardComponent
+    SocialBoardComponent,
+    SocialCommentComponent
 } from './components/social/index';
 
 import {
@@ -350,7 +351,8 @@ import {
         SynonymsTile, 
         WorkflowIssueEditorComponent,
         CHART_DIRECTIVES,
-        SocialBoardComponent
+        SocialBoardComponent,
+        SocialCommentComponent
     ],
     imports: [
         BrowserModule,
