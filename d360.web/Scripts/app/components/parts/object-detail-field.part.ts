@@ -7,7 +7,10 @@ import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../mode
     template: `
             <div *ngIf="field.Type == DetailFieldType.Field" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
             <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">
-                <a [href]="field.TooltipUrl" [innerHtml]="field.Value"></a>
+                <d3s-tooltip [tooltipType]="field.TooltipContext" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
+                    <a [href]="field.TooltipUrl" [innerHtml]="field.Value"></a>
+                </d3s-tooltip>
+
             </div>
             <div *ngIf="field.Type == DetailFieldType.Lookup">
                 <simple-accordion>
@@ -19,7 +22,6 @@ import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../mode
 
 export class ObjectDetailField implements OnInit {
     @Input() field: DetailField;
-
     DetailFieldType = DetailFieldType;
 
     constructor() {

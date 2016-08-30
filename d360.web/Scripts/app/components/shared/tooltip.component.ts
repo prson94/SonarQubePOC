@@ -3,7 +3,10 @@
 @Component({
     selector: 'd3s-tooltip',
     template: `                 
-                <a [attr.data-type]="objectType" [attr.data-context]="tooltipType" [attr.data-id]="objectId" (click)="click.emit()" data-hasqtip="true" aria-describedby="qtip-1"><i class="fa" [ngClass]="getIconName()"  [ngStyle]="{'color': iconColor}"></i></a>
+                <a *ngIf="icon && icon !=''" [attr.data-type]="objectType" [attr.data-context]="tooltipType" [attr.data-id]="objectId" (click)="click.emit()" data-hasqtip="true" aria-describedby="qtip-1"><i class="fa" [ngClass]="getIconName()"  [ngStyle]="{'color': iconColor}"></i></a>
+                <div *ngIf="icon == null || icon ==''"  style="display: inline-block;" [attr.data-type]="objectType" [attr.data-context]="tooltipType" [attr.data-id]="objectId" (click)="click.emit()" data-hasqtip="true" aria-describedby="qtip-1">
+                    <ng-content></ng-content>
+                </div>
               `
 })
 
