@@ -80,7 +80,8 @@ BEGIN
 					CRD.ObjectTypeName,
 					CRD.Url,
 					CRD.IconBackColor,
-					CRD.IconForeColor
+					CRD.IconForeColor,
+					CRD.NgUrl
 			from	CommentRelation CR
 					inner join cache.ObjectDetails CRD on CR.CommentID = a.ID and a.ParentID is null and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
 			for xml path('tag'), root('tags'), type

@@ -38,3 +38,19 @@ export class SocialComment {
     Tags: SocialCommentTag[];
     Votes: SocialVote[];
 }
+
+export class SocialEditCommentData{
+    constructor(comment?: SocialComment, tags?: SocialCommentTag[])
+    {
+        if(comment)
+            this.Comment = comment;
+
+        if(tags)
+            this.Tags = tags;
+    }
+
+    ObjectType: string;
+    ObjectID: number;
+    Comment: SocialComment;
+    Tags: SocialCommentTag[];
+}

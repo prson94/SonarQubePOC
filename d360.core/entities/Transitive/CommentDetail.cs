@@ -110,14 +110,14 @@ namespace d360.core.entities
         [DataMember, NotMapped]
         public ICollection<CommentDetail> Comments { get; set; }
 
-        public void ParseTagXml()
+        public void ParseTagXml(bool isNg = false)
         {
             if (!string.IsNullOrEmpty(TagsXml))
             {
                 try
                 {
                     Tags.AddRange(
-                        XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element("Url").Value, IconBackColor = i.Element("IconBackColor").Value, IconForeColor = i.Element("IconForeColor").Value })
+                        XElement.Parse(TagsXml).Elements("tag").Select(i => new CommentDetailTag { Object = i.Element("Object").Value, ObjectID = int.Parse(i.Element("ObjectID").Value), ObjectTypeName = i.Element("ObjectTypeName").Value, TextPath = i.Element("TextPath").Value, Url = i.Element(isNg ? "NgUrl" : "Url").Value, IconBackColor = i.Element("IconBackColor").Value, IconForeColor = i.Element("IconForeColor").Value })
                     );
                 }
                 catch (Exception ex)

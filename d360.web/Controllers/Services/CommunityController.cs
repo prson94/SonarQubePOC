@@ -214,11 +214,11 @@ namespace d360.web.Controllers.Services
                     ).ToList();
             }
 
-            var list = getChildren(comments, null);
+            var list = getChildren(comments, null, pageData.IsNg);
             return list;
         }
 
-        List<CommentDetail> getChildren(List<CommentDetail> fullList, int? currentParentID)
+        List<CommentDetail> getChildren(List<CommentDetail> fullList, int? currentParentID, bool isNg)
         {
             var listToLoad = new List<CommentDetail>();
 
@@ -237,7 +237,7 @@ namespace d360.web.Controllers.Services
                 {
                     if (!string.IsNullOrEmpty(c.TagsXml))
                     {
-                        c.ParseTagXml();
+                        c.ParseTagXml(isNg);
                     }
                     if (!string.IsNullOrEmpty(c.VotesXml))
                     {
@@ -246,7 +246,7 @@ namespace d360.web.Controllers.Services
                     listToLoad.Add(c);
                     if (fullList.Any(i => i.ParentID == c.ID))
                     {
-                        c.Comments = getChildren(fullList, c.ID);
+                        c.Comments = getChildren(fullList, c.ID, isNg);
                     }
                 });
             }

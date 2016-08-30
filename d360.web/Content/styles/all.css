@@ -20051,13 +20051,6 @@ jqx-grid-column-filterbutton-transparent,
 .qtip-youtube .qtip-titlebar .ui-state-hover {
   border-color: #303030;
 }
-.qtip-youtube > .qtip-content > table.striped tbody tr:nth-child(odd) {
-  background-color: #444;
-}
-.qtip-youtube > .qtip-content > table.hoverable tbody tr:hover {
-  background-color: #999;
-  color: black;
-}
 /* jQuery TOOLS Tooltip style */
 .qtip-jtools {
   background: #232323;

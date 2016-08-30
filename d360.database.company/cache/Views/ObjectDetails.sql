@@ -1,7 +1,4 @@
-﻿
-
-
-CREATE view [cache].[ObjectDetails]
+﻿create view [cache].[ObjectDetails]
 as
 	select	D.[Object],
 			D.[ObjectID],
@@ -32,7 +29,12 @@ as
 			coalesce(OT1.Name, OT2.Name, OT3.Name, OT4.TextPath, OT5.Name, OT12.Name, OT13.Name, OT14.Name, OT15.Name, OT20.Name, OT24.Name, NULL) as ObjectTypeName,
 			coalesce(S.IconBackColor, '#000') as IconBackColor,
 			coalesce(S.IconForeColor, '#fff') as IconForeColor,
-			coalesce(S.IconText, 'leaf') as IconText
+			coalesce(S.IconText, 'leaf') as IconText,
+			case D.[Object]
+				when 'Lookup' then dbo.GenerateNgObjectUrl('Lookup', O20.LookupTypeID, O20.ID)
+				when 'LookupType' then dbo.GenerateNgObjectUrl('LookupType', O21.ID, 0)
+				else dbo.GenerateNgObjectUrl(D.[Object], D.[ObjectTypeID], D.ObjectID) 
+			end as NgUrl
 	from	cache.[Object] D with(nolock)
 			left join Artifact O1 with(nolock) on D.[Object] = 'Artifact' and O1.ID = D.ObjectID
 			left join ArtifactType OT1 with(nolock) on D.[Object] = 'Artifact' and OT1.ID = O1.ArtifactTypeID
@@ -130,3 +132,7 @@ as
 			left join IntersectType OT24 with(nolock) on D.[Object] = 'Intersect' and OT24.ID = O24.IntersectTypeID
 
 			left join ObjectStyle S with(nolock) on S.ObjectType = D.ObjectType and S.ObjectID = D.[ObjectTypeID]
+
+GO
+
+

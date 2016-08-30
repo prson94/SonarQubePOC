@@ -3,28 +3,30 @@ import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { SocialComment, SocialVoteType } from '../../models/social.model';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
     selector: 'd3s-social-comment',    
     template: ` 
-                <div class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false">                                
+                <div class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
                     <div class="col s1 right-align">
                         <img class="user" height="35" [src]="'/resources/image/' + comment.CreatingResourceID + '?size=35'" width="35">                        
                     </div>
                     <div class="col s11">
                         <div class="row">
                             <div class="col s12 toolbox">
-                                <span class="user">{{comment.ResourceName}}</span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span>
+                                <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span>
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a class="comment-tool-item-mid" (click)="reply.emit();"><i class="fa fa-reply" aria-hidden="true" ></i></a>
-                                    <a class="comment-tool-item-mid" (click)="delete.emit();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
+                                    <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
+                                    <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="edit.emit();"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                                 </div>                      
                             </div>
                             <div class="col s12" [innerHtml]="comment.Body"></div>                            
                             <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Tags: <span *ngFor="let tag of comment.Tags" [ngStyle]="{'background':tag.IconBackColor, 'color':tag.IconForeColor}" class="comment-tag" (click)="visitTag(tag.Url)">{{tag.TextPath}} </span>
+                                <i class="fa fa-tag" aria-hidden="true"></i> Tags: <d3s-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [tooltipType]="'preview'" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-tooltip>
                             </div>
                         </div>                        
                     </div>                                    
@@ -46,36 +48,35 @@ import { SocialComment, SocialVoteType } from '../../models/social.model';
                 }
                 img.user{
                     border-radius:5px;
-                }                                
-                :host :hover {
-                    background: #EFEFEF;                    
-                 }
+                }                                              
                 .comment-tag{
                     border-radius: 5px;
                     margin-right: 5px;
-                    padding: 0 5px;
+                    padding: 3px 10px;
                     cursor:pointer;
                 }
                 .comment, .reply{
-                    padding-bottom:10px;
+                    padding:5px 0;
                 }
+                
                 .comment-tool-item, .comment-tool-item-mid{
                     padding:5px;
-                    font-size:1.25em;
+                    font-size:1.4em;
                     color:#646464;
                 }
                 .comment-tool-item-mid{
-                    border-right:1px solid #646464;
+                    border-right:1px solid #AAAAAA;
                 }
                 .comment-tools{                                  
                     display:inline-block;
                     position:absolute;
-                    top: 0;
+                    top: -.50rem;
                     right: .25rem;
-                    border: 1px solid #646464;
+                    border: 1px solid #AAAAAA;
                     border-radius: 5px;
                     box-sizing:border-box;
                     overflow:hidden;
+                    background:white;
                 }
                 .toolbox{
                     position:relative;
@@ -89,6 +90,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     @Output() delete = new EventEmitter();
     @Output() reply = new EventEmitter();
+    @Output() edit = new EventEmitter();
 
     private upVotes: number = 0;
     private downVotes: number = 0;
@@ -96,10 +98,9 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private showTools: boolean = false;
 
     public socialVoteType = SocialVoteType; // for template to use enum
-    public upVote: SocialVoteType = SocialVoteType.UpVote;
-    public downVote: SocialVoteType = SocialVoteType.DownVote;
     
-    constructor(private socialService: SocialService) {
+
+    constructor(private socialService: SocialService, private router: Router) {
         super();
     }
 
@@ -136,6 +137,14 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                     this.calculateVotes();
                 }
             });
+    }
+
+    private deleteCommentClick() {
+        this.delete.emit({ comment: this.comment });
+    }
+
+    private changeUrl(route) {
+        this.router.navigate([route]); 
     }
 
 };

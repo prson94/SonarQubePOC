@@ -75,6 +75,8 @@ namespace d360.web.Models
         public int TypeFilter { get; set; }
 
         public string SearchFilter { get; set; }
+
+        public bool IsNg { get; set; }
     }
 
     public class CommentTag

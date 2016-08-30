@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Output, Input, HostBinding } from '@angular/core';
 
 @Component({
     selector: 'd3s-tooltip',
@@ -15,7 +15,8 @@ export class TooltipComponent  {
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() icon: string;
-    @Input() iconColor: string;
+    @HostBinding('style.color') @Input() iconColor: string;
+    @HostBinding('style.background') @Input() foreColor: string;
 
     @Output() click = new EventEmitter();    
 

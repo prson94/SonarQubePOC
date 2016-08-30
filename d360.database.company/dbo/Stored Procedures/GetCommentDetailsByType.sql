@@ -44,7 +44,8 @@ BEGIN
 							CRD.ObjectTypeName,
 							CRD.Url,
 							CRD.IconForeColor,
-							CRD.IconBackColor
+							CRD.IconBackColor,
+							CRD.NgUrl
 					from	CommentRelation CR
 							inner join cache.ObjectDetails CRD on CR.CommentID = C.ID and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
 					for xml path('tag'), root('tags'), type
@@ -97,4 +98,3 @@ BEGIN
 	where
 		isdeleted = 0;
 END
-GO

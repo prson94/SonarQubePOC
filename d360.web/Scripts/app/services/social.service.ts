@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { SocialComment, SocialVote, SocialVoteType } from '../models/social.model';
+import { SocialComment, SocialVote, SocialVoteType, SocialEditCommentData } from '../models/social.model';
 
 @Injectable()
 export class SocialService extends BaseService {
@@ -18,7 +18,7 @@ export class SocialService extends BaseService {
         this.addRequestVerificationHeaders(headers);
 
         return this.http
-            .post(`services/community/comments`, `ObjectType=${objectType}&ObjectID=${objectID}&Skip=${page? page:0}&Take=${count? count: 10}&DateFilter=-${daysToLookBack}`,  { headers: headers })
+            .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID}&Skip=${page? page:0}&Take=${count? count: 10}&DateFilter=-${daysToLookBack}`,  { headers: headers })
             .toPromise()
             .then(res => <SocialComment[]>res.json())
             .catch(this.handleError);
@@ -32,9 +32,23 @@ export class SocialService extends BaseService {
         this.addRequestVerificationHeaders(headers);
 
         return this.http
-            .post(`services/community/vote`, `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
+            .post('services/community/vote', `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
             .toPromise()
             .then(res => <SocialVote[]>res.json())
+            .catch(this.handleError);
+    }
+
+    editComment(commentEditData: SocialEditCommentData): Promise<SocialComment> {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json');
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .post('services/community/edit', commentEditData, { headers: headers })
+            .toPromise()
+            .then(res => <SocialComment>res.json())
             .catch(this.handleError);
     }
 }
