@@ -1417,6 +1417,7 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\parts\object-detail-field.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\parts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
