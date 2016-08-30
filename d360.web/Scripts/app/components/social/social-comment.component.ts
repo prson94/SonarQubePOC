@@ -34,7 +34,7 @@ import { Router, NavigationEnd } from '@angular/router';
                 <div class="row reply" *ngFor="let response of comment?.Comments">
                     <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
                     <div class="col s10">
-                        <div><span class="user">{{response.ResourceName}}</span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span></div>
+                        <div><span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{response.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
                         <div [innerHtml]="response.Body"></div>                            
                     </div>                                
                 </div>                  
@@ -58,11 +58,14 @@ import { Router, NavigationEnd } from '@angular/router';
                 .comment, .reply{
                     padding:5px 0;
                 }
-                
+                .comment-tool-item :hover, .comment-tool-item-mid :hover{
+                    color:rgba(84,164,218,1);
+                }
                 .comment-tool-item, .comment-tool-item-mid{
                     padding:5px;
                     font-size:1.4em;
                     color:#646464;
+                    cursor:pointer;
                 }
                 .comment-tool-item-mid{
                     border-right:1px solid #AAAAAA;
@@ -76,7 +79,7 @@ import { Router, NavigationEnd } from '@angular/router';
                     border-radius: 5px;
                     box-sizing:border-box;
                     overflow:hidden;
-                    background:white;
+                    background:white;                    
                 }
                 .toolbox{
                     position:relative;

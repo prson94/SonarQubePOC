@@ -1,19 +1,19 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { SocialComment, SocialEditCommentData } from '../../models/social.model';
 
 @Component({
     selector: 'd3s-social-board',
-    template: ` <p-dataScroller [value]="comments" [rows]="rowCount">
-                        <template let-comment>
-                            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);"></d3s-social-comment>                            
-                        </template>
-                </p-dataScroller>                
+    template: ` 
+                <d3s-social-input (commented)="addComment($event);"></d3s-social-input>
+                <div *ngFor="let comment of comments">
+                    <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);"></d3s-social-comment>                            
+                </div>                
                 <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..." style="width: '150px';"></button>
                 `,
-    providers: [SocialService],    
+    providers: [SocialService],        
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
@@ -21,7 +21,6 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Input() objectType: string;
     @Input() objectName: string;
     
-
     private rowCount: number = 5;
     private pageNumber: number = 0;
     private hasMore: boolean = true;
@@ -55,15 +54,40 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         editData.ObjectID = this.objectID;
         editData.ObjectType = this.objectType;
         editData.Comment.IsDeleted = true;
-
+        
         this.socialService.editComment(editData).
             then(res => {
                 if (res.IsDeleted) {
+                    console.log(res);
                     let index = this.comments.findIndex(x => x.ID == res.ID);
-
+                    console.log(index);
                     if (index >= 0) {
-                        this.comments = this.comments.splice(index, 1);
+                        this.comments.splice(index,1);
                     }
+                    console.log(this.comments);
+                }
+            });
+    }
+
+    private addComment(event) {
+        let commentContent = event.comment;
+
+        if (!commentContent) return;
+
+        let comment = new SocialComment();
+
+        comment.Body = commentContent;
+        
+        let addData = new SocialEditCommentData(comment);
+        addData.ObjectID = this.objectID;
+        addData.ObjectType = this.objectType;        
+        addData.Tags = [];
+
+        this.socialService.addComment(addData).
+            then(res => {
+                console.log(res);
+                if (res) {
+                    this.comments.unshift(res);
                 }
             });
     }

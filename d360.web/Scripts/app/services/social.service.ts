@@ -51,4 +51,18 @@ export class SocialService extends BaseService {
             .then(res => <SocialComment>res.json())
             .catch(this.handleError);
     }
+
+    addComment(commentAddData: SocialEditCommentData): Promise<SocialComment> {
+        let headers = new Headers();
+
+        headers.append('Content-Type', 'application/json');
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .post('services/community/comment', commentAddData, { headers: headers })
+            .toPromise()
+            .then(res => <SocialComment>res.json())
+            .catch(this.handleError);
+    }
 }

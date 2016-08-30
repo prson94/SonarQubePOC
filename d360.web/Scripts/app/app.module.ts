@@ -23,8 +23,7 @@ import {
     MultiSelectModule,
     SpinnerModule,
     EditorModule,
-    TooltipModule,
-    DataScrollerModule,
+    TooltipModule,    
     DragDropModule,
 } from 'primeng/primeng';
 
@@ -188,7 +187,8 @@ import {
 
 import {
     SocialBoardComponent,
-    SocialCommentComponent
+    SocialCommentComponent,
+    SocialInputComponent,
 } from './components/social/index';
 
 import {
@@ -351,6 +351,7 @@ import {
         SimpleDropdown,
         SocialBoardComponent,
         SocialCommentComponent,
+        SocialInputComponent,
         StructureTile,
         SurveyQuestionsTile,
         SynonymsTile,
@@ -384,8 +385,7 @@ import {
         MultiSelectModule,
         SpinnerModule,
         EditorModule,
-        TooltipModule,
-        DataScrollerModule,
+        TooltipModule,        
         DragDropModule,
 
     ],
