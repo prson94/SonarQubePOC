@@ -52,3 +52,9 @@ export class GridFilterColumn {
     hiddenfield: boolean;
     id: string;
 }
+
+export class LookupGrid {
+    Columns: GridFilterColumn[];
+    Fields: GridField[];
+    Values: any[];
+}

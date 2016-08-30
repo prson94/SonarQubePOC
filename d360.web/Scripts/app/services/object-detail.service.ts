@@ -19,17 +19,18 @@ import {
     ObjectDetail
 } from '../models/object-detail.model';
 import { HierarchyModel, PredicateType } from '../models/relations.model';
+import { LookupGrid } from '../models/grid-definition.model';
 
 @Injectable()
-export class ObjectDetailService extends BaseService implements IObjectDetailService {
+export class ObjectDetailService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getObjectDetail(objectID: number, objectType: string): Promise<DetailModel> {
+    getObjectDetail(objectID: number, objectType: string): Promise<any> {
         return this.http.get(`api/${objectType}/${objectID}/detail`)
             .toPromise()
-            .then(response => <DetailModel>response.json())
-            .catch(err=>this.handleError(err));
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
     }
 
     getObject(objectID: number, objectType: string): Promise<ObjectDetail> {
@@ -77,7 +78,7 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
 
     getAttributeHierarchyTree(objectID: number, objectType: string): Promise<TreeNode[]> {
         return this.getAttributeHierarchyItems(objectID, objectType).then(result => {
-            let data = FormHelper.flattenTree(result, 'Items','ID','ParentUID');
+            let data = FormHelper.flattenTree(result, 'Items', 'ID', 'ParentUID');
             return FormHelper.formTree(data, 'ID', 'ParentUID');
         });
 
@@ -99,7 +100,7 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
 
     getRelationsHierarchyTree(predicateType: PredicateType, type: string, id: number): Promise<TreeNode[]> {
         return this.getRelationsHierarchy(predicateType, type, id).then(result => {
-            return FormHelper.formTree(result,  'UID', 'ParentID');
+            return FormHelper.formTree(result, 'UID', 'ParentID');
         });
     }
 
@@ -112,6 +113,14 @@ export class ObjectDetailService extends BaseService implements IObjectDetailSer
         return this.http.post('form/dynamiceditor/new/attribute', params)
             .toPromise()
             .then(result => <any>result.json());
+    }
+
+    //TODO: make explicit call here instead of passing uri
+    getLookupGrid(uri: string): Promise<LookupGrid> {
+        return this.http.get(uri)
+            .toPromise()
+            .then(result => <LookupGrid>result.json())
+            .catch(err => this.handleError(err));
     }
 
 }

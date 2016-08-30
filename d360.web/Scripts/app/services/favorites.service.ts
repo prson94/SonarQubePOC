@@ -38,5 +38,29 @@ export class FavoritesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    moveUp(route: string) {
+        let m = {
+            route: route,
+            moveUp: true
+        };
+
+        return this.http.put('navigation/movefavorite', m)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    moveDown(route: string) {
+        let m = {
+            route: route,
+            moveUp: false
+        };
+
+        return this.http.put('navigation/movefavorite', m)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 
 }

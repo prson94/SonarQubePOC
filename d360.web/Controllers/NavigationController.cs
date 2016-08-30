@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using d360.core.enums;
 using System.Text;
 using System.Security.Cryptography;
+using System;
 
 namespace d360.web.Controllers
 {
@@ -724,6 +725,7 @@ SELECT	'#Admin' as MenuID,
         {
 
             favorite.ResourceID = Company.CurrentResourceID;
+            favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
 
             var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
 
@@ -740,10 +742,54 @@ SELECT	'#Admin' as MenuID,
 
         }
 
+        [Authorize, HttpPut]
+        public JsonNetResult MoveFavorite(string route, bool moveUp = false)
+        {
+            try
+            {
+                var favorite = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && f.Route == route).First();
+
+                if (favorite == null)
+                    throw new Exception("no favorite with supplied route");
+                if (moveUp)
+                {
+                    var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
+                    if (above == null)
+                        throw new Exception("no favorite above");
+                    favorite.SortOrder--;
+                    above.SortOrder++;
+                }
+                else
+                {
+                    var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
+                    if (below == null)
+                        throw new Exception("no favorite below");
+                    favorite.SortOrder++;
+                    below.SortOrder--;
+                }
+
+                Company.SaveChanges();
+            } catch (Exception ex)
+            {
+                return new JsonNetResult
+                {
+                    Data = "exception",
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+
+            return new JsonNetResult
+            {
+                Data = "success",
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
         [Authorize, HttpGet]
         public JsonNetResult GetFavorites()
         {
-            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID).ToList();
+            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID).OrderBy(f => f.SortOrder).ToList();
 
             return new JsonNetResult
             {

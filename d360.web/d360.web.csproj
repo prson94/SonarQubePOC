@@ -1442,6 +1442,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-board-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-issue-details.component.ts" />

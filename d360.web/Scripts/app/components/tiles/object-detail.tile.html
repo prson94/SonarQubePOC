@@ -6,86 +6,68 @@
         <div style="line-height:10px">&nbsp;</div>
         <div *ngFor="let row of rows">
             <div class="row" style="margin-bottom: 10px" attr.data-category="{{row.Category}}">
-                <div *ngIf="columns == 1">
+                <div *ngIf="row.columns == 1">
                     <div class="col l2 m3 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
+                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
                         </div>
                     </div>
                     <div class="col l10 m9 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+                            <object-detail-field [field]="field"></object-detail-field>
                         </div>
                     </div>
                 </div>
-                <div *ngIf="columns != 1">
+                <div *ngIf="row.columns != 1">
                     <div class="col l2 m3 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
+                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
                         </div>
                     </div>
                     <div class="col l4 m3 s12">
                         <div *ngFor="let field of row.FirstColumnFields">
-                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+                            <object-detail-field [field]="field"></object-detail-field>
                         </div>
                     </div>
                     <div class="col l2 m3 s12">
                         <div *ngFor="let field of row.SecondColumnFields">
-                            <div class="FieldName FieldDisplayName">{{field.Name}}</div>
+                            <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
+                            <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
                         </div>
                     </div>
                     <div class="col l4 m3 s12">
                         <div *ngFor="let field of row.SecondColumnFields">
-                            <div class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+                            <object-detail-field [field]="field"></object-detail-field>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div *ngFor="let c of categories">
+            <simple-accordion *ngIf="!c.rows[0].FirstColumnFields[0].HideFooter && ((c.loaded && c.data[0]) || !c.loaded)" [header]="c.name" >
+                <div *ngIf="!c.loaded" style="width:100%; text-align:center;">
+                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin"></i></div>
+                </div>
+                <div *ngIf="c.loaded">
+                    <div *ngFor="let r of c.rows">
+                        <div class="row" style="margin-bottom: 10px">
+                            <div class="col l2 m3 s12">
+                                <div *ngFor="let field of r.FirstColumnFields">
+                                    <div *ngIf="field.FieldDescription && field.FieldDescription != ''" class="FieldName FieldDisplayName" [pTooltip]="field.FieldDescription" tooltipPosition="top">{{field.Name}}</div>
+                                    <div *ngIf="!field.FieldDescription || field.FieldDescription == ''" class="FieldName FieldDisplayName">{{field.Name}}</div>
+                                </div>
+                            </div>
+                            <div class="col l10 m9 s12">
+                                <div *ngFor="let field of r.FirstColumnFields; let i=index">
+                                    <d3s-dynamic-lookup-grid [data]="c.data[i]"></d3s-dynamic-lookup-grid>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </simple-accordion>
+        </div>
     </div>
 </div>
-    
-<!--<div style="line-height:10px">&nbsp;</div>
-{{#each rows}}
-<div class="row" style="margin-bottom: 10px" data-category="{{Category}}">
-    {{#if hasOneColumn}}
-
-    <div class="col l2 m3 s12">
-        {{#each FirstColumnFields}}
-        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
-        {{/each}}
-    </div>
-    <div class="col l10 m9 s12">
-        {{#each FirstColumnFields}}
-        <div id="{{valueID}}" class="FieldDisplayContent"></div>
-        {{/each}}
-    </div>
-
-    {{else}}
-
-    <div class="col l2 m3 s12">
-        {{#each FirstColumnFields}}
-        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
-        {{/each}}
-    </div>
-    <div class="col l4 m3 s12">
-        {{#each FirstColumnFields}}
-        <div id="{{valueID}}" class="FieldDisplayContent"></div>
-        {{/each}}
-    </div>
-
-
-    <div class="col l2 m3 s12">
-        {{#each SecondColumnFields}}
-        <div id="{{labelID}}" class="FieldName FieldDisplayName">{{Name}}</div>
-        {{/each}}
-    </div>
-    <div class="col l4 m3 s12">
-        {{#each SecondColumnFields}}
-        <div id="{{valueID}}" class="FieldDisplayContent"></div>
-        {{/each}}
-    </div>
-
-    {{/if}}
-</div>
-{{/each}}-->

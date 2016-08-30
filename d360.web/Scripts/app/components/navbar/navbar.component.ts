@@ -48,6 +48,20 @@ import * as _ from 'lodash';
                 color: #444;
             }
 
+
+            .navbar-favorite-toolbar {
+                display: inline-block;
+                cursor: pointer;
+            }
+
+            .navbar-favorite-toolbar-item {
+                color: white;
+                font-size: 1.2em;
+                display: inline-block;
+                width: 25px;
+                height:25px;
+                text-align: center;
+            }
         `
         ],
     providers: [SiteMenuService, FavoritesService],
@@ -61,6 +75,16 @@ import * as _ from 'lodash';
             </li>
         </template>
         <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
+            <!--<li>
+                <ul class="navbar-favorite-toolbar">
+                    <li class="navbar-favorite-toolbar-item" (click)="favAction('up')">
+                        <i class="fa fa-caret-up"></i>
+                    </li>
+                    <li class="navbar-favorite-toolbar-item" (click)="favAction('down')">
+                        <i class="fa fa-caret-down"></i>
+                    </li>
+                </ul>
+            </li> -->
             <li *ngFor="let fav of favItems" class="navbar-favorite" [class.active]="fav.active">
                 <a [routerLink]="[fav.route]">{{fav.name}}</a>
             </li>
@@ -88,6 +112,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private siteMenu: SiteMenu[] = [];
     private favItems: NavBarItem[] = new Array<NavBarItem>();
     private mode = NavBarMode.Default;
+    private firstLoad = true;
     NavBarMode = NavBarMode;
 
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
@@ -142,8 +167,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
                     i.route = f.Route;
                     this.favItems.push(i);
                 }
+                if (this.favItems.length > 0 && this.firstLoad)
+                    this.mode = NavBarMode.Favorites;
                 this.activateRoute(this.currentRoute, this.favItems);
+                this.firstLoad = false;
             });
+
         }
 
     }
@@ -339,6 +368,29 @@ export class NavBarComponent implements OnInit, OnDestroy {
             r.active = true;
         }
         return r;
+    }
+
+    favAction(action: string) {
+        switch (action) {
+            case 'up':
+                let l = this.favItems.find(f => f.route == this.currentRoute);
+
+                if (l == null)
+                    return;
+
+                this.favoritesService.moveUp(l.route).then(() => this.loadFavorites());
+                break;
+            case 'down':
+                let l2 = this.favItems.find(f => f.route == this.currentRoute);
+
+                if (l2 == null)
+                    return;
+
+                this.favoritesService.moveDown(l.route).then(() => this.loadFavorites());
+                break;
+            default:
+                break;
+        }
     }
 }
 

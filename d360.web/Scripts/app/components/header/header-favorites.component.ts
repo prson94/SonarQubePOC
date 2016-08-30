@@ -25,7 +25,10 @@ import * as _ from 'lodash';
     ],
     template:
     `
-        <span (click)="handleClick()" [class.active]="active" class="favorite"><i class="fa fa-star"></i></span>
+        <span (click)="handleClick()" [class.active]="active" class="favorite">
+            <i *ngIf="!isLoading" class="fa fa-star"></i>
+            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
+        </span>
     `,
     providers: [FavoritesService]
 })
@@ -38,6 +41,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
     private sub: any;
     private subBread: any;
     private name: string;
+    private isLoading = false;
 
     private favItems: Favorite[];
 
@@ -74,12 +78,16 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
 
 
     handleClick() {
+        if (this.isLoading)
+            return;
+        this.isLoading = true;
         this.favoritesService.toggleFavorite(this.name, this.uri)
             .then(() => this.favoritesService.getFavorites())
             .then(fav => {
                 this.headerActionsService.emitFavoritesChange(fav);
                 this.favItems = fav;
                 this.activateFavorites();
+                this.isLoading = false;
             });
     }
 

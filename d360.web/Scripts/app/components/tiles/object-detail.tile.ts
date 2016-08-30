@@ -1,7 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
+import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
+import { LookupGrid } from '../../models/grid-definition.model';
 
 declare var CompanySettings;
 
@@ -17,13 +18,15 @@ export class ObjectDetailTile implements OnChanges {
     @Input() objectID: number;
 
     private isLoading = false;
+    DetailFieldType = DetailFieldType;
 
     private TaxonomyTypeName = 'ArtifactTaxonomyType';
     private TaxonomyTypeNodeName = 'ArtifactTaxonomyTypeNodes';
 
+    private categories: Category[] = new Array<Category>();
+
 
     rows = new Array<DetailRow>();
-    columns: number;
 
     constructor(private objectDetailService: ObjectDetailService) {
     }
@@ -48,19 +51,30 @@ export class ObjectDetailTile implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
+                    console.log(data);
                     this.rows = data.rows;
-                    this.columns = data.columns;
-
+                    this.categories = [];
+                    
                     this.rows.forEach(r => {
+                        if (r.Category && this.categories.find(c => c.name == r.Category) == null)
+                            this.categories.push(new Category(r.Category));
+
                         r.FirstColumnFields.forEach(f => {
+                            this.setDetailFieldType(f);
                             if (f.FieldName == this.TaxonomyTypeName) {
                                 f.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
                             }
                             if (f.FieldName == this.TaxonomyTypeNodeName) {
                                 f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
+
+                            //f.FieldDescription = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
+
                         });
+                        r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
+
                         r.SecondColumnFields.forEach(s => {
+                            this.setDetailFieldType(s);
                             if (s.FieldName == this.TaxonomyTypeName) {
                                 s.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
                             }
@@ -68,10 +82,78 @@ export class ObjectDetailTile implements OnChanges {
                                 s.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
                         });
+                        r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                     });
+
+                    let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+
+                    for (let i = 0; i < this.categories.length; i++) {
+                        let items = this.rows.filter(r => r.Category == this.categories[i].name);
+                        this.categories[i].rows = [];
+                        for (let j of items) {
+                            if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
+                                this.categories[i].rows.push(j);
+                            }
+                        }
+                    }
+
+                    this.rows = displayRows;
+                    this.loadCategory(null);
                     this.isLoading = false;
+
                     //console.log(data);
+                    //console.log(this.categories);
+                    //console.log(this.rows);
                 });
         }
     }
+
+
+    private setDetailFieldType(field: DetailField) {
+        field.Type = DetailFieldType.Field;
+        if (field.Value == null)
+            field.Type = DetailFieldType.None;
+        if (field.TooltipUrl != null)
+            field.Type = DetailFieldType.Tooltip;
+        if (field.LookupGridUrl != null) {
+            if (field.HideFooter)
+                field.Type = DetailFieldType.None;
+            else
+                field.Type = DetailFieldType.Lookup;
+        }
+    }
+
+    private loadCategory(name: string) {
+        //let c = this.categories.find(c => c.name == name);
+        //if (c == null)
+        //    return;
+        //if (c.loaded)
+        //    return;
+
+        this.categories.forEach(c => {
+            var count = c.rows.length;
+            c.rows.forEach(r => {
+                this.objectDetailService.getLookupGrid(r.FirstColumnFields[0].LookupGridUrl)
+                    .then(g => {
+                        if (g.Values.length != 0)
+                            c.data.push(g);
+                        count--;
+                        if (count <= 0)
+                            c.loaded = true;
+                    });
+            });
+        });
+
+
+    }
+}
+
+class Category {
+    constructor(name: string) {
+        this.name = name;
+    }
+    loaded = false;
+    data: LookupGrid[] = new Array<LookupGrid>();
+    name: string;
+    rows = [];
 }

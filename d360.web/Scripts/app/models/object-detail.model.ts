@@ -12,7 +12,18 @@ export class DetailRow {
     columns: number;
     FirstColumnFields = new Array<DetailField>();
     SecondColumnFields = new Array<DetailField>();
+
+    //Type: DetailRowType = DetailRowType.Field;
 }
+
+export enum DetailFieldType {
+    Field,
+    Lookup,
+    Tooltip,
+    None,
+    Hidden,
+}
+
 
 export class DetailField {
     Column: any;
@@ -31,6 +42,8 @@ export class DetailField {
     TooltipType: any;
     TooltipUrl: string;
     Value: string;
+
+    Type: DetailFieldType = DetailFieldType.Field;
 }
 
 export class ObjectStyle {
