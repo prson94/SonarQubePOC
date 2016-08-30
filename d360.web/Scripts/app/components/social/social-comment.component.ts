@@ -2,7 +2,7 @@
 import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
-import { SocialComment } from '../../models/social.model';
+import { SocialComment, SocialVoteType } from '../../models/social.model';
 
 @Component({
     selector: 'd3s-social-comment',    
@@ -18,8 +18,8 @@ import { SocialComment } from '../../models/social.model';
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a class="comment-tool-item-mid" (click)="reply.emit();"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a class="comment-tool-item-mid" (click)="delete.emit();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
-                                    <a class="comment-tool-item-mid" (click)="doVote(true);"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i> {{upVotes}}</a>
-                                    <a class="comment-tool-item-mid" (click)="doVote(false);"><i class="fa fa-thumbs-o-down" aria-hidden="true"> {{downVotes}}</i></a>
+                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
+                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                                 </div>                      
                             </div>
                             <div class="col s12" [innerHtml]="comment.Body"></div>                            
@@ -62,17 +62,17 @@ import { SocialComment } from '../../models/social.model';
                 .comment-tool-item, .comment-tool-item-mid{
                     padding:5px;
                     font-size:1.25em;
-                    color:#999999;
+                    color:#646464;
                 }
                 .comment-tool-item-mid{
-                    border-right:1px solid #999999;
+                    border-right:1px solid #646464;
                 }
                 .comment-tools{                                  
                     display:inline-block;
                     position:absolute;
                     top: 0;
                     right: .25rem;
-                    border: 1px solid #999999;
+                    border: 1px solid #646464;
                     border-radius: 5px;
                     box-sizing:border-box;
                     overflow:hidden;
@@ -94,6 +94,10 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private downVotes: number = 0;
 
     private showTools: boolean = false;
+
+    public socialVoteType = SocialVoteType; // for template to use enum
+    public upVote: SocialVoteType = SocialVoteType.UpVote;
+    public downVote: SocialVoteType = SocialVoteType.DownVote;
     
     constructor(private socialService: SocialService) {
         super();
@@ -101,8 +105,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         if (this.comment && this.comment.Votes) {
-            this.upVotes = this.comment.Votes.filter(res => res.Vote == 1).length;
-            this.downVotes = this.comment.Votes.filter(res => res.Vote == 0).length;
+            this.calculateVotes();            
         }
     }   
     
@@ -110,11 +113,28 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         window.location.href = url;
     }    
 
-    private doVote(up: boolean) {
-        this.socialService.vote(this.comment.ID, up).then(
+    private calculateVotes() {
+        this.upVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.UpVote).length;
+        this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
+    }
+
+    private findVoteByVoter(resourceId: number) {
+        let indx = 0;
+        for (let vote of this.comment.Votes) {
+            if (vote.ResourceID == resourceId) return indx;
+            indx++;
+        }
+        return -1;
+    }
+
+    private doVote(vote: SocialVoteType) {
+        this.socialService.vote(this.comment.ID, vote).then(
             res => {
-                if (up) this.upVotes++;
-                else this.downVotes++;
+                if (res) {
+                    this.comment.Votes = res;
+
+                    this.calculateVotes();
+                }
             });
     }
 

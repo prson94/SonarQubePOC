@@ -1,4 +1,9 @@
-﻿export class SocialCommentTag {
+﻿export enum SocialVoteType {
+    DownVote = -1,
+    UpVote = 1
+}
+
+export class SocialCommentTag {
     Object: string;
     ObjectID: number;
     TextPath: string;
@@ -7,7 +12,7 @@
 export class SocialVote {
     CommentID: number;
     ResourceID: number;
-    Vote: number;
+    Vote: SocialVoteType;
     ID: number;
 }
 

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { SocialComment, SocialVote } from '../models/social.model';
+import { SocialComment, SocialVote, SocialVoteType } from '../models/social.model';
 
 @Injectable()
 export class SocialService extends BaseService {
@@ -24,7 +24,7 @@ export class SocialService extends BaseService {
             .catch(this.handleError);
     }
 
-    vote(commentID: number, up: boolean): Promise<SocialVote>{
+    vote(commentID: number, vote: SocialVoteType): Promise<SocialVote[]>{
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
@@ -32,9 +32,9 @@ export class SocialService extends BaseService {
         this.addRequestVerificationHeaders(headers);
 
         return this.http
-            .post(`services/community/vote`, `CommentID=${commentID}&Vote=${up ? "1" : "0"}`, { headers: headers })
+            .post(`services/community/vote`, `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
             .toPromise()
-            .then(res => <SocialVote>res.json())
+            .then(res => <SocialVote[]>res.json())
             .catch(this.handleError);
     }
 }
