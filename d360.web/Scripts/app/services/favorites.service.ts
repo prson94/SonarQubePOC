@@ -11,15 +11,6 @@ export class FavoritesService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    // Observable sources
-    private onFavoritesChangeSource = new Subject<string>();
-    public onFavoritesChanges$ = this.onFavoritesChangeSource.asObservable();
-
-    emitFavoritesChange(uri: string) {
-        this.onFavoritesChangeSource.next(uri);
-    }
-
-
     getFavorites(): Promise<Favorite[]> {
         return this.http.get('navigation/getfavorites')
             .toPromise()

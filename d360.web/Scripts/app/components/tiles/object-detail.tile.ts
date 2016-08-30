@@ -51,7 +51,7 @@ export class ObjectDetailTile implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
-                    console.log(data);
+                    //console.log(data);
                     this.rows = data.rows;
                     this.categories = [];
                     
@@ -96,14 +96,14 @@ export class ObjectDetailTile implements OnChanges {
                             }
                         }
                     }
-
+                    console.log(this.rows);
                     this.rows = displayRows;
-                    this.loadCategory(null);
+                    this.loadCategory();
                     this.isLoading = false;
 
                     //console.log(data);
                     //console.log(this.categories);
-                    //console.log(this.rows);
+                    
                 });
         }
     }
@@ -123,24 +123,35 @@ export class ObjectDetailTile implements OnChanges {
         }
     }
 
-    private loadCategory(name: string) {
-        //let c = this.categories.find(c => c.name == name);
-        //if (c == null)
-        //    return;
-        //if (c.loaded)
-        //    return;
-
+    private loadCategory() {
         this.categories.forEach(c => {
-            var count = c.rows.length;
+            var rcount = c.rows.length;
             c.rows.forEach(r => {
-                this.objectDetailService.getLookupGrid(r.FirstColumnFields[0].LookupGridUrl)
-                    .then(g => {
-                        if (g.Values.length != 0)
-                            c.data.push(g);
-                        count--;
-                        if (count <= 0)
+                let fcount = r.FirstColumnFields.length;
+                r.FirstColumnFields.forEach(f => {
+                    if (f.Type == DetailFieldType.Lookup)
+                        this.objectDetailService.getLookupGrid(f.LookupGridUrl)
+                            .then(g => {
+                                if (g.Values.length != 0) {
+                                    c.hasData = true;
+                                    f.Data = g;
+                                }
+                                fcount--;
+                                if (fcount <= 0)
+                                    rcount--;
+                                if (rcount <= 0)
+                                    c.loaded = true;
+                            });
+                    else {
+                        if (f.Type != DetailFieldType.None)
+                            c.hasData = true;
+                        fcount--;
+                        if (fcount <= 0)
+                            rcount--;
+                        if (rcount <= 0)
                             c.loaded = true;
-                    });
+                    }
+                });
             });
         });
 
@@ -153,7 +164,7 @@ class Category {
         this.name = name;
     }
     loaded = false;
-    data: LookupGrid[] = new Array<LookupGrid>();
+    hasData = false;
     name: string;
     rows = [];
 }

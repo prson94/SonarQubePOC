@@ -40,6 +40,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
 
     private sub: any;
     private subBread: any;
+    private subFavorites: any;
     private name: string;
     private isLoading = false;
 
@@ -67,6 +68,11 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
 
         this.subBread = this.breadcrumbService.breadcrumbs$.subscribe(b => {
             this.name = b.text;
+        });
+
+        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(fav => {
+            this.favItems = fav;
+            this.activateFavorites();
         });
 
         this.favoritesService.getFavorites()
@@ -107,6 +113,8 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.subBread.unsubscribe();
+        this.subFavorites.unsubscribe();
     }
 }
 

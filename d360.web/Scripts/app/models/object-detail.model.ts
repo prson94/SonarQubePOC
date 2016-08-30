@@ -44,6 +44,7 @@ export class DetailField {
     Value: string;
 
     Type: DetailFieldType = DetailFieldType.Field;
+    Data: any;
 }
 
 export class ObjectStyle {
