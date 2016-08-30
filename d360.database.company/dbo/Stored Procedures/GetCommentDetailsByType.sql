@@ -61,9 +61,10 @@ BEGIN
 														(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
 														(@dateStart is null and @dateEnd is null)
 														)
-													AND C.ParentID IS NULL				
+													AND C.ParentID IS NULL	
+													and c.isdeleted = 0			
 		WHERE
-			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%'))
+			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%')) 
 		ORDER BY	C.DateCreated DESC
 		OFFSET  @skip ROWS 
 		FETCH NEXT @take ROWS ONLY 
@@ -98,3 +99,4 @@ BEGIN
 	where
 		isdeleted = 0;
 END
+
