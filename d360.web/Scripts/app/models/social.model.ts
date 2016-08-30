@@ -3,6 +3,18 @@
     UpVote = 1
 }
 
+export enum SocialCommentType {
+    System = 1,
+    Social = 2,
+    Governance = 3,
+    Relationship = 4,
+    Issue = 5,
+    Task = 6,
+    RedFlag = 7,
+    DataEvent = 8,
+    Challenge = 9,
+}
+
 export class SocialCommentTag {
     Object: string;
     ObjectID: number;
@@ -19,7 +31,7 @@ export class SocialVote {
 export class SocialComment {
     Body: string;
     Comments: SocialComment[];
-    CommentTypeID: number;
+    CommentTypeID: SocialCommentType;
     CreatorIsOwner: boolean;
     CreatingResourceID: number;
     DateCreated: Date;

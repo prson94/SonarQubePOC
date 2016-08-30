@@ -2,12 +2,12 @@
 import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
-import { SocialComment, SocialEditCommentData } from '../../models/social.model';
+import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../models/social.model';
 
 @Component({
     selector: 'd3s-social-board',
     template: ` 
-                <d3s-social-input (commented)="addComment($event);"></d3s-social-input>
+                <d3s-social-input (commented)="addComment($event);" [comment]="commentText"></d3s-social-input>
                 <div *ngFor="let comment of comments">
                     <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);"></d3s-social-comment>                            
                 </div>                
@@ -24,7 +24,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     private rowCount: number = 5;
     private pageNumber: number = 0;
     private hasMore: boolean = true;
-    private comments: SocialComment[] = []
+    private comments: SocialComment[] = [];
+    private commentText: string = "";
 
     constructor(private socialService: SocialService) {
         super();
@@ -57,14 +58,12 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         
         this.socialService.editComment(editData).
             then(res => {
-                if (res.IsDeleted) {
-                    console.log(res);
+                if (res.IsDeleted) {                    
                     let index = this.comments.findIndex(x => x.ID == res.ID);
-                    console.log(index);
+                    
                     if (index >= 0) {
                         this.comments.splice(index,1);
-                    }
-                    console.log(this.comments);
+                    }                    
                 }
             });
     }
@@ -77,6 +76,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let comment = new SocialComment();
 
         comment.Body = commentContent;
+        comment.CommentTypeID = SocialCommentType.Social;
         
         let addData = new SocialEditCommentData(comment);
         addData.ObjectID = this.objectID;
@@ -84,10 +84,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         addData.Tags = [];
 
         this.socialService.addComment(addData).
-            then(res => {
-                console.log(res);
+            then(res => {                
                 if (res) {
                     this.comments.unshift(res);
+
+                    this.commentText = "";
                 }
             });
     }

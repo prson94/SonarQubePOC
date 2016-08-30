@@ -2,7 +2,7 @@
 import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
-import { SocialComment, SocialVoteType } from '../../models/social.model';
+import { SocialComment, SocialVoteType, SocialCommentType } from '../../models/social.model';
 import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
@@ -15,7 +15,7 @@ import { Router, NavigationEnd } from '@angular/router';
                     <div class="col s11">
                         <div class="row">
                             <div class="col s12 toolbox">
-                                <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span>
+                                <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> <span *ngIf="commentTypeText">Type:</span><span class="commentType">{{commentTypeText}}</span>
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a class="comment-tool-item-mid" (click)="reply.emit();"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
@@ -99,6 +99,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private downVotes: number = 0;
 
     private showTools: boolean = false;
+    private commentTypeText: string = "";
 
     public socialVoteType = SocialVoteType; // for template to use enum
     
@@ -109,14 +110,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         if (this.comment && this.comment.Votes) {
-            this.calculateVotes();            
+            this.calculateVotes();   
+            this.commentTypeText = this.getCommentTypeText();         
         }
     }   
     
-    private visitTag(url: string): void {
-        window.location.href = url;
-    }    
-
     private calculateVotes() {
         this.upVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.UpVote).length;
         this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
@@ -137,7 +135,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                 if (res) {
                     this.comment.Votes = res;
 
-                    this.calculateVotes();
+                    this.commentTypeText = this.getCommentTypeText();
                 }
             });
     }
@@ -148,6 +146,21 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private changeUrl(route) {
         this.router.navigate([route]); 
+    }
+
+    private getCommentTypeText() {
+        switch (this.comment.CommentTypeID) {
+            case SocialCommentType.Challenge:
+                return "Challenge";
+            case SocialCommentType.Issue:
+                return "Issue";
+            case SocialCommentType.Social:
+                return "";
+            case SocialCommentType.Task:
+                return "Task";            
+        }
+
+        return "Other";
     }
 
 };
