@@ -45,6 +45,7 @@ export class SocialComment {
     ObjectID: number;
     ObjectName: string;
     ObjectType: string;
+    ParentID: number;
     ResourceEmail: string;
     ResourceName: string;
     Tags: SocialCommentTag[];

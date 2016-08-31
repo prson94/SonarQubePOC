@@ -17,7 +17,7 @@ import { Router, NavigationEnd } from '@angular/router';
                             <div class="col s12 toolbox">
                                 <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> <span *ngIf="commentTypeText">Type:</span><span class="commentType">{{commentTypeText}}</span>
                                 <div *ngIf="showTools" class="comment-tools">
-                                    <a class="comment-tool-item-mid" (click)="reply.emit();"><i class="fa fa-reply" aria-hidden="true" ></i></a>
+                                    <a class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
                                     <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="edit.emit();"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
@@ -30,14 +30,23 @@ import { Router, NavigationEnd } from '@angular/router';
                             </div>
                         </div>                        
                     </div>                                    
-                </div>    
+                </div> 
+                <div class="row add-reply" *ngIf="showReply">
+                    <div class="col s11 offset-s1" style="padding-top:15px">   
+                        <p-editor *ngIf="showReply" placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
+                    </div>
+                    <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
+                        <button pButton type="button" (click)="handleReplyClick();" label="Reply" style="width: '150px';"></button>
+                        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel" style="width: '150px';"></button>
+                    </div>
+                </div>   
                 <div class="row reply" *ngFor="let response of comment?.Comments">
                     <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
                     <div class="col s10">
                         <div><span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{response.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
                         <div [innerHtml]="response.Body"></div>                            
                     </div>                                
-                </div>                  
+                </div>                 
                 `,    
     styles: [`
                 span.user{
@@ -99,7 +108,10 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private downVotes: number = 0;
 
     private showTools: boolean = false;
+    private showReply: boolean = false;
     private commentTypeText: string = "";
+
+    private replyText: string = "";
 
     public socialVoteType = SocialVoteType; // for template to use enum
     
@@ -161,6 +173,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         }
 
         return "Other";
+    }
+
+    private handleReplyClick() {
+        this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
+        this.showReply = false;
     }
 
 };
