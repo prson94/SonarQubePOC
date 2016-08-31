@@ -54,11 +54,11 @@ export class ObjectBoardComponent extends BaseComponent {
 
         if (days > 0) return "Last discussion was " + days + " days ago.";
 
-        var hours = diff.getHours();
+        var hours = diff.getUTCHours();
 
         if (hours > 0) return "Last discussion was " + hours + " hours ago.";
 
-        var minutes = diff.getMinutes();
+        var minutes = diff.getUTCMinutes();
 
         if (minutes > 0) return "Last discussion was " + minutes + " minutes ago.";
 

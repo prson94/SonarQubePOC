@@ -24,6 +24,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() objectName: string;
+
+    @Output() countsChanged = new EventEmitter();
     
     private rowCount: number = 5;
     private pageNumber: number = 0;
@@ -71,6 +73,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                         this.comments.splice(index,1);
                     }                                     
                 }
+                this.countsChanged.emit({}); // counts changed fire event
                 this.isLoading = false;
             });
     }
@@ -98,7 +101,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
                     this.commentText = "";                    
                 }
-
+                this.countsChanged.emit({}); // counts have changed fire event
                 this.isLoading = false;
             });
     }

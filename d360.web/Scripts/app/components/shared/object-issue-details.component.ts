@@ -50,6 +50,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
     @Input() objectType: string;
     @Input() objectName: string;
 
+    @Output() countsChanged = new EventEmitter();
 
     constructor(private issuesService: IssuesService) {
         super();
@@ -74,6 +75,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
     private handleSave() {
         this.showEditor = false;
         this.loadIssues();
+        this.countsChanged.emit({});
     }
 
     private handleRowDblClick() {

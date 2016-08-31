@@ -65,11 +65,11 @@ export class ObjectIssuesComponent extends BaseComponent {
 
         if (days > 0) return "Last issue came in " + days + " days ago.";
 
-        var hours = diff.getHours();
+        var hours = diff.getUTCHours();
 
         if (hours > 0) return "Last issue came in " + hours + " hours ago.";
 
-        var minutes = diff.getMinutes();
+        var minutes = diff.getUTCMinutes();
 
         if (minutes > 0) return "Last issue came in " + minutes + " minutes ago.";
 

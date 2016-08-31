@@ -14,8 +14,8 @@ import { Router, NavigationEnd } from '@angular/router';
                     </div>
                     <div class="col s11">
                         <div class="row">
-                            <div class="col s12 toolbox">
-                                <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> <span *ngIf="commentTypeText">Type:</span><span class="commentType">{{commentTypeText}}</span>
+                            <div class="col s12 toolbox">                                
+                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
@@ -109,11 +109,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private showTools: boolean = false;
     private showReply: boolean = false;
-    private commentTypeText: string = "";
+    
 
     private replyText: string = "";
 
-    public socialVoteType = SocialVoteType; // for template to use enum
+    private socialVoteType = SocialVoteType; // for template to use enum
+    
     
 
     constructor(private socialService: SocialService, private router: Router) {
@@ -122,8 +123,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         if (this.comment && this.comment.Votes) {
-            this.calculateVotes();   
-            this.commentTypeText = this.getCommentTypeText();         
+            this.calculateVotes();               
         }
     }   
     
@@ -145,9 +145,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.socialService.vote(this.comment.ID, vote).then(
             res => {
                 if (res) {
-                    this.comment.Votes = res;
-
-                    this.commentTypeText = this.getCommentTypeText();
+                    this.comment.Votes = res;                    
                 }
             });
     }
@@ -160,7 +158,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.router.navigate([route]); 
     }
 
-    private getCommentTypeText() {
+    private commentTypeIcon() {
         switch (this.comment.CommentTypeID) {
             case SocialCommentType.Challenge:
                 return "Challenge";
@@ -178,6 +176,18 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private handleReplyClick() {
         this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
         this.showReply = false;
+    }
+
+    private isChallenge(): boolean {
+        return this.comment.CommentTypeID == SocialCommentType.Challenge;
+    }
+
+    private isSocial(): boolean {        
+        return this.comment.CommentTypeID == SocialCommentType.Social;
+    }
+
+    private isIssue(): boolean {
+        return this.comment.CommentTypeID == SocialCommentType.Issue;
     }
 
 };

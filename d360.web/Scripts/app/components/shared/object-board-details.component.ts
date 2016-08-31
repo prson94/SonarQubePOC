@@ -8,7 +8,7 @@ import { BaseComponent } from '../shared/base.component';
             <div class="row">
                 <div class="col s12">
                     <header>Social for {{objectName}}</header>
-                    <d3s-social-board [objectID]="objectID" [objectType]="objectType" [objectName]="objectName"></d3s-social-board>
+                    <d3s-social-board [objectID]="objectID" [objectType]="objectType" [objectName]="objectName" (countsChanged)="countsChanged.emit({});"></d3s-social-board>
                 </div>                
             </div>
             
@@ -19,7 +19,8 @@ export class ObjectBoardDetailsComponent extends BaseComponent {
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() objectName: string;
-    
+
+    @Output() countsChanged = new EventEmitter();
 
     constructor() {
         super();

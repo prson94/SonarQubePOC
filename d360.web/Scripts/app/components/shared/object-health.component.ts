@@ -96,11 +96,11 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
                 
         if (days > 0) return "Last calculated " + days + " days ago.";
                 
-        var hours = diff.getHours();
+        var hours = diff.getUTCHours();
 
         if (hours > 0) return "Last calculated " + hours + " hours ago.";
 
-        var minutes = diff.getMinutes();
+        var minutes = diff.getUTCMinutes();
 
         if (minutes > 0) return "Last calculated " + minutes + " minutes ago.";
 
