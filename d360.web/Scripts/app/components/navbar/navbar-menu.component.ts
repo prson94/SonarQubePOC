@@ -8,6 +8,15 @@ import { NavBarMode } from '../../models/nav-bar.model';
         .navbar-menu {
             background-color: #1E1A15;
         }
+
+        /* hack to get menu to stick to bottom in FF */
+        @-moz-document url-prefix() {
+            .navbar-menu {
+                position: relative;
+                top: 60px; 
+            }
+        }
+
         .navbar-menu-list {
             display:inline;
         }
@@ -40,7 +49,7 @@ import { NavBarMode } from '../../models/nav-bar.model';
                 <div class="navbar-menu">
                     <ul class="navbar-menu-list">
                         <li (click)="handleClick(NavBarMode.Default)" style="margin: 0;" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Default"><i class="fa fa-2x fa-home"></i></li>
-                        <li (click)="handleClick(NavBarMode.Favorites)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Favorites"><i class="fa fa-2x fa-star"></i></li>
+                        <li (click)="handleClick(NavBarMode.Favorites)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Favorites || mode == NavBarMode.EditFavorites"><i class="fa fa-2x fa-star"></i></li>
                         <!--<li (click)="handleClick(NavBarMode.Edit)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Edit"><i class="fa fa-2x fa-cog"></i></li>-->
                     </ul>
                 </div>

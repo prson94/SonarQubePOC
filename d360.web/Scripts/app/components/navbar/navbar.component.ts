@@ -30,7 +30,11 @@ import * as _ from 'lodash';
                 padding: 7px 0 7px 0;
                 font-size: 1em;
                 color:white;
+                cursor: pointer;
                 
+            }
+            .navbar-favorite.active, .navbar-favorite:hover {
+                color:black;
             }
 
             .navbar-message {
@@ -48,60 +52,34 @@ import * as _ from 'lodash';
                 color: #444;
             }
 
-
             .navbar-favorite-toolbar {
                 display: inline-block;
                 cursor: pointer;
+                width: 100%;
+                height: 32px;                
+                background-color: #1E1A15;
             }
 
             .navbar-favorite-toolbar-item {
                 color: white;
                 font-size: 1.2em;
                 display: inline-block;
-                width: 25px;
-                height:25px;
+                width: 32px;
+                height: 32px;
+                padding: 7px;
+                margin-left: -4px;
                 text-align: center;
+                transition: all 200ms ease-in-out;
+            }
+
+            .navbar-favorite-toolbar-item:hover {
+                background-color: #82705C;
+                opacity:1;
             }
         `
-        ],
+    ],
     providers: [SiteMenuService, FavoritesService],
-    template: `
-    <ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
-        <li class="logo" [routerLink]="'a'"></li> 
-
-        <template [ngIf]="mode == NavBarMode.Default">
-            <li *ngFor="let item of items">
-                <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
-            </li>
-        </template>
-        <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
-            <!--<li>
-                <ul class="navbar-favorite-toolbar">
-                    <li class="navbar-favorite-toolbar-item" (click)="favAction('up')">
-                        <i class="fa fa-caret-up"></i>
-                    </li>
-                    <li class="navbar-favorite-toolbar-item" (click)="favAction('down')">
-                        <i class="fa fa-caret-down"></i>
-                    </li>
-                </ul>
-            </li> -->
-            <li *ngFor="let fav of favItems" class="navbar-favorite" [class.active]="fav.active">
-                <a [routerLink]="[fav.route]">{{fav.name}}</a>
-            </li>
-        </template>
-        <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0">
-            <li class="navbar-message">You don't have any favorites. Click the <i class="fa fa-star"></i> on the header of any page to add it to your favorites.</li>        
-        </template>
-        <template [ngIf]="mode == NavBarMode.Edit">
-            <li>edit</li>
-        </template>
-
-        <li style="margin-top: auto;">
-            <d3s-navbar-menu [(mode)]="mode"></d3s-navbar-menu>
-        </li>
-    </ul>
-
-`
+    templateUrl: 'scripts/app/components/navbar/navbar.component.html',
 })
 
 export class NavBarComponent implements OnInit, OnDestroy { 
@@ -114,6 +92,8 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private mode = NavBarMode.Default;
     private firstLoad = true;
     NavBarMode = NavBarMode;
+    private favIndex = 0;
+    private isEditingFavorites = false;
 
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
 
@@ -125,7 +105,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.loadFavorites();
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(s => {
-            this.loadFavorites(s);
+            this.loadFavorites(s, false);
         });
 
         this.sub = this.router.events.subscribe(e => {
@@ -147,7 +127,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         }
     }
 
-    loadFavorites(favorites: Favorite[] = null) {
+    loadFavorites(favorites: Favorite[] = null, emit = false): Promise<any> {
         if (favorites) {
             this.favItems = [];
             for (let f of favorites) {
@@ -156,10 +136,13 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 i.route = f.Route;
                 this.favItems.push(i);
             }
+            if (emit)
+                this.headerActionsService.emitFavoritesChange(favorites);
             this.activateRoute(this.currentRoute, this.favItems);
+            return null;
         }
         else {
-            this.favoritesService.getFavorites().then(fav => {
+            return this.favoritesService.getFavorites().then(fav => {
                 this.favItems = [];
                 for (let f of fav) {
                     let i = new NavBarItem();
@@ -167,14 +150,20 @@ export class NavBarComponent implements OnInit, OnDestroy {
                     i.route = f.Route;
                     this.favItems.push(i);
                 }
-                if (this.favItems.length > 0 && this.firstLoad)
+                if (this.favItems.length > 0 && this.firstLoad) {
                     this.mode = NavBarMode.Favorites;
+                }
+
+                if (this.favItems.length == 0 && this.mode == NavBarMode.EditFavorites) {
+                    this.mode = NavBarMode.Favorites;
+                }
+
+                if (emit)
+                    this.headerActionsService.emitFavoritesChange(fav);
                 this.activateRoute(this.currentRoute, this.favItems);
                 this.firstLoad = false;
             });
-
         }
-
     }
 
 
@@ -371,26 +360,58 @@ export class NavBarComponent implements OnInit, OnDestroy {
     }
 
     favAction(action: string) {
+        let item = null;
+        item = this.favItems[this.favIndex];
+
         switch (action) {
             case 'up':
-                let l = this.favItems.find(f => f.route == this.currentRoute);
-
-                if (l == null)
+                if (item == null || this.favIndex == 0)
                     return;
-
-                this.favoritesService.moveUp(l.route).then(() => this.loadFavorites());
+                this.isEditingFavorites = true;
+                this.favoritesService.moveUp(item.route)
+                    .then(() => {
+                        this.favIndex--;
+                        this.loadFavorites().then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    });
                 break;
             case 'down':
-                let l2 = this.favItems.find(f => f.route == this.currentRoute);
-
-                if (l2 == null)
+                if (item == null || this.favIndex == (this.favItems.length - 1))
                     return;
-
-                this.favoritesService.moveDown(l.route).then(() => this.loadFavorites());
+                this.isEditingFavorites = true;
+                this.favoritesService.moveDown(item.route)
+                    .then(() => {
+                        this.favIndex++;
+                        this.loadFavorites().then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    });
+                break;
+            case 'remove':
+                if (item == null)
+                    return;
+                this.isEditingFavorites = true;
+                this.favoritesService.toggleFavorite(item.name, item.route)
+                    .then(() => {
+                        this.loadFavorites(null, true).then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    })
+                break;
+            case 'edit':
+                let activeIndex = this.favItems.findIndex(f => f.active);
+                if (activeIndex >= 0)
+                    this.favIndex = activeIndex;
+                this.mode = NavBarMode.EditFavorites;
                 break;
             default:
                 break;
         }
+
+        //make sure favIndex is still valid after whatever
+        _.clamp(this.favIndex, 0, (this.favItems.length - 1));
+
     }
 }
 

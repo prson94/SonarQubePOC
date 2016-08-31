@@ -1,0 +1,52 @@
+﻿<ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
+    <li class="logo" [routerLink]="'a'"></li>
+    <template [ngIf]="mode == NavBarMode.Default">
+        <li *ngFor="let item of items">
+            <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
+        </li>
+    </template>
+    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
+        <li style="margin-bottom:-4px;">
+            <ul class="navbar-favorite-toolbar">
+                <li class="navbar-favorite-toolbar-item right" style="margin-right:10px;opacity:0.5;" (click)="favAction('edit')" pTooltip="edit favorites" tooltipPosition="right">
+                    <i class="fa fa-pencil"></i>
+                </li>
+            </ul>
+        </li>
+        <template ngFor let-fav [ngForOf]="favItems">
+            <li *ngIf="fav && fav.route" class="navbar-favorite" [class.active]="fav.active" [routerLink]="[fav.route]">
+                <span style="margin:0 5px 0 5px;">{{fav.name}}</span>
+            </li>
+        </template>
+    </template>
+    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0">
+        <li class="navbar-message">You don't have any favorites. Click the <i class="fa fa-star"></i> on the header of any page to add it to your favorites.</li>
+    </template>
+    <template [ngIf]="mode == NavBarMode.EditFavorites">
+        <li>
+            <div *ngIf="isEditingFavorites" style="height:32px; width: 100%; text-align:center; color: white; font-size: 1.2em;">
+                <i class="fa fa-spinner fa-spin" style="padding: 10px;"></i>
+            </div>
+            <ul *ngIf="!isEditingFavorites" class="navbar-favorite-toolbar">
+                <li class="navbar-favorite-toolbar-item right" style="margin-right:10px;" (click)="mode = NavBarMode.Favorites" pTooltip="exit edit mode" tooltipPosition="right">
+                    <i class="fa fa-sign-out"></i>
+                </li>
+                <li class="navbar-favorite-toolbar-item" (click)="favAction('up')" pTooltip="move up" tooltipPosition="right">
+                    <i class="fa fa-caret-up"></i>
+                </li>
+                <li class="navbar-favorite-toolbar-item" (click)="favAction('down')" pTooltip="move down" tooltipPosition="right">
+                    <i class="fa fa-caret-down"></i>
+                </li>
+                <li class="navbar-favorite-toolbar-item" (click)="favAction('remove')" pTooltip="unfavorite" tooltipPosition="right">
+                    <i class="fa fa-trash"></i>
+                </li>
+            </ul>
+        </li>
+        <li *ngFor="let fav of favItems; let i=index" class="navbar-favorite" [class.active]="i==favIndex" (click)="favIndex=i;">
+            <span style="margin:0 5px 0 5px;">{{fav.name}}</span>
+        </li>
+    </template>
+    <li style="margin-top: auto;">
+        <d3s-navbar-menu [(mode)]="mode"></d3s-navbar-menu>
+    </li>
+</ul>

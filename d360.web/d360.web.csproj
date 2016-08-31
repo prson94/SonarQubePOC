@@ -859,6 +859,7 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\navbar\navbar.component.html" />
     <Content Include="Scripts\app\components\shared\lineage.component.html" />
     <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
