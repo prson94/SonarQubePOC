@@ -1463,6 +1463,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\ownership-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social-board.component.ts" />
@@ -1541,6 +1542,7 @@
     <TypeScriptCompile Include="Scripts\app\models\responsibility-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\rule.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\survey.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\tag.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
@@ -1596,6 +1598,7 @@
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\page-header.service.ts" />

@@ -19,6 +19,7 @@ import { ObjectIssueDetailsComponent } from './object-issue-details.component';
 import { ObjectBoardDetailsComponent } from './object-board-details.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
+import { TagInputComponent } from './tag-input.component';
 
 
 export * from './messages.component';
@@ -42,3 +43,4 @@ export * from './object-issue-details.component';
 export * from './object-board-details.component';
 export * from './object-health-details.component';
 export * from './dynamic-lookup-grid.component';
+export * from './tag-input.component';

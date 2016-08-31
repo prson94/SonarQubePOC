@@ -183,6 +183,7 @@ import {
     PowerBIViewerComponent,
     TooltipComponent,
     DynamicLookupGridComponent,
+    TagInputComponent,
 } from './components/shared/index';
 
 import {
@@ -280,6 +281,7 @@ import {
         DynamicFieldComponent,
         DynamicGridComponent,
         DynamicLookupGridComponent,
+        TagInputComponent,
         DynamicRelationshipGridComponent,
         FieldDefinitionTile,
         FieldTypeForm,

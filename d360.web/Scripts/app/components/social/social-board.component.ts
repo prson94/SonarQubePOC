@@ -93,7 +93,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let addData = new SocialEditCommentData(comment);
         addData.ObjectID = this.objectID;
         addData.ObjectType = this.objectType;        
-        addData.Tags = [];
+        addData.Tags = event.tags? event.tags : [];
 
         this.socialService.addComment(addData).
             then(res => {                

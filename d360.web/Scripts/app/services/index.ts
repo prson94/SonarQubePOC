@@ -44,6 +44,7 @@ import { IssuesService} from './issues.service';
 import { ScoreService } from './score.service';
 import { ResourcesService } from './resources.service';
 import { SocialService } from './social.service';
+import { TagService } from './tag.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -91,3 +92,4 @@ export * from './issues.service';
 export * from './score.service';
 export * from './resources.service';
 export * from './social.service';
+export * from './tag.service';
