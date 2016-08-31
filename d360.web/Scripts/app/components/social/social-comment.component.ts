@@ -13,13 +13,13 @@ import { Router, NavigationEnd } from '@angular/router';
                         <img class="user" height="35" [src]="'/resources/image/' + comment.CreatingResourceID + '?size=35'" width="35">                        
                     </div>
                     <div class="col s11">
-                        <div class="row">
+                        <div class="row" *ngIf="!showEdit">
                             <div class="col s12 toolbox">                                
                                 <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
-                                    <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="edit.emit();"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
+                                    <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                                 </div>                      
@@ -29,11 +29,20 @@ import { Router, NavigationEnd } from '@angular/router';
                                 <i class="fa fa-tag" aria-hidden="true"></i> Tags: <d3s-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [tooltipType]="'preview'" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-tooltip>
                             </div>
                         </div>                        
+                        <div class="row" *ngIf="showEdit">
+                            <div class="col s11 offset-s1" style="padding-top:15px">   
+                                <p-editor name="Edit" [style]="{'height':'50px'}" [(ngModel)]="editText" ></p-editor>                 
+                            </div>
+                            <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
+                                <button pButton type="button" (click)="handleEditClick();" label="Edit" style="width: '150px';"></button>
+                                <button pButton type="button" (click)="showEdit = false;" label="Cancel" style="width: '150px';"></button>
+                            </div>
+                        </div>
                     </div>                                    
                 </div> 
                 <div class="row add-reply" *ngIf="showReply">
                     <div class="col s11 offset-s1" style="padding-top:15px">   
-                        <p-editor *ngIf="showReply" placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
+                        <p-editor placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
                     </div>
                     <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
                         <button pButton type="button" (click)="handleReplyClick();" label="Reply" style="width: '150px';"></button>
@@ -109,9 +118,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private showTools: boolean = false;
     private showReply: boolean = false;
+    private showEdit: boolean = false;
     
 
     private replyText: string = "";
+    private editText: string = "";
 
     private socialVoteType = SocialVoteType; // for template to use enum
     
@@ -132,20 +143,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
     }
 
-    private findVoteByVoter(resourceId: number) {
-        let indx = 0;
-        for (let vote of this.comment.Votes) {
-            if (vote.ResourceID == resourceId) return indx;
-            indx++;
-        }
-        return -1;
-    }
-
     private doVote(vote: SocialVoteType) {
         this.socialService.vote(this.comment.ID, vote).then(
             res => {
-                if (res) {
+                if (res) {                    
                     this.comment.Votes = res;                    
+                    this.calculateVotes();    
                 }
             });
     }
@@ -176,6 +179,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private handleReplyClick() {
         this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
         this.showReply = false;
+    }
+
+    private handleEditClick() {
+        this.comment.Body = this.editText;
+        this.edit.emit({ comment: this.comment });
+        this.showEdit = false;
     }
 
     private isChallenge(): boolean {

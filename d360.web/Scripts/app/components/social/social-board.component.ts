@@ -7,13 +7,13 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
 @Component({
     selector: 'd3s-social-board',
     template: `                 
-                <d3s-social-input (commented)="addComment($event);" [comment]="commentText"></d3s-social-input>
+                <d3s-social-input (commented)="addComment($event);"></d3s-social-input>
                 <div *ngIf="isLoading" style="postion:relative;overflow:hidden;width100%;">
                     <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
                     <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
                 <div *ngFor="let comment of comments">
-                    <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);"></d3s-social-comment>                            
+                    <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
                 </div>                
                 <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..." style="width: '150px';"></button>
                 `,
@@ -31,7 +31,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     private pageNumber: number = 0;
     private hasMore: boolean = true;
     private comments: SocialComment[] = [];
-    private commentText: string = "";
+    
+    
 
     constructor(private socialService: SocialService) {
         super();
@@ -97,11 +98,26 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.socialService.addComment(addData).
             then(res => {                
                 if (res) {
-                    this.comments.unshift(res);
-
-                    this.commentText = "";                    
+                    this.comments.unshift(res);                    
                 }
                 this.countsChanged.emit({}); // counts have changed fire event
+                this.isLoading = false;
+            });
+    }
+
+    private editComment(event) {
+        let comment = event.comment;
+
+        if (!comment) return;
+
+        this.isLoading = true;
+
+        let editData = new SocialEditCommentData(comment, comment.Tags);
+        editData.ObjectID = this.objectID;
+        editData.ObjectType = this.objectType;
+        
+        this.socialService.editComment(editData).
+            then(res => {                
                 this.isLoading = false;
             });
     }
