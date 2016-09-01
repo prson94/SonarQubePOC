@@ -1,12 +1,11 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter } from '@angular/core';
-import { Http, HTTP_PROVIDERS, Headers } from '@angular/http';
+import { Http, Headers } from '@angular/http';
 import { FormMessage, JsonResult } from '../../models/form.model';
 
 @Component({
     selector: 'delete-form',
-    templateUrl: 'scripts/app/components/forms/delete.form.html',
-    viewProviders: [HTTP_PROVIDERS],
+    templateUrl: 'scripts/app/components/forms/delete.form.html',    
 })
 
 export class DeleteForm {

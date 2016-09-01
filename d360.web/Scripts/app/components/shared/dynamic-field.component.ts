@@ -2,7 +2,6 @@
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
-import { DropdownItemToSelectItemPipe } from '../../pipes/dropdown-to-selectitem.pipe';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -34,8 +33,7 @@ import { DropdownItemToSelectItemPipe } from '../../pipes/dropdown-to-selectitem
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div>                   
                 </div>
-                `,
-    pipes: [DropdownItemToSelectItemPipe]
+                `,    
 })
 export class DynamicFieldComponent {
     @Input() field: EditorField;

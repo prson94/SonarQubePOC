@@ -4,12 +4,10 @@ import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';
 import { ObjectRelationshipCount } from '../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
-import { TechnicalNameToDisplayValuePipe } from '../../pipes/technical-to-display.pipe';
 
 @Component({
     selector: 'd3s-object-relationships-tile',
-    providers: [RelationshipsService],
-    pipes: [TechnicalNameToDisplayValuePipe],
+    providers: [RelationshipsService],    
     styles: [`
     div.relationship-container{
         max-height: 360px;min-height:200px;

@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
 import { CHART_DIRECTIVES } from 'angular2-highcharts'; 
+import { PipesModule } from './pipes/pipes.module';
 
 import {
     GrowlModule,
@@ -390,9 +391,12 @@ import {
         TooltipModule,        
         DragDropModule,
 
+        //d3s modules
+        PipesModule,
+
     ],
     bootstrap: [AppComponent],
-    providers: [Title],
+    providers: [Title],    
 })
 export class AppModule { }
 

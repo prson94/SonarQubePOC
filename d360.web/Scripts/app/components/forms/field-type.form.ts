@@ -1,6 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { NgForm } from '@angular/common';
 import { SelectItem } from 'primeng/primeng';
 import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';

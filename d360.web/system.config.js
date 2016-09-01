@@ -18,7 +18,6 @@
         },
         'lodash' : { main: 'lodash.js' },
         'rxjs': { main: 'index.js' },
-
         '@angular/router': { main: '/bundles/router.umd.js', defaultExtension: 'js' },
         '@angular/forms': { main: '/bundles/forms.umd.js', defaultExtension: 'js' },
         '@angular/core': { main: '/bundles/core.umd.js', defaultExtension: 'js' },

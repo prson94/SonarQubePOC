@@ -1,5 +1,4 @@
 ﻿import { Routes, RouterModule } from '@angular/router';
-import { provideRouter, RouterConfig } from '@angular/router';
 import { HomeComponent} from './components/index';
 import { AdminRoutes } from './components/admin/admin.routes';
 import { HomeRoutes} from './components/home/home.routes';
@@ -14,7 +13,7 @@ import { MonitorRoutes } from './components/monitor/monitor.routes';
 import { CommunityRoutes } from './components/community/community.routes';
 import { ReferenceRoutes } from './components/reference/reference.routes';
 
-export const routes: RouterConfig = [
+export const routes: Routes = [
     //{ path: 'a/admin', component: AdminComponent }
     { path: 'a', redirectTo: 'a/home', pathMatch: 'full' },
     ...AdminRoutes,

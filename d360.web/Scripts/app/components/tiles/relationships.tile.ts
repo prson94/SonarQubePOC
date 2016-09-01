@@ -2,13 +2,10 @@
 import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { RelationshipsService  } from '../../services/index';
 import { Relationship } from '../../models/relationship.model';
-import { RelationshipSearchPipe } from '../../pipes/relationship-search.pipe';
-
 
 @Component({
     selector: 'd3s-relationships-tile',
-    providers: [RelationshipsService],
-    pipes: [RelationshipSearchPipe],
+    providers: [RelationshipsService],    
     template: `
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
                     <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Relationship'" (addClick)="add()"></d3s-tile-actions>                            

@@ -6,12 +6,10 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ModelsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model } from '../../models/model.model';
-import { ModelTypePipe } from '../../pipes/model-type.pipe';
 
 @Component({
     selector: 'd3s-model-list',
-    providers: [ModelsService],
-    pipes: [ModelTypePipe],
+    providers: [ModelsService],    
     template: `                 
                 <div class="row">
                     <div class="col s12">

@@ -4,12 +4,9 @@ import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-import { ClassificationTypePipe } from '../../pipes/classification-display.pipe';
-
 
 @Component({
-    selector: 'd3s-dynamic-relationship-grid',
-    pipes: [ClassificationTypePipe],
+    selector: 'd3s-dynamic-relationship-grid',    
     providers: [GridDefinitionService, RelationshipsService],
     template: `                   
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
