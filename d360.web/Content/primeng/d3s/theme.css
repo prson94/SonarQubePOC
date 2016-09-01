@@ -796,18 +796,18 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 
 /* Growl */
 .ui-growl-item-container.ui-state-highlight.ui-growl-message-info {
-    background-color: #2196f3;
-    border-color :#2196f3;
+    background-color: #55A4DA;
+    border-color :#55A4DA;
 }
 
 .ui-growl-item-container.ui-state-highlight.ui-growl-message-error {
-    background-color: #f44336;
-    border-color :#f44336;
+    background-color: #BC1B01;
+    border-color :#BC1B01;
 }
 
 .ui-growl-item-container.ui-state-highlight.ui-growl-message-warn {
-    background-color: #ff9800;
-    border-color :#ff9800;
+    background-color: #FFB230;
+    border-color :#FFB230;
 }
 
 /* TabMenu */
