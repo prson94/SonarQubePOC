@@ -50,7 +50,8 @@ import { NavBarMode } from '../../models/nav-bar.model';
                     <ul class="navbar-menu-list">
                         <li (click)="handleClick(NavBarMode.Default)" style="margin: 0;" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Default"><i class="fa fa-2x fa-home"></i></li>
                         <li (click)="handleClick(NavBarMode.Favorites)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Favorites || mode == NavBarMode.EditFavorites"><i class="fa fa-2x fa-star"></i></li>
-                        <!--<li (click)="handleClick(NavBarMode.Edit)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Edit"><i class="fa fa-2x fa-cog"></i></li>-->
+                        <li *ngIf="isAdmin" (click)="handleClick(NavBarMode.AdminFavorites)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.AdminFavorites"><i class="fa fa-2x fa-sitemap"></i></li>
+                        <li *ngIf="isAdmin" (click)="handleClick(NavBarMode.Admin)" class="navbar-menu-item" [class.selected]="mode == NavBarMode.Admin"><i class="fa fa-2x fa-cog"></i></li>
                     </ul>
                 </div>
 `
@@ -58,6 +59,7 @@ import { NavBarMode } from '../../models/nav-bar.model';
 
 export class NavBarMenuComponent implements OnInit {
     @Input() mode: NavBarMode = NavBarMode.Default;
+    @Input() isAdmin: boolean = false;
     @Output() modeChange = new EventEmitter<NavBarMode>();
 
     NavBarMode = NavBarMode;

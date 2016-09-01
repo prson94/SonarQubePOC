@@ -6,6 +6,7 @@ import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
 import { SiteMenuService } from '../../services/index';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { FavoritesService } from '../../services/favorites.service';
 import { Favorite } from '../../models/favorite.model';
 import * as _ from 'lodash';
@@ -76,6 +77,19 @@ import * as _ from 'lodash';
                 background-color: #82705C;
                 opacity:1;
             }
+
+            .navbar-button {
+                cursor: pointer;
+                background-color: #383127;
+                color: white;
+                padding:5px;   
+                transition: all 200ms ease-in-out; 
+            }
+
+            .navbar-button:hover {
+                background-color: #F8F3EF;
+                color: black;
+            }
         `
     ],
     providers: [SiteMenuService, FavoritesService],
@@ -85,19 +99,27 @@ import * as _ from 'lodash';
 export class NavBarComponent implements OnInit, OnDestroy { 
     private sub: any;
     private subFavorites: any;
+    private subBread: any;
     private currentRoute = "";
+    private currentPage = "";
     private navItems: NavBarItem[];
     private siteMenu: SiteMenu[] = [];
     private favItems: NavBarItem[] = new Array<NavBarItem>();
+    private adminFavorites: Favorite[] = new Array<Favorite>();
     private mode = NavBarMode.Default;
     private firstLoad = true;
-    NavBarMode = NavBarMode;
     private favIndex = 0;
     private isEditingFavorites = false;
+    private isEditingAdmin = false;
+    private isAdmin = false;
+
+
+    NavBarMode = NavBarMode;
 
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
+    adminItems: NavBarItem[] = new Array<NavBarItem>();
 
-    constructor(private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService) {
+    constructor(private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
     }
 
     ngOnInit() {
@@ -118,6 +140,11 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.activateRoute(this.currentRoute, this.favItems);
             }
         });
+
+        this.subBread = this.headerBreadcrumbService.breadcrumbs$.subscribe(b => {
+            this.currentPage = b.text;
+        });
+
     }
 
     collapseOtherTopLevelMenus(event) {
@@ -134,6 +161,8 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 let i = new NavBarItem();
                 i.name = f.Name;
                 i.route = f.Route;
+                if (f.ResourceID == 0)
+                    i.icon = "fa-globe";
                 this.favItems.push(i);
             }
             if (emit)
@@ -148,6 +177,8 @@ export class NavBarComponent implements OnInit, OnDestroy {
                     let i = new NavBarItem();
                     i.name = f.Name;
                     i.route = f.Route;
+                    if (f.ResourceID == 0)
+                        i.icon = "fa-globe";
                     this.favItems.push(i);
                 }
                 if (this.favItems.length > 0 && this.firstLoad) {
@@ -162,7 +193,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
                     this.headerActionsService.emitFavoritesChange(fav);
                 this.activateRoute(this.currentRoute, this.favItems);
                 this.firstLoad = false;
-            });
+            }).then(() => this.favoritesService.getFavorites(true))
+                .then(f => {
+                    this.adminFavorites = f;
+                });
         }
     }
 
@@ -171,8 +205,11 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.siteMenuService.getMenu()
             .then(result => {
                 this.items = new Array<NavBarItem>();
+                this.adminItems = new Array<NavBarItem>();
+
+                this.siteMenu = result.MenuItems;
                 
-                this.siteMenu = result;
+                this.isAdmin = result.IsAdmin;
                 
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
@@ -182,7 +219,15 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.loadMonitorMenu();                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
                 this.loadAdminMenu(this.siteMenu.find(i => i.MenuID == '#Admin'));
+                this.loadCustomMenu(this.siteMenu.filter(i => i.MenuID.startsWith('~')));
             });
+    }
+
+    loadCustomMenu(customMenu: SiteMenu[]) {
+        customMenu.forEach(c => {
+            let m = this.addNavItem(c.MenuID.substr(1), 'folder', null);
+            this.renderChildItems(m, c.NavigationItems);
+        });
     }
 
     loadFusionMenu(fusionMenu: SiteMenu) {
@@ -234,14 +279,15 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadAdminMenu(adminMenu: SiteMenu) {
         if (adminMenu == null) return;
 
-        let admin = this.addNavItem('Administration', 'cogs', null);
-
+        let admin = this.addNavItem('Administration', 'cogs', null, this.adminItems);
+        admin.expanded = true;
         // these are ordered by alpha a-Z...
 
         let integrationModel = this.addSubItem(admin, 'Integration', null, null);
         this.addSubItem(integrationModel, 'API', null, null, '/swagger/ui/index');
         this.addSubItem(integrationModel, 'Bulk Loader', null, 'a/admin/load');
         this.addSubItem(integrationModel, 'Fusion', null, 'a/admin/fusion');
+        integrationModel.expanded = true;
 
         // meta model sub
         let metaModel = this.addSubItem(admin, 'MetaModel', null, null);
@@ -253,10 +299,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(metaModel, 'Relationships', null, 'a/admin/relationships');
         this.addSubItem(metaModel, 'Rules', null, 'a/admin/rules');
         this.addSubItem(metaModel, 'Surveys', null, 'a/admin/surveys');
+        metaModel.expanded = true;
 
         let metricsModel = this.addSubItem(admin, 'Metrics', null, null);
         this.addSubItem(metricsModel, 'Analytics', null, 'a/admin/analytics');
         this.addSubItem(metricsModel, 'Dashboards', null, 'a/admin/dashboards');
+        metricsModel.expanded = true;
 
         this.addSubItem(admin, 'Reference', null, 'a/admin/domain');
 
@@ -265,6 +313,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(security, 'Groups', null, 'a/admin/groups');
         this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
         this.addSubItem(security, 'Users', null, 'a/admin/resources');
+        security.expanded = true;
 
         this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
         this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
@@ -290,15 +339,18 @@ export class NavBarComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.subFavorites.unsubscribe();
+        this.subBread.unsubscribe();
     }
 
-    addNavItem(name: string, icon: string, route: string): NavBarItem {
+    addNavItem(name: string, icon: string, route: string, menu: NavBarItem[] = null): NavBarItem {
+        if (menu == null)
+            menu = this.items;
         route = _.trimStart(route, '/');
         let i = new NavBarItem();
         i.name = name;
         i.icon = icon;
         i.route = route;        
-        this.items.push(i);
+        menu.push(i);
         return i;
     }
 
@@ -397,7 +449,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
                         this.loadFavorites(null, true).then(() => {
                             this.isEditingFavorites = false;
                         });
-                    })
+                    });
                 break;
             case 'edit':
                 let activeIndex = this.favItems.findIndex(f => f.active);
@@ -405,13 +457,66 @@ export class NavBarComponent implements OnInit, OnDestroy {
                     this.favIndex = activeIndex;
                 this.mode = NavBarMode.EditFavorites;
                 break;
+            case 'adminedit':
+                this.mode = NavBarMode.EditAdminFavorites;
+                break;
+            case 'admintoggle':
+                this.favoritesService.toggleFavorite(this.currentPage, this.currentRoute, true)
+                    .then(() => {
+                        this.loadFavorites(null, true);
+                    });
+                break;
+            case 'adminup':
+                item = this.adminFavorites[this.favIndex];
+                if (item == null || this.favIndex == 0)
+                    return;
+                this.isEditingFavorites = true;
+                this.favoritesService.moveUp(item.Route, true)
+                    .then(() => {
+                        this.favIndex--;
+                        this.loadFavorites().then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    });
+                break;
+            case 'admindown':
+                item = this.adminFavorites[this.favIndex];
+                if (item == null || this.favIndex == (this.adminFavorites.length - 1))
+                    return;
+                this.isEditingFavorites = true;
+                this.favoritesService.moveDown(item.Route, true)
+                    .then(() => {
+                        this.favIndex++;
+                        this.loadFavorites().then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    });
+                break;
+            case 'adminremove':
+                item = this.adminFavorites[this.favIndex];
+                console.log(item);
+                if (item == null)
+                    return;
+                this.isEditingFavorites = true;
+                this.favoritesService.toggleFavorite(item.Name, item.Route, true)
+                    .then(() => {
+                        this.loadFavorites(null, true).then(() => {
+                            this.isEditingFavorites = false;
+                        });
+                    });
+                break;
             default:
                 break;
+
         }
 
         //make sure favIndex is still valid after whatever
         _.clamp(this.favIndex, 0, (this.favItems.length - 1));
 
+    }
+
+    currentRouteInAdminFavorites() {
+        return this.adminFavorites.findIndex(f => f.Route == this.currentRoute) >= 0;
     }
 }
 

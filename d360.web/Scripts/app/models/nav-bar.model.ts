@@ -17,6 +17,7 @@ export enum NavBarMode {
     Default,
     Favorites,
     EditFavorites,
+    AdminFavorites,
+    EditAdminFavorites,
     Admin,
-
 }

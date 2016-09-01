@@ -23,7 +23,7 @@ import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
                         <a *ngIf="item.route" [routerLink]="[item.route]" class="topgroup truncate">{{item.name}}</a>
                     </span>
                     <a *ngIf="!item.isRootItem() && item.route" [routerLink]="[item.route]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i>{{item.name}}</a>                    
-                    <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i><span *ngIf="!item.icon">-</span> {{item.name}}</a>                    
+                    <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i>{{item.name}}</a>                    
                 </div>
                 <div *ngIf="item.subItems && item.subItems.length > 0" [class.router-link-active]="item.active">
                     <span style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i *ngIf="item.isRootItem()" [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>

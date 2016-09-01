@@ -24,5 +24,8 @@ namespace d360.core.entities
         [DataMember]
         public int SortOrder { get; set; }
 
+        [DataMember]
+        public bool IsOverride { get; set; } = false;
+
     }
 }

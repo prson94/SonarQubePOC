@@ -8,15 +8,18 @@
     <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
         <li style="margin-bottom:-4px;">
             <ul class="navbar-favorite-toolbar">
-                <li class="navbar-favorite-toolbar-item right" style="margin-right:10px;opacity:0.5;" (click)="favAction('edit')" pTooltip="edit favorites" tooltipPosition="right">
+                <li class="navbar-favorite-toolbar-item right" style="opacity:0.5;" (click)="favAction('edit')" pTooltip="edit favorites" tooltipPosition="right">
                     <i class="fa fa-pencil"></i>
                 </li>
             </ul>
         </li>
         <template ngFor let-fav [ngForOf]="favItems">
             <li *ngIf="fav && fav.route" class="navbar-favorite" [class.active]="fav.active" [routerLink]="[fav.route]">
-                <span style="margin:0 5px 0 5px;">{{fav.name}}</span>
+                <span style="margin:0 5px 0 5px;"><i *ngIf="fav.icon" [class]="'fa ' + fav.icon"></i>  {{fav.name}}</span>
             </li>
+            <!--<li *ngIf="fav && fav.route && fav.icon" class="navbar-favorite" [class.active]="fav.active" [routerLink]="[fav.route]">
+                <span style="margin:0 5px 0 5px;"><i [class]="'fa ' + fav.icon"></i> {{fav.name}}</span>
+            </li>-->
         </template>
     </template>
     <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0">
@@ -28,7 +31,7 @@
                 <i class="fa fa-spinner fa-spin" style="padding: 10px;"></i>
             </div>
             <ul *ngIf="!isEditingFavorites" class="navbar-favorite-toolbar">
-                <li class="navbar-favorite-toolbar-item right" style="margin-right:10px;" (click)="mode = NavBarMode.Favorites" pTooltip="exit edit mode" tooltipPosition="right">
+                <li class="navbar-favorite-toolbar-item right" (click)="mode = NavBarMode.Favorites" pTooltip="exit edit mode" tooltipPosition="right">
                     <i class="fa fa-sign-out"></i>
                 </li>
                 <li class="navbar-favorite-toolbar-item" (click)="favAction('up')" pTooltip="move up" tooltipPosition="right">
@@ -43,10 +46,39 @@
             </ul>
         </li>
         <li *ngFor="let fav of favItems; let i=index" class="navbar-favorite" [class.active]="i==favIndex" (click)="favIndex=i;">
-            <span style="margin:0 5px 0 5px;">{{fav.name}}</span>
+            <span style="margin:0 5px 0 5px;"><i *ngIf="fav.icon" [class]="'fa ' + fav.icon"></i> {{fav.name}}</span>
+        </li>
+    </template>
+    <template [ngIf]="mode == NavBarMode.AdminFavorites">
+        <ul class="navbar-favorite-toolbar">
+            <li *ngIf="adminFavorites.length > 0" class="navbar-favorite-toolbar-item" (click)="favAction('adminup')" pTooltip="move up" tooltipPosition="right">
+                <i class="fa fa-caret-up"></i>
+            </li>
+            <li *ngIf="adminFavorites.length > 0" class="navbar-favorite-toolbar-item" (click)="favAction('admindown')" pTooltip="move down" tooltipPosition="right">
+                <i class="fa fa-caret-down"></i>
+            </li>
+            <li *ngIf="adminFavorites.length > 0" class="navbar-favorite-toolbar-item" (click)="favAction('adminremove')" pTooltip="unfavorite" tooltipPosition="right">
+                <i class="fa fa-trash"></i>
+            </li>
+            <li *ngIf="!isEditingAdmin && currentRouteInAdminFavorites()" class="navbar-favorite-toolbar-item" (click)="favAction('admintoggle')" pTooltip="remove from global favorites">
+                <i style="color: #FFB230;" class="fa fa-star"></i>
+            </li>
+            <li *ngIf="!isEditingAdmin && !currentRouteInAdminFavorites()" class="navbar-favorite-toolbar-item" (click)="favAction('admintoggle')" pTooltip="add to global favorites">
+                <i style="color: #FFF;" class="fa fa-star"></i>
+            </li>
+        </ul>
+        <template ngFor let-fav let-i="index" [ngForOf]="adminFavorites">
+            <li class="navbar-favorite" [class.active]="i==favIndex" (click)="favIndex=i;">
+                <span style="margin:0 5px 0 5px;"><i class="fa fa-globe"></i> {{fav.Name}}</span>
+            </li>
+        </template>
+    </template>
+    <template [ngIf]="mode == NavBarMode.Admin">
+        <li *ngFor="let item of adminItems">
+            <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
         </li>
     </template>
     <li style="margin-top: auto;">
-        <d3s-navbar-menu [(mode)]="mode"></d3s-navbar-menu>
+        <d3s-navbar-menu [(mode)]="mode" [isAdmin]="isAdmin"></d3s-navbar-menu>
     </li>
 </ul>

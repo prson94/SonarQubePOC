@@ -88,7 +88,11 @@ namespace d360.web.Controllers
         {
             return new JsonNetResult
             {
-                Data = GetSiteNavigation(true),
+                Data = new
+                {
+                    MenuItems = GetSiteNavigation(true),
+                    IsAdmin = Company.CurrentResourceIsAdmin
+                },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -699,7 +703,16 @@ SELECT	'#Admin' as MenuID,
 			for xml path('nav'), type
 		) as Items
 
-	where {0} = 1", (Company.CurrentResourceIsAdmin ? "1" : "0"))).ToList();
+	where {0} = 1
+	
+    UNION ALL
+
+	SELECT 
+		'~' + [Name] AS MenuID,
+		0 AS Feature,
+		dbo.CustomSiteNavigation(ID) AS Items
+	from SiteNav
+	where ParentID IS NULL", (Company.CurrentResourceIsAdmin ? "1" : "0"))).ToList();
 
                 #endregion
             }
@@ -721,15 +734,32 @@ SELECT	'#Admin' as MenuID,
 
         #region Favorites
         [Authorize, HttpPut]
-        public JsonNetResult ToggleFavorite(Favorite favorite)
+        public JsonNetResult ToggleFavorite(Favorite favorite, bool admin = false)
         {
+            if (admin && !Company.CurrentResourceIsAdmin)
+                return null;
 
-            favorite.ResourceID = Company.CurrentResourceID;
+            favorite.ResourceID = admin ? 0 : Company.CurrentResourceID;
             favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
 
             var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
+            var adminExisting = Company.Favorites.FirstOrDefault(f => f.ResourceID == 0 && f.Route == favorite.Route);
 
-            if (existing == null)
+            if (!admin)
+                if (adminExisting != null)
+                    favorite.IsOverride = true;
+
+            if (existing != null && adminExisting != null && !admin)
+            {
+                existing.IsOverride = !existing.IsOverride;
+                Company.Update(existing);
+            }
+            else if (existing != null && existing.IsOverride && !admin)
+            {
+                existing.IsOverride = false;
+                Company.Update(existing);
+            }
+            else if (existing == null)
                 Company.Add(favorite);
             else
                 Company.Delete(existing);
@@ -743,11 +773,17 @@ SELECT	'#Admin' as MenuID,
         }
 
         [Authorize, HttpPut]
-        public JsonNetResult MoveFavorite(string route, bool moveUp = false)
+        public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
         {
+            //TODO: meaningful exception handling and response
             try
             {
-                var favorite = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && f.Route == route).First();
+                if (admin && !Company.CurrentResourceIsAdmin)
+                    throw new Exception("user does not have admin privileges.");
+
+                var resid = admin ? 0 : Company.CurrentResourceID;
+
+                var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
 
                 if (favorite == null)
                     throw new Exception("no favorite with supplied route");
@@ -787,13 +823,21 @@ SELECT	'#Admin' as MenuID,
         }
 
         [Authorize, HttpGet]
-        public JsonNetResult GetFavorites()
+        public JsonNetResult GetFavorites(bool adminOnly = false)
         {
-            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID).OrderBy(f => f.SortOrder).ToList();
+            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && !f.IsOverride).OrderBy(f => f.SortOrder).ToList();
+            var overrides = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && f.IsOverride).Select(o => o.Route).ToList();
+            var adminFavorites = Company.Favorites.Where(f => f.ResourceID == 0).OrderBy(f => f.SortOrder).ToList();
+            var filteredAdminFavorites = adminFavorites.Where(f => !overrides.Contains(f.Route)).OrderBy(f => f.SortOrder).ToList();
+            favorites = favorites.Where(f => !filteredAdminFavorites.Select(a => a.Route).Contains(f.Route)).ToList();
+
+
+            favorites.InsertRange(0, filteredAdminFavorites);
+
 
             return new JsonNetResult
             {
-                Data = favorites,
+                Data = adminOnly ? adminFavorites : favorites,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 

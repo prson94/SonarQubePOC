@@ -528,6 +528,8 @@
     <None Include="dbo\Functions\GenerateNgObjectUrl.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalMapping.sql" />
     <None Include="dbo\Tables\Favorite.sql" />
+    <None Include="dbo\Tables\SiteNav.sql" />
+    <None Include="dbo\Functions\CustomSiteNavigation.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

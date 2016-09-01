@@ -10,3 +10,8 @@ export class SiteMenu {
     ShouldDisplay: boolean;
 }
 
+export class SiteMenuModel {
+    MenuItems: SiteMenu[];
+    IsAdmin: boolean = false;
+}
+
