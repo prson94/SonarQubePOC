@@ -3,7 +3,6 @@ import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 
 @Pipe({ name: 'technicalNameToDisplayValue' })
-@Injectable()
 export class TechnicalNameToDisplayValuePipe implements PipeTransform {
     transform(objectType: string): any {
         if (!objectType) return;

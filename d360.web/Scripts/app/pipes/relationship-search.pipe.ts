@@ -6,7 +6,6 @@ import { Relationship } from '../models/relationship.model';
 
 
 @Pipe({name: 'relationshipSearch'})
-@Injectable()
 export class RelationshipSearchPipe implements PipeTransform {
     transform(items: Relationship[], searchTerm: string): any {        
         if (!searchTerm || searchTerm.length == 0) return items;

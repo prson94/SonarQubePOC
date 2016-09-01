@@ -8,7 +8,6 @@ import { Http } from '@angular/http';
     name: 'filterName',
     pure: false
 })
-@Injectable()
 export class FilterPipeName implements PipeTransform {
     transform(items: any[], args: any[]): any {
         return items.filter(item => item.Name.indexOf(args[0].Name) !== -1);

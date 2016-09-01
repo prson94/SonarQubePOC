@@ -4,7 +4,6 @@ import { Http } from '@angular/http';
 import { SelectItem } from 'primeng/primeng';
 
 @Pipe({ name: 'dropdownItemToSelectItemPipe' })
-@Injectable()
 export class DropdownItemToSelectItemPipe implements PipeTransform {
     transform(items: any): any {
         let selectlist: SelectItem[] = [];
