@@ -5,7 +5,7 @@ import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEdito
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-
+import { Count } from '../models/counts.model';
 
 @Injectable()
 export class WorkflowService extends BaseService implements IWorkflowService {
@@ -64,6 +64,13 @@ export class WorkflowService extends BaseService implements IWorkflowService {
                 return r;
             })
             .catch(err =>this.handleError(err));
+    }
+
+    getMyCounts(daysToLookBack: number) : Promise<Count[]> {
+        return this.http.get(`api/count/assignments/${daysToLookBack}`)
+            .toPromise()
+            .then(response => <Count[]>response.json())
+            .catch(err => this.handleError(err));
     }
     
 }

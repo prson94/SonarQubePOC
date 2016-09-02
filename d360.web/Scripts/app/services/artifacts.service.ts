@@ -7,6 +7,7 @@ import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
+import { Count } from '../models/counts.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -78,5 +79,12 @@ export class ArtifactService extends BaseService {
             .toPromise()
             .then(response => <Artifact>response.json())
             .catch(err => this.handleError(err));        
+    }
+
+    getActivityCount(daysToLookBack: number): Promise<Count[]> {
+        return this.http.get(`api/count/activity/${daysToLookBack}`)
+            .toPromise()
+            .then(response => <Count[]>response.json())
+            .catch(err => this.handleError(err));
     }
 }

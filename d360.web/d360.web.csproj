@@ -1506,6 +1506,7 @@
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\challenge.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\counts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\dashboard.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />

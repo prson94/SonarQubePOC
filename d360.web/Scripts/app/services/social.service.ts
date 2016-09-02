@@ -4,6 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { SocialComment, SocialVote, SocialVoteType, SocialEditCommentData } from '../models/social.model';
+import { Count } from '../models/counts.model';
 
 @Injectable()
 export class SocialService extends BaseService {
@@ -64,5 +65,13 @@ export class SocialService extends BaseService {
             .toPromise()
             .then(res => <SocialComment>res.json())
             .catch(this.handleError);
+    }
+
+    getMyCounts(daysToLookBack: number): Promise<Count[]> {
+        return this.http.get(`api/count/social/${daysToLookBack}`)
+            .toPromise()
+            .then(response => <Count[]>response.json())
+            .catch(err => this.handleError(err));
+        
     }
 }
