@@ -218,6 +218,9 @@ import {
     StructureTile,
     SurveyQuestionsTile,
     SynonymsTile,
+    ActivityTile,
+    AssignmentsTile,
+    BoardTile,
 } from './components/tiles/index';
 
 
@@ -358,6 +361,9 @@ import {
         StructureTile,
         SurveyQuestionsTile,
         SynonymsTile,
+        ActivityTile,
+        AssignmentsTile,
+        BoardTile,
         TileActionsComponent,
         TooltipComponent,
         WorkflowIssueEditorComponent,

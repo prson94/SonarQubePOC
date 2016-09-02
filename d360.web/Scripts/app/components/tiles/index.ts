@@ -21,6 +21,9 @@ import { StructureTile } from './structure.tile';
 import { SurveyQuestionsTile } from './survey-questions.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TileActionsComponent } from './tile-actions.component';
+import { ActivityTile } from './activity-tile.component';
+import { AssignmentsTile } from './assignments-tile.component';
+import { BoardTile} from './board-tile.component';
 
 export * from './attributes.tile';
 export * from './claims.tile';
@@ -45,3 +48,6 @@ export * from './structure.tile';
 export * from './survey-questions.tile';
 export * from './synonyms.tile';
 export * from './tile-actions.component';
+export * from './activity-tile.component';
+export * from './assignments-tile.component';
+export * from './board-tile.component';
