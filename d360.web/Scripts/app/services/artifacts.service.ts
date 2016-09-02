@@ -13,7 +13,7 @@ export class ArtifactService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
     
-    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression ): Promise<Artifacts> {
+    getArtifacts(artifactType: ArtifactType, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?:string ): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `artifacts/ArtifactsByType?id=${artifactType.ID}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
@@ -57,6 +57,10 @@ export class ArtifactService extends BaseService {
 
         if (relationships != undefined) {
             uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.objectType}&RelationshipObjectIDs=${relationships.objectIds}`;
+        }
+
+        if (simpleFilter != undefined) {
+            uri += `&filter=${simpleFilter}`;
         }
 
         return this.http.get(uri)        

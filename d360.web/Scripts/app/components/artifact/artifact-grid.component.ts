@@ -12,6 +12,15 @@ import { Router, ActivatedRoute }       from '@angular/router';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
+    styles: [`
+           .simple-search{
+                width:100%;
+                padding:10px;
+                border: 1px solid #CCCCCC;
+                border-radius: 5px;
+                margin: 5px;
+            }
+        `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
                     <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" [addTitle]="'Add ' + artifactType?.Name" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
@@ -20,6 +29,19 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>    
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
+                    <div class="col s12">                                                
+                        <div class="search-input-container" style="padding-bottom:10px;">
+                            <div class="search-input-text-container" style="padding-left:0;">
+                                <input type="text" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="simpleSearchValue" placeholder="Search..." class="search-input-text" autofocus autocomplete="off" />
+                            </div>                            
+                            <div class="search-input-button-container">
+                                <button type="button" name="action" id="home-search-btn" class="search-input-btn" (click)="doSimpleSearch()">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div *ngIf="showTypeFilter" class="col l10 m9 s12">                                                                         
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">
                     </div>
@@ -93,6 +115,7 @@ export class ArtifactGridComponent implements OnChanges {
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;
     searchValue: string = "";
+    simpleSearchValue: string = "";
 
     error: any;
     items: any[];
@@ -167,8 +190,8 @@ export class ArtifactGridComponent implements OnChanges {
             });
     }
     
-    getData() {        
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes)
+    getData() {
+        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleSearchValue)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
@@ -237,6 +260,15 @@ export class ArtifactGridComponent implements OnChanges {
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
+        this.getData();
+    }
+
+    private checkSimpleSearchEnter(event) {
+        if (event.keyCode == 13) this.doSimpleSearch();
+    }
+
+    private doSimpleSearch() {
+        console.log("simple search requested", this.simpleSearchValue);
         this.getData();
     }
 }

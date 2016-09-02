@@ -9,6 +9,7 @@ using d360.web.Models.Attributes;
 using System.Diagnostics;
 using SpreadsheetLight;
 using System.Data;
+using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {
@@ -144,14 +145,14 @@ from	Artifact A
 
 
         [HttpGet]
-        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
-            return ByType(id, sortDataField, sortOrder, pagenum, pagesize);
+            return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
         }
 
 
         [HttpPost]
-        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
 
@@ -179,6 +180,14 @@ from	Artifact A
         inner join TaxonomyType T on T.ID = A.TaxonomyTypeID {1} 
         left join Artifact P on P.ID = A.ParentID 
 where    A.ArtifactTypeID = @id", columns, joins);
+
+            //if simple filter specified add that citeria to the sql
+
+            if(!string.IsNullOrEmpty(filter))
+            {
+                
+                querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name","A.Status","T.Name", "P.TextPath" }, "Artifact", id, filter, dbArgs)}";
+            }
 
             
             querySql = applyRelationFilteringExists(querySql, Request,dbArgs);

@@ -682,6 +682,49 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             fields = null;
         }
 
+        internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs)
+        {            
+            if (string.IsNullOrEmpty(filterExp)) return "";
+
+            var fieldTypeRelationType = type;
+            switch (type)
+            {
+                case "Rule":
+                    type = "Event";
+                    break;
+                default:
+                    fieldTypeRelationType += "Type";
+                    break;
+            }
+
+            //loop through visible fields for this item 
+            var fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var column in fixedColumns)
+            {
+                if (sb.Length != 0) sb.Append(" or ");
+
+                sb.Append($"({column} like '%{filterExp}%')");
+            }
+            
+            foreach (var field in fields)
+            {
+                if (sb.Length != 0) sb.Append(" or ");
+
+                var name = $"Field{field.ID}_T.FormattedValue";
+                
+                sb.Append($"({name} like '%{filterExp}%')");
+            }
+            
+
+            // add value to db args
+            dbArgs.Add("simpleFilter", filterExp);
+
+            return $"({sb.ToString()})";
+        }
+
         internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false)
         {
             columns = "";
