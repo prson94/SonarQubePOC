@@ -1,5 +1,5 @@
 ﻿<ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
-    <li class="logo" [routerLink]="'a'"></li>
+    <li class="logo" [routerLink]="'a'" style="cursor:pointer;"></li>
     <template [ngIf]="mode == NavBarMode.Default">
         <li *ngFor="let item of items">
             <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>

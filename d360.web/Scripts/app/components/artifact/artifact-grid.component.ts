@@ -267,8 +267,7 @@ export class ArtifactGridComponent implements OnChanges {
         if (event.keyCode == 13) this.doSimpleSearch();
     }
 
-    private doSimpleSearch() {
-        console.log("simple search requested", this.simpleSearchValue);
+    private doSimpleSearch() {        
         this.getData();
     }
 }
