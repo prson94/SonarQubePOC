@@ -87,4 +87,11 @@ export class ArtifactService extends BaseService {
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getActivityDetails(artifactTypeId: number, daysToLookBack): Promise<Artifact[]> {
+        return this.http.get(`api/countitems/activity/${artifactTypeId}/${daysToLookBack}`)
+            .toPromise()
+            .then(response => <Artifact[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

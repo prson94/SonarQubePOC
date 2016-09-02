@@ -32,7 +32,8 @@ from    FusionStatusLog S
         public static string ArtifactActivitySpecificDateCountList = @"
 select  at.name as Name,
 	    count(1) as New,
-        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
+        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,							
+        at.id as Id		
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id
 where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
@@ -41,7 +42,8 @@ group by at.name,at.id order by at.name";
         public static string ArtifactActivityAllDateCountList = @"
 select  at.name as Name,
 	    count(1) as New,
-        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri							
+        '/Home/ArtifactActivityOverlay?mode=new&artifactTypeID=' + cast(at.id as varchar) as NewUri,							
+        at.id as Id								
 from    Artifact a
         inner join artifacttype at on a.artifacttypeid = at.id                        
 group by at.name,at.id order by at.name";

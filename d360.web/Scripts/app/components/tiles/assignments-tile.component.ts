@@ -43,6 +43,7 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
             .then(res => {
                 this.counts = res;
                 this.isLoading = false;
+                this.isLoaded = true;
             });
     }
 }

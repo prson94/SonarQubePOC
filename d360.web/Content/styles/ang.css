@@ -23369,3 +23369,18 @@ div.powerbi iframe {
   border: 0;
 }
 /* end power bi*/
+/* overrides to search box*/
+.search-input-text {
+  border: 1px solid #CCCCCC;
+  border-right: none;
+}
+.search-input-btn {
+  border: 1px solid #CCCCCC;
+}
+.search-btn,
+.simple-search-btn,
+.adv-search-btn {
+  border-top: 1px solid #CCCCCC;
+  border-bottom: 1px solid #CCCCCC;
+}
+/* overrides to search box*/

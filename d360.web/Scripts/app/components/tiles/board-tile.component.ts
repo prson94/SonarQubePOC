@@ -44,9 +44,8 @@ export class BoardTile extends BaseComponent implements OnInit {
             res => {
                 this.counts = res;
                 this.isLoading = false;
+                this.isLoaded = true;
             });
-
-        this.isLoaded = true;
     }
 }
 

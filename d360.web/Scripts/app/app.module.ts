@@ -221,6 +221,7 @@ import {
     ActivityTile,
     AssignmentsTile,
     BoardTile,
+    ActivityDetailsTile,
 } from './components/tiles/index';
 
 
@@ -364,6 +365,7 @@ import {
         ActivityTile,
         AssignmentsTile,
         BoardTile,
+        ActivityDetailsTile,
         TileActionsComponent,
         TooltipComponent,
         WorkflowIssueEditorComponent,

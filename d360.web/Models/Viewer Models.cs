@@ -92,6 +92,7 @@ namespace d360.web.Models
         public int? Total { get; set; }
         public string NewUri { get; set; }
         public string TotalUri { get; set; }
+        public int? Id { get; set; }
     }
 
     public class CountTempModel

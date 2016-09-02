@@ -24,6 +24,7 @@ import { TileActionsComponent } from './tile-actions.component';
 import { ActivityTile } from './activity-tile.component';
 import { AssignmentsTile } from './assignments-tile.component';
 import { BoardTile} from './board-tile.component';
+import { ActivityDetailsTile} from './activity-details-tile.component';
 
 export * from './attributes.tile';
 export * from './claims.tile';
@@ -51,3 +52,4 @@ export * from './tile-actions.component';
 export * from './activity-tile.component';
 export * from './assignments-tile.component';
 export * from './board-tile.component';
+export * from './activity-details-tile.component';

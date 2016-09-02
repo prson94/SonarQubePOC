@@ -1,4 +1,4 @@
-﻿<div class="row home-tiles">
+﻿<div class="row home-tiles" *ngIf="!showActivityDetails">
     <div class="col l4 s12">
         <d3s-assignments-tile></d3s-assignments-tile>
     </div>
@@ -6,7 +6,13 @@
         <d3s-board-tile></d3s-board-tile>
     </div>
     <div class="col l4 s12">
-        <d3s-activity-tile></d3s-activity-tile>
+        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"></d3s-activity-tile>
+    </div>
+</div>
+
+<div class="row" *ngIf="showActivityDetails">
+    <div class="col s12">
+        <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="7"></d3s-activity-details-tile>
     </div>
 </div>
 

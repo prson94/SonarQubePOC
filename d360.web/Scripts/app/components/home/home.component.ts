@@ -10,7 +10,11 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
     templateUrl: 'scripts/app/components/home/home.component.html'
 })
 
-export class HomeComponent extends BaseComponent { 
+export class HomeComponent extends BaseComponent {
+    private showActivityDetails: boolean = false;
+    private selectedArtifactTypeId: number;
+    private selectedArtifactTypeName: string;
+
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
@@ -22,4 +26,9 @@ export class HomeComponent extends BaseComponent {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
     }
 
+    private onShowActivityDetails(event) {
+        this.showActivityDetails = true;        
+        this.selectedArtifactTypeId = event.Id;
+        this.selectedArtifactTypeName = event.name;
+    }
 }
