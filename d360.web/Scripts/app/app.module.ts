@@ -229,6 +229,12 @@ import {
     WorkflowIssueEditorComponent
 } from './components/workflow/index';
 
+import {
+    HomeSearchComponent,
+    SearchResultsComponent,
+    SearchResultItemComponent,
+} from './components/search/index';
+
 @NgModule({
     declarations: [
         ActionBar,
@@ -370,7 +376,9 @@ import {
         TooltipComponent,
         WorkflowIssueEditorComponent,
         WorkflowItemForm,
-
+        HomeSearchComponent,
+        SearchResultsComponent,
+        SearchResultItemComponent,
     ],
     imports: [
         BrowserModule,
@@ -401,6 +409,7 @@ import {
 
         //d3s modules
         PipesModule,
+        
 
     ],
     bootstrap: [AppComponent],

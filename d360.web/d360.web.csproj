@@ -1441,6 +1441,10 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\search-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
@@ -1553,7 +1557,7 @@
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-message.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\typeahead-search-result.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\pipes.module.ts" />
@@ -1580,6 +1584,7 @@
     <TypeScriptCompile Include="Scripts\app\services\resources.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\score.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\search.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />

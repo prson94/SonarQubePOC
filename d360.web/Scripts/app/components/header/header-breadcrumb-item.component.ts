@@ -4,7 +4,7 @@ import { Router }       from '@angular/router';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../services/index';
-import { TypeaheadSearchResult } from '../../models/typeahead-search-result.model';
+import { SearchResult } from '../../models/search-result.model';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
@@ -48,8 +48,8 @@ export class HeaderBreadcrumbItemComponent implements AfterViewInit {
 
     //@ViewChildren('input') inputs;
     
-    results: TypeaheadSearchResult[];
-    result: TypeaheadSearchResult;
+    results: SearchResult[];
+    result: SearchResult;
     showSearch: boolean;
 
 

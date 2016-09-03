@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, ElementRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../services/index';
-import { TypeaheadSearchResult } from '../../models/typeahead-search-result.model';
+import { SearchResult } from '../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
@@ -28,11 +28,11 @@ import { Router, NavigationEnd } from '@angular/router';
 export class HeaderTypeaheadSearchComponent {
     constructor(private elementRef: ElementRef, private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
 
-    result: TypeaheadSearchResult;
+    result: SearchResult;
     showSearch: boolean = false;
     hideTimeoutID: number = 0;
 
-    results: TypeaheadSearchResult[];
+    results: SearchResult[];
 
     search(event) {
         this.typeaheadSearchService.getResults(10, event.query).then(data => {

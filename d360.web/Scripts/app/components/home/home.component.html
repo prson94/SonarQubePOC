@@ -16,41 +16,4 @@
     </div>
 </div>
 
-<div class="search-input-container">
-    <div class="search-input-text-container">
-        <input type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />
-    </div>
-    <div class="search-input-exact-container">
-        <div class="adv-search-btn">
-            <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" checked> Exact match</label>
-        </div>
-    </div>
-    <div class="search-input-types-container">
-        <div id="SearchTypesDropdown" class="search-btn"></div>
-    </div>
-    <div class="search-input-adv-container">
-        <button type="button" name="action" id="home-adv-btn" class="adv-search-btn">Advanced&nbsp;<i class="fa fa-caret-down"></i></button>
-    </div>
-    <div class="search-input-button-container">
-        <button type="submit" name="action" id="home-search-btn" class="search-input-btn">
-            <i class="fa fa-search"></i>
-        </button>
-    </div>
-</div>
-
-<div id="SearchArea" style="display:none;">
-    <div class="row">
-        <div class="col l2 m4 hide-on-small-only">
-            <div>
-                <h4 class="search-result-categories">Categories</h4>
-                <div class="widget search-category-area" id="CategoryResults" data-bind="template: {name: 'searchResultsCategoryTmpl', foreach: categories }"></div>
-            </div>
-        </div>
-        <div class="col l10 m8">
-            <div>
-                <h6 data-bind="text: elapsedTime" class="search-result-summary"></h6>
-                <div id="SearchResults"></div>
-            </div>
-        </div>
-    </div>
-</div>
+<d3s-home-search></d3s-home-search>    
