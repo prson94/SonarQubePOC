@@ -2,7 +2,7 @@
 import { Component, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/index';
-import { SearchResultsObject } from '../../models/search-result.model';
+import { SearchResultsObject, SearchCategories } from '../../models/search-result.model';
 
 @Component({
     selector: 'd3s-home-search',
@@ -28,7 +28,7 @@ import { SearchResultsObject } from '../../models/search-result.model';
                         </button>
                     </div>
                 </div>
-                <d3s-search-results [results]="searchResults"></d3s-search-results>
+                <d3s-search-results [results]="searchResults" [categories]="categories" (categoryClick)="filterByCategory($event);"></d3s-search-results>
 
                 `,
     providers: [SearchService],
@@ -36,11 +36,13 @@ import { SearchResultsObject } from '../../models/search-result.model';
 
 export class HomeSearchComponent extends BaseComponent implements OnInit {
     private searchResults: SearchResultsObject;
+    private categories: SearchCategories[] = [];
     private searchText: string;
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
     private searchTypes: string[] = ["Artifact", "Synonym"];
 
+    
     constructor(private searchService: SearchService) {
         super();
     }
@@ -49,14 +51,19 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
         
     }
 
-    private doSearch() {
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber)
+    private doSearch(filterCategory?: SearchCategories) {
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, filterCategory)
             .then(res => {
                 this.searchResults = res;
+                if (filterCategory == undefined) this.categories = res.Categories;
             });
     }
 
-    private checkSearchKey(event) {
+    private checkSearchKey(event) {        
         if (event.keyCode == 13) this.doSearch();
+    }
+
+    private filterByCategory(event) {
+        this.doSearch(event.category);
     }
 };
