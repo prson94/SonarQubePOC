@@ -1,6 +1,6 @@
 ﻿<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails">
     <div class="col l4 s12">
-        <d3s-assignments-tile></d3s-assignments-tile>
+        <d3s-assignments-tile (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments-tile>
     </div>
     <div class="col l4 s12">
         <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"></d3s-board-tile>
@@ -26,7 +26,9 @@
 
 <div class="row" *ngIf="showAssignmentDetails">
     <div class="col s12">
-        Assigment Details
+        <div class="tile tile-detail">
+            <d3s-workflow-detail [workflowType]="selectedWorkflowType"></d3s-workflow-detail>
+        </div>
     </div>
 </div>
 

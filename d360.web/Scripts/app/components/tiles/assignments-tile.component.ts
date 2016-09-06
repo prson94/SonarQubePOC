@@ -1,9 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService, ResourcesService } from '../../services/index';
 import { Count } from '../../models/counts.model';
 import { Resource } from '../../models/resource.model';
+import { WorkflowType } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-assignments-tile',
@@ -19,7 +20,7 @@ import { Resource } from '../../models/resource.model';
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                     </div>
-                    <p-dataTable *ngIf="!isLoading" [value]="counts" selectionMode="single" [(selection)]="selected" >                    
+                    <p-dataTable *ngIf="!isLoading" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()" >                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>           
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
                     </p-dataTable>                      
@@ -29,8 +30,9 @@ import { Resource } from '../../models/resource.model';
 
 export class AssignmentsTile extends BaseComponent implements OnInit {
     @Input() resourceId = -1;
-    private counts: any[] = [];
-    private selected: any;
+    @Output() showItemDetail = new EventEmitter();
+    private counts: Count[] = [];
+    private selected: Count;
     private daysToLookBack: number = 7;
     private isLoaded: boolean = false;
     private resource: Resource = null;
@@ -62,6 +64,28 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
                     this.isLoaded = true;
                 }
             });
+    }
+
+    private doSelect() {
+        this.showItemDetail.emit({
+            workflowType: this.getSelectedWorkflowType()
+        });
+    }
+
+    private getSelectedWorkflowType(): WorkflowType{
+        if (!this.selected) return null;
+
+        switch (this.selected.Name.toUpperCase()) {
+            case "CERTIFY ARTIFACT":
+                return WorkflowType.CertifyArtifact;
+            case "CHALLENGE":
+                return WorkflowType.ChallengeArtifact;
+            case "PROPOSE NEW ARTIFACT":
+                return WorkflowType.SuggestNewArtifact;
+            case "WORK ISSUE":
+                return WorkflowType.WorkIssue;            
+        }        
+        return null;
     }
 }
 

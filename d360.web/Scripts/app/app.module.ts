@@ -230,7 +230,8 @@ import {
 
 
 import {
-    WorkflowIssueEditorComponent
+    WorkflowIssueEditorComponent,
+    WorkflowDetailComponent,
 } from './components/workflow/index';
 
 import {
@@ -383,6 +384,7 @@ import {
         TileActionsComponent,
         TooltipComponent,
         WorkflowIssueEditorComponent,
+        WorkflowDetailComponent,
         WorkflowItemForm,
         HomeSearchComponent,
         SearchResultsComponent,

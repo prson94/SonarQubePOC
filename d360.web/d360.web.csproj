@@ -1484,6 +1484,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />

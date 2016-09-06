@@ -46,7 +46,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
     private selected: any;
     private loaded: boolean = false;
     private showEditor: boolean = false;
-    @Input() objectID: number;
+    @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
 

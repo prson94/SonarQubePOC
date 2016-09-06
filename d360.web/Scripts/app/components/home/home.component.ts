@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
+import { WorkflowType } from '../../models/workflow.model';
 
 @Component({
     selector: 'home',
@@ -21,6 +22,8 @@ export class HomeComponent extends BaseComponent {
     private selectedArtifactTypeName: string;
 
     private selectedSocialType: SocialCommentType;
+
+    private selectedWorkflowType: WorkflowType;
 
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
@@ -39,6 +42,13 @@ export class HomeComponent extends BaseComponent {
         this.showAssignmentDetails = false;
         this.selectedArtifactTypeId = event.Id;
         this.selectedArtifactTypeName = event.name;
+    }
+
+    private onShowAssignmentDetails(event) {
+        this.showActivityDetails = false;
+        this.showBoardDetails = false;
+        this.showAssignmentDetails = true;
+        this.selectedWorkflowType = event.workflowType;
     }
 
     private onShowBoardDetails(event) {

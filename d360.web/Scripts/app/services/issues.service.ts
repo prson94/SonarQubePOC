@@ -12,7 +12,13 @@ export class IssuesService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getIssues(objectID: number, objectType: string): Promise<Issue[]> {
-        return this.http.get(`services/workflow/tasks/types/3/${objectID}/${objectType}`)
+        let url = 'services/workflow/tasks/types/3/';
+
+        if (objectID > 0 && objectType != undefined) {
+            url += `${objectID}/${objectType}`;
+        }
+
+        return this.http.get(url)
             .toPromise()
             .then(response => <Issue[]>response.json())
             .catch(err => this.handleError(err));
