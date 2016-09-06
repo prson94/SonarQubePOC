@@ -66,8 +66,8 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err =>this.handleError(err));
     }
 
-    getMyCounts(daysToLookBack: number) : Promise<Count[]> {
-        return this.http.get(`api/count/assignments/${daysToLookBack}`)
+    getMyCounts(daysToLookBack: number, resourceId?: number) : Promise<Count[]> {
+        return this.http.get(`api/count/assignments/${daysToLookBack}` + (resourceId ? `?id=${resourceId}` : ''))
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));

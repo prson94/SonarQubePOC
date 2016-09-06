@@ -1,0 +1,65 @@
+﻿<div class="row" *ngIf="!isLoading">
+    <div class="col s12 m12 l5">
+        <div class="tile tile-detail">
+            <div class="row">
+                <div class="col l3 m3 s12">
+                    <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
+                </div>
+                <div class="col l3 m3 s12">
+                        <!--<d3s-social-board [hasNewInput]="false" [hasCloseButton]="'true'" [objectType]="'Resource'" [objectID]="resourceId" [objectName]="'Current User'" (countsChanged)="updateBoardCounts()" (close)="showBoardDetails=false"></d3s-social-board>-->
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="tile tile-detail" style="padding-bottom:0">
+                        <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col s12 m12 l7">
+        <div class="tile tile-detail">
+            <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId"></d3s-assignments-tile>
+            <d3s-assignments-tile *ngIf="isMe"></d3s-assignments-tile>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="!isLoading">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <!--<d3s-object-relationships-tile [objectType]="'Resource'" [objectID]="resourceId"></d3s-object-relationships-tile>-->
+            <d3s-resource-responsibility-tile [resource]="resource"></d3s-resource-responsibility-tile>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--<div class="row" id="ProfileArea">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <div class="row">
+                <div class="col l3 m3 s12">
+                    <img src="/resources/image/{{ID}}?size=200" style="border-radius: 5px;margin-top:5px;width:100%" />
+                </div>
+                <div class="col l9 m9 s12" id="SocialTile"></div>
+            </div>
+            <div class="row">
+                <div id="DetailTile" class="col l12 m9 s12"></div>
+            </div>
+        </div>
+        <div id="AssignmentsTile" class="tile tile-detail" data-bind="template: {name: 'homePageCountTileTmpl' }"> assignments </div>
+    </div>
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <div class="row">
+                <div id="OwnedTile" class="col s12"></div>
+            </div>
+            <div class="row">
+                <div id="FollowingTile" class="col s12"></div>
+            </div>
+        </div>
+    </div>
+</div>-->

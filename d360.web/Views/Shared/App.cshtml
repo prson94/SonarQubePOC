@@ -44,6 +44,7 @@
         //window.appInsights=appInsights;
         //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
+        var CurrentResourceID = @(CurrentResourceID);
     </script>
     @Html.Partial("KnockoutTemplates")
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />

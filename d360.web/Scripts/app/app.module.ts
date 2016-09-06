@@ -222,6 +222,10 @@ import {
     AssignmentsTile,
     BoardTile,
     ActivityDetailsTile,
+    ResourceFollowingTile,
+    ResourceResponsibilityTile,
+    ResourceFollowingGridTile,
+    ResourceResponsibilityGridTile,
 } from './components/tiles/index';
 
 
@@ -351,7 +355,11 @@ import {
         ReportItemsTile,
         ReportLayoutTile,
         ResourceComponent,
+        ResourceFollowingGridTile,
+        ResourceFollowingTile,
         ResourceItemComponent,
+        ResourceResponsibilityGridTile,
+        ResourceResponsibilityTile,
         ResponsibilityItemForm,
         ResponsibilityTypeForm,
         RightSidebarComponent,

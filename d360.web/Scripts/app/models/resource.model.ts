@@ -11,3 +11,13 @@
         return `${this.FirstName} ${this.LastName}`;
     }
 }
+
+export class CountObject {
+    Count: number;
+    IconBackColor: string;
+    IconForeColor: string;
+    IconText: string;
+    Type: string;
+    TypeID: number;
+    TypeName: string;
+}

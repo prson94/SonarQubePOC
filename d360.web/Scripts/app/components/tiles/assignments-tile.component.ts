@@ -1,15 +1,19 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { WorkflowService } from '../../services/index';
-import { Count} from '../../models/counts.model';
+import { WorkflowService, ResourcesService } from '../../services/index';
+import { Count } from '../../models/counts.model';
+import { Resource } from '../../models/resource.model';
 
 @Component({
     selector: 'd3s-assignments-tile',
-    providers: [WorkflowService],
+    providers: [WorkflowService, ResourcesService],
     template: `
                 <div class="tile tile-detail">
-                   <header>Your Assignments
+                   <header *ngIf="resourceId >= 0">{{resource?.FirstName}}'s Assignments
+                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
+                   </header>
+                   <header *ngIf="resourceId == null || resourceId < 0">Your Assignments
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -24,12 +28,14 @@ import { Count} from '../../models/counts.model';
 })
 
 export class AssignmentsTile extends BaseComponent implements OnInit {
+    @Input() resourceId = -1;
     private counts: any[] = [];
     private selected: any;
     private daysToLookBack: number = 7;
     private isLoaded: boolean = false;
+    private resource: Resource = null;
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
         super();
     }
 
@@ -39,11 +45,22 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
 
     private load() {
         this.isLoading = true;
-        this.workflowService.getMyCounts(this.daysToLookBack)
+        let loadResource = (this.resourceId != null && this.resourceId >= 0);
+
+        this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
             .then(res => {
                 this.counts = res;
-                this.isLoading = false;
-                this.isLoaded = true;
+                if (loadResource)
+                    this.resourcesService.getResource(this.resourceId)
+                        .then(r => {
+                            this.resource = r;
+                            this.isLoading = false;
+                            this.isLoaded = true;
+                        });
+                else {
+                    this.isLoading = false;
+                    this.isLoaded = true;
+                }
             });
     }
 }
