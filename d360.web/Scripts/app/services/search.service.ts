@@ -10,7 +10,10 @@ export class SearchService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getSearchResults(term: string, size: number, pageNum: number, category?: SearchCategories): Promise<SearchResultsObject> {
+    getSearchResults(term: string, size: number, pageNum: number, category?: SearchCategories, isExactMatch?: boolean): Promise<SearchResultsObject> {
+
+        term = (isExactMatch ? `'${term}'` : term);
+        
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });

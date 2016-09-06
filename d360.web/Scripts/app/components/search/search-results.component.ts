@@ -39,6 +39,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                 <div *ngFor="let result of results?.Result?.Results">
                                     <d3s-search-result-item [result]="result"></d3s-search-result-item>
                                 </div>
+                                <p-paginator [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></p-paginator>
                             </div>
                         </div>
                     </div>
@@ -51,8 +52,11 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
 export class SearchResultsComponent extends BaseComponent implements OnInit {
     @Input() results: SearchResultsObject;
     @Input() categories: SearchCategories[] = [];    
+    @Input() itemsPerPage: number = 5;
 
+    
     @Output() categoryClick = new EventEmitter();
+    @Output() paginateClick = new EventEmitter();
 
     private selectedCategory = SearchCategories;
 
@@ -67,5 +71,16 @@ export class SearchResultsComponent extends BaseComponent implements OnInit {
     private selectCategory(category) {
         this.selectedCategory = category;
         this.categoryClick.emit({ category: this.selectedCategory });
+    }
+
+    private paginate(data) {
+        /*
+            event.page: New page number
+            event.first: Index of first record
+            event.rows: Number of rows to display in new page            
+            event.pageCount: Total number of pages
+        */
+        console.log(data);
+        this.paginateClick.emit({page: data.page, size: data.rows, first: data.first});
     }
 };

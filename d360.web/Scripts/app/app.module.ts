@@ -26,6 +26,7 @@ import {
     EditorModule,
     TooltipModule,    
     DragDropModule,
+    PaginatorModule,
 } from 'primeng/primeng';
 
 import {
@@ -406,6 +407,7 @@ import {
         EditorModule,
         TooltipModule,        
         DragDropModule,
+        PaginatorModule,
 
         //d3s modules
         PipesModule,
