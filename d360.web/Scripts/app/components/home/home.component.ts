@@ -4,6 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SocialCommentType } from '../../models/social.model';
 
 @Component({
     selector: 'home',
@@ -18,6 +19,8 @@ export class HomeComponent extends BaseComponent {
 
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;
+
+    private selectedSocialType: SocialCommentType;
 
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
@@ -39,6 +42,25 @@ export class HomeComponent extends BaseComponent {
     }
 
     private onShowBoardDetails(event) {
+        
+        switch (event.selected.Name.toUpperCase()) {
+            case "CHALLENGE":
+                this.selectedSocialType = SocialCommentType.Challenge;
+                break;
+            case "COMMENT":
+                this.selectedSocialType = SocialCommentType.Social;
+                break;
+            case "ISSUE":
+                this.selectedSocialType = SocialCommentType.Issue;
+                break;
+            case "TASK":
+                this.selectedSocialType = SocialCommentType.Task;
+                break;
+            default:
+                this.selectedSocialType = undefined;
+                break;
+        }
+
         this.showBoardDetails = true;
         this.showAssignmentDetails = false;
         this.showActivityDetails = false;        

@@ -11,7 +11,7 @@ export class SocialService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getComments(objectID: number, objectType: string, daysToLookBack: number, page?:number, count?:number): Promise<SocialComment[]> {        
+    getComments(objectID: number, objectType: string, daysToLookBack: number, page?:number, count?:number, typeFilter?:number): Promise<SocialComment[]> {        
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
@@ -19,7 +19,7 @@ export class SocialService extends BaseService {
         this.addRequestVerificationHeaders(headers);
 
         return this.http
-            .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID}&Skip=${page? page:0}&Take=${count? count: 10}&DateFilter=-${daysToLookBack}`,  { headers: headers })
+            .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers: headers })
             .toPromise()
             .then(res => <SocialComment[]>res.json())
             .catch(this.handleError);

@@ -19,7 +19,7 @@
 <div class="row" *ngIf="showBoardDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-social-board [hasNewInput]="false" [hasCloseButton]="'true'" [objectType]="'Resource'" [objectID]="2" [objectName]="'Current User'" (countsChanged)="updateBoardCounts()" (close)="showBoardDetails=false"></d3s-social-board>
+            <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="7" [hasNewInput]="false" [hasCloseButton]="true"  (countsChanged)="updateBoardCounts()" (close)="showBoardDetails=false"></d3s-social-board>
         </div>
     </div>
 </div>
@@ -30,4 +30,4 @@
     </div>
 </div>
 
-<d3s-home-search></d3s-home-search>    
+<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails"></d3s-home-search>    

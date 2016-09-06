@@ -9,8 +9,8 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
     template: ` 
                 <div class="row">
                     <div class="col s12">
-                        <header>Social for {{objectName}}</header>  
-                        <span *ngIf="hasNewInput"><d3s-social-input (commented)="addComment($event);"></d3s-social-input></span>                        
+                        <header>{{socialMessage}}</header>  
+                        <d3s-social-input (commented)="addComment($event);" *ngIf="hasNewInput"></d3s-social-input>
                         <div *ngIf="isLoading" style="postion:relative;overflow:hidden;width100%;">
                             <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
                             <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -18,8 +18,10 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
                         <div *ngFor="let comment of comments">
                             <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
                         </div>                
-                        <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..." style="width: '150px';"></button>
-                        <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width:'150px';margin-top:'10px'"></button>                    
+                        <div style="margin-top:10px;">
+                            <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
+                            <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>                    
+                        </div>
                     </div>
                 </div>
                 `,
@@ -27,11 +29,13 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
-    @Input() objectID: number;
+    @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
     @Input() hasCloseButton: boolean = false;
     @Input() hasNewInput: boolean = true;
+    @Input() daysToLookBack: number = -1;
+    @Input() limitToType: SocialCommentType;
 
     @Output() countsChanged = new EventEmitter();
     @Output() close = new EventEmitter();
@@ -40,6 +44,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     private pageNumber: number = 0;
     private hasMore: boolean = true;
     private comments: SocialComment[] = [];
+    private socialMessage: string;
     
     
 
@@ -48,12 +53,29 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
+
+        if (this.objectID > 0) {
+            this.socialMessage = `Social for ${this.objectName}`;
+        }
+        else {
+            if (this.limitToType == SocialCommentType.Challenge)
+                this.socialMessage = `My Challenge's for last ${this.daysToLookBack} days`;
+            else if (this.limitToType == SocialCommentType.Social)
+                this.socialMessage = `My Comment's for last ${this.daysToLookBack} days`;
+            else if (this.limitToType == SocialCommentType.Issue)
+                this.socialMessage = `My Issue's for last ${this.daysToLookBack} days`;
+            else if (this.limitToType == SocialCommentType.Task)
+                this.socialMessage = `My Task's for last ${this.daysToLookBack} days`;
+            else
+                this.socialMessage = 'My Social';
+        }
+                
         this.loadComments();
     }
 
     loadComments() {
         this.isLoading = true;
-        this.socialService.getComments(this.objectID, this.objectType, -1, (this.pageNumber) * this.rowCount, this.rowCount)
+        this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
             .then(res => {
                 this.isLoading = false;
                 this.comments = this.comments.concat(res);
