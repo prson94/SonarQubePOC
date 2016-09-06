@@ -6,16 +6,22 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
 
 @Component({
     selector: 'd3s-social-board',
-    template: `                 
-                <d3s-social-input (commented)="addComment($event);"></d3s-social-input>
-                <div *ngIf="isLoading" style="postion:relative;overflow:hidden;width100%;">
-                    <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
-                    <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    template: ` 
+                <div class="row">
+                    <div class="col s12">
+                        <header>Social for {{objectName}}</header>  
+                        <span *ngIf="hasNewInput"><d3s-social-input (commented)="addComment($event);"></d3s-social-input></span>                        
+                        <div *ngIf="isLoading" style="postion:relative;overflow:hidden;width100%;">
+                            <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
+                            <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                        </div>
+                        <div *ngFor="let comment of comments">
+                            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
+                        </div>                
+                        <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..." style="width: '150px';"></button>
+                        <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width:'150px';margin-top:'10px'"></button>                    
+                    </div>
                 </div>
-                <div *ngFor="let comment of comments">
-                    <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
-                </div>                
-                <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..." style="width: '150px';"></button>
                 `,
     providers: [SocialService],       
 })
@@ -24,8 +30,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Input() objectID: number;
     @Input() objectType: string;
     @Input() objectName: string;
+    @Input() hasCloseButton: boolean = false;
+    @Input() hasNewInput: boolean = true;
 
     @Output() countsChanged = new EventEmitter();
+    @Output() close = new EventEmitter();
     
     private rowCount: number = 5;
     private pageNumber: number = 0;

@@ -12,6 +12,10 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 
 export class HomeComponent extends BaseComponent {
     private showActivityDetails: boolean = false;
+    private showBoardDetails: boolean = false;
+    private showAssignmentDetails: boolean = false;
+
+
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;
 
@@ -28,7 +32,19 @@ export class HomeComponent extends BaseComponent {
 
     private onShowActivityDetails(event) {
         this.showActivityDetails = true;        
+        this.showBoardDetails = false;
+        this.showAssignmentDetails = false;
         this.selectedArtifactTypeId = event.Id;
         this.selectedArtifactTypeName = event.name;
+    }
+
+    private onShowBoardDetails(event) {
+        this.showBoardDetails = true;
+        this.showAssignmentDetails = false;
+        this.showActivityDetails = false;        
+    }
+
+    private updateBoardCounts() {
+
     }
 }

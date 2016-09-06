@@ -1,9 +1,9 @@
-﻿<div class="row home-tiles" *ngIf="!showActivityDetails">
+﻿<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails">
     <div class="col l4 s12">
         <d3s-assignments-tile></d3s-assignments-tile>
     </div>
     <div class="col l4 s12">
-        <d3s-board-tile></d3s-board-tile>
+        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"></d3s-board-tile>
     </div>
     <div class="col l4 s12">
         <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"></d3s-activity-tile>
@@ -13,6 +13,20 @@
 <div class="row" *ngIf="showActivityDetails">
     <div class="col s12">
         <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="7"></d3s-activity-details-tile>
+    </div>
+</div>
+
+<div class="row" *ngIf="showBoardDetails">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <d3s-social-board [hasNewInput]="false" [hasCloseButton]="'true'" [objectType]="'Resource'" [objectID]="2" [objectName]="'Current User'" (countsChanged)="updateBoardCounts()" (close)="showBoardDetails=false"></d3s-social-board>
+        </div>
+    </div>
+</div>
+
+<div class="row" *ngIf="showAssignmentDetails">
+    <div class="col s12">
+        Assigment Details
     </div>
 </div>
 
