@@ -17,7 +17,7 @@ import { Count} from '../../models/counts.model';
                     </div>
                     <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()">                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                           
-                        <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>  
+                        <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
                     </p-dataTable>                      
                     <div *ngIf="counts.length == 0 && !isLoading">
                         No recent activity

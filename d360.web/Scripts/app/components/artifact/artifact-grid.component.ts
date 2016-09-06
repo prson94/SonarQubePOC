@@ -116,6 +116,7 @@ export class ArtifactGridComponent implements OnChanges {
     sortOrder: SortOrder = SortOrder.None;
     searchValue: string = "";
     simpleSearchValue: string = "";
+    searchDelayMilliSeconds: number = 1000;
 
     error: any;
     items: any[];
@@ -274,7 +275,7 @@ export class ArtifactGridComponent implements OnChanges {
                 this.simpleSearchID = 0;
             }
 
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(), 500);
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(), this.searchDelayMilliSeconds);
             
         }
     }

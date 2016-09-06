@@ -21,7 +21,7 @@ export class SearchService extends BaseService {
         this.addRequestVerificationHeaders(headers);
         
         return this.http
-            .post('search/results', `from=${pageNum}&size=${size}&search=${term}&group=${category ? category.Name : ''}&type=Artifact&adv=`, { headers: headers })
+            .post('search/results', `from=${pageNum}&size=${size}&search=${term}&group=${category && !category.DisplayName ? category.Name : ''}&type=Artifact&adv=`, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())
             .catch(this.handleError);

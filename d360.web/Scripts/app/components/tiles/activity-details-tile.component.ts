@@ -23,6 +23,20 @@ import { Artifact } from '../../models/artifacts.model';
                             </template>
                         </p-column>                                                                                                   
                         <p-column field="Status" header="Status" [sortable]="true" [filter]="true" [style]="{'width':'150px'}"></p-column>
+                        <p-column [style]="{width:'40px'}">
+                            <template let-item="rowData">
+                                <div class="RowTools">
+                                    <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
+                                </div>
+                            </template>
+                        </p-column>
+                        <p-column [style]="{width:'40px'}">
+                            <template let-item="rowData">
+                                <div class="RowTools">
+                                    <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
+                                </div>
+                            </template>
+                        </p-column>
                     </p-dataTable>      
                     <button pButton type="button" (click)="close.emit();" label="Close" style="width:150px;margin-top:10px"></button>                    
                 </div>
@@ -56,6 +70,16 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
                 this.items = res;
                 this.isLoading = false;
             });
+    }
+
+    private certificateColor(item) {
+        switch (item.Status) {
+            case 'Certified':
+                return '#3f9d40';
+            case 'Under Review':
+                return '#e2792a';
+        }
+        return '#ebebeb';
     }
     
 }

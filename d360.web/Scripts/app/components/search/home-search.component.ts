@@ -66,7 +66,7 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
         if (event.keyCode == 13) this.doSearch();
     }
 
-    private filterByCategory(event) {
+    private filterByCategory(event) {        
         this.selectedCategory = event.category;
         this.doSearch(this.selectedCategory);
     }
