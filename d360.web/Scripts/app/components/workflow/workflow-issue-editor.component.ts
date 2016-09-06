@@ -3,8 +3,8 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
-import { ResourcesService, IssuesService } from '../../services/index';
-import { Issue } from '../../models/issue.model';
+import { ResourcesService, WorkflowService } from '../../services/index';
+import { Issue } from '../../models/workflow.model';
 import { Resource } from '../../models/resource.model';
 
 import * as _ from 'lodash';
@@ -63,7 +63,7 @@ import * as _ from 'lodash';
                 </div>
                 </form>
                 `,
-    providers: [ResourcesService, IssuesService],   
+    providers: [ResourcesService, WorkflowService],   
 })
 
 export class WorkflowIssueEditorComponent extends BaseComponent {    
@@ -77,7 +77,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     private assignToId: string;
     private action: string = "assign";
 
-    constructor(private resourcesService: ResourcesService, private issuesService: IssuesService) { super(); }
+    constructor(private resourcesService: ResourcesService, private workflowService: WorkflowService) { super(); }
 
     ngOnInit() {
         if (this.resources.length <= 0) {
@@ -97,7 +97,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     onSubmit() {
         this.isLoading = true;
         console.log(this.assignToId);
-        this.issuesService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
+        this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
             res => {
                 this.isLoading = false;
                 this.saveClick.emit();

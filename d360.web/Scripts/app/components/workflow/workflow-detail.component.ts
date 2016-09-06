@@ -9,18 +9,25 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-workflow-detail',
     template: ` 
-                <d3s-object-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue"></d3s-object-issue-details>
+                <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue"></d3s-workflow-issue-details>                    
+                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact"></d3s-workflow-suggest-details>                    
+                <div style="padding:10px">
+                    <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
+                </div>                    
                 `,    
 })
 
 export class WorkflowDetailComponent extends BaseComponent implements OnInit {
     @Input() workflowType: WorkflowType;
+    @Input() hasCloseButton: boolean = true;
+
+    @Output() close = new EventEmitter();
 
     private tempWorkflowtype = WorkflowType;
 
 
     ngOnInit() {
-        
+        console.log(this.workflowType);
     }
     
 };

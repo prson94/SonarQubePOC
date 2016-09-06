@@ -1,10 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { IssuesService } from '../../services/index';
+import { WorkflowService } from '../../services/index';
 
 @Component({
-    selector: 'd3s-object-issue-details',
+    selector: 'd3s-workflow-issue-details',
     template: `
             <d3s-workflow-issue-editor *ngIf="!isLoading && showEditor" [issue]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-issue-editor>
             <div class="row" *ngIf="!isLoading && issues.length > 0 && !showEditor">
@@ -38,10 +38,10 @@ import { IssuesService } from '../../services/index';
             </div>
             
         `,
-    providers: [IssuesService]
+    providers: [WorkflowService]
 })
 
-export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit {
+export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
     private selected: any;
     private loaded: boolean = false;
@@ -52,7 +52,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
 
     @Output() countsChanged = new EventEmitter();
 
-    constructor(private issuesService: IssuesService) {
+    constructor(private workflowService: WorkflowService) {
         super();
     }
 
@@ -63,7 +63,7 @@ export class ObjectIssueDetailsComponent extends BaseComponent implements OnInit
 
     private loadIssues() {
         this.isLoading = true;
-        this.issuesService.getIssues(this.objectID, this.objectType)
+        this.workflowService.getIssues(this.objectID, this.objectType)
             .then(result => {
                 this.issues = result;
                 if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];

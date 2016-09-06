@@ -1453,7 +1453,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-issue-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\powerbi-viewer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
@@ -1509,6 +1509,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
@@ -1524,7 +1525,6 @@
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\issue.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
@@ -1581,7 +1581,6 @@
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\issues.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-actions.service.ts" />

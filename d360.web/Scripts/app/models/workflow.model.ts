@@ -43,3 +43,24 @@ export enum WorkflowType {
     WorkIssue = 3,
     ChallengeArtifact = 4,
 }
+
+export class Issue {
+    Issue: string;
+    ResourceName: string;
+    ResourceID: number;
+    ActivityName: string;
+    DateStarted: string;
+    WorkflowID: string;
+}
+
+export class SuggestedItem {
+    Name: string;
+    ID: number;
+    ProposedName: string;
+    TaxonomyTypeName: string;
+    RequestingResourceName: string;
+    RequestingResourceID: number;
+    ActivityName: string;
+    StartDate: string;
+    WorkflowID: string;
+}

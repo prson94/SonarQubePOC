@@ -1,11 +1,12 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel } from '../models/workflow.model';
+import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { Count } from '../models/counts.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class WorkflowService extends BaseService implements IWorkflowService {
@@ -71,6 +72,44 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getSuggestedItems(objectID: number, objectType: string): Promise<SuggestedItem[]> {
+        let url = 'services/workflow/tasks/types/1/';
+
+        if (objectID > 0 && objectType != undefined) {
+            url += `${objectID}/${objectType}`;
+        }
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <SuggestedItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+
+    getIssues(objectID: number, objectType: string): Promise<Issue[]> {
+        let url = 'services/workflow/tasks/types/3/';
+
+        if (objectID > 0 && objectType != undefined) {
+            url += `${objectID}/${objectType}`;
+        }
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <Issue[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+        return this.http
+            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
     
 }

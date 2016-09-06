@@ -177,8 +177,7 @@ import {
     ObjectChallengeComponent,
     ObjectHealthComponent,
     ObjectHealthDetailsComponent,
-    ObjectIssuesComponent,
-    ObjectIssueDetailsComponent,
+    ObjectIssuesComponent,    
     OwnershipTabComponent,
     PageLinksComponent,
     PowerBIViewerComponent,
@@ -232,6 +231,8 @@ import {
 import {
     WorkflowIssueEditorComponent,
     WorkflowDetailComponent,
+    WorkflowIssueDetailsComponent,
+    WorkflowSuggestDetailsComponent,
 } from './components/workflow/index';
 
 import {
@@ -339,8 +340,7 @@ import {
         ObjectDetailTile,
         ObjectGovernanceTile,
         ObjectHealthComponent,
-        ObjectHealthDetailsComponent,
-        ObjectIssueDetailsComponent,
+        ObjectHealthDetailsComponent,        
         ObjectIssuesComponent,
         ObjectRelationshipsTile,
         OwnershipTabComponent,
@@ -385,6 +385,8 @@ import {
         TooltipComponent,
         WorkflowIssueEditorComponent,
         WorkflowDetailComponent,
+        WorkflowIssueDetailsComponent,
+        WorkflowSuggestDetailsComponent,
         WorkflowItemForm,
         HomeSearchComponent,
         SearchResultsComponent,
