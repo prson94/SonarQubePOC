@@ -1,7 +1,7 @@
 ﻿///<reference path="../es6-shim.d.ts"/>
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem } from '../models/workflow.model';
+import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
@@ -84,6 +84,19 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         return this.http.get(url)
             .toPromise()
             .then(response => <SuggestedItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getCertifyItems(objectID: number, objectType: string): Promise<CertifyItem[]> {
+        let url = 'services/workflow/tasks/types/2/';
+
+        if (objectID > 0 && objectType != undefined) {
+            url += `${objectID}/${objectType}`;
+        }
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <CertifyItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 

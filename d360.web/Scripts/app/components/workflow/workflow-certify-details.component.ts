@@ -2,36 +2,31 @@
 import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
-import { SuggestedItem } from '../../models/workflow.model';
+import { CertifyItem } from '../../models/workflow.model';
 
 @Component({
-    selector: 'd3s-workflow-suggest-details',
+    selector: 'd3s-workflow-certify-details',
     template: `            
             <div class="row" *ngIf="!isLoading">
-                <header>Open Proposed New Artifacts</header>
+                <header>Open Artifact Certifications</header>
                 <div class="col s12">                    
                     <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >
-                        <p-column field="Name" header="Type" [sortable]="true" [style]="{'width':'250px'}">
+                        <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}"></p-column>
+                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
                             <template let-col let-item="rowData">
-                                <d3s-tooltip [objectType]="'ArtifactType'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
+                                <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
                             </template>
-                        </p-column>                        
-                        <p-column field="RequestingResourceName" header="Requested By" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
-                                <d3s-tooltip [objectType]="'Resource'" [objectId]="item.RequestingResourceID" [tooltipType]="'preview'">{{item.RequestingResourceName}}</d3s-tooltip>                                
-                            </template>
-                        </p-column>
+                        </p-column>                                                                        
                         <p-column field="StartDate" header="Created" [sortable]="true" [style]="{'width':'250px'}">
                             <template let-col let-data="rowData">
                                 <span>{{data.StartDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
-                        <p-column field="ProposedName" header="Proposed Name" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
-                                <span [innerHtml]="item?.ProposedName"></span>
+                        <p-column field="DueDate" header="Due" [sortable]="true" [style]="{'width':'250px'}">
+                            <template let-col let-data="rowData">
+                                <span>{{data.DueDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
-                        <p-column field="TaxonomyTypeName" header="Subject Area" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column  [style]="{width:'40px'}">
                             <template let-item="rowData">
@@ -42,7 +37,7 @@ import { SuggestedItem } from '../../models/workflow.model';
                         </p-column>                            
                     </p-dataTable>   
                 </div>
-                <div style="padding:10px">
+                <div class="col s12">
                     <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
                 </div>  
             </div>                        
@@ -50,12 +45,12 @@ import { SuggestedItem } from '../../models/workflow.model';
     providers: [WorkflowService]
 })
 
-export class WorkflowSuggestDetailsComponent extends BaseComponent implements OnInit {
-    private items: SuggestedItem[] = [];
-    private selected: SuggestedItem;
+export class WorkflowCertifyDetailsComponent extends BaseComponent implements OnInit {
+    private items: CertifyItem[] = [];
+    private selected: CertifyItem;
 
     private showEditor: boolean = false;
-    
+
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -69,17 +64,17 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        this.loadSuggestions();
+        this.loadCertifications();
     }
 
-    private loadSuggestions() {
+    private loadCertifications() {
         this.isLoading = true;
-        this.workflowService.getSuggestedItems(this.objectID, this.objectType)
+        this.workflowService.getCertifyItems(this.objectID, this.objectType)
             .then(result => {
                 this.items = result;
                 if (this.items.length && this.items.length > 0) this.selected = this.items[0];
-                this.isLoading = false;                
+                this.isLoading = false;
             });
     }
-    
+
 }

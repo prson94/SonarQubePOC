@@ -51,7 +51,7 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
 
         this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
             .then(res => {
-                this.counts = res;
+                this.counts = res.filter(item =>item.Name != 'Challenge');
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)
                         .then(r => {

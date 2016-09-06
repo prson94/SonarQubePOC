@@ -36,6 +36,9 @@ import { WorkflowService } from '../../services/index';
             <div style="min-height:100px" *ngIf="!isLoading && issues.length == 0">
                 <h4>No issues currently exist for <b>{{objectName}}</b>.</h4>
             </div>
+            <div style="padding:10px" *ngIf="!showEditor">
+                <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
+            </div>  
             
         `,
     providers: [WorkflowService]
@@ -49,7 +52,9 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
+    @Input() hasCloseButton: boolean = false;
 
+    @Output() close = new EventEmitter();
     @Output() countsChanged = new EventEmitter();
 
     constructor(private workflowService: WorkflowService) {

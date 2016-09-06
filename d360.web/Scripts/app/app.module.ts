@@ -233,6 +233,7 @@ import {
     WorkflowDetailComponent,
     WorkflowIssueDetailsComponent,
     WorkflowSuggestDetailsComponent,
+    WorkflowCertifyDetailsComponent,
 } from './components/workflow/index';
 
 import {
@@ -387,6 +388,7 @@ import {
         WorkflowDetailComponent,
         WorkflowIssueDetailsComponent,
         WorkflowSuggestDetailsComponent,
+        WorkflowCertifyDetailsComponent,
         WorkflowItemForm,
         HomeSearchComponent,
         SearchResultsComponent,

@@ -53,6 +53,18 @@ export class Issue {
     WorkflowID: string;
 }
 
+export class CertifyItem {
+    Name: string;
+    ID: number;    
+    Activity: number;
+    ActivityName: string;
+    ActivityDescription: string;
+    StartDate: string;
+    DueDate: string;
+    WorkflowID: string;
+    TypeName: string;
+}
+
 export class SuggestedItem {
     Name: string;
     ID: number;
