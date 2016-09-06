@@ -71,9 +71,7 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
         this.doSearch(this.selectedCategory);
     }
 
-    private paginate(event) {
-        //this.paginateClick.emit({page: data.page, size: data.rows, first: data.first});
-
+    private paginate(event) {        
         if (!event.size == undefined) {
             console.log("ERROR : MISSING ITEMS PER PAGE.");
 

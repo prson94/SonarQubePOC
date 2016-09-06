@@ -234,6 +234,7 @@ import {
     HomeSearchComponent,
     SearchResultsComponent,
     SearchResultItemComponent,
+    SearchComponent,
 } from './components/search/index';
 
 @NgModule({
@@ -380,6 +381,7 @@ import {
         HomeSearchComponent,
         SearchResultsComponent,
         SearchResultItemComponent,
+        SearchComponent,
     ],
     imports: [
         BrowserModule,

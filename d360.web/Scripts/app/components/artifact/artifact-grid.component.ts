@@ -130,6 +130,8 @@ export class ArtifactGridComponent implements OnChanges {
     showEditor: boolean = false;
     isLoading: boolean = false;
 
+    simpleSearchID: number = 0;
+
     selected: any = null;
 
     theDeleteCallback: Function;
@@ -195,7 +197,8 @@ export class ArtifactGridComponent implements OnChanges {
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
-                if (this.items.length > 0) this.selected = this.items[0];                
+                if (this.items.length > 0) this.selected = this.items[0]; 
+                this.simpleSearchID = 0;               
             });
     }
 
@@ -265,6 +268,15 @@ export class ArtifactGridComponent implements OnChanges {
 
     private checkSimpleSearchEnter(event) {
         if (event.keyCode == 13) this.doSimpleSearch();
+        else {
+            if (this.simpleSearchID > 0) {
+                window.clearTimeout(this.simpleSearchID);
+                this.simpleSearchID = 0;
+            }
+
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(), 500);
+            
+        }
     }
 
     private doSimpleSearch() {        

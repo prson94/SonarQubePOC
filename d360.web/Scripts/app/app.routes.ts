@@ -12,6 +12,7 @@ import { RuleRoutes } from './components/rule/rule.routes';
 import { MonitorRoutes } from './components/monitor/monitor.routes';
 import { CommunityRoutes } from './components/community/community.routes';
 import { ReferenceRoutes } from './components/reference/reference.routes';
+import { SearchRoutes } from './components/search/search.routes';
 
 export const routes: Routes = [
     //{ path: 'a/admin', component: AdminComponent }
@@ -28,6 +29,7 @@ export const routes: Routes = [
     ...MonitorRoutes,
     ...CommunityRoutes,
     ...ReferenceRoutes,
+    ...SearchRoutes,
 ];
 
 export const routing = RouterModule.forRoot(routes);
