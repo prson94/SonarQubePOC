@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Resource, CountObject } from '../models/resource.model';
+import { Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource } from '../models/resource.model';
 
 @Injectable()
 export class ResourcesService extends BaseService {
@@ -38,4 +38,20 @@ export class ResourcesService extends BaseService {
             .then(response => <CountObject[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getResponsibilitiesByResourceByType(resourceID: number, type: string, id: number): Promise<ResponsibilityDetailForResource[]> {
+        return this.http.get(`api/resources/${resourceID}/ownership/${type}/${id}`)
+            .toPromise()
+            .then(response => <ResponsibilityDetailForResource[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    //    public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
+    getFollowingByResourceByType(resourceID: number, type: string, id: number): Promise<FollowingDetailForResource[]> {
+        return this.http.get(`queries/followingbyresourcebytype?resourceID=${resourceID}&type=${type}&id=${id}`)
+            .toPromise()
+            .then(response => <FollowingDetailForResource[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

@@ -5,7 +5,8 @@ import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../mode
 @Component({
     selector: 'object-detail-field',
     template: `
-            <div *ngIf="field.Type == DetailFieldType.Field" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
+            <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
+            <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email'" class="FieldDisplayContent" [innerHtml]="field.Value"></div>
             <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">
                 <d3s-tooltip [tooltipType]="field.TooltipContext" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
                     <a [href]="field.TooltipUrl" [innerHtml]="field.Value"></a>

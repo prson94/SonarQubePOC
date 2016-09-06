@@ -2,19 +2,20 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ResourcesService } from '../../services/index';
+import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Resource } from '../../models/resource.model';
+import { ObjectStatistics } from '../../models/object-statistics.model';
 
 
 //TODO: find out where this comes from
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-policy-item',
+    selector: 'd3s-resource-item',
     templateUrl: 'scripts/app/components/resource/resource-item.component.html',
-    providers: [ ResourcesService ]
+    providers: [ ResourcesService, ObjectStatisticsService ]
 })
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -22,8 +23,16 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceId = -1;
     private resource: Resource;
     private isMe = false;
+    private statistics: ObjectStatistics;
+    private pageMode: PageMode = PageMode.Default;
+    PageMode = PageMode;
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, private route: ActivatedRoute, private resourcesService: ResourcesService) {
+    constructor(
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private route: ActivatedRoute,
+        private resourcesService: ResourcesService,
+        private statisticsService: ObjectStatisticsService) {
         super();
     }
 
@@ -42,16 +51,37 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
 
                     this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);
+                    if (this.resourceId.toString() === CurrentResourceID.toString())
+                        this.isMe = true;
+                    else
+                        this.isMe = false;
                     this.isLoading = false;
                 });
+            this.pageMode = PageMode.Default;
+            this.updateStatistics();
 
-            if (this.resourceId.toString() == CurrentResourceID) {
-                this.isMe = true;
-            }
+
+
+
         });
+    }
+
+    updateStatistics() {
+        this.statisticsService.getObjectStatistics(this.resourceId, 'Resource')
+            .then(s => {
+                this.statistics = s;
+            });
     }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
     }
 };
+
+enum PageMode {
+    Default,
+    Board,
+    Followers,
+    Governance,
+    Assignment
+}

@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { ResourcesService } from '../../services/index';
 import { Resource, CountObject } from '../../models/resource.model';
 
@@ -48,15 +48,13 @@ declare var CurrentResourceID;
                 </header>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
-                        <div class="row relationship" *ngFor="let r of items; let i = index" [ngClass]="{'active' : isSelected(r)}" (click)="selected=r;">
+                        <div class="row relationship" *ngFor="let r of items; let i = index" [ngClass]="{'active' : isSelected(r)}" (click)="select(r)">
                             <div class="col s10 name" [title]="r.Type | technicalNameToDisplayValue">{{r.TypeName}}</div>
                             <div class="col s2 count center" [ngClass]="{'empty-count': r.Count == 0, 'count': r.Count != 0}">{{r.Count}}</div>
                         </div>                        
                     </div>
                     <div class="col l9 s12">       
-                        
-                        <!--<d3s-dynamic-relationship-grid [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        -->
-                        grid
+                        <d3s-resource-responsibility-grid-tile *ngIf="selected != null" [resourceId]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-tile>
                     </div>                    
                 </div>
 `
@@ -64,7 +62,7 @@ declare var CurrentResourceID;
     providers: [ResourcesService]
 })
 
-export class ResourceResponsibilityTile implements OnInit {
+export class ResourceResponsibilityTile implements OnInit, OnChanges {
     @Input() resourceId: any = 0;
     @Input() resource: Resource = null;
     private items: CountObject[] = new Array<CountObject>();
@@ -72,11 +70,24 @@ export class ResourceResponsibilityTile implements OnInit {
     isLoading = false;
     isMe = false;
 
-    constructor(private resourcesService: ResourcesService) {
+    constructor(private resourcesService: ResourcesService) { }
 
+    ngOnInit() { }
+
+    ngOnChanges() {
+        this.load();
     }
 
-    ngOnInit() {
+
+    isSelected(item: any) {
+        return (item == this.selected);
+    }
+
+    select(item: any) {
+        this.selected = item;
+    }
+
+    load() {
         this.isLoading = true;
 
         if (this.resource != null)
@@ -87,6 +98,8 @@ export class ResourceResponsibilityTile implements OnInit {
         this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId)
             .then(r => {
                 this.items = r;
+                if (this.items && this.items.length > 0)
+                    this.select(this.items[0]);
 
                 if (this.resource == null)
                     this.resourcesService.getResource(this.resourceId)
@@ -97,10 +110,6 @@ export class ResourceResponsibilityTile implements OnInit {
                 else
                     this.isLoading = false;
             });
-    }
-
-    isSelected(item: any) {
-        return false;
     }
 
 }

@@ -1452,6 +1452,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-lookup-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\follower-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-details.component.ts" />
@@ -1525,6 +1527,7 @@
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\follower.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
@@ -1574,6 +1577,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
@@ -1581,6 +1585,7 @@
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />

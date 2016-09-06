@@ -184,6 +184,8 @@ import {
     TooltipComponent,
     DynamicLookupGridComponent,
     TagInputComponent,
+    ObjectFollowersComponent,
+    FollowerGridComponent,
 } from './components/shared/index';
 
 import {
@@ -304,6 +306,7 @@ import {
         DynamicRelationshipGridComponent,
         FieldDefinitionTile,
         FieldTypeForm,
+        FollowerGridComponent,
         FormMessagePart,
         FusionAttributesTile,
         FusionComponent,
@@ -339,6 +342,7 @@ import {
         ObjectDefinitionTile,
         ObjectDetailField,
         ObjectDetailTile,
+        ObjectFollowersComponent,
         ObjectGovernanceTile,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,        

@@ -21,3 +21,28 @@ export class CountObject {
     TypeID: number;
     TypeName: string;
 }
+
+export class ResponsibilityDetailForResource {
+    ResponsibilityID: number;
+    ObjectType: string;
+    ObjectID: number;
+    ObjectName: string;
+    ObjectTypeID: number;
+    ObjectTypeName: string;
+    ObjectUrl: string;
+    ResponsibleObjectType: string;
+    ResponsibleObjectID: string;
+    FormGroup: boolean;
+    Role: string;
+    CurrentScore: number;
+}
+
+export class FollowingDetailForResource {
+    ID: number;
+    CurrentScore: number;
+    Name: string;
+    ObjectID: number;
+    ObjectType: string;
+    OpenEventCount: number;
+    Url: string;
+}

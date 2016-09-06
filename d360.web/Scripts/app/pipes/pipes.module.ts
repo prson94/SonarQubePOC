@@ -6,6 +6,7 @@ import { FilterPipeName } from './filter-name.pipe';
 import { ModelTypePipe } from './model-type.pipe';
 import { RelationshipSearchPipe } from './relationship-search.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
+import { ScoreDisplayPipe } from './score-display.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -16,6 +17,7 @@ import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
         ModelTypePipe,
         RelationshipSearchPipe,
         TechnicalNameToDisplayValuePipe,
+        ScoreDisplayPipe,
     ],
     exports: [
         ClassificationTypePipe,
@@ -24,6 +26,7 @@ import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
         ModelTypePipe,
         RelationshipSearchPipe,
         TechnicalNameToDisplayValuePipe,
+        ScoreDisplayPipe,
     ]
 })
 export class PipesModule { }

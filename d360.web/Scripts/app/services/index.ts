@@ -45,6 +45,7 @@ import { ResourcesService } from './resources.service';
 import { SocialService } from './social.service';
 import { TagService } from './tag.service';
 import { SearchService } from './search.service';
+import { FollowerService } from './follower.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -93,3 +94,4 @@ export * from './resources.service';
 export * from './social.service';
 export * from './tag.service';
 export * from './search.service';
+export * from './follower.service';

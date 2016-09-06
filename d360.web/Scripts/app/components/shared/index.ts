@@ -18,6 +18,8 @@ import { TooltipComponent } from './tooltip.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { TagInputComponent } from './tag-input.component';
+import { ObjectFollowersComponent } from './object-followers.component';
+import { FollowerGridComponent } from './follower-grid.component';
 
 
 export * from './messages.component';
@@ -40,3 +42,5 @@ export * from './tooltip.component';
 export * from './object-health-details.component';
 export * from './dynamic-lookup-grid.component';
 export * from './tag-input.component';
+export * from './object-followers.component';
+export * from './follower-grid.component';
