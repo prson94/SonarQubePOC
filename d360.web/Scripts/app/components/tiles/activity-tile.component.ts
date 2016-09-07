@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit, Output, EventEmitter} from '@angular/core';
+import { Component, OnInit, Output, Input, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/index';
 import { Count} from '../../models/counts.model';
@@ -10,7 +10,7 @@ import { Count} from '../../models/counts.model';
     template: `
                 <div class="tile tile-detail">
                    <header>Activity
-                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -28,9 +28,11 @@ import { Count} from '../../models/counts.model';
 
 export class ActivityTile extends BaseComponent implements OnInit {
     private counts: Count[] = [];
-    private selected: Count;
-    private daysToLookBack: number = 7;
+    private selected: Count;    
     private isLoaded: boolean = false;
+
+    @Input() daysToLookBack: number = 7;
+    @Output() daysToLookBackChange = new EventEmitter();
 
     @Output() showItemDetail = new EventEmitter();
 
@@ -57,6 +59,12 @@ export class ActivityTile extends BaseComponent implements OnInit {
             Id: this.selected.Id,
             name: this.selected.Name
         });
+    }
+
+    private changeDates(event) {
+        this.daysToLookBack = event.days;
+        this.daysToLookBackChange.emit(this.daysToLookBack);
+        this.load();
     }
 }
 

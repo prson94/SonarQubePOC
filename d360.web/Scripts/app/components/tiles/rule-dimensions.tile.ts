@@ -9,7 +9,7 @@ import { MessagesService, RulesService  } from '../../services/index';
     providers: [RulesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Dimensions
-                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Rule Dimension'" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

@@ -12,7 +12,7 @@ import { SurveyType } from '../../models/survey.model';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Surveys
-                            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Survey'" (addClick)="add()"></d3s-tile-actions>                            
+                            <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
                             <div *ngIf="isLoading" style="width:100%; text-align:center;">
                                 <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

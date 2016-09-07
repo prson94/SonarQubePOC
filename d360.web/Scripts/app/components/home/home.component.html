@@ -3,23 +3,23 @@
         <d3s-assignments-tile (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments-tile>
     </div>
     <div class="col l4 s12">
-        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"></d3s-board-tile>
+        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);" [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
     </div>
     <div class="col l4 s12">
-        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"></d3s-activity-tile>
+        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);" [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
     </div>
 </div>
 
 <div class="row" *ngIf="showActivityDetails">
     <div class="col s12">
-        <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="7"></d3s-activity-details-tile>
+        <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="activityDaysToLookBack"></d3s-activity-details-tile>
     </div>
 </div>
 
 <div class="row" *ngIf="showBoardDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="7" [hasNewInput]="false" [hasCloseButton]="true" (close)="showBoardDetails=false"></d3s-social-board>
+            <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="boardDaysToLookBack" [hasNewInput]="false" [hasCloseButton]="true" (close)="showBoardDetails=false"></d3s-social-board>
         </div>
     </div>
 </div>

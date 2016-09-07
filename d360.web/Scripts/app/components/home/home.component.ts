@@ -17,6 +17,8 @@ export class HomeComponent extends BaseComponent {
     private showBoardDetails: boolean = false;
     private showAssignmentDetails: boolean = false;
 
+    private activityDaysToLookBack: number = 7;
+    private boardDaysToLookBack: number = 7;
 
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;
@@ -40,6 +42,7 @@ export class HomeComponent extends BaseComponent {
         this.showActivityDetails = true;        
         this.showBoardDetails = false;
         this.showAssignmentDetails = false;
+        
         this.selectedArtifactTypeId = event.Id;
         this.selectedArtifactTypeName = event.name;
     }

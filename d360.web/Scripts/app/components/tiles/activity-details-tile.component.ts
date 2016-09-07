@@ -59,7 +59,7 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (this.objectId > 0 && this.daysToLookBack > 0)
+        if (this.objectId > 0)
             this.load();
     }
 

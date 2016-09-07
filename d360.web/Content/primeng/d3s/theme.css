@@ -837,8 +837,8 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 .ui-menu,
 .ui-menu .ui-menu-child {
     border: none !important;
-    color: white;
-    background: #275075;
+    color: black;
+    background: white;
     min-height: 30px;
 }
 
@@ -849,7 +849,7 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 
 
 .ui-menuitem-link {
-    color: white;
+    color: black;
 }
 
 .ui-menuitem-link:hover {
@@ -857,7 +857,7 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 }
 a.ui-menuitem-link {
     border:none !important;
-    color:white;
+    color:black;
 }
 
 /*.ui-menu-icon, .ui-submenu-icon, .ui-menuitem-icon, .ui-menuitem-text {

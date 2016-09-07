@@ -11,7 +11,7 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [addTitle]="'Add ' + title" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()"></d3s-tile-actions>                            
                 </header>           
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

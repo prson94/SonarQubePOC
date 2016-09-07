@@ -9,7 +9,7 @@ import { MessagesService, ReportsService  } from '../../services/index';
     providers: [ReportsService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Tiles on this Dashboard
-                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Tile'" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

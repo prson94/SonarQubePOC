@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, OnInit, Output, EventEmitter} from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { Count } from '../../models/counts.model';
@@ -9,7 +9,7 @@ import { Count } from '../../models/counts.model';
     template: `
                 <div class="tile tile-detail">
                    <header>Board
-                    <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -27,7 +27,8 @@ export class BoardTile extends BaseComponent implements OnInit {
     private counts: Count[] = [];
     private selected: any;
     private isLoaded: boolean = false;
-    private daysToLookBack: number = 7;
+    @Input() daysToLookBack: number = 7;
+    @Output() daysToLookBackChange = new EventEmitter();
 
     @Output() showItemDetail = new EventEmitter();
 
@@ -54,6 +55,12 @@ export class BoardTile extends BaseComponent implements OnInit {
         this.showItemDetail.emit({
             selected: this.selected
         });
+    }
+
+    private changeDates(event) {
+        this.daysToLookBack = event.days;
+        this.daysToLookBackChange.emit( this.daysToLookBack );
+        this.load();
     }
 }
 

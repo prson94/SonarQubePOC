@@ -8,7 +8,7 @@ import { Relationship } from '../../models/relationship.model';
     providers: [RelationshipsService],    
     template: `
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
-                    <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Relationship'" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                 </header>    
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

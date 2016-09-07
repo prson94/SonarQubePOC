@@ -3,7 +3,7 @@
     <div class="col s12 m12 l3">
         <div class="root-tile">
             <header>
-                <d3s-tile-actions style="position:relative;top:1px;left:-8px;display:block;" [hasAdd]="true" [addTitle]="'Add fusion type'" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
+                <d3s-tile-actions style="position:relative;top:1px;left:-8px;display:block;" [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>
             <p-dataTable [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
                 <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>

@@ -15,7 +15,7 @@ import { Title } from '@angular/platform-browser';
                             <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                         </div>
                         <header  *ngIf="!isLoading">Tooltip Templates
-                            <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Template'" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
+                            <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
                         </header>                        
                         <p-dataTable *ngIf="!isLoading" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>

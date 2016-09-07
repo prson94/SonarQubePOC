@@ -9,7 +9,7 @@ import { MessagesService, SurveysService  } from '../../services/index';
     providers: [SurveysService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Questions
-                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Question'" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

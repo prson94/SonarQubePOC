@@ -21,7 +21,7 @@ import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model
                             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Rule'" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
+                                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
                                     </header>                              
                                     <p-dataTable [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
                                         <p-column field="ID" header="ID" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        

@@ -41,7 +41,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
   `],
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="true" [addTitle]="'Add Relationship'" [exportEnabled]="enableExport()" (exportClick)="export()" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="add()"></d3s-tile-actions>                            
                 </header>
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

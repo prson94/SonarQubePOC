@@ -13,7 +13,7 @@ import { Title } from '@angular/platform-browser';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Analytic Types
-                                <d3s-tile-actions [hasAdd]="true" [addTitle]="'Add Analytic Type'" (addClick)="add()"></d3s-tile-actions>                            
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
                             <div *ngIf="isLoading">
                                 <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

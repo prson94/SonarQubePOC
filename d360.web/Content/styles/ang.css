@@ -23257,7 +23257,7 @@ span.breadcrumbs .sep {
 .tile .header,
 .tile header {
   font-family: "Roboto", Tahoma !important;
-  padding: 3px 0px 5px 5px !important;
+  padding: 3px 0px 15px 5px !important;
   font-size: 16px !important;
   text-transform: uppercase;
   color: #5c5e60 !important;

@@ -23,7 +23,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
         `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" [addTitle]="'Add ' + artifactType?.Name" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>           
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>

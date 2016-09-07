@@ -1,60 +1,76 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component, EventEmitter, Output, Input} from '@angular/core';
-import {DataTable} from 'primeng/primeng';
+import {Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange} from '@angular/core';
+import {MenuItem} from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-tile-actions',
     styles: [`
-    .btn-flat {
-        padding:0;
-        margin-left:10px;
-    }
-    .spacer {
-        
-    }
-
-    .disabled {
-        color:#d3d5d8;
-        pointer-events: none;
-        cursor: default;
-    }
+     :host{
+            text-transform:none;
+        }
   `],
     template: `
-                <div id="FieldsTile_tools" class="TileTools">
-                    <a *ngIf="hasAdd" class="waves-effect waves-teal btn-flat" (click)="addClick.emit(null)" [ngClass]="{'disabled':!addEnabled}">
-                        <i class="fa fa-plus" [title]="addTitle"></i>
-                    </a>                    
-                    <a *ngIf="hasExport" class="waves-effect waves-teal btn-flat" (click)="exportClick.emit(null)" [ngClass]="{'disabled':!exportEnabled}">
-                        <i class="fa fa-download" [title]="exportTitle"></i>
-                    </a>
-                    <a *ngIf="hasEdit" class="waves-effect waves-teal btn-flat" (click)="editClick.emit(null)" [ngClass]="{'disabled':!editEnabled}">
-                        <i class="fa fa-pencil" [title]="editTitle"></i>
-                    </a>
-                    <a *ngIf="grid" class="waves-effect waves-teal btn-flat" (click)="doGridExport()">
-                        <i class="fa fa-download" [title]="exportTitle"></i>
-                    </a>
+                <div class="TileTools">                                    
+                    <p-menubar [model]="items"></p-menubar>
                 </div>          
                 `
 })
 
-export class TileActionsComponent {
+export class TileActionsComponent implements OnInit, OnChanges {
     @Output() addClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
+    @Output() dateClick = new EventEmitter();
 
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
     @Input() hasEdit: boolean = false;
-    @Input() addTitle: string = "Add";
-    @Input() exportTitle: string = "Export";
-    @Input() editTitle: string = "Edit";
-    @Input() grid: DataTable;
+    @Input() hasDate: boolean = false;
 
-    @Input() exportEnabled: boolean = true;
-    @Input() addEnabled: boolean = true;
-    @Input() editEnabled: boolean = true;
+    private items: MenuItem[] = [];
 
-    private doGridExport() {
-        this.grid.exportCSV();
-    }    
+    
+
+    ngOnInit() {        
+
+        
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        this.buildMenu();
+    }
+
+    private buildMenu() {        
+        this.items = [];
+        if (this.hasAdd) {
+            this.items.push({
+                icon: 'fa-plus', command: () => this.addClick.emit(null)
+            });
+        }
+
+        if (this.hasExport) {
+            this.items.push({
+                icon: 'fa-download', command: () => this.exportClick.emit(null)
+            });
+        }
+
+        if (this.hasEdit) {
+            this.items.push({
+                icon: 'fa-pencil', command: () => this.editClick.emit(null)
+            });
+        }
+
+        if (this.hasDate) {
+            this.items.push({
+                icon: 'fa-clock-o',
+                items: [
+                    { label: 'Past Week', command: () => this.dateClick.emit({ days: 7 }) },
+                    { label: 'Past Month', command: () => this.dateClick.emit({ days: 30 }) },
+                    { label: 'Past Year', command: () => this.dateClick.emit({ days: 365 }) },
+                    { label: 'All', command: () => this.dateClick.emit({ days: 0 }) }
+                ]
+            });
+        }
+    }
+
 }
