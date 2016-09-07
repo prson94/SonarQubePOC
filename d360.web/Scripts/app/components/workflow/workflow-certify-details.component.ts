@@ -29,7 +29,7 @@ import { CertifyItem } from '../../models/workflow.model';
                             </template>
                         </p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
-                        <p-column  [style]="{width:'40px'}">
+                        <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
@@ -56,6 +56,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() objectName: string;
     @Input() hasCloseButton: boolean = true;
+    @Input() hasCertifyButton: boolean = true;
 
     @Output() close = new EventEmitter();
     

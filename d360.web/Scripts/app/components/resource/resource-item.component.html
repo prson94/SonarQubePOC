@@ -26,8 +26,8 @@
     </div>
     <div class="col s12 m12 l5">
         <div class="tile tile-detail">
-            <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId"></d3s-assignments-tile>
-            <d3s-assignments-tile *ngIf="isMe"></d3s-assignments-tile>
+            <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
+            <d3s-assignments-tile *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
         </div>
     </div>
 </div>
@@ -62,7 +62,7 @@
     <div *ngSwitchCase="PageMode.Assignment" class="col s12">
         <div class="tile tile-detail">
             <div style="text-align:right;cursor:pointer;font-size:1.6rem;" (click)="pageMode = PageMode.Default"><i class="fa fa-remove"></i></div>
-            assignment placeholder
+            <d3s-workflow-detail [hasCloseButton]="false" [hasCertifyButton]="isMe" [workflowType]="selectedWorkflow"></d3s-workflow-detail>
         </div>
     </div>
 </div>

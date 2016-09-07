@@ -9,15 +9,16 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-workflow-detail',
     template: ` 
-                <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue" [hasCloseButton]="hasCloseButton" (close)="close.emit({});"></d3s-workflow-issue-details>                    
-                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" (close)="close.emit({});"></d3s-workflow-suggest-details>                    
-                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" (close)="close.emit({});"></d3s-workflow-certify-details>                                  
+                <d3s-workflow-issue-details *ngIf="workflowType == tempWorkflowtype.WorkIssue" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close.emit({});"></d3s-workflow-issue-details>                    
+                <d3s-workflow-suggest-details *ngIf="workflowType == tempWorkflowtype.SuggestNewArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close.emit({});"></d3s-workflow-suggest-details>                    
+                <d3s-workflow-certify-details *ngIf="workflowType == tempWorkflowtype.CertifyArtifact" [hasCloseButton]="hasCloseButton" [hasCertifyButton]="hasCertifyButton" (close)="close.emit({});"></d3s-workflow-certify-details>                                  
                 `,    
 })
 
 export class WorkflowDetailComponent extends BaseComponent {
     @Input() workflowType: WorkflowType;
     @Input() hasCloseButton: boolean = true;
+    @Input() hasCertifyButton: boolean = true;
         
     @Output() close = new EventEmitter();
 

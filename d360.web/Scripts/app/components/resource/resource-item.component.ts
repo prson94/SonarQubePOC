@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
+import { WorkflowType } from '../../models/workflow.model';
 
 
 //TODO: find out where this comes from
@@ -24,6 +25,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resource: Resource;
     private isMe = false;
     private statistics: ObjectStatistics;
+    private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
     PageMode = PageMode;
 
@@ -75,6 +77,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    showAssignment(e: any) {
+        this.selectedWorkflow = e.workflowType;
+        this.pageMode = PageMode.Assignment;
     }
 };
 

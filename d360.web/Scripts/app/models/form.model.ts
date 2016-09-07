@@ -112,6 +112,14 @@ export module FormHelper {
         return items;
     }
 
+    export function convertToNgUrl(data: any[], field: string) {
+        for (let d of data) {
+            d[field] = (d[field]).replace('#', 'a');
+            d[field] = (d[field]).replace('artifacts', 'artifact');
+        }
+        return data;
+    }
+
 }
 
 
