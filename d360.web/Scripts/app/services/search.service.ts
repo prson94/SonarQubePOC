@@ -10,7 +10,7 @@ export class SearchService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getSearchResults(term: string, size: number, pageNum: number, category?: SearchCategories, isExactMatch?: boolean): Promise<SearchResultsObject> {
+    getSearchResults(term: string, size: number, pageNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean): Promise<SearchResultsObject> {
 
         term = (isExactMatch ? `'${term}'` : term);
         
@@ -21,7 +21,7 @@ export class SearchService extends BaseService {
         this.addRequestVerificationHeaders(headers);
         
         return this.http
-            .post('search/results', `from=${pageNum}&size=${size}&search=${term}&group=${category && !category.DisplayName ? category.Name : ''}&type=Artifact&adv=`, { headers: headers })
+            .post('search/results', `from=${pageNum}&size=${size}&search=${term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes.join(',')}&adv=`, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())
             .catch(this.handleError);

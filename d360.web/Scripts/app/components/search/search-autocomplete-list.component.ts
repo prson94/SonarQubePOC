@@ -13,19 +13,13 @@ import { SearchResult} from '../../models/search-result.model';
                 :host{
                     position:relative;
                     margin-left:11.25px;
-                }
-                .searchHeader{
-                    color: #b0b2b6;
-                    text-align: center;
-                    padding: 5px;
-                    background: #f0f3f8;
-                }   
+                }                                     
             `],
     template: ` 
-                <div *ngIf="showResults" class="tt-menu" style="position:absolute;top:-3px;left:0;background:white;min-width:400px" [ngStyle]="{'width':width}">                         
-                    <div class="searchHeader">Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>
+                <div *ngIf="showResults" class="tt-menu" style="position:absolute;top:-3px;left:0;min-width:400px" [ngStyle]="{'width':width}">                         
+                    <div class="header">Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>
                     <div *ngFor="let autocomplete of autocompletions" class="tt-suggestion tt-selectable" (click)="goTo(autocomplete)">
-                        <span class="type">{{autocomplete.Type}}</span> {{autocomplete.Name}}<strong class="tt-highlight"></strong>
+                        <span class="type">{{autocomplete.Type}}</span> <span [innerHtml]="highlightedResult(autocomplete.Name)"></span>
                     </div>                    
                 </div>
                 
@@ -34,6 +28,7 @@ import { SearchResult} from '../../models/search-result.model';
 
 export class SearchAutocompleteListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() autocompletions: SearchResult[] = [];    
+    @Input() searchText: string;
     @Input() element: any;
 
     private showResults = true;
@@ -58,6 +53,10 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     public convertUrl(item: SearchResult): string {
         if (item.Url.startsWith('#/artifacts'))
             return item.Url.replace('#/artifacts', '/a/artifact');
+        else if (item.Url.startsWith('#/resources'))
+            return item.Url.replace('#/resources', '/a/resource');
+        else if (item.Url.startsWith('#/catalogs'))
+            return item.Url.replace('#/catalogs', '/a/model');        
         return item.Url.replace('#', '/a');
     }
 
@@ -65,5 +64,12 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
         if (this.showResults && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
             this.showResults = false;
         }
+    }
+
+    private highlightedResult(item: string): string {
+        if (!item) return "";
+        //var regEx = new RegExp(this.searchText, "ig");
+        //return item.replace(regEx, `<strong class="item-highlight">${this.searchText}</strong>`);
+        return item;
     }
 };

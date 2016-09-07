@@ -10,8 +10,8 @@ export class TypeaheadSearchService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getResults(size, term): Promise<SearchResult[]> {
-        return this.http.get(`search/typeahead?q=${term}&num=${size}&t=`)
+    getResults(size, term, types?: string[]): Promise<SearchResult[]> {
+        return this.http.get(`search/typeahead?q=${term}&num=${size}&t=${types != undefined ? types.join(','):''}`)
             .toPromise()
             .then(response => <SearchResult[]>response.json())
             .catch(err => this.handleError(err));

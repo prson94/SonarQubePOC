@@ -32,6 +32,8 @@ export class SearchResultItemComponent extends BaseComponent  {
         switch (item.Group.toUpperCase()) {
             case 'ARTIFACT':
                 return item.Url.replace('#/artifacts', '/a/artifact');
+            case 'USERS':            
+                return item.Url.replace('#/resources', '/a/resource');            
         }
 
         return item.Url.replace('#', '/a');

@@ -3,7 +3,7 @@ import { Component, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
-
+import {SelectItem} from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-home-search',
@@ -18,7 +18,9 @@ import { SearchResultsObject, SearchCategories, SearchResult } from '../../model
                         </div>
                     </div>
                     <div class="search-input-types-container">
-                        <div id="SearchTypesDropdown" class="search-btn"></div>
+                        <div class="search-btn">
+                            <p-multiSelect [options]="searchObjectTypes" [(ngModel)]="searchTypes"></p-multiSelect>                        
+                        </div>
                     </div>
                     <div class="search-input-adv-container">
                         <button type="button" name="action" id="home-adv-btn" class="adv-search-btn" [routerLink]="'/a/search'">Advanced&nbsp;<i class="fa fa-caret-down"></i></button>
@@ -29,7 +31,7 @@ import { SearchResultsObject, SearchCategories, SearchResult } from '../../model
                         </button>
                     </div>
                 </div>
-                <d3s-search-autocomplete-list [element]="search" *ngIf="autocompletions.length > 0" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>
+                <d3s-search-autocomplete-list [searchText]="searchText" [element]="search" *ngIf="autocompletions.length > 0" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>
                 <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
 
                 `,
@@ -49,6 +51,18 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
 
     private autocompletions: SearchResult[] = [];
 
+    private searchObjectTypes: SelectItem[] = [        
+        { value: "Attribute", label: "Attribute" },
+        { value: "FusionAttributes", label: "Fusion" },
+        { value: "FusionType", label: "Fusion Type" },
+        { value: "Artifact", label: "Glossary" },
+        { value: "Group", label: "Group" },
+        { value: "Taxonomy", label: "Model" },
+        { value: "Domain", label: "Reference" },
+        { value: "Users", label: "User" },
+        { value: "Synonym", label: "Synonym" },
+    ];
+
     private isExactMatch: boolean = true;
     
 
@@ -61,7 +75,7 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
     }
         
     private doSearch(filterCategory?: SearchCategories) {
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, filterCategory, this.isExactMatch)
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
             .then(res => {
                 this.autocompletions = [];
                 this.searchResults = res;
@@ -83,7 +97,7 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
 
     private doAutocompleteSearch() {
         if (!this.searchText || this.searchText.length == 0) return;
-        this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText)
+        this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText, this.searchTypes)
             .then(res => {
                 this.autocompletions = res;
             });
