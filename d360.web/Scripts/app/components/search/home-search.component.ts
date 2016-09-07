@@ -1,15 +1,16 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 import { Component, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService } from '../../services/index';
-import { SearchResultsObject, SearchCategories } from '../../models/search-result.model';
+import { SearchService, TypeaheadSearchService } from '../../services/index';
+import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
+
 
 @Component({
     selector: 'd3s-home-search',
     template: `      
                 <div class="search-input-container">           
                     <div class="search-input-text-container">
-                        <input [(ngModel)]="searchText" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />
+                        <input #search [(ngModel)]="searchText" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />
                     </div>
                     <div class="search-input-exact-container">
                         <div class="adv-search-btn">
@@ -28,10 +29,11 @@ import { SearchResultsObject, SearchCategories } from '../../models/search-resul
                         </button>
                     </div>
                 </div>
+                <d3s-search-autocomplete-list [element]="search" *ngIf="autocompletions.length > 0" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>
                 <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
 
                 `,
-    providers: [SearchService],
+    providers: [SearchService, TypeaheadSearchService],
 })
 
 export class HomeSearchComponent extends BaseComponent implements OnInit {
@@ -42,28 +44,49 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
     private searchTypes: string[] = ["Artifact", "Synonym"];
+    private simpleSearchID: number = 0;
+    private autocompleteResultSize: number = 5;
+
+    private autocompletions: SearchResult[] = [];
 
     private isExactMatch: boolean = true;
-
     
-    constructor(private searchService: SearchService) {
+
+    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();
     }
 
     ngOnInit() {
         
     }
-
+        
     private doSearch(filterCategory?: SearchCategories) {
         this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, filterCategory, this.isExactMatch)
             .then(res => {
+                this.autocompletions = [];
                 this.searchResults = res;
                 if (filterCategory == undefined) this.categories = res.Categories;
             });
     }
 
-    private checkSearchKey(event) {        
+    private checkSearchKey(event) {                
         if (event.keyCode == 13) this.doSearch();
+        else if (this.searchText.length > 3) {
+            if (this.simpleSearchID > 0) {
+                window.clearTimeout(this.simpleSearchID);
+                this.simpleSearchID = 0;
+            }
+
+            this.simpleSearchID = window.setTimeout(() => this.doAutocompleteSearch(), 1000);
+        }
+    }
+
+    private doAutocompleteSearch() {
+        if (!this.searchText || this.searchText.length == 0) return;
+        this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText)
+            .then(res => {
+                this.autocompletions = res;
+            });
     }
 
     private filterByCategory(event) {        
@@ -91,7 +114,7 @@ export class HomeSearchComponent extends BaseComponent implements OnInit {
         }
 
         this.resultsPerPage = event.size;
-        console.log(event);
+        
         this.pageNumber = event.first == 0 ? 0 : (event.first / this.resultsPerPage);
 
         this.doSearch(this.selectedCategory);

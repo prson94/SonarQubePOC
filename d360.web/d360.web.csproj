@@ -1444,6 +1444,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\search-autocomplete-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.component.ts" />

@@ -3,7 +3,7 @@
     Name: string;
     DisplayName: string;
     Url: string;
-    Type: string;    
+    Type: string;       
 }
 
 export class SearchFullResult {
@@ -15,6 +15,8 @@ export class SearchFullResult {
     Score: number;
     Type: string;
     Url: string;
+
+    
 }
 
 export class SearchCategories {

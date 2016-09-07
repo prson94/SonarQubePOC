@@ -25,17 +25,15 @@ export class SearchResultItemComponent extends BaseComponent  {
     }
 
     private navigateLink() {
-        let url = '';
-        switch (this.result.Group.toUpperCase()) {
+        this.router.navigateByUrl(this.convertUrl(this.result));
+    }
+
+    public convertUrl(item: SearchFullResult): string {
+        switch (item.Group.toUpperCase()) {
             case 'ARTIFACT':
-                url = this.result.Url.replace('#/artifacts', '/a/artifact');                
-                break;
-            default:
-                url = this.result.Url.replace('#', '/a');
-                break;
+                return item.Url.replace('#/artifacts', '/a/artifact');
         }
-        console.log(url);
-                    
-        this.router.navigateByUrl(url);
+
+        return item.Url.replace('#', '/a');
     }
 };

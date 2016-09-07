@@ -246,6 +246,7 @@ import {
     SearchResultsComponent,
     SearchResultItemComponent,
     SearchComponent,
+    SearchAutocompleteListComponent,
 } from './components/search/index';
 
 @NgModule({
@@ -403,6 +404,7 @@ import {
         SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
+        SearchAutocompleteListComponent,
     ],
     imports: [
         BrowserModule,
