@@ -112,6 +112,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private isEditingFavorites = false;
     private isEditingAdmin = false;
     private isAdmin = false;
+    private isLoading = false;
 
 
     NavBarMode = NavBarMode;
@@ -171,6 +172,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
             return null;
         }
         else {
+            this.isLoading = true;
             return this.favoritesService.getFavorites().then(fav => {
                 this.favItems = [];
                 for (let f of fav) {
@@ -196,6 +198,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
             }).then(() => this.favoritesService.getFavorites(true))
                 .then(f => {
                     this.adminFavorites = f;
+                    this.isLoading = false;
                 });
         }
     }

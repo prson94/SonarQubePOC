@@ -1,11 +1,14 @@
 ﻿<ul class="side-nav fixed menu-flex" style="overflow: auto; transform: translateX(0px);">
     <li class="logo" [routerLink]="'a'" style="cursor:pointer;"></li>
-    <template [ngIf]="mode == NavBarMode.Default">
+    <template [ngIf]="isLoading">
+        <span style="text-align:center;color:white;padding:7px; font-size:1.5em;"><i class="fa fa-spinner fa-spin"></i></span>
+    </template>
+    <template [ngIf]="mode == NavBarMode.Default && !isLoading">
         <li *ngFor="let item of items">
             <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
         </li>
     </template>
-    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0">
+    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0 && !isLoading">
         <li style="margin-bottom:-4px;">
             <ul class="navbar-favorite-toolbar">
                 <li class="navbar-favorite-toolbar-item right" style="opacity:0.5;" (click)="favAction('edit')" pTooltip="edit favorites" tooltipPosition="right">
@@ -22,10 +25,10 @@
             </li>-->
         </template>
     </template>
-    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0">
+    <template [ngIf]="mode == NavBarMode.Favorites && favItems.length == 0 && !isLoading">
         <li class="navbar-message">You don't have any favorites. Click the <i class="fa fa-star"></i> on the header of any page to add it to your favorites.</li>
     </template>
-    <template [ngIf]="mode == NavBarMode.EditFavorites">
+    <template [ngIf]="mode == NavBarMode.EditFavorites && !isLoading">
         <li>
             <div *ngIf="isEditingFavorites" style="height:32px; width: 100%; text-align:center; color: white; font-size: 1.2em;">
                 <i class="fa fa-spinner fa-spin" style="padding: 10px;"></i>
@@ -49,7 +52,7 @@
             <span style="margin:0 5px 0 5px;"><i *ngIf="fav.icon" [class]="'fa ' + fav.icon"></i> {{fav.name}}</span>
         </li>
     </template>
-    <template [ngIf]="mode == NavBarMode.AdminFavorites">
+    <template [ngIf]="mode == NavBarMode.AdminFavorites && !isLoading">
         <ul class="navbar-favorite-toolbar">
             <li *ngIf="adminFavorites.length > 0" class="navbar-favorite-toolbar-item" (click)="favAction('adminup')" pTooltip="move up" tooltipPosition="right">
                 <i class="fa fa-caret-up"></i>
@@ -73,7 +76,7 @@
             </li>
         </template>
     </template>
-    <template [ngIf]="mode == NavBarMode.Admin">
+    <template [ngIf]="mode == NavBarMode.Admin && !isLoading">
         <li *ngFor="let item of adminItems">
             <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
         </li>
