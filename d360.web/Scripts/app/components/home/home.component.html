@@ -27,7 +27,7 @@
 <div class="row" *ngIf="showAssignmentDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false"></d3s-workflow-detail>
+            <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false" (countsChanged)="reloadAssignmentCounts()"></d3s-workflow-detail>
         </div>
     </div>
 </div>

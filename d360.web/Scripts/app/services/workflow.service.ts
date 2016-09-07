@@ -124,5 +124,17 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
     }
+
+
+    certifyArtifact(certify: CertifyItem): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+        return this.http
+            .post(`/services/workflow/tasks/${certify.WorkflowID}`, JSON.stringify({ WorkflowAction: 'CertificationFromOwner' }), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
     
 }

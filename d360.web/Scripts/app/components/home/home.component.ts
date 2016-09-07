@@ -79,4 +79,8 @@ export class HomeComponent extends BaseComponent {
     private updateBoardCounts() {
 
     }
+
+    private reloadAssignmentCounts() {
+
+    }
 }

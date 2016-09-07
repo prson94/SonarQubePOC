@@ -6,11 +6,12 @@ import { CertifyItem } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-certify-details',
-    template: `            
-            <div class="row" *ngIf="!isLoading">
+    template: `     
+            <d3s-workflow-certify-editor *ngIf="!isLoading && showEditor" [certify]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-certify-editor>       
+            <div class="row" *ngIf="!isLoading && !showEditor">
                 <header>Open Artifact Certifications</header>
                 <div class="col s12">                    
-                    <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >
+                    <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
                             <template let-col let-item="rowData">
@@ -75,6 +76,16 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
                 if (this.items.length && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
             });
+    }
+
+    private handleSave() {
+        this.showEditor = false;
+        this.loadCertifications();
+        this.countsChanged.emit({});
+    }
+
+    private handleRowDblClick() {
+        if (this.selected.Activity > 0) this.showEditor = true;
     }
 
 }
