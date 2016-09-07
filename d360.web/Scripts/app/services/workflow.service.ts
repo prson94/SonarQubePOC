@@ -125,6 +125,18 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(this.handleError);
     }
 
+    updateSuggestion(suggestion: SuggestedItem, approve: boolean, comments: string): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+        return this.http
+            .post(`/services/workflow/tasks/${suggestion.WorkflowID}`, JSON.stringify({
+                WorkflowAction: 'ApprovalFromOwner', Approved: approve, Notes: comments }), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+
 
     certifyArtifact(certify: CertifyItem): Promise<JsonResult> {
         let headers = new Headers({

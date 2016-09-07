@@ -49,7 +49,7 @@ import * as _ from 'lodash';
                             </div>     
                         </div>
                         <div id="CommentArea">
-                            <div class="FieldName">Comment</div>
+                            <div class="FieldName">Comments</div>
                             <textarea name="Comment" [(ngModel)]="comments"></textarea>
                         </div>                                                                                           
                     </div>                    

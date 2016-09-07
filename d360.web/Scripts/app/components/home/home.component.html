@@ -19,7 +19,7 @@
 <div class="row" *ngIf="showBoardDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="7" [hasNewInput]="false" [hasCloseButton]="true"  (countsChanged)="updateBoardCounts()" (close)="showBoardDetails=false"></d3s-social-board>
+            <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="7" [hasNewInput]="false" [hasCloseButton]="true" (close)="showBoardDetails=false"></d3s-social-board>
         </div>
     </div>
 </div>
@@ -27,7 +27,7 @@
 <div class="row" *ngIf="showAssignmentDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false" (countsChanged)="reloadAssignmentCounts()"></d3s-workflow-detail>
+            <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false"></d3s-workflow-detail>
         </div>
     </div>
 </div>

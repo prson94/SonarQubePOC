@@ -58,8 +58,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
     @Input() hasCloseButton: boolean = true;
 
     @Output() close = new EventEmitter();
-    @Output() countsChanged = new EventEmitter();
-
+    
     constructor(private workflowService: WorkflowService) {
         super();
     }
@@ -80,8 +79,7 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
 
     private handleSave() {
         this.showEditor = false;
-        this.loadCertifications();
-        this.countsChanged.emit({});
+        this.loadCertifications();        
     }
 
     private handleRowDblClick() {

@@ -6,11 +6,12 @@ import { SuggestedItem } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-suggest-details',
-    template: `            
-            <div class="row" *ngIf="!isLoading">
+    template: `        
+            <d3s-workflow-suggest-editor *ngIf="!isLoading && showEditor" [suggest]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-suggest-editor>           
+            <div class="row" *ngIf="!isLoading && !showEditor">
                 <header>Open Proposed New Artifacts</header>
                 <div class="col s12">                    
-                    <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >
+                    <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="Name" header="Type" [sortable]="true" [style]="{'width':'250px'}">
                             <template let-col let-item="rowData">
                                 <d3s-tooltip [objectType]="'ArtifactType'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
@@ -62,8 +63,7 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
     @Input() hasCloseButton: boolean = true;
 
     @Output() close = new EventEmitter();
-    @Output() countsChanged = new EventEmitter();
-
+    
     constructor(private workflowService: WorkflowService) {
         super();
     }
@@ -81,5 +81,15 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
                 this.isLoading = false;                
             });
     }
-    
+
+
+    private handleSave() {
+        this.showEditor = false;
+        this.loadSuggestions();        
+    }
+
+    private handleRowDblClick() {
+        if (this.selected.Activity > 0) this.showEditor = true;
+    }
+
 }

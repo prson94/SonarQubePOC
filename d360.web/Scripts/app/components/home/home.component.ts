@@ -75,12 +75,5 @@ export class HomeComponent extends BaseComponent {
         this.showAssignmentDetails = false;
         this.showActivityDetails = false;        
     }
-
-    private updateBoardCounts() {
-
-    }
-
-    private reloadAssignmentCounts() {
-
-    }
+    
 }

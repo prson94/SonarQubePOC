@@ -69,10 +69,12 @@ export class SuggestedItem {
     Name: string;
     ID: number;
     ProposedName: string;
+    PropsoedDescription: string;
     TaxonomyTypeName: string;
     RequestingResourceName: string;
     RequestingResourceID: number;
     ActivityName: string;
     StartDate: string;
     WorkflowID: string;
+    Activity: number;
 }

@@ -1513,6 +1513,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />

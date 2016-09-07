@@ -20,10 +20,11 @@ import { WorkflowType } from '../../models/workflow.model';
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                     </div>
-                    <p-dataTable *ngIf="!isLoading" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()" >                    
+                    <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()" >                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>           
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
                     </p-dataTable>                      
+                    <div *ngIf="counts.length == 0" style="padding:10px">No assignments currently</div>
                 </div>
                 `
 })
@@ -51,7 +52,7 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
 
         this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
             .then(res => {
-                this.counts = res.filter(item =>item.Name != 'Challenge');
+                this.counts = res.filter(item => (item.Name != 'Challenge' && item.Total > 0));
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)
                         .then(r => {
