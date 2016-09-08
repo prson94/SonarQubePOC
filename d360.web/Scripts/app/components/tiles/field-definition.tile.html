@@ -24,17 +24,17 @@
             <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
-                <template let-item="rowData">
+                <template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
                 </template>
             </p-column>
             <p-column field="IsListable" header="Listable?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
-                <template let-item="rowData">
+                <template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
                 </template>
             </p-column>
             <p-column [style]="{ 'width': '16%' }">
-                <template let-col let-item="rowData">
+                <template let-col let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

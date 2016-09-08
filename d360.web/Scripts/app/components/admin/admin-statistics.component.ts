@@ -23,14 +23,14 @@ import { Title } from '@angular/platform-browser';
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
                                 <p-column field="Score" header="Score" [sortable]="true" [filter]="true"></p-column>                                                        
                                 <p-column [style]="{width:'40px'}">
-                                    <template let-analytic="rowData">
+                                    <template let-analytic="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=analytic;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
-                                    <template let-analytic="rowData">
+                                    <template let-analytic="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=analytic;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>

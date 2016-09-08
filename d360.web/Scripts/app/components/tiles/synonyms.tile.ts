@@ -19,7 +19,7 @@ import { FormMode, FormHelper } from '../../models/form.model';
                 <p-column field="ObjectTypeName" header="Type" sortable="true" [style]="{ 'width': '28%' }"></p-column>
                 <p-column field="Name" header="Name" sortable="true"></p-column>
                 <p-column [style]="{ 'width': '16%' }" *ngIf="!readonly">
-                    <template let-col let-item="rowData">
+                    <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedItem=item;" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

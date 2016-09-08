@@ -8,14 +8,14 @@
             <p-dataTable [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
                 <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
                 <p-column [style]="{width:'40px'}">
-                    <template let-col let-item="rowData">
+                    <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
                         </div>
                     </template>
                 </p-column>
                 <p-column [style]="{width:'40px'}">
-                    <template let-col let-item="rowData">
+                    <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>

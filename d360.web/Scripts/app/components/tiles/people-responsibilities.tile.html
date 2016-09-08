@@ -16,7 +16,7 @@
                 <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
                 <p-column field="ContextItems" header="Context" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
                 <p-column>
-                    <template let-item="rowData">
+                    <template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

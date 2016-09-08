@@ -6,7 +6,7 @@
                 <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
                     <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
                     <p-column>
-                        <template let-col let-item="rowData">
+                        <template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                                 <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

@@ -18,20 +18,20 @@ import { Artifact } from '../../models/artifacts.model';
                     </div>
                     <p-dataTable *ngIf="!isLoading" [value]="items" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="true">
-                            <template let-col let-item="rowData">
+                            <template let-col let-item="rowData" pTemplate type="body">
                                 <a [routerLink]="'/a/artifact/' + item.ArtifactTypeID + '/' + item.ID">{{item.Name}}</a>
                             </template>
                         </p-column>                                                                                                   
                         <p-column field="Status" header="Status" [sortable]="true" [filter]="true" [style]="{'width':'150px'}"></p-column>
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
                                 </div>
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
                                 </div>

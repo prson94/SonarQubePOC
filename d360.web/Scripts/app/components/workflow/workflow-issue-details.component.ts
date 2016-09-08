@@ -12,19 +12,19 @@ import { WorkflowService } from '../../services/index';
                 <div class="col s12">                    
                     <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="Issue" header="Issue" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-issue="rowData">
+                            <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
                             </template>
                         </p-column>
                         <p-column field="ResourceName" header="Reported By" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column field="DateStarted" header="Created" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-data="rowData">
+                            <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'medium'}}</span>
                             </template>
                         </p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
-                            <template let-issue="rowData">
+                            <template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>

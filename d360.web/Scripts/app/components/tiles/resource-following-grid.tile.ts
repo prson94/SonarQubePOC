@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
    <p-dataTable [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
         <p-column field="Name" header="Name"></p-column>
         <p-column header="Current Score">
-            <template let-row="rowData">
+            <template let-row="rowData" pTemplate type="body">
                 <div>{{row.CurrentScore | scoreDisplay }}</div>
             </template>
         </p-column>

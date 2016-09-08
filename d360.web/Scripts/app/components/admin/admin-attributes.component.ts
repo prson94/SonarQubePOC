@@ -23,7 +23,7 @@ import { Title } from '@angular/platform-browser';
                                 <p-column field="ID" header="ID"></p-column>
                                 <p-column field="Name" header="Name"></p-column>
                                 <p-column>
-                                    <template let-col let-item="rowData">
+                                    <template let-col let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>

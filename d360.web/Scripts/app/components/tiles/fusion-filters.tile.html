@@ -10,7 +10,7 @@
             <p-column field="Name" header="Name"></p-column>
             <p-column field="Filter" header="Filter"></p-column>
             <p-column>
-                <template let-item="rowData">
+                <template let-item="rowData" pTemplate type="body">
                     <div class="RowTools">
                         <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         <a (click)="selectedRow = item; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

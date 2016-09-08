@@ -15,20 +15,20 @@ import { BaseComponent } from '../shared/base.component';
                <p-dataTable #dt *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor()" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                     <p-column field="Name" header="Name" [filter]="true" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                     <p-column header="Classification" field="Classification" [filter]="true" [sortable]="true" [style]="{'width':'150px'}">                        
-                        <template let-col let-rowTenant="rowData">
+                        <template let-col let-rowTenant="rowData" pTemplate type="body">
                             <span>{{rowTenant?.Classification | classificationTypeDisplayValue}}</span>
                         </template>
                     </p-column>           
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>                                                               
                     <p-column  [style]="{width:'30px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                                                           
                                 </div>
                             </template>
                     </p-column>                   
                     <p-column  [style]="{width:'30px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                                    
                                     <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>

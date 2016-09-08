@@ -17,19 +17,19 @@ import { MessagesService, RulesService  } from '../../services/index';
                <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                 <p-column field="Description" header="Description" [sortable]="true" [filter]="true">
-                    <template let-col let-dimension="rowData">
+                    <template let-col let-dimension="rowData" pTemplate type="body">
                         <div [innerHtml]="dimension?.Description"></div>
                     </template>                                                        
                 </p-column>    
                     <p-column [style]="{width:'40px'}">
-                        <template let-dimension="rowData">
+                        <template let-dimension="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                             </div>
                         </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
-                        <template let-dimension="rowData">
+                        <template let-dimension="rowData" pTemplate type="body">
                             <div class="RowTools">                                
                                 <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                             </div>

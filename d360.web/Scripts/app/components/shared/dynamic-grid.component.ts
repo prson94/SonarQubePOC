@@ -19,14 +19,14 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
                <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable"></p-column>
                     <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>

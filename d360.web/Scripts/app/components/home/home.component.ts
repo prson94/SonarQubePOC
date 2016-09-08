@@ -55,7 +55,10 @@ export class HomeComponent extends BaseComponent {
     }
 
     private onShowBoardDetails(event) {
-        
+        if (!event.selected) {
+            console.log("ERROR NO SELECTION PASSED ON BOARD DETAILS CLICK.");
+            return;
+        }
         switch (event.selected.Name.toUpperCase()) {
             case "CHALLENGE":
                 this.selectedSocialType = SocialCommentType.Challenge;

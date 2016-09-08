@@ -21,19 +21,19 @@ import { Title } from '@angular/platform-browser';
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
                             <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
                             <p-column header="Description" sortable="true" filter="true">
-                                <template let-col let-template="rowData">
+                                <template let-col let-template="rowData" pTemplate type="body">
                                     <div [innerHtml]="template?.Description"></div>
                                 </template>
                             </p-column>                             
                             <p-column [style]="{width:'40px'}">
-                                <template let-template="rowData">
+                                <template let-template="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a (click)="selectedTemplate=template;isEditing=true;isDeleting=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
                                 </template>
                             </p-column>                            
                             <p-column  [style]="{width:'40px'}">
-                                <template let-template="rowData">
+                                <template let-template="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a (click)="selectedTemplate=template;isEditing=false;isDeleting=true;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>

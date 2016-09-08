@@ -15,7 +15,7 @@ import { Count} from '../../models/counts.model';
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                     </div>
-                    <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()" [rows]="10" [paginator]="true" [pageLinks]="3">                    
+                    <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()" [rows]="10" [paginator]="true" [pageLinks]="3">                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                           
                         <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
                     </p-dataTable>                      

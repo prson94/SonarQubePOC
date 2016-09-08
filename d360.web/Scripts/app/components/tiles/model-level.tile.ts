@@ -18,19 +18,19 @@ import { MessagesService, TaxonomiesService  } from '../../services/index';
                 <p-column field="Level" header="Level" [sortable]="true" [filter]="true"></p-column>                                                            
                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                 <p-column field="Description" header="Description" [sortable]="true" [filter]="true">
-                    <template let-col let-taxonomy="rowData">
+                    <template let-col let-taxonomy="rowData" pTemplate type="body">
                         <div [innerHtml]="taxonomy?.Description"></div>
                     </template>                                                        
                 </p-column>    
                     <p-column [style]="{width:'40px'}">
-                        <template let-template="rowData">
+                        <template let-template="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                             </div>
                         </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
-                        <template let-template="rowData">
+                        <template let-template="rowData" pTemplate type="body">
                             <div class="RowTools">                                
                                 <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                             </div>

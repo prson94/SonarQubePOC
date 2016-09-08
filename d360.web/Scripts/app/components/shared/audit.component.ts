@@ -21,19 +21,19 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                             <p-dataTable scrollable="true" scrollWidth="100%"  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
                                 <p-column field="ResourceName" header="User" [sortable]="true" [filter]="true" [style]="{'width':'150px'}"></p-column>                                                                                    
                                 <p-column field="Date" header="Date" [sortable]="true" [filter]="true" [style]="{'width':'200px'}">
-                                    <template let-col let-data="rowData">
+                                    <template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.Date | date: 'medium'}}</span>
                                     </template>
                                 </p-column>
                                 <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{'width':'100px'}"></p-column>                                                            
                                 <p-column field="Field" header="Field" [sortable]="true" [filter]="true" [style]="{'width':'200px'}"></p-column>                                
                                 <p-column field="NewValue" header="New Value" [sortable]="true" [filter]="true" [style]="{'width':'250px'}">
-                                    <template let-col let-data="rowData">
+                                    <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.NewValue"></div>
                                     </template>                                                        
                                 </p-column>
                                 <p-column field="PreviousValue" header="Previous Value" [sortable]="true" [filter]="true" [style]="{'width':'250px'}">
-                                    <template let-col let-data="rowData">
+                                    <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>

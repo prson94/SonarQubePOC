@@ -9,7 +9,7 @@
         'primeng': './node_modules/primeng',
         'powerbi-client': './node_modules/powerbi-client',
         'angular2-highcharts': './node_modules/angular2-highcharts/dist',
-        'highcharts/highstock.src': './node_modules/highcharts/highstock.js'
+        'highcharts/highstock.src': './node_modules/highcharts/highstock.js',        
     },    
     packages: {
         'scripts/app': {
@@ -17,12 +17,11 @@
             defaultExtension: 'js'
         },
         'lodash' : { main: 'lodash.js' },
-        'rxjs': { main: 'index.js' },
+        'rxjs': { defaultExtension: 'js' },
         '@angular/router': { main: '/bundles/router.umd.js', defaultExtension: 'js' },
         '@angular/forms': { main: '/bundles/forms.umd.js', defaultExtension: 'js' },
         '@angular/core': { main: '/bundles/core.umd.js', defaultExtension: 'js' },
-        '@angular/http': { main: '/bundles/http.umd.js', defaultExtension: 'js' },
-        '@angular/router-deprecated': { main: '/bundles/router-deprecated.umd.js', defaultExtension: 'js' },
+        '@angular/http': { main: '/bundles/http.umd.js', defaultExtension: 'js' },        
         '@angular/upgrade': { main: '/bundles/upgrade.umd.js', defaultExtension: 'js' },
         '@angular/common': { main: '/bundles/common.umd.js', defaultExtension: 'js' },
         '@angular/compiler': { main: '/bundles/compiler.umd.js', defaultExtension: 'js' },
@@ -30,6 +29,6 @@
         '@angular/platform-browser-dynamic': { main: '/bundles/platform-browser-dynamic.umd.js', defaultExtension: 'js' },      
         'primeng': { defaultExtension: 'js' },
         'powerbi-client': { main: '/dist/powerbi.js', defaultExtension: 'js' },
-        'angular2-highcharts': { main: 'index', format: 'cjs', defaultExtension: 'js' }
+        'angular2-highcharts': { main: 'index', format: 'cjs', defaultExtension: 'js' },        
     },
 });

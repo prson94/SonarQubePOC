@@ -22,14 +22,14 @@ import { Title } from '@angular/platform-browser';
                             <p-dataTable *ngIf="!isLoading && !showEditor && !showDelete" [value]="reports" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
                                 <p-column [style]="{width:'40px'}">
-                                    <template let-report="rowData">
+                                    <template let-report="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=report;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
-                                    <template let-report="rowData">
+                                    <template let-report="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=report;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>

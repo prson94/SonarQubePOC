@@ -23,14 +23,14 @@ import { Title } from '@angular/platform-browser';
                                 <p-column field="ID" header="ID" [sortable]="true" [filter]="true"></p-column>                                                            
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column [style]="{width:'40px'}">
-                                    <template let-lookup="rowData">
+                                    <template let-lookup="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selectedLookup=lookup;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                                 </p-column>                            
                                 <p-column  [style]="{width:'40px'}">
-                                    <template let-lookup="rowData">
+                                    <template let-lookup="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selectedLookup=lookup;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>

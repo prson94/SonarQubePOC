@@ -12,7 +12,7 @@
                 <p-column field="FirstName" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
                 <p-column field="Owner?" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
                 <p-column [style]="{ 'width': '20%' }">
-                    <template let-col let-item="rowData">
+                    <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>

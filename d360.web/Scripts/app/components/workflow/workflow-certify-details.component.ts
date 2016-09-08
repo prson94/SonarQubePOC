@@ -14,23 +14,23 @@ import { CertifyItem } from '../../models/workflow.model';
                     <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
+                            <template let-col let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
                             </template>
                         </p-column>                                                                        
                         <p-column field="StartDate" header="Created" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-data="rowData">
+                            <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.StartDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
                         <p-column field="DueDate" header="Due" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-data="rowData">
+                            <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DueDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>

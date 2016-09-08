@@ -19,14 +19,14 @@ import { MessagesService, PredicatesService  } from '../../services/index';
                     <p-column field="Inverse" header="Inverse" [sortable]="true" [filter]="true"></p-column>
                     <p-column field="Type" header="Type" [sortable]="true" [filter]="true"></p-column>                
                     <p-column [style]="{width:'40px'}">
-                        <template let-predicate="rowData">
+                        <template let-predicate="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                             </div>
                         </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
-                        <template let-predicate="rowData">
+                        <template let-predicate="rowData" pTemplate type="body">
                             <div class="RowTools">                                
                                 <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                             </div>

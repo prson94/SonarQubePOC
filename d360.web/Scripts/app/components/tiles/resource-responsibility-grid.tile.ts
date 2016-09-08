@@ -17,7 +17,7 @@ import { Router } from '@angular/router';
         <p-column field="ObjectName" header="Name"></p-column>
         <p-column field="Role" header="Role"></p-column>
         <p-column header="Current Score">
-            <template let-row="rowData">
+            <template let-row="rowData" pTemplate type="body">
                 <div>{{row.CurrentScore | scoreDisplay }}</div>
             </template>
         </p-column>

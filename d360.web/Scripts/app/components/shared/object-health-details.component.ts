@@ -20,7 +20,7 @@ import { Highcharts } from 'angular2-highcharts';
                             <p-dataTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdown" selectionMode="single">                                
                                 <p-column field="Name" header="Analytic" [style]="{'width':'250px'}"></p-column>                                
                                 <p-column header="Score" [style]="{'width':'250px'}">
-                                    <template let-col let-data="rowData">
+                                    <template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.Score}} out of {{data.MaxScore}}</span>
                                     </template>
                                 </p-column>

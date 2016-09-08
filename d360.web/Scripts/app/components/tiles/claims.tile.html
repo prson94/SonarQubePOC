@@ -13,7 +13,7 @@
             <p-column expander="true" [style]="{ 'width':'25px', 'padding-left': '2px', 'padding-right': '2px', 'text-align' : 'center' }"></p-column>
             <p-column field="Name" header="Name" sortable="true"></p-column>
             <p-column header="Description" sortable="true">
-                <template let-col let-item="rowData">
+                <template let-col let-item="rowData" pTemplate type="body">
                     <div [innerHtml]="item?.Description"></div>
                 </template>
             </p-column>

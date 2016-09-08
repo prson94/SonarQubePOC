@@ -9,7 +9,7 @@
                 <p-column field="Action" header="Action" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
                 <p-column field="ObjectName" header="Target" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '40%' }"></p-column>
                 <p-column field="DateCompleted" header="Date Completed" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }">
-                    <template let-item="rowData">
+                    <template let-item="rowData" pTemplate type="body">
                         {{item.DateCompleted | date:'short'}}
                     </template>
                 </p-column>

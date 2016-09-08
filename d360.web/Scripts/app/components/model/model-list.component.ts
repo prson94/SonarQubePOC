@@ -23,7 +23,7 @@ import { Model } from '../../models/model.model';
                             <p-dataTable #dt [value]="models | modelType: modelGroup" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'25%'}"></p-column>                                                                                                                        
                                 <p-column field="Description" header="Description" [sortable]="true" [filter]="true" [style]="{width:'60%'}">
-                                    <template let-col let-data="rowData">
+                                    <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.Description"></div>
                                     </template>                                                        
                                 </p-column>

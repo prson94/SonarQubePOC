@@ -59,7 +59,7 @@ import * as _ from 'lodash';
         <div [class]="readonly ? 'col s12' : 'col s6'">
             <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="loadMenu();">
                 <p-column>
-                    <template let-item="rowData">
+                    <template let-item="rowData" pTemplate type="body">
                         <div *ngIf="item.data.IsCategory">
                             <span class='Attribute-Category'>{{item.data.Name}}</span>
                         </div>

@@ -18,14 +18,14 @@ import { MessagesService, SurveysService  } from '../../services/index';
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                     <p-column field="DisplayStyle" header="Display Type" [sortable]="true" [filter]="true"></p-column>
                     <p-column [style]="{width:'40px'}">
-                            <template let-question="rowData">
+                            <template let-question="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=question;showEditor=true"><i class="fa fa-pencil"></i></a>                                      
                                 </div>
                             </template>
                     </p-column>                                                
                     <p-column [style]="{width:'40px'}">
-                            <template let-question="rowData">
+                            <template let-question="rowData" pTemplate type="body">
                                 <div class="RowTools">                                    
                                     <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                 </div>

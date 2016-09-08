@@ -13,29 +13,29 @@ import { SuggestedItem } from '../../models/workflow.model';
                 <div class="col s12">                    
                     <p-dataTable scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="Name" header="Type" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
+                            <template let-col let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="'ArtifactType'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
                             </template>
                         </p-column>                        
                         <p-column field="RequestingResourceName" header="Requested By" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
+                            <template let-col let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="'Resource'" [objectId]="item.RequestingResourceID" [tooltipType]="'preview'">{{item.RequestingResourceName}}</d3s-tooltip>                                
                             </template>
                         </p-column>
                         <p-column field="StartDate" header="Created" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-data="rowData">
+                            <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.StartDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
                         <p-column field="ProposedName" header="Proposed Name" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData">
+                            <template let-col let-item="rowData" pTemplate type="body">
                                 <span [innerHtml]="item?.ProposedName"></span>
                             </template>
                         </p-column>
                         <p-column field="TaxonomyTypeName" header="Subject Area" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
-                            <template let-item="rowData">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                
                                     <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-check-circle-o"></i></a>                                    
                                 </div>

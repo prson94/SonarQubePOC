@@ -27,24 +27,24 @@ import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model
                                         <p-column field="ID" header="ID" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
                                         <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'45%'}"></p-column>                                                                                                                        
                                         <p-column field="RuleType" header="Type" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
-                                            <template let-col let-data="rowData">
+                                            <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{getRuleTypeText(data.RuleType)}}</span>
                                             </template>                          
                                         </p-column>
                                         <p-column field="Dimension" header="Dimension" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
-                                            <template let-col let-data="rowData">
+                                            <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.Dimension?.Name}}</span>
                                             </template>                          
                                         </p-column>
                                         <p-column [style]="{width:'40px'}">
-                                            <template let-item="rowData">
+                                            <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                                 </div>
                                             </template>
                                         </p-column>                            
                                         <p-column  [style]="{width:'40px'}">
-                                                <template let-item="rowData">
+                                                <template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools">                                
                                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                                     </div>

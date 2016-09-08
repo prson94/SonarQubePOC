@@ -7,7 +7,7 @@
             <p-dataTable [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" [rows]="20" [paginator]="true" >
                 <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true"></p-column>
                 <p-column>
-                    <template let-col let-item="rowData">
+                    <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>

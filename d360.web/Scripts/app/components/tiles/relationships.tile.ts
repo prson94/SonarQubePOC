@@ -27,14 +27,14 @@ import { Relationship } from '../../models/relationship.model';
                             <p-column field="Target" header="Side 2 Type" [sortable]="true"></p-column>                                
                             <p-column field="TargetName" header="Side 2 Name" [sortable]="true"></p-column>
                             <p-column [style]="{width:'40px'}">
-                                <template let-relationship="rowData">
+                                <template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=relationship;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
                                 </template>
                             </p-column>                            
                             <p-column  [style]="{width:'40px'}">
-                                <template let-relationship="rowData">
+                                <template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=relationship;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>

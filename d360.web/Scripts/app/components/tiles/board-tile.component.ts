@@ -14,7 +14,7 @@ import { Count } from '../../models/counts.model';
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                     </div>
-                    <p-dataTable *ngIf="!isLoading" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="doSelect()">                    
+                    <p-dataTable *ngIf="!isLoading" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()">                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                           
                         <p-column field="Total" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>
                     </p-dataTable>                      
@@ -51,7 +51,7 @@ export class BoardTile extends BaseComponent implements OnInit {
             });
     }
 
-    private doSelect() {
+    private doSelect() {        
         this.showItemDetail.emit({
             selected: this.selected
         });

@@ -16,7 +16,7 @@
                     <p-column field="ObjectName" header="Type" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '28%' }"></p-column>
                     <p-column field="ParentName" header="Subject Area" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '28%' }"></p-column>
                     <p-column [style]="{ 'width': '16%' }">
-                        <template let-col let-item="rowData">
+                        <template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                                 <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
