@@ -8,7 +8,7 @@ import { Count } from '../../models/counts.model';
     selector: 'd3s-board-tile',
     template: `
                 <div class="tile tile-detail">
-                   <header>Board
+                   <header>Board<span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -61,6 +61,18 @@ export class BoardTile extends BaseComponent implements OnInit {
         this.daysToLookBack = event.days;
         this.daysToLookBackChange.emit( this.daysToLookBack );
         this.load();
+    }
+
+    private timeFrameMessage() {
+        switch (this.daysToLookBack) {
+            case 7:
+                return ' (Past week)';
+            case 30:
+                return ' (Past month)';
+            case 365:
+                return ' (Past year)';
+        }
+        return ' (All)'
     }
 }
 

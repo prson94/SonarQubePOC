@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -17,15 +17,24 @@ import { BaseComponent } from '../shared/base.component';
         `
 })
 
-export class ObjectIssuesComponent extends BaseComponent {
+export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
     @Input() issueCount: number = 0;
     @Input() lastIssueDate: string;
 
     @Input() showDetails: boolean = false;
     @Output() showDetailsChange = new EventEmitter();
 
+    private dateDiff: Date;
+
     constructor() {
         super();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.lastIssueDate) {
+            this.dateDiff = new Date(Date.now() - Date.parse(this.lastIssueDate));
+        }
+
     }
 
     private isWarning(): boolean {
@@ -49,30 +58,27 @@ export class ObjectIssuesComponent extends BaseComponent {
         if (!this.lastIssueDate) {
             return "No issues raised.";
         }
-        let lastDate = Date.parse(this.lastIssueDate);
-
-        var diff = new Date(Date.now() - lastDate);
-
-        var years = diff.getUTCFullYear() - 1970;
+        
+        var years = this.dateDiff.getUTCFullYear() - 1970;
 
         if (years > 0) return "Last issue came in " + years + " years ago.";
 
-        var months = diff.getUTCMonth();
+        var months = this.dateDiff.getUTCMonth();
 
         if (months > 0) return "Last issue came in " + months + " months ago.";
 
-        var days = diff.getUTCDate() - 1;
+        var days = this.dateDiff.getUTCDate() - 1;
 
         if (days > 0) return "Last issue came in " + days + " days ago.";
 
-        var hours = diff.getUTCHours();
+        var hours = this.dateDiff.getUTCHours();
 
         if (hours > 0) return "Last issue came in " + hours + " hours ago.";
 
-        var minutes = diff.getUTCMinutes();
+        var minutes = this.dateDiff.getUTCMinutes();
 
         if (minutes > 0) return "Last issue came in " + minutes + " minutes ago.";
-
-        return "Last issue came in a few seconds ago.";
+                
+        return "Last discussion was a moment ago.";
     }
 }
