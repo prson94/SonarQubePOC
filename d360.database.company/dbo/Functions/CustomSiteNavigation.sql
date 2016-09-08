@@ -17,3 +17,5 @@ BEGIN
         FOR XML PATH('nav'),TYPE
     )
 END
+GO
+

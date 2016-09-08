@@ -7,16 +7,7 @@ as
 				else I.Classification
 			end as Classification,
 			I.Description,
-			substring((
-						select	', ' + P.Name as [text()]
-						from	IntersectMap IM
-								inner join [Predicate] P on	P.ID = IM.PredicateID	
-															and (
-																(IM.SubjectIntersectNodeID = R.[SourceIntersectNodeID] and IM.ObjectIntersectNodeID = R.[TargetIntersectNodeID]) or
-																(IM.SubjectIntersectNodeID = R.[TargetIntersectNodeID] and IM.ObjectIntersectNodeID = R.[SourceIntersectNodeID])
-																)
-						for xml path('')
-						), 3, 1000) as [Role],
+			'' as [Role],
 			--R.[Role],
 			R.SourceIntersectTypeNodeID,
 			R.SourceObject as SourceObjectType,

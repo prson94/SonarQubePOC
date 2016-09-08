@@ -1,4 +1,4 @@
-﻿create procedure [tile].[GetObjectStatistics]
+﻿CREATE procedure [tile].[GetObjectStatistics]
 	@type varchar(50),
 	@id int
 AS
@@ -23,7 +23,10 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 			FROM	    [Event] E
 					    INNER JOIN EventGroup G ON E.EventGroupID = G.ID and E.Status in ('Active', 'Open')
 					    INNER JOIN [Rule] R on R.ID = G.RuleID
-					    inner join cache.Relationships CR on CR.SourceObject = @type and CR.SourceObjectID = @id and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
+					    inner join [Intersect] CR on (
+														(CR.Subject = @type and CR.SubjectID = @id and CR.Object = 'Rule' and CR.ObjectID = R.ID) OR
+														(CR.Object = @type and CR.ObjectID = @id and CR.Subject = 'Rule' and CR.SubjectID = R.ID)
+													 )
 
 	insert into @table values (null, dbo.[GetObjectStatisticScore](@type, @id) * 100, 'Score', '/overlays/' + @type + '/' + cast(@id as varchar(10)) + '/score', null)
 
@@ -62,6 +65,5 @@ declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25
 	select * from @table
 
 END
-
-
 GO
+

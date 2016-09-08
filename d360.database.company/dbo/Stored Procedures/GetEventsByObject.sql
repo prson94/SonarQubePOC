@@ -86,7 +86,11 @@ BEGIN
 					INNER JOIN EventGroup G ON E.EventGroupID = G.ID 
 											and (E.Status = @Status OR 1=1)
 					INNER JOIN [Rule] R on R.ID = G.RuleID
-					inner join cache.Relationships CR on CR.SourceObject = @Type and CR.SourceObjectID = @ID and CR.TargetObject = 'Rule' and CR.TargetObjectID = R.ID
+					inner join [Intersect] CR on	(
+													(CR.Subject = @Type and CR.SubjectID = @ID and CR.Object = 'Rule' and CR.ObjectID = R.ID) OR 
+													(CR.Object = @Type and CR.ObjectID = @ID and CR.Subject = 'Rule' and CR.SubjectID = R.ID)
+													)
 		end
 END
 GO
+

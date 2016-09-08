@@ -11,30 +11,25 @@ begin
 		merge cache.Relationship as T
 		using (
 				select	distinct
-						S.IntersectID,
-						S.IntersectTypeNodeID as SourceIntersectTypeNodeID, 
-						S.ID as SourceIntersectNodeID,
-						S.ObjectType as SourceObject,
-						S.ObjectID as SourceObjectID,
-						T.IntersectTypeNodeID as TargetIntersectTypeNodeID,
-						T.ID as TargetIntersectNodeID,
-						T.ObjectType as TargetObject,
-						T.ObjectID as TargetObjectID
-				from	dbo.IntersectNode S
-						inner join dbo.IntersectNode T on T.IntersectID = S.IntersectID and T.ID <> S.ID
-			  ) as S (
-					IntersectID, 
-					SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, 
-					TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID
-					)
-		on    (T.IntersectID = S.IntersectID and T.SourceObject = S.SourceObject and T.SourceObjectID = S.SourceObjectID)
+						ID as IntersectID,
+						Subject,
+						SubjectID,
+						Object,
+						ObjectID
+				from	[Intersect]
+				union
+				select	distinct
+						ID as IntersectID,
+						Object as Subject,
+						ObjectID as SubjectID,
+						Subject as Object,
+						SubjectID as ObjectID
+				from	[Intersect]
+			  ) as S
+		on    (T.IntersectID = S.IntersectID and T.SourceObject = S.Subject and T.SourceObjectID = S.SubjectID)
 		when not matched then
-			insert (
-					IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID
-					)
-			values (
-					S.IntersectID, S.SourceIntersectTypeNodeID, S.SourceIntersectNodeID, S.SourceObject, S.SourceObjectID, S.TargetIntersectTypeNodeID, S.TargetIntersectNodeID, S.TargetObject, S.TargetObjectID
-					);
+			insert (IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID)
+			values (S.IntersectID, S.Subject, S.SubjectID, S.Object, S.ObjectID);
 	end
 	else
 	begin
@@ -42,34 +37,28 @@ begin
 		merge cache.Relationship as T
 		using (
 				select	distinct
-						S.IntersectID,
-						S.IntersectTypeNodeID as SourceIntersectTypeNodeID, 
-						S.ID as SourceIntersectNodeID,
-						S.ObjectType as SourceObject,
-						S.ObjectID as SourceObjectID,
-						T.IntersectTypeNodeID as TargetIntersectTypeNodeID,
-						T.ID as TargetIntersectNodeID,
-						T.ObjectType as TargetObject,
-						T.ObjectID as TargetObjectID
-				from	dbo.IntersectNode S
-						inner join dbo.IntersectNode T on T.IntersectID = S.IntersectID and T.ID <> S.ID
-						inner join @Intersects C on C.ObjectID = S.IntersectID
-			  ) as S (
-					IntersectID, 
-					SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, 
-					TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID
-					)
-		on    (T.IntersectID = S.IntersectID and T.SourceObject = S.SourceObject and T.SourceObjectID = S.SourceObjectID)
+						I.ID as IntersectID,
+						I.Subject,
+						I.SubjectID,
+						I.Object,
+						I.ObjectID
+				from	[Intersect] I
+						inner join @Intersects C on C.ObjectID = I.ID
+				union
+				select	distinct
+						I.ID as IntersectID,
+						I.Object as Subject,
+						I.ObjectID as SubjectID,
+						I.Subject as Object,
+						I.SubjectID as ObjectID
+				from	[Intersect] I
+						inner join @Intersects C on C.ObjectID = I.ID
+			  ) as S
+		on    (T.IntersectID = S.IntersectID and T.SourceObject = S.Subject and T.SourceObjectID = S.SubjectID)
 		when not matched then
-			insert (
-					IntersectID, 
-					SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, 
-					TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID
-					)
-			values (
-					S.IntersectID, 
-					S.SourceIntersectTypeNodeID, S.SourceIntersectNodeID, S.SourceObject, S.SourceObjectID, 
-					S.TargetIntersectTypeNodeID, S.TargetIntersectNodeID, S.TargetObject, S.TargetObjectID
-					);
+			insert (IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID)
+			values (S.IntersectID, S.Subject, S.SubjectID, S.Object, S.ObjectID);
 	end
 end
+GO
+

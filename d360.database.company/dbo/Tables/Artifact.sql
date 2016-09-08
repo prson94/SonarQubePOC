@@ -6,7 +6,6 @@
     [Description]       NVARCHAR (MAX)  NULL,
     [Status]            NVARCHAR (25)   NOT NULL,
     [TextPath]          NVARCHAR (1000) NULL,
-    [Path]              XML             NULL,
     [DateLastCertified] DATETIME        NULL,
     [UpdatedOn]         DATETIME        NULL,
     [UpdatedBy]         INT             NULL,
@@ -17,46 +16,25 @@
     CONSTRAINT [FK_Artifact_ParentArtifact] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Artifact] ([ID]),
     CONSTRAINT [FK_Artifact_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID])
 );
-
-
-
-
-
-
-
-
-
-
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID]
     ON [dbo].[Artifact]([ArtifactTypeID] ASC)
     INCLUDE([ID], [ParentID], [Name], [Description], [Status]);
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Artifact_ArtifactTypeID-Status]
     ON [dbo].[Artifact]([ArtifactTypeID] ASC, [Status] ASC);
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Artifact_ParentID]
     ON [dbo].[Artifact]([ParentID] ASC);
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Artifact_TaxonomyTypeID]
     ON [dbo].[Artifact]([TaxonomyTypeID] ASC);
-
-
 GO
 
-
-GO
-
-
-GO
 CREATE TRIGGER [dbo].[Artifact_AfterDelete]
 	ON [dbo].[Artifact]
 	AFTER DELETE
@@ -67,10 +45,8 @@ AS
 
 	insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 		select 'Artifact', O.ID, O.TextPath, coalesce(O.UpdatedBy, 0), coalesce(O.UpdatedOn, getutcdate()), 'Deleted', 'Artifact', O.ID, T.Name, O.TextPath, 'This artifact has been removed.' from deleted O inner join ArtifactType T on T.ID = O.ArtifactTypeID;
-
-
-
 GO
+
 CREATE TRIGGER [dbo].[Artifact_AfterUpsert]
    ON  [dbo].[Artifact] 
    AFTER INSERT, UPDATE
@@ -119,3 +95,5 @@ AS
 	when	not matched then
 			insert	( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
 			values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
+GO
+

@@ -1,6 +1,6 @@
-﻿CREATE FUNCTION [quality].CalculatePassed
+﻿CREATE FUNCTION [quality].[CalculatePassed]
 (
-	@PassFraction decimal(3,3),
+	@PassFraction decimal(4,3),
 	@QualityRuleID int
 )
 RETURNS bit
@@ -21,3 +21,5 @@ BEGIN
 
 	RETURN @Passed
 END
+GO
+

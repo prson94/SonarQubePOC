@@ -4,7 +4,6 @@
     [TaxonomyTypeID] INT             NOT NULL,
     [Name]           NVARCHAR (250)  NOT NULL,
     [Description]    NVARCHAR (MAX)  NULL,
-    [Path]           XML             NULL,
     [TextPath]       NVARCHAR (1000) NULL,
     [Level]          INT             NULL,
     [UpdatedOn]      DATETIME        NULL,
@@ -13,26 +12,10 @@
     CONSTRAINT [CK_Taxonomy_IDNotEqualParentID] CHECK ([ID]<>[ParentID]),
     CONSTRAINT [FK_Taxonomy_TaxonomyType] FOREIGN KEY ([TaxonomyTypeID]) REFERENCES [dbo].[TaxonomyType] ([ID]) ON DELETE CASCADE
 );
-
-
-
-
-
-
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Taxonomy_TaxonomyTypeID-ParentID]
     ON [dbo].[Taxonomy]([TaxonomyTypeID] ASC, [ParentID] ASC);
-
-
-GO
-
-
-
-GO
-
-
 GO
 
 CREATE TRIGGER [dbo].[Taxonomy_AfterDelete]
@@ -42,7 +25,6 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('Removed', 'TaxonomyType', TaxonomyTypeID, coalesce(UpdatedBy, 0)), 'Taxonomy', ID from deleted
-
 GO
 
 CREATE TRIGGER [dbo].[Taxonomy_AfterUpsert]
@@ -101,3 +83,5 @@ AS
 		when	not matched then
 				insert	( [Object],[ObjectID], [ObjectType], [ObjectTypeID] )
 				values	( S.[Object], S.[ObjectID], S.[ObjectType], S.[ObjectTypeID] );
+GO
+

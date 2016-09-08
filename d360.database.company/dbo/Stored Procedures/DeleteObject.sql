@@ -258,7 +258,10 @@ begin
 					FROM	IntersectNode
 					WHERE	ObjectType = @Object and ObjectID = @ObjectID
 
-				delete [Intersect] where ID in (select ID from @tblIntersectIDs)
+				delete	[Intersect] where ID in (select ID from @tblIntersectIDs)
+				delete	MapItem 
+				where	SourceIntersectID in (select ID from @tblIntersectIDs) OR
+						TargetIntersectID in (select ID from @tblIntersectIDs)
 			END TRY
 			BEGIN CATCH
 
@@ -318,4 +321,5 @@ begin
 		rollback transaction @trans
 	end catch
 end
+GO
 

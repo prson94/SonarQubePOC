@@ -163,11 +163,23 @@ begin
 					from	@relations R
 							outer apply (
 										select		COUNT(1) as Score
-										from		[cache].[Relationship] IR
-													inner join cache.[Object] ID on ID.[Object] = IR.TargetObject and ID.ObjectID = IR.TargetObjectID 
-																				and ID.ObjectType = @CheckObjectType and ID.ObjectTypeID = @CheckObjectID 
-																				and IR.SourceObject = R.[Object] and IR.SourceObjectID = R.ObjectID
-										group by	ID.ObjectType, ID.ObjectTypeID
+										from		[Intersect] I
+													inner join IntersectType IT on	IT.ID = I.IntersectTypeID
+																					and (
+																						(I.Subject = R.[Object] and I.SubjectID = R.ObjectID) OR
+																						(I.Object = R.[Object] and I.ObjectID = R.ObjectID)
+																						)
+																					and (
+																							@CheckObjectType = case 
+																											when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.Object
+																											else IT.Subject
+																											end and
+																							@CheckObjectID = case 
+																											when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.ObjectID
+																											else IT.SubjectID
+																											end																				
+																						)
+										--group by	ID.ObjectType, ID.ObjectTypeID
 										) O
 			end
 		end
@@ -304,10 +316,19 @@ begin
 				from	@relations R
 						outer apply (
 									select		COUNT(1) as [Count]
-									from		[cache].[Relationship] IR
-												inner join cache.[Object] D on D.[Object] = IR.TargetObject and D.ObjectID = IR.TargetObjectID 
-																			and IR.SourceObject = R.[Object] and IR.SourceObjectID = R.ObjectID
-												inner join @checkRelationshipObjects TT on TT.[Object] = D.ObjectType and TT.ObjectID = D.ObjectTypeID
+									from		[Intersect] IR
+												inner join IntersectType IRT on IRT.ID = IR.IntersectTypeID and (
+																												(IR.Subject = R.Object and IR.SubjectID = R.ObjectID) OR 
+																												(IR.Object = R.Object and IR.ObjectID = R.ObjectID)
+																												)
+												inner join @checkRelationshipObjects TT on TT.[Object] = case 
+																											when (IR.Subject = R.Object and IR.SubjectID = R.ObjectID) then IRT.Object 
+																											else IRT.Subject
+																										 end
+																						and TT.ObjectID = case 
+																											when (IR.Subject = R.Object and IR.SubjectID = R.ObjectID) then IRT.ObjectID
+																											else IRT.SubjectID
+																										 end
 									) O
 
 		end
@@ -351,15 +372,51 @@ begin
 				from	@relations R
 						cross apply (
 									select	count(1) as [Count] 
-									from	cache.Relationships
-									where	SourceObject = R.[Object] and SourceObjectID = R.ObjectID
-											and TargetType = @CheckObjectType and TargetTypeID = @CheckObjectID
+									from	[Intersect] I
+											inner join IntersectType IT on	IT.ID = I.IntersectTypeID
+																			and (
+																				(I.Subject = R.[Object] and I.SubjectID = R.ObjectID) OR
+																				(I.Object = R.[Object] and I.ObjectID = R.ObjectID)
+																				)
+																			and (
+																					@CheckObjectType = case 
+																									when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.Object
+																									else IT.Subject
+																								 end and
+																					@CheckObjectID = case 
+																									when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.ObjectID
+																									else IT.SubjectID
+																								 end																				
+																				)
 									) C
 						outer apply (
-									select	sum(dbo.GetObjectStatisticScore(TargetObject, TargetObjectID)) as Total
-									from	cache.Relationships 
-									where	SourceObject = R.[Object] and SourceObjectID = R.ObjectID 
-											and TargetType = @CheckObjectType and TargetTypeID = @CheckObjectID
+									select	sum(dbo.GetObjectStatisticScore(O, OID)) as Total
+									from	(
+											select	case 
+														when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then I.Object
+														else I.Subject
+													end as O, 
+													case 
+														when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then I.ObjectID
+														else I.SubjectID
+													end as OID
+											from	[Intersect] I
+													inner join IntersectType IT on	IT.ID = I.IntersectTypeID
+																					and (
+																						(I.Subject = R.[Object] and I.SubjectID = R.ObjectID) OR
+																						(I.Object = R.[Object] and I.ObjectID = R.ObjectID)
+																						)
+																					and (
+																							@CheckObjectType = case 
+																											when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.Object
+																											else IT.Subject
+																										 end and
+																							@CheckObjectID = case 
+																											when (I.Subject = R.[Object] and I.SubjectID = R.ObjectID) then IT.ObjectID
+																											else IT.SubjectID
+																										 end																				
+																						)
+										) I
 									) T
 				where C.[Count] > 0
 		end
@@ -410,15 +467,15 @@ begin
 
 			select	@TotalValid = sum(cast(V.ValidCount as int)),
 					@TotalInvalid = sum(cast(I.InvalidCount as int))
-			from	cache.Relationships REL
-					inner join [Rule] R on R.ID = REL.TargetObjectID and REL.TargetObject = 'Rule' and R.RuleType in (3,4)
+			from	[Intersect] REL
+					inner join [Rule] R on ((R.ID = REL.ObjectID and REL.Object = 'Rule') OR (R.ID = REL.SubjectID and REL.Subject = 'Rule')) and R.RuleType in (3,4)
 					inner join EventGroup EG on EG.RuleID = R.ID
 					inner join [Event] E on E.EventGroupID = EG.ID 
 					inner join (
 								select	R.ID,
 										max(E.Date) as [Date]
-								from	cache.Relationships REL
-										inner join [Rule] R on R.ID = REL.TargetObjectID and REL.TargetObject = 'Rule' and R.RuleType in (3,4)
+								from	[Intersect] REL
+										inner join [Rule] R on ((R.ID = REL.ObjectID and REL.Object = 'Rule') OR (R.ID = REL.SubjectID and REL.Subject = 'Rule')) and R.RuleType in (3,4)
 										inner join EventGroup EG on EG.RuleID = R.ID
 										inner join [Event] E on E.EventGroupID = EG.ID
 								group by R.ID					
@@ -462,18 +519,13 @@ begin
 				from	@relations R
 						outer apply (
 									select	count(1) as [Count]
-									from	IntersectMap M
-											inner join cache.Relationship IR on IR.[SourceIntersectNodeID] = M.SubjectIntersectNodeID 
-																			and IR.[TargetIntersectNodeID] = M.ObjectIntersectNodeID 
-																			and M.PredicateID = @PredicateID
-											inner join cache.Relationship T1 on T1.SourceObject = R.[Object] 
-																			and T1.SourceObjectID = R.ObjectID
-																			and T1.TargetObject = IR.SourceObject 
-																			and T1.TargetObjectID = IR.SourceObjectID
-											inner join cache.Relationship T2 on T2.SourceObject = R.[Object] 
-																			and T2.SourceObjectID = R.ObjectID
-																			and T2.TargetObject = IR.TargetObject 
-																			and T2.TargetObjectID = IR.TargetObjectID
+									from	[Intersect] I
+											inner join IntersectType IT on IT.ID = I.IntersectTypeID and 
+																		IT.PredicateID = @PredicateID and 
+																		(
+																		(I.Subject = R.Object and I.SubjectID = R.ObjectID) OR
+																		(I.Object = R.Object and I.ObjectID = R.ObjectID)
+																		)
 									) O
 		end
 
@@ -523,3 +575,5 @@ begin
 					);
 	
 end
+GO
+

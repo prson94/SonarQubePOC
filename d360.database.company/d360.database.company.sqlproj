@@ -136,17 +136,14 @@
     </Build>
     <Build Include="dbo\Tables\PolicyTypeClass.sql" />
     <Build Include="dbo\Tables\IntersectType.sql" />
-    <Build Include="dbo\Tables\FusionAttributeSynchronizationStatus.sql" />
     <Build Include="dbo\Tables\PolicyType.sql" />
     <Build Include="dbo\Tables\LoadItem.sql" />
     <Build Include="dbo\Tables\Follow.sql" />
     <Build Include="dbo\Tables\Intersect.sql" />
     <Build Include="dbo\Tables\AttributeType.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionRuleMapping.sql" />
-    <Build Include="dbo\Tables\FusionJobHistory.sql" />
     <Build Include="dbo\Tables\FusionAttributePromotionRuleItem.sql" />
     <Build Include="dbo\Tables\Field.sql" />
-    <Build Include="dbo\Tables\FusionJobSchedule.sql" />
     <Build Include="dbo\Tables\EventType.sql" />
     <Build Include="dbo\Tables\Resolution.sql" />
     <Build Include="reporting\Tables\Global_Audit.sql" />
@@ -302,7 +299,6 @@
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="utility\Stored Procedures\AddOrUpdateFieldType.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeRelationships.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedIntersectionTypesByIntersect.sql" />
     <Build Include="utility\Stored Procedures\AddAuditEntry.sql" />
@@ -317,14 +313,12 @@
     </Build>
     <Build Include="dbo\Stored Procedures\GetCommentCountByFollower.sql" />
     <Build Include="dbo\Stored Procedures\GetCommentCountByType.sql" />
-    <Build Include="fusion\Stored Procedures\GetPromotionOptions.sql" />
     <Build Include="dbo\Stored Procedures\EditRelationship.sql" />
     <Build Include="fusion\Stored Procedures\GetFusionOwnerOptions.sql" />
     <Build Include="fusion\Stored Procedures\GetAttributesByFusion.sql">
       <AnsiNulls>Off</AnsiNulls>
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
-    <Build Include="dbo\Stored Procedures\AddMappingDependencies.sql" />
     <Build Include="dbo\Stored Procedures\ProcessBulkLoad.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeObjectDetails.sql" />
     <Build Include="dbo\Stored Procedures\GetStatisticDetails.sql" />
@@ -355,17 +349,13 @@
       <AnsiNulls>Off</AnsiNulls>
       <QuotedIdentifier>Off</QuotedIdentifier>
     </Build>
-    <Build Include="dbo\Stored Procedures\GetNonIntersections.sql" />
     <Build Include="dbo\Stored Procedures\GetAllowedAndUnallocatedResponsibilityTypesByObject.sql" />
-    <Build Include="dbo\Stored Procedures\GetRelatedObjectsByEventTypeWrapper.sql" />
-    <Build Include="validate\Stored Procedures\IntersectType.sql" />
     <Build Include="utility\Stored Procedures\GetOwnersForWorkflow.sql" />
     <Build Include="dbo\Stored Procedures\SetChildrenByFollowID.sql" />
     <Build Include="utility\Stored Procedures\GetArtifactsUpForCertification.sql">
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="dbo\Stored Procedures\GetIntersectTypeOptions.sql" />
     <Build Include="dbo\User Defined Types\PreviouslyCheckedIDTable.sql" />
     <Build Include="dbo\User Defined Types\StaticFieldCandidateTable.sql" />
     <Build Include="dbo\User Defined Types\IntersectionNodeType.sql" />
@@ -386,7 +376,6 @@
     <Build Include="Security\validate.sql" />
     <Build Include="dbo\Stored Procedures\FollowObject.sql" />
     <Build Include="tile\Stored Procedures\GetObjectStatistics.sql" />
-    <Build Include="dbo\Tables\IntersectMap.sql" />
     <Build Include="dbo\Tables\Predicate.sql" />
     <Build Include="dbo\Tables\MapTransformation.sql" />
     <Build Include="fusion\Tables\StagingFile.sql" />
@@ -415,36 +404,20 @@
     <Build Include="dbo\Stored Procedures\AddRelationshipTypesBulk.sql" />
     <Build Include="utility\Functions\ShouldPromotionRun.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDefinition.sql" />
-    <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject_1.sql" />
-    <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect_1.sql" />
     <Build Include="dbo\User Defined Types\RelationshipTypeTable_1.sql" />
     <Build Include="fusion\Stored Procedures\ProcessEagleMCToBBMnemonic.sql" />
     <Build Include="Security\relation.sql" />
-    <Build Include="utility\Stored Procedures\PromoteFusionAttributeLookups.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDisplayField.sql" />
-    <Build Include="dbo\Tables\SourceRuleContext.sql" />
-    <Build Include="dbo\Tables\SourceRule.sql" />
     <Build Include="dbo\Tables\IntersectTypePredicate_1.sql" />
-    <Build Include="dbo\Tables\IntersectMapSourceRuleContext.sql" />
-    <Build Include="dbo\Tables\IntersectMapSourceRule.sql" />
     <Build Include="utility\Functions\GetVerticalResponsibilityList.sql" />
     <Build Include="utility\Functions\GetHierarchyAssignedResponsibilityList.sql" />
     <Build Include="utility\Functions\GetDirectlyAssignedResponsibilityList.sql" />
-    <Build Include="dbo\Tables\IntersectMapTemplate.sql" />
-    <Build Include="dbo\Tables\IntersectMapTemplateLogSummary.sql" />
-    <Build Include="utility\Stored Procedures\ProcessIntersectTemplates.sql" />
-    <Build Include="utility\Stored Procedures\AddRelationDiagramRelations.sql" />
     <Build Include="fusion\Tables\AgentError.sql" />
     <Build Include="fusion\Tables\AgentErrorItem.sql" />
-    <Build Include="dbo\Stored Procedures\GetHierarchyByMapType_1.sql" />
     <Build Include="utility\User Defined Types\DiagramRelationshipTable_1.sql" />
-    <Build Include="dbo\Tables\IntersectMapGroup_1.sql" />
-    <Build Include="dbo\Stored Procedures\GetGroupHierarchy_1.sql" />
     <Build Include="dbo\Tables\FieldTypeRelationLookupDisplayField.sql" />
     <Build Include="dbo\Tables\FieldTypeRelationLookupDefinition.sql" />
     <Build Include="dbo\Stored Procedures\AddSingleIntersect.sql" />
-    <Build Include="dbo\Tables\SourceTargetRule_1.sql" />
-    <Build Include="dbo\Tables\IntersectMapSourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\RuleDimension.sql" />
     <Build Include="dbo\Functions\EventCountByObject.sql" />
     <Build Include="dbo\Functions\EventsByObject.sql" />
@@ -470,7 +443,6 @@
     <Build Include="dbo\Tables\Map.sql" />
     <Build Include="dbo\Tables\IntersectRole.sql" />
     <Build Include="dbo\Tables\IntersectGroup.sql" />
-    <Build Include="fusion\Stored Procedures\Rules_1.sql" />
     <Build Include="dbo\Stored Procedures\GetTypeHierarchyByObject.sql" />
     <Build Include="utility\Stored Procedures\GetApproversForWorkflow.sql" />
     <Build Include="reporting\Tables\Dates.sql" />
@@ -506,6 +478,8 @@
     <Build Include="bulkload\Stored Procedures\UpdateTypeColumn.sql" />
     <Build Include="Security\quality.sql" />
     <Build Include="Security\bulkload.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateItemColumnByType.sql" />
+    <Build Include="quality\Functions\CalculatePassedWrapper.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -514,7 +488,6 @@
     <None Include="dbo\Stored Procedures\AddMapRelationship.sql" />
     <None Include="dbo\Stored Procedures\GetLineageDiagram.sql" />
     <None Include="dbo\Stored Procedures\ExcludeMapIntersect.sql" />
-    <None Include="dbo\Tables\IntersectMapExclusion.sql" />
     <None Include="dbo\Stored Procedures\FindExcludeMapIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject.sql" />
@@ -522,22 +495,15 @@
     <None Include="dbo\Tables\IntersectTypePredicate.sql" />
     <None Include="ToDeployToClientDev.sql" />
     <None Include="utility\User Defined Types\DiagramRelationshipTable.sql" />
-    <None Include="dbo\Stored Procedures\GetHierarchyByMapType.sql" />
-    <None Include="dbo\Tables\IntersectMapGroup.sql" />
-    <None Include="dbo\Stored Procedures\GetGroupHierarchy.sql" />
-    <None Include="dbo\Tables\IntersectMapSourceTargetRule.sql" />
-    <None Include="dbo\Tables\SourceTargetRule.sql" />
     <None Include="dbo\Tables\DomainItemXref.sql" />
     <None Include="dbo\Tables\DomainSourceType.sql" />
     <None Include="dbo\Tables\DomainClassification.sql" />
-    <None Include="dbo\Tables\Language.sql" />
     <None Include="dbo\Views\WorkflowIssue.sql" />
     <None Include="dbo\Views\WorkflowChallenge.sql" />
     <None Include="fusion\Stored Procedures\Rules.sql" />
     <None Include="dbo\Functions\ArtifactNgSiteNavigation.sql" />
     <None Include="dbo\Functions\GenerateNgObjectUrl.sql" />
     <None Include="dbo\Stored Procedures\GetTechnicalMapping.sql" />
-    <None Include="dbo\Tables\Favorite.sql" />
     <None Include="dbo\Tables\SiteNav.sql" />
     <None Include="dbo\Functions\CustomSiteNavigation.sql" />
   </ItemGroup>

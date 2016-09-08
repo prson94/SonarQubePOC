@@ -6,7 +6,6 @@
     [Name]                       NVARCHAR (250) NOT NULL,
     [Description]                NVARCHAR (MAX) NULL,
     [DomainGroupID]              INT            NULL,
-    [Path]                       XML            NULL,
     [UpdatedOn]                  DATETIME       NULL,
     [UpdatedBy]                  INT            NULL,
     [SourceArtifactID]           INT            NULL,
@@ -15,22 +14,14 @@
     CONSTRAINT [FK_Domain_DomainType] FOREIGN KEY ([DomainTypeID]) REFERENCES [dbo].[DomainType] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_Domain_ParentDomain] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Domain] ([ID])
 );
-
-
-
-
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Domain_DomainGroupID]
     ON [dbo].[Domain]([DomainGroupID] ASC);
-
-
 GO
+
 CREATE NONCLUSTERED INDEX [IX_Domain_DomainTypeID]
     ON [dbo].[Domain]([DomainTypeID] ASC);
-
-
 GO
 
 CREATE TRIGGER [dbo].[Domain_AfterDelete]
@@ -40,7 +31,6 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('Removed', 'Domain', ID, coalesce(UpdatedBy, 0)), 'Domain', ID from deleted
-
 GO
 
 CREATE TRIGGER [dbo].[Domain_AfterInsert]
@@ -50,11 +40,6 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Add', [queue].WriteIndexXml('', 'Domain', ID, coalesce(UpdatedBy, 0)), 'Domain', ID from inserted
-	update	T
-	set		T.[Path] = utility.GetBreadcrumbWrapper('Domain', S.ID)
-	from	Domain T
-			inner join inserted S on S.ID = T.ID
-
 GO
 
 CREATE TRIGGER [dbo].[Domain_AfterUpdate]
@@ -64,8 +49,5 @@ AS
 	SET NOCOUNT ON;
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', 'Domain', ID, coalesce(UpdatedBy, 0)), 'Domain', ID from inserted
+GO
 
-	update	T
-	set		T.[Path] = utility.GetBreadcrumbWrapper('Domain', S.ID)
-	from	Domain T
-			inner join inserted S on S.ID = T.ID

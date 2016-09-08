@@ -17,16 +17,15 @@ begin
 	-- load the unprocessed relations for now across all fusion types /ids
 
 	insert into [fusion].[StagingRelation]
-				select	distinct @unprocessedRelationsExeId,
+				select	distinct 
+						@unprocessedRelationsExeId,
 						R.StartID,
 						R.EndID,
 						S.ID,
 						E.ID,
 						S.FusionAttributeTypeID,
 						E.FusionAttributeTypeID,
-						rel.SourceIntersectTypeNodeID,
-						rel.TargetIntersectTypeNodeID,
-						rel.IntersectTypeID,
+						IT.ID,
 						null
 				from	(
 						select	srm.StartID,
@@ -35,10 +34,22 @@ begin
 						) R
 						inner join FusionAttribute S on S.SourceID = R.StartID
 						inner join FusionAttribute E on E.SourceID = R.EndID
-						inner join utility.RelationshipTypes rel on (rel.SourceObjectID = S.FusionAttributeTypeID and rel.SourceObjectType = 'FusionAttributeType' and rel.TargetObjectType = 'FusionAttributeType' and rel.TargetObjectID = E.FusionAttributeTypeID)
-				WHERE  NOT EXISTS (select * from [intersect] i
-					inner join intersectnode inode on (i.id = inode.intersectid and inode.objectid = s.id and inode.objecttype = 'FusionAttribute')
-					inner join intersectnode inode2 on (i.id = inode2.intersectid and inode2.objectid = e.id and inode2.objecttype = 'FusionAttribute'))
+						inner join IntersectType IT on	IT.Subject = 'FusionAttributeType' and 
+														IT.Object = 'FusionAttributeType' and 
+														(
+															( IT.SubjectID = S.FusionAttributeTypeID and IT.ObjectID = E.FusionAttributeTypeID ) OR
+															( IT.SubjectID = E.FusionAttributeTypeID and IT.ObjectID = S.FusionAttributeTypeID )
+														)
+				where	NOT EXISTS	(
+									select	* 
+									from	[Intersect] I
+									where	I.Subject = 'FusionAttribute' and 
+											I.Object = 'FusionAttribute' and
+											(
+												(I.SubjectID = S.ID and I.ObjectID = E.ID ) OR
+												(I.SubjectID = E.ID and I.ObjectID = S.ID )
+											)
+									)
 
 	-- process these relations as regular relations
 	exec [fusion].[ProcessFusionRelationships] @unprocessedRelationsExeId
@@ -55,3 +66,5 @@ begin
 	delete from [fusion].[StagingRelation] where executionid = @unprocessedRelationsExeId
 
 end
+GO
+

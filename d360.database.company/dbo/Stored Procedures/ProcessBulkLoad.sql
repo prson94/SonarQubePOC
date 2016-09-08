@@ -524,10 +524,8 @@ begin
 				@max int,
 				@sourceObject varchar(50),
 				@sourceObjectID int,
-				@sourceIntersectTypeNodeID int,
 				@targetObject varchar(50),
 				@targetObjectID int,
-				@targetIntersectTypeNodeID int,
 				@intersectID int = null,
 				@date datetime = getutcdate()
 
@@ -950,33 +948,19 @@ begin
 
 			set		@intersectID = null
 
-			select	@IntersectID = SN.IntersectID 
-			from	[IntersectNode] SN 
-					inner join IntersectNode TN on	SN.IntersectID = TN.IntersectID 
-													and SN.ID <> TN.ID 
-													and SN.ObjectType = @sourceObject 
-													and SN.ObjectID = @sourceObjectID 
-													and TN.ObjectType = @targetObject 
-													and TN.ObjectID = @targetObjectID
+			select	@IntersectID = ID 
+			from	[Intersect]
+			where	(Subject = @sourceObject and SubjectID = @sourceObjectID and Object = @targetObject and ObjectID = @targetObjectID) OR
+					(Object = @sourceObject and ObjectID = @sourceObjectID and Subject = @targetObject and SubjectID = @targetObjectID)
+
 			if @Action = 'R'	--RELATION
 			begin
 				if @intersectID is null
 				begin
-					-- Get the node type IDs
-					select	@sourceIntersectTypeNodeID = S.ID,
-							@targetIntersectTypeNodeID = T.ID
-					from	IntersectTypeNode S 
-							inner join IntersectTypeNode T on S.IntersectTypeID = T.IntersectTypeID and S.[Order] = 1 and T.[Order] = 2 and S.ID <> T.ID and S.IntersectTypeID = @ObjectID
-
 					insert into [Intersect] (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) 
 					values		(@ObjectID, 2, @sourceObject, @sourceObjectID, @targetObject, @targetObjectID, 0, @date, 0, @date)
 
 					set @intersectID = SCOPE_IDENTITY()
-
-					insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-					values						(@sourceIntersectTypeNodeID, @intersectID, @sourceObject, @sourceObjectID)
-					insert into [IntersectNode] (IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-					values						(@targetIntersectTypeNodeID, @intersectID, @targetObject, @targetObjectID)
 
 					exec utility.AddAuditEntry @sourceObject, @sourceObjectID, 0, @date, 'Created', 'Intersect', @intersectID
 					exec utility.AddAuditEntry @targetObject, @targetObjectID, 0, @date, 'Created', 'Intersect', @intersectID
@@ -1008,24 +992,15 @@ begin
 				begin
 					begin try
 						if exists(	select 1 
-									from	[cache].[Relationships] SR
-											inner join Responsibility RE on RE.ResponsibleObjectType = SR.SourceObject and RE.ResponsibleObjectID = SR.SourceObjectID
-											inner join [cache].[Relationships] TR on RE.ObjectType = 'Intersect' and RE.ObjectID = TR.IntersectID and TR.TargetObject = SR.TargetObject and TR.TargetObjectID = SR.TargetObjectID
-									where	SR.IntersectID = @intersectID
+									from	MapItem
+									where	SourceIntersectID = @intersectID or TargetIntersectID = @intersectID
 								 )
 						begin
-							DECLARE @Targets VARCHAR(8000) 
-							SELECT	@Targets = COALESCE(@Targets + ', ', '') + TR.SourceObjectName 
-							from	[cache].[Relationships] SR
-									inner join Responsibility RE on RE.ResponsibleObjectType = SR.SourceObject and RE.ResponsibleObjectID = SR.SourceObjectID
-									inner join [cache].[Relationships] TR on RE.ObjectType = 'Intersect' and RE.ObjectID = TR.IntersectID and TR.TargetObject = SR.TargetObject and TR.TargetObjectID = SR.TargetObjectID
-							where	SR.IntersectID = @intersectID
-
 							update	LoadItem
 							set		[Object] = 'Intersect',
 									ObjectID = @intersectID,
 									[Status] = 0,
-									StatusMessage = 'Unable to remove relationship as it acts as a source for: ' + @Targets
+									StatusMessage = 'Unable to remove relationship as it is involved in lineage.'
 							where	LoadID = @LoadID
 									and RowIndex = @current
 						end
@@ -1133,4 +1108,5 @@ begin
 	set		DateCompleted = getutcdate()
 	where	ID = @LoadID
 end
-go
+GO
+

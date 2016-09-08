@@ -79,23 +79,13 @@ begin
 
 					SELECT @IntersectID = SCOPE_IDENTITY()
 
-					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID) 
-					VALUES						(@SubjectIntersectTypeNodeID, @IntersectID, @Subject, @SubjectID)
-
-					SELECT @SubjectIntersectNodeID = SCOPE_IDENTITY()
-
-					INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					VALUES						(@ObjectIntersectTypeNodeID, @IntersectID, @Object, @ObjectID)
-
-					SELECT @ObjectIntersectNodeID = SCOPE_IDENTITY()
-
 					insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
 					values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
 
 					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID );
+					values	( @IntersectID, 0, 0, @Subject, @SubjectID, 0, 0, @Object, @ObjectID );
 					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID );
+					values	( @IntersectID, 0, 0, @Object, @ObjectID, 0, 0, @Subject, @SubjectID );
 
 					--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
 					if ( (@Subject = 'Taxonomy' and @Object = 'Artifact') OR (@Subject = 'Artifact' and @Object = 'Taxonomy') )
@@ -117,3 +107,5 @@ begin
 
 	select * from [Intersect] where ID = @IntersectID
 end
+GO
+

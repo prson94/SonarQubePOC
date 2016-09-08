@@ -1,6 +1,7 @@
-﻿
-create procedure bulkload.BusinessLineage
+﻿CREATE procedure [bulkload].[BusinessLineage]
+--declare
 	@id int
+--set @id = 19
 as
 begin
 	set nocount on;
@@ -32,6 +33,8 @@ begin
 	exec bulkload.UpdateFusionAttributeColumn @id, 19, 20	-- target fusion attribute
 
 	exec bulkload.UpdateIntersectRoleColumn @id, 22			-- intersect role
+
+	drop table if exists #Items
 
 	BEGIN TRANSACTION [Tran1]
 
@@ -93,7 +96,7 @@ begin
 				inner join LoadItemColumn SST	on SST.LoadID = SS.LoadID	and SST.RowIndex = SS.RowIndex	and SST.ColumnIndex = 2
 				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SO.ColumnIndex = 8
 				inner join LoadItemColumn SOT	on SOT.LoadID = SS.LoadID	and SOT.RowIndex = SS.RowIndex	and SOT.ColumnIndex = 6
-				inner join IntersectType SIT on SIT.Subject = SST.LookupObject and SIT.SubjectID = SST.LookupObjectID and SIT.Object = SOT.LookupObject and SIT.ObjectID = SOT.LookupObjectID
+				left join IntersectType SIT on SIT.Subject = SST.LookupObject and SIT.SubjectID = SST.LookupObjectID and SIT.Object = SOT.LookupObject and SIT.ObjectID = SOT.LookupObjectID
 
 				left join LoadItemColumn SF	on SF.LoadID = SS.LoadID	    and SF.RowIndex = SS.RowIndex	and SF.ColumnIndex = 10
 				left join FusionAttribute SFA on SFA.ID = SF.LookupObjectID
@@ -103,7 +106,7 @@ begin
 				inner join LoadItemColumn TST	on TST.LoadID = SS.LoadID	and TST.RowIndex = SS.RowIndex	and TST.ColumnIndex = 12 
 				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = 18
 				inner join LoadItemColumn TOT	on TOT.LoadID = SS.LoadID	and TOT.RowIndex = SS.RowIndex	and TOT.ColumnIndex = 16
-				inner join IntersectType TIT on TIT.Subject = TST.LookupObject and TIT.SubjectID = TST.LookupObjectID and TIT.Object = TOT.LookupObject and TIT.ObjectID = TOT.LookupObjectID
+				left join IntersectType TIT on TIT.Subject = TST.LookupObject and TIT.SubjectID = TST.LookupObjectID and TIT.Object = TOT.LookupObject and TIT.ObjectID = TOT.LookupObjectID
 
 				left join LoadItemColumn TF	on TF.LoadID = SS.LoadID	    and TF.RowIndex = SS.RowIndex	and TF.ColumnIndex = 20
 				left join FusionAttribute TFA on TFA.ID = TF.LookupObjectID
@@ -141,8 +144,6 @@ begin
 				T.TargetFusionIntersectChangeType = 'U'
 		from	#Items T
 				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
-
-		--should disable triggers here???
 
 		-- insert source business relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
@@ -228,8 +229,6 @@ begin
 				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
 				and T.TargetFusionIntersectChangeType <> 'U';
 
-		-- enable triggers here??
-
 		-- update rows with existing map items
 		update	T
 		set		T.MapItemID = S.ID,
@@ -298,19 +297,30 @@ begin
 				values (S.MapRuleItemID, S.MapItemID);
 
 		-- update status & status message for Items table
+		
+		-- SUCCESS STATUS
 		update	#Items
-		set		Status = 1
-		where	MapItemID > 0 and MapItemID is not null;
-
-		update	#Items
-		set		StatusMessage = case MapItemChangeType
+		set		Status = 1,
+				StatusMessage = case MapItemChangeType
 									when 'A' then 'Business map created. '
 									when 'U' then 'Business map updated. '
 								end
-		where	Status = 1 and MapItemID > 0 and MapItemID is not null;
+		where	MapItemID > 0;
 
+		update	#Items
+		set		StatusMessage = StatusMessage + 
+								case MapRuleItemChangeType
+									when 'A' then 'Technical map created. '
+									when 'U' then 'Technical map updated. '
+								end
+		where	Status = 1 and MapRuleItemID > 0;
+
+		-- FAILED STATUS
+
+		-- Business failures
 		update	T
-		set		T.StatusMessage = T.StatusMessage +
+		set		T.Status = 0,
+				T.StatusMessage = T.StatusMessage +
 								'Business map could not be created nor updated. ' + 
 								IIF(SrcS.LookupObjectID is null, 'Could not find source subject. ', '') + 
 								IIF(SrcO.LookupObjectID is null, 'Could not find source object. ', '') + 
@@ -321,16 +331,17 @@ begin
 				left join LoadItemColumn SrcO on SrcO.LoadID = @id and SrcO.RowIndex = T.RowIndex and SrcO.ColumnIndex = 8
 				left join LoadItemColumn TgtS on TgtS.LoadID = @id and TgtS.RowIndex = T.RowIndex and TgtS.ColumnIndex = 14
 				left join LoadItemColumn TgtO on TgtO.LoadID = @id and TgtO.RowIndex = T.RowIndex and TgtO.ColumnIndex = 18
-		where	Status = 0 and (MapItemID = 0 or MapItemID is not null);
+		where	MapItemID = 0;
 
-		update	#Items
-		set		StatusMessage = StatusMessage + 
-								case MapRuleItemChangeType
-									when 'A' then 'Technical map created. '
-									when 'U' then 'Technical map updated. '
-								end
-		where	Status = 1 and MapRuleItemID > 0 and MapRuleItemID is not null;
+		update	T
+		set		T.Status = 0,
+				T.StatusMessage = T.StatusMessage +
+								IIF(T.SourceIntersectTypeID is null, 'Could not find source relationship type. ', '') + 
+								IIF(T.TargetIntersectTypeID is null, 'Could not find target relationship type. ', '')
+		from	#Items T
+		where	(T.SourceIntersectTypeID is null OR T.TargetIntersectTypeID is null);
 
+		-- Technical failures
 		update	T
 		set		T.StatusMessage = T.StatusMessage +
 								'Technical map could not be created nor updated. ' +
@@ -339,7 +350,14 @@ begin
 		from	#Items T
 				left join LoadItemColumn src on src.LoadID = @id and src.RowIndex = T.RowIndex and src.ColumnIndex = 10
 				left join LoadItemColumn tgt on tgt.LoadID = @id and tgt.RowIndex = T.RowIndex and tgt.ColumnIndex = 20
-		where	Status = 0 and (MapRuleItemID = 0 or MapRuleItemID is not null) and T.SourceFusionRaw <> '' and T.SourceFusionRaw is not null and T.TargetFusionRaw <> '' and T.TargetFusionRaw is not null;
+		where	MapRuleItemID = 0 and T.SourceFusionRaw <> '' and T.SourceFusionRaw is not null and T.TargetFusionRaw <> '' and T.TargetFusionRaw is not null;
+
+		update	T
+		set		T.StatusMessage = T.StatusMessage +
+								IIF(T.SourceFusionIntersectTypeID is null, 'Could not find source fusion relationship type. ', '') + 
+								IIF(T.TargetFusionIntersectTypeID is null, 'Could not find target fusion relationship type. ', '')
+		from	#Items T
+		where	(T.SourceFusionRaw is not null AND T.SourceFusionIntersectTypeID is null) OR (T.TargetFusionRaw is not null AND T.TargetFusionIntersectTypeID is null);
 
 		-- Now update LoadItems on original Load with status and messages created above
 		update	T
@@ -354,7 +372,7 @@ begin
 							else NULL
 						   end
 		from	LoadItem T
-				inner join #Items S on T.LoadID = @id and S.RowIndex = T.RowIndex	;
+				inner join #Items S on T.LoadID = @id and S.RowIndex = T.RowIndex;
 
 		-- Close out the Load job
 		update	[Load]
@@ -367,3 +385,5 @@ begin
 		ROLLBACK TRANSACTION [Tran1]
 	END CATCH
 end
+GO
+

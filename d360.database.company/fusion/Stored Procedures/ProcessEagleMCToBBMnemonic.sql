@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [fusion].[ProcessEagleMCToBBMnemonic]
+﻿CREATE PROCEDURE [fusion].[ProcessEagleMCToBBMnemonic]
 	@StagingFileID int,
 	@FusionID int
 AS
@@ -7,9 +6,7 @@ BEGIN
 	SET NOCOUNT ON;
 		
 	declare		@eagleStreamID int,
-				@streamToFieldIntersectTypeID int,				
-				@streamSourceIntersectTypeNodeID int,
-				@streamTargetIntersectTypeNodeID int;
+				@streamToFieldIntersectTypeID int;
 
 	declare		@IDList Table(IntersectID int,StageID Int);
 
@@ -32,19 +29,19 @@ BEGIN
 	-- todo pull to separate proc
 	if @eagleStreamID is not null
 	begin
-			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int,IntersectTypeID int, ID int);
+			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int, ID int);
 			
 			-- load the intersect type ids
-			select	@streamToFieldIntersectTypeID = IntersectTypeID,
-					@streamSourceIntersectTypeNodeID = SourceIntersectTypeNodeID,
-					@streamTargetIntersectTypeNodeID = TargetIntersectTypeNodeID
-			from	utility.RelationshipTypes
-			where	SourceObjectType = 'FusionAttributeType' and 
-					SourceObjectID = @MessageStreamFussionAttributeID and 
-					TargetObjectType = 'FusionAttributeType' and 
-					TargetObjectID = @BloombergMnemonicFusionID
+			select	@streamToFieldIntersectTypeID = ID
+			from	[IntersectType]
+			where	Subject = 'FusionAttributeType' and 
+					Object = 'FusionAttributeType' and 
+					(
+						( SubjectID = @MessageStreamFussionAttributeID and ObjectID = @BloombergMnemonicFusionID ) OR
+						( SubjectID = @BloombergMnemonicFusionID and ObjectID = @MessageStreamFussionAttributeID )
+					)
 
-			if @streamToFieldIntersectTypeID is null or @streamSourceIntersectTypeNodeID is null or @streamTargetIntersectTypeNodeID is null
+			if @streamToFieldIntersectTypeID is null
 			begin
 				raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO EAGLE MESSAGE STREAMS', 15, 1);
 				return;
@@ -59,67 +56,35 @@ BEGIN
 				from		fusionAttribute fa
 							inner join [fusion].[StagingFileItem] sfi on (sfi.value = fa.name)				
 							inner join [fusion].[StagingFile] sf on (sfi.stagingfileid = sf.id)
-							left join	(
-										select	srcINode.ObjectID as SourceObjectID,
-												tgtINode.ObjectID as TargetObjectID,
-												1 as hasExisting
-										from	[Intersect] isect 
-												inner join intersectnode srcINode on	(
-																						isect.intersecttypeid = @streamToFieldIntersectTypeID and 
-																						isect.id = srcINode.IntersectID and 
-																						srcINode.IntersectTypeNodeID = @streamSourceIntersectTypeNodeID
-																						)
-												inner join intersectnode tgtINode on	(
-																						isect.intersecttypeid = @streamToFieldIntersectTypeID and 
-																						isect.id = tgtINode.IntersectID and 
-																						tgtINode.IntersectTypeNodeID = @streamTargetIntersectTypeNodeID
-																						)
-										) existing on existing.SourceObjectID = sf.FusionAttributeID and existing.TargetObjectID = fa.ID
+							left join [Intersect] I on	I.IntersectTypeID = @streamToFieldIntersectTypeID and 
+														I.Subject = 'FusionAttribute' and 
+														I.Object ='FusionAttribute' and
+														(
+															( SubjectID = sf.FusionAttributeID and ObjectID = fa.ID ) OR
+															( SubjectID = fa.ID and ObjectID = sf.FusionAttributeID )
+														)
 					where		fa.fusionattributetypeid = @BloombergMnemonicFusionID and 
 								sfi.stagingfileid = @StagingFileID and 
-								existing.hasExisting is null
+								I.ID is null
 					group by	fa.id, sf.FusionAttributeID  -- grouping is used to eliminate duplicate star tag relations
 
-			--insert intersect records and save there id's
-			-- trick is to use merge to keep the sequence id and staging row ids
-			-- http://stackoverflow.com/questions/15614261/using-output-clause-to-insert-value-not-in-inserted
 			MERGE
 				INTO    [Intersect] d
 				USING   (
-							SELECT	sr.IntersectTypeID, 
-									2 as class,
-									sr.ID as srID,
-									'FusionAttribute' as Subject,
-									sr.StreamFusionAttributeID as SubjectID,
-									'FusionAttribute' as Object,
-									sr.FieldFusionAttributeID as ObjectID
-							FROM	@StreamToFieldList sr							
+							SELECT	IntersectTypeID, 
+									ID,
+									StreamFusionAttributeID as SubjectID,
+									FieldFusionAttributeID as ObjectID
+							FROM	@StreamToFieldList							
 						) s
 				ON      (1 = 0)
 				WHEN NOT MATCHED THEN
 				INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
-				VALUES  (s.IntersectTypeID, s.class, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID)
-				OUTPUT  INSERTED.ID, s.srID into @IDList;
-
-			--insert start records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-				select	@streamSourceIntersectTypeNodeID, 
-						il.IntersectID, 
-						'FusionAttribute',
-						sr.StreamFusionAttributeID 
-				from	@StreamToFieldList sr 
-						inner join @IDList il on sr.ID = il.StageID;
-
-			--insert end records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-				select	@streamTargetIntersectTypeNodeID, 
-						il.IntersectID, 
-						'FusionAttribute',
-						sr.FieldFusionAttributeID 
-				from	@StreamToFieldList sr 
-						inner join @IDList il on sr.ID = il.StageID;
+				VALUES  (s.IntersectTypeID, 2, NULL, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID)
+				OUTPUT  INSERTED.ID, s.ID into @IDList;
 										
-			insert into @Intersects select idl.intersectid from @IDList idl;
+			insert into @Intersects 
+				select idl.intersectid from @IDList idl;
 			
 			declare @IntersectCount int
 			select @IntersectCount = count(1) from @Intersects
@@ -130,3 +95,5 @@ BEGIN
 			end
 	end;
 end
+GO
+
