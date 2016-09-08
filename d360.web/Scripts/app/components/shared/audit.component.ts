@@ -68,7 +68,7 @@ export class AuditComponent {
     constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) { }
     
 
-    private getData() {        
+    private getData() {           
         this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
             .then(result => {         
                 this.audits = result.results;

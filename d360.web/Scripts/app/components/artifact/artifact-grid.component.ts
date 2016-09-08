@@ -3,9 +3,8 @@ import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit
 import { LazyLoadEvent } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService} from '../../services/index';
+import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService} from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { SortOrder } from '../../models/enums.model';
 import { Router, ActivatedRoute }       from '@angular/router';
 
 
@@ -32,7 +31,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <div class="col s12">                                                
                         <div class="search-input-container" style="padding-bottom:10px;">
                             <div class="search-input-text-container" style="padding-left:0;">
-                                <input type="text" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="simpleSearchValue" placeholder="Search..." class="search-input-text" autofocus autocomplete="off" />
+                                <input type="text" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." class="search-input-text" autofocus autocomplete="off" />
                             </div>                            
                             <div class="search-input-button-container">
                                 <button type="button" name="action" id="home-search-btn" class="search-input-btn" (click)="doSimpleSearch()">
@@ -111,11 +110,9 @@ export class ArtifactGridComponent implements OnChanges {
 
     totalRecords: number;
     rowsPerPage: number = 20;
-    currentPageNumber: number = 0;
-    sortField: string = "";
-    sortOrder: SortOrder = SortOrder.None;
+    
     searchValue: string = "";
-    simpleSearchValue: string = "";
+    
     searchDelayMilliSeconds: number = 1000;
 
     error: any;
@@ -123,10 +120,7 @@ export class ArtifactGridComponent implements OnChanges {
     columns: GridColumn[] = [];
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
-    filters: GridFilterExpression[] = [];
-    relationships: GridRelationshipFilterExpression;
-    attributes: GridAttributeFilterExpression;
-
+    
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
@@ -137,7 +131,7 @@ export class ArtifactGridComponent implements OnChanges {
 
     theDeleteCallback: Function;
     
-    constructor(private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+    constructor(private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
@@ -145,6 +139,9 @@ export class ArtifactGridComponent implements OnChanges {
         if (this.artifactType != null) {
             this.load();
         }
+
+        //clear out the filters if the artifacttype is different
+        this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);        
     }
 
     load() {
@@ -153,27 +150,27 @@ export class ArtifactGridComponent implements OnChanges {
 
     filterGridData(filterData) {
         if (filterData.filter)
-            this.filters = filterData.filter;
+            this.stateService.artifactTypeFilters.filters = filterData.filter;
         else {
-            this.filters.splice(0, this.filters.length);
+            this.stateService.artifactTypeFilters.filters.splice(0, this.stateService.artifactTypeFilters.filters.length);
         }
 
         if (filterData.relationships) {
-            this.relationships = filterData.relationships;
+            this.stateService.artifactTypeFilters.relationships = filterData.relationships;
         }
         else {
-            this.relationships = null;
+            this.stateService.artifactTypeFilters.relationships = null;
         }
 
         if (filterData.attributes) {
-            this.attributes = filterData.attributes;
+            this.stateService.artifactTypeFilters.attributes = filterData.attributes;
         }
         else {
-            this.attributes = null;
+            this.stateService.artifactTypeFilters.attributes = null;
         }
 
 
-        this.currentPageNumber = 0;
+        this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }
 
@@ -194,7 +191,7 @@ export class ArtifactGridComponent implements OnChanges {
     }
     
     getData() {
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.currentPageNumber, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleSearchValue)
+        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                
@@ -260,10 +257,10 @@ export class ArtifactGridComponent implements OnChanges {
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
         
-        this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.stateService.artifactTypeFilters.sortOrder = event.sortOrder;
+        this.stateService.artifactTypeFilters.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.currentPageNumber = event.first / event.rows;
+        this.stateService.artifactTypeFilters.currentPageNumber = event.first / event.rows;
         this.getData();
     }
 
