@@ -22428,8 +22428,8 @@ ul.hierarchy :last-child {
 }
 .root-tile .TileTools {
   position: absolute;
-  right: -5px;
-  top: -5px;
+  right: 5px;
+  top: -10px;
   z-index: 900;
   color: #5c5e60;
   font-size: 15px;
@@ -22459,7 +22459,7 @@ ul.hierarchy :last-child {
 .tile .header .TileTools,
 .tile header .TileTools {
   position: absolute;
-  right: -5px;
+  right: 5px;
   top: -5px;
   z-index: 900;
   color: #5c5e60;

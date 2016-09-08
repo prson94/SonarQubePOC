@@ -14,20 +14,20 @@ import { MessagesService, PredicatesService  } from '../../services/index';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                     <p-column field="Inverse" header="Inverse" [sortable]="true" [filter]="true"></p-column>
                     <p-column field="Type" header="Type" [sortable]="true" [filter]="true"></p-column>                
                     <p-column [style]="{width:'40px'}">
                         <template let-predicate="rowData" pTemplate type="body">
-                            <div class="RowTools">
+                            <div class="RowTools" *ngIf="!predicate.IsSystem">
                                 <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                             </div>
                         </template>
                     </p-column>                            
                     <p-column  [style]="{width:'40px'}">
                         <template let-predicate="rowData" pTemplate type="body">
-                            <div class="RowTools">                                
+                            <div class="RowTools" *ngIf="!predicate.IsUsed && !predicate.IsSystem">                                
                                 <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                             </div>
                         </template>
@@ -111,6 +111,11 @@ export class PredicatesTile {
                 this.selected = event.item;
                 this.showEditor = false;
             });
+    }
+
+    private showPredicateEditor() {
+        if (this.selected.IsSystem) return; //dont allow edit of system predicates
+        this.showEditor = true;
     }
 }
 
