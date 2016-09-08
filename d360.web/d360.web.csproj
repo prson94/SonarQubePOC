@@ -853,10 +853,6 @@
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
-    <Content Include="Scripts\app\app.component.js" />
-    <Content Include="Scripts\app\app.js" />
-    <Content Include="Scripts\app\app.module.js" />
-    <Content Include="Scripts\app\app.routes.js" />
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
@@ -873,7 +869,6 @@
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
-    <Content Include="Scripts\app\main.js" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
