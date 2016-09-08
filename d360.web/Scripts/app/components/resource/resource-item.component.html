@@ -1,37 +1,77 @@
-﻿<div class="row" *ngIf="!isLoading">
-    <div class="col s12 m12 l7">
-        <div class="tile tile-detail">
-            <div class="row">
-                <div class="col l3 m3 s12">
-                    <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
+﻿<div class="row" *ngIf="!isLoading" [ngSwitch]="pageMode">
+    <div *ngSwitchDefault>
+        <div class="col s12 m12 l7">
+            <div class="tile tile-detail">
+                <div class="row">
+                    <header>
+                        <d3s-action-bar *ngIf="isMe" [items]="actions" (onClick)="action($event)" alignRight="true"></d3s-action-bar>
+                    </header>
+                    <div class="col l3 m3 s12">
+                        <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
+                    </div>
+                    <div class="col l2 m2 s12">
+                        <d3s-object-followers [followerCount]="statistics?.FollowerCount" (click)="pageMode = PageMode.Followers"></d3s-object-followers>
+                    </div>
+                    <div class="col l2 m2 s12">
+                        <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="CommentLast" (click)="pageMode = PageMode.Board"></d3s-object-board>
+                    </div>
+                    <div class="col l5 m5 s12">
+                        <d3s-object-health [objectType]="'Resource'" [objectID]="resourceId" [score]="statistics?.Score" (click)="pageMode = PageMode.Governance"></d3s-object-health>
+                    </div>
                 </div>
-                <div class="col l2 m2 s12">
-                    <d3s-object-followers [followerCount]="statistics?.FollowerCount" (click)="pageMode = PageMode.Followers"></d3s-object-followers>
-                </div>
-                <div class="col l2 m2 s12">
-                    <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="CommentLast" (click)="pageMode = PageMode.Board"></d3s-object-board>
-                </div>
-                <div class="col l5 m5 s12">
-                    <d3s-object-health [objectType]="'Resource'" [objectID]="resourceId" [score]="statistics?.Score" (click)="pageMode = PageMode.Governance"></d3s-object-health>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div class="tile tile-detail" style="padding-bottom:0">
-                        <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail" style="padding-bottom:0">
+                            <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col s12 m12 l5">
+            <div class="tile tile-detail">
+                <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
+                <d3s-assignments-tile *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
+            </div>
+        </div>
     </div>
-    <div class="col s12 m12 l5">
-        <div class="tile tile-detail">
-            <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
-            <d3s-assignments-tile *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
+    <div *ngSwitchCase="PageMode.EditingInfo">
+        <div class="col s12">
+            <div class="tile tile-detail">
+                <d3s-dynamic-editor
+                                    objectType="resourceself"
+                                    title="Your Bio"
+                                    objectID="-1"
+                                    hasCloseButton="true"
+                                    [selection]="resource"
+                                    (closeClick)="pageMode = PageMode.Default;"
+                                    (saveClick)="save($event)">
+                </d3s-dynamic-editor>
+            </div>
+        </div>
+    </div>
+    <div *ngSwitchCase="PageMode.EditingPassword">
+        <div class="col s12">
+            <div class="tile tile-detail">
+                <d3s-dynamic-editor objectType="resourceselfpassword"
+                                    objectID="-1"
+                                    title="Your Password"
+                                    hasCloseButton="true"
+                                    [selection]="resource"
+                                    (closeClick)="pageMode = PageMode.Default;"
+                                    (saveClick)="savePass($event)">
+                </d3s-dynamic-editor>
+            </div>
+        </div>
+    </div>
+    <div *ngSwitchCase="PageMode.ViewingAPICredentials">
+        <div class="col s12">
+            <div class="tile tile-detail">
+                <d3s-resource-api hasCloseButton="true" (onClose)="pageMode = PageMode.Default"></d3s-resource-api>
+            </div>
         </div>
     </div>
 </div>
-
 <div *ngIf="!isLoading" [ngSwitch]="pageMode" class="row">
     <div *ngSwitchDefault class="col s12">
         <div class="tile tile-detail">

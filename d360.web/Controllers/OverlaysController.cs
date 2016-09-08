@@ -32,6 +32,23 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        public JsonNetResult MyApiCredentialsNg()
+        {
+            var resource = Community.GetById<Resource>(Community.CurrentResourceID);
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    PublicKey = resource.APIPublicKey,
+                    PrivateKey = resource.APIPrivateKey,
+                    Token = resource.ApiReadOnlyAccessToken
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+
+            };
+        }
+
         public ActionResult ArtifactListMetricsDashboard(int id)
         {
             var model = Company.GetById<ArtifactType>(id);

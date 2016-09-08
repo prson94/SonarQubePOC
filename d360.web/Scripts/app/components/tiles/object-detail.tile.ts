@@ -51,7 +51,6 @@ export class ObjectDetailTile implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
-                    //console.log(data);
                     this.rows = data.rows;
                     this.categories = [];
                     
@@ -67,8 +66,6 @@ export class ObjectDetailTile implements OnChanges {
                             if (f.FieldName == this.TaxonomyTypeNodeName) {
                                 f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
-
-                            //f.FieldDescription = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
 
                         });
                         r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
@@ -96,13 +93,11 @@ export class ObjectDetailTile implements OnChanges {
                             }
                         }
                     }
-                    console.log(this.rows);
+                    //console.log(this.rows);
                     this.rows = displayRows;
                     this.loadCategory();
                     this.isLoading = false;
 
-                    //console.log(data);
-                    //console.log(this.categories);
                     
                 });
         }

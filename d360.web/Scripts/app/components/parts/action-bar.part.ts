@@ -24,21 +24,17 @@ import { MenuPartItem } from './menu.part';
             right:10px;
         }
         .action-bar-item {
-            font-size: 1.3rem;
             display: inline-block;
             margin-left: 10px;
             cursor: pointer;
-            transition: all .25s ease-in-out;
-            transform: scale(1);
         }
 
         .action-bar-item:hover {
-            transform: scale(1.25);    
+            color: #aaa;
         }
 
         .action-bar-item.disabled {
             cursor: default;
-            transform: scale(1);
             color: #666;
         }
         .action-bar.disabled:hover {

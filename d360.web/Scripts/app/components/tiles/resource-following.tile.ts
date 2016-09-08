@@ -41,9 +41,11 @@ declare var CurrentResourceID;
     template: `
                 <header *ngIf="isMe">
                     Items You Follow
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>    
                 </header>
                 <header *ngIf="!isMe">
                     Items {{resource?.FirstName}} Follows
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>      
                 </header>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
@@ -108,5 +110,9 @@ export class ResourceFollowingTile implements OnInit, OnChanges {
                 else
                     this.isLoading = false;
             });
+    }
+
+    export() {
+        this.resourcesService.exportFollowingByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID);
     }
 }

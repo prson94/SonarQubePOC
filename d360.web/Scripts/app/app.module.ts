@@ -155,6 +155,7 @@ import {
 import {
     ResourceComponent,
     ResourceItemComponent,
+    ResourceApiComponent,
 } from './components/resource/index';
 
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
@@ -298,6 +299,7 @@ import {
         RelationshipsTile,
         ReportItemsTile,
         ReportLayoutTile,
+        ResourceApiComponent,
         ResourceComponent,
         ResourceFollowingGridTile,
         ResourceFollowingTile,

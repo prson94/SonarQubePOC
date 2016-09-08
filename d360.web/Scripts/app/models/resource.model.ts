@@ -12,6 +12,12 @@
     }
 }
 
+export class ResourceAPICredentials {
+    PublicKey: string;
+    PrivateKey: string;
+    Token: string;
+}
+
 export class CountObject {
     Count: number;
     IconBackColor: string;

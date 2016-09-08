@@ -2,7 +2,7 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService } from '../../services/index';
+import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService, UriBasedService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Resource } from '../../models/resource.model';
@@ -16,7 +16,7 @@ declare var CurrentResourceID;
 @Component({
     selector: 'd3s-resource-item',
     templateUrl: 'scripts/app/components/resource/resource-item.component.html',
-    providers: [ ResourcesService, ObjectStatisticsService ]
+    providers: [ResourcesService, ObjectStatisticsService, UriBasedService ]
 })
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -28,18 +28,43 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
     PageMode = PageMode;
+    private actions: any[] = [];
 
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private route: ActivatedRoute,
         private resourcesService: ResourcesService,
-        private statisticsService: ObjectStatisticsService) {
+        private statisticsService: ObjectStatisticsService,
+        private uriBasedService: UriBasedService) {
         super();
     }
 
     ngOnInit() {
         this.isLoading = true;
+
+        this.actions = [];
+
+        this.actions.push({
+            icon: 'pencil',
+            title: 'edit info',
+            key: 'edit'
+        });
+
+        this.actions.push({
+            icon: 'key',
+            title: 'view api credentials',
+            key: 'api'
+        });
+
+        this.actions.push({
+            icon: 'asterisk',
+            title: 'change password',
+            key: 'password'
+        });
+
+
+
         this.sub = this.route.params.subscribe(params => {
             let resourceId = +params['resourceId'];
             this.resourceId = resourceId;
@@ -83,6 +108,43 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.selectedWorkflow = e.workflowType;
         this.pageMode = PageMode.Assignment;
     }
+
+    action(e: any) {
+        switch (e.key) {
+            case 'edit':
+                this.pageMode = PageMode.EditingInfo;
+                break;
+            case 'password':
+                this.pageMode = PageMode.EditingPassword;
+                break;
+            case 'api':
+                this.pageMode = PageMode.ViewingAPICredentials;
+                break;
+            default:
+                this.pageMode = PageMode.Default;
+                break;
+        }
+    }
+
+    save(e: any) {
+        let values = e.item;
+        values.ID = -1;
+
+        this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceself", values)
+            .then(result => {
+                this.pageMode = PageMode.Default;
+            });
+    }
+
+    savePass(e: any) {
+        let values = e.item;
+        values.ID = -1;
+
+        this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceselfpassword", values)
+            .then(result => {
+                this.pageMode = PageMode.Default;
+            });
+    }
 };
 
 enum PageMode {
@@ -90,5 +152,8 @@ enum PageMode {
     Board,
     Followers,
     Governance,
-    Assignment
+    Assignment,
+    EditingInfo,
+    EditingPassword,
+    ViewingAPICredentials
 }

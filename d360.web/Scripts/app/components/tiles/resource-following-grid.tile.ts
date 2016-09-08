@@ -14,7 +14,11 @@ import { Router } from '@angular/router';
 </div>
 <div *ngIf="!isLoading">
    <p-dataTable [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
-        <p-column field="Name" header="Name"></p-column>
+        <p-column header="Name">
+            <template let-row="rowData" pTemplate type="body">
+                <d3s-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID" tooltipType="preview">{{row.Name}}</d3s-tooltip>
+            </template>
+        </p-column>
         <p-column header="Current Score">
             <template let-row="rowData" pTemplate type="body">
                 <div>{{row.CurrentScore | scoreDisplay }}</div>
@@ -32,7 +36,7 @@ export class ResourceFollowingGridTile implements OnInit, OnChanges {
     private items: FollowingDetailForResource[] = new Array<FollowingDetailForResource>();
 
     constructor(private resourcesService: ResourcesService, private router: Router) {
-
+        
     }
 
     ngOnInit() { }

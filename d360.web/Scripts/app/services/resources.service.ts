@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource } from '../models/resource.model';
+import { Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials } from '../models/resource.model';
 
 @Injectable()
 export class ResourcesService extends BaseService {
@@ -25,7 +25,6 @@ export class ResourcesService extends BaseService {
     }
 
     getResponsibilityBreakdownByResource(id: number): Promise<CountObject[]> {
-        console.log(id);
         return this.http.get(`tiles/ResponsibilityBreakdownByResource?id=${id}`)
             .toPromise()
             .then(response => <CountObject[]>response.json())
@@ -51,6 +50,21 @@ export class ResourcesService extends BaseService {
         return this.http.get(`queries/followingbyresourcebytype?resourceID=${resourceID}&type=${type}&id=${id}`)
             .toPromise()
             .then(response => <FollowingDetailForResource[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    exportFollowingByResourceByType(resourceID: number, type: string, id: number) {
+        window.location.assign(`/resources/${resourceID}/following/${type}/${id}.xlsx`);      
+    }
+
+    exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number) {
+        window.location.assign(`/resources/${resourceID}/ownership/${type}/${id}.xlsx`);   
+    }
+
+    getMyCredentials(): Promise<ResourceAPICredentials> {
+        return this.http.get('overlays/myapicredentialsng')
+            .toPromise()
+            .then(response => <ResourceAPICredentials>response.json())
             .catch(err => this.handleError(err));
     }
 

@@ -1429,6 +1429,7 @@
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\index.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />

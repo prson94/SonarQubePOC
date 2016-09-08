@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-dynamic-editor',
     template: ` 
-                <header>{{action}} {{title}}</header>
+                <header>{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
                 <div class="row">                    
                     <form (ngSubmit)="onSubmit()" [formGroup]="form">
                         
@@ -43,6 +43,7 @@ export class DynamicEditorComponent {
     @Input() editParams: any[] = [];
     @Input() targetType: string;
     @Input() targetTypeID: number;
+    @Input() hasCloseButton = false;
     
 
     @Output() closeClick = new EventEmitter();

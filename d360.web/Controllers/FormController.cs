@@ -369,6 +369,10 @@ namespace d360.web.Controllers
                     return Relationship_EditFields(ID);
                 case "ATTRIBUTE":
                     return Attribute_EditFields(ID);
+                case "RESOURCESELF":
+                    return Resource_EditMyInfoFields();
+                case "RESOURCESELFPASSWORD":
+                    return Resource_ChangeMyPasswordFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -460,6 +464,10 @@ namespace d360.web.Controllers
                     return EditSurveyType(form);
                 case "INTERSECT":
                     return EditRelationship(form);
+                case "RESOURCESELF":
+                    return EditMyInfo(form);
+                case "RESOURCESELFPASSWORD":
+                    return ChangeMyPassword(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
