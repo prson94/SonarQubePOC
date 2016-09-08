@@ -72,6 +72,10 @@ namespace d360.model
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
+            
+            //output queries in debug mode to console
+            if (System.Diagnostics.Debugger.IsAttached)
+                this.Database.Log = Console.Write;
         }
 
         #endregion
@@ -1158,6 +1162,7 @@ order by	Date desc",
                     case "Comments":
                         model.CommentCount = i.Value;
                         model.CommentUrl = i.Url;
+                        model.CommentLast = i.MostRecent;
                         break;
                     case "Followers":
                         model.FollowerCount = i.Value;
@@ -1170,6 +1175,7 @@ order by	Date desc",
                     case "Issues":
                         model.IssueCount = i.Value;
                         model.IssueUrl = i.Url;
+                        model.IssueLast = i.MostRecent;
                         break;
                     default:
                         model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), Url = i.Url });
