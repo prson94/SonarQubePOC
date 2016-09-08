@@ -1093,25 +1093,8 @@ where   h.ID <> @t order by h.[Level] desc;
                     #endregion
                 case SystemObjects.DomainType:
                     #region Actions
-                    if (context != "root")
-                    {
-                        if (hasPermission(permissions, Claim.Create, ClaimObject.Root))
-                        {
-                            //addItem = new PageActionItem { Context = "nullform", Icon = Resources.Actions.Add_Icon, Uri = "#" };
-                            list.Add(new PageActionItem { Context = ContextList.DomainType, Icon = Resources.Actions.Add_Icon, Uri = "/form/domains/add" });
-
-                            //if (id > 0)
-                            //{
-                            //    if (hasPermission(permissions, Claim.Create, ClaimObject.Governance))
-                            //        loadResponsiblityTypeAddMenu(type, id, addItem, true);
-                            //}
-                            
-                            //list.Add(addItem);
-                        }
-                    }
                     following = Company.IsUserFollowing(type, id, null);
                     list.Add(new PageActionItem { Context = "command", CommandName = "follow", Icon = following ? Resources.Actions.Unfollow_Icon : Resources.Actions.Follow_Icon, Title = following ? Resources.Actions.Unfollow : Resources.Actions.Follow, Uri = $"/resources/UpdateFollowStatus?type={type}&id={id}" });
-
                     list.Add(new PageActionItem { Context = "Audit", Icon = Resources.Actions.Audit_Icon, Title = Resources.Actions.Audit, Uri = $"/overlays/{type.ToString()}/{id}/audit" });
                     break;
                     #endregion
@@ -2134,10 +2117,10 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.Filter<IntersectType>(x=>x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object)).Select(x=>new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x=>x.Name);
         }
 
-        [Route("fusion/rule/lineage/predicates")]
-        public IQueryable<Predicate> GetPredicateTypes()
+        [Route("fusion/rule/lineage/roles")]
+        public IQueryable<IntersectRole> GetIntersectRoles()
         {
-            return Company.Predicates;            
+            return Company.IntersectRoles;            
         }
 
         [Route("fusion/rule/relate/objectTypes")]
@@ -2192,11 +2175,11 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.GetFusionOwnerOptions();// (intersectTypeID);
         }
 
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership")]
-        public IQueryable<FusionAttributeOwnerDetail> GetFusionAttributeOwnerDetails(int typeID, int fusionID)
-        {
-            return Company.Filter<FusionAttributeOwnerDetail>(i => i.FusionID == fusionID);
-        }
+        //[Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership")]
+        //public IQueryable<FusionAttributeOwnerDetail> GetFusionAttributeOwnerDetails(int typeID, int fusionID)
+        //{
+        //    return Company.Filter<FusionAttributeOwnerDetail>(i => i.FusionID == fusionID);
+        //}
 
         [Route("fusion/rule/{ruleID:int}/steps/{ruleStepID:int}")]
         public IEnumerable<dynamic> GetRuleSteps(int ruleID, int ruleStepID)
@@ -2214,11 +2197,11 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.GetFusionPromotionOptions();
         }
 
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotion")]
-        public IQueryable<FusionAttributePromotionDetail> GetFusionAttributePromotionDetails(int typeID, int fusionID)
-        {
-            return Company.Filter<FusionAttributePromotionDetail>(i => i.FusionID == fusionID);
-        }
+        //[Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotion")]
+        //public IQueryable<FusionAttributePromotionDetail> GetFusionAttributePromotionDetails(int typeID, int fusionID)
+        //{
+        //    return Company.Filter<FusionAttributePromotionDetail>(i => i.FusionID == fusionID);
+        //}
 
         [Route("fusion/{id:int}/OwnershipRuleItems")]
         public HttpResponseMessage GetFusionAttributeOwnershipRuleItems(int id)
@@ -3312,6 +3295,347 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Values = results,//values,
+                Columns = columns,
+                Fields = gridFields
+            });
+        }
+
+        #endregion
+
+        #region Complex Lookup Fields
+
+        private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+
+            var ft = Company.GetById<FieldType>(fieldTypeID);
+            var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
+
+            if (ft != null && lookup != null)
+            {
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Column = 1,
+                                        Name = ft.FriendlyName,
+                                        FieldDescription = ft.DisplayDescription,
+                                        FieldName = ft.Name,
+                                        HideHeader = lookup.HideHeader,
+                                        HideFooter = lookup.HideFooter,
+                                        LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values"
+                                    }
+                                },
+                    Category = ft.Category
+                });
+            }
+
+            return list;
+        }
+
+        private void loadComplexLookupColumns(List<FieldType> fieldTypes, List<FieldTypeLookupDefinitionField> fields, FieldTypeLookupDefinitionRelation join, string intersectIDColumn, string objColumn, string objIDColumn, int position)
+        {
+            fields.ForEach(i => {
+                var column = "";
+                var columnName = "";
+                FieldType ft = null;
+
+                if (i.Object == "IntersectType" && join.IntersectTypeID == i.ObjectID)
+                {
+                    if (i.FieldTypeID > 0)
+                    {
+                        ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
+                        columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
+                        column = (ft != null) ? 
+                            $"case F{position}.[Type] when 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end as [{columnName}]" :
+                            $"F{position}.FormattedValue as {columnName}";
+                        join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = 'Intersect' and F{position}.ObjectID = {intersectIDColumn}"; 
+                    }
+                    else
+                    {
+                        column = $"A{position}.{i.FieldTypeName} as [{i.OverrideDisplayName ?? i.FieldTypeName}]";
+                    }
+                }
+                else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
+                {
+                    if (i.FieldTypeID > 0)
+                    {
+                        ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
+                        columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
+                        column = (ft != null) ?
+                            $"case F{position}.[Type] when 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end as [{columnName}]" :
+                            $"F{position}.FormattedValue as {columnName}";
+                        join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = {objColumn} and F{position}.ObjectID = {objIDColumn}";
+                    }
+                    else
+                    {
+                        column = $"A{position}.{i.FieldTypeName} as {i.OverrideDisplayName ?? i.FieldTypeName}";
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(column))
+                {
+                    join.ColumnStatement += ((string.IsNullOrEmpty(join.ColumnStatement)) ? "" : ", ") + column;
+                }
+            });
+        }
+
+        [Route("ComplexLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
+        public HttpResponseMessage GetComplexLookupGridField(string type, int id, int fieldTypeID)
+        {
+            var gridFields = new List<GridField>();
+            var columns = new List<GridColumn>();
+            IEnumerable<dynamic> results = null;
+
+            try
+            {
+                var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
+                if (lookup == null) throw new Exception("Invalid complex lookup field is specified.");
+
+                var def = lookup.ParseDefinition();
+                var fields = def.Fields.ToList();
+
+                var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
+                var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+
+                type = type.CleanForSql();
+
+                for (var i = 0; i < def.Relations.Count; i++)
+                {
+                    var join = def.Relations[i];
+                    var currentObj = join.Object.Replace("Type", "");
+                    var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
+                    var objColumn = "";
+                    var objIDColumn = "";
+
+                    switch (join.RelationType)
+                    {
+                        case ComplexLookupRelationType.StandardRelationhip:
+                            #region
+                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                            if (i == 0)
+                            {
+                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            }
+                            else
+                            {
+                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                            }
+                            break;
+                            #endregion
+                        case ComplexLookupRelationType.ChildRelationship:
+                            #region
+                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
+                            join.JoinStatement += $" inner join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                            objColumn = $"'{join.Object.Replace("Type", "")}'";
+                            objIDColumn = $"I{i}.ObjectID";
+                            if (i == 0)
+                                join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                            break;
+                            #endregion
+                        case ComplexLookupRelationType.ChildItem:
+                            #region
+                            switch (join.Object)
+                            {
+                                case "ArtifactType":
+                                    join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                    break;
+                                case "FusionAttributeType":
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    break;
+                            }
+                            objColumn = $"'{currentObj}'";
+                            objIDColumn = $"I{i}.ID";
+                            if (i == 0)
+                                join.WhereStatement = $"I{i}.ID = {id}";
+                            break;
+                            #endregion
+                        case ComplexLookupRelationType.ParentItem:
+                            #region
+                            switch (join.Object)
+                            {
+                                case "ArtifactType":
+                                    join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                    break;
+                                case "FusionAttributeType":
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    break;
+                            }
+                            objColumn = $"'{currentObj}'";
+                            objIDColumn = $"I{i}.ID";
+                            if (i == 0)
+                                join.WhereStatement = $"I{i}.ID = {id}";
+                            break;
+                            #endregion
+                    }
+
+                    loadComplexLookupColumns(fieldTypes, fields, join, $"I{i}.ID", objColumn, objIDColumn, i);
+                }
+
+
+
+
+                var sqlQuery = "select " + string.Join(", ", def.Relations.Where(i => !string.IsNullOrEmpty(i.ColumnStatement)).Select(i => i.ColumnStatement)) + " ";
+                sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement)) + " ";
+
+                var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));
+                if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
+                sqlQuery += whereQuery + " ";
+
+                var orderQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.OrderByStatement)).Select(i => i.OrderByStatement));
+                if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
+                sqlQuery += orderQuery;
+
+                #region Load Columns/Fields
+
+                if (fields.Any(i => i.FieldTypeName == "Name" && i.DisplayOrder > 0))
+                {
+                    gridFields.Add(new GridField { name = "Name", type = "string" });
+                    columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
+                }
+                if (fields.Any(i => i.FieldTypeName == "TextPath" && i.DisplayOrder > 0))
+                {
+                    gridFields.Add(new GridField { name = "TextPath", type = "string" });
+                    columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
+                }
+                if (fields.Any(i => i.FieldTypeName == "Description" && i.DisplayOrder > 0))
+                {
+                    if (!gridFields.Any(i => i.name == "Description") && !columns.Any(i => i.text == "Description"))
+                    {
+                        gridFields.Add(new GridField { name = "Description", type = "string" });
+                        columns.Add(new GridColumn { text = "Description", datafield = "Description", width = "auto" });
+                    }
+                }
+                if (fieldTypeIDs != null)
+                {
+                    bool descriptionFieldAlreadyPresent = false;
+
+
+                    var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
+                    foreach (var fieldType in fieldTypeInfo)
+                    {
+                        var displayField = fields.Single(i => i.FieldTypeID == fieldType.ID);
+                        if (displayField.DisplayOrder > 0)
+                        {
+                            var cellsformat = "";
+                            var columntype = GridColumn.COLUMN_TYPE_STRING;
+                            var gridfieldType = "string";
+                            switch (fieldType.Type)
+                            {
+                                case "Boolean":
+                                    columntype = GridColumn.COLUMN_TYPE_CHECKBOX;
+                                    gridfieldType = "bool";
+                                    break;
+                                case "Date":
+                                    cellsformat = "MM/dd/yyyy";
+                                    columntype = GridColumn.COLUMN_TYPE_DATE;
+                                    gridfieldType = "date";
+                                    break;
+                                case "DateTime":
+                                    cellsformat = "MM/dd/yyyy hh:mm tt";
+                                    columntype = GridColumn.COLUMN_TYPE_DATE;
+                                    gridfieldType = "date";
+                                    break;
+                                case "Decimal":
+                                    cellsformat = "d";
+                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
+                                    gridfieldType = "number";
+                                    break;
+                                case "Number":
+                                    cellsformat = "n";
+                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
+                                    gridfieldType = "number";
+                                    break;
+                            }
+
+                            if (!gridFields.Any(i => i.name == fieldType.Name) && !columns.Any(i => i.datafield == fieldType.Name))
+                            {
+                                gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
+                                var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
+                                if (!string.IsNullOrEmpty(cellsformat))
+                                {
+                                    gc.cellsformat = cellsformat;
+                                }
+                                columns.Add(gc);
+                            }
+
+                            if (fieldType.Name == "Description")
+                            {
+                                descriptionFieldAlreadyPresent = true;
+                            }
+                        }
+                    }
+                }
+
+                gridFields.Add(new GridField { name = "Object", type = "string" });
+                gridFields.Add(new GridField { name = "Url", type = "string" });
+                gridFields.Add(new GridField { name = "ID", type = "number" });
+
+                //foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
+                //{
+                //    sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
+                //    if (df.FieldTypeID > 0)
+                //    {
+                //        sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                //    }
+                //    else
+                //    {
+                //        sqlWhere += $" {columnPrefix}.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
+                //    }
+                //}
+
+                //foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
+                //{
+                //    sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
+                //    if (df.FieldTypeID > 0)
+                //    {
+                //        var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
+                //        if (fieldTypeInfo != null)
+                //        {
+                //            switch (fieldTypeInfo.Type)
+                //            {
+                //                case "Date":
+                //                case "DateTime":
+                //                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as datetime) asc";
+                //                    break;
+                //                case "Decimal":
+                //                case "Number":
+                //                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as decimal) asc";
+                //                    break;
+                //                default:
+                //                    sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                //                    break;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
+                //        }
+                //    }
+                //    else
+                //    {
+                //        sqlOrderBy += $" {columnPrefix}.[{df.FieldTypeName}] asc";
+                //    }
+                //}
+
+                #endregion
+
+                results = Company.Query<dynamic>(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                Values = results,
                 Columns = columns,
                 Fields = gridFields
             });
@@ -6691,6 +7015,5 @@ SELECT (
         }
 
         #endregion
-
     }
 }

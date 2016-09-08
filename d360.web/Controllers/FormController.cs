@@ -183,29 +183,29 @@ namespace d360.web.Controllers
             return list;
         }
 
-        List<SelectListItem> convertToEditableFieldItems(List<FieldTypeLookupValue> items, string selectedValue = "", bool appendType = true)
-        {
-            return items
-                .Select(i => new SelectListItem
-                {
-                    Text = i.Name,
-                    Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
-                    Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID))
-                })
-                .ToList();
-        }
+        //List<SelectListItem> convertToEditableFieldItems(List<FieldTypeLookupValue> items, string selectedValue = "", bool appendType = true)
+        //{
+        //    return items
+        //        .Select(i => new SelectListItem
+        //        {
+        //            Text = i.Name,
+        //            Value = string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID),
+        //            Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.LookupObjectType, i.LookupObjectID))
+        //        })
+        //        .ToList();
+        //}
 
-        List<SelectListItem> convertToEditableFieldItems(List<FieldNameByObjectType> items, string selectedValue = "")
-        {
-            return items
-                .Select(i => new SelectListItem
-                {
-                    Text = string.Format("{0}", i.Name),
-                    Value = string.Format("{0}|{1}", i.Name, i.IsCustomField),
-                    Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.Name, i.IsCustomField))
-                })
-                .ToList();
-        }
+        //List<SelectListItem> convertToEditableFieldItems(List<FieldNameByObjectType> items, string selectedValue = "")
+        //{
+        //    return items
+        //        .Select(i => new SelectListItem
+        //        {
+        //            Text = string.Format("{0}", i.Name),
+        //            Value = string.Format("{0}|{1}", i.Name, i.IsCustomField),
+        //            Selected = string.IsNullOrEmpty(selectedValue) ? false : selectedValue.Equals(string.Format("{0}|{1}", i.Name, i.IsCustomField))
+        //        })
+        //        .ToList();
+        //}
         
         #endregion
 
@@ -656,7 +656,7 @@ namespace d360.web.Controllers
                 pluralize = null;
             }
 
-            bool isPromoted = Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
+            bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
 
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, ReadOnly = isPromoted, FieldName = "Name", Name = "Name", FieldDescription = ((isPromoted) ? "Artifact promoted via Fusion.  No changes allowed to the Name." : ""), FieldType = DataType.Text.ToString(), Value = Server.HtmlDecode(a.Name), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "TaxonomyTypeID", Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldDescription = Resources.FieldInfo.TaxonomyType_Description, FieldType = DataType.Lookup.ToString(), Value = a.TaxonomyTypeID.ToString(), Items = Company.Table<TaxonomyType>().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList() });
@@ -906,7 +906,7 @@ namespace d360.web.Controllers
                 if (model == null) throw new NotFoundException("artifact");
 
                 var sType = SystemObjects.Artifact.ToString();
-                bool isPromoted = Company.Filter<FusionAttributePromotion>(i => i.ObjectType == sType && i.ObjectID == id).Any();
+                bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == sType && i.ObjectID == id).Any();
 
                 var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == model.ArtifactTypeID && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).Any();
 
@@ -6348,297 +6348,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #endregion
 
-        #region FusionOwnerRule
-
-        #region Field Generation
-
-        /// <param name="id">FusionAttributeOwnerRuleID</param>
-        public JsonResult FusionOwnerRule_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/owners/add")]
-        public ActionResult AddFusionOwnerRule(int typeID, int fusionID)
-        {
-            //if (!Company.HasPermission(SystemObjects.AttributeType, 0, Claim.Create))
-            //    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var model = new FusionOwnerRuleEditorModel()
-            {
-                FusionID = fusionID,
-                FusionTypeID = typeID,
-                FormUri = "/Form/AddFusionOwnerRule",
-                FormMethod = "POST",
-                FormName = "Add Owner Rule",
-                Rule = new FusionAttributeOwnerRule { FusionID = fusionID },
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
-            };
-            return PartialView("FusionAttributeOwnerRuleEditForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionOwnerRule(FormCollection form)//(FusionOwnerEditListModel model)
-        {
-            try
-            {
-                var item = new FusionAttributeOwnerRule
-                {
-                    RelationshipOwnerObjectType = "Artifact",
-                    RelationshipOwnerObjectID = parseIntField(form, "FusionOwnerOptionsDropdown"),
-                    FusionID = parseIntField(form, "FusionID"),
-                    ObjectType = "FusionAttributeType",
-                    ObjectID = parseIntField(form, "FusionAttributeTypeID"),
-                };
-                Company.Add<FusionAttributeOwnerRule>(item);
-
-                return jsonSuccess("Items assigned to owner", "0", ContextList.FusionOwnerRule, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult DeleteFusionOwnerRule(int id)
-        {
-            var model = new EditableForm
-            {
-                Context = ContextList.FusionOwnerRule,
-                FieldUri = string.Format("/form/FusionOwnerRule_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this ownership rule"),
-                FormUri = "/form/DeleteFusionOwnerRule",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionOwnerRule(FormCollection form)//(int typeID, int id)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("owner");
-
-                var model = Company.GetById<FusionAttributeOwnerRule>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("owner");
-
-                Company.Delete<FusionAttributeOwnerRule>(model);
-                return jsonSuccess("Item successfully removed.", model.ID.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public ActionResult EditFusionOwnerRule(int id)
-        {
-            var a = Company.GetById<FusionAttributeOwnerRule>(id, i => i.Fusion);
-            if (a == null) return HttpNotFound();
-
-            var model = new FusionOwnerRuleEditorModel
-            {
-                FusionID = a.FusionID,
-                FusionTypeID = 0,
-                FormUri = "/Form/EditFusionOwnerRule",
-                FormMethod = "PUT",
-                FormName = "Update Ownership Rule",
-                Rule = a,
-                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList()
-            };
-
-            return PartialView("FusionAttributeOwnerRuleEditForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditFusionOwnerRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("promotion rule");
-
-                var model = Company.GetById<FusionAttributePromotionRule>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("promotion rule");
-
-                var promotionObject = form["PrOptionsDropdown"].Split('|');
-                var promotionParent = form["PrOptionsParentDropdown"];
-
-                model.Enabled = parseBooleanField(form, "Enabled");
-                model.ObjectID = parseIntField(form, "FusionAttributeTypeID");
-                model.PromotionObjectType = promotionObject[0];
-                model.PromotionObjectID = int.Parse(promotionObject[1]);
-
-                if (!string.IsNullOrEmpty(promotionParent))
-                {
-                    model.PromotionParentObjectType = model.PromotionObjectType.Replace("Type", "");
-                    model.PromotionParentObjectID = int.Parse(promotionParent);
-                }
-
-                Company.Update<FusionAttributePromotionRule>(model);
-
-                return jsonSuccess("Promotion rule successfully updated.", model.ID.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionOwnerRuleItem
-
-        #region Field Generation
-
-        public JsonResult FusionAttributeOwnerRuleItem_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        public ActionResult AddFusionAttributeOwnerRuleItem(int id)
-        {
-            var rule = Company.GetById<FusionAttributeOwnerRule>(id, i => i.Fusion);
-
-            if (rule == null)
-                return jsonException("Rule not found", HttpStatusCode.NotFound);
-
-            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionOwnerRuleItemEditorModel
-            {
-                FormUri = "/Form/AddFusionAttributeOwnerRuleItem",
-                FormMethod = "POST",
-                FormName = "Add Ownership Target Item",
-                FusionID = rule.FusionID,
-                TargetFusionAttributeTypeID = rule.ObjectID,
-                Item = new FusionAttributeOwnerRuleItem { FusionAttributeOwnerRuleID = id }
-            };
-            return PartialView("FusionAttributeOwnershipRuleItemEditForm", editorModel);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddFusionAttributeOwnerRuleItem(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "FusionAttributeOwnerRuleID");
-                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-                if (fusionAttributeIDs.Count == 0)
-                {
-                    Company.Set<FusionAttributeOwnerRuleItem>().Add(
-                        new FusionAttributeOwnerRuleItem { FusionAttributeOwnerRuleID = ruleID, FusionAttributeID = null }
-                        );
-                }
-                else
-                {
-                    fusionAttributeIDs.ForEach(fa =>
-                    {
-                        int? fusionAttributeID = null;
-                        if (!string.IsNullOrEmpty(fa))
-                        {
-                            fusionAttributeID = int.Parse(fa);
-                        }
-                        Company.Set<FusionAttributeOwnerRuleItem>().Add(
-                            new FusionAttributeOwnerRuleItem { FusionAttributeOwnerRuleID = ruleID, FusionAttributeID = fusionAttributeID }
-                            );
-                    });
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionOwnerRuleItem, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        public ActionResult DeleteFusionAttributeOwnerRuleItem(int id)
-        {
-            var a = Company.GetById<FusionAttributeOwnerRuleItem>(id);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                FormSize = "small",
-                Context = ContextList.FusionOwnerRuleItem,
-                FieldUri = string.Format("/form/FusionAttributeOwnerRuleItem_DeleteFields?id={0}", id),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this target item"),
-                FormUri = "/form/DeleteFusionAttributeOwnerRuleItem",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("OverlayDeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteFusionAttributeOwnerRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                Company.Delete<FusionAttributeOwnerRuleItem>(i => i.ID == id);
-                return jsonSuccess("Target item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region FusionRule
-
 
         #region Form Get/Post
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/rule/add")]
@@ -7112,29 +6822,15 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
             else if (action == "LINEAGE")
             {
-                var intersectType = parseTextField(form, "LineageIntersectType");
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
+                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
 
-                var subjectSearch = parseTextField(form, "LineageSubjectSearchType");
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = "ResultFromStep" });
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = subjectSearch });
+                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
 
-                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, form);
-
-                var objectSearch = parseTextField(form, "LineageObjectSearchType");
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
-
-                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
-
-                var focalSearch = parseTextField(form, "LineageFocalSearchType");
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FocalSearch", Value = focalSearch });
-
-                handleSearchParameters("Lineage", "Focal", item.FusionRuleStepSettings, focalSearch, item.ID, form);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Predicate", Value = parseTextField(form, "LineagePredicate") });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = parseTextField(form, "LineageRole") });
             }
         }
 
@@ -8605,7 +8301,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-
         #endregion
 
         #region IntersectRole
@@ -8897,52 +8592,37 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             {
                 if (form == null) throw new NoFormDataException("relationship type");
 
-                var nodes = new List<IntersectTypeNode>();
-
                 var side1 = form["Side1"];
-                short side1Order = 1;
                 var side1Info = side1.Split('|');
-                var node1 = new IntersectTypeNode { ObjectID = int.Parse(side1Info[1]), ObjectType = side1Info[0], Order = side1Order };
-                //if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
-                //    node1.MenuDisplayText = form["Side1DisplayText"];
-
-                nodes.Add(node1);
-
                 var side2 = form["Side2"];
-                short side2Order = 2;
                 var side2Info = side2.Split('|');
-                var node2 = new IntersectTypeNode { ObjectID = int.Parse(side2Info[1]), ObjectType = side2Info[0], Order = side2Order };
-                //if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
-                //    node2.MenuDisplayText = form["Side2DisplayText"];
-                nodes.Add(node2);
-
-                Company.ValidateIntersectType(0, nodes);
 
                 var predicate = form["Predicate"];
                 int? predicateID = null;
 
-                if (!string.IsNullOrEmpty(predicate))
+                if (string.IsNullOrEmpty(predicate))
                 {
-                    predicateID = int.Parse(predicate);
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
+                }
 
-                    var predicateModel = Company.GetById<Predicate>(predicateID.Value);
+                predicateID = int.Parse(predicate);
 
-                    if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
-                    }
-                    if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                    }
-                    if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
-                    }
+                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
+
+                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
+                }
+                if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+                }
+                if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 var model = new IntersectType {
-                    Nodes = nodes,
                     Subject = side1Info[0],
                     SubjectID = int.Parse(side1Info[1]),
                     Object = side2Info[0],
@@ -9035,67 +8715,40 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var model = Company.GetById<IntersectType>(id, i => i.Nodes, i => i.IntersectTypePredicates);
+                var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");
 
-                var nodes = new List<IntersectTypeNode>();
 
                 var side1 = form["Side1"];
-                short side1Order = 1;
                 var side1Info = side1.Split('|');
 
                 var side2 = form["Side2"];
-                short side2Order = 2;
                 var side2Info = side2.Split('|');
-
-                var side1Node = new IntersectTypeNode { ObjectID = int.Parse(side1Info[1]), ObjectType = side1Info[0], Order = side1Order };
-                if (!string.IsNullOrEmpty(form["Side1DisplayText"]))
-                    side1Node.MenuDisplayText = form["Side1DisplayText"];
-                nodes.Add(side1Node);
-
-                var side2Node = new IntersectTypeNode { ObjectID = int.Parse(side2Info[1]), ObjectType = side2Info[0], Order = side2Order };
-                if (!string.IsNullOrEmpty(form["Side2DisplayText"]))
-                    side2Node.MenuDisplayText = form["Side2DisplayText"];
-                nodes.Add(side2Node);
 
                 var predicate = form["Predicate"];
                 int? predicateID = null;
 
-                if (!string.IsNullOrEmpty(predicate))
+                if (string.IsNullOrEmpty(predicate))
                 {
-                    predicateID = int.Parse(predicate);
-
-                    var predicateModel = Company.GetById<Predicate>(predicateID.Value);
-
-                    if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
-                    }
-                    if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                    }
-                    if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                    {
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
-                    }
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
                 }
 
-                // Validation
-                Company.ValidateIntersectType(id, nodes);
+                predicateID = int.Parse(predicate);
 
+                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
 
-                // Now set the properties we need to overwrite.
-
-                var existingSide1Node = model.Nodes.Single(i => i.Order == 1);
-                existingSide1Node.ObjectType = side1Node.ObjectType;
-                existingSide1Node.ObjectID = side1Node.ObjectID;
-                //existingSide1Node.MenuDisplayText = side1Node.MenuDisplayText;
-
-                var existingSide2Node = model.Nodes.Single(i => i.Order == 2);
-                existingSide2Node.ObjectType = side2Node.ObjectType;
-                existingSide2Node.ObjectID = side2Node.ObjectID;
-                //existingSide2Node.MenuDisplayText = side2Node.MenuDisplayText;
+                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
+                }
+                if ((side1 != side2) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+                }
+                if ((side1 == side2) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+                }
 
                 model.Subject = side1Info[0];
                 model.SubjectID = int.Parse(side1Info[1]);
@@ -9104,8 +8757,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 model.PredicateID = int.Parse(predicate);
 
                 Company.Update<IntersectType>(model);
-                Company.Update<IntersectTypeNode>(existingSide1Node);
-                Company.Update<IntersectTypeNode>(existingSide2Node);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), ContextList.IntersectType, "edit", HttpStatusCode.OK);
             }
@@ -11146,10 +10797,10 @@ from ArtifactType A
                 {
                     Company.Add<Load>(load);
                     // use bulkloaddev queue to debug bulk load web job
-                    Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     // regular production queue
-                    //Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+                    Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
@@ -11168,6 +10819,63 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [Route("loads/{id:int}/Errors.xlsx"), FileDownload, HttpGet]
+        public FileResult ErrorLoadFile(int id)
+        {
+            var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
+            var loadItems = Company.Query<dynamic>("select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc", new { id}).ToList();
+            var loadItemColumnss = Company.Query<LoadItemColumn>("select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc", new { id }).ToList();
+
+            var document = new SLDocument();
+            document.RenameWorksheet("Sheet1", "Items");
+
+            #region Create the list sheet
+
+            var r = 1;
+            var columnCount = loadColumns.Count;
+
+            #region Header
+
+            foreach (var lc in loadColumns)
+            {
+                document.SetCellValue(r, lc.ColumnIndex, lc.Name);
+            }
+            document.SetCellValue(r, columnCount + 1, "Error");
+            document.SetRowStyle(r, new SLStyle { Font = new SLFont { Bold = true } });
+            document.FreezePanes(1, columnCount);
+
+            #endregion
+
+
+            foreach (var i in loadItems)
+            {
+                r++;
+                foreach (var lic in loadItemColumnss.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
+                {
+                    document.SetCellValue(r, lic.ColumnIndex, lic.Value);
+                }
+                document.SetCellValue(r, columnCount + 1, i.StatusMessage);
+            }
+
+            document.SetColumnStyle(columnCount + 1, new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } });
+
+            #endregion
+
+
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"Errors-{id}.xlsx");
+        }
+
+        [Route("loads/{id:int}/all.xlsx"), FileDownload, HttpGet]
+        public FileResult FullLoadFile(int id)
+        {
+            var load = Company.GetById<Load>(id);
+            return File(load.File, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }
 
         #endregion
@@ -13028,7 +12736,7 @@ from ArtifactType A
         {
             var list = new List<EditableField>();
             var a = Company.GetById<Predicate>(id);
-            var any = Company.Any<IntersectMap>(i => i.PredicateID == id);
+            var any = Company.Any<IntersectType>(i => i.PredicateID == id);
             if (!Company.HasPermission(SystemObjects.Predicate, id, Claim.Update))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -14963,7 +14671,7 @@ order by	D.Name, I.Name";
                 Context = ContextList.ResponsibilityType,
                 FieldUri = string.Format("/form/ResponsibilityType_AddFields?Group={0}", ((int)Group).ToString()),
                 FormSize = "small",
-                FormTitle = string.Format("Add {0} Type", Group.ToString()),
+                FormTitle = "Add Responsibility Type",
                 FormUri = "/form/AddResponsibilityType",
                 FormMethod = "POST"
             };
@@ -15082,7 +14790,7 @@ order by	D.Name, I.Name";
                 Context = ContextList.ResponsibilityType,
                 FieldUri = string.Format("/form/ResponsibilityType_EditFields?id={0}", id),
                 FormSize = "small",
-                FormTitle = "Edit Type",
+                FormTitle = "Edit Responsibility Type",
                 FormUri = "/form/EditResponsibilityType",
                 FormMethod = "PUT"
             };
@@ -17470,130 +17178,6 @@ order by	D.Name, I.Name";
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
-        }
-
-        #endregion
-
-        #region SourceToTarget
-
-        [HttpGet, Route("sourcetarget/load/{focal}/{focalid}/{source}/{sourceid}/{target}/{targetid}")]
-        public JsonNetResult LoadSourceTargetRules(string focal, int focalid, string source, int sourceid, string target, int targetid)
-        {
-
-            var items = new List<SourceTargetRule>();
-
-            var sourceObj = Company.GetObjectDetail(source, sourceid);
-            var targetObj = Company.GetObjectDetail(target, targetid);
-
-            items = Company.Filter<SourceTargetRule>(r => 
-                    r.FocalObject == focal && r.FocalObjectID == focalid && 
-                    r.SourceObject == source && r.SourceObjectID == sourceid && 
-                    r.TargetObject == target && r.TargetObjectID == targetid)
-                .OrderBy(i => i.Sequence).ToList();
-
-            var sql = @"select distinct r.id as RuleID, n.objectid as FusionID, a.textpath, 'source' as [type] from sourcetargetrule r
-                        join intersectmapsourcetargetrule st on st.ruleid = r.id
-                        join intersectmap m on m.type = 2 and m.id = st.intersectmapid
-                        join intersectnode n on n.id = m.subjectintersectnodeid
-                        join fusionattribute a on a.id = n.objectid
-                        where r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid
-                        union all
-                        select distinct r.id as RuleID, n.objectid as FusionID, a.textpath, 'target' as [type] from sourcetargetrule r
-                        join intersectmapsourcetargetrule st on st.ruleid = r.id
-                        join intersectmap m on m.type = 2 and m.id = st.intersectmapid
-                        join intersectnode n on n.id = m.objectintersectnodeid
-                        join fusionattribute a on a.id = n.objectid
-                        where r.focalobject = @focal and r.focalobjectid = @focalid and r.sourceobject = @source and r.sourceobjectid = @sourceid and r.targetobject = @target and r.targetobjectid = @targetid";
-
-
-            var ruleItems = Company.Query<dynamic>(sql, new { focal = focal, focalid = focalid, source = source, sourceid = sourceid, target = target, targetid = targetid }).ToList();
-
-            foreach (SourceTargetRule rule in items)
-            {
-                var sources = ruleItems.Where(r => r.RuleID == rule.ID && r.type == "source");
-                var targets = ruleItems.Where(r => r.RuleID == rule.ID && r.type == "target");
-
-                rule.Sources = new List<SourceTargetItem>();
-                rule.Targets = new List<SourceTargetItem>();
-
-                foreach (dynamic s in sources)
-                {
-                    var sourceItem = new SourceTargetItem();
-                    sourceItem.FusionID = s.FusionID;
-                    sourceItem.Name = s.textpath;
-                    rule.Sources.Add(sourceItem);
-                }
-                foreach (dynamic t in targets)
-                {
-                    var targetItem = new SourceTargetItem();
-                    targetItem.FusionID = t.FusionID;
-                    targetItem.Name = t.textpath;
-                    rule.Targets.Add(targetItem);
-                }
-            }
-
-            int sourceCount = 0;
-            int targetCount = 0;
-
-            if (items.Count == 0)
-            {
-                var sql2 = @"select count(*) from 
-                        fusion.attributeowner f
-                        join fusionattributetype t on t.id = f.objectid
-                        join fusionattribute a on a.fusionattributetypeid = f.objectid
-                        where 
-                        f.relationshipownerobjectid = @id and f.relationshipownerobjecttype = @type";
-
-                sourceCount = Company.Query<int>(sql2, new { id = sourceid, type = source }).SingleOrDefault();
-                if (sourceCount > 0)
-                    targetCount = Company.Query<int>(sql2, new { id = targetid, type = target }).SingleOrDefault();
-            }
-
-            return new JsonNetResult
-            {
-                Data = new { items = items.ToList(), sourceCount, targetCount, sourceObj, targetObj },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpGet, Route("sourcetarget/fusion/")]
-        public JsonNetResult GetRelatedFusionItems(string type, int id, string phrase, bool getDefault = false)
-        {
-            string sql = "";
-            if (phrase == null)
-                phrase = "";
-
-            if (getDefault)
-            {
-                sql = @"select top 100 r.targetobjectid as id, r.targetname as name 
-                        from	Relationship R
-		                inner join Relationship S on R.SourceObjectType = 'Intersect' 
-										                and S.IntersectID = R.SourceObjectID 
-										                and S.SourceObjectType = @type 
-										                and S.SourceObjectID = @id
-						                where r.targetobjecttype = 'FusionAttribute'";
-            } else
-            {
-                phrase = '%' + phrase.Trim() + '%';
-                sql = @"select top 100 a.textpath as name, a.id from 
-                        fusion.attributeowner f
-                        join fusionattributetype t on t.id = f.objectid
-                        join fusionattribute a on a.fusionattributetypeid = f.objectid
-                        where 
-                        f.relationshipownerobjectid = @id and f.relationshipownerobjecttype = @type
-                        and a.textpath like @phrase";
-            }
-
-
-
-
-            var items = Company.Query<dynamic>(sql, new { type = type, id = id, phrase = phrase });
-
-            return new JsonNetResult
-            {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
         }
 
         #endregion

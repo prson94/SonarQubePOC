@@ -108,7 +108,7 @@
                         columnsResize: true,
                         columns: [
                             {
-                                dataField: "SubjectID",
+                                dataField: "SubjectName",
                                 text: "Subject",
                                 cellsRenderer: function (row, column, value, rowData) {
                                     return rowData.SubjectName + ' <span style="font-size: 75%; color: #999">(' + rowData.Subject.replace("Type", "") + ')</span>';
@@ -116,7 +116,7 @@
                             },
                             { dataField: "PredicateName", text: "Predicate", width: '15%' },
                             {
-                                dataField: "ObjectID",
+                                dataField: "ObjectName",
                                 text: "Object",
                                 cellsRenderer: function (row, column, value, rowData) {
                                     return rowData.ObjectName + ' <span style="font-size: 75%; color: #999">(' + rowData.Object.replace("Type", "") + ')</span>';

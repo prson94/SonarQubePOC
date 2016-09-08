@@ -144,6 +144,8 @@ namespace d360.model
 
         public DbSet<FieldTypeWithRelation> FieldTypeWithRelations { get; set; }                /* VIEW */
 
+        public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
+
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
@@ -158,7 +160,7 @@ namespace d360.model
 
         public DbSet<Follow> Follows { get; set; }
 
-        public DbSet<FollowChild> FollowChildren { get; set; }
+        //public DbSet<FollowChild> FollowChildren { get; set; }
 
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
 
@@ -168,37 +170,37 @@ namespace d360.model
 
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
-        public DbSet<FusionAttributeOwnerDetail> FusionAttributeOwnerDetails { get; set; }          /* VIEW */
+        //public DbSet<FusionAttributeOwnerDetail> FusionAttributeOwnerDetails { get; set; }          /* VIEW */
 
-        public DbSet<FusionAttributePromotionDetail> FusionAttributePromotionDetails { get; set; }  /* VIEW */
+        //public DbSet<FusionAttributePromotionDetail> FusionAttributePromotionDetails { get; set; }  /* VIEW */
 
-        public DbSet<FusionAttributeOwnerRule> FusionAttributeOwnerRules { get; set; }
+        //public DbSet<FusionAttributeOwnerRule> FusionAttributeOwnerRules { get; set; }
 
-        public DbSet<FusionAttributeOwnerRuleItem> FusionAttributeOwnerRuleItems { get; set; }
+        //public DbSet<FusionAttributeOwnerRuleItem> FusionAttributeOwnerRuleItems { get; set; }
 
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
 
-        public DbSet<FusionAttributePromotionRule> FusionAttributePromotionRules { get; set; }
+        //public DbSet<FusionAttributePromotionRule> FusionAttributePromotionRules { get; set; }
 
-        public DbSet<FusionAttributePromotionRuleItem> FusionAttributePromotionRuleItems { get; set; }
+        //public DbSet<FusionAttributePromotionRuleItem> FusionAttributePromotionRuleItems { get; set; }
 
-        public DbSet<FusionAttributePromotionRuleMapping> FusionAttributePromotionRuleMappings { get; set; }
+        //public DbSet<FusionAttributePromotionRuleMapping> FusionAttributePromotionRuleMappings { get; set; }
 
-        public DbSet<FusionAttributePromotion> FusionAttributePromotions { get; set; }
+        //public DbSet<FusionAttributePromotion> FusionAttributePromotions { get; set; }
 
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
-        public DbSet<FusionAttributeTypePromotion> FusionAttributeTypePromotions { get; set; }
+        //public DbSet<FusionAttributeTypePromotion> FusionAttributeTypePromotions { get; set; }
 
         public DbSet<FusionFilter> FusionFilters { get; set; }
 
-        public DbSet<FusionJobHistory> FusionJobHistories { get; set; }
+        //public DbSet<FusionJobHistory> FusionJobHistories { get; set; }
 
         public DbSet<FusionRule> FusionRules { get; set; }
 
         public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
         
-        public DbSet<FusionJobSchedule> FusionJobSchedules { get; set; }
+        //public DbSet<FusionJobSchedule> FusionJobSchedules { get; set; }
 
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
@@ -208,15 +210,15 @@ namespace d360.model
 
         public DbSet<Group> Groups { get; set; }
 
-        public DbSet<IntersectMap> IntersectMaps { get; set; }
+        //public DbSet<IntersectMap> IntersectMaps { get; set; }
 
-        public DbSet<IntersectMapGroup> IntersectMapGroups { get; set; }
+        //public DbSet<IntersectMapGroup> IntersectMapGroups { get; set; }
 
-        public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
+        //public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
 
-        public DbSet<IntersectMapSourceTargetRule> IntersectMapSourceTargetRules { get; set; }
+        //public DbSet<IntersectMapSourceTargetRule> IntersectMapSourceTargetRules { get; set; }
 
-        public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
+        //public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
 
         public DbSet<Intersect> Intersects { get; set; }
 
@@ -288,11 +290,6 @@ namespace d360.model
 
         public DbSet<Relationship> Relationships { get; set; }                                              /* VIEW */
 
-
-        public DbSet<Relation> Relations { get; set; }
-
-        public DbSet<RelationType> RelationTypes { get; set; }
-
         public DbSet<ReportLayout> ReportLayouts { get; set; }
 
         public DbSet<Report> Reports { get; set; }
@@ -333,11 +330,11 @@ namespace d360.model
 
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
-        public DbSet<SourceRule> SourceRules { get; set; }
+        //public DbSet<SourceRule> SourceRules { get; set; }
 
-        public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }
+        //public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }
 
-        public DbSet<SourceTargetRule> SourceTargetRules { get; set; }
+        //public DbSet<SourceTargetRule> SourceTargetRules { get; set; }
 
         public DbSet<Statistic> Statistics { get; set; }
 
@@ -636,8 +633,8 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
 
         public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
         {
-            string query = string.Format("EXEC GetFieldsWithRelationsByObject '{0}', {1}", type.ToString(), id);
-            return Database.SqlQuery<FieldWithRelation>(query).OrderBy(i => i.SortOrder).AsQueryable();
+            var sType = type.ToString();
+            return Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == id);
         }
 
         public IQueryable<FieldTypeWithRelation> GetFieldTypeRelationsByObject(SystemObjects type, int id)
@@ -684,7 +681,14 @@ where R.ObjectID is null", new { id = attributeTypeID }).ToList();
 
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
-            return Database.Connection.Query<FusionOwnerOption>("EXEC fusion.GetFusionOwnerOptions").ToList();
+            return Database.Connection.Query<FusionOwnerOption>(@"
+	select	T.Name as [Type],
+			A.ID,
+			T.Name + ' : ' + A.TextPath as Name
+	from	Artifact A 
+			inner join ArtifactType T	on T.ID = A.ArtifactTypeID 
+										and T.CanOwnFusion = 1
+	order by	T.Name + ' : ' + A.TextPath").ToList();
         }
 
         public List<FusionPromotionOption> GetFusionPromotionOptions()
@@ -1088,27 +1092,6 @@ order by	ColumnIndex", new { id });
                 }
             }
             return value;
-        }
-
-        public void ValidateIntersectType(int id, List<IntersectTypeNode> nodes)
-        {
-            var dt = new DataTable();
-            dt.Columns.Add("ObjectType");
-            dt.Columns.Add("ObjectID");
-
-            nodes.ForEach(n =>
-            {
-                dt.Rows.Add(n.ObjectType, n.ObjectID);
-            });
-
-            var pId = new SqlParameter("ID", SqlDbType.Int);
-            pId.Value = id;
-
-            var pTbl = new SqlParameter("Nodes", SqlDbType.Structured);
-            pTbl.Value = dt;
-            pTbl.TypeName = "dbo.IntersectionNodeType";
-
-            Database.ExecuteSqlCommand("validate.IntersectType @ID, @Nodes", pId, pTbl);
         }
 
         #region Events
@@ -2430,19 +2413,19 @@ order by Name", new { workflowType, type, id });
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypePredicate>().HasRequired(t => t.IntersectType).WithMany(t => t.IntersectTypePredicates).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
 
-            modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
+            //modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
             //modelBuilder.Entity<MapRuleItem>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.MapRuleItems).Map(i =>
             //{
             //    i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
@@ -2828,6 +2811,37 @@ order by Name", new { workflowType, type, id });
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more attributes reference this relationship.");
                             any = Any<IntersectNode>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : IntersectType
+                if (entry.Entity is IntersectType)
+                {
+                    var o = entry.Entity as IntersectType;
+                    var id = o.ID;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            var anyAdd = Any<IntersectType>(i =>
+                                i.Object == o.Object &&
+                                i.ObjectID == o.ObjectID &&
+                                i.PredicateID == o.PredicateID &&
+                                i.Subject == o.Subject &&
+                                i.SubjectID == o.SubjectID);
+                            if (anyAdd) throw new ConflictException("Relationship Type Cannot Be Created", "Another relationship already exists with this configuration.");
+                            break;
+                        case EntityState.Modified:
+                            var anyEdit = Any<IntersectType>(i =>
+                                i.Object == o.Object &&
+                                i.ObjectID == o.ObjectID &&
+                                i.PredicateID == o.PredicateID &&
+                                i.Subject == o.Subject &&
+                                i.SubjectID == o.SubjectID &&
+                                i.ID != o.ID);
+                            if (anyEdit) throw new ConflictException("Relationship Type Cannot Be Updated", "Another relationship already exists with this configuration.");
                             break;
                     }
                 }

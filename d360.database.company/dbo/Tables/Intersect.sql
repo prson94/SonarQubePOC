@@ -26,6 +26,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID]
     ON [dbo].[Intersect]([IntersectTypeID] ASC);
@@ -43,8 +45,7 @@ BEGIN
         select 'Add', [queue].WriteIndexXml('', 'Intersect', ID, 0), 'Intersect', ID from inserted
 END
 GO
-DISABLE TRIGGER [dbo].[Intersect_AfterUpsert]
-    ON [dbo].[Intersect];
+
 
 
 

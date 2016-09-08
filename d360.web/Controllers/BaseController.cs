@@ -165,6 +165,15 @@ namespace d360.web.Controllers
                 );
         }
 
+        [Route("responsibilities/{type}/{id:int}")]
+        internal IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
+        {
+            return Company.Query<dynamic>(
+                QueryConstants.ResponsibilityList,
+                new { ObjectType = type.ToString(), ObjectID = id }
+            ).AsQueryable();
+        }
+
         internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();

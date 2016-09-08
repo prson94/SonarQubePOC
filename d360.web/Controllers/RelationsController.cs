@@ -101,12 +101,10 @@ namespace d360.web.Controllers
 
         public class HierarchyArtifactsModel
         {
-            public int IntersectMapID { get; set; }
             public PredicateType MapType { get; set; }
             public SystemObjects Type { get; set; }
             public int ID { get; set; }
-            public int GroupNumber { get; set; }
-            public bool IsAddingParent { get; set; }
+            public bool IsSubject { get; set; }
         }
 
         #endregion
@@ -383,297 +381,118 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                 Formatting = Formatting.None
             };
         }
-  
+
         #region Hierarchy
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
-        [Route("hierarchy/save")]
-        public JsonNetResult SaveHierarchy(HierarchyPostModel model)
-        {
-            var message = "";
+        //[ValidateHttpAntiForgeryToken, HttpPost, Route("hierarchy/save")]
+        //public JsonNetResult SaveHierarchy(HierarchyPostModel model)
+        //{
+        //    var message = "";
 
-            if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
-            {
-                message = $"The Subject you provided is invalid.";
-            }
-            else if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
-            {
-                message = $"The Object you provided is invalid.";
-            }
-            else if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
-            {
-                message = $"A source may not map to itself directly.";
-            }
-            else if ((int)model.HierarchyType < 1)
-            {
-                message = $"The hierarchy type is invalid.";
-            }
+        //    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+        //    {
+        //        message = $"The Subject you provided is invalid.";
+        //    }
+        //    else if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+        //    {
+        //        message = $"The Object you provided is invalid.";
+        //    }
+        //    else if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+        //    {
+        //        message = $"A parent may not map to itself directly.";
+        //    }
+        //    else if ((int)model.HierarchyType < 1)
+        //    {
+        //        message = $"The hierarchy type is invalid.";
+        //    }
 
-            Predicate predicate = null; //Company.GetById<Predicate>(model.PredicateID);
-            if (model.HierarchyType == PredicateType.GroupHierarchy)
-            {
-                predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.GroupHierarchy).FirstOrDefault();
-            }
-            else
-            {
-                predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.TypeHierarchy).FirstOrDefault();
-            }
+        //    var intersectType = Company.Filter<IntersectType>(i => i.Predicate.Type == ((model.HierarchyType == PredicateType.GroupHierarchy) ? PredicateType.GroupHierarchy : PredicateType.TypeHierarchy)).FirstOrDefault();
 
-            if (predicate == null)
-            {
-                message = "No predicate exists to fulfill this request.";
-            }
+        //    if (intersectType == null)
+        //    {
+        //        message = "No relationship type exists to fulfill this request.";
+        //    }
 
-            if (message == "")
-            {
-                if (model.IsAddingParent)
-                {
-                    int subid = model.SubjectID;
-                    string subtype = model.Subject;
-                    if (model.IntersectMapID > 0)
-                    {
-                        //first add a relationship between the old parent of the object and the new parent
-
-                        var record = Company.Query<dynamic>("select n1.ObjectType as SubjectType, n1.ObjectID as SubjectID, n2.ObjectType, n2.ObjectID from intersectmap m join intersectnode n1 on n1.id = m.subjectintersectnodeid join intersectnode n2 on n2.id = m.objectintersectnodeid where m.id = @id", new { id = model.IntersectMapID }).Single();
-
-                        subid = record.ObjectID;
-                        subtype = record.ObjectType;
-
-                        Company.AddIntersect(record.SubjectType, record.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                        var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
-                                S.IntersectID,
-                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-                                from [IntersectNode] S 
-                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
-                                and S.[ObjectType] = @s and S.ObjectID = @sid 
-                                and O.[ObjectType] = @o and O.ObjectID = @oid",
-                            new { s = record.SubjectType, sid = record.SubjectID, o = model.Object, oid = model.ObjectID }
-                            ).SingleOrDefault();
-
-                        if (intersect != null)
-                        {
-                            var existingSourceRecordCount = Company.Query<int>(
-                                "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                                new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
-                            ).Single();
-
-                            if (existingSourceRecordCount <= 0)
-                            {
-                                var intersectMap = new IntersectMap
-                                {
-                                    ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                    PredicateID = predicate.ID, //model.PredicateID,
-                                    SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                    Type = model.HierarchyType
-                                };
-                                try
-                                {
-                                    Company.Add(intersectMap);
-                                } catch (Exception ex)
-                                {
-                                    message = ex.Message;
-                                }
-                                
-
-                                if (model.HierarchyType == PredicateType.GroupHierarchy && message == "")
-                                {
-                                    var intersectMapGroup = new IntersectMapGroup();
-                                    intersectMapGroup.IntersectMapID = intersectMap.ID;
-                                    if (model.GroupNumber > -1)
-                                        intersectMapGroup.GroupNumber = model.GroupNumber;
-                                    else
-                                    {
-                                        intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
-                                        model.GroupNumber = intersectMapGroup.GroupNumber;
-                                    }
-                                    
-                                    try
-                                    {
-                                        Company.Add(intersectMapGroup);
-                                    } catch (Exception ex)
-                                    {
-                                        message = ex.Message;
-                                    }
-                                }
-                            }
-                        }
-
-                        try
-                        {
-                            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
-                            Company.Delete(intersectMap);
-                        }
-                        catch (Exception ex)
-                        {
-                            message = ex.Message;
-                        }
-
-                        if (model.HierarchyType == PredicateType.GroupHierarchy && model.GroupNumber > -1 && message == "")
-                        {
-                            try
-                            {
-                                var intersectMapGroup = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == model.IntersectMapID && g.GroupNumber == model.GroupNumber).FirstOrDefault();
-
-                                if (intersectMapGroup != null)
-                                {
-                                    Company.Delete(intersectMapGroup);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                message = ex.Message;
-                            }
-                        }
-                    }
-                    
-                    //swap subject/object and add the relationship
-                    model.Subject = model.Object;
-                    model.SubjectID = model.ObjectID;
-                    model.Object = subtype;
-                    model.ObjectID = subid;
-                }
-
-                if (message == "")
-                {
-                    Company.AddIntersect(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                    var intersect2 = Company.Query<IntersectLookupModel>(@"select top 1 
-                                S.IntersectID,
-                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-                                from [IntersectNode] S 
-                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
-                                and S.[ObjectType] = @s and S.ObjectID = @sid 
-                                and O.[ObjectType] = @o and O.ObjectID = @oid",
-                        new { s = model.Subject, sid = model.SubjectID, o = model.Object, oid = model.ObjectID }
-                        ).SingleOrDefault();
-
-                    if (intersect2 != null)
-                    {
-                        var existingSourceRecordCount = Company.Query<int>(
-                            "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                            new { s = intersect2.SubjectNodeID, o = intersect2.ObjectNodeID, p = model.PredicateID }
-                        ).Single();
-
-                        if (existingSourceRecordCount <= 0)
-                        {
-                            var intersectMap = new IntersectMap
-                            {
-                                ObjectIntersectNodeID = intersect2.ObjectNodeID,// objectIntersectNode.ID,
-                                PredicateID = predicate.ID,
-                                SubjectIntersectNodeID = intersect2.SubjectNodeID,// subjectIntersectNode.ID,
-                                Type = model.HierarchyType
-                            };
-
-                            try
-                            {
-                                Company.Add(intersectMap);
-                            }
-                            catch (Exception ex)
-                            {
-                                message = ex.Message;
-                            }
-
-                            if (model.HierarchyType == PredicateType.GroupHierarchy && message == "")
-                            {
-                                try
-                                {
-                                    var intersectMapGroup = new IntersectMapGroup();
-                                    intersectMapGroup.IntersectMapID = intersectMap.ID;
-                                    if (model.GroupNumber > -1)
-                                        intersectMapGroup.GroupNumber = model.GroupNumber;
-                                    else
-                                        intersectMapGroup.GroupNumber = Company.Query<int>("select coalesce(max(groupnumber) + 1, 1) from intersectmapgroup").Single();
-                                    Company.Add(intersectMapGroup);
-                                }
-                                catch (Exception ex)
-                                {
-                                    message = ex.Message;
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
+        //    if (message == "")
+        //    {
+        //        Company.AddIntersect(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+        //    }
 
 
-            if (string.IsNullOrEmpty(message))
-            {
-                return new JsonNetResult
-                {
-                    Data = new { type = "success", title = "Success", message = "Updated structure" },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-            else
-            {
-                return new JsonNetResult
-                {
-                    Data = new { type = "error", title = "An error occured", message = message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-        }
+        //    if (string.IsNullOrEmpty(message))
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = new { type = "success", title = "Success", message = "Updated structure" },
+        //            Formatting = Formatting.None
+        //        };
+        //    }
+        //    else
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = new { type = "error", title = "An error occured", message = message },
+        //            Formatting = Formatting.None
+        //        };
+        //    }
+        //}
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
-        [Route("hierarchy/edit")]
-        public JsonResult EditHierarchy(HierarchyPostModel model)
-        {
-            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+        //[ValidateHttpAntiForgeryToken, HttpPost]
+        //[Route("hierarchy/edit")]
+        //public JsonResult EditHierarchy(HierarchyPostModel model)
+        //{
+        //    var intersect = Company.GetById<Intersect>(model.IntersectID);
 
-            if (intersectMap == null)
-                return null;
+        //    if (intersect == null)
+        //        return null;
 
-            intersectMap.PredicateID = model.PredicateID;
-            Company.Update(intersectMap);
+        //    Company.Update(intersect);
 
-            return null;
-            
-        }
+        //    return null;
 
-        [HttpDelete]
-        [Route("hierarchy/delete/{id:int}")]
-        public JsonResult DeleteHierarchy(int id)
-        {
-            
-            try
-            {
-                var model = Company.GetById<IntersectMap>(id);
-                var group = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == id).FirstOrDefault();
-                if (model == null) throw new NotFoundException("hierarchy");
+        //}
 
-                Company.Delete(model);
+        //[HttpDelete]
+        //[Route("hierarchy/delete/{id:int}")]
+        //public JsonResult DeleteHierarchy(int id)
+        //{
+        //    try
+        //    {
+        //        var model = Company.GetById<Intersect>(id);
+        //        var group = Company.Filter<IntersectGroup>(g => g.IntersectID == id).FirstOrDefault();
+        //        if (model == null) throw new NotFoundException("hierarchy");
 
-                if (group != null)
-                    Company.Delete(group);
+        //        if (group != null)
+        //            Company.Delete(group);
 
-                return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
-            }
-            catch (BaseException ex)
-            {
-                return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        Company.Delete(model);
+
+        //        return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
         [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
         public JsonNetResult GetHierarchy(SystemObjects type, int id, PredicateType mapType)
         {
-            var sql = "EXEC GetHierarchyByMapType @type, @id, @mapType";
+            //var sql = "EXEC GetHierarchyByMapType @type, @id, @mapType";
 
-            if (mapType == PredicateType.GroupHierarchy)
-                sql = "EXEC GetGroupHierarchy @type, @id";
+            //if (mapType == PredicateType.GroupHierarchy)
+            //    sql = "EXEC GetGroupHierarchy @type, @id";
 
-            var results = Company.Query<HierarchyModel>(sql, new { type = type.ToString(), id = id, mapType = (int)mapType });
+            //var results = Company.Query<HierarchyModel>(sql, new { type = type.ToString(), id = id, mapType = (int)mapType });
 
             return new JsonNetResult
             {
-                Data = results,
+                Data = new { },// results,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -688,86 +507,86 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
         public JsonNetResult GetHierarchyArtifacts(HierarchyArtifactsModel model)
         {
 
-            var sql = @"select  [Object], 
-                        ObjectID, 
-                        ObjectTypeName + ': ' + TextPath as DisplayName,
-                        TextPath as Name,
-                        ObjectTypeName
-                        from cache.ObjectDetails d
-                        where ObjectID <> 0  and ObjectTypeName is not null
-                        and [Object] + '|' + cast(ObjectID as varchar(20)) not in
-                        (
-	                        select distinct n.objecttype + '|' + cast(n.objectid as varchar(20)) from intersectmap m
-	                        join intersectnode n on n.id = m.{0}
-                            {1}
-	                        where m.type = @mapType
-                        ) {2}";
+            //var sql = @"select  [Object], 
+            //            ObjectID, 
+            //            ObjectTypeName + ': ' + TextPath as DisplayName,
+            //            TextPath as Name,
+            //            ObjectTypeName
+            //            from cache.ObjectDetails d
+            //            where ObjectID <> 0  and ObjectTypeName is not null
+            //            and [Object] + '|' + cast(ObjectID as varchar(20)) not in
+            //            (
+	           //             select distinct n.objecttype + '|' + cast(n.objectid as varchar(20)) from intersectmap m
+	           //             join intersectnode n on n.id = m.{0}
+            //                {1}
+	           //             where m.type = @mapType
+            //            ) {2}";
 
-            var nodeId = "objectintersectnodeid";
-            if (model.IsAddingParent)
-                nodeId = "subjectintersectnodeid";
+            //var nodeId = "objectintersectnodeid";
+            //if (model.IsAddingParent)
+            //    nodeId = "subjectintersectnodeid";
 
-            switch(model.MapType)
-            {
-                case PredicateType.TypeHierarchy:
-                    sql = string.Format(sql, nodeId, "", " and ObjectType = @type and ObjectTypeID = @id order by Name");
-                    break;
-                case PredicateType.GroupHierarchy:
-                    sql = string.Format(sql, nodeId, "join intersectmapgroup g on g.intersectmapid = m.id and g.groupnumber = @groupNumber", " and ObjectType = @type and ObjectTypeID = @id order by Name");
-                    break;
-                default:
-                    sql += " order by Name";
-                    break;
-            }
+            //switch(model.MapType)
+            //{
+            //    case PredicateType.TypeHierarchy:
+            //        sql = string.Format(sql, nodeId, "", " and ObjectType = @type and ObjectTypeID = @id order by Name");
+            //        break;
+            //    case PredicateType.GroupHierarchy:
+            //        sql = string.Format(sql, nodeId, "join intersectmapgroup g on g.intersectmapid = m.id and g.groupnumber = @groupNumber", " and ObjectType = @type and ObjectTypeID = @id order by Name");
+            //        break;
+            //    default:
+            //        sql += " order by Name";
+            //        break;
+            //}
 
-            var obj = Company.GetObjectDetail(model.Type, model.ID);
-            var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = model.MapType, groupNumber = model.GroupNumber});
-            var itemList = allItems.ToList();
+            //var obj = Company.GetObjectDetail(model.Type, model.ID);
+            //var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = model.MapType, groupNumber = model.GroupNumber});
+            //var itemList = allItems.ToList();
 
-            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
-            var hierarchy = new List<HierarchyModel>();
+            //var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+            //var hierarchy = new List<HierarchyModel>();
 
-            if (intersectMap != null)
-            {
-                var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
-                if (model.MapType == PredicateType.GroupHierarchy)
-                    hierarchy = Company.Query<HierarchyModel>("EXEC GetGroupHierarchy @type, @id", new { type = model.Type.ToString(), id = model.ID }).ToList();
-                else
-                    hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = model.Type.ToString(), id = model.ID, mapType = model.MapType }).ToList();
-            }
-            else
-            {
-                hierarchy.Add(new HierarchyModel() { Subject = model.Type.ToString(), SubjectID = model.ID });
-            }
+            //if (intersectMap != null)
+            //{
+            //    var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
+            //    if (model.MapType == PredicateType.GroupHierarchy)
+            //        hierarchy = Company.Query<HierarchyModel>("EXEC GetGroupHierarchy @type, @id", new { type = model.Type.ToString(), id = model.ID }).ToList();
+            //    else
+            //        hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = model.Type.ToString(), id = model.ID, mapType = model.MapType }).ToList();
+            //}
+            //else
+            //{
+            //    hierarchy.Add(new HierarchyModel() { Subject = model.Type.ToString(), SubjectID = model.ID });
+            //}
 
-            foreach (dynamic d in allItems)
-            {
-                switch(model.MapType)
-                {
-                    case PredicateType.TypeHierarchy:
-                    case PredicateType.ParentChildHierarchy:
-                        var t = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
-                        var t2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
+            //foreach (dynamic d in allItems)
+            //{
+            //    switch(model.MapType)
+            //    {
+            //        case PredicateType.TypeHierarchy:
+            //        case PredicateType.ParentChildHierarchy:
+            //            var t = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
+            //            var t2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
 
-                        if (t != null || t2 != null)
-                            itemList.Remove(d);
-                        break;
-                    case PredicateType.GroupHierarchy:
-                        if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
-                            itemList.Remove(d);
-                        var g = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
-                        var g2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
+            //            if (t != null || t2 != null)
+            //                itemList.Remove(d);
+            //            break;
+            //        case PredicateType.GroupHierarchy:
+            //            if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
+            //                itemList.Remove(d);
+            //            var g = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
+            //            var g2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
 
-                        if (g != null || g2 != null)
-                            itemList.Remove(d);
-                        break;
-                }
-            }
+            //            if (g != null || g2 != null)
+            //                itemList.Remove(d);
+            //            break;
+            //    }
+            //}
 
             return new JsonNetResult
             {
-                Data = itemList,
-                Formatting = Newtonsoft.Json.Formatting.None
+                Data = null,//itemList,
+                Formatting = Formatting.None
             };
         }
 
@@ -775,359 +594,359 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
 
         #region Synonym
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
-        [Route("synonyms/save")]
-        public JsonNetResult SaveSynonym(FormCollection model)
-        {
-            var message = "";
+        //[ValidateHttpAntiForgeryToken, HttpPost]
+        //[Route("synonyms/save")]
+        //public JsonNetResult SaveSynonym(FormCollection model)
+        //{
+        //    var message = "";
 
-            var sub = model["Subject"];
-            var subID = int.Parse(model["SubjectID"]);
-            var obj = model["Object"];
-            var objID = int.Parse(model["ObjectID"]);
+        //    var sub = model["Subject"];
+        //    var subID = int.Parse(model["SubjectID"]);
+        //    var obj = model["Object"];
+        //    var objID = int.Parse(model["ObjectID"]);
 
-            if (string.IsNullOrEmpty(sub) || subID <= 0)
-            {
-                message = $"The Subject you provided is invalid.";
-            }
-            else if (string.IsNullOrEmpty(obj) || objID <= 0)
-            {
-                message = $"The Object you provided is invalid.";
-            }
-            else if (sub == obj && subID == objID)
-            {
-                message = $"A source may not map to itself directly.";
-            }
+        //    if (string.IsNullOrEmpty(sub) || subID <= 0)
+        //    {
+        //        message = $"The Subject you provided is invalid.";
+        //    }
+        //    else if (string.IsNullOrEmpty(obj) || objID <= 0)
+        //    {
+        //        message = $"The Object you provided is invalid.";
+        //    }
+        //    else if (sub == obj && subID == objID)
+        //    {
+        //        message = $"A source may not map to itself directly.";
+        //    }
 
-            var predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.Synonym).FirstOrDefault();
+        //    var predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.Synonym).FirstOrDefault();
 
-            if (predicate == null)
-            {
-                message = "No predicate exists to fulfill this request.";
-            }
+        //    if (predicate == null)
+        //    {
+        //        message = "No predicate exists to fulfill this request.";
+        //    }
 
-            if (message == "")
-            {
-                Company.AddIntersect(sub, subID, obj, objID, IntersectClassification.Normal, null, null);
-                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
-                                S.IntersectID,
-                                S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-                                O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-                                from [IntersectNode] S 
-                                inner join IntersectNode O on O.IntersectID = S.IntersectID 
-                                and S.[ObjectType] = @s and S.ObjectID = @sid 
-                                and O.[ObjectType] = @o and O.ObjectID = @oid",
-                    new { s = sub, sid = subID, o = obj, oid = objID }
-                    ).SingleOrDefault();
+        //    if (message == "")
+        //    {
+        //        Company.AddIntersect(sub, subID, obj, objID, IntersectClassification.Normal, null, null);
+        //        var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+        //                        S.IntersectID,
+        //                        S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+        //                        O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+        //                        from [IntersectNode] S 
+        //                        inner join IntersectNode O on O.IntersectID = S.IntersectID 
+        //                        and S.[ObjectType] = @s and S.ObjectID = @sid 
+        //                        and O.[ObjectType] = @o and O.ObjectID = @oid",
+        //            new { s = sub, sid = subID, o = obj, oid = objID }
+        //            ).SingleOrDefault();
 
-                if (intersect != null)
-                {
-                    var existingSourceRecordCount = Company.Query<int>(
-                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                        new {
-                            s = intersect.SubjectNodeID,
-                            o = intersect.ObjectNodeID,
-                            p = predicate.ID
-                        }
-                    ).Single();
+        //        if (intersect != null)
+        //        {
+        //            var existingSourceRecordCount = Company.Query<int>(
+        //                "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+        //                new {
+        //                    s = intersect.SubjectNodeID,
+        //                    o = intersect.ObjectNodeID,
+        //                    p = predicate.ID
+        //                }
+        //            ).Single();
 
-                    if (existingSourceRecordCount <= 0)
-                    {
-                        var intersectMap = new IntersectMap
-                        {
-                            ObjectIntersectNodeID = intersect.ObjectNodeID,
-                            PredicateID = predicate.ID,
-                            SubjectIntersectNodeID = intersect.SubjectNodeID,
-                            Type = PredicateType.Synonym
-                        };
-                        try
-                        {
-                            Company.Add(intersectMap);
-                        }
-                        catch (Exception ex)
-                        {
-                            message = ex.Message;
-                        }
-                    }
-                }
-            }
+        //            if (existingSourceRecordCount <= 0)
+        //            {
+        //                var intersectMap = new IntersectMap
+        //                {
+        //                    ObjectIntersectNodeID = intersect.ObjectNodeID,
+        //                    PredicateID = predicate.ID,
+        //                    SubjectIntersectNodeID = intersect.SubjectNodeID,
+        //                    Type = PredicateType.Synonym
+        //                };
+        //                try
+        //                {
+        //                    Company.Add(intersectMap);
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    message = ex.Message;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            if (string.IsNullOrEmpty(message))
-            {
-                return new JsonNetResult
-                {
-                    Data = new { type = "success", title = "Success", message = "Updated synonyms" },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-            else
-            {
-                return new JsonNetResult
-                {
-                    Data = new { type = "error", title = "An error occured", message = message },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
-            }
-        }
+        //    if (string.IsNullOrEmpty(message))
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = new { type = "success", title = "Success", message = "Updated synonyms" },
+        //            Formatting = Newtonsoft.Json.Formatting.None
+        //        };
+        //    }
+        //    else
+        //    {
+        //        return new JsonNetResult
+        //        {
+        //            Data = new { type = "error", title = "An error occured", message = message },
+        //            Formatting = Newtonsoft.Json.Formatting.None
+        //        };
+        //    }
+        //}
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
-        [Route("synonyms/edit")]
-        public JsonResult EditSynonym(HierarchyPostModel model)
-        {
-            var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
+        //[ValidateHttpAntiForgeryToken, HttpPost]
+        //[Route("synonyms/edit")]
+        //public JsonResult EditSynonym(HierarchyPostModel model)
+        //{
+        //    var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
 
-            if (intersectMap == null)
-                return null;
+        //    if (intersectMap == null)
+        //        return null;
 
-            intersectMap.PredicateID = model.PredicateID;
-            Company.Update(intersectMap);
+        //    intersectMap.PredicateID = model.PredicateID;
+        //    Company.Update(intersectMap);
 
-            return null;
+        //    return null;
 
-        }
+        //}
 
-        [HttpDelete]
-        [Route("synonyms/delete/{id:int}")]
-        public JsonResult DeleteSynonym(int id)
-        {
+        //[HttpDelete]
+        //[Route("synonyms/delete/{id:int}")]
+        //public JsonResult DeleteSynonym(int id)
+        //{
 
-            try
-            {
-                var model = Company.GetById<IntersectMap>(id);
-                var group = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == id).FirstOrDefault();
-                if (model == null) throw new NotFoundException("hierarchy");
+        //    try
+        //    {
+        //        var model = Company.GetById<IntersectMap>(id);
+        //        var group = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == id).FirstOrDefault();
+        //        if (model == null) throw new NotFoundException("hierarchy");
 
-                Company.Delete(model);
+        //        Company.Delete(model);
 
-                if (group != null)
-                    Company.Delete(group);
+        //        if (group != null)
+        //            Company.Delete(group);
 
-                return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
-            }
-            catch (BaseException ex)
-            {
-                return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        //        return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
+        //    }
+        //    catch (BaseException ex)
+        //    {
+        //        return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SendException(ex);
+        //        return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
+        //    }
+        //}
 
-        [HttpGet, Route("{type}/{id:int}/synonyms")]
-        public JsonNetResult GetSynonyms(SystemObjects type, int id)
-        {
-            var sql = @"
-select	D.ID,
-		D.TextPath as Name,
-		DT.Name as Type
-from	(
-		select	distinct
-				RT.TargetObjectType,
-				RT.TargetObjectID 
-		from	utility.RelationshipTypes RT
-				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
-		) T
-		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
-		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
+//        [HttpGet, Route("{type}/{id:int}/synonyms")]
+//        public JsonNetResult GetSynonyms(SystemObjects type, int id)
+//        {
+//            var sql = @"
+//select	D.ID,
+//		D.TextPath as Name,
+//		DT.Name as Type
+//from	(
+//		select	distinct
+//				RT.TargetObjectType,
+//				RT.TargetObjectID 
+//		from	utility.RelationshipTypes RT
+//				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
+//				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
+//		) T
+//		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
+//		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
 
-            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id = id });
+//            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id = id });
 
-            return new JsonNetResult
-            {
-                Data = results,
-                Formatting = Formatting.None
-            };
-        }
+//            return new JsonNetResult
+//            {
+//                Data = results,
+//                Formatting = Formatting.None
+//            };
+//        }
 
-        [HttpGet, Route("synonyms/artifacts")]
-        public JsonNetResult GetSynonymArtifacts(SystemObjects type, int id)
-        {
-            var sql = @"
-select	D.ID,
-		D.TextPath as Name,
-		DT.Name as Type
-from	(
-		select	distinct
-				RT.TargetObjectType,
-				RT.TargetObjectID 
-		from	utility.RelationshipTypes RT
-				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
-		) T
-		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
-		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
+//        [HttpGet, Route("synonyms/artifacts")]
+//        public JsonNetResult GetSynonymArtifacts(SystemObjects type, int id)
+//        {
+//            var sql = @"
+//select	D.ID,
+//		D.TextPath as Name,
+//		DT.Name as Type
+//from	(
+//		select	distinct
+//				RT.TargetObjectType,
+//				RT.TargetObjectID 
+//		from	utility.RelationshipTypes RT
+//				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
+//				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
+//		) T
+//		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
+//		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
 
-            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id });
+//            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id });
 
 
-            return new JsonNetResult
-            {
-                Data = results,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+//            return new JsonNetResult
+//            {
+//                Data = results,
+//                Formatting = Newtonsoft.Json.Formatting.None
+//            };
+//        }
 
         #endregion Synonym
 
-        void processSourceLevel(List<SourcesToObjectModel> list, int id)
-        {
+        //void processSourceLevel(List<SourcesToObjectModel> list, int id)
+        //{
 
-            var level = list.Single(i => i.ID == id && i.Type == "S").Level + 1;
+        //    var level = list.Single(i => i.ID == id && i.Type == "S").Level + 1;
 
-            list.Where(i => i.ID == id && i.Type == "O").ToList().ForEach(i => {
-                i.Level = level;
-                processSourceLevel(list, i.O, i.OID, level);
-            });
-        }
-        void processSourceLevel(List<SourcesToObjectModel> list, string obj, int objID, int level)
-        {
-            list.Where(i => i.O == obj && i.OID == objID && i.Type == "S" && i.Level == 0).ToList().ForEach(i => {
-                i.Level = level;
-                processSourceLevel(list, i.ID);
-            });
-        }
+        //    list.Where(i => i.ID == id && i.Type == "O").ToList().ForEach(i => {
+        //        i.Level = level;
+        //        processSourceLevel(list, i.O, i.OID, level);
+        //    });
+        //}
+        //void processSourceLevel(List<SourcesToObjectModel> list, string obj, int objID, int level)
+        //{
+        //    list.Where(i => i.O == obj && i.OID == objID && i.Type == "S" && i.Level == 0).ToList().ForEach(i => {
+        //        i.Level = level;
+        //        processSourceLevel(list, i.ID);
+        //    });
+        //}
 
 
-        public DiagramModel TraverseDiagram(DiagramModel model, JsonNodeItem start)
-        {
-            var diagram = new DiagramModel();
-            diagram.nodes.Add(start);
+        //public DiagramModel TraverseDiagram(DiagramModel model, JsonNodeItem start)
+        //{
+        //    var diagram = new DiagramModel();
+        //    diagram.nodes.Add(start);
 
-            //links to the right
-            var links = model.links.Where(l => l.from == start.key).ToList();
+        //    //links to the right
+        //    var links = model.links.Where(l => l.from == start.key).ToList();
 
-            links.ForEach(l =>
-            {
-                diagram.links.Add(l);
-                var node = model.nodes.Where(i => i.key == l.to).SingleOrDefault();
-                if (node == null)
-                    return;
+        //    links.ForEach(l =>
+        //    {
+        //        diagram.links.Add(l);
+        //        var node = model.nodes.Where(i => i.key == l.to).SingleOrDefault();
+        //        if (node == null)
+        //            return;
 
-                var k = TraverseDiagram(model, node);
-                diagram.nodes.AddRange(k.nodes);
-                diagram.links.AddRange(k.links);
-            });
+        //        var k = TraverseDiagram(model, node);
+        //        diagram.nodes.AddRange(k.nodes);
+        //        diagram.links.AddRange(k.links);
+        //    });
 
-            return diagram;
-        }
+        //    return diagram;
+        //}
 
-        public DiagramModel MergeDiagram(DiagramModel model)
-        {
-            var leadingNodes = model.nodes.Where(n => !model.links.Any(l => l.to == n.key)).ToList();
-            var diagrams = new List<DiagramModel>();
+        //public DiagramModel MergeDiagram(DiagramModel model)
+        //{
+        //    var leadingNodes = model.nodes.Where(n => !model.links.Any(l => l.to == n.key)).ToList();
+        //    var diagrams = new List<DiagramModel>();
 
-            //get discrete diagrams
-            leadingNodes.ForEach(n =>
-            {
-                var diagram = TraverseDiagram(model, n);
-                diagrams.Add(diagram);
+        //    //get discrete diagrams
+        //    leadingNodes.ForEach(n =>
+        //    {
+        //        var diagram = TraverseDiagram(model, n);
+        //        diagrams.Add(diagram);
 
-            });
+        //    });
 
-            //pick the biggest
-            var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).FirstOrDefault();
+        //    //pick the biggest
+        //    var mainDiagram = diagrams.OrderByDescending(d => d.nodes.Count).FirstOrDefault();
 
-            //now merge the smaller diagrams into the main one if possible
-            foreach (DiagramModel dgm in diagrams)
-            {
-                if (dgm == mainDiagram)
-                    continue;
+        //    //now merge the smaller diagrams into the main one if possible
+        //    foreach (DiagramModel dgm in diagrams)
+        //    {
+        //        if (dgm == mainDiagram)
+        //            continue;
 
-                var nodeList = dgm.nodes.OrderByDescending(n => n.level);
+        //        var nodeList = dgm.nodes.OrderByDescending(n => n.level);
 
-                foreach (JsonNodeItem n in nodeList)
-                {
+        //        foreach (JsonNodeItem n in nodeList)
+        //        {
 
-                    var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
-                    if (node == null)
-                        continue;
-                    else
-                    {
-                        var leftLinks = dgm.links.Where(l => l.to == n.key);
-                        var rightLinks = dgm.links.Where(l => l.from == n.key);
+        //            var node = mainDiagram.nodes.OrderBy(k => k.level).Where(k => k.obj == n.obj && k.objid == n.objid).FirstOrDefault();
+        //            if (node == null)
+        //                continue;
+        //            else
+        //            {
+        //                var leftLinks = dgm.links.Where(l => l.to == n.key);
+        //                var rightLinks = dgm.links.Where(l => l.from == n.key);
 
-                        var nodeExists = false;
+        //                var nodeExists = false;
 
-                        if (mainDiagram.nodes.Any(k => k.key == n.key))
-                        {
-                            //make sure we don't delete this node later
-                            nodeExists = true;
-                        }
+        //                if (mainDiagram.nodes.Any(k => k.key == n.key))
+        //                {
+        //                    //make sure we don't delete this node later
+        //                    nodeExists = true;
+        //                }
 
-                        //point affected links to mainDiagram node
-                        foreach (JsonLinkItem l in leftLinks)
-                            l.to = node.key;
-                        foreach (JsonLinkItem l in rightLinks)
-                            l.from = node.key;
+        //                //point affected links to mainDiagram node
+        //                foreach (JsonLinkItem l in leftLinks)
+        //                    l.to = node.key;
+        //                foreach (JsonLinkItem l in rightLinks)
+        //                    l.from = node.key;
 
-                        if (!nodeExists)
-                            model.nodes.Remove(n);
-                    }
-                }
-            }
+        //                if (!nodeExists)
+        //                    model.nodes.Remove(n);
+        //            }
+        //        }
+        //    }
 
-            return model;
-        }
+        //    return model;
+        //}
 
-        [HttpGet, Route("{type}/{id:int}/sources")]
-        public JsonNetResult GetSourcesByObject(SystemObjects type, int id)
-        {
-            var list = Company.Query<SourcesToObjectModel>(@"exec GetLineageDiagram @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
+        //[HttpGet, Route("{type}/{id:int}/sources")]
+        //public JsonNetResult GetSourcesByObject(SystemObjects type, int id)
+        //{
+        //    var list = Company.Query<SourcesToObjectModel>(@"exec GetLineageDiagram @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
 
-            list.Where(i => i.Level == 1).ToList().ForEach(i =>
-            {
-                processSourceLevel(list, i.ID); //assumes type is "O"
-            });
+        //    list.Where(i => i.Level == 1).ToList().ForEach(i =>
+        //    {
+        //        processSourceLevel(list, i.ID); //assumes type is "O"
+        //    });
 
-            var model = new DiagramModel();
+        //    var model = new DiagramModel();
 
-            Func<string, int, string, int> getTotalSourceRules = delegate (string obj, int objID, string currentType)
-            {
-                return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawSourceRuleCount);
-            };
+        //    Func<string, int, string, int> getTotalSourceRules = delegate (string obj, int objID, string currentType)
+        //    {
+        //        return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawSourceRuleCount);
+        //    };
 
-            Func<string, int, string, int> getTotalMappingRules = delegate (string obj, int objID, string currentType)
-            {
-                return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawMappingRuleCount);
-            };
+        //    Func<string, int, string, int> getTotalMappingRules = delegate (string obj, int objID, string currentType)
+        //    {
+        //        return list.Where(i => i.O == obj && i.OID == objID && i.Type == "O").Sum(i => i.RawMappingRuleCount);
+        //    };
 
-            var IDs = list.Select(i => i.ID).Distinct().ToList();
-            IDs.ForEach(m =>
-            {
-                var s = list.Single(i => i.ID == m && i.Type == "S");
-                var sKey = $"{s.Level}{s.O}{s.OID}";
-                if (!model.nodes.Any(i => i.key == sKey))
-                    model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount, openEventCount = s.OpenEventCount, openIssueCount = s.OpenIssueCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
+        //    var IDs = list.Select(i => i.ID).Distinct().ToList();
+        //    IDs.ForEach(m =>
+        //    {
+        //        var s = list.Single(i => i.ID == m && i.Type == "S");
+        //        var sKey = $"{s.Level}{s.O}{s.OID}";
+        //        if (!model.nodes.Any(i => i.key == sKey))
+        //            model.nodes.Add(new JsonNodeItem { key = sKey, level = s.Level, obj = s.O, objid = s.OID, name = s.ObjectName, type = s.TypeName, objecttype = s.ObjectType, objecttypeid = s.ObjectTypeID, back = s.BackColor, fore = s.ForeColor, intersectMapId = s.ID, intersectId = s.IntersectID, mappingRuleCount = s.RawMappingRuleCount, challengeCount = s.ChallengeCount, openEventCount = s.OpenEventCount, openIssueCount = s.OpenIssueCount }); //, sourceRuleCount = getTotal(s.O, s.OID, s.Type)
 
-                var o = list.Single(i => i.ID == m && i.Type == "O");
-                var oKey = $"{o.Level}{o.O}{o.OID}";
-                if (!model.nodes.Any(i => i.key == oKey))
-                    model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount, openEventCount = o.OpenEventCount, openIssueCount = o.OpenIssueCount });
-                else
-                    model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type);
+        //        var o = list.Single(i => i.ID == m && i.Type == "O");
+        //        var oKey = $"{o.Level}{o.O}{o.OID}";
+        //        if (!model.nodes.Any(i => i.key == oKey))
+        //            model.nodes.Add(new JsonNodeItem { key = oKey, level = o.Level, obj = o.O, objid = o.OID, name = o.ObjectName, type = o.TypeName, objecttype = o.ObjectType, objecttypeid = o.ObjectTypeID, back = o.BackColor, fore = o.ForeColor, intersectMapId = o.ID, intersectId = o.IntersectID, sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type), mappingRuleCount = o.RawMappingRuleCount, challengeCount = o.ChallengeCount, openEventCount = o.OpenEventCount, openIssueCount = o.OpenIssueCount });
+        //        else
+        //            model.nodes.First(i => i.key == oKey).sourceRuleCount = getTotalSourceRules(o.O, o.OID, o.Type);
 
-                if (model.links.Any(i => i.from == sKey && i.to == oKey))
-                {
-                    var existingLink = model.links.Single(i => i.from == sKey && i.to == oKey);
-                    existingLink.text += $", {s.Predicate}";
-                }
-                else
-                {
-                    model.links.Add(new JsonLinkItem { id = s.ID, intersectTypeId = s.IntersectTypeID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount, transformationCount = s.LinkTransformationCount });
-                }
-            });
+        //        if (model.links.Any(i => i.from == sKey && i.to == oKey))
+        //        {
+        //            var existingLink = model.links.Single(i => i.from == sKey && i.to == oKey);
+        //            existingLink.text += $", {s.Predicate}";
+        //        }
+        //        else
+        //        {
+        //            model.links.Add(new JsonLinkItem { id = s.ID, intersectTypeId = s.IntersectTypeID, from = sKey, to = oKey, text = s.Predicate, predicateId = s.PredicateID, mappingRuleCount = s.LinkMappingRuleCount, transformationCount = s.LinkTransformationCount });
+        //        }
+        //    });
 
-            model = MergeDiagram(model);
+        //    model = MergeDiagram(model);
 
-            return new JsonNetResult
-            {
-                Data = new { model.nodes, model.links },
-                Formatting = Formatting.None
-            };
-        }
+        //    return new JsonNetResult
+        //    {
+        //        Data = new { model.nodes, model.links },
+        //        Formatting = Formatting.None
+        //    };
+        //}
 
         [HttpGet]
         public JsonNetResult ChildRelationshipsBySourceAndTarget(SystemObjects s, int sID, SystemObjects t, int tID)
@@ -1146,30 +965,6 @@ from[Intersect] O
                                        ( (O.Subject = @o and O.SubjectID = @oid) AND (O.Object = @s and O.ObjectID = @sid) )
 							        )
 									and T.Subject = 'Intersect' and T.SubjectID = O.ID";
-            //            if (sType == tType && sID == tID)
-            //            {
-            //                //These objects are the same
-            //                sql = @"select	R.* 
-            //from	Relationship R
-            //		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
-            //										and S.IntersectID = R.SourceObjectID 
-            //										and S.SourceObject = @sType 
-            //										and S.SourceObjectID = @sID";
-            //                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
-            //            }
-            //            else
-            //            {
-            //                //Objects are different
-            //                sql = @"select	R.*
-            //from	Relationship R
-            //		inner join cache.Relationship S on R.SourceObjectType = 'Intersect' 
-            //										and S.IntersectID = R.SourceObjectID 
-            //										and S.SourceObject = @sType 
-            //										and S.SourceObjectID = @sID
-            //										and S.TargetObject = @tType 
-            //										and S.TargetObjectID = @tID";
-            //                return new JsonNetResult { Data = Company.Query<Relationship>(sql, new { sType = new Dapper.DbString { Value = sType, IsAnsi = true }, sID, tType = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, tID }).OrderBy(i => i.TargetTypeName).ThenBy(i => i.TargetName), Formatting = Newtonsoft.Json.Formatting.None };
-            //            }
 
             return new JsonNetResult { Data = Company.Query<dynamic>(sql, new { s = new Dapper.DbString { Value = sType, IsAnsi = true }, sid = sID, o = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true }, oid = tID }).OrderBy(i => i.ObjectTypeName).ThenBy(i => i.ObjectName), Formatting = Formatting.None };
         }
@@ -1265,163 +1060,163 @@ for		    xml path('relationship'), root('item')
 
         #region Partials
 
-        [Obsolete, HttpPost, Route("sources")]
-        public JsonNetResult LineageSourcePost(SourcePostModel models)
-        {
-            var message = "";
-            var success = false;
+//        [Obsolete, HttpPost, Route("sources")]
+//        public JsonNetResult LineageSourcePost(SourcePostModel models)
+//        {
+//            var message = "";
+//            var success = false;
 
-            models.Adds.ForEach(model =>
-            {
-                #region 
-                if (string.IsNullOrEmpty(model.Focal) || model.FocalID <= 0)
-                {
-                    message += $"The Target, or current object, you provided is invalid.";
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
-                    {
-                        message += $"The Subject you provided is invalid.";
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
-                        {
-                            message += $"The Object you provided is invalid.";
-                        }
-                        else
-                        {
-                            if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
-                            {
-                                message += $"A source may not map to itself directly.";
-                            }
-                            else
-                            {
-                                var predicate = Company.GetById<Predicate>(model.PredicateID);
+//            models.Adds.ForEach(model =>
+//            {
+//                #region 
+//                if (string.IsNullOrEmpty(model.Focal) || model.FocalID <= 0)
+//                {
+//                    message += $"The Target, or current object, you provided is invalid.";
+//                }
+//                else
+//                {
+//                    if (string.IsNullOrEmpty(model.Subject) || model.SubjectID <= 0)
+//                    {
+//                        message += $"The Subject you provided is invalid.";
+//                    }
+//                    else
+//                    {
+//                        if (string.IsNullOrEmpty(model.Object) || model.ObjectID <= 0)
+//                        {
+//                            message += $"The Object you provided is invalid.";
+//                        }
+//                        else
+//                        {
+//                            if (model.Subject == model.Object && model.SubjectID == model.ObjectID)
+//                            {
+//                                message += $"A source may not map to itself directly.";
+//                            }
+//                            else
+//                            {
+//                                var predicate = Company.GetById<Predicate>(model.PredicateID);
 
-                                if (predicate.Type == PredicateType.Lineage)
-                                {
-                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
-                                        Company.AddIntersect(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
+//                                if (predicate.Type == PredicateType.Lineage)
+//                                {
+//                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Subject}{model.SubjectID}")
+//                                        Company.AddIntersect(model.Focal, model.FocalID, model.Subject, model.SubjectID, IntersectClassification.Normal, null, null);
 
-                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Object}{model.ObjectID}")
-                                        Company.AddIntersect(model.Focal, model.FocalID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                                }
+//                                    if ($"{model.Focal}{model.FocalID}" != $"{model.Object}{model.ObjectID}")
+//                                        Company.AddIntersect(model.Focal, model.FocalID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+//                                }
 
 
-                                Company.AddIntersect(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
-                                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
-S.IntersectID,
-S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-from [IntersectNode] S 
-inner join IntersectNode O on O.IntersectID = S.IntersectID 
-and S.[ObjectType] = @s and S.ObjectID = @sid 
-and O.[ObjectType] = @o and O.ObjectID = @oid",
-            new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
-            ).SingleOrDefault();
-                                if (intersect != null)
-                                {
-                                    var existingSourceRecordCount = Company.Query<int>(
-                                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-                                        new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
-                                    ).Single();
+//                                Company.AddIntersect(model.Subject, model.SubjectID, model.Object, model.ObjectID, IntersectClassification.Normal, null, null);
+//                                var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
+//S.IntersectID,
+//S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
+//O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
+//from [IntersectNode] S 
+//inner join IntersectNode O on O.IntersectID = S.IntersectID 
+//and S.[ObjectType] = @s and S.ObjectID = @sid 
+//and O.[ObjectType] = @o and O.ObjectID = @oid",
+//            new { s = new Dapper.DbString { Value = model.Subject, IsAnsi = true }, sid = model.SubjectID, o = new Dapper.DbString { Value = model.Object, IsAnsi = true }, oid = model.ObjectID }
+//            ).SingleOrDefault();
+//                                if (intersect != null)
+//                                {
+//                                    var existingSourceRecordCount = Company.Query<int>(
+//                                        "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
+//                                        new { s = intersect.SubjectNodeID, o = intersect.ObjectNodeID, p = model.PredicateID }
+//                                    ).Single();
 
-                                    if (existingSourceRecordCount <= 0)
-                                    {
-                                        // If we got here, we are all good.
+//                                    if (existingSourceRecordCount <= 0)
+//                                    {
+//                                        // If we got here, we are all good.
 
-                                        var intersectMap = new IntersectMap
-                                        {
-                                            ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
-                                            PredicateID = model.PredicateID,
-                                            SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
-                                            Type = PredicateType.Lineage
-                                        };
-                                        Company.Add<IntersectMap>(intersectMap);
-                                    }
-                                }
-                                else
-                                {
-                                    message += $"The Subject or Object did not match up with the Relationship you provided.";
-                                }
-                            }
-                        }
-                    }
-                }
-                #endregion
-            });
+//                                        var intersectMap = new IntersectMap
+//                                        {
+//                                            ObjectIntersectNodeID = intersect.ObjectNodeID,// objectIntersectNode.ID,
+//                                            PredicateID = model.PredicateID,
+//                                            SubjectIntersectNodeID = intersect.SubjectNodeID,// subjectIntersectNode.ID,
+//                                            Type = PredicateType.Lineage
+//                                        };
+//                                        Company.Add<IntersectMap>(intersectMap);
+//                                    }
+//                                }
+//                                else
+//                                {
+//                                    message += $"The Subject or Object did not match up with the Relationship you provided.";
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                #endregion
+//            });
 
-            models.Deletes.ForEach(model =>
-            {
-                #region 
-                if (model.IntersectMapID <= 0)
-                {
-                    message = $"The source ID ({model.IntersectMapID}) is invalid.";
-                }
-                else
-                {
-                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
-                    if (o == null)
-                    {
-                        message += $"The source with ID ({model.IntersectMapID}) could not be found.";
-                    }
-                    else
-                    {
-                        if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
-                        {
-                            message = FormInfo.Permisions_Error_Delete;
-                        }
-                        else
-                        {
-                            Company.Delete<IntersectMap>(o);
-                        }
-                    }
-                }
-                #endregion
-            });
+//            models.Deletes.ForEach(model =>
+//            {
+//                #region 
+//                if (model.IntersectMapID <= 0)
+//                {
+//                    message = $"The source ID ({model.IntersectMapID}) is invalid.";
+//                }
+//                else
+//                {
+//                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+//                    if (o == null)
+//                    {
+//                        message += $"The source with ID ({model.IntersectMapID}) could not be found.";
+//                    }
+//                    else
+//                    {
+//                        if (!Company.HasPermission(model.Focal, model.FocalID, Claim.Delete, ClaimObject.Relationship))
+//                        {
+//                            message = FormInfo.Permisions_Error_Delete;
+//                        }
+//                        else
+//                        {
+//                            Company.Delete<IntersectMap>(o);
+//                        }
+//                    }
+//                }
+//                #endregion
+//            });
 
-            models.Edits.ForEach(model =>
-            {
-                #region 
-                if (model.IntersectMapID <= 0)
-                {
-                    message += $"The intersect map ID ({model.IntersectMapID}) is invalid.";
-                }
-                else
-                {
-                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
-                    if (o == null)
-                    {
-                        message += $"The intersect map record with ID ({model.IntersectMapID}) cound not be found.";
-                    }
-                    else
-                    {
-                        o.PredicateID = model.PredicateID;
-                        Company.Update(o);
-                    }
-                }
-                #endregion
-            });
+//            models.Edits.ForEach(model =>
+//            {
+//                #region 
+//                if (model.IntersectMapID <= 0)
+//                {
+//                    message += $"The intersect map ID ({model.IntersectMapID}) is invalid.";
+//                }
+//                else
+//                {
+//                    var o = Company.GetById<IntersectMap>(model.IntersectMapID);
+//                    if (o == null)
+//                    {
+//                        message += $"The intersect map record with ID ({model.IntersectMapID}) cound not be found.";
+//                    }
+//                    else
+//                    {
+//                        o.PredicateID = model.PredicateID;
+//                        Company.Update(o);
+//                    }
+//                }
+//                #endregion
+//            });
 
-            success = string.IsNullOrEmpty(message);
+//            success = string.IsNullOrEmpty(message);
 
-            if (string.IsNullOrEmpty(message))
-            {
-                message = "Successfully updated lineage.";
-            }
+//            if (string.IsNullOrEmpty(message))
+//            {
+//                message = "Successfully updated lineage.";
+//            }
 
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    message = message,
-                    success = success
-                },
-                Formatting = Formatting.None
-            };
-        }
+//            return new JsonNetResult
+//            {
+//                Data = new
+//                {
+//                    message = message,
+//                    success = success
+//                },
+//                Formatting = Formatting.None
+//            };
+//        }
 
         public ActionResult AggregateRelationOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly = false)
         {

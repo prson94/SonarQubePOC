@@ -430,6 +430,69 @@ BEGIN
 			set @hasDynamicFields = 1
 		end;
 
+		if @Type = 'Domain' OR @Type = 'DomainItem'
+		begin
+			set @html = @html + '{Items}'
+
+			declare @MyPreviewDomainID int
+			if @Type = 'DomainItem'
+				begin
+					select @MyPreviewDomainID = DomainID from [DomainItem] where ID = @ID 
+				end
+			else
+				begin
+					set @MyPreviewDomainID = @ID
+				end
+
+			-- BUILD Domain LIST HTML -----------------------------------------
+			declare @PreviewDomainItemsHtml nvarchar(max)
+			declare @HasPreviewDescription bit
+
+			select @HasPreviewDescription = case Cnt 
+										when 0 then 0
+										else 1
+									 end 
+									 from (
+											select count(1) as Cnt
+											from	(
+												select		top 100 percent 
+															[Description]
+												from		DomainItem
+												where		DomainID = @MyPreviewDomainID
+															and [Description] is not null and [Description] <> ''
+												order by	Name asc
+												) D
+											) D
+
+			set @PreviewDomainItemsHtml = '<table class="hoverable bordered striped" style="width:100%"><thead>'
+			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<th style="margin-right: 15px">Code</th><th style="margin-right: 15px">Name</th>'
+			if @HasPreviewDescription = 1
+			begin
+				set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<th>Description</th>'
+			end
+			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</thead><tbody>'
+
+			select		top 10 
+						@PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '<tr>' + 
+											'<td>' + Code + '</td>' + 
+											'<td>' + Name + '</td>' + 
+											case 
+												when @HasPreviewDescription = 1 then 
+													'<td>' + [Description] + '</td>'
+												else ''
+											end
+											+ '</tr>'
+			from		DomainItem
+			where		DomainID = @MyPreviewDomainID
+			order by	Name asc
+
+			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</tbody>'
+			set @PreviewDomainItemsHtml = @PreviewDomainItemsHtml + '</table>'
+ 
+			insert into @tbl values ('Items', @PreviewDomainItemsHtml)
+			------------------------------------------------------------------
+		end
+
 		if @Type = 'DomainGroup'
 		begin
 			select	@n = Name,

@@ -182,49 +182,14 @@ from	FusionAttribute FA
            // return null;
         }
 
-        [Route("technical/{intersectId:int}")]
-        public IQueryable<dynamic> GetTechnicalRelationships(int intersectId)
-        {
-            return Company.Query<dynamic>("EXEC GetTechnicalRelationshipsByIntersect @IntersectID"
-            , new
-            {
-                IntersectID = intersectId
-            }).AsQueryable();
-        }
-
-        [Route("responsibilities/{type}/{id:int}")]
-        public IQueryable<dynamic> GetResponsibilities(SystemObjects type, int id)
-        {
-            return Company.Query<dynamic>(
-                QueryConstants.ResponsibilityList,
-                new { ObjectType = type.ToString(), ObjectID = id }
-            ).AsQueryable();
-        }
-
-        #region New Relationship Logic
-
-        [Route("types"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
-        public IEnumerable<dynamic> GetRelationTypes()
-        {
-            var predicateTypes = PredicateType.Lineage.GetAsList();
-            var models = from r in Company.Query<dynamic>(QueryConstants.RelationshipTypeList)
-                         join p in predicateTypes on r.PredicateType equals (int)p.ID
-                         select new
-                         {
-                             r.ID,
-                             r.Subject,
-                             r.SubjectID,
-                             r.SubjectName,
-                             r.Object,
-                             r.ObjectID,
-                             r.ObjectName,
-                             r.PredicateType,
-                             PredicateTypeName = p.Name
-                         };
-
-            return models;
-        }
-
-        #endregion
+        //[Route("technical/{intersectId:int}")]
+        //public IQueryable<dynamic> GetTechnicalRelationships(int intersectId)
+        //{
+        //    return Company.Query<dynamic>("EXEC GetTechnicalRelationshipsByIntersect @IntersectID"
+        //    , new
+        //    {
+        //        IntersectID = intersectId
+        //    }).AsQueryable();
+        //}
     }
 }

@@ -243,6 +243,7 @@
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.IdentityModel.Services" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.20622.1351, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -437,6 +438,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Diagram Models.cs" />
+    <Compile Include="Models\Extensions.cs" />
     <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
@@ -851,6 +853,10 @@
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeui\themes\omega\theme.css" />
+    <Content Include="Scripts\app\app.component.js" />
+    <Content Include="Scripts\app\app.js" />
+    <Content Include="Scripts\app\app.module.js" />
+    <Content Include="Scripts\app\app.routes.js" />
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
@@ -867,6 +873,7 @@
     <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
+    <Content Include="Scripts\app\main.js" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
@@ -1133,8 +1140,6 @@
     <Content Include="Views\Shared\DeleteForm.cshtml" />
     <Content Include="Views\Form\FieldTypeEditForm.cshtml" />
     <Content Include="Views\Form\AttributeTypeEditForm.cshtml" />
-    <Content Include="Views\Form\FusionAttributeOwnerRuleEditForm.cshtml" />
-    <Content Include="Views\Form\FusionAttributePromotionRuleEditForm.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeClaimGrid.cshtml" />
     <Content Include="Views\Parts\ResponsibilityTypeObjectClaimGrid.cshtml" />
     <Content Include="Views\Form\AddRelationship.cshtml" />
@@ -1187,10 +1192,7 @@
     <Content Include="Views\Overlays\FusionConfigurationOwnershipRules.cshtml" />
     <Content Include="Views\Shared\OverlayEditableForm.cshtml" />
     <Content Include="Views\Shared\OverlayDeleteForm.cshtml" />
-    <Content Include="Views\Form\FusionAttributePromotionRuleMappingEditForm.cshtml" />
     <Content Include="Views\Shared\FusionAttributeTypeFormTreeControl.cshtml" />
-    <Content Include="Views\Form\FusionAttributePromotionRuleItemEditForm.cshtml" />
-    <Content Include="Views\Form\FusionAttributeOwnershipRuleItemEditForm.cshtml" />
     <Content Include="Views\Overlays\LookupTypeUsage.cshtml" />
     <Content Include="Views\Form\IntersectTypeEditForm.cshtml" />
     <Content Include="Views\Overlays\TaxonomyTypeClasses.cshtml" />

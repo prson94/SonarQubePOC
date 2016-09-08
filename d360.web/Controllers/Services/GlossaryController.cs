@@ -368,6 +368,12 @@ from    FieldWithRelation F
             return response;
         }
 
+        [Route("artifacts/{id:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForArtifactType(int id)
+        {
+            return GetResponsibilities(SystemObjects.ArtifactType, id);
+        }
+
         JArray GetAttributesProperty(List<AttributeDetail> attributes, List<FieldWithRelation> attributeFields, int? parentAttributeID)
         {
             JArray attributeArray = null;
@@ -585,6 +591,12 @@ where A.ArtifactTypeID = @id", columns, joins);
             }
         }
 
+        [Route("artifacts/{typeID:int}/{id:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForArtifact(int typeID, int id)
+        {
+            return GetResponsibilities(SystemObjects.Artifact, id);
+        }
+
         #endregion
 
         #region Models
@@ -625,6 +637,12 @@ where A.TaxonomyTypeID = @id ", columns, joins);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
             return Company.Query<dynamic>(sql, new { id = id }).AsQueryable();
+        }
+
+        [Route("models/{id:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForTaxonomyType(int id)
+        {
+            return GetResponsibilities(SystemObjects.TaxonomyType, id);
         }
 
         /// <summary>
@@ -775,6 +793,12 @@ where A.TaxonomyTypeID = @id ", columns, joins);
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "An unknown error occured.  Please try again later.", ex);
             }
+        }
+
+        [Route("models/{typeID:int}/{id:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForTaxonomy(int typeID, int id)
+        {
+            return GetResponsibilities(SystemObjects.Taxonomy, id);
         }
 
         #endregion

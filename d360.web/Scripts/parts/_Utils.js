@@ -120,7 +120,9 @@ function TileTools(toolsControlID, tools, local) {
     }
 
     $.each(tools, function () {
-        var html = "<a style='margin-left: 10px' class='btn-floating waves-effect waves-light brown lighten-1'";
+        var color = "";
+        if (this.color) color = this.color + "-text";
+        var html = "<a style='margin-left: 10px; padding: 0 .25rem' class='btn-flat waves-effect waves-teal " + color + "'";
         if (local) {
             html += " data-local ";
         }

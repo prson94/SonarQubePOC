@@ -5,13 +5,11 @@
 
 <header>
     <span id="LineageHeaderText">Lineage</span>
+    <span id="LoadingProgress" style="display:none;color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
     <div class="TileTools" style="right: 5px; top: 5px; z-index: 1003">
         <div id="LineageTools" style="border: none !important; background-color: transparent !important">
             <ul>
-                <li>
-                    <div id="LineageZoomSlider"></div>
-
-                </li>
+                <li><div id="LineageZoomSlider"></div></li>
                 <li data-action="reset"><i class="fa fa-2x fa-refresh" title="Refresh"></i></li>
                 <li id="ToolView">
                     <i class="fa fa-2x fa-eye" title="Views"></i>
@@ -32,19 +30,7 @@
                         <li data-action="allmappings">All Technical Mappings</li>*@
                     </ul>
                 </li>
-                <li id="ToolWindows">
-                    <i class="fa fa-2x fa-universal-access" title="Toolbars"></i>
-                    <i class="fa fa-chevron-down" style="color: #999;line-height: 1.3;vertical-align: super;"></i>
-                    <ul style="width:200px">
-                        <li id="w_info" data-action="w_info"><i class="fa fa-info" title="Node Info"></i> Node Info</li>
-                        <li id="w_sourcerules" data-action="w_sourcerules"><i class="fa fa-code-fork" title="Source Rules"></i> Source Rules</li>
-                        <li id="w_mappings" data-action="w_mappings"><i class="fa fa-exchange" title="Mapping Rules"></i> Mapping Rules</li>
-                        <li id="w_roles" data-action="w_roles"><i class="fa fa-user" title="Roles"></i> Roles</li>
-                        <li id="w_fusion" data-action="w_fusion"><i class="fa fa-database" title="Fusion"></i> Fusion</li>
-                        @*<li data-action="w_xforms"><i class="fa fa-random" title="Business Transformations"></i> Business Transformations</li>*@
-                    </ul>
-                </li>
-
+                <li id="ToolWindows" data-action="openwindow"><i class="fa fa-2x fa-info-circle" title="Toolbars"></i></li>
                 <li data-action="close"><i class="fa fa-2x fa-close" title="Close Lineage"></i></li>
             </ul>
         </div>
@@ -91,34 +77,24 @@
 
 <div id="LineageDiagram" style="overflow: hidden" class="diagram"></div>
 
-<div id="LineageWindow0">
-    <div><i class="fa fa-info-circle"></i>&#160;Info</div>
-    <div id="Lineage_info_detail"></div>
-</div>
-
-<div id="LineageWindow1">
-    <div><i class="fa fa-code-fork"></i>&#160;Source Rules</div>
-    <div id="Lineage_sourcerules_content"></div>
-</div>
-
-<div id="LineageWindow2">
-    <div><i class="fa fa-exchange"></i>&#160;Mapping Rules</div>
-    <div id="Lineage_mappingrules_content"></div>
-</div>
-
-<div id="LineageWindow3">
-    <div><i class="fa fa-user"></i>&#160;Responsibilities</div>
-    <div id="Lineage_responsibilities_content"></div>
-</div>
-
-<div id="LineageWindow4">
-    <div><i class="fa fa-database"></i>&#160;Fusion Relationships</div>
-    <div id="Lineage_fusion_content"></div>
-</div>
-
-<div id="LineageWindow5">
-    <div><i class="fa fa-random"></i>&#160;Business Transformations</div>
-    <div id="Lineage_transformations_content"></div>
+<div id="LineageWindow">
+    <div>Info</div>
+    <div id="LineageWindowTabs" style="padding: 0px; margin:0px; border-bottom: 0px solid transparent">
+        <ul>
+            <li title="Info"><i class="fa fa-2x fa-info-circle"></i></li>
+            <li title="Source Rules"><i class="fa fa-2x fa-code-fork"></i></li>
+            <li title="Mapping Rules"><i class="fa fa-2x fa-exchange"></i></li>
+            <li title="Responsibilities"><i class="fa fa-2x fa-user"></i></li>
+            <li title="Fusion Relationships"><i class="fa fa-2x fa-database"></i></li>
+            @*<li title="Business Transformations"><i class="fa fa-2x fa-random"></i></li>*@
+        </ul>
+        <div style="margin:5px"><div id="Lineage_info_detail"></div></div>
+        <div style="margin:5px"><div id="Lineage_sourcerules_content"></div></div>
+        <div style="margin:5px"><div id="Lineage_mappingrules_content"></div></div>
+        <div style="margin:5px"><div id="Lineage_responsibilities_content"></div></div>
+        <div style="margin:5px"><div id="Lineage_fusion_content"></div></div>
+        @*<div style="margin:5px"><div id="Lineage_transformations_content"></div></div>*@
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -153,12 +129,8 @@
     }
 
     function unsubscribe(){
-        $('#LineageWindow0').jqxWindow('destroy');
-        $('#LineageWindow1').jqxWindow('destroy');
-        $('#LineageWindow2').jqxWindow('destroy');
-        $('#LineageWindow3').jqxWindow('destroy');
-        $('#LineageWindow4').jqxWindow('destroy');
-        $('#LineageWindow5').jqxWindow('destroy');
+        $('#LineageWindowTabs').jqxTabs('destroy');
+        $('#LineageWindow').jqxWindow('destroy');
         amplify.unsubscribe(AmplifyActions.Unsubscribe, unsubscribe);
     }
 
@@ -228,20 +200,16 @@
         //#region Control instantiation
 
         var windowSettings = {
-            height: 'auto', width: 500,
+            height: 'auto', width: 500, position: 'center, right',
             draggable: true,
-            autoOpen: false,
+            autoOpen: true,
             zIndex: 1002,
             minWidth: 400, minHeight: 300,
-            maxWidth: 900, maxHeight: 500
+            maxWidth: 1000, maxHeight: 1000
         };
+        $('#LineageWindow').jqxWindow(windowSettings);
 
-        $('#LineageWindow0').jqxWindow(windowSettings);
-        $('#LineageWindow1').jqxWindow(windowSettings);
-        $('#LineageWindow2').jqxWindow(windowSettings);
-        $('#LineageWindow3').jqxWindow(windowSettings);
-        $('#LineageWindow4').jqxWindow(windowSettings);
-        $('#LineageWindow5').jqxWindow(windowSettings);
+        $('#LineageWindowTabs').jqxTabs({theme: 'metro', width: '100%', scrollable:false});//, height: '100%'
 
         $('#ManageLineageTools').jqxMenu({ theme: 'flat', mode: 'horizontal', height: 50 });
         $('#ManageLineageTools').hide();
@@ -476,40 +444,10 @@
                     populateDiagram();
                     break;
                     //#endregion
-                case 'w_info':
+                case 'openwindow':
                     //#region
-                    $("#LineageWindow0").jqxWindow('open');
-                    $("#LineageWindow0").jqxWindow('move', offset.left - 50, offset.top + 50);
-                    break;
-                    //#endregion
-                case 'w_sourcerules':
-                    //#region
-                    $("#LineageWindow1").jqxWindow('open');
-                    $("#LineageWindow1").jqxWindow('move', offset.left - 75, offset.top + 75);
-                    break;
-                    //#endregion
-                case 'w_mappings':
-                    //#region
-                    $("#LineageWindow2").jqxWindow('open');
-                    $("#LineageWindow2").jqxWindow('move', offset.left - 100, offset.top + 100);
-                    break;
-                    //#endregion
-                case 'w_roles':
-                    //#region
-                    $("#LineageWindow3").jqxWindow('open');
-                    $("#LineageWindow3").jqxWindow('move', offset.left - 50, offset.top + 50);
-                    break;
-                    //#endregion
-                case 'w_fusion':
-                    //#region
-                    $("#LineageWindow4").jqxWindow('open');
-                    $("#LineageWindow4").jqxWindow('move', offset.left - 75, offset.top + 75);
-                    break;
-                    //#endregion
-                case 'w_xforms':
-                    //#region
-                    $("#LineageWindow5").jqxWindow('open');
-                    $("#LineageWindow5").jqxWindow('move', offset.left - 100, offset.top + 100);
+                    $("#LineageWindow").jqxWindow('open');
+                    $("#LineageWindow").jqxWindow('move', offset.left - 100, offset.top + 100);
                     break;
                     //#endregion
                 case 'close':
@@ -1218,6 +1156,13 @@
 
         //#endregion
 
+        //must be here, after grids are instantiated
+        $('#LineageWindow').on('resized', function (event) { 
+            $('#Lineage_mappingrules_content').jqxGrid('refresh');
+            $('#Lineage_responsibilities_content').jqxGrid('refresh');
+            $('#Lineage_fusion_content').jqxGrid('refresh');
+        }); 
+
         //#region Methods
 
         function mappingBindingComplete(event) {
@@ -1525,11 +1470,11 @@
 
         function toggleButtons(data) {
             if (data == null) {
-                $('#LineageTools').jqxMenu('disable', 'w_info', true);
-                $('#LineageTools').jqxMenu('disable', 'w_sourcerules', true);
-                $('#LineageTools').jqxMenu('disable', 'w_mappings', true);
-                $('#LineageTools').jqxMenu('disable', 'w_roles', true);
-                $('#LineageTools').jqxMenu('disable', 'w_fusion', true);
+                $('#LineageWindowTabs').jqxTabs('disableAt', 0); //$('#LineageTools').jqxMenu('disable', 'w_info', true);
+                $('#LineageWindowTabs').jqxTabs('disableAt', 1); //$('#LineageTools').jqxMenu('disable', 'w_sourcerules', true);
+                $('#LineageWindowTabs').jqxTabs('disableAt', 2); //$('#LineageTools').jqxMenu('disable', 'w_mappings', true);
+                $('#LineageWindowTabs').jqxTabs('disableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', true);
+                $('#LineageWindowTabs').jqxTabs('disableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', true);
 
                 //$("#" + controlID_ribbon_sourcerule).hide(delay);
                 //$("#" + controlID_ribbon_multimaprule).show(delay);
@@ -1538,17 +1483,17 @@
                 //$("#" + controlID_ribbon_multimaprule).hide(delay);
 
                 if (data.diagramObjectType == 'Node') {
-                    $('#LineageTools').jqxMenu('disable', 'w_info', false);
-                    $('#LineageTools').jqxMenu('disable', 'w_sourcerules', false);
-                    $('#LineageTools').jqxMenu('disable', 'w_mappings', true);
-                    $('#LineageTools').jqxMenu('disable', 'w_roles', false);
-                    $('#LineageTools').jqxMenu('disable', 'w_fusion', false);
+                    $('#LineageWindowTabs').jqxTabs('enableAt', 0); //$('#LineageTools').jqxMenu('disable', 'w_info', false);
+                    $('#LineageWindowTabs').jqxTabs('enableAt', 1); //$('#LineageTools').jqxMenu('disable', 'w_sourcerules', false);
+                    $('#LineageWindowTabs').jqxTabs('disableAt', 2); //$('#LineageTools').jqxMenu('disable', 'w_mappings', true);
+                    $('#LineageWindowTabs').jqxTabs('enableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', false);
+                    $('#LineageWindowTabs').jqxTabs('enableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', false);
                 } else {
-                    $('#LineageTools').jqxMenu('disable', 'w_info', true);
-                    $('#LineageTools').jqxMenu('disable', 'w_sourcerules', true);
-                    $('#LineageTools').jqxMenu('disable', 'w_mappings', false);
-                    $('#LineageTools').jqxMenu('disable', 'w_roles', true);
-                    $('#LineageTools').jqxMenu('disable', 'w_fusion', true);
+                    $('#LineageWindowTabs').jqxTabs('disableAt', 0); //$('#LineageTools').jqxMenu('disable', 'w_info', true);
+                    $('#LineageWindowTabs').jqxTabs('disableAt', 1); //$('#LineageTools').jqxMenu('disable', 'w_sourcerules', true);
+                    $('#LineageWindowTabs').jqxTabs('enableAt', 2); //$('#LineageTools').jqxMenu('disable', 'w_mappings', false);
+                    $('#LineageWindowTabs').jqxTabs('disableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', true);
+                    $('#LineageWindowTabs').jqxTabs('disableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', true);
                 }
             }
         }
@@ -1653,13 +1598,19 @@
         }
 
         function populateDiagram() {
+            $('#LoadingProgress').show();
             var results = $.ajax({
+                timeout:120000, //120 sec
                 url: '/diagrams/' + lineageObject + '/' + lineageObjectID + '/lineage/' + viewID,
                 data: null
+            }).fail(function(jqXHR, textStatus, errorThrown){
+                amplify.publish("ShowMessage", { title: "Error while reloading", message: errorThrown, type: 'error' });
+                $('#LoadingProgress').fadeOut();            
             }).done(function (data, status, xhr) {
                 parseData(data);
                 reOrderLayout();
                 myDiagram.zoomToFit();
+                $('#LoadingProgress').fadeOut();
             });
         }
 

@@ -237,28 +237,6 @@ var quickTipRenderer = function (name, tip) {
     return html;
 }
 
-var redFlaggedRenderer = function (data, isOwner) {
-    var html = "";
-
-    try {
-        var flagMessage = data.RedFlagged ? "This item has notes!" : "";
-        var flagCss = data.RedFlagged ? "active-flag" : "inactive-flag";
-        if (isOwner) {
-            flagCss += " flag-clickable";
-        }
-        html = "<i title='" + flagMessage + "' class='fa fa-flag " + flagCss + "'></i>";
-
-        if (isOwner) {
-            html = "<a data-active='" + data.RedFlagged + "' data-objecttype='" + data.ObjectType + "' data-objectid='" + data.ObjectID + "' onclick='SetAlertFlag(event)'>" + html + "</a>"
-        }
-
-    } catch (e) {
-        console.log(e);
-    }
-
-    return html;
-}
-
 var gearsRenderer = function (type, id) {
     return "<div class='hasTooltip' data-tools data-t='" + type + "' data-i='" + id + "'><i class='fa fa-lg fa-gears'></i></div>";
 }

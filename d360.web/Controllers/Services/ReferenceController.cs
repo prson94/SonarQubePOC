@@ -330,6 +330,11 @@ for json path";
             return response;
         }
 
+        [Route("{typeID:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForDomainType(int typeID)
+        {
+            return GetResponsibilities(SystemObjects.DomainType, typeID);
+        }
 
         /// <summary>
         /// Gets an OData-queryable list of lists.

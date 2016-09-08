@@ -416,17 +416,17 @@ where A.FusionTypeID = @id", columns, joins);
             return Company.GetAttributesByFusion(fusionID);
         }
 
-        /// <summary>
-        /// Internal endpoint.
-        /// </summary>
-        /// <param name="typeID">The ID of the fusion type.</param>
-        /// <param name="fusionID">The ID of the fusion configuration.</param>
-        /// <returns></returns>
-        [Route("{typeID:int}/configurations/{fusionID:int}/promotionrules")]
-        public IQueryable<FusionAttributePromotionDetail> GetPromotionRulesByFusion(int typeID, int fusionID)
-        {
-            return Company.Filter<FusionAttributePromotionDetail>(i => i.FusionID == fusionID);
-        }
+        ///// <summary>
+        ///// Internal endpoint.
+        ///// </summary>
+        ///// <param name="typeID">The ID of the fusion type.</param>
+        ///// <param name="fusionID">The ID of the fusion configuration.</param>
+        ///// <returns></returns>
+        //[Route("{typeID:int}/configurations/{fusionID:int}/promotionrules")]
+        //public IQueryable<FusionAttributePromotionDetail> GetPromotionRulesByFusion(int typeID, int fusionID)
+        //{
+        //    return Company.Filter<FusionAttributePromotionDetail>(i => i.FusionID == fusionID);
+        //}
 
         /// <summary>
         /// Internal endpoint.
@@ -435,11 +435,11 @@ where A.FusionTypeID = @id", columns, joins);
         /// <param name="fusionID">The ID of the fusion configuration.</param>
         /// <param name="ruleID">The ID of the fusion promotion rule.</param>
         /// <returns></returns>
-        [Route("{typeID:int}/configurations/{fusionID:int}/promotionrules/{ruleID:int}/fields")]
-        public IQueryable<FusionAttributePromotionRuleMapping> GetPromotionRuleFieldsByFusion(int typeID, int fusionID, int ruleID)
-        {
-            return Company.Filter<FusionAttributePromotionRuleMapping>(i => i.FusionAttributePromotionRuleID == ruleID);
-        }
+        //[Route("{typeID:int}/configurations/{fusionID:int}/promotionrules/{ruleID:int}/fields")]
+        //public IQueryable<FusionAttributePromotionRuleMapping> GetPromotionRuleFieldsByFusion(int typeID, int fusionID, int ruleID)
+        //{
+        //    return Company.Filter<FusionAttributePromotionRuleMapping>(i => i.FusionAttributePromotionRuleID == ruleID);
+        //}
 
         /// <summary>
         /// Takes a given set of fusion data for a particular fusion configuration.

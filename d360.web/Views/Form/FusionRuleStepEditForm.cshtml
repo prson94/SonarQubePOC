@@ -1,31 +1,30 @@
 ﻿@model d360.web.Models.FusionRuleStepEditorModel
 @{    
-    var objectType = Model.RuleStep.GetSettingValueByName("Object");
-    var subjectType = Model.RuleStep.GetSettingValueByName("Subject");
-    var focalType = Model.RuleStep.GetSettingValueByName("Focal");
-    var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
+    var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
+    var subject = Model.RuleStep.GetSettingValueByName("Subject");
     var subjectID = Model.RuleStep.GetSettingValueByName("SubjectID");
-    var focalID = Model.RuleStep.GetSettingValueByName("FocalID");
+
+    var objectSearch = Model.RuleStep.GetSettingValueByName("ObjectSearch");
+    var @object = Model.RuleStep.GetSettingValueByName("Object");
+    var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
+
 
     var promoteParentTypeID = Model.RuleStep.GetSettingValueByName("ParentObjectTypeID");
     var promoteParentSearch = Model.RuleStep.GetSettingValueByName("ParentObjectSearch");
     var promoteParentObjectID = Model.RuleStep.GetSettingValueByName("ParentObjectID");
 
-    var objectSearch = Model.RuleStep.GetSettingValueByName("ObjectSearch");
-    var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
-    var focalSearch = Model.RuleStep.GetSettingValueByName("FocalSearch");
 
     var filterField = Model.RuleStep.GetSettingValueByName("FilterField");
     var targetField = Model.RuleStep.GetSettingValueByName("TargetField");
     var intersectTypeID = Model.RuleStep.GetSettingValueByName("IntersectType");
     var RuleObjectID = Model.RuleStep.FusionRule.ObjectID;
     var RuleObjectType = Model.RuleStep.FusionRule.ObjectType;
-    var predicate = Model.RuleStep.GetSettingValueByName("Predicate");
+
+    var role = Model.RuleStep.GetSettingValueByName("Role");
     var findParent = Model.RuleStep.GetSettingValueByName("FindParent");
 
     var promotionFusionAttributeTypeID = Model.RuleStep.GetSettingValueByName("PromotionFusionAttributeTypeID");
     var promotionStepID = Model.RuleStep.GetSettingValueByName("PromotionStepID");
-
 }
 @Html.Partial("FormHeader", new d360.web.Models.FormHeaderEditorModel { Context = ContextList.FusionRuleStep, Description = "Configure the actions for this step of your fusion rule.", Name = Model.FormName })
 <div class="large-overlay">
@@ -44,6 +43,12 @@
 </div>
 
 <script type="text/javascript">
+    // Tooltip labels
+    var _PromotionTip = "@Resources.FieldInfo.FusionPromotionTo_ToolTip";
+    var _PromotionParentTip = "@Resources.FieldInfo.FusionPromotionUnder_ToolTip";
+    var _PromotionResultStepTip = "Choose a step to use the results from to base the parent of this step from.";
+    var _PromotionParentSearchTip = "Choose a method to determine the parent value of the promoted item. Direct you specify the parent directly, or Result From Step where the parent value is based off the result of another step.";
+
     var prErrorLogCategory = "Promotion";
     var prUri = "@(Model.FormUri)";
     var prMethod = "@(Model.FormMethod)";
@@ -65,28 +70,30 @@
 
         if("@((Model.RuleStep.Action ?? "").ToUpper())" == "PROMOTE")
         {
-            ruleStepViewModel.actionPromoteSettings().SetInitialValues('@(string.Format("{0}|{1}|{2}", objectType, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
+            ruleStepViewModel.actionPromoteSettings().SetInitialValues('@(string.Format("{0}|{1}|{2}", @object, objectID, ((!string.IsNullOrEmpty(promoteParentTypeID)) ? promoteParentTypeID : "null")))', '@(promoteParentSearch)', "@(promoteParentObjectID)");
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
-            ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(objectType)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)', '@(promotionFusionAttributeTypeID)', '@(promotionStepID)');
+            ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(@object)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)', '@(promotionFusionAttributeTypeID)', '@(promotionStepID)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {
-            ruleStepViewModel.actionRelateSettings().SetInitialValues('@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)');
+            ruleStepViewModel.actionRelateSettings().SetInitialValues('@(subjectSearch)', '@(subject)', '@(subjectID)', '@(objectSearch)', '@(@object)', '@(objectID)', '@(intersectTypeID)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "LINEAGE")
         {
-            ruleStepViewModel.actionLineageSettings().SetInitialValues('@(focalSearch)', '@(focalType)', '@(focalID)', '@(subjectSearch)', '@(subjectType)', '@(subjectID)', '@(objectSearch)', '@(objectType)', '@(objectID)', '@(intersectTypeID)', '@(predicate)');
+            ruleStepViewModel.actionLineageSettings().SetInitialValues('@(subjectID)', '@(objectID)', '@(role)');
         }
 
         ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));
 
         //#region tooltips
+
         tipCss = 'qtip-blue qtip-shadow';
+
         $('#PromotionTip').qtip({
             content: {
-                text: "@Resources.FieldInfo.FusionPromotionTo_ToolTip"
+                text: _PromotionTip
             },
             style: {
                 classes: tipCss
@@ -95,25 +102,25 @@
 
         $('#PromotionParentTip').qtip({
             content: {
-                text: "@Resources.FieldInfo.FusionPromotionUnder_ToolTip"
-            },
-            style: {
-                classes: tipCss
-            }
-        });
-        $('#PromotionResultStepTip').qtip({
-            content: {
-                text: "Choose a step to use the results from to base the parent of this step from."
+                text: _PromotionParentTip
             },
             style: {
                 classes: tipCss
             }
         });
 
+        $('#PromotionResultStepTip').qtip({
+            content: {
+                text: _PromotionResultStepTip
+            },
+            style: {
+                classes: tipCss
+            }
+        });
 
         $('#PromotionParentSearchTip').qtip({
             content: {
-                text: "Choose a method to determine the parent value of the promoted item. Direct you specify the parent directly, or Result From Step where the parent value is based off the result of another step."
+                text: _PromotionParentSearchTip
             },
             style: {
                 classes: tipCss
@@ -154,8 +161,9 @@
             ]
         });
 
-
         //#endregion
+
+        //#region events
 
         $('#form0').on('validationSuccess', function (event) {
             $('#form0').submit();
@@ -172,12 +180,11 @@
             $('#EditableFormSaveButton').hide();
         });
 
-        $("html, body").animate({ scrollTop: 0 }, "slow");
-
-
         amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
         amplify.subscribe(AmplifyActions.OverlayUnsubscribe, unsubscribe);
 
+        //#endregion
 
+        $("html, body").animate({ scrollTop: 0 }, "slow");
     });
 </script>

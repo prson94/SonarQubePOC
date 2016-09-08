@@ -196,42 +196,6 @@ begin
 		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @ActionObjectID
 	end
 
-	-- Relevant ONLY to: Fusion
-	if @ActionObject = 'FusionAttributeOwnerRule'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Ownership Rule ' + cast(O.ID as nvarchar(15))
-		from	FusionAttributeOwnerRule O
-				inner join Fusion T on T.ID = O.FusionID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentObjectType', ParentObjectType, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentObjectID', ParentObjectID, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'RelationshipOwnerObjectType', RelationshipOwnerObjectType, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'RelationshipOwnerObjectID', RelationshipOwnerObjectID, 0, 0 from FusionAttributeOwnerRule where ID = @ActionObjectID
-	end
-
-	-- Relevant ONLY to: Fusion
-	if @ActionObject = 'FusionAttributePromotionRule'
-	begin
-		select	@actionObjectTypeName = T.Name,
-				@actionObjectName = T.Name + ' Promotion Rule ' + cast(O.ID as nvarchar(15))
-		from	FusionAttributePromotionRule O
-				inner join Fusion T on T.ID = O.FusionID
-		where	O.ID = @ActionObjectID
-
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentObjectType', ParentObjectType, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ParentObjectID', ParentObjectID, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PromotionObjectType', PromotionObjectType, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PromotionObjectID', PromotionObjectID, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PromotionParentObjectType', PromotionParentObjectType, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-		insert into @tbl  select 0, 'PromotionParentObjectID', PromotionParentObjectID, 0, 0 from FusionAttributePromotionRule where ID = @ActionObjectID
-	end
-
 	-- Relevant ONLY to: FusionAttributeType, FusionType
 	if @ActionObject = 'FusionAttributeType'
 	begin
@@ -399,7 +363,7 @@ begin
 		where	O.ID = @ActionObjectID
 
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from QuestionType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ResponseTypeID', ResponseTypeID, 0, 0 from QuestionType where ID = @ActionObjectID
+		insert into @tbl  select 0, 'DisplayStyle', DisplayStyle, 0, 0 from QuestionType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from QuestionType where ID = @ActionObjectID
 	end
 
@@ -508,7 +472,7 @@ begin
 		where	O.ID = @ActionObjectID
 
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from SurveyType where ID = @ActionObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from SurveyType where ID = @ActionObjectID
+		insert into @tbl  select 0, 'Object', Object, 0, 0 from SurveyType where ID = @ActionObjectID
 		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from SurveyType where ID = @ActionObjectID
 	end
 

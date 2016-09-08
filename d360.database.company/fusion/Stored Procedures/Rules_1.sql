@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [fusion].[Rules]
+﻿CREATE PROCEDURE [fusion].[Rules] 
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -317,12 +317,12 @@ from	#rules R
 
 					if @ParentObjectSearchType = 'FusionOwner'
 					begin
-						select	@ParentObject = RelationshipOwnerObjectType,
-								@ParentObjectID = RelationshipOwnerObjectID
-						from	FusionAttributeOwnerRule
+						select	@ParentObject = 'Artifact',
+								@ParentObjectID = ArtifactID
+						from	FusionOwner
 						where	@ParentSearchObject = 'Owner'
 								and FusionID = @FusionID
-								and ID = @ParentSearchObjectID
+								--and ID = @ParentSearchObjectID
 					end
 
 					if @ParentObjectSearchType = 'ResultFromStep'
@@ -532,7 +532,8 @@ from	#rules R
 						@FindFilterField int = null,
 						@FindFilterFieldValue nvarchar(250) = null,
 						@FindTargetField int = null,
-						@FindParent int = null
+						@FindParent int = null,
+						@PromotionRuleStepID int = null
 
 				select	@FindSearchType			= Value from @settings where Name = 'ObjectSearch'
 				select	@FindSearchObject		= Value from @settings where Name = 'Object'
@@ -572,12 +573,12 @@ from	#rules R
 				--BEGIN: Find based on search type
 				if @FindSearchType = 'FusionOwner'
 				begin
-					select	@ResultObject = RelationshipOwnerObjectType,
-							@ResultObjectID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
+					select	@ResultObject = 'Artifact',
+							@ResultObjectID = ArtifactID
+					from	FusionOwner
 					where	@FindSearchObject = 'Owner'
 							and FusionID = @FusionID
-							and ID = @FindSearchObjectID
+							--and ID = @FindSearchObjectID
 				end
 
 				if @FindSearchType = 'Glossary'					
@@ -657,14 +658,42 @@ from	#rules R
 							and RuleStepID = @FindSearchObjectID
 							and FusionAttributeID = @FusionAttributeID
 				end
+
+				if @FindSearchType = 'Promotion' and @FindTargetField is null --by parent
+				begin
+					select	@ResultObject = ObjectType,
+						    @ResultObjectID = ObjectID
+					from	[fusion].[RulePromotion]
+					join	FusionAttribute A on A.ID = @FusionAttributeID
+					join	FusionAttribute AP on AP.ID = A.ParentID
+					where	RuleStepID = @PromotionRuleStepID
+							and FusionAttributeID = AP.ID
+				end
+
+				if @FindSearchType = 'Promotion' and @FindTargetField is not null -- by field
+				begin
+					select	@ResultObject = R.ObjectType, 
+							@ResultObjectID = R.ObjectID 
+					from	[fusion].[RulePromotion] R
+					join	FusionAttribute SA on SA.ID = R.FusionAttributeID
+					join	Field SF on SF.ObjectType = 'FusionAttribute' 
+							and SF.ObjectID = SA.ID 
+							and SF.FieldTypeID = @FindFilterField
+					join	FusionAttribute TA on TA.ID = @FusionAttributeID
+					join	Field TF on TF.ObjectType = 'FusionAttribute' 
+							and TF.ObjectID = TA.ID 
+							and TF.FieldTypeID = @FindTargetField
+					where	R.RuleStepID = @PromotionRuleStepID 
+							and SF.Value = TF.Value
+				end
+
 				--END: Find based on search type
 			end --END: Find Action
 			
 			--BEGIN: Lineage Action
 			if @Action = 'Lineage'
 			begin
-				declare @IntersectTypeID int = null,
-						@SubjectSearchType nvarchar(250) = null,
+				declare @SubjectSearchType nvarchar(250) = null,
 						@SubjectSearchObject varchar(50) = null,
 						@SubjectSearchObjectID int = null,
 						@Subject varchar(50) = null,
@@ -674,43 +703,17 @@ from	#rules R
 						@ObjectSearchObjectID int = null,
 						@Object varchar(50) = null,
 						@ObjectID int = null,
-						@FocalSearchType nvarchar(250) = null,
-						@FocalSearchObject varchar(50) = null,
-						@FocalSearchObjectID int = null,
-						@Focal varchar(50) = null,
-						@FocalID int = null,
-						@PredicateID int = null,
-						@IntersectID int = null
+						@RoleID int = null
 
-				select	@IntersectTypeID			= Value from @settings where Name = 'IntersectType'
 				select	@SubjectSearchType			= Value from @settings where Name = 'SubjectSearch'
 				select	@SubjectSearchObject		= Value from @settings where Name = 'Subject'
 				select	@SubjectSearchObjectID		= Value from @settings where Name = 'SubjectID'
 				select	@ObjectSearchType			= Value from @settings where Name = 'ObjectSearch'
 				select	@ObjectSearchObject			= Value from @settings where Name = 'Object'
 				select	@ObjectSearchObjectID		= Value from @settings where Name = 'ObjectID'
-				select	@FocalSearchType			= Value from @settings where Name = 'FocalSearch'
-				select	@FocalSearchObject			= Value from @settings where Name = 'Focal'
-				select	@FocalSearchObjectID		= Value from @settings where Name = 'FocalID'
-				select	@PredicateID				= Value from @settings where Name = 'Predicate'
+				select	@RoleID						= Value from @settings where Name = 'Role'
 				
-				--BEGIN: Find subject based on search type
-				if @SubjectSearchType = 'Direct'
-				begin
-					set @Subject = @SubjectSearchObject
-					set @SubjectID = @SubjectSearchObjectID
-				end
-
-				if @SubjectSearchType = 'FusionOwner'
-				begin
-					select	@Subject = RelationshipOwnerObjectType,
-							@SubjectID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
-					where	@SubjectSearchObject = 'Owner'
-							and FusionID = @FusionID
-							and ID = @SubjectSearchObjectID
-				end
-
+				--BEGIN: Find subject based on search type, ALWAYS ResultFromStep
 				if @SubjectSearchType = 'ResultFromStep'
 				begin
 					select	@Subject = ObjectType,
@@ -721,32 +724,10 @@ from	#rules R
 							and RuleStepID = @SubjectSearchObjectID
 							and FusionAttributeID = @FusionAttributeID
 				end
-
-				if @SubjectSearchType = 'Self'
-				begin
-					set @Subject = 'FusionAttribute'
-					set @SubjectID = @FusionAttributeID
-				end
 				--END: Find subject based on search type
 
 				--BEGIN: Find object based on search type
-				if @ObjectSearchType = 'Direct'
-				begin
-					set @Object = @ObjectSearchObject
-					set @ObjectID = @ObjectSearchObjectID
-				end
-
-				if @ObjectSearchType = 'FusionOwner'
-				begin
-					select	@Object = RelationshipOwnerObjectType,
-							@ObjectID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
-					where	@ObjectSearchObject = 'Owner'
-							and FusionID = @FusionID
-							and ID = @ObjectSearchObjectID
-				end
-
-				if @ObjectSearchType = 'ResultFromStep'
+				if @ObjectSearchType = 'ResultFromStep' --ALWAYS ResultFromStep
 				begin
 					select	@Object = ObjectType,
 							@ObjectID = ObjectID
@@ -756,180 +737,29 @@ from	#rules R
 							and RuleStepID = @ObjectSearchObjectID
 							and FusionAttributeID = @FusionAttributeID
 				end
-
-				if @ObjectSearchType = 'Self'
-				begin
-					set @Object = 'FusionAttribute'
-					set @ObjectID = @FusionAttributeID
-				end
 				--END: Find object based on search type
 
-				--BEGIN: Find focal based on search type
-				if @FocalSearchType = 'Direct'
-				begin
-					set @Focal = @FocalSearchObject
-					set @FocalID = @FocalSearchObjectID
-				end
-
-				if @FocalSearchType = 'FusionOwner'
-				begin
-					select	@Focal = RelationshipOwnerObjectType,
-							@FocalID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
-					where	@FocalSearchObject = 'Owner'
-							and FusionID = @FusionID
-							and ID = @FocalSearchObjectID
-				end
-
-				if @FocalSearchType = 'ResultFromStep'
-				begin
-					select	@Focal = ObjectType,
-							@FocalID = ObjectID
-					from	[fusion].[RulePromotion]
-					where	@FocalSearchObject = 'Step'
-							and RuleID = @RuleID
-							and RuleStepID = @FocalSearchObjectID
-							and FusionAttributeID = @FusionAttributeID
-				end
-
-				if @FocalSearchType = 'Self'
-				begin
-					set @Focal = 'FusionAttribute'
-					set @FocalID = @FusionAttributeID
-				end
-				--END: Find focal based on search type
-
-				declare @SubjectType varchar(50) = null,
-						@SubjectTypeID int = null,
-						@SubjectIntersectNodeID int = null,
-						@SubjectIntersectTypeNodeID int = null,
-
-						@ObjectType varchar(50) = null,
-						@ObjectTypeID int = null,
-						@ObjectIntersectNodeID int = null,
-						@ObjectIntersectTypeNodeID int = null,
-
-						@PredicateType int = null
-
-				--BEGIN: Relate Subject to Object
-				--Check to see if we have all the required data to create the relationship.
-				if @IntersectTypeID is not null and @subject is not null and @SubjectID is not null and @Object is not null and @ObjectID is not null
+				--BEGIN: Add Map
+				if @Subject = 'Intersect' and @SubjectID is not null and @Object = 'Intersect' and @ObjectID is not null
 				begin					
-					-- Validate that intersect type exists.
-					if exists(select 1 from IntersectType where ID = @IntersectTypeID)
-					begin
---select @Subject, @SubjectID, @Object, @ObjectID
-						select	@IntersectID = isect.ID,
-								@SubjectIntersectNodeID = inode2.ID,
-								@ObjectIntersectNodeID = inode1.ID
-						from	[Intersect] isect
-								inner join [intersectnode] inode1 on(isect.id = inode1.intersectid and inode1.objecttype = isect.object and inode1.objectid = isect.objectid)
-								inner join [intersectnode] inode2 on(isect.id = inode2.intersectid and inode2.objecttype = isect.subject and inode2.objectid = isect.subjectid)
-						where	Subject = @Subject 
-								and isect.SubjectID = @SubjectID 
-								and isect.Object = @Object 
-								and isect.ObjectID = @ObjectID
-								and isect.IntersectTypeID = @IntersectTypeID							
---select @IntersectID
-						if @IntersectID is null
-						begin
-							select	@SubjectType = ObjectType, @SubjectTypeID = ObjectTypeID from cache.[object] where Object = @Subject and ObjectID = @SubjectID
-							select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID from cache.[object] where Object = @Object and ObjectID = @ObjectID
-
-							select	@SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
-									@ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
-							from	utility.RelationshipTypes R 
-							where	SourceObjectType = @SubjectType and SourceObjectID = @SubjectTypeID 
-									and TargetObjectType = @ObjectType and TargetObjectID = @ObjectTypeID
-									and IntersectTypeID = @IntersectTypeID
-
-							if @SubjectIntersectTypeNodeID is not null and @ObjectIntersectTypeNodeID is not null
-							begin
-								begin try
-
-
-									insert into [Intersect] (IntersectTypeID, Classification, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-									values					(@IntersectTypeID, 2, @Subject, @SubjectID, @Object, @ObjectID, 0, @r, @d, @r, @d)  
-
-									select @IntersectID = SCOPE_IDENTITY()
-
-									insert into IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-									values						(@SubjectIntersectTypeNodeID, @IntersectID, @Subject, @SubjectID)
-
-									select @SubjectIntersectNodeID = SCOPE_IDENTITY()
-
-									insert into IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-									values						(@ObjectIntersectTypeNodeID, @IntersectID, @Object, @ObjectID)
-
-									select @ObjectIntersectNodeID = SCOPE_IDENTITY()
-
-									--cache logic
-									insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] ) values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
-									insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-									values	( @IntersectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID );
-									insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-									values	( @IntersectID, @ObjectIntersectTypeNodeID, @ObjectIntersectNodeID, @Object, @ObjectID, @SubjectIntersectTypeNodeID, @SubjectIntersectNodeID, @Subject, @SubjectID );
-
-									--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
-									if ( (@Subject = 'Taxonomy' and @Object = 'Artifact') OR (@Subject = 'Artifact' and @Object = 'Taxonomy') )
-									begin
-										if @Subject = 'Artifact'
-										begin
-											exec [cache].[SynchronizeResponsibilitiesForObject] @Subject, @SubjectID
-										end
-										if @Object = 'Artifact'
-										begin
-											exec [cache].[SynchronizeResponsibilitiesForObject] @Object, @ObjectID
-										end
-									end
-
-									exec utility.AddAuditEntry @Subject, @SubjectID, @r, @d, 'Created', 'Intersect', @IntersectID
-									exec utility.AddAuditEntry @Object, @ObjectID, @r, @d, 'Created', 'Intersect', @IntersectID
-													
-									set @NumberOfNewRelations = @NumberOfNewRelations + 1
-																											
-									set @ResultObjectID = @IntersectID
-								end try
-								begin catch
-									select ERROR_MESSAGE()
-								end catch
-
-							end
-						end
-					end
-				end
-				--END: Relate Subject to Object
-
-				--BEGIN: Add IntersectMap
-				if @SubjectIntersectNodeID is not null and @ObjectIntersectNodeID is not null
-				begin					
-					select @PredicateType = Type from Predicate where ID = @PredicateID
-					if @PredicateType is not null
-					begin
-						declare @intersectMap table (ID int)
-						MERGE	IntersectMap AS T
-						USING	(
-								SELECT	@SubjectIntersectNodeID as SubjectIntersectNodeID, 
-										@ObjectIntersectNodeID as ObjectIntersectNodeID, 
-										@PredicateID as PredicateID, 
-										@PredicateType as Type
-								) as S
-						ON		T.SubjectIntersectNodeID = S.SubjectIntersectNodeID
-								and T.ObjectIntersectNodeID = S.ObjectIntersectNodeID 
-								and T.PredicateID = S.PredicateID 
-						WHEN	MATCHED THEN
-								UPDATE SET	T.Type = S.Type
-						WHEN	NOT MATCHED THEN
-								INSERT (SubjectIntersectNodeID, ObjectIntersectNodeID, PredicateID, Type) 
-								VALUES (S.SubjectIntersectNodeID, S.ObjectIntersectNodeID, S.PredicateID, S.Type)
-						OUTPUT inserted.ID into @intersectMap;
+					declare @Map table (ID int)
+					MERGE	MapItem AS T
+					USING	(
+							SELECT	@SubjectID as SourceIntersectID, 
+									@ObjectID as TargetIntersectID
+							) as S
+					ON		T.SourceIntersectID = S.SourceIntersectID
+							and T.TargetIntersectID = S.TargetIntersectID 
+					WHEN	NOT MATCHED THEN
+							INSERT (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn) 
+							VALUES (S.SourceIntersectID, S.TargetIntersectID, 0, getutcdate(), 0, getutcdate())
+					OUTPUT inserted.ID into @Map;
 					
-						set @ResultObject = 'IntersectMap'
-						select top 1 @ResultObjectID = ID from @intersectMap
-						delete from @intersectMap				
-					end
+					set @ResultObject = 'MapItem'
+					select top 1 @ResultObjectID = ID from @Map
+					delete from @Map				
 				end
-				--END: Add IntersectMap
+				--END: Add Map
 
 
 			end --END: Lineage Action
@@ -968,12 +798,12 @@ from	#rules R
 
 				if @R_SubjectSearchType = 'FusionOwner'
 				begin
-					select	@R_Subject = RelationshipOwnerObjectType,
-							@R_SubjectID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
+					select	@R_Subject = 'Artifact',
+							@R_SubjectID = ArtifactID
+					from	FusionOwner
 					where	@R_SubjectSearchObject = 'Owner'
 							and FusionID = @FusionID
-							and ID = @R_SubjectSearchObjectID
+							--and ID = @R_SubjectSearchObjectID
 				end
 
 				if @R_SubjectSearchType = 'ResultFromStep'
@@ -1005,12 +835,12 @@ from	#rules R
 
 				if @R_ObjectSearchType = 'FusionOwner'
 				begin
-					select	@R_Object = RelationshipOwnerObjectType,
-							@R_ObjectID = RelationshipOwnerObjectID
-					from	FusionAttributeOwnerRule
+					select	@R_Object = 'Artifact',
+							@R_ObjectID = ArtifactID
+					from	FusionOwner
 					where	@R_ObjectSearchObject = 'Owner'
 							and FusionID = @FusionID
-							and ID = @R_ObjectSearchObjectID
+							--and ID = @R_ObjectSearchObjectID
 				end
 
 				if @R_ObjectSearchType = 'ResultFromStep'

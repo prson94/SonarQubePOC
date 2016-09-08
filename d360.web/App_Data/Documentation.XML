@@ -2051,23 +2051,6 @@
             <param name="fusionID">The ID of the fusion configuration.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.FusionController.GetPromotionRulesByFusion(System.Int32,System.Int32)">
-            <summary>
-            Internal endpoint.
-            </summary>
-            <param name="typeID">The ID of the fusion type.</param>
-            <param name="fusionID">The ID of the fusion configuration.</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.FusionController.GetPromotionRuleFieldsByFusion(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Internal endpoint.
-            </summary>
-            <param name="typeID">The ID of the fusion type.</param>
-            <param name="fusionID">The ID of the fusion configuration.</param>
-            <param name="ruleID">The ID of the fusion promotion rule.</param>
-            <returns></returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.FusionController.PostBulkAttributesAsync(System.Int32,System.Int32)">
             <summary>
             Takes a given set of fusion data for a particular fusion configuration.
@@ -2278,9 +2261,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.Fusion_EditFields(System.Int32)">
             <param name="id">FusionAttributeTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.FusionOwnerRule_DeleteFields(System.Int32)">
-            <param name="id">FusionAttributeOwnerRuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionRule_DeleteFields(System.Int32)">
             <param name="id">FusionAttributePromotionRuleID</param>
@@ -2552,7 +2532,7 @@
         <member name="M:d360.web.Controllers.FormController.TooltipTemplate_EditFields(System.Int32)">
             <param name="id">TooltipTemplateID</param>
         </member>
-        <member name="M:d360.web.Controllers.FusionController.GetFusionRuleStatistics(System.Int32)">
+        <member name="M:d360.web.Controllers.FusionController.FusionItemDetails(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets ownership and promotion rule counts by a specific fusion configuration.
             </summary>
@@ -2568,6 +2548,26 @@
         <member name="T:d360.web.Controllers.RelationsController.HierarchyViewModel">
             <summary>
             This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.ColumnStatement">
+            <summary>
+            Generated when it comes time to create a dynamic SQL query.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.JoinStatement">
+            <summary>
+            Generated when it comes time to create a dynamic SQL query.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.OrderByStatement">
+            <summary>
+            Generated when it comes time to create a dynamic SQL query.
+            </summary>
+        </member>
+        <member name="P:d360.web.Models.FieldTypeLookupDefinitionRelation.WhereStatement">
+            <summary>
+            Generated when it comes time to create a dynamic SQL query.
             </summary>
         </member>
         <member name="M:d360.web.Models.Attributes.FileDownloadAttribute.CheckAndHandleFileResult(System.Web.Mvc.ActionExecutedContext)">

@@ -1157,16 +1157,16 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
         /// </summary>
         /// <param name="id">The Configuration ID</param>
         /// <returns></returns>
-        public JsonResult GetFusionRuleStatistics(int id)
-        {
-            var model = new
-            {
-                OwnershipRuleCount = Company.Count<FusionAttributeOwnerRule>(i => i.FusionID == id),
-                PromotionRuleCount = Company.Count<FusionAttributePromotionRule>(i => i.FusionID == id)
-            };
+        //public JsonResult GetFusionRuleStatistics(int id)
+        //{
+        //    var model = new
+        //    {
+        //        OwnershipRuleCount = Company.Count<FusionAttributeOwnerRule>(i => i.FusionID == id),
+        //        PromotionRuleCount = Company.Count<FusionAttributePromotionRule>(i => i.FusionID == id)
+        //    };
 
-            return Json(model, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(model, JsonRequestBehavior.AllowGet);
+        //}
 
 
         [Route("details/{type}/{id:int}")]

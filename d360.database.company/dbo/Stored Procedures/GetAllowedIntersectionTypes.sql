@@ -1,13 +1,11 @@
 ﻿CREATE PROCEDURE [dbo].[GetAllowedIntersectionTypes]
-(
 --declare 
 	@SourceType varchar(250),
 	@SourceTypeID int,
 	@IntersectID int = 0
 --set @SourceType = 'ArtifactType'--'FusionAttributeType'
 --set @SourceTypeID = 1--213
---set @IntersectID = 32
-)
+--set @IntersectID = 40859
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -15,47 +13,23 @@ BEGIN
 	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int);
 
 	insert into @tbl
-		SELECT	RT.IntersectTypeID,
-				RT.[TargetObjectType] AS TargetType,
-				RT.[TargetObjectID] AS TargetTypeID, 
-				(
-				case RT.[TargetObjectType]
-					when 'TaxonomyType' then 'Model: '
-					when 'DomainType' then 'Reference: '
-					when 'FusionType' then 'Fusion: '
-					when 'FusionAttributeType' then 'Fusion: '
-					when 'ArtifactType' then 'Glossary: '
-					when 'RuleType' then 'Rules: '
-					when 'PolicyType' then 'Policies: '
-					else ''
-				end + 
+		SELECT	RT.ID,
 				case 
-					when RT.[TargetMenuDisplayText] is null then coalesce(RTD.Name, RT.[TargetObjectType])
-					when RT.[TargetMenuDisplayText] = '' then coalesce(RTD.Name, RT.[TargetObjectType])
-					else RT.[TargetMenuDisplayText]
-				end 
-				) AS TargetName,
+					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Object 
+					else RT.Subject
+				end AS TargetType,
+				case 
+					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectID
+					else RT.SubjectID
+				end AS TargetTypeID,
+				case 
+					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
+					else RT.SubjectName
+				end AS TargetName,
 				NULL
-		FROM	[utility].[RelationshipTypes] RT
-				left join cache.ObjectDetails RTD on RTD.[Object] = RT.TargetObjectType and RTD.ObjectID = RT.TargetObjectID
-		WHERE	RT.SourceObjectType = @SourceType and RT.SourceObjectID = @SourceTypeID 
-		ORDER BY (
-				case RT.[TargetObjectType]
-					when 'TaxonomyType' then 'Model: '
-					when 'DomainType' then 'Reference: '
-					when 'FusionType' then 'Fusion: '
-					when 'FusionAttributeType' then 'Fusion: '
-					when 'ArtifactType' then 'Glossary: '
-					when 'RuleType' then 'Rules: '
-					when 'PolicyType' then 'Policies: '
-					else ''
-				end + 
-				case 
-					when RT.[TargetMenuDisplayText] is null then coalesce(RTD.Name, RT.[TargetObjectType])
-					when RT.[TargetMenuDisplayText] = '' then coalesce(RTD.Name, RT.[TargetObjectType])
-					else RT.[TargetMenuDisplayText]
-				end 
-				)
+		FROM	IntersectTypeDetail RT
+		WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
+				(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
 
 	if @IntersectID > 0
 	begin
@@ -65,44 +39,68 @@ BEGIN
 		where	ID = @IntersectID;
 
 		insert into @tbl
-			SELECT	RT.IntersectTypeID,
-					RT.[TargetObjectType] AS TargetType,
-					RT.[TargetObjectID] AS TargetTypeID, 
-					case 
-						when RT.[TargetMenuDisplayText] is null then coalesce(RTD.Name, RT.[TargetObjectType])
-						when RT.[TargetMenuDisplayText] = '' then coalesce(RTD.Name, RT.[TargetObjectType])
-						else RT.[TargetMenuDisplayText]
-					end AS TargetName,
-					NULL
-			FROM	[utility].[RelationshipTypes] RT
-					left join cache.ObjectDetails RTD on RTD.[Object] = RT.TargetObjectType and RTD.ObjectID = RT.TargetObjectID
-			WHERE	RT.SourceObjectType = @SourceType and RT.SourceObjectID = @SourceTypeID
-			ORDER BY case 
-						when RT.[TargetMenuDisplayText] is null then coalesce(RTD.Name, RT.[TargetObjectType])
-						when RT.[TargetMenuDisplayText] = '' then coalesce(RTD.Name, RT.[TargetObjectType])
-						else RT.[TargetMenuDisplayText]
-					end
+			SELECT		RT.ID,
+						case 
+							when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Object 
+							else RT.Subject
+						end AS TargetType,
+						case 
+							when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectID
+							else RT.SubjectID
+						end AS TargetTypeID,
+						case 
+							when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
+							else RT.SubjectName
+						end AS TargetName,
+						NULL
+			FROM		IntersectTypeDetail RT
+			WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
+					(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
 
 		-- Now figure out if we need to remove any fusion relationship types based on ownership.
 		select	top 1
-				@SourceType = ObjectType,
-				@SourceTypeID = ObjectID
-		from	IntersectNode N
-				inner join Artifact A	on A.ID = N.ObjectID and N.ObjectType = 'Artifact'
-										and N.IntersectID = @IntersectID
+				@SourceType = 'Artifact',
+				@SourceTypeID = A.ID
+		from	[Intersect] I
+				inner join Artifact A on ( (A.ID = I.SubjectID and I.Subject = 'Artifact') OR (A.ID = I.ObjectID and I.Object = 'Artifact') ) and I.ID = @IntersectID
 				inner join ArtifactType AT on AT.ID = A.ArtifactTypeID and AT.CanOwnFusion = 1
 
 		delete	@tbl
 		where	TargetType = 'FusionAttributeType'
 				and TargetTypeID not in (
-										select	ObjectID
-										from	FusionAttributeOwnerRule
-										where	ObjectType = 'FusionAttributeType' 
-												and RelationshipOwnerObjectType = @SourceType 
-												and RelationshipOwnerObjectID = @SourceTypeID
+										select	T.ID
+										from	FusionOwner FO
+												inner join Fusion F on F.ID = FO.FusionID
+												inner join FusionAttributeType T on T.FusionTypeID = F.FusionTypeID
+										where	@SourceType = 'Artifact' and FO.ArtifactID = @SourceTypeID
 										)
 	end
 
-	select * from @tbl order by TargetName
+	select		distinct
+				IntersectTypeID, 
+				TargetType, 
+				TargetTypeID, 
+				case TargetType
+					when 'TaxonomyType' then 'Model: '
+					when 'DomainType' then 'Reference: '
+					when 'FusionType' then 'Fusion: '
+					when 'FusionAttributeType' then 'Fusion: '
+					when 'ArtifactType' then 'Glossary: '
+					when 'RuleType' then 'Rules: '
+					when 'PolicyType' then 'Policies: '
+					else ''
+				end + ' : ' + TargetName as TargetName, 
+				ParentIntersectID
+	from		@tbl 
+	order by	case TargetType
+					when 'TaxonomyType' then 'Model: '
+					when 'DomainType' then 'Reference: '
+					when 'FusionType' then 'Fusion: '
+					when 'FusionAttributeType' then 'Fusion: '
+					when 'ArtifactType' then 'Glossary: '
+					when 'RuleType' then 'Rules: '
+					when 'PolicyType' then 'Policies: '
+					else ''
+				end + ' : ' + TargetName
 END
 

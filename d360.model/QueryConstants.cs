@@ -100,15 +100,22 @@ from	(
 					from	(
 								select	IT.ID
 								from	IntersectType IT
-										inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID and ITP.PredicateType = 6 -- Synonym
+										inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 6 -- Synonym
 								where	(IT.Subject = 'ArtifactType' and IT.SubjectID = @id) OR (IT.Object = 'ArtifactType' and IT.ObjectID = @id)
 							) O
 					) S on 1=1
 		inner join	(
-					select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end  as AllowPredicateHierarchies
-					from	utility.RelationshipTypes T
-							inner join IntersectTypePredicate TP on TP.IntersectTypeID = T.IntersectTypeID and T.SourceObjectType = 'ArtifactType' and T.SourceObjectID = @id
-							inner join Predicate P on P.Type = TP.PredicateType and P.Type in (3)--, 4)
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit) 
+							end as AllowPredicateHierarchies
+					from	(
+								select	IT.ID
+								from	IntersectType IT
+										inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 -- TypeOf
+								where	((IT.Subject = 'ArtifactType' and IT.SubjectID = @id) OR (IT.Object = 'ArtifactType' and IT.ObjectID = @id))
+
+							) O
 					) P on 1=1";
 
         public static string ArtifactTypeStatisticsList = @"
@@ -595,7 +602,7 @@ where   I.RuleStepID = @id";
 	(select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentExecutions,
     (select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionExecutions,	
 	(select count(1) from fusion.error where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionErrors,
-	(select count(1) from fusionattributepromotionlogsummary where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as NumberOfPromotions";
+	(select sum(PromotedTaxonomies) + sum(PromotedDomainItems) + sum(PromotedDomains) + sum(PromotedArtifacts) from fusion.RuleLog where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as NumberOfPromotions";
 
         public static string GroupResourceInfoList = @"
 select  RG.GroupID,

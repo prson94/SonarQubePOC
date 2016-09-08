@@ -124,6 +124,11 @@
     <Folder Include="queue\Functions" />
     <Folder Include="cache\Views\" />
     <Folder Include="utility\User Defined Types" />
+    <Folder Include="quality\" />
+    <Folder Include="quality\Tables\" />
+    <Folder Include="quality\Functions\" />
+    <Folder Include="bulkload\" />
+    <Folder Include="bulkload\Stored Procedures\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -199,7 +204,6 @@
     <Build Include="dbo\Tables\Workflow.sql" />
     <Build Include="dbo\Tables\Statistic.sql" />
     <Build Include="dbo\Tables\WorkflowStatus.sql" />
-    <Build Include="dbo\Tables\AlertFlag.sql" />
     <Build Include="dbo\Tables\Group.sql" />
     <Build Include="dbo\Tables\ResourceGroup.sql" />
     <Build Include="reporting\Tables\Global_Resource.sql" />
@@ -214,7 +218,6 @@
     <Build Include="dbo\Tables\DomainItem.sql" />
     <Build Include="dbo\Tables\ResponsibilityTypeClaim.sql" />
     <Build Include="dbo\Tables\DomainGroup.sql" />
-    <Build Include="queue\Tables\BulkLoad.sql" />
     <Build Include="dbo\Tables\Taxonomy.sql" />
     <Build Include="dbo\Tables\ResponsibilityContextItem.sql" />
     <Build Include="dbo\Tables\FusionAttributeType.sql" />
@@ -224,8 +227,6 @@
     <Build Include="dbo\Tables\FusionAttribute.sql" />
     <Build Include="dbo\Tables\TaxonomyTypeClass.sql" />
     <Build Include="dbo\Tables\ObjectVersion.sql" />
-    <Build Include="dbo\Tables\FollowChild.sql" />
-    <Build Include="dbo\Tables\FusionAttributePromotion.sql" />
     <Build Include="dbo\Tables\ObjectStyle.sql" />
     <Build Include="dbo\Tables\LookupType.sql" />
     <Build Include="dbo\Tables\LoadColumn.sql" />
@@ -244,7 +245,6 @@
     <Build Include="utility\Views\RelationshipTypes.sql" />
     <Build Include="dbo\Views\SecurityDetail.sql" />
     <Build Include="dbo\Views\FollowDetail.sql" />
-    <Build Include="fusion\Views\AttributePromotion.sql" />
     <Build Include="fusion\Views\AttributeOwner.sql" />
     <Build Include="dbo\Views\ResponsibilityTypeObjectClaimDetail.sql" />
     <Build Include="dbo\Views\FieldWithRelation.sql" />
@@ -260,7 +260,6 @@
     </Build>
     <Build Include="dbo\Views\ResponsibilityDetailForResource.sql" />
     <Build Include="dbo\Views\Relationship.sql" />
-    <Build Include="dbo\Views\FollowWithChildren.sql" />
     <Build Include="Security\d3s_4_user.sql" />
     <Build Include="utility\Functions\DeriveIntersectNameWrapper.sql" />
     <Build Include="dbo\Functions\ArtifactSiteNavigation.sql" />
@@ -293,8 +292,6 @@
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="dbo\Functions\GetFusionPromotionsHierarchy.sql" />
-    <Build Include="dbo\Functions\GetFusionOwnershipHierarchy.sql" />
     <Build Include="dbo\Functions\GetRelatedObjectsByEventType.sql" />
     <Build Include="utility\Functions\GetObjectHierarchy.sql" />
     <Build Include="dbo\Stored Procedures\GetScoreHistoryByObject.sql">
@@ -333,7 +330,6 @@
     <Build Include="dbo\Stored Procedures\GetStatisticDetails.sql" />
     <Build Include="utility\Stored Procedures\CalculateStatistics.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationships.sql" />
-    <Build Include="dbo\Stored Procedures\GetRandomSurveyQuestionForUser.sql" />
     <Build Include="dbo\Stored Procedures\GetCommentDetailsByType.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationship.sql" />
     <Build Include="dbo\Stored Procedures\GetCommentDetailsByFollower.sql" />
@@ -416,7 +412,6 @@
     <Build Include="dbo\Stored Procedures\AsyncDeleteObject.sql" />
     <Build Include="dbo\Stored Procedures\AsyncAddObject.sql" />
     <Build Include="cache\Stored Procedures\SynchronizeResponsibilitiesForObject.sql" />
-    <Build Include="dbo\Tables\FusionAttributePromotionLogSummary.sql" />
     <Build Include="dbo\Stored Procedures\AddRelationshipTypesBulk.sql" />
     <Build Include="utility\Functions\ShouldPromotionRun.sql" />
     <Build Include="dbo\Tables\FieldTypeFusionLookupDefinition.sql" />
@@ -441,7 +436,6 @@
     <Build Include="utility\Stored Procedures\AddRelationDiagramRelations.sql" />
     <Build Include="fusion\Tables\AgentError.sql" />
     <Build Include="fusion\Tables\AgentErrorItem.sql" />
-    <Build Include="dbo\Stored Procedures\GetLineageDiagram_1.sql" />
     <Build Include="dbo\Stored Procedures\GetHierarchyByMapType_1.sql" />
     <Build Include="utility\User Defined Types\DiagramRelationshipTable_1.sql" />
     <Build Include="dbo\Tables\IntersectMapGroup_1.sql" />
@@ -452,7 +446,6 @@
     <Build Include="dbo\Tables\SourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\IntersectMapSourceTargetRule_1.sql" />
     <Build Include="dbo\Tables\RuleDimension.sql" />
-    <Build Include="dbo\Tables\BusinessTransformationRule.sql" />
     <Build Include="dbo\Functions\EventCountByObject.sql" />
     <Build Include="dbo\Functions\EventsByObject.sql" />
     <Build Include="dbo\Tables\Language_1.sql" />
@@ -496,6 +489,23 @@
     <Build Include="dbo\Functions\GetFusionAttributesByOwningArtifact.sql" />
     <Build Include="dbo\Stored Procedures\GetTechnicalMapping_1.sql" />
     <Build Include="dbo\Stored Procedures\GetLineage.sql" />
+    <Build Include="dbo\Tables\FusionOwner.sql" />
+    <Build Include="dbo\Tables\Favorite_1.sql" />
+    <Build Include="quality\Tables\Dimension.sql" />
+    <Build Include="quality\Tables\RuleResult.sql" />
+    <Build Include="quality\Tables\RuleMap.sql" />
+    <Build Include="quality\Tables\Rule.sql" />
+    <Build Include="dbo\Views\MapRuleItemDetail.sql" />
+    <Build Include="quality\Functions\CalculatePassed.sql" />
+    <Build Include="bulkload\Stored Procedures\BusinessLineage.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateItemColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateFusionConfigurationColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateFusionAttributeColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateSubjectAreaColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateIntersectRoleColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateTypeColumn.sql" />
+    <Build Include="Security\quality.sql" />
+    <Build Include="Security\bulkload.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

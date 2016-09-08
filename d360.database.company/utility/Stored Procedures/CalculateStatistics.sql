@@ -329,10 +329,10 @@ begin
 						end as Score
 				from	@relations R
 						outer apply (
-									select		ISNULL(RelationshipOwnerObjectID, 0) as ValueExists
-									from		FusionAttributeOwnerRule
-									where		RelationshipOwnerObjectType = R.[Object] and RelationshipOwnerObjectID = R.ObjectID
-									group by	RelationshipOwnerObjectType, RelationshipOwnerObjectID
+									select		ISNULL(ArtifactID, 0) as ValueExists
+									from		FusionOwner
+									where		ArtifactID = R.ObjectID
+									group by	ArtifactID
 									) O
 		end
 

@@ -383,6 +383,12 @@ namespace d360.web.Controllers.Services
             return Company.Filter<Domain>(i => i.DomainTypeID == typeID);
         }
 
+        [Route("{typeID:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForType(int typeID)
+        {
+            return GetResponsibilities(SystemObjects.DomainType, typeID);
+        }
+
         /// <summary>
         /// Gets an OData-queryable list of items within a specified domain.
         /// </summary>
@@ -393,6 +399,12 @@ namespace d360.web.Controllers.Services
         public IQueryable<DomainItem> GetItemsByDomain(int typeID, int listID)
         {
             return Company.Filter<DomainItem>(i => i.DomainID == listID);
+        }
+
+        [Route("{typeID:int}/lists/{listID:int}/responsibilities"), HttpGet]
+        public IQueryable<dynamic> GetResponsibilitiesForList(int typeID, int listID)
+        {
+            return GetResponsibilities(SystemObjects.Domain, listID);
         }
 
         [Route("lists/{sourceArtifactID:int}"), HttpGet]

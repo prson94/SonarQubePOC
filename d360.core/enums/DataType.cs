@@ -42,7 +42,9 @@ namespace d360.core
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute,
         [Description("Filtered Lookup")]//, ReadOnly(true)]
-        FilteredLookup
+        FilteredLookup,
+        [Description("Complex Lookup"), ReadOnly(true)]
+        ComplexLookup
     }
 
     public class DataTypeInfo

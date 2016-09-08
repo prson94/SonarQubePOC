@@ -82,8 +82,6 @@
 
                 $('#SideIcons').PageTools({ type: type, id: 0 });
 
-                permissions.GetPermissionsForObject(type, 0);
-
                 //#region Grid
 
                 DomainTypesSource = {
@@ -99,38 +97,56 @@
 
                 DomainTypesAdapter = new $.jqx.dataAdapter(DomainTypesSource);
 
-                $("#List").jqxGrid({
-                    altrows: true,
-                    width: grid_width,
-                    pagesizeoptions: ['10', '20', '50'],
-                    pagesize: 20,
-                    autoheight: true,
-                    sortable: true,
-                    filterable: true,
-                    showfilterrow: true,
-                    pageable: true,
-                    source: DomainTypesAdapter,
-                    theme: theme,
-                    columns: [
-                        { datafield: "Name", text: "Name" },
-                        {
-                            text: '',
-                            dataField: 'ID',
-                            width: 120,
-                            filterable: false,
-                            cellsrenderer: function (row, column, value) {
-                                var tools = [
-                                    { isitemlink: true, urlprefix: '#/domains/{0}' },
-                                    { icon: 'pencil', urlprefix: '/form/domains/{0}/edit' },
-                                    { icon: 'trash-o', urlprefix: '/form/domains/{0}/delete' }
-                                ];
-                                return renderToolsHtml(value, tools, contextList.DomainType);
+                var loadAfterPermissionsRetrieved = function () {
+
+                    var tools = [];
+                    if (permissions.HasPermission("Root", "Create")) {
+                        tools.push({ icon: 'plus', uri: '/form/domains/add', context: contextList.DomainType, title: 'Add reference type' });
+                    }
+                    TileTools('#ListTools', tools);
+
+                    $("#List").jqxGrid({
+                        altrows: true,
+                        width: grid_width,
+                        pagesizeoptions: ['10', '20', '50'],
+                        pagesize: 20,
+                        autoheight: true,
+                        sortable: true,
+                        filterable: true,
+                        showfilterrow: true,
+                        pageable: true,
+                        source: DomainTypesAdapter,
+                        theme: theme,
+                        columns: [
+                            { datafield: "Name", text: "Name" },
+                            {
+                                text: '',
+                                dataField: 'ID',
+                                width: 120,
+                                filterable: false,
+                                cellsrenderer: function (row, column, value) {
+                                    var tools = [
+                                        { isitemlink: true, urlprefix: '#/domains/{0}' }
+                                    ];
+
+                                    if (permissions.HasPermission("Root", "Update")) {
+                                        tools.push({ icon: 'pencil', urlprefix: '/form/domains/{0}/edit' });
+                                    }
+                                    if (permissions.HasPermission("Root", "Delete")) {
+                                        tools.push({ icon: 'trash-o', urlprefix: '/form/domains/{0}/delete' });
+                                    }
+
+                                    return renderToolsHtml(value, tools, contextList.DomainType);
+                                }
                             }
-                        }
-                    ]
-                });
+                        ]
+                    });
+
+                }
 
                 //#endregion
+
+                permissions.GetPermissionsForObject(type, 0).then(loadAfterPermissionsRetrieved);
 
                 //#region Event Subscriptions
 

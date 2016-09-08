@@ -19,6 +19,7 @@ using d360.core.exceptions;
 using d360.workflow.models;
 using d360.workflow;
 using d360.workflow.entities;
+using System.Data.SqlClient;
 
 namespace d360.jobs.queue.ProcessBulkLoad
 {
@@ -63,20 +64,20 @@ namespace d360.jobs.queue.ProcessBulkLoad
             var queue = new AzureQueueSource();
             var community = new CommunityContext(cache, queue, sec);
             var company = new CompanyContext(community, cache, queue, sec, true);
-            var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev"));
+            var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
             #endregion
 
+            var companyConnection = GetCompanyConnection(loadInfo.CompanyID);
+
             #region Create Load Items from Load file
 
-            var load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
-            //var load = company.GetById<Load>(loadInfo.LoadID, 
-            //    i => i.LoadColumns, 
-            //    i => i.LoadItems);
+            var load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
 
-            var existingRows = load.LoadItems.Any();
-
-            if (!existingRows)
+            companyConnection.Open();
+            var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
+            companyConnection.Close();
+            if (loadItemRowCount <= 0)
             {
                 var memoryStream = new MemoryStream(load.File);
                 var xls = new SLDocument(memoryStream);
@@ -86,6 +87,10 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 var numberOfRows = stats.NumberOfRows;
                 var rowIndex = stats.StartRowIndex + 1;
                 var numberOfColumns = load.LoadColumns.Count;
+
+                var loadItems = new List<LoadItem>();
+                var loadItemColumns = new List<LoadItemColumn>();
+
                 while (rowIndex <= stats.EndRowIndex)
                 {
                     // Empty row validation.
@@ -100,9 +105,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     // Empty row check.
                     if (numberOfEmptyColumns < numberOfColumns)
                     {
-                        var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex, LoadItemColumns = new List<LoadItemColumn>() };
-                        company.LoadItems.Add(loadItem);
-                        //company.Add<LoadItem>(loadItem);
+                        var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
+                        loadItems.Add(loadItem);
 
                         foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                         {
@@ -124,28 +128,105 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                 loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
                             }
 
-                            company.LoadItemColumns.Add(
-                                new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue }
-                            );
-                            //loadItem.LoadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = (isDate ? xls.GetCellValueAsDateTime(rowIndex, c.ColumnIndex).ToShortDateString() : xls.GetCellValueAsString(rowIndex, c.ColumnIndex)) });
+                            loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
                         }
-                        //load.LoadItems.Add(loadItem); //company.LoadItems.Add(loadItem);
                     }
                     rowIndex++;
                 }
 
-                company.SaveChanges();  // Save all load items and columns we created.
+                //logger.WriteLine($"Created {load.LoadItems.Count} load item(s) for Company: {loadInfo.CompanyID}, Load: {loadInfo.LoadID}.");
 
-                logger.WriteLine($"Created {load.LoadItems.Count} load item(s) for Company: {loadInfo.CompanyID}, Load: {loadInfo.LoadID}.");
+                companyConnection.Open();
+
+                #region Bulk LoadItems
+
+                using (var trans = companyConnection.BeginTransaction())
+                {
+                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+                    {
+                        bulkCopy.BatchSize = loadItems.Count;
+                        bulkCopy.DestinationTableName = "dbo.LoadItem";
+                        bulkCopy.BulkCopyTimeout = 3600;
+
+                        var table = new System.Data.DataTable();
+                        var columnName = "LoadID";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "RowIndex";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        foreach (var item in loadItems)
+                        {
+                            var row = table.NewRow();
+
+                            row["LoadID"] = item.LoadID;
+                            row["RowIndex"] = item.RowIndex;
+
+                            table.Rows.Add(row);
+                        }
+
+                        bulkCopy.WriteToServer(table);
+                    }
+                    trans.Commit();
+                }
+
+                #endregion
+
+                #region Bulk LoadItemColumns
+
+                using (var trans = companyConnection.BeginTransaction())
+                {
+                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+                    {
+                        bulkCopy.BatchSize = loadItemColumns.Count;
+                        bulkCopy.DestinationTableName = "dbo.LoadItemColumn";
+                        bulkCopy.BulkCopyTimeout = 3600;
+
+                        var table = new System.Data.DataTable();
+                        var columnName = "LoadID";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "RowIndex";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "ColumnIndex";
+                        table.Columns.Add(columnName, typeof(int));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        columnName = "Value";
+                        table.Columns.Add(columnName, typeof(string));
+                        bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                        foreach (var item in loadItemColumns)
+                        {
+                            var row = table.NewRow();
+
+                            row["LoadID"] = item.LoadID;
+                            row["RowIndex"] = item.RowIndex;
+                            row["ColumnIndex"] = item.ColumnIndex;
+                            if (string.IsNullOrEmpty(item.Value))
+                                row["Value"] = DBNull.Value;
+                            else 
+                                row["Value"] = item.Value;
+
+                            table.Rows.Add(row);
+                        }
+
+                        bulkCopy.WriteToServer(table);
+                    }
+                    trans.Commit();
+                }
+
+                #endregion
+
+                companyConnection.Close();
             }
+
             #endregion
-
-            List<SimpleTypeModel> subjectAreas = null;
-
-            if (load.Action == "O" || load.Action == "N")   //List loading
-            {
-                subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-            }
 
             if (load.Action == "O")         // Ownership/Responsibilities
             {
@@ -162,6 +243,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 #endregion
 
                 #region Get data to pre-populate
+
+                var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
 
                 List<SimpleTypeModel> types = null;
                 switch (load.Object)
@@ -196,7 +279,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
 
-                #region For
+                #region ForEach
+
+                load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
                 foreach (var loadItem in load.LoadItems)
                 {
@@ -433,30 +518,27 @@ namespace d360.jobs.queue.ProcessBulkLoad
             }
             else if (load.Action == "R" && isDev)    // Relation
             {
+                #region Relationship
+
                 #region
                 /*
-                 * Side 1
-                 * Side 2
+                 * 1    Side 1
+                 * 2    Side 2
                  * 
                  * OR
                  * 
-                 * Side 1 Subject Area
-                 * Side 1
-                 * Side 2 Subject Area
-                 * Side 2
+                 * 1    Side 1 Subject Area
+                 * 2    Side 1
+                 * 3    Side 2 Subject Area
+                 * 4    Side 2
                  */
                 #endregion
 
                 #region Get data to pre-populate
 
                 var relationIntersectTypeDetail = company.Filter<IntersectTypeDetail>(i => i.ID == load.ObjectID).FirstOrDefault();
-                var relationSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
                 var subjectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.SubjectID, Type = relationIntersectTypeDetail.Subject.Replace("Type", ""), Name = relationIntersectTypeDetail.SubjectName };
                 var objectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.ObjectID, Type = relationIntersectTypeDetail.Object.Replace("Type", ""), Name = relationIntersectTypeDetail.ObjectName };
-                var cachedItems = new List<BulkLoadCacheEntryModel>();
-
-                cachedItems.AddRange(cacheDataForType(subjectType, company));
-                cachedItems.AddRange(cacheDataForType(objectType, company));
 
                 #endregion
 
@@ -493,123 +575,165 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
 
-                #region ForEach
-
-                foreach (var loadItem in load.LoadItems)
+                try
                 {
-                    var rawSubjectArea = "";
-                    var rawItem = "";
+                    companyConnection.Open();
 
-                    LoadItemColumn subjectSubjectAreaColumn = null;
-                    LoadItemColumn subjectColumn = null;
-
-                    LoadItemColumn objectSubjectAreaColumn = null;
-                    LoadItemColumn objectColumn = null;
-
-                    SimpleTypeModel verifiedSubjectArea = null;
-
-                    #region Look up subject
-
-                    #region Verify Subject Area
+                    #region perform lookups for the text values in the LoadItemColumns
 
                     if (subjectCheckSubjectArea)
-                    {
-                        subjectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectSubjectAreaColumnIndex);
-                        rawSubjectArea = subjectSubjectAreaColumn.Value.Trim().ToLower();
-                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                        if (verifiedSubjectArea != null)
-                        {
-                            subjectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                            subjectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                        }
-                    }
-
-                    #endregion
-
-                    #region Verify Item
-
-                    subjectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectColumnIndex);
-                    rawItem = subjectColumn.Value.Trim().ToLower();
-
-                    LookupItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea);
-                    //LookupCacheItem(company, subjectColumn, rawItem, subjectType, verifiedSubjectArea, cachedItems);
-
-                    #endregion
-
-                    #endregion
-
-                    #region Look up object
-
-                    #region Verify Subject Area
-
+                        companyConnection.Execute(getSubjectAreaColumnLookupSql(load.ID, subjectSubjectAreaColumnIndex), null, null, 600);                                              // subject subject area
                     if (objectCheckSubjectArea)
-                    {
-                        objectSubjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectSubjectAreaColumnIndex);
-                        rawSubjectArea = objectSubjectAreaColumn.Value.Trim().ToLower();
-                        verifiedSubjectArea = relationSubjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                        if (verifiedSubjectArea != null)
-                        {
-                            objectSubjectAreaColumn.LookupObject = "TaxonomyType";
-                            objectSubjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                        }
-                    }
+                        companyConnection.Execute(getSubjectAreaColumnLookupSql(load.ID, objectSubjectAreaColumnIndex), null, null, 600);                                               // object subject area
+
+                    var sql = "";
+                    sql = getItemColumnLookupSql(load.ID, subjectType.Type, subjectType.ID, subjectSubjectAreaColumnIndex, subjectColumnIndex);
+                    if (!string.IsNullOrEmpty(sql))
+                        companyConnection.Execute(sql, null, null, 600);   // subject
+                    sql = getItemColumnLookupSql(load.ID, objectType.Type, objectType.ID, objectSubjectAreaColumnIndex, objectColumnIndex);
+                    if (!string.IsNullOrEmpty(sql))
+                        companyConnection.Execute(sql, null, null, 600);       // object
 
                     #endregion
 
-                    #region Verify Item
+                #region Load temp table we will work with
 
-                    objectColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectColumnIndex);
-                    rawItem = objectColumn.Value.Trim().ToLower();
+                companyConnection.Execute($@"
+--Load temp table we will work with
+select	S.RowIndex,
+		
+		{relationIntersectTypeDetail.ID} as IntersectTypeID,
+		S.LookupObject as Subject,
+		S.LookupObjectID as SubjectID,
 
-                    LookupItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea);
-                    //LookupCacheItem(company, objectColumn, rawItem, objectType, verifiedSubjectArea, cachedItems);
+		O.LookupObject as Object,
+		O.LookupObjectID as ObjectID,
 
-                    #endregion
+		cast(0 as int) as IntersectID,
+		cast('' as char(1)) as IntersectChangeType,
 
-                    #endregion
+		cast(0 as bit) as Status,
+		cast('' as nvarchar(500)) as StatusMessage,
 
-                    var subject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == subjectColumnIndex);
-                    var @object = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == objectColumnIndex);
+		{load.UpdatedBy} as ResourceID  --THE USER THAT ADDED THE LOAD
+into	#Items{load.ID}
+from	LoadItemColumn S
+		inner join LoadItemColumn O	on O.LoadID = S.LoadID	and O.RowIndex = S.RowIndex and S.ColumnIndex = {subjectColumnIndex} and O.ColumnIndex = {objectColumnIndex}
 
-                    Intersect model = null;
+where	S.LoadID = {load.ID};
 
-                    if (!string.IsNullOrEmpty(subject.LookupObject) && subject.LookupObjectID.HasValue &&
-                        !string.IsNullOrEmpty(@object.LookupObject) && @object.LookupObjectID.HasValue)
-                    {
-                        try
-                        {
-                            model = company.AddIntersect(subject.LookupObject, subject.LookupObjectID.Value, @object.LookupObject, @object.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                            if (model != null)
-                            {
-                                loadItem.Status = true;
-                                loadItem.StatusMessage = "Successfully created/updated relationship.";
-                            }
-                            else
-                            {
-                                loadItem.Status = false;
-                                loadItem.StatusMessage = "Unable to create relationship.";
-                            }
-
-                        }
-                        catch (BaseException ex)
-                        {
-                            loadItem.Status = false;
-                            loadItem.StatusMessage += " " + ex.StatusDescription;
-                        }
-                    }
-                    else
-                    {
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {subject.Value}, Object = {@object.Value}].";
-                    }
-
-                    company.Update(loadItem);
-                }
+--Add indexes to temp table
+CREATE NONCLUSTERED INDEX [IX_Temp_Items{load.ID}] ON #Items{load.ID} ( IntersectTypeID ASC, Subject ASC, SubjectID ASC, Object ASC, ObjectID ASC );", 
+    null, null, 600);
 
                 #endregion
 
-                load.DateCompleted = DateTime.UtcNow;
-                company.Update(load);
+                #region Update rows with existing source business intersect
+
+                companyConnection.Execute($@"
+update	T
+set		T.IntersectID = S.ID,
+		T.IntersectChangeType = 'U'
+from	#Items{load.ID} T
+		inner join [Intersect] S on S.IntersectTypeID = T.IntersectTypeID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID;", 
+        null, null, 600);
+
+                #endregion
+
+                #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+
+                companyConnection.Execute($@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", null, null, 600);
+                companyConnection.Execute($@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", null, null, 600);
+
+                #endregion
+
+                #region Insert relationships
+
+                companyConnection.Execute($@"
+declare @dt datetime = getutcdate()
+
+insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+	select	IntersectTypeID, 
+			Subject, SubjectID, Object, ObjectID,
+			0, ResourceID, @dt, ResourceID, @dt
+	from	#Items{load.ID} 
+	where	IntersectTypeID is not null
+			and IntersectID = 0
+			and Subject is not null and SubjectID is not null
+			and Object is not null and ObjectID is not null", null, null, 600);
+
+                #endregion
+
+                #region Update rows with new intersect IDs
+
+                companyConnection.Execute($@"
+update	T
+set		T.IntersectID = S.ID,
+		T.IntersectChangeType = 'A'
+from	#Items{load.ID} T
+		inner join [Intersect] S on S.IntersectTypeID = T.IntersectTypeID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID
+		and T.IntersectChangeType <> 'U'", null, null, 600);
+
+                #endregion
+
+                #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+
+                companyConnection.Execute($@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", null, null, 600);
+                companyConnection.Execute($@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", null, null, 600);
+
+                #endregion
+
+                #region Update status flag and status messages on temp table
+
+                companyConnection.Execute($@"
+update	#Items{load.ID}
+set		Status = 1
+where	IntersectID > 0 and IntersectID is not null
+
+update	#Items{load.ID}
+set		StatusMessage = case IntersectChangeType
+							when 'A' then 'Relationship created. '
+							when 'U' then 'Relationship updated. '
+						end
+where	Status = 1 and IntersectID > 0 and IntersectID is not null
+
+update	T
+set		T.StatusMessage = T.StatusMessage +
+						'Relationship could not be created nor updated. ' + 
+						IIF(S.LookupObjectID is null, 'Could not find subject. ', '') + 
+						IIF(O.LookupObjectID is null, 'Could not find object. ', '')
+from	#Items{load.ID} T
+		left join LoadItemColumn S on S.LoadID = {load.ID} and S.RowIndex = T.RowIndex and S.ColumnIndex = {subjectColumnIndex}
+		left join LoadItemColumn O on O.LoadID = {load.ID} and O.RowIndex = T.RowIndex and O.ColumnIndex = {objectColumnIndex}
+where	Status = 0 and (IntersectID = 0 or IntersectID is not null)", null, null, 600);
+
+                #endregion
+
+                #region Update LoadItems with status and message, then close out Load job.
+
+                companyConnection.Execute($@"
+update	T
+set		T.Status = S.Status,
+		T.StatusMessage = S.StatusMessage
+from	LoadItem T
+		inner join #Items{load.ID} S on T.LoadID = {load.ID} and S.RowIndex = T.RowIndex
+
+update	[Load]
+set		DateCompleted = getutcdate()
+where	ID = {load.ID}", null, null, 600);
+
+                #endregion
+
+                    companyConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
+
+
+
+                #endregion
             }
             else if (load.Action == "N")    // New Lineage
             {
@@ -617,510 +741,66 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #region
                 /*
-                 * Source subject type	
-                 * Source subject type name	
-                 * Source subject subject area	
-                 * Source subject	
+                 * 1    Source subject type	            
+                 * 2    Source subject type name	    
+                 * 3    Source subject subject area	    
+                 * 4    Source subject	                
                  * 
-                 * Source object type	
-                 * Source object type name	
-                 * Source object subject area	
-                 * Source object
+                 * 5    Source object type	            
+                 * 6    Source object type name	
+                 * 7    Source object subject area	
+                 * 8    Source object                   
                  * 
-                 * Source Fusion Configuration
-                 * Source Fusion Path
+                 * 9    Source Fusion Configuration
+                 * 10   Source Fusion Path              
                  * 
-                 * Target subject type	
-                 * Target subject type name	
-                 * Target subject subject area	
-                 * Target subject	
+                 * 11   Target subject type	
+                 * 12   Target subject type name	
+                 * 13   Target subject subject area	
+                 * 14   Target subject	                
                  * 
-                 * Target object type	
-                 * Target object type name	
-                 * Target object subject area	
-                 * Target object
+                 * 15   Target object type	
+                 * 16   Target object type name	
+                 * 17   Target object subject area	
+                 * 18   Target object                   
                  * 
-                 * Target Fusion Configuration
-                 * Target Fusion Path
+                 * 19   Target Fusion Configuration
+                 * 20   Target Fusion Path              
                  * 
-                 * Transformation
-                 * Role
+                 * 21   Transformation
+                 * 22   Role                            
                  */
                 #endregion
 
-                #region Get data to pre-populate
-
-                var objectTypes = company.Query<IntersectTypeOption>(@"
-select ID, ltrim(rtrim(lower(Name))) as Name, 'Artifact' as Type from ArtifactType
-union
-select ID, ltrim(rtrim(lower(Name))) as Name, 'Domain' as Type from DomainType
-union
-select ID, ltrim(rtrim(lower(Name))) as Name, 'Policy' as Type from PolicyType
-union
-select 1 as ID, 'informational' as Name, 'Rule' as Type
-union
-select 2 as ID, 'quality check' as Name, 'Rule'as Type
-union
-select 3 as ID, 'metric' as Name, 'Rule' as Type
-union
-select 4 as ID, 'profile' as Name, 'Rule' as Type
-union
-select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyType").ToList();
-                var roles = company.Table<IntersectRole>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-                var fusions = company.Table<Fusion>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
-
-                #endregion
-
-                #region ForEach
-
-                foreach (var loadItem in load.LoadItems)
+                try
                 {
-                    var rawType = "";
-                    var rawTypeName = "";
-                    var rawSubjectArea = "";
-                    var rawItem = "";
+                    companyConnection.Open();
 
-                    LoadItemColumn typeColumn = null;
-                    LoadItemColumn typeNameColumn = null;
-                    LoadItemColumn subjectAreaColumn = null;
-                    LoadItemColumn itemColumn = null;
+                    #region DISABLE Intersect triggers
 
-                    IntersectTypeOption verifiedType = null;
-                    SimpleTypeModel verifiedSubjectArea = null;
-                    SimpleTypeModel verifiedRole = null;
-
-                    SimpleTypeModel verifiedSourceFusionConfiguration = null;
-
-                    SimpleTypeModel verifiedTargetFusionConfiguration = null;
-
-                    #region Look up source subject info
-
-                    #region Verify Type
-
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 1);
-                    rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 2);
-                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-                    verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
-
-                    if (verifiedType != null)
-                    {
-                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-                        typeNameColumn.LookupObjectID = verifiedType.ID;
-                    }
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
                     #endregion
 
-                    #region Verify Subject Area
+                    // Call business lineage procedure.
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.BusinessLineage {load.ID}", 2400);
 
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 3);
-                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (subjectAreaColumn != null)
-                    {
-                        subjectAreaColumn.LookupObject = "TaxonomyType";
-                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                    }
+                    #region ENABLE Intersect triggers
+
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
                     #endregion
 
-                    #region Verify Item
-
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
-                    rawItem = itemColumn.Value.Trim().ToLower();
-                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-                    #endregion
-
-                    #endregion
-
-                    #region Look up source object info
-
-                    #region Verify Type
-
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 5);
-                    rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 6);
-                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-                    verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
-
-                    if (verifiedType != null)
-                    {
-                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-                        typeNameColumn.LookupObjectID = verifiedType.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Subject Area
-
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 7);
-                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (subjectAreaColumn != null)
-                    {
-                        subjectAreaColumn.LookupObject = "TaxonomyType";
-                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Item
-
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 8);
-                    rawItem = itemColumn.Value.Trim().ToLower();
-                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-                    #endregion
-
-                    #endregion
-
-                    #region Lookup up source fusion configuration
-
-                    var sourceFusionConfigurationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
-                    var rawSourceFusionConfigurationColumn = (sourceFusionConfigurationColumn.Value + "").Trim().ToLower();
-                    verifiedSourceFusionConfiguration = fusions.SingleOrDefault(i => i.Name == rawSourceFusionConfigurationColumn);
-
-                    if (verifiedSourceFusionConfiguration != null)
-                    {
-                        sourceFusionConfigurationColumn.LookupObject = "Fusion";
-                        sourceFusionConfigurationColumn.LookupObjectID = verifiedSourceFusionConfiguration.ID;
-                    }
-
-                    #endregion
-
-                    #region Lookup up source fusion attribute
-
-                    if (verifiedSourceFusionConfiguration != null)
-                    {
-                        var sourceFusionAttributeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
-                        var rawSourceFusionAttributeColumn = (sourceFusionAttributeColumn.Value + "").Trim().ToLower();
-                        var verifiedSourceFusionAttribute = company.Filter<FusionAttribute>(i => i.FusionID == verifiedSourceFusionConfiguration.ID && i.TextPath.ToLower() == rawSourceFusionAttributeColumn).FirstOrDefault();
-
-                        if (verifiedSourceFusionAttribute != null)
-                        {
-                            sourceFusionAttributeColumn.LookupObject = "FusionAttribute";
-                            sourceFusionAttributeColumn.LookupObjectID = verifiedSourceFusionAttribute.ID;
-                        }
-                    }
-
-                    #endregion
-
-                    #region Look up target subject info
-
-                    #region Verify Type
-
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 11);
-                    rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 12);
-                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-                    verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
-
-                    if (verifiedType != null)
-                    {
-                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-                        typeNameColumn.LookupObjectID = verifiedType.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Subject Area
-
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 13);
-                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (subjectAreaColumn != null)
-                    {
-                        subjectAreaColumn.LookupObject = "TaxonomyType";
-                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Item
-
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
-                    rawItem = itemColumn.Value.Trim().ToLower();
-                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-                    #endregion
-
-                    #endregion
-
-                    #region Look up target object info
-
-                    #region Verify Type
-
-                    typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 15);
-                    rawType = typeColumn.Value.Trim().ToLower();
-                    typeNameColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 16);
-                    rawTypeName = typeNameColumn.Value.Trim().ToLower();
-                    verifiedType = objectTypes.SingleOrDefault(i => i.Type.ToLower() == rawType && i.Name == rawTypeName);
-
-                    if (verifiedType != null)
-                    {
-                        typeNameColumn.LookupObject = verifiedType.Type + "Type";
-                        typeNameColumn.LookupObjectID = verifiedType.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Subject Area
-
-                    subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 17);
-                    rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
-                    verifiedSubjectArea = subjectAreas.SingleOrDefault(i => i.Name == rawSubjectArea);
-                    if (subjectAreaColumn != null)
-                    {
-                        subjectAreaColumn.LookupObject = "TaxonomyType";
-                        subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
-                    }
-
-                    #endregion
-
-                    #region Verify Item
-
-                    itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 18);
-                    rawItem = itemColumn.Value.Trim().ToLower();
-                    LookupItem(company, itemColumn, rawItem, verifiedType, verifiedSubjectArea);
-
-                    #endregion
-
-                    #endregion
-
-                    #region Lookup up source fusion configuration
-
-                    var targetFusionConfigurationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 19);
-                    var rawTargetFusionConfigurationColumn = (targetFusionConfigurationColumn.Value + "").Trim().ToLower();
-                    verifiedTargetFusionConfiguration = fusions.SingleOrDefault(i => i.Name == rawTargetFusionConfigurationColumn);
-
-                    if (verifiedTargetFusionConfiguration != null)
-                    {
-                        targetFusionConfigurationColumn.LookupObject = "Fusion";
-                        targetFusionConfigurationColumn.LookupObjectID = verifiedTargetFusionConfiguration.ID;
-                    }
-
-                    #endregion
-
-                    #region Lookup up target fusion attribute
-
-                    if (verifiedTargetFusionConfiguration != null)
-                    {
-                        var targetFusionAttributeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 20);
-                        var rawTargetFusionAttributeColumn = (targetFusionAttributeColumn.Value + "").Trim().ToLower();
-                        var verifiedTargetFusionAttribute = company.Filter<FusionAttribute>(i => i.FusionID == verifiedTargetFusionConfiguration.ID && i.TextPath.ToLower() == rawTargetFusionAttributeColumn).FirstOrDefault();
-
-                        if (verifiedTargetFusionAttribute != null)
-                        {
-                            targetFusionAttributeColumn.LookupObject = "FusionAttribute";
-                            targetFusionAttributeColumn.LookupObjectID = verifiedTargetFusionAttribute.ID;
-                        }
-                    }
-
-                    #endregion
-
-                    #region Load transformation
-
-                    var transformationColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 21);
-                    var rawTransformation = transformationColumn.Value.Trim();
-
-                    #endregion
-
-                    #region Lookup up role
-
-                    var roleColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 22);
-                    var rawRole = roleColumn.Value.Trim().ToLower();
-                    verifiedRole = roles.SingleOrDefault(i => i.Name == rawRole);
-
-                    if (verifiedRole != null)
-                    {
-                        roleColumn.LookupObject = "IntersectRole";
-                        roleColumn.LookupObjectID = verifiedRole.ID;
-                    }
-
-                    #endregion
-
-                    var sourceSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 4);
-                    var sourceObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 8);
-                    var targetSubject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 14);
-                    var targetObject = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 18);
-
-                    var shouldContinue = true;
-
-                    Intersect source = null;
-                    Intersect target = null;
-
-                    if (!string.IsNullOrEmpty(sourceSubject.LookupObject) && sourceSubject.LookupObjectID.HasValue && !string.IsNullOrEmpty(sourceObject.LookupObject) && sourceObject.LookupObjectID.HasValue)
-                    {
-                        try
-                        {
-                            source = company.AddIntersect(sourceSubject.LookupObject, sourceSubject.LookupObjectID.Value, sourceObject.LookupObject, sourceObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                        }
-                        catch (BaseException ex)
-                        {
-                            shouldContinue = false;
-                            loadItem.Status = false;
-                            loadItem.StatusMessage += " " + ex.StatusDescription;
-                        }
-                    }
-                    else
-                    {
-                        shouldContinue = false;
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {sourceSubject.Value}, Subject = {sourceObject.Value}].";
-                    }
-                    if (targetObject != null)
-                    {
-                        if (!string.IsNullOrEmpty(targetSubject.LookupObject) && targetSubject.LookupObjectID.HasValue && !string.IsNullOrEmpty(targetObject.LookupObject) && targetObject.LookupObjectID.HasValue)
-                        {
-                            try
-                            {
-                                target = company.AddIntersect(targetSubject.LookupObject, targetSubject.LookupObjectID.Value, targetObject.LookupObject, targetObject.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                            }
-                            catch (BaseException ex)
-                            {
-                                shouldContinue = false;
-                                loadItem.Status = false;
-                                loadItem.StatusMessage += " " + ex.StatusDescription;
-                            }
-                        }
-                        else
-                        {
-                            shouldContinue = false;
-                            loadItem.Status = false;
-                            loadItem.StatusMessage += $" One of the sides of this relationships could not be resolved [Subject = {targetSubject.Value}, Subject = {targetObject.Value}].";
-                        }
-                    }
-
-                    if (source == null)
-                    {
-                        shouldContinue = false;
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" Could not create the source relationship.";
-                    }
-
-                    if (target == null)
-                    {
-                        shouldContinue = false;
-                        loadItem.Status = false;
-                        loadItem.StatusMessage += $" Could not create the target relationship.";
-                    }
-
-                    #region Continue processing map logic
-
-                    if (shouldContinue)
-                    {
-                        var map = company.Filter<Map>(i =>
-                            i.MapItems.Any(mi => mi.SourceIntersectID == source.ID && mi.TargetIntersectID == target.ID),
-                            i => i.MapItems
-                            ).FirstOrDefault();
-
-                        if (map == null)
-                        {
-                            map = new Map { Transformation = rawTransformation, MapItems = new List<MapItem>() };
-                            if (verifiedRole != null)
-                                map.IntersectRoleID = verifiedRole.ID;
-
-                            map.MapItems.Add(new MapItem { SourceIntersectID = source.ID, TargetIntersectID = target.ID });
-                            company.Add<Map>(map);
-
-                            loadItem.Status = true;
-                            loadItem.StatusMessage = $"Map created.";
-                        }
-                        else
-                        {
-                            map.Transformation = rawTransformation;
-                            company.Update<Map>(map);
-
-                            loadItem.Status = true;
-                            loadItem.StatusMessage = $"Map updated.";
-                        }
-
-                        //var sourceFusionConfiguration = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 9);
-                        var sourceFusionAttribute = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 10);
-                        //var targetFusionConfiguration = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 19);
-                        var targetFusionAttribute = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 20);
-                        if (
-                            !string.IsNullOrEmpty(sourceFusionAttribute.LookupObject) && sourceFusionAttribute.LookupObjectID.HasValue &&
-                            !string.IsNullOrEmpty(targetFusionAttribute.LookupObject) && targetFusionAttribute.LookupObjectID.HasValue
-                            )
-                        {
-                            // Create child relationships.
-                            Intersect childSourceRelation = null;
-                            Intersect childTargetRelation = null;
-                            MapRule mapRule = null;
-
-                            try
-                            {
-                                childSourceRelation = company.AddIntersect("Intersect", source.ID, "FusionAttribute", sourceFusionAttribute.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                            }
-                            catch (BaseException ex)
-                            {
-                                loadItem.StatusMessage += " " + ex.StatusDescription;
-                            }
-
-                            try
-                            {
-                                childTargetRelation = company.AddIntersect("Intersect", target.ID, "FusionAttribute", targetFusionAttribute.LookupObjectID.Value, IntersectClassification.Normal, null, null);
-                            }
-                            catch (BaseException ex)
-                            {
-                                loadItem.StatusMessage += " " + ex.StatusDescription;
-                            }
-
-                            if (childSourceRelation != null && childTargetRelation != null)
-                            {
-                                mapRule = company.Filter<MapRule>(i =>
-                                    i.MapRuleItems.Any(mi => mi.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && mi.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value),
-                                    i => i.MapRuleItems
-                                ).FirstOrDefault();
-
-                                if (mapRule == null)
-                                {
-                                    mapRule = new MapRule { MapRuleItems = new List<MapRuleItem>() };
-                                    mapRule.MapRuleItems.Add(new MapRuleItem { SourceFusionAttributeID = sourceFusionAttribute.LookupObjectID.Value, TargetFusionAttributeID = targetFusionAttribute.LookupObjectID.Value });
-                                    company.Add<MapRule>(mapRule);
-
-                                    loadItem.StatusMessage += $" Technical Map created.";
-                                }
-                                else
-                                {
-                                    //map.Transformation = rawTransformation;
-                                    //company.Update<MapRule>(mapRule);
-
-                                    //loadItem.StatusMessage += $" Technical Map updated.";
-                                }
-                            }
-                            else
-                            {
-                                loadItem.Status = false;
-                                loadItem.StatusMessage += $"Technical relationship could not be created or updated.";
-                            }
-
-                            if (map != null && mapRule != null)
-                            {
-                                var mapItem = map.MapItems.Single(i => i.SourceIntersectID == source.ID && i.TargetIntersectID == target.ID);
-                                var mapRuleItem = mapRule.MapRuleItems.Single(i => i.SourceFusionAttributeID == sourceFusionAttribute.LookupObjectID.Value && i.TargetFusionAttributeID == targetFusionAttribute.LookupObjectID.Value);
-
-                                var joinRecord = company.Filter<MapRuleItemMapItem>(i => i.MapItemID == mapItem.ID && i.MapRuleItemID == mapRuleItem.ID).SingleOrDefault();
-                                if (joinRecord == null)
-                                {
-                                    joinRecord = new MapRuleItemMapItem { MapItemID = mapItem.ID, MapRuleItemID = mapRuleItem.ID };
-                                    company.Add(joinRecord);
-                                }
-                            }
-                        }
-                    }
-
-                    #endregion
-
-                    company.Update(loadItem);
+                    companyConnection.Close();
                 }
-
-                #endregion
-
-                load.DateCompleted = DateTime.UtcNow;
-                company.Update(load);
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
 
                 #endregion
             }
@@ -1145,6 +825,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                 #endregion
 
                 var mappingList = new List<SimpleTypeModel>();
+
+                load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
                 foreach (var loadItem in load.LoadItems)
                 {
@@ -1386,6 +1068,10 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
             }
             else if (load.Action == "W")    // Promotion Propose via Workflow
             {
+                #region Propose
+
+                load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
+
                 #region Get data to pre-populate
 
                 var proposalSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
@@ -1397,6 +1083,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                 var artifactType = company.GetById<ArtifactType>(load.ObjectID);
                 var processor = new Processor();
                 var wtrItems = company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == load.ObjectID && i.Enabled && (i.WorkflowType == WorkflowType.SuggestNewArtifact || i.WorkflowType == WorkflowType.SuggestNewArtifactMulti)).ToList();
+
+                load = company.GetById<Load>(loadInfo.LoadID, i => i.LoadItems);
 
                 foreach (var loadItem in load.LoadItems)
                 {
@@ -1552,6 +1240,8 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
+
+                #endregion
             }
             else
             {
@@ -1562,7 +1252,7 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
                 var connection = GetCompanyConnection(loadInfo.CompanyID);
                 connection.Open();
 
-                var task = connection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 10800);   // 180 minute timeout.
+                var task = connection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 3600);   // 60 minute timeout.
 
                 task.ContinueWith(t =>
                 {
@@ -1597,132 +1287,67 @@ select ID, ltrim(rtrim(lower(Name))) as Name, 'Taxonomy' as Type from TaxonomyTy
             }
         }
 
-        static void LookupItem(CompanyContext company, LoadItemColumn itemColumn, string rawItem, IntersectTypeOption verifiedType, SimpleTypeModel verifiedSubjectArea)
+        static void executeWithTry(SqlConnection companyConnection, TextWriter logger, string lineageSql, int timeout = 1200)
         {
-            if (verifiedType != null)
+            try
             {
-                if (verifiedType.Type == "Artifact")
-                {
-                    if (verifiedSubjectArea != null)
-                    {
-                        var artifact = company.Filter<Artifact>(i => i.ArtifactTypeID == verifiedType.ID && i.TaxonomyTypeID == verifiedSubjectArea.ID && i.TextPath.ToLower() == rawItem).SingleOrDefault();
-                        if (artifact != null)
-                        {
-                            itemColumn.LookupObject = verifiedType.Type;
-                            itemColumn.LookupObjectID = artifact.ID;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (verifiedType.Type)
-                    {
-                        case "Domain":
-                            var domain = company.Filter<Domain>(i => i.DomainTypeID == verifiedType.ID && i.Name.ToLower() == rawItem).SingleOrDefault();
-                            if (domain != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = domain.ID;
-                            }
-                            break;
-                        case "Intersect":
-                            var intersect = company.Filter<Intersect>(i => i.IntersectTypeID == verifiedType.ID && i.Name.ToLower() == rawItem).SingleOrDefault();
-                            if (intersect != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = intersect.ID;
-                            }
-                            break;
-                        case "Rule":
-                            var rule = company.Filter<Rule>(i => i.RuleType == (RuleType)verifiedType.ID && i.Name.ToLower() == rawItem).SingleOrDefault();
-                            if (rule != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = rule.ID;
-                            }
-                            break;
-                        case "Policy":
-                            var policy = company.Filter<Policy>(i => i.PolicyTypeID == verifiedType.ID && i.TextPath.ToLower() == rawItem).SingleOrDefault();
-                            if (policy != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = policy.ID;
-                            }
-                            break;
-                        case "Taxonomy":
-                            var taxonomy = company.Filter<Taxonomy>(i => i.TaxonomyTypeID == verifiedType.ID && i.TextPath.ToLower() == rawItem).SingleOrDefault();
-                            if (taxonomy != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = taxonomy.ID;
-                            }
-                            break;
-                    }
-                }
+                companyConnection.Execute(lineageSql, null, null, timeout);
+            }
+            catch (Exception ex)
+            {
+                logger.WriteLine(lineageSql);
+                logger.WriteLine(ex.GetFullExceptionData());
             }
         }
 
-        static void LookupCacheItem(CompanyContext company, LoadItemColumn itemColumn, string rawItem, IntersectTypeOption verifiedType, SimpleTypeModel verifiedSubjectArea, List<BulkLoadCacheEntryModel> cache)
+        static string getSubjectAreaColumnLookupSql(int loadID, int subjectAreaColumn)
         {
-            BulkLoadCacheEntryModel cacheModel = null;
-
-            if (verifiedType != null)
-            {
-                if (verifiedType.Type == "Artifact")
-                {
-                    if (verifiedSubjectArea != null)
-                    {
-                        cacheModel = cache.SingleOrDefault(i => i.TypeID == verifiedType.ID && i.GroupID == verifiedSubjectArea.ID && i.Name == rawItem);
-                        if (cacheModel != null)
-                        {
-                            itemColumn.LookupObject = cacheModel.Object;
-                            itemColumn.LookupObjectID = cacheModel.ObjectID;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (verifiedType.Type)
-                    {
-                        case "Intersect":
-                            var intersect = company.Filter<Intersect>(i => i.IntersectTypeID == verifiedType.ID && i.Name.ToLower() == rawItem).SingleOrDefault();
-                            if (intersect != null)
-                            {
-                                itemColumn.LookupObject = verifiedType.Type;
-                                itemColumn.LookupObjectID = intersect.ID;
-                            }
-                            break;
-                        default:
-                            cacheModel = cache.SingleOrDefault(i => i.TypeID == verifiedType.ID && i.Name == rawItem);
-                            if (cacheModel != null)
-                            {
-                                itemColumn.LookupObject = cacheModel.Object;
-                                itemColumn.LookupObjectID = cacheModel.ObjectID;
-                            }
-                            break;
-                    }
-
-                }
-            }
+            return $@"update	T
+set		T.LookupObject = 'TaxonomyType',
+		T.LookupObjectID = S.ID
+from	LoadItemColumn T
+		inner join TaxonomyType S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = {subjectAreaColumn} and T.LoadID = {loadID}";
         }
 
-        static IQueryable<BulkLoadCacheEntryModel> cacheDataForType(IntersectTypeOption option, CompanyContext company)
+        static string getItemColumnLookupSql(int loadID, string type, int typeID, int subjectAreaColumn, int itemColumn)
         {
-            switch (option.Type)
+            if (type.Contains("Type")) type = type.Replace("Type", "");
+
+            var sql = $"update T ";
+            sql += $"set T.LookupObject = '{type}', T.LookupObjectID = O.ID ";
+            sql += $"from LoadItemColumn T ";
+            if (type == "Artifact")
+                sql += $"inner join LoadItemColumn TS on TS.LoadID = T.LoadID and TS.RowIndex = T.RowIndex and TS.ColumnIndex = {subjectAreaColumn}";
+
+            switch (type)
             {
                 case "Artifact":
-                    return company.Filter<Artifact>(i => i.ArtifactTypeID == option.ID).Select(i => new BulkLoadCacheEntryModel { Object = "Artifact", ObjectID = i.ID, GroupID = i.TaxonomyTypeID, Name = i.TextPath.ToLower(), TypeID = i.ArtifactTypeID });
+                    sql += $"inner join Artifact O on lower(O.TextPath) = lower(T.Value) and O.TaxonomyTypeID = TS.LookupObjectID and O.ArtifactTypeID = {typeID}";
+                    break;
                 case "Domain":
-                    return company.Filter<Domain>(i => i.DomainTypeID == option.ID).Select(i => new BulkLoadCacheEntryModel { Object = "Domain", ObjectID = i.ID, Name = i.Name.ToLower(), TypeID = i.DomainTypeID });
+                    sql += $"inner join Domain O on lower(O.Name) = lower(T.Value) and O.DomainTypeID = {typeID}";
+                    break;
+                case "FusionAttribute":
+                    sql += $"inner join [FusionAttribute] O on lower(O.TextPath) = lower(T.Value) and O.FusionAttributeTypeID = {typeID}";
+                    break;
+                case "Intersect":
+                    sql += $"inner join [Intersect] O on lower(O.Name) = lower(T.Value) and O.IntersectTypeID = {typeID}";
+                    break;
                 case "Policy":
-                    return company.Filter<Policy>(i => i.PolicyTypeID == option.ID).Select(i => new BulkLoadCacheEntryModel { Object = "Policy", ObjectID = i.ID, Name = i.TextPath.ToLower(), TypeID = i.PolicyTypeID });
+                    sql += $"inner join [Policy] O on lower(O.TextPath) = lower(T.Value) and O.PolicyTypeID = {typeID}";
+                    break;
                 case "Rule":
-                    return company.Filter<Rule>(i => (int)i.RuleType == option.ID).Select(i => new BulkLoadCacheEntryModel { Object = "Rule", ObjectID = i.ID, Name = i.Name.ToLower(), TypeID = (int)i.RuleType });
+                    sql += $"inner join [Rule] O on lower(O.Name) = lower(T.Value) and O.RuleType = {typeID}";
+                    break;
                 case "Taxonomy":
-                    return company.Filter<Taxonomy>(i => i.TaxonomyTypeID == option.ID).Select(i => new BulkLoadCacheEntryModel { Object = "Taxonomy", ObjectID = i.ID, Name = i.TextPath.ToLower(), TypeID = i.TaxonomyTypeID });
+                    sql += $"inner join [Taxonomy] O on lower(O.TextPath) = lower(T.Value) and O.TaxonomyTypeID = {typeID}";
+                    break;
                 default:
-                    return null;
+                    sql = "";
+                    break;
             }
+
+            return sql;
         }
     }
 }

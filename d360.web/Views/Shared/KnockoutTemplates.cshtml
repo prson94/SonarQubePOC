@@ -1633,57 +1633,51 @@
 
 <script id="promotionStepLineageActionTmpl" type="text/html">
     <div>
-        <div class="FieldNameRequired">Intersect Type</div>
-        <div name="LineageIntersectType" id="LineageIntersectType" data-bind="jqxDropDownList: {placeHolder: 'Choose a intersect type:',source: intersectTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedIntersectTypeIndex}"></div>
+        <div class="FieldNameRequired">Role</div>
+        <div name="LineageRole" 
+             id="LineageRole" 
+             data-bind="jqxDropDownList: {
+                placeHolder: 'Choose a role:',
+                source: roles, 
+                height: field_height, 
+                width: field_width, 
+                displayMember: 'text', 
+                valueMember: 'value',
+                theme: theme, 
+                selectedIndex: selectedRoleIndex
+             }"></div>
     </div>
     <div>
-        <div class="FieldNameRequired">Predicate</div>
-        <div name="LineagePredicate" id="LineagePredicate" data-bind="jqxDropDownList: {placeHolder: 'Choose a predicate:',source: predicates, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedPredicateIndex}"></div>
+        <div class="FieldNameRequired">Source From Step (Business Relation)</div>
+        <div name="LineageSubjectStep" 
+             id="LineageSubjectStep" 
+             data-bind="jqxDropDownList: {
+                placeHolder: 'Choose a step:',
+                source: steps, 
+                height: field_height, 
+                width: field_width, 
+                displayMember: 'text', 
+                valueMember: 'value',
+                theme: theme, 
+                selectedIndex: selectedBusinessSourceStepIndex
+             }"></div>
     </div>
     <div>
-        <div class="FieldNameRequired">Subject Search Type</div>
-        <div name="LineageSubjectSearchType" id="LineageSubjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectSearchTypeIndex}"></div>
+        <div class="FieldNameRequired">Target From Step (Business Relation)</div>
+        <div name="LineageObjectStep" 
+             id="LineageObjectStep" 
+             data-bind="jqxDropDownList: { 
+                placeHolder: 'Choose a step:', 
+                source: steps, 
+                height: field_height, 
+                width: field_width, 
+                displayMember: 'text', 
+                valueMember: 'value', 
+                theme: theme, 
+                selectedIndex: selectedBusinessTargetStepIndex
+             }"></div>
     </div>
-    <div data-bind="visible: selectedSubjectSearchTypeIndex() == 0">
-        <div class="FieldNameRequired">Subject From Step</div>
-        <div name="LineageSubjectStep" id="LineageSubjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectStepIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedSubjectSearchTypeIndex() == 2">
-        <div class="FieldNameRequired">Subject Fusion Owner Rule</div>
-        <div name="LineageSubjectOwnerRule" id="LineageSubjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectFusionOwnerRuleIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedSubjectSearchTypeIndex() == 3">
-        <div class="FieldNameRequired">Subject</div>
-        <div name="LineageSubjectItem" id="LineageSubjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: subjectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedSubjectItemIndex}"></div>
-    </div>
-    <div>
-        <div class="FieldNameRequired">Object Search Type</div>
-        <div name="LineageObjectSearchType" id="LineageObjectSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectSearchTypeIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedObjectSearchTypeIndex() == 0">
-        <div class="FieldNameRequired">Object From Step</div>
-        <div name="LineageObjectStep" id="LineageObjectStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectStepIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedObjectSearchTypeIndex() == 2">
-        <div class="FieldNameRequired">Object Fusion Owner Rule</div>
-        <div name="LineageObjectOwnerRule" id="LineageObjectOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectFusionOwnerRuleIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedObjectSearchTypeIndex() == 3">
-        <div class="FieldNameRequired">Object</div>
-        <div name="LineageObjectItem" id="LineageObjectItem" data-bind="jqxDropDownList: {placeHolder: 'Choose a subject:',source: objectObjects, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedObjectItemIndex}"></div>
-    </div>
-    <div>
-        <div class="FieldNameRequired">Focal Point Search Type</div>
-        <div name="LineageFocalSearchType" id="LineageFocalSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalSearchTypeIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedFocalSearchTypeIndex() == 0">
-        <div class="FieldNameRequired">Focal Point From Step</div>
-        <div name="LineageFocalStep" id="LineageFocalStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalStepIndex}"></div>
-    </div>
-    <div data-bind="visible: selectedFocalSearchTypeIndex() == 2">
-        <div class="FieldNameRequired">Focal Fusion Owner Rule</div>
-        <div name="LineageFocalOwnerRule" id="LineageFocalOwnerRule" data-bind="jqxDropDownList: {placeHolder: 'Choose a rule:',source: fusionOwnerRules, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFocalFusionOwnerRuleIndex}"></div>
-    </div>
+
 </script>
 
 

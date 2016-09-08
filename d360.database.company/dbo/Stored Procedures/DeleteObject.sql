@@ -1,6 +1,4 @@
-﻿
-
-CREATE procedure [dbo].[DeleteObject]
+﻿CREATE procedure [dbo].[DeleteObject]
 	@Obj varchar(50),
 	@ObjectID int,
 	@ResourceID int
@@ -36,7 +34,7 @@ begin
 		delete Field							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Follow							where ObjectType = @Object and ObjectID = @ObjectID
 		delete Responsibility					where ObjectType = @Object and ObjectID = @ObjectID
-		delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
+		--delete SurveyObjectCache				where ObjectType = @Object and ObjectID = @ObjectID
 		delete cache.[Object]					where [Object] = @Object and ObjectID = @ObjectID
 
 		if charindex('Type', @Object) > 0
@@ -233,7 +231,7 @@ begin
 
 			if @Object = 'SurveyType'
 			begin
-				delete SurveyObjectCache where SurveyTypeID = @ObjectID
+				--delete SurveyObjectCache where SurveyTypeID = @ObjectID
 				delete Survey where SurveyTypeID = @ObjectID
 				delete SurveyType where ID = @ObjectID
 			end

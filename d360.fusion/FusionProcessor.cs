@@ -417,70 +417,65 @@ namespace d360.fusion
             // delete any relations that already exist from the temp table
             // delete from temp table where 
             var rowsDeleted = await companyConnection.ExecuteAsync(@"
-                            delete from #tempResolvedRel where 				
-				                [id] in(
-					                select 
-						                sr.id
-					                from
-						                intersectnode inode1
-						                inner join intersectnode inode2 on(inode1.IntersectID = inode2.IntersectID and inode1.ObjectID != inode2.ObjectID)
-						                inner join #tempResolvedRel sr on(inode1.ObjectID = sr.startfusionattributeid and inode2.ObjectID = sr.endfusionattributeid)
-					                where 
-						                inode1.objecttype = 'FusionAttribute'
-								                and
-						                inode2.objecttype = 'FusionAttribute');
-                        ", commandTimeout: ExecuteQueryTimeout);
+delete  #tempResolvedRel 
+where 	[ID] in (
+                select  sr.id
+				from    #tempResolvedRel sr 
+                        inner join [Intersect] I on I.Subject = 'FusionAttribute' and 
+                                                    I.Object = 'FusionAttribute' and 
+                                                    (
+                                                        ( I.SubjectID = sr.startfusionattributeid and I.ObjectID = sr.endfusionattributeid ) OR
+                                                        ( I.SubjectID = sr.endfusionattributeid and I.ObjectID = sr.startfusionattributeid  )
+                                                    )
+                );", commandTimeout: ExecuteQueryTimeout);
 
             Trace.TraceInformation("DELETED {0} RELATIONS FROM TEMPRESOLVEDREL TABLE AS PRE-EXISTING RELATIONSHIPS.", rowsDeleted);
-
 
             if(_workArea.Relationships.ResolvedRelationshipData.Count == rowsDeleted)
             {
                 Trace.TraceInformation("NO NEW RELATIONS TO INSERT EXITING");
-
                 return;
             }
 
             // do the 3 inserts into the db using the temp table
-
             await companyConnection.ExecuteAsync(@"
-                        Declare @IDList Table(IntersectID int,StageID Int);
-                        declare @Intersects IDTable;
+declare @Intersects IDTable;
+declare @objectType varchar(50) = 'FusionAttribute';			
+Declare @IDList Table(IntersectID int, StageID Int);
 			
-                        -- INSERT INTERSECTS KEEP INSTANCE IN VARIABLE ABOVE WITH ID FROM TEMP TABLE 
-			            MERGE
-				            INTO    [Intersect] d
-				            USING   (
-						            SELECT  sr.IntersectTypeID isectid, 
-                                            2 as class, 
-                                            sr.ID as srID,
-                                            sr.startfusionattributeid as SubjectID,
-                                            sr.endfusionattributeid as ObjectID
-							        FROM    #tempResolvedRel sr							            
-						            ) s
-				            ON      (1 = 0)
-				            WHEN NOT MATCHED THEN
-				            INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID) --, CreatedBy, CreatedOn, UdatedBy, UpdatedOn
-				            VALUES  (isectid, class, NULL, 'FusionAttribute', s.SubjectID, 'FusionAttribute', s.ObjectID)
-				            OUTPUT  INSERTED.ID, s.srID into @IDList;
+MERGE
+	INTO    [Intersect] d
+	USING   (
+			SELECT	IntersectTypeID, 
+					ID,
+					StartFusionAttributeID,
+					EndFusionAttributeID
+			FROM	[fusion].stagingrelation
+			where	ExecutionID = @executionID 
+					and IntersectID is null
+			) S
+	ON      (1 = 0)
+	WHEN NOT MATCHED THEN
+	INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
+	VALUES  (S.IntersectTypeID, 2, NULL, @objectType, StartFusionAttributeID, @objectType, EndFusionAttributeID)
+	OUTPUT  INSERTED.ID, S.ID into @IDList;
+	
+--update StagingRelation to have the id's we used in intersect table.
+UPDATE	T
+SET		T.IntersectID = S.IntersectID
+from	[fusion].[StagingRelation] T
+		inner join @IDList S on T.ExecutionID = @executionID and T.ID = S.StageID;
 
-			            --insert start records into intersect node
-			            INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					            select sr.SourceIntersectTypeID, il.IntersectID, 'FusionAttribute',sr.StartFusionAttributeID from #tempResolvedRel sr inner join @IDList il on (sr.ID = il.StageID);
-
-			            --insert end records into intersect node
-			            INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-					            select sr.TargetIntersectTypeID, il.IntersectID, 'FusionAttribute',sr.EndFusionAttributeID from #tempResolvedRel sr inner join @IDList il on (sr.ID = il.StageID);	
-
-                        insert into @Intersects select idl.intersectid from @IDList idl;
-
-                        declare @IntersectCount int
-			            select @IntersectCount = count(1) from @Intersects
-			            if @IntersectCount > 0 
-			            begin
-				            EXEC cache.SynchronizeRelationships @Intersects
-			            end
-            ", commandTimeout: ExecuteQueryTimeout);
+insert into @Intersects 
+	select	IntersectID 
+	from	@IDList;
+	
+declare @IntersectCount int
+select @IntersectCount = count(1) from @Intersects
+if @IntersectCount > 0 
+begin
+	EXEC cache.SynchronizeRelationships @Intersects
+end", commandTimeout: ExecuteQueryTimeout);
         }
 
         /// <summary>
@@ -623,7 +618,7 @@ namespace d360.fusion
 
                 if(relData.StartFusionAttributeID > 0 && relData.EndFusionAttributeID > 0)
                 {
-                    var intersectInfo = _workArea.Relationships.IntersectTypeMapping.FirstOrDefault(x => x.SourceObjectID == sourceAttributeTypeID && x.TargetObjectID == targetAttributeTypeID);
+                    var intersectInfo = _workArea.Relationships.IntersectTypeMapping.FirstOrDefault(x => x.SubjectID == sourceAttributeTypeID && x.ObjectID == targetAttributeTypeID);
 
                     if(intersectInfo == null)
                     {
@@ -632,9 +627,9 @@ namespace d360.fusion
                         continue;
                     }
 
-                    relData.EndIntersectTypeID = intersectInfo.TargetIntersectTypeNodeID;
-                    relData.StartIntersectTypeID = intersectInfo.SourceIntersectTypeNodeID;
-                    relData.IntersectTypeID = intersectInfo.IntersectTypeID;
+                    //relData.EndIntersectTypeID = intersectInfo.TargetIntersectTypeNodeID;
+                    //relData.StartIntersectTypeID = intersectInfo.SourceIntersectTypeNodeID;
+                    relData.IntersectTypeID = intersectInfo.ID;
 
                     _workArea.Relationships.ResolvedRelationshipData.Add(relData);
                 }
@@ -650,17 +645,9 @@ namespace d360.fusion
         private async Task LoadFusionIntersectTypes(SqlConnection companyConnection)
         {
             _workArea.Relationships.IntersectTypeMapping = await companyConnection.QueryAsync<FusionIntersectMapping>(@"
-                    select 
-	                    IntersectTypeID,
-	                    SourceIntersectTypeNodeID,
-	                    TargetIntersectTypeNodeID,
-	                    SourceObjectID,
-	                    TargetObjectID
-                    from 
-                        utility.RelationshipTypes 
-                    where 
-                        sourceobjecttype = 'FusionAttributeType'
-                ", commandTimeout: ReadQueryTimeout);
+select  ID, SubjectID, ObjectID
+from    [IntersectType]
+where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
             Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM utility.RelationshipTypes.", _workArea.Relationships.IntersectTypeMapping.Count());
         }

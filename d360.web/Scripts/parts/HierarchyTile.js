@@ -17,24 +17,21 @@
 
             dataType: "json",
             dataFields: [
-            { name: 'ID', type: 'number' },
-            { name: 'UID', type: 'string' },
-            { name: 'Subject', type: 'string' },
-            { name: 'SubjectID', type: 'number' },
-            { name: 'Object', type: 'string' },
-            { name: 'ObjectID', type: 'number' },
-            { name: 'ObjectType', type: 'string' },
-            { name: 'ObjectTypeID', type: 'number' },
-            { name: 'ParentID', type: 'string' },
-            { name: 'Name', type: 'string' },
-            { name: 'Path', type: 'string' },
-            { name: 'Url', type: 'string' },
-            { name: 'ObjectTypeName', type: 'string' },
-            { name: 'Level', type: 'number' },
-            { name: 'PredicateID', type: 'number' },
-            { name: 'PredicatePhrase', type: 'string' },
-            { name: 'Type', type: 'number' },
-            { name: 'GroupNumber', type: 'number' }
+                { name: 'ID', type: 'number' },
+                { name: 'UID', type: 'string' },
+                { name: 'Subject', type: 'string' },
+                { name: 'SubjectID', type: 'number' },
+                { name: 'Object', type: 'string' },
+                { name: 'ObjectID', type: 'number' },
+                { name: 'ObjectType', type: 'string' },
+                { name: 'ObjectTypeID', type: 'number' },
+                { name: 'ParentID', type: 'string' },
+                { name: 'Name', type: 'string' },
+                { name: 'Path', type: 'string' },
+                { name: 'Url', type: 'string' },
+                { name: 'ObjectTypeName', type: 'string' },
+                { name: 'Level', type: 'number' },
+                { name: 'Type', type: 'number' }
             ],
             hierarchy:
             {
@@ -45,7 +42,6 @@
             url: '/relations/hierarchy/' + mapType + '/' + type + '/' + id,
             addRow: function (rowID, rowData, position, parentID, commit) {
                 rowData.parentID = parentID;
-
                 newRowID = rowID;
                 commit(true);
             }
@@ -252,30 +248,11 @@
                         var subid = null;
                         var obj = null;
                         var objid = null;
-                        var intersectMapId = null;
 
-                        //if (isAddingParent) {
-                        //    intersectMapId = rowData.ID;
-                        //} else {
-
-                        intersectMapId = (rowData.ID || 0);
-                        //console.log(rowData.ID);
-                        //}
-                        //console.log(rowData);
-                        //console.log(parentData);
-                        //if (isAddingParent) {
                         sub = parentData.type;
                         subid = parentData.id;
                         obj = rowData.Object;
                         objid = rowData.ObjectID;
-                        // intersectMapId = rowData.ID;
-                        //} else {
-                        //    sub = parentData.type;
-                        //    subid = parentData.id;
-                        //    obj = rowData.Object;
-                        //    objid = rowData.ObjectID;
-                        //    //intersectMapId = (rowData.parent.ID || 0);
-                        //}
 
                         if (rowData != null) {
 
@@ -284,21 +261,10 @@
                                 SubjectID: subid,
                                 'Object': obj,
                                 'ObjectID': objid,
-                                //PredicateID: rowData.PredicateID,
-                                IsAddingParent: isAddingParent,
-                                IntersectMapID: intersectMapId,
-                                HierarchyType: mapType,
-                                GroupNumber: rowData.parent.GroupNumber
+                                HierarchyType: mapType
                             };
-                            //console.log(hierarchyPostModel);
+
                             var url = '/relations/hierarchy/save';
-                            if (oldMode == 'edit') {
-                                url = '/relations/hierarchy/edit';
-                                hierarchyPostModel.IntersectMapId = rowData.ID;
-
-                            }
-
-                            //mode = 'saving';
 
                             isUpdating = true;
                             setButtonState('disable');
@@ -386,9 +352,11 @@
                         return "<div style='margin-left: 4px; display:inline-block;'><div style='font-weight:600;'>" + value + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"
                     },
                     createEditor: function (row, cellvalue, editor, cellText, width, height) {
+                        var data = $(selector).jqxTreeGrid('getRow', row);
+
                         if (mode == 'edit') {
-                            var data = $(selector).jqxTreeGrid('getRow', row);
                             var item = getRowDataItem(data);
+
                             if (item.type == type && item.id == id) {
                                 editor.append($("<div style='margin-left: 4px; display:inline-block;color:#33A'><div style='font-weight:600;'>" + data.Name + "</div><div style='font-size:0.7em;'>" + data.ObjectTypeName + "</div><div style='clear: both;'></div></div>"));
                             } else {
@@ -398,27 +366,26 @@
                             return;
                         }
 
-                        var rowData = $(selector).jqxTreeGrid('getRow', row);
-
-                        var mapId = 0;
-                        var groupNumber = 0;
-
-                        if (rowData != null) {
-                            if (rowData.parent != null)
-                                mapId = rowData.parent.ID;
-                            if (rowData.parent != null)
-                                groupNumber = rowData.parent.GroupNumber;
-                        }
-
-
                         var hierarchyArtifactsModel = {
-                            IntersectMapID: mapId,
+                            IsSubject: true,
                             MapType: mapType,
-                            Type: type,
-                            ID: id,
-                            GroupNumber: groupNumber,
-                            IsAddingParent: isAddingParent
+                            Type: '',
+                            ID: 0
                         }
+
+                        if (data != null) {
+                            if (data.parent != null) {
+                                hierarchyArtifactsModel.IsSubject = true;
+                                hierarchyArtifactsModel.type = data.parent.Subject;
+                                hierarchyArtifactsModel.type = data.parent.SubjectID;
+                            }
+                            else {
+                                hierarchyArtifactsModel.IsSubject = false;
+                                hierarchyArtifactsModel.type = data.Subject;
+                                hierarchyArtifactsModel.type = data.SubjectID;
+                            }
+                        }
+
                         var hierarchySubjectSource = {
                             datafields: [
                                 { name: 'Object' },
@@ -432,19 +399,15 @@
                             data: hierarchyArtifactsModel
                         };
 
-
-                        var hierarchySubjectAdapter = new $.jqx.dataAdapter(
-                            hierarchySubjectSource,
-                            {
-                                beforeLoadComplete: function (records) {
-                                    for (var i = 0; i < records.length; i++) {
-                                        var record = records[i];
-                                        record.Value = record.Object + '|' + record.ObjectID;
-                                    }
-                                    return records;
+                        var hierarchySubjectAdapter = new $.jqx.dataAdapter(hierarchySubjectSource, {
+                            beforeLoadComplete: function (records) {
+                                for (var i = 0; i < records.length; i++) {
+                                    var record = records[i];
+                                    record.Value = record.Object + '|' + record.ObjectID;
                                 }
+                                return records;
                             }
-                        );
+                        });
 
                         editor.jqxDropDownList({
                             theme: theme,
@@ -457,8 +420,6 @@
                             dropDownWidth: 350,
                             searchMode: 'containsignorecase'
                         });
-
-
                     },
                     getEditorValue: function (row, cellvalue, editor) {
                         var rowData = $(selector).jqxTreeGrid('getRow', row);

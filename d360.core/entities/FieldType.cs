@@ -69,6 +69,9 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
+        //[IgnoreDataMember, ForeignKey("FieldTypeID")]
+        //public virtual FieldTypeLookup FieldTypeLookup { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
 

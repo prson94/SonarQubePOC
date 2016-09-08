@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[GetAllowedIntersectionTypesByIntersect]
 --declare 
 	@IntersectID int
---set @IntersectID = 261502--261625
+--set @IntersectID = 40954
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -13,19 +13,14 @@ BEGIN
 	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int);
 
 	insert into @tbl
-		select	RT.IntersectTypeID,
-				RT.TargetObjectType,
-				RT.TargetObjectID,
-				case 
-					when RT.TargetMenuDisplayText is null then coalesce(RTD.TextPath, RTD.Name)
-					when RT.TargetMenuDisplayText = '' then coalesce(RTD.TextPath, RTD.Name)
-					else RT.TargetMenuDisplayText
-				end,
+		select	ID,
+				Object,
+				ObjectID,
+				ObjectName,
 				@IntersectID
-		from	[utility].[RelationshipTypes] RT 
-				inner join cache.ObjectDetails RTD on RTD.[Object] = RT.TargetObjectType and RTD.ObjectID = RT.TargetObjectID
-		where	RT.SourceObjectType = 'IntersectType' 
-				and RT.SourceObjectID = @intersectTypeID 
+		from	IntersectTypeDetail
+		where	Subject = 'IntersectType' 
+				and SubjectID = @intersectTypeID 
 
 	-- Now figure out if we need to remove any fusion relationship types based on ownership.
 
@@ -33,10 +28,10 @@ BEGIN
 			@OwnerSourceID int
 
 	select	top 1
-			@OwnerSourceType = ObjectType,
-			@OwnerSourceID = ObjectID
-	from	IntersectNode N
-			inner join Artifact A on A.ID = N.ObjectID and N.ObjectType = 'Artifact' and N.IntersectID = @IntersectID
+			@OwnerSourceType = I.Subject,
+			@OwnerSourceID = I.SubjectID
+	from	[Intersect] I
+			inner join Artifact A on I.Subject = 'Artifact' and A.ID = I.SubjectID and I.ID = @IntersectID
 			inner join ArtifactType AT on AT.ID = A.ArtifactTypeID and AT.CanOwnFusion = 1
 
 	declare @h table (ID int);
@@ -58,18 +53,14 @@ BEGIN
 				select ID from h;
 		end
 
-
 	delete	@tbl
 	where	TargetType = 'FusionAttributeType'
 			and TargetTypeID not in (
-									select		R.ObjectID
-									from		FusionAttributeOwnerRule R
-												inner join @h h on 
-													R.ObjectType = 'FusionAttributeType' 
-													and R.RelationshipOwnerObjectType = 'Artifact'
-													and h.ID = R.RelationshipOwnerObjectID
-
-									group by	R.ObjectID
+									select		T.ID
+									from		FusionOwner O
+												inner join @h h on h.ID = O.ArtifactID
+												inner join Fusion F on F.ID = O.FusionID
+												inner join FusionAttributeType T on T.FusionTypeID = F.FusionTypeID
 									)
 
 	select * from @tbl order by TargetName

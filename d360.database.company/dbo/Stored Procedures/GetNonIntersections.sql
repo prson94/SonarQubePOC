@@ -72,10 +72,10 @@ BEGIN
 		IF @SourceType = 'Intersect'
 		BEGIN
 			select	top 1
-					@OwnerSourceType = ObjectType,
-					@OwnerSourceID = ObjectID
-			from	IntersectNode N
-					inner join Artifact A on A.ID = N.ObjectID and N.ObjectType = 'Artifact' and N.IntersectID = @SourceID
+					@OwnerSourceType = I.Subject,
+					@OwnerSourceID = I.SubjectID
+			from	[Intersect] I
+					inner join Artifact A on I.Subject = 'Artifact' and A.ID = I.SubjectID and I.ID = @SourceID
 					inner join ArtifactType AT on AT.ID = A.ArtifactTypeID and AT.CanOwnFusion = 1
 		END
 		ELSE
@@ -107,36 +107,25 @@ BEGIN
 				insert into @h values (@OwnerSourceID)
 			end;
 
+
+		declare @fatName nvarchar(250)
+		select @fatName = Name from FusionAttributeType where ID = @TargetTypeID;
+
 		with fa as	(
-					select	A.ID,
-							A.ParentID,
-							A.FusionAttributeTypeID
-					from	FusionAttributeOwnerRule R
-							inner join FusionAttributeOwnerRuleItem RI on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = 'Artifact'
-							inner join @h H on H.ID = R.RelationshipOwnerObjectID
-							inner join FusionAttribute A on (
-															(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
-															(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
-															)
-															AND A.FusionID = R.FusionID
-					union all
-					select	C.ID,
-							C.ParentID,
-							C.FusionAttributeTypeID
-					from	FusionAttribute C
-							inner join fa P on C.ParentID = P.ID --and P.ID <> C.ID
+					select		A.ID
+					from		FusionOwner O
+								inner join @h H on H.ID = O.ArtifactID
+								inner join FusionAttribute A on A.FusionID = O.FusionID and A.FusionAttributeTypeID = @TargetTypeID
+					group by	A.ID
 					)
 
 		INSERT INTO @tbl
-			SELECT	dbo.GenerateObjectUrl(@TargetType, B.FusionAttributeTypeID, B.ID),
-					B.ID,
-					B.TextPath,
-					C.Name
-			FROM	FusionAttribute B
-					INNER JOIN FusionAttributeType C ON	C.ID = B.FusionAttributeTypeID
-													AND B.FusionAttributeTypeID = @TargetTypeID
-													AND B.ID NOT IN (SELECT	ID FROM	@IDs)
-					INNER JOIN fa on fa.ID = B.ID and fa.FusionAttributeTypeID = @TargetTypeID
+			SELECT	dbo.GenerateObjectUrl(@TargetType, O.FusionAttributeTypeID, O.ID),
+					O.ID,
+					O.TextPath,
+					@fatName
+			FROM	FusionAttribute O
+					INNER JOIN fa on fa.ID = O.ID 
 	END
 
 	IF (@TargetType = 'Group')
@@ -149,41 +138,6 @@ BEGIN
 			FROM	[Group]
 			WHERE	Name LIKE '%' + @Prefix + '%' 
 					 AND ID NOT IN (SELECT	ID FROM	@IDs)
-	END
-
-	IF (@TargetType = 'Intersect')
-	BEGIN
-		IF @SourceType = 'FusionAttribute'
-		BEGIN
-			declare @fusionID int
-			select @fusionID = FusionID from FusionAttribute where ID = @SourceID
-			insert into @owners
-				select	RelationshipOwnerObjectType, 
-						RelationshipOwnerObjectID, 
-						FusionAttributeID 
-				from	GetFusionOwnershipHierarchy(@fusionID, '', 0)
-		END
-
-		INSERT INTO @tbl
-			SELECT	dbo.GenerateObjectUrl(@TargetType, O.IntersectTypeID, O.ID),
-					O.ID,
-					O.Name,
-					T.Name
-			FROM	[Intersect] O
-					INNER JOIN IntersectType T ON	O.IntersectTypeID = T.ID
-													AND T.ID = @TargetTypeID
-													AND T.Name LIKE '%' + @Prefix + '%'
-													AND O.ID NOT IN (SELECT	ID FROM	@IDs)
-			WHERE	@SourceType <> 'FusionAttribute'
-					OR	(
-						@SourceType = 'FusionAttribute' and
-						O.ID in (
-								SELECT	I.ID
-								FROM	[Intersect]	I
-										INNER JOIN IntersectNode N on N.IntersectID = I.ID
-										INNER JOIN @owners FO on FO.ObjectType = N.ObjectType and FO.ObjectID = N.ObjectID and FO.FusionAttributeID = @SourceID
-								)
-						)
 	END
 
 	IF (@TargetType = 'Policy')

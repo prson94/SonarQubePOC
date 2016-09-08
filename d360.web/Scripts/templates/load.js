@@ -71,6 +71,23 @@
                     case 'ResizeItemGrid':
                         $("#LoadItemsTile").jqxGrid('autoresizecolumns');
                         break;
+                    case 'DownloadFull':
+                        var rix = $("#LoadsTile").jqxGrid('getselectedrowindex');
+                        var r = $("#LoadsTile").jqxGrid('getrowdata', rix);
+                        var rUrl = "/form/loads/" + r.ID + "/all.xlsx";
+                        location.assign(rUrl);
+                        break;
+                    case 'DownloadErrors':
+                        var rix = $("#LoadsTile").jqxGrid('getselectedrowindex');
+                        var r = $("#LoadsTile").jqxGrid('getrowdata', rix);
+                        var rUrl = "/form/loads/" + r.ID + "/Errors.xlsx";
+                        if (r.DateCompleted) {
+                            location.assign(rUrl);
+                        }
+                        else {
+                            amplify.publish("ShowMessage", { title: "Unable to Download", message: "This load has not yet completed.", type: 'error' });
+                        }
+                        break;
                 }
             } catch (e) { }
         }
@@ -168,6 +185,8 @@
                     //#region LoadItems Grid
 
                     var itemtools = [
+                        { icon: 'cloud-download', action: 'DownloadFull', title: 'Download original spreadsheet', color:'blue' },
+                        { icon: 'cloud-download', action: 'DownloadErrors', title: 'Download errors spreadsheet', color: 'red' },
                         { icon: 'arrows-h', action: 'ResizeItemGrid', title: 'Resize columns' },
                         { icon: 'refresh', action: 'RefreshItems', title: 'Refresh this list' }
                     ];

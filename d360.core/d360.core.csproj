@@ -108,6 +108,7 @@
     <Compile Include="entities\DomainItemXref.cs" />
     <Compile Include="entities\DomainSourceType.cs" />
     <Compile Include="entities\Favorite.cs" />
+    <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDisplayField.cs" />
     <Compile Include="entities\FusionRule.cs" />
@@ -127,8 +128,6 @@
     <Compile Include="entities\Language.cs" />
     <Compile Include="entities\Plugins\FusionTypeField.cs" />
     <Compile Include="entities\Plugins\FusionAttributeTypeField.cs" />
-    <Compile Include="entities\Relation.cs" />
-    <Compile Include="entities\RelationType.cs" />
     <Compile Include="entities\Environment.cs" />
     <Compile Include="entities\FieldTypeRelationLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
@@ -136,26 +135,17 @@
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\FusionAgentError.cs" />
     <Compile Include="entities\FusionAgentErrorItem.cs" />
-    <Compile Include="entities\IntersectMapGroup.cs" />
     <Compile Include="entities\IntersectTypePredicate.cs" />
     <Compile Include="entities\RuleDimension.cs" />
-    <Compile Include="entities\SourceRuleContext .cs" />
-    <Compile Include="entities\IntersectMapSourceRuleContext.cs" />
     <Compile Include="entities\Predicate.cs" />
-    <Compile Include="entities\IntersectMap.cs" />
     <Compile Include="entities\CommentVote.cs" />
     <Compile Include="entities\CommentCount.cs" />
-    <Compile Include="entities\FusionAttributeOwnerRuleItem.cs" />
-    <Compile Include="entities\FusionAttributePromotionRuleItem.cs" />
     <Compile Include="entities\Queues\BulkLoadQueue.cs" />
-    <Compile Include="entities\IntersectMapSourceRule.cs" />
-    <Compile Include="entities\SourceRule.cs" />
     <Compile Include="entities\Audit.cs" />
     <Compile Include="entities\AuditField.cs" />
     <Compile Include="entities\CompanySetting.cs" />
     <Compile Include="entities\Contracts\ISearchable.cs" />
     <Compile Include="entities\Contracts\IUpdatedMetadata.cs" />
-    <Compile Include="entities\FusionAttributePromotionRuleMapping.cs" />
     <Compile Include="entities\Setting.cs" />
     <Compile Include="entities\FusionExecution.cs" />
     <Compile Include="entities\Rule.cs" />
@@ -165,7 +155,6 @@
     <Compile Include="entities\ReportLayout.cs" />
     <Compile Include="entities\PolicyType.cs" />
     <Compile Include="entities\PolicyTypeClass.cs" />
-    <Compile Include="entities\SourceToTargetMapping.cs" />
     <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\PolicyTypeLevel.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
@@ -181,8 +170,6 @@
     <Compile Include="entities\CompanyFeature.cs" />
     <Compile Include="entities\FusionFilter.cs" />
     <Compile Include="entities\FusionStatusLog.cs" />
-    <Compile Include="entities\FusionJobHistory.cs" />
-    <Compile Include="entities\FusionJobSchedule.cs" />
     <Compile Include="entities\LoadColumn.cs" />
     <Compile Include="entities\LoadItemColumn.cs" />
     <Compile Include="entities\LoadItem.cs" />
@@ -200,12 +187,9 @@
     <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />
-    <Compile Include="entities\FusionAttributeOwnerRule.cs" />
-    <Compile Include="entities\FusionAttributePromotionRule.cs" />
     <Compile Include="entities\IntersectNode.cs" />
     <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
     <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
-    <Compile Include="entities\Transitive\FieldNameByObjectType.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
     <Compile Include="entities\Transitive\RedFlagSummariesByResource.cs" />
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
@@ -231,8 +215,6 @@
     <Compile Include="entities\CommentRelation.cs" />
     <Compile Include="entities\Contracts\IIntObject.cs" />
     <Compile Include="entities\Contracts\IFieldsObject.cs" />
-    <Compile Include="entities\FusionAttributePromotion.cs" />
-    <Compile Include="entities\FusionAttributeTypePromotion.cs" />
     <Compile Include="entities\ObjectSecurity.cs" />
     <Compile Include="entities\ResolutionRelation.cs" />
     <Compile Include="entities\EventGroup.cs" />
@@ -289,8 +271,6 @@
     <Compile Include="entities\Views\ResponsibilityTypeObjectClaimDetail.cs" />
     <Compile Include="entities\Views\SecurityDetail.cs" />
     <Compile Include="entities\Views\StatisticTypeCheckOption.cs" />
-    <Compile Include="entities\Views\FusionAttributePromotionDetail.cs" />
-    <Compile Include="entities\Views\FusionAttributeOwnerDetail.cs" />
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
@@ -304,6 +284,7 @@
     </Compile>
     <Compile Include="enums\AuthenticationType.cs" />
     <Compile Include="enums\CommentVisibility.cs" />
+    <Compile Include="enums\ComplexLookupRelationType.cs" />
     <Compile Include="enums\QuestionDisplayStyle.cs" />
     <Compile Include="enums\FollowType.cs" />
     <Compile Include="enums\FusionRuleType.cs" />

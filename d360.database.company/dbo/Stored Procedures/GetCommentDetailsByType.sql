@@ -1,4 +1,5 @@
-﻿CREATE PROCEDURE [dbo].[GetCommentDetailsByType]
+﻿
+CREATE PROCEDURE [dbo].[GetCommentDetailsByType]
 --declare
 	@type varchar(50), 
 	@id int,
@@ -99,4 +100,18 @@ BEGIN
 	where
 		isdeleted = 0;
 END
+
+/*
+select * from Comment where ownerobjectid = 971882 
+
+
+select	*, 'Comments', '/overlays/Artifact/' + cast(971882 as varchar(10)) + '/comments'
+		from	Comment C
+				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
+												and R.ObjectType = 'Artifact' and R.ObjectID = 971882
+                                                and C.ParentID is null
+												and C.IsDeleted = 0
+
+
+exec [GetCommentDetailsByType] 'Artifact',971882,0,5*/
 
