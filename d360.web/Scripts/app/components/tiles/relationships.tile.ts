@@ -21,11 +21,18 @@ import { Relationship } from '../../models/relationship.model';
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                     </div>
                     <div class="col s12">
-                        <p-dataTable [value]="relationships | relationshipSearch: searchValue" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowSelect)="onSelectedChanged.emit($event.data)"  (onRowDblclick)="selected=$event.data;onSelectedChanged.emit($event.data);showEditor=true;" >
-                            <p-column field="Source" header="Side 1 Type" [sortable]="true"></p-column>                                
-                            <p-column field="SourceName" header="Side 1 Name" [sortable]="true"></p-column>
-                            <p-column field="Target" header="Side 2 Type" [sortable]="true"></p-column>                                
-                            <p-column field="TargetName" header="Side 2 Name" [sortable]="true"></p-column>
+                        <p-dataTable [value]="relationships | relationshipSearch: searchValue" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowSelect)="onSelectedChanged.emit($event.data)"  (onRowDblclick)="selected=$event.data;onSelectedChanged.emit($event.data);showEditor=true;" >                            
+                            <p-column field="SubjectName" header="Subject" [sortable]="true">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <div>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></div>
+                                </template>
+                            </p-column>
+                            <p-column field="PredicateName" header="Predicate" [sortable]="true"></p-column>                                
+                            <p-column field="ObjectName" header="Side 2 Name" [sortable]="true">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <div>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></div>
+                                </template>
+                            </p-column>
                             <p-column [style]="{width:'40px'}">
                                 <template let-relationship="rowData" pTemplate type="body">
                                     <div class="RowTools">
@@ -132,5 +139,10 @@ export class RelationshipsTile implements OnChanges {
     add() {
         this.showEditor = true;
         this.selected = null;
+    }
+
+    displayTypeName(type: string) {
+        if (!type) return "";
+        return type.replace("Type", "");
     }
 }

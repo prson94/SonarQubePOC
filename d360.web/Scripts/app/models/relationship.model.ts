@@ -1,17 +1,19 @@
 ﻿export class Relationship {
     ID: number;
-    Source: string;
-    SourceID: number;
-    SourceName: string;
-    Target: string;
-    TargetID: number;
-    TargetName: string;
+    Object: string;
+    ObjectID: number;
+    ObjectName: string;
+    PredicateID: number;
+    PredicateName: string;
+    Subject: string;
+    SubjectID: number;
+    SubjectName: string;
 }
 
 export class RelationshipDetail {
     ID: number;
     LimitedChangesOnly: boolean;
-    Predicates: number[];
+    Predicate: number;
     Side1: string;
     Side1DisplayText: string;
     Side2: string;

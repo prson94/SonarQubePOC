@@ -43,7 +43,12 @@ import * as _ from 'lodash';
                         </div>                        
                         <div class="col l12 s12">                                                        
                             <div class="FieldName">Predicates</div>
-                            <div><p-multiSelect name="predicates" [options]="predicates" [(ngModel)]="editedRelationship.Predicates" [style]="{width:'100%'}"></p-multiSelect></div>
+                            <div>
+                                <select name="predicates" [(ngModel)]="editedRelationship.Predicate" #predicate="ngModel" style="width:100%;">
+                                    <option *ngFor="let p of predicates" [value]="p.value" [innerHtml]="p.title"></option>
+                                </select>
+                            </div>
+                            <div [hidden]="predicate.valid || predicate.pristine">A predicate is required</div>
                         </div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
@@ -65,7 +70,7 @@ export class AdminRelationshipsEditor {
     editedRelationship: RelationshipDetail;
     side1Options: DropdownOption[] = [];
     side2Options: DropdownOption[] = [];
-    predicates: SelectItem[] = [];
+    predicates: DropdownOption[] = [];
     isLoading: boolean = false;
     isLoadingSide2: boolean = false;
     isLoadingItem: boolean = false;
@@ -110,9 +115,7 @@ export class AdminRelationshipsEditor {
 
     private loadPredicates() {
         this.relationshipsService.getRelationshipPredicates().then(result => {
-            for (let item of result) {
-                this.predicates.push({ label: item.title, value: Number(item.value) });
-            }               
+            this.predicates = result;            
         });
     }
 

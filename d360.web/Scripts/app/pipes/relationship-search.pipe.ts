@@ -12,6 +12,6 @@ export class RelationshipSearchPipe implements PipeTransform {
 
         let search = searchTerm.toLowerCase();
 
-        return items.filter(item => item.Source && item.Source.toLowerCase().includes(search) || item.Target && item.Target.toLowerCase().includes(search) || item.SourceName && item.SourceName.toLowerCase().includes(search) || item.TargetName && item.TargetName.toLowerCase().includes(search));      
+        return items.filter(item => item.Object && item.Object.toLowerCase().includes(search) || item.Subject && item.Subject.toLowerCase().includes(search) || item.ObjectName && item.ObjectName.toLowerCase().includes(search) || item.SubjectName && item.SubjectName.toLowerCase().includes(search));      
     }
 }
