@@ -5,7 +5,7 @@ import {  NgModule } from '@angular/core';
 import { routing } from './admin.routes';
 //import * as primeng from 'primeng/primeng';
 import { SharedModule } from '../shared/shared.module';
-import { FormModule } from '../forms/forms.module';
+import { InputFormsModule } from '../forms/input-forms.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { PartsModule } from '../parts/parts.module';
 
@@ -83,7 +83,7 @@ import {
         SpinnerModule,
         CheckboxModule,
         SharedModule,
-        FormModule,
+        InputFormsModule,
         TilesModule,
         PartsModule,
         BrowserModule,

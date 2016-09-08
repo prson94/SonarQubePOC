@@ -10,8 +10,14 @@ import { Model, ModelHierarchy } from '../../models/model.model';
 @Component({
     selector: 'd3s-model-item',
     providers: [ModelsService],
-    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>
-                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-ownership-tab>
+    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
+                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">   
+                            <d3s-people-responsibilities-tile [objectID]="selected?.ID" [objectType]="'Taxonomy'" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>

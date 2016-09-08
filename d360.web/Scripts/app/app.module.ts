@@ -5,7 +5,11 @@ import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
 import { CHART_DIRECTIVES } from 'angular2-highcharts'; 
+
 import { PipesModule } from './pipes/pipes.module';
+import { SearchModule } from './components/search/search.module';
+import { WorkflowModule } from './components/workflow/workflow.module';
+import { SharedModule } from './components/shared/shared.module';
 
 import {
     GrowlModule,
@@ -85,8 +89,7 @@ import {
 } from './components/diagnostic/index';
 
 import {
-    ArtifactTypeForm,
-    DeleteForm,
+    ArtifactTypeForm,    
     FieldTypeForm,
     GroupForm,
     LoadForm,
@@ -132,8 +135,7 @@ import { NavBarMenuComponent } from './components/navbar/navbar-menu.component';
 import {
     ActionBar,
     SimpleAccordion,
-    ClaimsMatrixPart,
-    FormMessagePart,
+    ClaimsMatrixPart,    
     MenuPartItem,
     MenuPart,
     SimpleDropdown,
@@ -164,7 +166,7 @@ import {
     RuleListComponent,
 } from './components/rule/index';
 
-import {
+/*import {
     AuditComponent,
     BaseComponent,
     DashboardTabComponent,
@@ -187,7 +189,7 @@ import {
     TagInputComponent,
     ObjectFollowersComponent,
     FollowerGridComponent,
-} from './components/shared/index';
+} from './components/shared/index';*/
 
 import {
     SocialBoardComponent,
@@ -198,7 +200,7 @@ import {
 import {
     AttributesTile,
     FusionAttributesTile,
-    TileActionsComponent,
+    //TileActionsComponent,
     ClaimsTile,
     FieldDefinitionTile,
     FusionConfigurationTile,
@@ -229,25 +231,6 @@ import {
     ResourceFollowingGridTile,
     ResourceResponsibilityGridTile,
 } from './components/tiles/index';
-
-
-import {
-    WorkflowIssueEditorComponent,
-    WorkflowDetailComponent,
-    WorkflowIssueDetailsComponent,
-    WorkflowSuggestDetailsComponent,
-    WorkflowCertifyDetailsComponent,
-    WorkflowCertifyEditorComponent,
-    WorkflowSuggestEditorComponent,
-} from './components/workflow/index';
-
-import {
-    HomeSearchComponent,
-    SearchResultsComponent,
-    SearchResultItemComponent,
-    SearchComponent,
-    SearchAutocompleteListComponent,
-} from './components/search/index';
 
 @NgModule({
     declarations: [
@@ -292,26 +275,25 @@ import {
         ArtifactListComponent,
         ArtifactTypeForm,
         AttributesTile,
-        AuditComponent,
-        CHART_DIRECTIVES,
+     //   AuditComponent,
+        //CHART_DIRECTIVES,
         ClaimsMatrixPart,
         ClaimsTile,
         CommunityComponent,
         CommunitySummaryComponent,
-        DashboardTabComponent,
-        DeleteForm,
+    //    DashboardTabComponent,
+//        DeleteForm,
         DiagnosticComponent,
         DiagnosticIncorrectTextpathComponent,
-        DynamicEditorComponent,
-        DynamicFieldComponent,
-        DynamicGridComponent,
-        DynamicLookupGridComponent,
-        TagInputComponent,
-        DynamicRelationshipGridComponent,
+      //  DynamicEditorComponent,
+      //  DynamicFieldComponent,
+     //   DynamicGridComponent,
+     //   DynamicLookupGridComponent,
+     //   TagInputComponent,
+     //   DynamicRelationshipGridComponent,
         FieldDefinitionTile,
         FieldTypeForm,
-        FollowerGridComponent,
-        FormMessagePart,
+    //    FollowerGridComponent,        
         FusionAttributesTile,
         FusionComponent,
         FusionConfigurationTile,
@@ -327,11 +309,11 @@ import {
         HeaderFavoritesComponent,
         HeaderTypeaheadSearchComponent,
         HomeComponent,
-        LineageComponent,
+    //    LineageComponent,
         LoadForm,
         LoadItemTile,
         MenuPart,
-        MessagesComponent,
+    //    MessagesComponent,
         ModelComponent,
         ModelItemComponent,
         ModelLevelTile,
@@ -341,23 +323,23 @@ import {
         NavBarComponent,
         NavBarItemComponent,
         NavBarMenuComponent,
-        ObjectBoardComponent,        
-        ObjectChallengeComponent,
+     //   ObjectBoardComponent,        
+     //   ObjectChallengeComponent,
         ObjectDefinitionTile,
         ObjectDetailField,
         ObjectDetailTile,
-        ObjectFollowersComponent,
+      //  ObjectFollowersComponent,
         ObjectGovernanceTile,
-        ObjectHealthComponent,
-        ObjectHealthDetailsComponent,        
-        ObjectIssuesComponent,
+     //   ObjectHealthComponent,
+     //   ObjectHealthDetailsComponent,        
+     //   ObjectIssuesComponent,
         ObjectRelationshipsTile,
-        OwnershipTabComponent,
-        PageLinksComponent,
+    //    OwnershipTabComponent,
+     //   PageLinksComponent,
         PeopleResponsibilitiesTile,
         PolicyComponent,
         PolicyItemComponent,
-        PowerBIViewerComponent,
+    //    PowerBIViewerComponent,
         PredicatesTile,
         ReferenceComponent,
         ReferenceListComponent,
@@ -390,21 +372,9 @@ import {
         AssignmentsTile,
         BoardTile,
         ActivityDetailsTile,
-        TileActionsComponent,
-        TooltipComponent,
-        WorkflowIssueEditorComponent,
-        WorkflowDetailComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowSuggestDetailsComponent,
-        WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,
-        WorkflowSuggestEditorComponent,
-        WorkflowItemForm,
-        HomeSearchComponent,
-        SearchResultsComponent,
-        SearchResultItemComponent,
-        SearchComponent,
-        SearchAutocompleteListComponent,
+        //TileActionsComponent,
+     //   TooltipComponent,        
+        WorkflowItemForm,     
     ],
     imports: [
         BrowserModule,
@@ -437,8 +407,9 @@ import {
 
         //d3s modules
         PipesModule,
-        
-
+        SearchModule,
+        WorkflowModule,
+        SharedModule,        
     ],
     bootstrap: [AppComponent],
     providers: [Title],    

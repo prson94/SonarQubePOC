@@ -18,7 +18,13 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-ownership-tab>
+                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">   
+                            <d3s-people-responsibilities-tile [objectID]="artifact?.ID" [objectType]="'Artifact'" [title]="'Ownership of ' + artifact?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>

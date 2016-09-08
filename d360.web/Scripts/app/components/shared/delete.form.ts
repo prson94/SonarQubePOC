@@ -5,7 +5,7 @@ import { FormMessage, JsonResult } from '../../models/form.model';
 
 @Component({
     selector: 'delete-form',
-    templateUrl: 'scripts/app/components/forms/delete.form.html',    
+    templateUrl: 'scripts/app/components/shared/delete.form.html',    
 })
 
 export class DeleteForm {

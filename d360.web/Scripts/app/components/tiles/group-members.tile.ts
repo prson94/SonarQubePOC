@@ -2,7 +2,6 @@
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { GroupService } from '../../services/group.service';
-import { TileActionsComponent } from './tile-actions.component';
 import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.model';
 
 @Component({

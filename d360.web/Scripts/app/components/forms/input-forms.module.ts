@@ -1,6 +1,10 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
-import { NgModule } from '@angular/core';
+import { NgModule }       from '@angular/core';
+import { CommonModule }       from '@angular/common';
+import { FormsModule }    from '@angular/forms';
+import { HttpModule }     from '@angular/http';
+import { RouterModule } from '@angular/router';
+
 import { PartsModule } from '../parts/parts.module';
 
 import { BrowserModule } from '@angular/platform-browser';
@@ -21,8 +25,7 @@ import {
 
 
 import {
-    ArtifactTypeForm,
-    DeleteForm,
+    ArtifactTypeForm,    
     FieldTypeForm,
     GroupForm,
     LoadForm,
@@ -39,8 +42,7 @@ import {
 
 @NgModule({
     declarations: [
-        ArtifactTypeForm,
-        DeleteForm,
+        ArtifactTypeForm,        
         FieldTypeForm,
         GroupForm,
         LoadForm,
@@ -50,6 +52,11 @@ import {
         //FormMessagePart
     ]
     , imports: [
+        CommonModule,
+        FormsModule,
+        HttpModule,
+        RouterModule,
+
         TreeTableModule,
         DataTableModule,
         InputTextModule,
@@ -60,12 +67,11 @@ import {
         MultiSelectModule,
         SpinnerModule,
         CalendarModule,
-        BrowserModule,
-        ReactiveFormsModule,
+        BrowserModule,        
         FormsModule,
         PartsModule
     ]
 
 })
 
-export class FormModule { }
+export class InputFormsModule { }

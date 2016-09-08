@@ -12,8 +12,14 @@ import { RuleDetail } from '../../models/rule.model';
     selector: 'd3s-rule-item',
     providers: [RulesService],    
     template: ` 
-                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>
-                <d3s-ownership-tab *ngIf="!isLoading && isOwnershipVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-ownership-tab>
+                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
+                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">   
+                            <d3s-people-responsibilities-tile [objectID]="rule?.ID" [objectType]="'Rule'" [title]="'Ownership of ' + rule?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>
                 <div *ngIf="isLoading">
                             <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>

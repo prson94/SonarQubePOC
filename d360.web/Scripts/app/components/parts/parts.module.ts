@@ -20,8 +20,7 @@ import {
 
 import {
     ActionBar,
-    ClaimsMatrixPart,
-    FormMessagePart,
+    ClaimsMatrixPart,    
     MenuPart,
     SimpleAccordion,
     SimpleDropdown
@@ -30,16 +29,14 @@ import {
 @NgModule({
     declarations: [
         ActionBar,
-        ClaimsMatrixPart,
-        FormMessagePart,
+        ClaimsMatrixPart,        
         MenuPart,
         SimpleAccordion,
         SimpleDropdown
     ],
     exports: [
         ActionBar,
-        ClaimsMatrixPart,
-        FormMessagePart,
+        ClaimsMatrixPart,        
         MenuPart,
         SimpleAccordion,
         SimpleDropdown

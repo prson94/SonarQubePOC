@@ -966,7 +966,7 @@
     </Content>
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
-    <Content Include="Scripts\app\components\forms\delete.form.html" />
+    <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\forms\workflow-item.form.html" />
     <Content Include="Scripts\app\components\tiles\claims.tile.html" />
@@ -1384,7 +1384,7 @@
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\forms.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\input-forms.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
@@ -1445,11 +1445,11 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-autocomplete-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\search.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
@@ -1473,7 +1473,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\object-challenge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\ownership-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tag-input.component.ts" />
@@ -1490,7 +1489,6 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
@@ -1504,7 +1502,6 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-governance-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\ownership-tab.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
@@ -1513,13 +1510,14 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\structure.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\survey-questions.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\tile-actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\delete.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
@@ -1635,7 +1633,7 @@
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\field-definition.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\form-message.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />

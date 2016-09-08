@@ -5,7 +5,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { SharedModule } from '../shared/shared.module';
 import { AdminModule } from '../admin/admin.module';
 import { PartsModule } from '../parts/parts.module';
-import { FormModule } from '../forms/forms.module';
+import { InputFormsModule } from '../forms/input-forms.module';
 
 import {
     AttributesTile,
@@ -30,8 +30,7 @@ import {
     RuleDimensionsTile,
     StructureTile,
     SurveyQuestionsTile,
-    SynonymsTile,
-    TileActionsComponent
+    SynonymsTile,    
 } from './index';
 
 import {
@@ -70,8 +69,7 @@ import {
         RuleDimensionsTile,
         StructureTile,
         SurveyQuestionsTile,
-        SynonymsTile,
-        TileActionsComponent,
+        SynonymsTile,        
     ],
     exports: [
         AttributesTile,
@@ -96,8 +94,7 @@ import {
         RuleDimensionsTile,
         StructureTile,
         SurveyQuestionsTile,
-        SynonymsTile,
-        TileActionsComponent,
+        SynonymsTile,        
         ]
     , imports: [
         ButtonModule,
@@ -112,7 +109,7 @@ import {
         BrowserModule,
         SharedModule,
         //AdminModule,
-        FormModule,
+        InputFormsModule,
         PartsModule,
     ]
 
