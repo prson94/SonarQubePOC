@@ -1,4 +1,6 @@
-﻿export class GridDefinition {
+﻿import { ObjectRelationship} from './relationship.model';
+
+export class GridDefinition {
     Columns: GridColumn[];
     Fields: GridField[];
     FieldsCount: number;
@@ -20,9 +22,9 @@ export class GridColumn {
 }
 
 export class GridRelationshipFilterExpression {
-    includeType: string = "Any";
-    objectType: string;
-    objectIds: string;
+    includeType: string = "Any";    
+    objectIds: string[];
+    relationshipType: ObjectRelationship;
 }
 
 export class GridAttributeFilterExpression {

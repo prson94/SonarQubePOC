@@ -57,7 +57,7 @@ export class ArtifactService extends BaseService {
         }
 
         if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.objectType}&RelationshipObjectIDs=${relationships.objectIds}`;
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
         }
 
         if (simpleFilter != undefined) {

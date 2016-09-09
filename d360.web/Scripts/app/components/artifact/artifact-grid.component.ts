@@ -47,7 +47,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <div *ngIf="showTypeFilter" class="col l2 m3 s12">                                                                         
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
                     </div>
-                    <d3s-artifact-column-filter [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
+                    <d3s-artifact-column-filter [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
@@ -149,27 +149,6 @@ export class ArtifactGridComponent implements OnChanges {
     }
 
     filterGridData(filterData) {
-        if (filterData.filter)
-            this.stateService.artifactTypeFilters.filters = filterData.filter;
-        else {
-            this.stateService.artifactTypeFilters.filters.splice(0, this.stateService.artifactTypeFilters.filters.length);
-        }
-
-        if (filterData.relationships) {
-            this.stateService.artifactTypeFilters.relationships = filterData.relationships;
-        }
-        else {
-            this.stateService.artifactTypeFilters.relationships = null;
-        }
-
-        if (filterData.attributes) {
-            this.stateService.artifactTypeFilters.attributes = filterData.attributes;
-        }
-        else {
-            this.stateService.artifactTypeFilters.attributes = null;
-        }
-
-
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }

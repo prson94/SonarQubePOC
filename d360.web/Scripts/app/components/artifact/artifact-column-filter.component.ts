@@ -44,7 +44,7 @@ import { AttributeType } from '../../models/attribute-type.model';
                         <div class="col s4 filter">
                             <div class="row">
                                 <div class="col s12 FieldName">Attribute</div>
-                                <div class="col s12"><select name="attributeName" style="width:100%;" placeholder="Choose an attribute" [(ngModel)]="attributeFilter.attributeType" (change)="attributeSelected($event.target)">                                            
+                                <div class="col s12"><select name="attributeName" style="width:100%;" placeholder="Choose an attribute" [(ngModel)]="attributeFilter.attributeType" (change)="attributeSelected($event.target?.value)">                                            
                                       <option></option>
                                       <option *ngFor="let p of attributeTypes" [value]="p.ID">{{p.Name}}</option></select>
                                 </div>                                
@@ -62,16 +62,15 @@ import { AttributeType } from '../../models/attribute-type.model';
                         </div>
                         <div class="col s3"></div>
                     </div>
-                    <div *ngIf="relationshipFilters" class="filter">
+                    <div *ngIf="relationshipFilter" class="filter">
                         <div class="col s1 filter FieldName">
                             Relationship:                            
                         </div>
                         <div class="col s4 filter">
                             <div class="row">
                                 <div class="col s12 FieldName">Type of relationship</div>
-                                <div class="col s12"><select name="relationType" style="width:100%;" placeholder="Choose a type" (change)="relationshipSelected($event.target)">                                            
-                                      <option></option>
-                                      <option *ngFor="let p of relationshipTypes" [value]="p.TargetType + '|' + p.TargetTypeID">{{p.TargetName}}</option></select>
+                                <div class="col s12"><select name="relationType" style="width:100%;" placeholder="Choose a type" [ngModel]="relationshipFilter.relationshipType?.IntersectTypeID" (ngModelChange)="relationshipSelected($event)">                                                                                  
+                                      <option *ngFor="let p of relationshipTypes" [ngValue]="p.IntersectTypeID">{{p.TargetName}}</option></select>
                                 </div>                                
                             </div>                       
                         </div>
@@ -79,7 +78,7 @@ import { AttributeType } from '../../models/attribute-type.model';
                             <div class="row">
                                 <div class="col s12 FieldName">Relationship</div>
                                 <div class="col s12">
-                                    <p-multiSelect name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [(ngModel)]="relationItems"></p-multiSelect>
+                                    <p-multiSelect name="predicates" [options]="relationshipValues" [style]="{width:'100%'}" [(ngModel)]="relationshipFilter.objectIds"></p-multiSelect>
                                 </div>     
                             </div>
                         </div>
@@ -87,17 +86,17 @@ import { AttributeType } from '../../models/attribute-type.model';
                             <div class="row">
                                 <div class="col s12 FieldName">Connector</div>
                                 <div class="col s12">
-                                    <p-selectButton name="relationIncludeType" [options]="connectors" [(ngModel)]="relationshipFilters.includeType"></p-selectButton>
+                                    <p-selectButton name="relationIncludeType" [options]="connectors" [(ngModel)]="relationshipFilter.includeType"></p-selectButton>
                                 </div>     
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12 buttons">
-                            <button pButton *ngIf="filters.length > 0 || relationshipFilters || attributeFilter" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
-                            <button pButton *ngIf="filters.length || relationshipFilters || attributeFilter" type="button" style="width: '150px';" label="Clear all Filters" (click)="clearFilter()"></button>
+                            <button pButton *ngIf="filters.length > 0 || relationshipFilter || attributeFilter" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
+                            <button pButton *ngIf="filters.length || relationshipFilter || attributeFilter" type="button" style="width: '150px';" label="Clear all Filters" (click)="clearFilter()"></button>
                             <button pButton *ngIf="!filters.length" type="button" style="width: '150px';" label="Add Filter" (click)="addFilter()"></button>
-                            <button pButton *ngIf="!relationshipFilters && (relationshipTypes && relationshipTypes.length > 0)" type="button" style="width: '150px';" label="Add Relationship Filter" (click)="addRelationshipFilter()"></button>
+                            <button pButton *ngIf="!relationshipFilter && (relationshipTypes && relationshipTypes.length > 0)" type="button" style="width: '150px';" label="Add Relationship Filter" (click)="addRelationshipFilter()"></button>
                             <button pButton *ngIf="!attributeFilter && (attributeTypes && attributeTypes.length > 0)" type="button" style="width: '150px';" label="Add Attribute Filter" (click)="addAttributeFilter()"></button>
                         </div>
                     </div>
@@ -110,15 +109,19 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
     @Input() artifactType: ArtifactType;
     @Output() filterChanged = new EventEmitter();
 
-    filters: GridFilterExpression[] = [];
-    relationshipFilters: GridRelationshipFilterExpression = null;
-    attributeFilter: GridAttributeFilterExpression = null;
+    @Input() filters: GridFilterExpression[] = [];
+    @Output() filtersChange = new EventEmitter();
+
+    @Input() relationshipFilter: GridRelationshipFilterExpression = null;    
+    @Output() relationshipFilterChange = new EventEmitter();
+
+    @Input() attributeFilter: GridAttributeFilterExpression = null;
+    @Output() attributeFilterChange = new EventEmitter();
 
     relationshipTypes: ObjectRelationship[];    
     relationshipValues: SelectItem[] = [];
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
-    relationItems: string[];
-    
+        
     attributeTypes: AttributeType[];
     attributeValues: string[];
     
@@ -126,8 +129,10 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
         
     }
 
-    ngOnInit() {
-        
+    ngOnInit() {        
+
+        if (this.attributeFilter && this.attributeFilter.attributeType)
+            this.attributeSelected(this.attributeFilter.attributeType);        
     }
 
     ngOnDestroy() {
@@ -139,23 +144,33 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
             this.getAttributes();
             //fetch relationships for this artifacttypeid
             if (!this.relationshipTypes) this.getRelationshipTypes();
-        }
+            if (this.relationshipFilter && this.relationshipFilter.relationshipType)
+                this.loadRelationshipValues();
+        }                
     }
 
     private onSubmit() {
-        if (this.relationItems && this.relationItems.length > 0 && this.relationshipFilters) {
-            this.relationshipFilters.objectIds = this.relationItems.join(',');            
+        if (this.relationshipFilter) {            
+            this.relationshipFilterChange.emit(this.relationshipFilter);        }
+
+        if (this.attributeFilter) {
+            this.attributeFilterChange.emit(this.attributeFilter);
         }
 
-        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilters, attributes: this.attributeFilter });
+        this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilter, attributes: this.attributeFilter });
     }
 
     private clearFilter() {
         this.filters.splice(0, this.filters.length);
-        this.relationshipFilters = null;
+        this.filtersChange.emit(this.filters);
+
+        this.relationshipFilter = null;
+        this.relationshipFilterChange.emit(this.relationshipFilter);
+
         this.attributeFilter = null;
-        this.relationItems = [];
-        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilters });
+        this.attributeFilterChange.emit(this.attributeFilter);
+        
+        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilter });
     }
        
 
@@ -198,35 +213,55 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
 
         this.relationshipsService.getObjectRelations('ArtifactType', this.artifactType.ID)
             .then(result => {
-                this.relationshipTypes = result;
+                this.relationshipTypes = result;                
             });
     }
 
     private attributeSelected(target) {
+        if (this.attributeFilter) console.log(this.attributeFilter.attributeSearchValue);
         this.attributeValues = [];
-        this.attributeTypeService.getAttributeFilterValues('ArtifactType', this.artifactType.ID, target.value)
+        this.attributeTypeService.getAttributeFilterValues('ArtifactType', this.artifactType.ID, target)
             .then(result => {
                 this.attributeValues = result;
             });
     }
 
     private relationshipSelected(target) {
+        if (!target) {
+            console.log("ERROR RELATIONSELECTED TARGET IS NULL!");
+
+            return;
+        }
+
+        var relTypes = this.relationshipTypes.filter(item => item.IntersectTypeID == target);
+
+        if (relTypes.length < 1) {
+            console.log("ERROR CANNOT FIND INRESECTTYPEID!", target);
+
+            return;
+        }
+
         //load values for this relationship
-        this.relationItems = [];
-        let objectInfo = target.value.split('|');
-        if (objectInfo.length != 2) return;
+        this.relationshipFilter.relationshipType = relTypes[0];
+
+        this.relationshipFilter.objectIds = [];
+
+        this.loadRelationshipValues();
+    }
+
+    private loadRelationshipValues() {
         this.relationshipValues.splice(0, this.relationshipValues.length);
-        this.relationshipFilters.objectType = objectInfo[0].replace("Type","");
-        this.relationshipsService.getRelatedObjects(objectInfo[0], objectInfo[1]).then(
-            result => {                
+
+        this.relationshipsService.getRelatedObjects(this.relationshipFilter.relationshipType.TargetType, this.relationshipFilter.relationshipType.TargetTypeID).then(
+            result => {
                 for (let item of result) {
                     this.relationshipValues.push({ label: item.Name, value: item.ID });
-                }   
+                }
             });        
     }
 
     private addRelationshipFilter() {        
-        this.relationshipFilters = new GridRelationshipFilterExpression();      
+        this.relationshipFilter = new GridRelationshipFilterExpression();          
     }
 
     private addAttributeFilter() {
