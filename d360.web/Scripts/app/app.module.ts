@@ -10,6 +10,7 @@ import { PipesModule } from './pipes/pipes.module';
 import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { SharedModule } from './components/shared/shared.module';
+import { SocialModule } from './components/social/social.module';
 
 import {
     GrowlModule,
@@ -168,12 +169,6 @@ import {
 } from './components/rule/index';
 
 import {
-    SocialBoardComponent,
-    SocialCommentComponent,
-    SocialInputComponent,
-} from './components/social/index';
-
-import {
     AttributesTile,
     FusionAttributesTile,    
     ClaimsTile,
@@ -315,10 +310,7 @@ import {
         RuleItemComponent,
         RuleListComponent,
         SimpleAccordion,
-        SimpleDropdown,
-        SocialBoardComponent,
-        SocialCommentComponent,
-        SocialInputComponent,
+        SimpleDropdown,    
         StructureTile,
         SurveyQuestionsTile,
         SynonymsTile,
@@ -361,7 +353,8 @@ import {
         PipesModule,
         SearchModule,
         WorkflowModule,
-        SharedModule,        
+        SharedModule,  
+        SocialModule,      
     ],
     bootstrap: [AppComponent],
     providers: [Title],    
