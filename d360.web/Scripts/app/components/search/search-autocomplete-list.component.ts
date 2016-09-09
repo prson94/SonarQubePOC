@@ -16,7 +16,7 @@ import { SearchResult} from '../../models/search-result.model';
                 }                                     
             `],
     template: ` 
-                <div *ngIf="showResults" class="tt-menu" style="position:absolute;top:-3px;left:0;min-width:400px" [ngStyle]="{'width':width}">                         
+                <div *ngIf="showResults && autocompletions.length > 0" class="tt-menu" style="position:absolute;top:-3px;left:0;min-width:400px" [ngStyle]="{'width':width}">                         
                     <div class="header">Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>
                     <div *ngFor="let autocomplete of autocompletions" class="tt-suggestion tt-selectable" (click)="goTo(autocomplete)">
                         <span class="type">{{autocomplete.Type}}</span> <span [innerHtml]="highlightedResult(autocomplete.Name)"></span>

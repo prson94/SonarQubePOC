@@ -9,7 +9,7 @@ import { Router, NavigationEnd } from '@angular/router';
     host: {
         '(document:click)': 'onClick($event)',
     },  
-    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" >
+    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" (keyup)="checkKey($event)" >
                     <a style="display:table-cell;" (click)="showSearch=!showSearch;" ><i class="fa fa-search"></i></a>
                     <p-autoComplete size="50" 
                             styleClass="searchTypeahead" 
@@ -31,10 +31,11 @@ export class HeaderTypeaheadSearchComponent {
     result: SearchResult;
     showSearch: boolean = false;
     hideTimeoutID: number = 0;
-
+    searchText: string;
     results: SearchResult[];
 
     search(event) {
+        this.searchText = event.query;
         this.typeaheadSearchService.getResults(10, event.query).then(data => {
             this.results = data;
         });       
@@ -63,6 +64,12 @@ export class HeaderTypeaheadSearchComponent {
         if (this.showSearch && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
             this.showSearch = false;
         }        
+    }
+
+    checkKey(event) {
+        if (event.keyCode == 13) {
+            this.router.navigateByUrl(`/a/search?query=${encodeURIComponent(this.searchText)}`);
+        }
     }
 }
 

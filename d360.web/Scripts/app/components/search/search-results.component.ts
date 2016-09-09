@@ -10,8 +10,8 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                 <div *ngIf="results?.Result?.Results?.length > 0">
                     <div class="row">
                         <div class="col l2 m4 hide-on-small-only">
-                            <div>
-                                <h4 class="search-result-categories">Categories</h4>
+                            <div class="tile tile-detail">
+                                <header>Categories</header>
                                 <div class="widget search-category-area" id="CategoryResults">
                                     <div class="row">
                                         <div class="col l10 m10 s11 entry">                                            
@@ -44,8 +44,8 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                             </div>
                         </div>
                         <div class="col l10 m8">
-                            <div>                                
-                                <h6 class="search-result-summary">Search found {{ results?.Result?.Matches }} matches in ({{results?.Result?.ElapsedMS /1000}} seconds)</h6>
+                            <div class="tile tile-detail">                                
+                                <header>Search results - <span style="color:#999;font-size:75%">found {{ results?.Result?.Matches }} matches in ({{results?.Result?.ElapsedMS /1000}} seconds)</span></header>
                                 <div *ngFor="let result of results?.Result?.Results">
                                     <d3s-search-result-item [result]="result"></d3s-search-result-item>
                                 </div>

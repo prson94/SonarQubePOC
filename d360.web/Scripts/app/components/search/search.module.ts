@@ -9,6 +9,7 @@ import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
 import { SearchAutocompleteListComponent } from './search-autocomplete-list.component';
+import { SearchInputComponent } from './search-input.component';
 
 import {
     GrowlModule,
@@ -62,7 +63,8 @@ import {
         SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
-        SearchAutocompleteListComponent,        
+        SearchAutocompleteListComponent,    
+        SearchInputComponent,    
     ],
     exports: [
         HomeSearchComponent,
@@ -70,6 +72,7 @@ import {
         SearchResultItemComponent,
         SearchComponent,
         SearchAutocompleteListComponent,        
+        SearchInputComponent,
     ]
 })
 export class SearchModule { }

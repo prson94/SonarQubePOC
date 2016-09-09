@@ -1,20 +1,38 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RulesService } from '../../services/index';
+import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SearchService, TypeaheadSearchService } from '../../services/index';
+import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 
 @Component({
     selector: 'd3s-search',
-    template: ` Search Page
-             ` ,
+    template: `               
+                <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>                
+                <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
+                `,
+    providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchComponent extends BaseComponent implements OnInit { 
-    
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
-        super();        
+export class SearchComponent extends BaseComponent implements OnInit {
+    private searchResults: SearchResultsObject;
+    private categories: SearchCategories[] = [];
+    private selectedCategory: SearchCategories;
+    private searchText: string;
+    private isExactMatch: boolean = true;
+    private searchTypes: string[] = ["Artifact", "Synonym"];
+
+    private resultsPerPage: number = 10;
+    private pageNumber: number = 0;
+    private sub: any;
+    private showAdvanced: boolean = false;
+
+    constructor(private route: ActivatedRoute, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
+        super();
+        
     }
 
     ngOnInit() {
@@ -22,7 +40,54 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search'));
+
+        this.sub = this.route.queryParams.subscribe(params => {
+            this.showAdvanced = params['advanced'] == '1';
+            this.searchText = params['query'] ? params['query'] : '';
+            if (params['types']) {
+                this.searchTypes = params['types'].split(',');
+            }
+            if (this.searchText.length > 0) this.doSearch();
+
+        });
     }
 
+    private doSearch(filterCategory?: SearchCategories) {
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
+            .then(res => {
+                this.searchResults = res;
+                if (filterCategory == undefined) this.categories = res.Categories;
+            });
+    }
 
-}
+    private filterByCategory(event) {
+        this.selectedCategory = event.category;
+        this.doSearch(this.selectedCategory);
+    }
+
+    private paginate(event) {
+        if (!event.size == undefined) {
+            console.log("ERROR : MISSING ITEMS PER PAGE.");
+
+            return;
+        }
+
+        if (event.page == undefined) {
+            console.log("ERROR : MISSING PAGE NUMBER.");
+
+            return;
+        }
+
+        if (!event.first == undefined) {
+            console.log("ERROR : MISSING INDEX OF FIRST PAGE.");
+
+            return;
+        }
+
+        this.resultsPerPage = event.size;
+
+        this.pageNumber = event.first == 0 ? 0 : (event.first / this.resultsPerPage);
+
+        this.doSearch(this.selectedCategory);
+    }
+};
