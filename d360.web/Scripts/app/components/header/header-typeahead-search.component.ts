@@ -16,10 +16,15 @@ import { Router, NavigationEnd } from '@angular/router';
                             scrollHeight="400px" *ngIf="showSearch" 
                             [(ngModel)]="result" 
                             [suggestions]="results" 
-                            (completeMethod)="search($event)" 
-                            field="Name"  
+                            field="Name"
+                            (completeMethod)="search($event)"                              
                             placeholder="Search Data3Sixty"
                             (onSelect)="selectItem()">                       
+                        <template let-result>
+                            <div style="padding:5px 0;">                                
+                                <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.Name}}</div>
+                            </div>                            
+                        </template>
                     </p-autoComplete>
                 <span>`,
     providers: [TypeaheadSearchService]
@@ -41,8 +46,25 @@ export class HeaderTypeaheadSearchComponent {
         });       
     }
 
-    selectItem() {        
-        window.location.href = this.result.Url;        
+    public convertUrl(item: SearchResult): string {
+        if (item.Url.startsWith('#/artifacts'))
+            return item.Url.replace('#/artifacts', '/a/artifact');
+        else if (item.Url.startsWith('#/resources'))
+            return item.Url.replace('#/resources', '/a/resource');
+        else if (item.Url.startsWith('#/catalogs'))
+            return item.Url.replace('#/catalogs', '/a/model');
+        return item.Url;
+    }
+
+    selectItem() {
+        let url = this.convertUrl(this.result);
+
+        if (url.startsWith('/a')) {
+            this.router.navigateByUrl(url);
+        }
+        else {
+            window.location.href = url;
+        }
     }
 
     hide() {        
@@ -68,6 +90,7 @@ export class HeaderTypeaheadSearchComponent {
 
     checkKey(event) {
         if (event.keyCode == 13) {
+            this.showSearch = false;
             this.router.navigateByUrl(`/a/search?query=${encodeURIComponent(this.searchText)}`);
         }
     }

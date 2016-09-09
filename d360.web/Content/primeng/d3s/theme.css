@@ -900,3 +900,6 @@ p-togglebutton.ng-dirty.ng-invalid .ui-button {
     float:none;
     transition:none;
 }
+.ui-autocomplete-panel .ui-autocomplete-list-item{
+    border-bottom: 1px solid #ccc;
+}
