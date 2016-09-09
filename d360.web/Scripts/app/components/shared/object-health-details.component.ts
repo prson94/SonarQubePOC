@@ -88,7 +88,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         text:''
                     },                    
                     xAxis: {
-                        type: 'datetime'
+                        type: 'datetime',
+                        minTickInterval: (24 * 3600 * 1000),                    
                     },
                     yAxis: {
                         title: {
@@ -105,7 +106,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     plotOptions: {
                         area: {                           
                             marker: {
-                                radius: 2
+                                radius: 1
                             },
                             lineWidth: 1,
                             states: {

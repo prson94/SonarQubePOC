@@ -3,7 +3,7 @@
 	@id int
 AS
 begin
-	declare @Points int = 14,
+	declare @Points int = 40,
 			@DateStart datetime, @DateEnd datetime, @DateCurrent datetime,
 			@Increment int, @CurrentPoints int, @MaxPoints int, @current int,
 			@oType varchar(25), @oTypeID int, @score float
@@ -57,3 +57,4 @@ begin
 	end
 	select * from  @dates order by [Date]
 end
+
