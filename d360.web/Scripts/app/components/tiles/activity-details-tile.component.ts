@@ -1,5 +1,6 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/index';
 import { Count} from '../../models/counts.model';
@@ -16,7 +17,7 @@ import { Artifact } from '../../models/artifacts.model';
                     <div *ngIf="isLoading" style="width:100%; text-align:center;">
                         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                     </div>
-                    <p-dataTable *ngIf="!isLoading" [value]="items" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
+                    <p-dataTable *ngIf="!isLoading" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="true">
                             <template let-col let-item="rowData" pTemplate type="body">
                                 <a [routerLink]="'/a/artifact/' + item.ArtifactTypeID + '/' + item.ID">{{item.Name}}</a>
@@ -54,13 +55,17 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
 
     @Output() close = new EventEmitter();
 
-    constructor(private artifactService: ArtifactService) {
+    constructor(private router: Router, private artifactService: ArtifactService) {
         super();
     }
 
     ngOnInit() {
         if (this.objectId > 0)
             this.load();
+    }
+
+    private navigateToArtifact() {
+        this.router.navigateByUrl(`/a/artifact/${this.selected.ArtifactTypeID}/${this.selected.ID}`);
     }
 
     private load() {
