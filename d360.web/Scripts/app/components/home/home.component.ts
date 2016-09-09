@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import {Component} from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
@@ -14,7 +14,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     templateUrl: 'scripts/app/components/home/home.component.html'
 })
 
-export class HomeComponent extends BaseComponent {
+export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private showActivityDetails: boolean = false;
     private showBoardDetails: boolean = false;
     private showAssignmentDetails: boolean = false;
@@ -44,6 +44,10 @@ export class HomeComponent extends BaseComponent {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
         this.clearSidebar();
         this.setCommonRightSideBar(false, false, true);
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     private onShowActivityDetails(event) {
