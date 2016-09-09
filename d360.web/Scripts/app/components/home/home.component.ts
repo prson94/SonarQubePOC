@@ -2,10 +2,12 @@
 import {Component} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';
+import { Subscription }   from 'rxjs/Subscription';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'home',
@@ -27,8 +29,12 @@ export class HomeComponent extends BaseComponent {
 
     private selectedWorkflowType: WorkflowType;
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
-        super();
+    constructor(protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        //private objectActionsService: ObjectActionsService,
+        webAnalyticsService: WebAnalyticsService,
+        rightSidebarService: RightSidebarService) {
+        super(rightSidebarService, webAnalyticsService);
     }
 
     ngOnInit() {
@@ -36,6 +42,8 @@ export class HomeComponent extends BaseComponent {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
+        this.clearSidebar();
+        this.setCommonRightSideBar(false, false, true);
     }
 
     private onShowActivityDetails(event) {

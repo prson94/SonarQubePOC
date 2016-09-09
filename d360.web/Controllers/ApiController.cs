@@ -133,23 +133,26 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        //Computed field, maybe.
+                        //Computed field.
                         if (ft.Type == DataType.RelationLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderRelationLookupField(type.ToString(), id, ft.ID));
                         }
-                        //Computed field, maybe.
                         if (ft.Type == DataType.FilteredLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
                         }
-                        //Computed field, maybe.
                         if (ft.Type == DataType.Attribute.ToString())
                         {
                             //look at attribute field and figure out what to show
                             list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
+                        }
+                        if (ft.Type == DataType.ComplexLookup.ToString())
+                        {
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));
                         }
                     }
                 });
@@ -3334,12 +3337,72 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             return list;
         }
 
-        private void loadComplexLookupColumns(List<FieldType> fieldTypes, List<FieldTypeLookupDefinitionField> fields, FieldTypeLookupDefinitionRelation join, string intersectIDColumn, string objColumn, string objIDColumn, int position)
+        internal class ComplexColumnModel
         {
+            public string text { get; set; }
+            public string texttype { get; set; }
+            public string datafield { get; set; }
+            public string datafieldtype { get; set; }
+            public string format { get; set; }
+
+            public string DisplayColumn { get; set; }
+            public int DisplayOrder { get; set; }
+
+            public string SortColumn { get; set; }
+            public int SortOrder { get; set; }
+
+            public string Filter { get; set; }
+        }
+
+        private void loadComplexLookupColumns(List<FieldType> fieldTypes, List<FieldTypeLookupDefinitionField> fields, List<ComplexColumnModel> columnModels, FieldTypeLookupDefinitionRelation join, string intersectIDColumn, string objColumn, string objIDColumn, int position)
+        {
+            Func<FieldType, FieldTypeLookupDefinitionField, ComplexColumnModel, string> setColumnTypeInfo = (ft,  df, c) => {
+
+                c.format = "";
+                c.texttype = GridColumn.COLUMN_TYPE_STRING;
+                c.datafieldtype = "string";
+                c.DisplayOrder = df.DisplayOrder;
+                c.SortOrder = df.SortOrder;
+                c.Filter = df.Filter;
+                if (ft != null)
+                {
+                    switch (ft.Type)
+                    {
+                        case "Boolean":
+                            c.texttype = GridColumn.COLUMN_TYPE_CHECKBOX;
+                            c.datafieldtype = "bool";
+                            break;
+                        case "Date":
+                            c.format = "MM/dd/yyyy";
+                            c.texttype = GridColumn.COLUMN_TYPE_DATE;
+                            c.datafieldtype = "date";
+                            break;
+                        case "DateTime":
+                            c.format = "MM/dd/yyyy hh:mm tt";
+                            c.texttype = GridColumn.COLUMN_TYPE_DATE;
+                            c.datafieldtype = "date";
+                            break;
+                        case "Decimal":
+                            c.format = "d";
+                            c.texttype = GridColumn.COLUMN_TYPE_NUMBER;
+                            c.datafieldtype = "number";
+                            break;
+                        case "Number":
+                            c.format = "n";
+                            c.texttype = GridColumn.COLUMN_TYPE_NUMBER;
+                            c.datafieldtype = "number";
+                            break;
+                    }
+                }
+
+                return "";
+            };
+
             fields.ForEach(i => {
-                var column = "";
+                ComplexColumnModel c = null;
                 var columnName = "";
                 FieldType ft = null;
+                var displayColumn = "";
 
                 if (i.Object == "IntersectType" && join.IntersectTypeID == i.ObjectID)
                 {
@@ -3347,14 +3410,36 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     {
                         ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
                         columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
-                        column = (ft != null) ? 
-                            $"case F{position}.[Type] when 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end as [{columnName}]" :
-                            $"F{position}.FormattedValue as {columnName}";
+
+                        if (ft == null)
+                        {
+                            displayColumn = $"F{position}.FormattedValue";
+                        }
+                        else
+                        {
+                            displayColumn = $"case when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end";
+                        }
+
+                        c = new ComplexColumnModel
+                        {
+                            DisplayColumn = displayColumn,
+                            SortColumn = $"F{position}.FormattedValue",
+                            datafield = columnName,
+                            text = (ft != null) ? ft.FriendlyName : columnName
+                        };
+                        setColumnTypeInfo(ft, i, c);
                         join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = 'Intersect' and F{position}.ObjectID = {intersectIDColumn}"; 
                     }
                     else
                     {
-                        column = $"A{position}.{i.FieldTypeName} as [{i.OverrideDisplayName ?? i.FieldTypeName}]";
+                        c = new ComplexColumnModel
+                        {
+                            DisplayColumn = $"A{position}.{i.FieldTypeName}",
+                            SortColumn = $"A{position}.{i.FieldTypeName}",
+                            datafield = i.FieldTypeName,
+                            text = i.OverrideDisplayName ?? i.FieldTypeName
+                        };
+                        setColumnTypeInfo(ft, i, c);
                     }
                 }
                 else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
@@ -3363,20 +3448,57 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     {
                         ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
                         columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
-                        column = (ft != null) ?
-                            $"case F{position}.[Type] when 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end as [{columnName}]" :
-                            $"F{position}.FormattedValue as {columnName}";
+
+                        if (ft == null)
+                        {
+                            displayColumn = $"F{position}.FormattedValue";
+                        }
+                        else
+                        {
+                            displayColumn = $"case when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end";
+                        }
+
+                        c = new ComplexColumnModel
+                        {
+                            DisplayColumn = displayColumn,
+                            SortColumn = $"F{position}.FormattedValue",
+                            datafield = columnName,
+                            text = (ft != null) ? ft.FriendlyName : columnName
+                        };
+                        setColumnTypeInfo(ft, i, c);
                         join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = {objColumn} and F{position}.ObjectID = {objIDColumn}";
                     }
                     else
                     {
-                        column = $"A{position}.{i.FieldTypeName} as {i.OverrideDisplayName ?? i.FieldTypeName}";
+                        switch (i.Object)
+                        {
+                            case "ArtifactType":
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                break;
+                            case "FusionAttributeType":
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                break;
+                            default:
+                                displayColumn = $"A{position}.{i.FieldTypeName}";
+                                break;
+                        }
+
+                        c = new ComplexColumnModel
+                        {
+                            DisplayColumn = displayColumn,
+                            SortColumn = $"A{position}.{i.FieldTypeName}",
+                            datafield = i.FieldTypeName,
+                            text = i.OverrideDisplayName ?? i.FieldTypeName
+                        };
+                        setColumnTypeInfo(ft, i, c);
                     }
                 }
 
-                if (!string.IsNullOrEmpty(column))
+                if (c != null)
                 {
-                    join.ColumnStatement += ((string.IsNullOrEmpty(join.ColumnStatement)) ? "" : ", ") + column;
+                    var count = columnModels.Count(cc => cc.datafield == c.datafield);
+                    if (count > 0) c.datafield += count;
+                    columnModels.Add(c);
                 }
             });
         }
@@ -3384,6 +3506,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         [Route("ComplexLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
         public HttpResponseMessage GetComplexLookupGridField(string type, int id, int fieldTypeID)
         {
+            var columnModels = new List<ComplexColumnModel>();
             var gridFields = new List<GridField>();
             var columns = new List<GridColumn>();
             IEnumerable<dynamic> results = null;
@@ -3475,162 +3598,38 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             #endregion
                     }
 
-                    loadComplexLookupColumns(fieldTypes, fields, join, $"I{i}.ID", objColumn, objIDColumn, i);
+                    loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, i);
                 }
 
-
-
-
-                var sqlQuery = "select " + string.Join(", ", def.Relations.Where(i => !string.IsNullOrEmpty(i.ColumnStatement)).Select(i => i.ColumnStatement)) + " ";
+                var sqlQuery = "select " + string.Join(", ", columnModels.Where(i => i.DisplayOrder > 0).OrderBy(i => i.DisplayOrder).Select(i => $"{i.DisplayColumn} as [{i.datafield}]")) + " ";
                 sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement)) + " ";
 
                 var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));
+                whereQuery += string.Join(" AND ", columnModels.Where(i => !string.IsNullOrEmpty(i.Filter)).Select(i => $"{i.SortColumn} like '{i.Filter.CleanForSql()}%'"));
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 
-                var orderQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.OrderByStatement)).Select(i => i.OrderByStatement));
+                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
-                #region Load Columns/Fields
 
-                if (fields.Any(i => i.FieldTypeName == "Name" && i.DisplayOrder > 0))
+                columnModels.ForEach(c =>
                 {
-                    gridFields.Add(new GridField { name = "Name", type = "string" });
-                    columns.Add(new GridColumn { text = "Name", datafield = "Name", width = "auto" });
-                }
-                if (fields.Any(i => i.FieldTypeName == "TextPath" && i.DisplayOrder > 0))
-                {
-                    gridFields.Add(new GridField { name = "TextPath", type = "string" });
-                    columns.Add(new GridColumn { text = "Path", datafield = "TextPath", width = "auto" });
-                }
-                if (fields.Any(i => i.FieldTypeName == "Description" && i.DisplayOrder > 0))
-                {
-                    if (!gridFields.Any(i => i.name == "Description") && !columns.Any(i => i.text == "Description"))
-                    {
-                        gridFields.Add(new GridField { name = "Description", type = "string" });
-                        columns.Add(new GridColumn { text = "Description", datafield = "Description", width = "auto" });
-                    }
-                }
-                if (fieldTypeIDs != null)
-                {
-                    bool descriptionFieldAlreadyPresent = false;
-
-
-                    var fieldTypeInfo = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
-                    foreach (var fieldType in fieldTypeInfo)
-                    {
-                        var displayField = fields.Single(i => i.FieldTypeID == fieldType.ID);
-                        if (displayField.DisplayOrder > 0)
-                        {
-                            var cellsformat = "";
-                            var columntype = GridColumn.COLUMN_TYPE_STRING;
-                            var gridfieldType = "string";
-                            switch (fieldType.Type)
-                            {
-                                case "Boolean":
-                                    columntype = GridColumn.COLUMN_TYPE_CHECKBOX;
-                                    gridfieldType = "bool";
-                                    break;
-                                case "Date":
-                                    cellsformat = "MM/dd/yyyy";
-                                    columntype = GridColumn.COLUMN_TYPE_DATE;
-                                    gridfieldType = "date";
-                                    break;
-                                case "DateTime":
-                                    cellsformat = "MM/dd/yyyy hh:mm tt";
-                                    columntype = GridColumn.COLUMN_TYPE_DATE;
-                                    gridfieldType = "date";
-                                    break;
-                                case "Decimal":
-                                    cellsformat = "d";
-                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
-                                    gridfieldType = "number";
-                                    break;
-                                case "Number":
-                                    cellsformat = "n";
-                                    columntype = GridColumn.COLUMN_TYPE_NUMBER;
-                                    gridfieldType = "number";
-                                    break;
-                            }
-
-                            if (!gridFields.Any(i => i.name == fieldType.Name) && !columns.Any(i => i.datafield == fieldType.Name))
-                            {
-                                gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
-                                var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name, width = "auto" };
-                                if (!string.IsNullOrEmpty(cellsformat))
-                                {
-                                    gc.cellsformat = cellsformat;
-                                }
-                                columns.Add(gc);
-                            }
-
-                            if (fieldType.Name == "Description")
-                            {
-                                descriptionFieldAlreadyPresent = true;
-                            }
-                        }
-                    }
-                }
-
-                gridFields.Add(new GridField { name = "Object", type = "string" });
-                gridFields.Add(new GridField { name = "Url", type = "string" });
-                gridFields.Add(new GridField { name = "ID", type = "number" });
-
-                //foreach (var df in displayFields.Where(i => !string.IsNullOrEmpty(i.FilterValue)))
-                //{
-                //    sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
-                //    if (df.FieldTypeID > 0)
-                //    {
-                //        sqlWhere += $" F{df.FieldTypeID}.FormattedValue like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                //    }
-                //    else
-                //    {
-                //        sqlWhere += $" {columnPrefix}.{df.FieldTypeName} like '{df.FilterValue.StripFormatting(null).CleanForSql()}%'";
-                //    }
-                //}
-
-                //foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
-                //{
-                //    sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
-                //    if (df.FieldTypeID > 0)
-                //    {
-                //        var fieldTypeInfo = Company.Filter<FieldType>(i => i.ID == df.FieldTypeID).SingleOrDefault();
-                //        if (fieldTypeInfo != null)
-                //        {
-                //            switch (fieldTypeInfo.Type)
-                //            {
-                //                case "Date":
-                //                case "DateTime":
-                //                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as datetime) asc";
-                //                    break;
-                //                case "Decimal":
-                //                case "Number":
-                //                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as decimal) asc";
-                //                    break;
-                //                default:
-                //                    sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                //                    break;
-                //            }
-                //        }
-                //        else
-                //        {
-                //            sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                //        }
-                //    }
-                //    else
-                //    {
-                //        sqlOrderBy += $" {columnPrefix}.[{df.FieldTypeName}] asc";
-                //    }
-                //}
-
-                #endregion
+                    gridFields.Add(new GridField { name = c.datafield, type = c.datafieldtype });
+                    var gc = new GridColumn { text = c.text, datafield = c.datafield, width = "auto", columntype = c.texttype };
+                    if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
+                    columns.Add(gc);
+                });
 
                 results = Company.Query<dynamic>(sqlQuery);
             }
             catch (Exception ex)
             {
-
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, new
+                {
+                    Error = ex.GetFullExceptionData(),
+                });
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new

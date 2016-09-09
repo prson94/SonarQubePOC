@@ -206,10 +206,18 @@ namespace d360.web.Controllers
         [Route("ByContext/{type}/{id:int}/{reportType?}")]
         public JsonNetResult GetReportsByObject(string type, int id, string reportType)
         {
-            if(!string.IsNullOrEmpty(reportType))
-                return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id && x.ReportType == reportType).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+            if (!string.IsNullOrEmpty(reportType))
+            {
+                if (id > 0)
+                    return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id && x.ReportType == reportType).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+                else
+                    return new JsonNetResult { Data = Company.Filter<Report>(x => x.ReportType == reportType).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
+            }
 
-            return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };            
+            if (id > 0)
+                return new JsonNetResult { Data = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == id).OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };            
+            else
+                return new JsonNetResult { Data = Company.Table<Report>().OrderBy(i => i.Name), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("tiles")]

@@ -1,0 +1,12 @@
+﻿######################################
+# Ignore .txt files in this folder 
+\Scripts\app\app.js
+\Scripts\all.js
+\Scripts\all.min.js
+#
+# Ignore .cer files
+*.cer
+#
+# Ignore all files in the Temp sub-folder
+\node_modules
+\WebJob1

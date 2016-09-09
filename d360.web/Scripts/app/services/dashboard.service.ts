@@ -12,6 +12,9 @@ export class DashboardService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getDashboards(objectID: number, objectType: string): Promise<Dashboard[]> {
+        if (!objectType || objectType == '') objectType = 'Home';
+        if (!objectID || objectID == 0) objectID = 0;
+         
         return this.http.get(`reports/bycontext/${objectType}/${objectID}/powerbi`)
             .toPromise()
             .then(response => <Dashboard[]>response.json())

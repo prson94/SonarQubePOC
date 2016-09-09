@@ -1,4 +1,5 @@
-﻿<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails">
+﻿<d3s-dashboard-tab *ngIf="isDashboardVisible" [objectID]="'0'" [objectName]="'Home'" [objectType]="'Home'"></d3s-dashboard-tab>
+<div class="row home-tiles" *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && !isDashboardVisible">
     <div class="col l4 s12">
         <d3s-assignments-tile (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments-tile>
     </div>
@@ -10,13 +11,13 @@
     </div>
 </div>
 
-<div class="row" *ngIf="showActivityDetails">
+<div class="row" *ngIf="showActivityDetails && !isDashboardVisible">
     <div class="col s12">
         <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName" (close)="showActivityDetails = false;" [daysToLookBack]="activityDaysToLookBack"></d3s-activity-details-tile>
     </div>
 </div>
 
-<div class="row" *ngIf="showBoardDetails">
+<div class="row" *ngIf="showBoardDetails && !isDashboardVisible">
     <div class="col s12">
         <div class="tile tile-detail">
             <d3s-social-board [limitToType]="selectedSocialType" [daysToLookBack]="boardDaysToLookBack" [hasNewInput]="false" [hasCloseButton]="true" (close)="showBoardDetails=false"></d3s-social-board>
@@ -24,7 +25,7 @@
     </div>
 </div>
 
-<div class="row" *ngIf="showAssignmentDetails">
+<div class="row" *ngIf="showAssignmentDetails && !isDashboardVisible">
     <div class="col s12">
         <div class="tile tile-detail">
             <d3s-workflow-detail [workflowType]="selectedWorkflowType" (close)="showAssignmentDetails=false"></d3s-workflow-detail>
@@ -32,4 +33,4 @@
     </div>
 </div>
 
-<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails"></d3s-home-search>    
+<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && !isDashboardVisible"></d3s-home-search>    
