@@ -25,6 +25,7 @@ namespace d360.web.Controllers
             return View("SPA");
         }
 
+        [Authorize]
         public ActionResult App()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
