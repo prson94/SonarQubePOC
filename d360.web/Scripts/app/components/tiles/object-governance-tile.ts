@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Output, Component, OnInit} from '@angular/core';
+import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ObjectStatisticsService } from '../../services/index';
 import { ObjectStatistics } from '../../models/object-statistics.model';
@@ -56,7 +56,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
     providers: [ObjectStatisticsService]
 })
 
-export class ObjectGovernanceTile extends BaseComponent implements OnInit {
+export class ObjectGovernanceTile extends BaseComponent implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -72,7 +72,12 @@ export class ObjectGovernanceTile extends BaseComponent implements OnInit {
     }    
 
     ngOnInit() {
-        this.load();
+        
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.objectType && this.objectID)
+            this.load();
     }
 
     load() {

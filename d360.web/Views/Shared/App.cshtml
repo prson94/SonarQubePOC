@@ -105,8 +105,15 @@
         System.import('scripts/app/app').then(null, console.error.bind(console));
     </script>
 </head>
-<body>    
-    <d3s-app><div style="width:100%;height:100%;text-align:center;vertical-align:middle;padding: 50px;"><i class="fa fa-spinner fa-4x fa-spin"></i></div></d3s-app>    
+<body>
+    <d3s-app>
+        <div style="width:100%;height:100vh;background:#54a4da">&nbsp;</div>
+        <div style="position:absolute;top:50%;left:50%;transform: translateX(-50%) translateY(-50%);color:white;">
+            <div style="background-image: url(/Content/images/logo.new.png);background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-80px;">&nbsp;</div>
+            <i style="margin:10px auto" class="fa fa-spinner fa-4x fa-spin"></i>
+            <div><h5>Initializing...</h5></div>
+        </div>
+    </d3s-app>
     <script type="text/javascript" title="Context List">
         var getContextList = function () {
             var self = this;
@@ -216,7 +223,7 @@
         }
 
         var contextList = getContextList();
-    </script>    
+    </script>
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 </body>
 </html>

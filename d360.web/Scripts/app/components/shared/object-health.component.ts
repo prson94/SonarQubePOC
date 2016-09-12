@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ScoreService } from '../../services/index';
 import { PointBreakdown, AverageScore } from '../../models/score.model';
@@ -21,7 +21,7 @@ import { Highcharts } from 'angular2-highcharts';
                     </div>                                
                 </div>                
             </div>
-            <div class="row">
+            <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                  {{lastCalculatedMessage()}}
                 </div>
@@ -30,7 +30,7 @@ import { Highcharts } from 'angular2-highcharts';
     providers: [ScoreService],    
 })
 
-export class ObjectHealthComponent extends BaseComponent implements OnInit {    
+export class ObjectHealthComponent extends BaseComponent implements OnInit, OnChanges {    
     @Input() score: any = 0;
 
     @Input() showDetails: boolean = false;    
@@ -51,8 +51,14 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.loadSeriesData();
-        this.loadScoreData();
+        
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.objectType && this.objectID) {
+            this.loadSeriesData();
+            this.loadScoreData();
+        }
     }
 
     private isWarning(): boolean {
