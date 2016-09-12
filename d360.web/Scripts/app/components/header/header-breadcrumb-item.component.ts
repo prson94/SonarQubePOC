@@ -22,6 +22,7 @@ import { TreeNode } from 'primeng/primeng';
     }
     .link {
         border-bottom: 1px solid #3979a2;
+        cursor:pointer;
     }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
