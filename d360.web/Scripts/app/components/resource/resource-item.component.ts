@@ -1,5 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ResourcesService, ObjectStatisticsService, UriBasedService } from '../../services/index';
@@ -9,8 +8,6 @@ import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 
-
-//TODO: find out where this comes from
 declare var CurrentResourceID;
 
 @Component({

@@ -39,10 +39,10 @@ Your Api Credentials
                 </div>
             </div>
         </div>
-        <div class="col s2" style="margin-top: 50px;">
-            <header>
+        <div class="col s2" style="margin-top: 50px; text-align: center;">
+            <h4>
                 OR
-            </header>
+            </h4>
         </div>
         <div class="col s5">
             <div class="row">

@@ -1,5 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { TreeNode } from 'primeng/primeng';
 import { ArtifactTypeEditorModel, ArtifactType } from '../models/artifact-type.model';

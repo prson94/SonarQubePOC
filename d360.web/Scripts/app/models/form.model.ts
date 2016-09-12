@@ -60,14 +60,16 @@ export module FormHelper {
 
     export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
         var tree = new Array<TreeNode>();
+        if (data && data.filter) {
+            data.filter(d => d[parentField] == null).forEach(d => {
+                tree.push({ data: d, children: [] });
+            });
 
-        data.filter(d => d[parentField] == null).forEach(d => {
-            tree.push({ data: d, children: [] });
-        });
+            tree.forEach(t => {
+                FormHelper.formTreeR(t, data, idField, parentField);
+            });
+        }
 
-        tree.forEach(t => {
-            FormHelper.formTreeR(t, data, idField, parentField);
-        });
         //console.log(tree);
         return tree;
     }

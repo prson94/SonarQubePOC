@@ -506,6 +506,7 @@
     <None Include="dbo\Stored Procedures\GetTechnicalMapping.sql" />
     <None Include="dbo\Tables\SiteNav.sql" />
     <None Include="dbo\Functions\CustomSiteNavigation.sql" />
+    <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

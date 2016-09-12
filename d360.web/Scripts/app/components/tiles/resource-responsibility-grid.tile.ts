@@ -1,5 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, OnInit, OnChanges } from '@angular/core';
+﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { Column, Header } from 'primeng/primeng';
 import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/index';
