@@ -11,6 +11,7 @@ import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { SharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
+import { NavbarModule } from './components/navbar/navbar.module';
 
 import {
     GrowlModule,
@@ -128,10 +129,6 @@ import {
     MonitorComponent,
     MonitorListComponent,
 } from './components/monitor/index';
-
-import { NavBarComponent } from './components/navbar/navbar.component';
-import { NavBarItemComponent } from './components/navbar/navbar-item.component';
-import { NavBarMenuComponent } from './components/navbar/navbar-menu.component';
 
 import {
     ActionBar,
@@ -277,9 +274,6 @@ import {
         ModelListComponent,
         MonitorComponent,
         MonitorListComponent,
-        NavBarComponent,
-        NavBarItemComponent,
-        NavBarMenuComponent,     
         ObjectDefinitionTile,
         ObjectDetailField,
         ObjectDetailTile,      
@@ -354,7 +348,8 @@ import {
         SearchModule,
         WorkflowModule,
         SharedModule,  
-        SocialModule,      
+        SocialModule,   
+        NavbarModule,   
     ],
     bootstrap: [AppComponent],
     providers: [Title],    
