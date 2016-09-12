@@ -903,3 +903,7 @@ p-togglebutton.ng-dirty.ng-invalid .ui-button {
 .ui-autocomplete-panel .ui-autocomplete-list-item{
     border-bottom: 1px solid #ccc;
 }
+
+.ui-treenode {
+    clear:both; /*materialize css is messing with floats and causing problems this is the workaround.*/
+}

@@ -1,16 +1,22 @@
-﻿export class Breadcrumb {
+﻿import { TreeNode } from 'primeng/primeng';
+
+export class Breadcrumb {
     text: string = "-";
     link: string = null;
     active: boolean;
     objectType: string;
     objectId: number;
+    treeItems: TreeNode[];
+    selectedTreeNode: TreeNode;
 
-    constructor(text?: string, link?: string, active?: boolean, type?: string, objectId?: number) {
+    constructor(text?: string, link?: string, active?: boolean, type?: string, objectId?: number, treeItems?: TreeNode[], selectedTreeNode?: TreeNode) {
         this.text = text === undefined ? "-" : text;
         this.link = link === undefined ? null : link;
         this.active = active === undefined ? false : active;
         this.objectType = type === undefined ? undefined : type;
         this.objectId = objectId === undefined ? undefined : objectId;
+        this.treeItems = treeItems === undefined ? undefined : treeItems;
+        this.selectedTreeNode = selectedTreeNode === undefined ? undefined : selectedTreeNode;
     }
 
     public hasLink(): boolean {

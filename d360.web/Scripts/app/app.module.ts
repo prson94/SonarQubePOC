@@ -34,6 +34,8 @@ import {
     TooltipModule,    
     DragDropModule,
     PaginatorModule,
+    TreeModule,
+    OverlayPanelModule,
 } from 'primeng/primeng';
 
 import {
@@ -342,6 +344,8 @@ import {
         TooltipModule,        
         DragDropModule,
         PaginatorModule,
+        TreeModule,
+        OverlayPanelModule,
 
         //d3s modules
         PipesModule,
