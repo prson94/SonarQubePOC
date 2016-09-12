@@ -74,7 +74,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     }
 
     private handleLinkClick(panel,event) {
-        if (!this.isTreeItem) return;
+        if (!this.isTreeItem()) return;
 
         panel.toggle(event);
     }
