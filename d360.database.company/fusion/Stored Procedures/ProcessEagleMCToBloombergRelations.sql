@@ -32,13 +32,16 @@ BEGIN
 	begin
 		Declare @BBToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int, IntersectTypeID int, ID int);
 		
-		-- load the intersect id's for message stream to bb mnemonic
+		-- load the intersect id's for message stream to bb mnemonic	
+
 		select	@fieldToBBIntersectTypeID = ID
-		from	[IntersectType]
-		where	Subject = 'FusionAttributeType' 
-				and SubjectID = 301					
-				and Object = 'FusionAttributeType' 
-				and ObjectID = 205;
+			from	[IntersectType]
+			where	Subject = 'FusionAttributeType' and 
+					Object = 'FusionAttributeType' and 
+					(
+						( SubjectID = 205 and ObjectID = 301 ) OR
+						( SubjectID = 301 and ObjectID = 205 )
+					)
 
 		if @fieldToBBIntersectTypeID is null
 		begin
@@ -93,4 +96,3 @@ BEGIN
 	end;
 END
 GO
-

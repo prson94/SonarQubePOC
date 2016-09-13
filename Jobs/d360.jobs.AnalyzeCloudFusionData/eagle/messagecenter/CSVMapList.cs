@@ -113,6 +113,17 @@ namespace d360.jobs.AnalyzeCloudFusionData.eagle.messageCenter
                     rel.BloombergMnemonics.Add(item);
             }
 
+            //run regexpression to find all 
+            var matchesPipe = Regex.Matches(rel.Expression, "\\|([A-Z0-9-_]+)\\|");
+
+            foreach (var match in matchesPipe)
+            {
+                var item = match.ToString().Trim('|');
+
+                if (!rel.BloombergMnemonics.Contains(item))
+                    rel.BloombergMnemonics.Add(item);
+            }
+
         }
     }
 }
