@@ -57,8 +57,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     modelHierarchy: ModelHierarchy[] = [];
     selected: ModelHierarchy;
     modelId: number;
-    hierarchyId: number;
-
+    treeNodeArray: TreeNode[] = [];
+    
     constructor(private route: ActivatedRoute,
             private router: Router,
             rightSidebarService: RightSidebarService,
@@ -70,35 +70,41 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.setCommonRightSideBar(true, true);
     }
 
-    ngOnInit() {
-
+    ngOnInit() {        
         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
             id => {
                 this.showHierarchy(id);  
             });
         
         this.sub = this.route.params.subscribe(params => {
-            this.modelId = +params['modelId'];
-            let newHierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
-
-            if (this.hierarchyId > 0 && this.hierarchyId == newHierarchyId) return;
-            this.hierarchyId = newHierarchyId;
             
-            this.isLoading = true;            
-            this.modelsService.getModel(this.modelId)
-                .then(result => {
-                    this.isLoading = false;
-                    this.model = result;
-                    
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Information Models'));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name));
+            let newModelId = +params['modelId'];
+            let hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
+                        
+            if (this.modelId != newModelId) {
+                this.modelId = newModelId;
+                this.isLoading = true;
+                this.modelsService.getModel(this.modelId)
+                    .then(result => {
+                        this.isLoading = false;
+                        this.model = result;
 
-                    this.loadModelHierarchy(this.modelId, this.hierarchyId);
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models'));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `/a/model/classification/${this.model.ClassificationName}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name));
 
-                    this.setBrowserTitle(this.titleService, this.model.Name);
+                        this.loadModelHierarchy(this.modelId, hierarchyId);
 
-                });           
+                        this.setBrowserTitle(this.titleService, this.model.Name);
+
+                    });
+            }
+            else {
+                // pop last breadcrumb
+                this.headerBreadcrumbService.popLastBreadcrumb();
+                this.selectModelHierarchy(hierarchyId)
+            }
             
         });        
     }
@@ -108,27 +114,65 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
     }
+    
+
+    private selectModelHierarchy(selectedHierarchyId: number) {
+        if (selectedHierarchyId > 0) {
+            let selArray = this.modelHierarchy.filter(x => x.ID == selectedHierarchyId);
+            if (selArray.length > 0) this.selected = selArray[0];
+            else {
+                console.log("ERROR INVALID SELECTED HIERARCY ID SPECIFIED.", selectedHierarchyId);
+
+                this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
+            }
+        }
+        else {
+            this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
+        }
+
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+    }
 
     private loadModelHierarchy(modelId: number, selectedHierarchyId: number) {
         this.modelsService.getModelHierarchy(modelId)
             .then(result => {
                 this.modelHierarchy = result;
 
-                if (selectedHierarchyId > 0) {
-                    let selArray = this.modelHierarchy.filter(x => x.ID == selectedHierarchyId);
-                    if (selArray.length > 0) this.selected = selArray[0];
-                    else {
-                        console.log("ERROR INVALID SELECTED HIERARCY ID SPECIFIED.", selectedHierarchyId);
+                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)
 
-                        this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;                    
-                    }
-                }
-                else {
-                    this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;                    
-                }
-                
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.buildTreeNodeArray(result)));
+                this.selectModelHierarchy(selectedHierarchyId);                
             });
+    }
+
+    private findSelectedTreeNode(id: number): TreeNode {
+        let nodes: TreeNode[] = [];
+
+        // add root nodes
+        for (let rNode of this.treeNodeArray) {
+            nodes.push(rNode);
+        }
+
+        //do a breadth first search for the given treenode
+        if (nodes.length == 0) return;
+
+        let node = nodes[0];
+
+        while (node) {
+            if (node.data.id && node.data.id == id) return node;
+
+            //push children
+            if (node.children) {
+                for (let cNode of node.children) {
+                    nodes.push(cNode);
+                }
+            }
+
+            //remove this node
+            nodes.splice(0, 1);
+
+            if (nodes.length == 0) return null;
+            node = nodes[0];
+        }
     }
 
     private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
@@ -142,9 +186,11 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         for (let root of rootNodes) {
             res.push({
-                label : root.Name,
-                data: root.ID,                
-                children: (root.HasChildren ? this.buildTreeNodeArray(models, root.ID) : null) //recursively find its children
+                label: root.Name,
+                data: {
+                    id: root.ID, hasRelations: root.HasChildren
+                },                
+                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
         }       
 
@@ -152,17 +198,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`/a/model/${this.modelId};hierarchyId=${id}`);
-       /* let sel = this.modelHierarchy.filter(x => x.ID == id);
-
-        if (sel.length <= 0) {
-            console.log("ERROR UNABLE TO FIND SPECIFIED HIERARCHY ID");
-
-            return;
-        }
-        this.hierarchyId = id;
-       // this.route.params['hierarchyId'] = this.hierarchyId;
-
-        this.selected = sel[0];*/
+        this.router.navigateByUrl(`/a/model/${this.modelId};hierarchyId=${id}`);       
     }
 };

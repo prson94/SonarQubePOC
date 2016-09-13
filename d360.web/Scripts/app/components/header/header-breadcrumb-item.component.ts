@@ -43,7 +43,10 @@ import { TreeNode } from 'primeng/primeng';
                 <p-overlayPanel #treePanel>  
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
                         <p-tree [value]="treeItems | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto','line-height':'25px'}" 
-                            (onNodeSelect)="nodeSelect($event,treePanel)">                            
+                            (onNodeSelect)="nodeSelect($event,treePanel)">
+                            <template let-node>
+                                <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
+                            </template>
                         </p-tree>
                 </p-overlayPanel>                
               `
@@ -108,8 +111,17 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     
     nodeSelect(event, panel) {        
         this.breadcrumb.text = event.node.label;
-        this.treeClick.emit({ id: event.node.data });      
+        this.treeClick.emit({ id: event.node.data.id });      
         panel.hide();
+    }
+
+    setTreeNodeStyles(node) {
+        if (!node.data) return null;
+
+        let styles = {            
+            'font-weight': node.data.hasRelations ? 'bold' : 'normal',            
+        };
+        return styles;
     }
 
 }
