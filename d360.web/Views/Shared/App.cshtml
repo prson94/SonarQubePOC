@@ -45,8 +45,7 @@
         //appInsights.trackPageView();
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
-    </script>
-    @Html.Partial("KnockoutTemplates")
+    </script>    
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
     <style type="text/css">
 
@@ -113,117 +112,7 @@
             <i style="margin:10px auto" class="fa fa-spinner fa-4x fa-spin"></i>
             <div style="margin-left:-15px;"><h4>Initializing...</h4></div>
         </div>
-    </d3s-app>
-    <script type="text/javascript" title="Context List">
-        var getContextList = function () {
-            var self = this;
-            self.Artifact = "@(ContextList.Artifact)";
-            self.ArtifactType = "@(ContextList.ArtifactType)";
-            self.Attribute = "@(ContextList.Attribute)";
-            self.Attribute_Embedded = "@(ContextList.Attribute_Embedded)";
-            self.AttributeType = "@(ContextList.AttributeType)";
-            self.AttributeTypeCategory = "@(ContextList.AttributeTypeCategory)";
-            self.AttributeTypeRelation = "@(ContextList.AttributeTypeRelation)";
-            self.Comment = "commentform";
-            self.Domain = "@(ContextList.Domain)";
-            self.DomainGroup = "@(ContextList.DomainGroup)";
-            self.DomainItem = "@(ContextList.DomainItem)";
-            self.DomainXrefItem = "@(ContextList.DomainXrefItem)";
-            self.DomainType = "@(ContextList.DomainType)";
-            self.EmailTemplate = "@(ContextList.EmailTemplate)";
-            self.Event = "@(ContextList.Event)";
-            self.EventType = "@(ContextList.EventType)";
-            self.Field = "@(ContextList.Field)";
-            self.FieldType = "@(ContextList.FieldType)";
-            self.Fusion = "@(ContextList.Fusion)";
-            self.FusionAttribute = "@(ContextList.FusionAttribute)";
-            self.FusionAttributeType = "@(ContextList.FusionAttributeType)";
-            self.FusionExecution = "FusionExecution";
-            self.FusionFilter = "@(ContextList.FusionFilter)";
-            self.FusionOwnerRule = "@ContextList.FusionOwnerRule";
-            self.FusionOwnerRuleItem = "@ContextList.FusionOwnerRuleItem";
-            self.FusionPromotionRule = "@ContextList.FusionPromotionRule";
-            self.FusionPromotionRuleItem = "@ContextList.FusionPromotionRuleItem";
-            self.FusionPromotionRuleMapping = "@ContextList.FusionPromotionRuleMapping";
-            self.FusionType = "@(ContextList.FusionType)";
-            self.Group = "@(ContextList.Group)";
-            self.Intersect = "@(ContextList.Intersect)";
-            self.IntersectType = "@(ContextList.IntersectType)";
-
-            self.Load = "@(ContextList.Load)";
-            self.LoadType = "@(ContextList.LoadType)";
-            self.LoadTypeField = "@(ContextList.LoadTypeField)";
-            self.LoadTypeRule = "@(ContextList.LoadTypeRule)";
-            self.LoadTypeRuleItem = "@(ContextList.LoadTypeRuleItem)";
-            self.Lookup = "@(ContextList.Lookup)";
-            self.LookupType = "@(ContextList.LookupType)";
-
-            self.Policy = "@(ContextList.Policy)";
-            self.PolicyType = "@(ContextList.PolicyType)";
-            self.PolicyTypeClass = "@(ContextList.PolicyTypeClass)";
-            self.PolicyTypeLevel = "@(ContextList.PolicyTypeLevel)";
-            self.Predicate = "@(ContextList.Predicate)";
-
-            self.QuestionType = "@(ContextList.QuestionType)";
-
-            self.Relation = "@(ContextList.Relation)";
-            self.RelationType = "@(ContextList.RelationType)";
-
-            self.Report = "@(ContextList.Report)";
-            self.ReportTile = "@(ContextList.ReportTile)";
-            self.Resource = "@(ContextList.Resource)";
-            self.ResourceGroup = "@(ContextList.ResourceGroup)";
-            self.ResourceType = "@(ContextList.ResourceType)";
-            self.ResponseType = "@(ContextList.ResponseType)";
-            self.ResponseTypeOption = "@(ContextList.ResponseTypeOption)";
-            self.PeopleResponsibility = "@(ContextList.PeopleResponsibility)";
-            self.Responsibility = "@(ContextList.Responsibility)";
-            self.ResponsibilityTransformation = "@(ContextList.ResponsibilityTransformation)";
-            self.ResponsibilityType = "@(ContextList.ResponsibilityType)";
-            self.ResponsibilityTypeClaim = "@(ContextList.ResponsibilityTypeClaim)";
-            self.ResponsibilityTypeObjectClaim = "@(ContextList.ResponsibilityTypeObjectClaim)";
-            self.ResponsibilityTypeGroup = "@(ContextList.ResponsibilityTypeGroup)";
-            self.ResponsibilityTypeHierarchy = "@(ContextList.ResponsibilityTypeHierarchy)";
-            self.Role = "@(ContextList.Role)";
-            self.Rule = "@(ContextList.Rule)";
-            self.RuleDimension = "@(ContextList.RuleDimension)";
-            self.StatisticType = "@(ContextList.StatisticType)";
-            self.StatisticTypeRelation = "@(ContextList.StatisticTypeRelation)";
-            self.SurveyType = "@(ContextList.SurveyType)";
-
-            self.Taxonomy = "@(ContextList.Taxonomy)";
-            self.TaxonomyType = "@(ContextList.TaxonomyType)";
-            self.TaxonomyTypeClass = "@(ContextList.TaxonomyTypeClass)";
-            self.TaxonomyTypeLevel = "@(ContextList.TaxonomyTypeLevel)";
-            self.TooltipTemplate = "@(ContextList.TooltipTemplate)";
-
-            self.EmbeddedAttribute = "embeddedattributeform";
-
-            self.Workflow = "@(ContextList.Workflow)";
-            self.WorkflowIssue = "@(ContextList.WorkflowIssue)";
-            self.WorkflowTypeRelation = "@(ContextList.WorkflowTypeRelation)";
-
-            self.ActionBoard = "@(ContextList.ActionBoard)";
-            self.ActionCommand = "@(ContextList.ActionCommand)";
-            self.ActionDiagram = "@(ContextList.ActionDiagram)";
-            self.ActionExport = "@(ContextList.ActionExport)";
-            self.ActionFilter = "@(ContextList.ActionFilter)";
-            self.ActionFollow = "@(ContextList.ActionFollow)";
-            self.ActionGeneric = "@(ContextList.ActionGeneric)";
-            self.ActionGenericReport = "@(ContextList.ActionGenericReport)";
-            self.ActionLink = "@(ContextList.ActionLink)";
-            self.ActionRelate = "@(ContextList.ActionRelate)";
-            self.ActionResponsibility = "@(ContextList.ActionResponsibility)";
-            self.ActionEditRelate = "@(ContextList.ActionEditRelate)";
-            self.ActionUnrelate = "@(ContextList.ActionUnrelate)";
-
-            self.Monitor = "@(ContextList.Monitor)";
-
-            return self;
-        }
-
-        var contextList = getContextList();
-    </script>
+    </d3s-app>    
     <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
 </body>
 </html>

@@ -7,26 +7,29 @@ import { ModelTypePipe } from './model-type.pipe';
 import { RelationshipSearchPipe } from './relationship-search.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { ScoreDisplayPipe } from './score-display.pipe';
+import { BreadcrumbTreeSearchPipe } from './breadcrumb-tree-search.pipe';
 
 @NgModule({
     imports: [CommonModule],
     declarations: [
+        BreadcrumbTreeSearchPipe,
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,
         ModelTypePipe,
         RelationshipSearchPipe,
-        TechnicalNameToDisplayValuePipe,
         ScoreDisplayPipe,
+        TechnicalNameToDisplayValuePipe,        
     ],
     exports: [
+        BreadcrumbTreeSearchPipe,
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,
         ModelTypePipe,
         RelationshipSearchPipe,
-        TechnicalNameToDisplayValuePipe,
         ScoreDisplayPipe,
+        TechnicalNameToDisplayValuePipe,        
     ]
 })
 export class PipesModule { }

@@ -1,5 +1,5 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter } from '@angular/core';
+import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TypeaheadSearchService, HeaderBreadcrumbService, ModelsService } from '../../services/index';
@@ -26,7 +26,7 @@ import { TreeNode } from 'primeng/primeng';
     }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (click)="handleLinkClick()" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
+                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
                 <p-autoComplete size="50"                                                      
                             *ngIf="showSearch" 
                             [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
@@ -40,9 +40,11 @@ import { TreeNode } from 'primeng/primeng';
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
                 <span *ngIf="!lastItem" class="sep breadcrumb"> :: </span>                
-                <p-overlayPanel #treePanel>                        
-                        <p-tree [value]="breadcrumb?.treeItems" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto'}" 
-                            (onNodeSelect)="nodeSelect($event,treePanel)"></p-tree>
+                <p-overlayPanel #treePanel>  
+                        <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
+                        <p-tree [value]="treeItems | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto','line-height':'25px'}" 
+                            (onNodeSelect)="nodeSelect($event,treePanel)">                            
+                        </p-tree>
                 </p-overlayPanel>                
               `
 })
@@ -56,12 +58,18 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     private result: SearchResult;
     private showSearch: boolean;
     private hasTree: boolean;
-    
+    private searchValue: string;
+    private treeItems: TreeNode[] = [];
 
-    constructor(private modelsService: ModelsService, private elementRef: ElementRef, private router: Router,
+    constructor(private renderer:Renderer, private modelsService: ModelsService, private elementRef: ElementRef, private router: Router,
                 private typeaheadSearchService: TypeaheadSearchService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.breadcrumb)
+            this.treeItems = this.breadcrumb.treeItems;
+    }
+
+    ngAfterViewInit() {
         
     }
 
@@ -78,7 +86,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
             this.showSearch = true;
         }        
         if (this.isTreeItem()) {
-            panel.toggle(event);
+            panel.toggle(event);            
         }
     }    
 
@@ -103,5 +111,5 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
         this.treeClick.emit({ id: event.node.data });      
         panel.hide();
     }
-    
+
 }

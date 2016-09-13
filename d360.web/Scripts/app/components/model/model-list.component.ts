@@ -74,8 +74,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.modelsService.getModels()
             .then(result => {
                 this.isLoading = false;
-                this.models = result;
-                console.log(result);
+                this.models = result;                
                 if (this.models.length && this.models.length > 0) this.selected = this.models[0];
             });
     }
