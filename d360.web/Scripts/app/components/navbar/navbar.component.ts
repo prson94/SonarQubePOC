@@ -134,7 +134,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.currentRoute = _.trimStart(e.url, '/');
-
+               
                 let item = this.activateRoute(this.currentRoute);
                 if (item) this.expandRoute(item); 
 
@@ -520,6 +520,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
     currentRouteInAdminFavorites() {
         return this.adminFavorites.findIndex(f => f.Route == this.currentRoute) >= 0;
+    }
+
+    nav(route: string) {
+        this.router.navigateByUrl(route);
     }
 }
 

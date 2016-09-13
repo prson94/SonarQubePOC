@@ -17,7 +17,7 @@
             </ul>
         </li>
         <template ngFor let-fav [ngForOf]="favItems">
-            <li *ngIf="fav && fav.route" class="navbar-favorite" [class.active]="fav.active" [routerLink]="[fav.route]">
+            <li *ngIf="fav && fav.route" class="navbar-favorite" [class.active]="fav.active" (click)="nav(fav.route)">
                 <span style="margin:0 5px 0 5px;"><i *ngIf="fav.icon" [class]="'fa ' + fav.icon"></i>  {{fav.name}}</span>
             </li>
             <!--<li *ngIf="fav && fav.route && fav.icon" class="navbar-favorite" [class.active]="fav.active" [routerLink]="[fav.route]">
