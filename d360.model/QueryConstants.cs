@@ -1129,8 +1129,19 @@ from	[Intersect] I
 where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)";
 
         public static string TaxonomySettingsItem = @"
-select	*
+select	
+	T.ID,
+	T.Name,
+	T.Description,
+	T.MaximumDepth,
+	T.TaxonomyTypeClassID,
+	T.UpdatedOn,
+	T.UpdatedBy,
+	A.AllowAttributes,
+	S.AllowSynonyms,
+	Tc.Name as ClassificationName	
 from	TaxonomyType T
+		inner join taxonomytypeclass Tc on (T.TaxonomyTypeClassID = Tc.ID)		
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)

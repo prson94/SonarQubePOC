@@ -15,24 +15,32 @@ import { Subscription }   from 'rxjs/Subscription';
 })
 
 export class HeaderBreadcrumbComponent {
-    subscription: Subscription;
+    subscriptionPop: Subscription;
+    subscriptionClear: Subscription;
+    subscriptionAdd: Subscription;
     breadcrumbs : Breadcrumb[];
 
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {
         this.breadcrumbs = [];
-        this.subscription = headerBreadcrumbService.breadcrumbs$.subscribe(
+        this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.push(breadcrumb);               
             });
-        this.subscription = headerBreadcrumbService.breadcrumbClear$.subscribe(
+        this.subscriptionClear = headerBreadcrumbService.breadcrumbClear$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.splice(0, this.breadcrumbs.length);                
+            })
+        this.subscriptionPop = headerBreadcrumbService.breadcrumbPopLastSource$.subscribe(
+            breadcrumb => {
+                this.breadcrumbs.pop();
             })
     }
 
     ngOnDestroy() {
         // prevent memory leak when component destroyed
-        this.subscription.unsubscribe();
+        this.subscriptionPop.unsubscribe();
+        this.subscriptionClear.unsubscribe();
+        this.subscriptionAdd.unsubscribe();
     }
 
     private handleTreeClick(event) {

@@ -26,7 +26,7 @@ import { TreeNode } from 'primeng/primeng';
     }           
   `],
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (click)="handleLinkClick(treePanel,$event)" (mouseover)="in()" class="breadcrumb" [ngClass]="{'link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
+                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (click)="handleLinkClick()" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
                 <p-autoComplete size="50"                                                      
                             *ngIf="showSearch" 
                             [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
@@ -40,7 +40,7 @@ import { TreeNode } from 'primeng/primeng';
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
                 <span *ngIf="!lastItem" class="sep breadcrumb"> :: </span>                
-                <p-overlayPanel #treePanel>
+                <p-overlayPanel #treePanel>                        
                         <p-tree [value]="breadcrumb?.treeItems" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto'}" 
                             (onNodeSelect)="nodeSelect($event,treePanel)"></p-tree>
                 </p-overlayPanel>                
@@ -72,17 +72,14 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     private isTreeItem(): boolean {
         return this.breadcrumb.objectType == 'Taxonomy';
     }
-
-    private handleLinkClick(panel,event) {
-        if (!this.isTreeItem()) return;
-
-        panel.toggle(event);
-    }
-
-    private in() {
+    
+    private in(panel, event) {
         if (this.isChangableItem()) {
             this.showSearch = true;
         }        
+        if (this.isTreeItem()) {
+            panel.toggle(event);
+        }
     }    
 
     search(event) {

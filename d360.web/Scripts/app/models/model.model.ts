@@ -3,6 +3,7 @@
     Description: string;
     MaximumDepth: number;
     TaxonomyTypeClass: string;
+    ClassificationName: string;
     ID: number;
 }
 

@@ -6833,7 +6833,8 @@ SELECT (
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "AllowSynonyms", (bool)row.AllowSynonyms }
+                    { "AllowSynonyms", (bool)row.AllowSynonyms },
+                    { "ClassificationName", row.ClassificationName }
                 }
             );
         }
