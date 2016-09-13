@@ -2630,6 +2630,7 @@ namespace d360.web.Controllers
             model.ArtifactType_TaxonomyTypeIDNodes = (settings.Any(i => i.SettingID == 8) ? settings.Single(i => i.SettingID == 8).Value : "");
 
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
+            model.SiteNav = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -2904,6 +2905,22 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex.GetFullExceptionData(), HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpGet]
+        public JsonNetResult GetSiteNavFolderItems(int id)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.SiteNav.Where(s => s.ParentID == id).ToList(),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpGet]
+        public JsonNetResult GetSiteNavFolderAvailableItems()
+        {
+            return null;
         }
 
         #endregion

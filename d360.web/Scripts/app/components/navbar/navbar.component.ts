@@ -100,6 +100,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private sub: any;
     private subFavorites: any;
     private subBread: any;
+    private subSiteNav: any;
     private currentRoute = "";
     private currentPage = "";
     private navItems: NavBarItem[];
@@ -144,6 +145,10 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         this.subBread = this.headerBreadcrumbService.breadcrumbs$.subscribe(b => {
             this.currentPage = b.text;
+        });
+
+        this.subSiteNav = this.headerActionsService.onSiteNavChanges$.subscribe(() => {
+            this.loadMenu();
         });
 
     }
@@ -207,28 +212,31 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadMenu() {
         this.siteMenuService.getMenu()
             .then(result => {
+                //console.log(result);
                 this.items = new Array<NavBarItem>();
                 this.adminItems = new Array<NavBarItem>();
 
                 this.siteMenu = result.MenuItems;
                 
                 this.isAdmin = result.IsAdmin;
-                
+
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));
                 this.loadModelMenu(this.siteMenu.find(i => i.MenuID == '#Models'));
                 this.loadPoliciesMenu(this.siteMenu.find(i => i.MenuID == '#Policy'));     
-                this.loadReferenceMenu(this.siteMenu.find(i => i.MenuID == '#Domains'));           
+                this.loadReferenceMenu(this.siteMenu.find(i => i.MenuID == '#Reference'));           
                 this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
-                this.loadMonitorMenu();                
+                this.loadMonitorMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
                 this.loadAdminMenu(this.siteMenu.find(i => i.MenuID == '#Admin'));
                 this.loadCustomMenu(this.siteMenu.filter(i => i.MenuID.startsWith('~')));
+
+                this.items.sort((i, j) => { return (i.sortorder > j.sortorder) ? 1 : (i.sortorder < j.sortorder) ? -1 : 0 });
             });
     }
 
     loadCustomMenu(customMenu: SiteMenu[]) {
         customMenu.forEach(c => {
-            let m = this.addNavItem(c.MenuID.substr(1), 'folder', null);
+            let m = this.addNavItem(c.MenuID.substr(1), 'folder', null, null, c.SortOrder);
             this.renderChildItems(m, c.NavigationItems);
         });
     }
@@ -236,19 +244,19 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadFusionMenu(fusionMenu: SiteMenu) {
         if (fusionMenu == null || !fusionMenu.ShouldDisplay) return;
 
-        let fusion = this.addNavItem('Fusion', 'database', 'a/fusion');
+        let fusion = this.addNavItem('Fusion', 'database', 'a/fusion', null, fusionMenu.SortOrder);
     }
 
     loadReferenceMenu(referenceMenu: SiteMenu) {
         if (referenceMenu == null ) return;
 
-        let fusion = this.addNavItem('Reference', 'cubes', 'a/reference');
+        let fusion = this.addNavItem('Reference', 'cubes', 'a/reference', null, referenceMenu.SortOrder);
     }
 
     loadGlossaryMenu(glossaryMenu: SiteMenu) {
         if (glossaryMenu == null ) return;
 
-        let glossary = this.addNavItem('Glossary', 'book', null);
+        let glossary = this.addNavItem('Glossary', 'book', null, null, glossaryMenu.SortOrder);
         
         this.renderChildItems(glossary, glossaryMenu.NavigationItems);
     }
@@ -256,17 +264,17 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadCommunityMenu(communityMenu: SiteMenu) {
         if (communityMenu == null || !communityMenu.ShouldDisplay) return;
 
-        let community = this.addNavItem('Community', 'group', 'a/community');
+        let community = this.addNavItem('Community', 'group', 'a/community', null, communityMenu.SortOrder);
     }
 
-    loadMonitorMenu() {        
-        let monitor = this.addNavItem('Monitor', 'dashboard', 'a/monitor');
+    loadMonitorMenu(monitorMenu: SiteMenu) {        
+        let monitor = this.addNavItem('Monitor', 'dashboard', 'a/monitor', null, monitorMenu.SortOrder);
     }
 
     loadPoliciesMenu(policiesMenus: SiteMenu) {
         if (policiesMenus == null) return;
 
-        let policies = this.addNavItem('Policies', 'university', null);
+        let policies = this.addNavItem('Policies', 'university', null, null, policiesMenus.SortOrder);
 
         this.renderChildItems(policies, policiesMenus.NavigationItems);
     }
@@ -274,7 +282,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadModelMenu(modelMenus: SiteMenu) {
         if (modelMenus == null ) return;
 
-        let models = this.addNavItem('Models', 'sitemap', null);
+        let models = this.addNavItem('Models', 'sitemap', null, null, modelMenus.SortOrder);
 
         this.renderChildItems(models, modelMenus.NavigationItems);
     }
@@ -282,7 +290,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadAdminMenu(adminMenu: SiteMenu) {
         if (adminMenu == null) return;
 
-        let admin = this.addNavItem('Administration', 'cogs', null, this.adminItems);
+        let admin = this.addNavItem('Administration', 'cogs', null, this.adminItems, adminMenu.SortOrder);
         admin.expanded = true;
         // these are ordered by alpha a-Z...
 
@@ -343,13 +351,15 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
         this.subFavorites.unsubscribe();
         this.subBread.unsubscribe();
+        this.subSiteNav.unsubscribe();
     }
 
-    addNavItem(name: string, icon: string, route: string, menu: NavBarItem[] = null): NavBarItem {
+    addNavItem(name: string, icon: string, route: string, menu: NavBarItem[] = null, sortOrder: number = 0): NavBarItem {
         if (menu == null)
             menu = this.items;
         route = _.trimStart(route, '/');
         let i = new NavBarItem();
+        i.sortorder = sortOrder;
         i.name = name;
         i.icon = icon;
         i.route = route;        

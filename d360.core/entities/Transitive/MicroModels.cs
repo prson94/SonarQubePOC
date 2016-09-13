@@ -149,6 +149,7 @@ namespace d360.core.entities
         public bool ShouldDisplay { get; set; }
         public string Items { get; set; }
         public List<NavigationItem> NavigationItems { get; set; }
+        public int SortOrder { get; set; }
 
     }
 
@@ -158,6 +159,12 @@ namespace d360.core.entities
         public string Url { get; set; }
         public string MenuID { get; set; }
         public List<NavigationItem> Items { get; set; }
+    }
+
+    public class AddSiteNavModel
+    {
+        public SiteNav Folder { get; set; }
+        public List<SiteNav> Items { get; set; } = new List<SiteNav>();
     }
 
     [DataContract(Namespace = NAMESPACE)]

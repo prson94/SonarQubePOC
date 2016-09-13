@@ -330,6 +330,8 @@ namespace d360.model
 
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
+        public DbSet<SiteNav> SiteNav { get; set; }
+
         //public DbSet<SourceRule> SourceRules { get; set; }
 
         //public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }

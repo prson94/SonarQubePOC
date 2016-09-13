@@ -1,4 +1,7 @@
-﻿export interface ICompanySettingsService {
+﻿import { NavBarItem } from './nav-bar.model';
+import { SiteNav } from './site-menu.model';
+
+export interface ICompanySettingsService {
     getSettings(): Promise<CompanySettings>;
     putSettings(companySettings: CompanySettings): Promise<any>;
 }
@@ -10,6 +13,7 @@ export class CompanySettings {
     ArtifactType_TaxonomyTypeIDNodes: string;
     SubjectAreaNodeName: string;
     IpRestrictions = new Array<IpRestriction>();
+    SiteNav = new Array<SiteNav>();
     CompanyLogo: string;
     SetLogoToDefault = false;
     CompanyIcon: string;

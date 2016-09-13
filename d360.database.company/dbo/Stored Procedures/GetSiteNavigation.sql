@@ -8,6 +8,14 @@ SELECT	n.Name as MenuID,
 		0 as Feature,
 		NULL AS Items
 FROM SiteNav n
+WHERE n.Name = '#Monitor'
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		NULL AS Items
+FROM SiteNav n
 WHERE n.Name = '#Home'
 UNION ALL
 
@@ -112,7 +120,7 @@ SELECT	n.Name as MenuID,
 		FOR XML PATH('nav'), TYPE				
 		) AS Items
 FROM SiteNav n
-WHERE n.Name = '#Domains'
+WHERE n.Name = '#Reference'
 
 UNION ALL
 

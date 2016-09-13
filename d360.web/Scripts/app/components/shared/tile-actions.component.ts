@@ -21,11 +21,13 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() exportClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
     @Output() dateClick = new EventEmitter();
+    @Output() closeClick = new EventEmitter();
 
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
     @Input() hasEdit: boolean = false;
     @Input() hasDate: boolean = false;
+    @Input() hasClose: boolean = false;
 
     private items: MenuItem[] = [];
 
@@ -57,6 +59,12 @@ export class TileActionsComponent implements OnInit, OnChanges {
         if (this.hasEdit) {
             this.items.push({
                 icon: 'fa-pencil', command: () => this.editClick.emit(null)
+            });
+        }
+
+        if (this.hasClose) {
+            this.items.push({
+                icon: 'fa-remove', command: () => this.closeClick.emit(null)
             });
         }
 

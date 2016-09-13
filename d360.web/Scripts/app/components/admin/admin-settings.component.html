@@ -50,19 +50,19 @@
                         <div class="col s6">
                             <input #logoUpload type="file" (change)="onLogoFileChange($event)" accept="image/gif,image/jpeg,image/png" />
                             <span *ngIf="companyLogo?.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                            <a *ngIf="logoUpload.files.length > 0" (click)="logoUpload.value = null; onLogoFileChange(null);" class="remove" ><i class="fa fa-remove"></i></a>
+                            <a *ngIf="logoUpload.files.length > 0" (click)="logoUpload.value = null; onLogoFileChange(null);" class="remove"><i class="fa fa-remove"></i></a>
                         </div>
                         <div class="col s6">
                             <input #iconUpload type="file" (change)="onIconFileChange($event)" accept="image/vnd.microsoft.icon,image/x-icon" />
                             <span *ngIf="companyIcon?.isLoading"><i class="fa fa-spinner fa-spin"></i></span>
-                            <a *ngIf="iconUpload.files.length > 0" (click)="iconUpload.value = null; onIconFileChange(null);" class="remove" ><i class="fa fa-remove"></i></a>
+                            <a *ngIf="iconUpload.files.length > 0" (click)="iconUpload.value = null; onIconFileChange(null);" class="remove"><i class="fa fa-remove"></i></a>
                         </div>
                     </div>
                 </div>
                 <div class="tile tile-detail">
                     <header>
                         IP Restrictions
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="addIpRestriction()"></d3s-tile-actions>                        
+                        <d3s-tile-actions [hasAdd]="true" (addClick)="addIpRestriction()"></d3s-tile-actions>
                     </header>
                     <div class="directions">
                         Restrictions will only apply if there are entries present.  If no entries are present, then users will be allowed to access this environment from any IP.
@@ -94,6 +94,129 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div class="tile tile-detail">
+                    <div *ngIf="formIsLoading">
+                        <div style="text-align: center;">
+                            <i class="fa fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                    <div [ngSwitch]="formMode" *ngIf="!formIsLoading">
+                        <div *ngSwitchDefault>
+                            <header>
+                                Site Nav
+                                <d3s-tile-actions hasAdd="true" (addClick)="action('add')"></d3s-tile-actions>
+                            </header>
+                            <p-dataTable [value]="companySettings.SiteNav" selectionMode="single" [(selection)]="selection">
+                                <p-column field="DisplayName" header="Name"></p-column>
+                                <p-column header="">
+                                    <template let-col let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">
+                                            <a *ngIf="item.IsCustom" (click)="selection = item; action('delete')" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                            <a *ngIf="item.IsCustom" (click)="selection = item; action('edit')" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                            <a (click)="selection = item; action('moveUp', item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                                            <a (click)="selection = item; action('moveDown', item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                                        </div>
+                                    </template>
+                                </p-column>
+                            </p-dataTable>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Editing">
+                            <header>
+                                Edit {{selection.Name}}
+                                <d3s-tile-actions hasClose="true" (closeClick)="formMode = FormMode.Default"></d3s-tile-actions>
+                            </header>
+                            <div *ngIf="!formIsLoading">
+                                <div class="row" style="margin-bottom:15px;">
+                                    <div class="col s12">
+                                        <div class="FieldName" style="display:block;">Folder Name</div>
+                                        <input type="text" [(ngModel)]="selection.Name" />
+                                        <button pButton type="button" label="Rename" (click)="action('rename', selection)"></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m6">
+                                        <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
+                                            <p-column field="DisplayName" header="Available Folder Items"></p-column>
+                                            <p-column>
+                                                <template let-item="rowData" pTemplate type="body">
+                                                    <div class="RowTools" style="height: initial;">
+                                                        <a (click)="action('addFolderItem', item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                                    </div>
+                                                </template>
+                                            </p-column>
+                                        </p-dataTable>
+                                    </div>
+                                    <div class="col s12 m6">
+                                        <p-dataTable [value]="folderItems" [rows]="10" [paginator]="true" selectionMode="single">
+                                            <p-column field="Name" header="Existing Folder Items"></p-column>
+                                            <p-column>
+                                                <template let-item="rowData" pTemplate type="body">
+                                                    <div class="RowTools" style="height: initial;">
+                                                        <a (click)="action('deleteFolderItem', item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                                    </div>
+                                                </template>
+                                            </p-column>
+                                        </p-dataTable>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Deleting">
+                            <header>
+                                Delete {{selection.Name}}?
+                                <d3s-tile-actions hasClose="true" (closeClick)="formMode = FormMode.Default"></d3s-tile-actions>
+                            </header>
+                            <button pButton type="button" label="Delete" (click)="action('deleteFolder',selection)"></button>
+                            <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Adding">
+                            <header>
+                                Add Navigation Folder
+                                <d3s-tile-actions hasClose="true" (closeClick)="formMode = FormMode.Default"></d3s-tile-actions>
+                            </header>
+                            <div *ngIf="!formIsLoading">
+                                <div class="row" style="margin-bottom:15px;">
+                                    <div class="col s12">
+                                        <div class="FieldName" style="display:block;">Folder Name</div>
+                                        <input type="text" [(ngModel)]="newFolder.Name" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m6">
+                                        <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
+                                            <p-column field="DisplayName" header="Available Folder Items"></p-column>
+                                            <p-column>
+                                                <template let-item="rowData"  let-i="index" pTemplate type="body">
+                                                    <div class="RowTools" style="height: initial;">
+                                                        <a (click)="action('addNewFolderItem', i)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                                    </div>
+                                                </template>
+                                            </p-column>
+                                        </p-dataTable>
+                                    </div>
+                                    <div class="col s12 m6">
+                                        <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
+                                            <p-column field="Name" header="Folder Items"></p-column>
+                                            <p-column>
+                                                <template let-item="rowData" let-i="index" pTemplate type="body">
+                                                    <div class="RowTools" style="height: initial;">
+                                                        <a (click)="action('deleteNewFolderItem', item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                                    </div>
+                                                </template>
+                                            </p-column>
+                                        </p-dataTable>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12">
+                                        <button pButton type="button" label="Save" (click)="action('save')"></button>
+                                        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

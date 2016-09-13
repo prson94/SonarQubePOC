@@ -155,6 +155,7 @@
     <Compile Include="entities\ReportLayout.cs" />
     <Compile Include="entities\PolicyType.cs" />
     <Compile Include="entities\PolicyTypeClass.cs" />
+    <Compile Include="entities\SiteNav.cs" />
     <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\PolicyTypeLevel.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />

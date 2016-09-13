@@ -428,42 +428,318 @@ SELECT	'#Admin' as MenuID,
             return nodes;
         }
 
+        public JsonNetResult GetAvailableSiteNavigation()
+        {
+            var nav = Company.Query<dynamic>(@"
+                with s as
+                (
+	                select cast(
+	                case when object = 'ArtifactType' then
+		                'Glossary :: ' + name
+	                when object = 'TaxonomyTypeClass' then
+		                'Models :: ' + name
+	                when object = 'PolicyTypeClass' then
+		                'Policy :: ' + name
+	                else
+		                name
+	                end	
+	                 as varchar(500)) as DisplayName,* from sitenavavailable where parentid is null
+	                union all
+	                select cast((s.DisplayName + ' :: ' + v.name) as varchar(500)) as displayname, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
+	                case when v.object = 'TaxonomyType' or v.object = 'PolicyType' then
+		                v.object + 'Class'
+	                else
+		                v.object
+	                end = s.object
+                )
+                select * from s where object not like '%Class'").ToList();
+
+            return new JsonNetResult
+            {
+                Data = nav,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Authorize, HttpGet]
+        public JsonNetResult GetSiteNavItems()
+        {
+            return new JsonNetResult
+            {
+                Data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList(),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Authorize, HttpPost]
+        public JsonNetResult AddFolderItem(SiteNav item)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                var deleteExisting = Company.Query<SiteNav>(@"with s as
+                (
+	                select * from sitenavflat where objectid = @ObjectID and object = @Object
+	                union all
+	                select v.* from sitenavflat v join s on s.objectid = v.parentid and s.object = v.object
+                )
+                select n.* from s
+                join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { ObjectID = item.ObjectID, Object = item.Object }).ToList();
+
+                deleteExisting.ForEach(d =>
+                {
+                    var record = Company.GetById<SiteNav>(d.ID);
+                    Company.Delete(record);
+                });
+
+                Company.Add(item);
+                Company.SaveChanges();
+                message = "Folder item added successfully.";
+            } catch(Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+           
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [Authorize, HttpPost]
+        public JsonNetResult RemoveFolderItem(int id)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                var fi = Company.GetById<SiteNav>(id);
+                if (fi == null)
+                    throw new Exception($"Folder Item Id ${id} not found");
+                Company.Delete(fi);
+                Company.SaveChanges();
+                message = "Folder item removed successfully.";
+            } catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [Authorize, HttpPost]
+        public JsonNetResult RemoveFolder(int id)
+        {
+            var success = true;
+            var message = "";
+
+            try
+            {
+                var folder = Company.GetById<SiteNav>(id);
+                if (folder == null)
+                    throw new Exception($"Folder id ${id} not found");
+
+                var subNavs = Company.SiteNav.Where(s => s.ParentID == folder.ID);
+
+                Company.SiteNav.RemoveRange(subNavs);
+                Company.Delete(folder);
+                Company.SaveChanges();
+                message = "Folder removed successfully.";
+            } catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Authorize, HttpPost]
+        public JsonNetResult AddFolder(AddSiteNavModel model)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                model.Folder.SortOrder = 9999;
+                var folder = Company.SiteNav.Add(model.Folder);
+                Company.SaveChanges();
+                model.Items.ForEach(i =>
+                {
+                    i.ParentID = folder.ID;
+                });
+
+                Company.SiteNav.AddRange(model.Items);
+                Company.SaveChanges();
+                message = "Folder added successfully";
+            } catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [Authorize, HttpPut]
+        public JsonNetResult MoveUp(int id)
+        {
+            var success = true;
+            var message = "";
+
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(id);
+                var siteNavAbove = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder - 1).SingleOrDefault();
+
+                if (siteNav == null)
+                    throw new Exception($"Folder id ${id} not found");
+                if (siteNavAbove == null)
+                    throw new Exception("This folder is already sorted to the top");
+
+                siteNavAbove.SortOrder++;
+                siteNav.SortOrder--;
+                Company.SaveChanges();
+                message = $"Folder ${siteNav.Name} moved up successfully.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Authorize, HttpPut]
+        public JsonNetResult MoveDown(int id)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(id);
+                var siteNavBelow = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder + 1).SingleOrDefault();
+
+                if (siteNav == null)
+                    throw new Exception($"Folder Id ${id} not found");
+                if (siteNavBelow == null)
+                    throw new Exception($"This folder is already sorted to the bottom.");
+
+                siteNavBelow.SortOrder--;
+                siteNav.SortOrder++;
+                Company.SaveChanges();
+                message = $"Folder ${siteNav.Name} moved down successfully.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Authorize, HttpPut]
+        public JsonNetResult RenameFolder(int id, string name)
+        {
+            var success = true;
+            var message = "";
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(id);
+                if (siteNav == null)
+                    throw new Exception($"Folder Id ${id} not found.");
+                siteNav.Name = name;
+                Company.SaveChanges();
+                message = "Folder renamed successfully.";
+            }
+             catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
 
         #region Favorites
         [Authorize, HttpPut]
         public JsonNetResult ToggleFavorite(Favorite favorite, bool admin = false)
         {
-            if (admin && !Company.CurrentResourceIsAdmin)
-                return null;
+            var success = true;
+            var message = "";
 
-            favorite.ResourceID = admin ? 0 : Company.CurrentResourceID;
-            favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
-
-            var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
-            var adminExisting = Company.Favorites.FirstOrDefault(f => f.ResourceID == 0 && f.Route == favorite.Route);
-
-            if (!admin)
-                if (adminExisting != null)
-                    favorite.IsOverride = true;
-
-            if (existing != null && adminExisting != null && !admin)
+            try
             {
-                existing.IsOverride = !existing.IsOverride;
-                Company.Update(existing);
-            }
-            else if (existing != null && existing.IsOverride && !admin)
-            {
-                existing.IsOverride = false;
-                Company.Update(existing);
-            }
-            else if (existing == null)
-                Company.Add(favorite);
-            else
-                Company.Delete(existing);
+                if (admin && !Company.CurrentResourceIsAdmin)
+                    throw new Exception("You do not have permission to perform this action");
 
+                favorite.ResourceID = admin ? 0 : Company.CurrentResourceID;
+                favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
+
+                var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
+                var adminExisting = Company.Favorites.FirstOrDefault(f => f.ResourceID == 0 && f.Route == favorite.Route);
+
+                if (!admin)
+                    if (adminExisting != null)
+                        favorite.IsOverride = true;
+
+                if (existing != null && adminExisting != null && !admin)
+                {
+                    existing.IsOverride = !existing.IsOverride;
+                    Company.Update(existing);
+                }
+                else if (existing != null && existing.IsOverride && !admin)
+                {
+                    existing.IsOverride = false;
+                    Company.Update(existing);
+                }
+                else if (existing == null)
+                    Company.Add(favorite);
+                else
+                    Company.Delete(existing);
+                message = "Favorite updated.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
             return new JsonNetResult
             {
-                Data = new { success = true },
+                Data = new { success, message},
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 
@@ -472,7 +748,8 @@ SELECT	'#Admin' as MenuID,
         [Authorize, HttpPut]
         public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
         {
-            //TODO: meaningful exception handling and response
+            var success = true;
+            var message = "";
             try
             {
                 if (admin && !Company.CurrentResourceIsAdmin)
@@ -502,18 +779,16 @@ SELECT	'#Admin' as MenuID,
                 }
 
                 Company.SaveChanges();
+                message = "Favorite moved successfully.";
             } catch (Exception ex)
             {
-                return new JsonNetResult
-                {
-                    Data = "exception",
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
+                success = false;
+                message = ex.GetFullExceptionData();
             }
 
             return new JsonNetResult
             {
-                Data = "success",
+                Data = new { success, message },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 

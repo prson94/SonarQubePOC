@@ -286,7 +286,7 @@ namespace d360.web.Models
         public string ArtifactType_TaxonomyTypeIDNodes { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
-
+        public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
         public string DefaultSearchTypes { get; set; }
     }
 
