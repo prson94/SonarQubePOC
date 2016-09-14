@@ -22,7 +22,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() editClick = new EventEmitter();
     @Output() dateClick = new EventEmitter();
     @Output() closeClick = new EventEmitter();
-
+    
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
     @Input() hasEdit: boolean = false;

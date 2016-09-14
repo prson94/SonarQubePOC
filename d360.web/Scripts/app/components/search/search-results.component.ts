@@ -6,6 +6,20 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
 
 @Component({
     selector: 'd3s-search-results',
+    styles: [`
+       .nodata ul
+        {
+            list-style: initial;
+            margin: initial;
+            padding: 0 0 0 40px;            
+        }
+
+        .nodata li
+        {
+            display: list-item;
+            list-style-type: disc;
+        }
+    `],
     template: `               
                 <div *ngIf="results?.Result?.Results?.length > 0">
                     <div class="row">
@@ -42,19 +56,36 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                     </template>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col l10 m8">
+                        </div>                        
+                        <div class="col l10 m8">                            
                             <div class="tile tile-detail">                                
                                 <header>Search results - <span style="color:#999;font-size:75%">found {{ results?.Result?.Matches }} matches in ({{results?.Result?.ElapsedMS /1000}} seconds)</span></header>
-                                <div *ngFor="let result of results?.Result?.Results">
-                                    <d3s-search-result-item [result]="result"></d3s-search-result-item>
+                                <span *ngIf="!loading">
+                                    <div *ngFor="let result of results?.Result?.Results">
+                                        <d3s-search-result-item [result]="result"></d3s-search-result-item>
+                                    </div>
+                                </span>
+                                <div *ngIf="loading">
+                                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                                 </div>
                                 <p-paginator [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></p-paginator>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                <div *ngIf="results?.Result?.Results?.length == 0">
+                    <div class="row">
+                        <div class="tile tile-detail nodata">       
+                            <header>Your search did not find any results.</header>
+                            <span style="padding-left:15px">Suggestions:</span>
+                            <ul>
+                                <li>Check your spelling</li>
+                                <li>Try broader search criteria</li>
+                                <li>Try a different keyword</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 `,
     providers: [SearchService],
 })
@@ -63,7 +94,7 @@ export class SearchResultsComponent extends BaseComponent implements OnInit {
     @Input() results: SearchResultsObject;
     @Input() categories: SearchCategories[] = [];    
     @Input() itemsPerPage: number = 5;
-
+    @Input() loading: boolean = false;
     
     @Output() categoryClick = new EventEmitter();
     @Output() paginateClick = new EventEmitter();

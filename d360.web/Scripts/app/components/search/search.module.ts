@@ -4,6 +4,8 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { SharedModule } from '../shared/shared.module';
+
 import { HomeSearchComponent} from './home-search.component'
 import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
@@ -56,6 +58,9 @@ import {
         SpinnerModule,        
         TooltipModule,        
         PaginatorModule,
+
+        //d3s
+        SharedModule,
 
     ],
     declarations: [

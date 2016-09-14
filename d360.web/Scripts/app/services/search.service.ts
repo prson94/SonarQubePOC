@@ -3,14 +3,14 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { SearchResultsObject, SearchCategories } from '../models/search-result.model';
+import { SearchResultsObject, SearchCategories, AdvancedSearchFilter } from '../models/search-result.model';
 
 @Injectable()
 export class SearchService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getSearchResults(term: string, size: number, pageNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean): Promise<SearchResultsObject> {
+    getSearchResults(term: string, size: number, pageNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean, advancedSearchFilter?: AdvancedSearchFilter[]): Promise<SearchResultsObject> {
 
         term = (isExactMatch ? `'${term}'` : term);
         
@@ -21,7 +21,7 @@ export class SearchService extends BaseService {
         this.addRequestVerificationHeaders(headers);
         
         return this.http
-            .post('search/results', `from=${pageNum}&size=${size}&search=${term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes.join(',')}&adv=`, { headers: headers })
+            .post('search/results', `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(','):''}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())
             .catch(this.handleError);

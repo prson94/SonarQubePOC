@@ -6,13 +6,13 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
-import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
+import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 
 @Component({
     selector: 'd3s-search',
     template: `               
-                <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>                
-                <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
+                <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>                              
+                <d3s-search-results [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -24,6 +24,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private searchText: string;
     private isExactMatch: boolean = true;
     private searchTypes: string[] = ["Artifact", "Synonym"];
+    private advancedFilters: AdvancedSearchFilter[] = [];
 
     private resultsPerPage: number = 10;
     private pageNumber: number = 0;
@@ -53,8 +54,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     private doSearch(filterCategory?: SearchCategories) {
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
+        this.isLoading = true;
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, (this.showAdvanced? undefined: this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
             .then(res => {
+                this.isLoading = false;
                 this.searchResults = res;
                 if (filterCategory == undefined) this.categories = res.Categories;
             });

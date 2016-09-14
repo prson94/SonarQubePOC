@@ -1,15 +1,16 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Component, OnInit, Input, Output, EventEmitter, DoCheck} from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import {SelectItem} from 'primeng/primeng';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
-import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
+import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { DropdownOption } from '../../models/dropdown.model';
 
 @Component({
     selector: 'd3s-search-input',
     template: `      
-                <div class="search-input-container">           
+                <div class="search-input-container" *ngIf="!isAdvancedMode">           
                     <div class="search-input-text-container">
                         <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />
                     </div>
@@ -31,13 +32,45 @@ import { SearchResultsObject, SearchCategories, SearchResult } from '../../model
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
-                </div>                                
+                </div>   
+                <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
+                    <header>Advanced Search <d3s-tile-actions [hasAdd]="false" [hasClose]="true" (closeClick)="handleAdvancedClick()"></d3s-tile-actions></header>
+                    <div *ngFor="let filter of advancedFilters; let last=last" class="row advSearchRow">
+                        <div class="col s1 center-align">Field</div>
+                        <div class="col s3">
+                            <select [(ngModel)]="filter.field" style="width:100%;">
+                                    <option value="" disabled selected>Please Choose...</option>
+                                    <option *ngFor="let p of fields" [value]="p.value">{{p.title}}</option>
+                            </select>
+                        </div>
+                        <div class="col s3" *ngIf="filter.field != '_type'">
+                            <input type="text" [(ngModel)]="filter.value" style="width:100%" placeholder="Enter a value">
+                        </div>
+                        <div class="col s3" *ngIf="filter.field == '_type'">
+                            <select [(ngModel)]="filter.value" style="width:100%;" placeholder="Choose a type">
+                                    <option value="" disabled selected>Please Choose...</option>
+                                    <option *ngFor="let p of types" [value]="p.value">{{p.title}}</option>
+                            </select>
+                        </div>
+                        <div class="col s1" *ngIf="filter.field != '_type'">
+                                <label><input type="checkbox" [(ngModel)]="filter.exact">Exact match</label>
+                        </div>
+                        <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
+                        <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>
+                        <div class="col s1" *ngIf="!last" (click)="removeFilter(filter)"  style="cursor:pointer"><i class="fa fa-minus" aria-hidden="true" title="remove filter" style="font-size:1.5em"></i></div>
+                    </div>
+                    <div class="row">
+                        <div class="col s1 offset-s1">
+                            <button pButton type="button" (click)="triggerAdvancedSearch()" label="Search" style="width:150px;"></button>
+                        </div>
+                    </div>
+                </div>
                 <d3s-search-autocomplete-list [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchInputComponent extends BaseComponent {
+export class SearchInputComponent extends BaseComponent implements OnChanges {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -50,6 +83,32 @@ export class SearchInputComponent extends BaseComponent {
     @Output() search = new EventEmitter();
 
     @Input() hasAdvanced: boolean = false;
+
+    @Input() isAdvancedMode: boolean = false;
+    @Output() isAdvancedModeChange = new EventEmitter();
+
+    @Input() advancedFilters: AdvancedSearchFilter[] = [];
+    @Output() advancedFiltersChange = new EventEmitter();
+    
+
+    private fields: DropdownOption[] = [
+        { title: "Category", value: "Type" },
+        { title: "Description", value: "Description" },
+        { title: "Name", value: "Name" },
+        { title: "Type", value: "_type" },
+    ];
+
+    private types: DropdownOption[] = [
+        { title: "Attribute", value: "Attribute" },
+        { title: "Fusion", value: "FusionAttributes" },
+        { title: "Fusion Type", value: "FusionType" },
+        { title: "Glossary", value: "Artifact" },
+        { title: "Group", value: "Group" },
+        { title: "Model", value: "Taxonomy" },
+        { title: "Reference", value: "Domain" },
+        { title: "User", value: "Users" },
+        { title: "Synonym", value: "Synonym" },
+    ];
 
     private searchObjectTypes: SelectItem[] = [
         { value: "Attribute", label: "Attribute" },
@@ -71,6 +130,11 @@ export class SearchInputComponent extends BaseComponent {
     constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();
     }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (this.isAdvancedMode && this.advancedFilters.length == 0)
+            this.advancedFilters.push(new AdvancedSearchFilter("Name"));
+    }
     
 
     private triggerSearch() {
@@ -80,8 +144,15 @@ export class SearchInputComponent extends BaseComponent {
             text: this.searchText,
             exactMatch: this.isExactMatch,
             types: this.searchTypes
-        });
-        
+        });        
+    }
+
+    private triggerAdvancedSearch() {
+        this.cancelAutocomplete();
+        this.autocompletions = [];
+        this.search.emit({
+            adv: this.advancedFilters
+        });        
     }
 
     private cancelAutocomplete() {
@@ -91,7 +162,6 @@ export class SearchInputComponent extends BaseComponent {
         }
     }
     
-
     private checkSearchKey(event) {
         if (event.keyCode == 13) {
             this.triggerSearch();
@@ -112,9 +182,25 @@ export class SearchInputComponent extends BaseComponent {
             });
     }
 
+    private removeFilter(filter) {
+        let index = this.advancedFilters.findIndex(x => x == filter);
+
+        if (index >= 0 && index < this.advancedFilters.length) {
+            this.advancedFilters.splice(index,1);
+            this.advancedFiltersChange.emit(this.advancedFilters);
+        }
+    }
+
+    private addFilter() {
+        this.advancedFilters.push(new AdvancedSearchFilter());
+        this.advancedFiltersChange.emit(this.advancedFilters);
+    }
+
     private handleAdvancedClick() {
         if (this.hasAdvanced) {
-
+            this.isAdvancedMode = !this.isAdvancedMode;
+                        
+            this.isAdvancedModeChange.emit(this.isAdvancedMode);
         }
         else {
             this.router.navigateByUrl(`/a/search?query=${this.searchText ? encodeURIComponent(this.searchText):''}&advanced=1&types=${this.searchTypes? this.searchTypes.join(','):''}`);

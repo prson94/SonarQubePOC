@@ -35,3 +35,14 @@ export class SearchResultsObject {
     Categories: SearchCategories[];
     Result: SearchResultInfo;
 }
+
+export class AdvancedSearchFilter {
+    constructor(field?: string) {
+        this.field = field;
+    }
+
+    field: string;
+    value: string;
+    exact: boolean = false;
+    connector: string = 'and';
+}
