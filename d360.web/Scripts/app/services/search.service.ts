@@ -19,9 +19,16 @@ export class SearchService extends BaseService {
         });
 
         this.addRequestVerificationHeaders(headers);
-        
+
+        let url = '';
+
+        if (category && category.Categories)
+            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=&type=${category.Name}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`;
+        else
+            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`;
+
         return this.http
-            .post('search/results', `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : term}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(','):''}&adv=${advancedSearchFilter ? JSON.stringify(advancedSearchFilter) : ''}`, { headers: headers })
+            .post('search/results', url, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())
             .catch(this.handleError);

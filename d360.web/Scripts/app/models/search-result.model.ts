@@ -23,6 +23,7 @@ export class SearchCategories {
     Name: string;
     DisplayName: string;
     ResultCount: number;
+    Categories: any[];
 }
 
 export class SearchResultInfo {

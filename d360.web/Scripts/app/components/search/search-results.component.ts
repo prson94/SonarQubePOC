@@ -116,7 +116,8 @@ export class SearchResultsComponent extends BaseComponent implements OnInit {
 
     private selectCategory(category) {
         this.selectedCategory = category;
-        this.categoryClick.emit({ category: this.selectedCategory });
+            
+        this.categoryClick.emit({ category: category });
     }
 
     private paginate(data) {
