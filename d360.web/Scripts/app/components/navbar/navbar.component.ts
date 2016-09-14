@@ -282,7 +282,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadModelMenu(modelMenus: SiteMenu) {
         if (modelMenus == null ) return;
 
-        let models = this.addNavItem('Models', 'sitemap', null, null, modelMenus.SortOrder);
+        let models = this.addNavItem('Models', 'sitemap', 'a/model/classification', null, modelMenus.SortOrder);
 
         this.renderChildItems(models, modelMenus.NavigationItems);
     }

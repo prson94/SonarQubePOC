@@ -20,14 +20,15 @@ import { Model } from '../../models/model.model';
                             <header>{{modelGroup}} Models
                                 <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                             </header>                              
-                            <p-dataTable #dt [value]="models | modelType: modelGroup" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'25%'}"></p-column>                                                                                                                        
-                                <p-column field="Description" header="Description" [sortable]="true" [filter]="true" [style]="{width:'60%'}">
+                            <p-dataTable #dt [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
+                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'200px'}"></p-column>                                                                                                                        
+                                <p-column field="TaxonomyTypeClass" [hidden]="modelGroup" header="Classification" [sortable]="true" [filter]="true" [style]="{width:'200px'}"></p-column>
+                                <p-column field="Description" header="Description" [sortable]="true" [filter]="true" [style]="{width:'500px'}">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.Description"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true" [style]="{width:'15%'}"></p-column>                                
+                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true" [style]="{width:'100px'}"></p-column>                                
                             </p-dataTable>      
                         </div>
                     </div>
@@ -54,12 +55,16 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.modelGroup = params['group'];
-                        
+
+                                    
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models'));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));
-                        
-            this.setBrowserTitle(this.titleService, `${this.modelGroup} Models`);
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', this.modelGroup ? '/a/model/classification' : undefined));
+
+            if (this.modelGroup) {
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));
+            }
+
+            this.setBrowserTitle(this.titleService, `${this.modelGroup ? this.modelGroup + ' ' : ''}Models`);
 
             this.loadModels();
         });
