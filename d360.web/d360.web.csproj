@@ -1403,6 +1403,7 @@
     <TypeScriptCompile Include="Scripts\app\components\model\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\index.ts" />

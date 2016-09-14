@@ -92,7 +92,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', '/a/model/classification'));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `/a/model/classification/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `/a/model/${this.model.ID}/structure`));
 
                         this.loadModelHierarchy(this.modelId, hierarchyId);
 

@@ -126,6 +126,7 @@ import {
     ModelComponent,
     ModelItemComponent,
     ModelListComponent,
+    ModelItemStructureComponent,
 } from './components/model/index';
 
 import {
@@ -275,6 +276,7 @@ import {
         ModelItemComponent,
         ModelLevelTile,
         ModelListComponent,
+        ModelItemStructureComponent,
         MonitorComponent,
         MonitorListComponent,
         ObjectDefinitionTile,

@@ -7,6 +7,7 @@ export const ModelRoutes = [
         children: [
             { path: 'classification/:group', component: model.ModelListComponent },
             { path: 'classification', component: model.ModelListComponent },
+            { path: ':modelId/structure', component: model.ModelItemStructureComponent },
             { path: ':modelId', component: model.ModelItemComponent }
         ]
     }
