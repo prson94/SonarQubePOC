@@ -11,7 +11,7 @@ import { SearchFullResult } from '../../models/search-result.model';
                 <div class="search-res-container">
                     <h4 class="search-result-name"><a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a></h4>
                     <p class="search-result-desc" [innerHtml]="result?.Description"></p>
-                    <h5 class="search-result-attributes">Category: <em class="result-category">{{result?.Type}}</em>&nbsp;&nbsp;Type: <em class="result-type">{{result?.Group}}</em></h5>
+                    <h5 class="search-result-attributes">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;Type: <em class="result-type">{{result?.Group}}</em></h5>
                 </div>        
                 `,
     providers: [SearchService], 
@@ -33,7 +33,8 @@ export class SearchResultItemComponent extends BaseComponent  {
             case 'ARTIFACT':
                 return item.Url.replace('#/artifacts', '/a/artifact');
             case 'USERS':            
-                return item.Url.replace('#/resources', '/a/resource');            
+                return item.Url.replace('#/resources', '/a/resource');    
+                        
         }
 
         return item.Url.replace('#', '/a');

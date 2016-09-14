@@ -30,7 +30,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     @Input() autocompletions: SearchResult[] = [];    
     @Input() searchText: string;
     @Input() element: any;
-
+    
     private showResults = true;
     private width: string = '400px';
     
@@ -38,7 +38,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
         super();
     }
 
-    ngOnInit() {    
+    ngOnInit() {            
         if (this.element && this.element.offsetWidth) this.width = this.element.offsetWidth + 'px';        
     }
 

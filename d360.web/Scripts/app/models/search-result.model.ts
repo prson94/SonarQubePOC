@@ -37,8 +37,9 @@ export class SearchResultsObject {
 }
 
 export class AdvancedSearchFilter {
-    constructor(field?: string) {
+    constructor(field?: string, value?:string) {
         this.field = field;
+        this.value = value;
     }
 
     field: string;
