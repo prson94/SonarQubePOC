@@ -26,8 +26,8 @@ import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
                     <a *ngIf="!item.isRootItem() && item.url" [href]="[item.url]" style="font-size:small;" class="nav-item active truncate"><i [class]="'fa fa-' + item.icon"></i>{{item.name}}</a>                    
                 </div>
                 <div *ngIf="item.subItems && item.subItems.length > 0" [class.router-link-active]="item.active">
-                    <span style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i *ngIf="item.isRootItem()" [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>
-                        <a class="group truncate" *ngIf="item.route" [routerLink]="[item.route]">{{item.name}}</a>
+                    <span style="cursor: pointer;" class="nav-item inactive" (click)="expandClick(item);item.expanded = !item.expanded"><i *ngIf="item.isRootItem()" [class]="'fa fa-' + (item.icon || (item.expanded ? 'caret-down' : 'caret-right'))"></i>                        
+                        <a class="truncate" *ngIf="item.route" [routerLink]="[item.route]" [ngClass]="{'topgroup': (item.isRootItem() && item.route), 'group': (item.route && !item.isRootItem())}">{{item.name}}</a>
                         <span *ngIf="!item.route" [ngClass]="{'topitem':item.isRootItem()}">{{item.name}}</span>
                         <span class="right"><i [class]="'fa fa-' + (item.expanded ? 'caret-up' : 'caret-down')"></i></span>
                     </span>
