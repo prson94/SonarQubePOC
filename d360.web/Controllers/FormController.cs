@@ -373,6 +373,7 @@ namespace d360.web.Controllers
                     return Resource_EditMyInfoFields();
                 case "RESOURCESELFPASSWORD":
                     return Resource_ChangeMyPasswordFields();
+               
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -468,6 +469,8 @@ namespace d360.web.Controllers
                     return EditMyInfo(form);
                 case "RESOURCESELFPASSWORD":
                     return ChangeMyPassword(form);
+                case "TAXONOMY":
+                    return EditTaxonomy(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -504,7 +507,9 @@ namespace d360.web.Controllers
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);                
+                    return DeleteQuestionType(form);
+                case "TAXONOMY":
+                    return DeleteTaxonomy(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");

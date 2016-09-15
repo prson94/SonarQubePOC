@@ -36,23 +36,39 @@ where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren,
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        public JsonNetResult ModelHierarchyDetailed(int id)
+        {
+            var models = Company.Query<TaxonomyDetail>(
+@"select	T.*,
+			case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
+	from	Taxonomy T
+			CROSS APPLY (
+				select	count(1) as [ItemsCount]
+				from	IntersectNode
+				where	ObjectType = 'Taxonomy' and ObjectID = T.ID
+				) DC
+where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID, i.Description });
+
+            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
         #endregion
 
         #region Partials
 
         //        [Route("{id:int}/widgets/tree")]
-//        public ActionResult Taxonomy_Tree(int id)
-//        {
-//            return PartialView(Company.Query<TaxonomyDetail>(@"select	T.*,
-//			case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
-//	from	Taxonomy T
-//			CROSS APPLY (
-//				select	count(1) as [ItemsCount]
-//				from	IntersectNode
-//				where	ObjectType = 'Taxonomy' and ObjectID = T.ID
-//				) DC
-//where T.TaxonomyTypeID = @id", new { id = id }));
-//        }
+        //        public ActionResult Taxonomy_Tree(int id)
+        //        {
+        //            return PartialView(Company.Query<TaxonomyDetail>(@"select	T.*,
+        //			case  when DC.ItemsCount > 0 then cast(1 as bit) else cast(0 as bit) end as HasChildren		 
+        //	from	Taxonomy T
+        //			CROSS APPLY (
+        //				select	count(1) as [ItemsCount]
+        //				from	IntersectNode
+        //				where	ObjectType = 'Taxonomy' and ObjectID = T.ID
+        //				) DC
+        //where T.TaxonomyTypeID = @id", new { id = id }));
+        //        }
 
         //[Route("{id:int}/levels")]
         //public ActionResult Levels(int id)

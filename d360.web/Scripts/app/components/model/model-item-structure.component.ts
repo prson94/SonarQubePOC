@@ -22,17 +22,45 @@ import { TreeNode } from 'primeng/primeng';
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
+                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !showDelete">                            
                     <header>{{model.Name}}
-                        <d3s-tile-actions [hasAdd]="true" [hasEdit]="true"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="true"></d3s-tile-actions>                            
                     </header>                              
                     <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
-                    <p-tree [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                            <template let-node>
-                                <span [ngStyle]="setTreeNodeStyles(node)"><span (dblclick)="showHierarchy(node.data?.id);">{{node.label}}</span> <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;padding-left:20px"></i></span>
+                    <p-treeTable [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
+                        <p-column field="name" header="Name">
+                            <template let-item="rowData" pTemplate type="body">
+                                <a (click)="showHierarchy(item.data.id)">{{item.data.name}}</a>
                             </template>
-                    </p-tree>                                   
+                        </p-column>                        
+                        <p-column field="description" header="Description">
+                            <template let-item="rowData" pTemplate type="body">
+                               <span [innerHtml]="item.data.description"></span>
+                            </template>
+                        </p-column>
+                        <p-column [style]="{width:'40px'}" >
+                                    <template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                        </div>
+                                    </template>
+                        </p-column>                            
+                        <p-column  [style]="{width:'40px'}">
+                                    <template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">                                
+                                            <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                        </div>
+                                    </template>
+                        </p-column>       
+                    </p-treeTable>                                   
                 </div>
+                <delete-form *ngIf="showDelete"
+                    [callback]="theDeleteCallback"
+                    [itemId]="selected?.data?.id"
+                    [method]="'callback'"
+                    [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
+                    (onCancel)="showDelete=false;"
+                ></delete-form>                 
                 `
 })
 
@@ -47,6 +75,10 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     selected: TreeNode;
 
     searchValue: string;
+    showEditor: boolean;
+    showDelete: boolean;
+
+    theDeleteCallback: Function;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -57,6 +89,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true);
+
+        this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
     }
 
     ngOnInit() {
@@ -90,7 +124,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private loadModelHierarchy(modelId: number) {
-        this.modelsService.getModelHierarchy(modelId)
+        this.modelsService.getModelHierarchy(modelId, true)
             .then(result => {
                 this.modelHierarchy = result;
 
@@ -111,7 +145,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             res.push({
                 label: root.Name,
                 data: {
-                    id: root.ID, hasRelations: root.HasChildren
+                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: root.Description
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
@@ -131,5 +165,56 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',
         };
         return styles;
+    }
+
+    deleteModelHierarchy(id: number) {
+        this.modelsService.deleteModelHierarchy(id).then(res => {
+            if (res.type && res.type != "error")
+                this.deleteSelectedTreeNode(id);
+        });
+        this.showDelete = false;
+    }
+
+    private deleteSelectedTreeNode(id: number): TreeNode {
+        let nodes: TreeNode[] = [];
+
+        // add root nodes
+        for (var i = 0; i < this.treeNodeArray.length; i++) {
+            if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.id == id) {
+                this.treeNodeArray.splice(i, 1);
+                return
+            }
+
+            nodes.push(this.treeNodeArray[i]);
+        }
+
+        //do a breadth first search for the given treenode
+        if (nodes.length == 0) return;
+
+        let node = nodes[0];
+
+        while (node) {
+            if (node.data.id && node.data.id == id) {
+
+                return node;
+            }
+
+            //push children
+            if (node.children) {
+                for (var i = 0; i < node.children.length; i++) {                    
+                    if (node.children[i].data.id && node.children[i].data.id == id) {
+                        node.children.splice(i, 1);
+                        return
+                    }
+                    nodes.push(node.children[i]);
+                }
+            }
+
+            //remove this node
+            nodes.splice(0, 1);
+
+            if (nodes.length == 0) return null;
+            node = nodes[0];
+        }
     }
 };

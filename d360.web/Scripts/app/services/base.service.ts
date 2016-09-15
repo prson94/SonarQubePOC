@@ -28,6 +28,19 @@ export class BaseService {
             .catch(err => this.handleError(err));
     }
 
+    protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        let url = `form/dynamicedit/delete/${type}/${id}`;
+
+        return http
+            .delete(url, headers)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
+
     protected postDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {
         
         if (file != undefined) {
