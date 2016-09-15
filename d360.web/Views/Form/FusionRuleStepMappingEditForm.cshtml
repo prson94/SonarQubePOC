@@ -3,7 +3,7 @@
 @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
 {
     <input type="hidden" id="ID" name="ID" value="@(Model.Item.ID)" />
-    <input type="hidden" id="FusionAttributePromotionRuleID" name="FusionAttributePromotionRuleID" value="@(Model.Item.FusionRuleStep.ID)" />
+    <input type="hidden" id="RuleID" name="RuleID" value="@(Model.Item.FusionRuleStep.ID)" />
     <div class="row">
         @Html.CheckBox("isConstantValue", Model.Item.IsConstantValue)        
         <label id="isConstantValueLabel" for="IsConstantValue">Store a fixed source value</label>

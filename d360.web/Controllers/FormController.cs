@@ -4497,7 +4497,7 @@ namespace d360.web.Controllers
                     qry = Company.Filter<FusionAttributeType>(i => i.ParentID == s);
                     break;
                 case 4: //Relationship Reference
-                    var relations = Company.Query<int>(@"select TargetObjectID from utility.RelationshipTypes where SourceObjectType  = 'FusionAttributeType' and SourceObjectID = @id and TargetObjectType = 'FusionAttributeType'", new { id = s }).ToList();
+                    var relations = Company.Query<int>(@"select case when (SubjectID = @id) then ObjectID else SubjectID end as ID from [IntersectType] where (Subject = 'FusionAttributeType' and Object = 'FusionAttributeType') AND (SubjectID = @id or ObjectID = @id)", new { id = s }).ToList();
                     qry = Company.Filter<FusionAttributeType>(i => relations.Contains(i.ID));
                     break;
             }
@@ -4621,13 +4621,16 @@ namespace d360.web.Controllers
         {
             var intersectTypes = Company.Query<dynamic>(@"
 select  distinct 
-        cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
+        cast(RT.ID as varchar) + '|' + D.Object + '|' + cast(D.ObjectID as varchar) as value, 
         D.TextPath as title
-from    utility.RelationshipTypes RT
-        inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-        and RT.SourceObjectType = 'IntersectType' and RT.SourceObjectID = @id
-order by  D.TextPath
-", new { id });
+from    [IntersectType] RT
+        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = 'IntersectType' and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+                                            and D.ObjectID = case when (RT.Subject = 'IntersectType' and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+                                            and ( 
+                                                (RT.Subject = 'IntersectType' and RT.SubjectID = @id) OR 
+                                                (RT.Object = 'IntersectType' and RT.ObjectID = @id) 
+                                                )
+order by  D.TextPath", new { id });
 
             return new JsonNetResult
             {
@@ -4736,13 +4739,16 @@ order by  D.TextPath
 
             var intersectTypes = Company.Query<dynamic>(@"
             select  distinct 
-                    cast(RT.IntersectTypeID as varchar) + '|' + RT.TargetObjectType + '|' + cast(RT.TargetObjectID as varchar) as value, 
+                    cast(RT.ID as varchar) + '|' + D.Object + '|' + cast(D.ObjectID as varchar) as value, 
                     D.TextPath as title
-            from    utility.RelationshipTypes RT
-                    inner join cache.ObjectDetails D on D.[Object] = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-                    and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-            order by  D.TextPath
-            ", new { type, id });
+            from    [IntersectType] RT
+                    inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+                                                        and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+                                                        and ( 
+                                                            (RT.Subject = @type and RT.SubjectID = @id) OR 
+                                                            (RT.Object = @type and RT.ObjectID = @id) 
+                                                            )
+            order by  D.TextPath", new { type, id });
 
             //#region
             //var sql = @"
@@ -6532,7 +6538,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
-        /// <param name="id">FusionAttributePromotionRuleID</param>
+        /// <param name="id">RuleID</param>
         public ActionResult FusionRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6593,7 +6599,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         {
             try
             {
-                var ruleID = parseIntField(form, "FusionAttributePromotionRuleID");
+                var ruleID = parseIntField(form, "RuleID");
                 var rule = Company.GetById<FusionRule>(ruleID);
                 if (rule != null)
                 {
@@ -6831,6 +6837,12 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                     item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TargetField", Value = parseTextField(form, "TargetSearchField") });
                 }
+                else if (findType == "FUSION")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = parseTextField(form, "FindSearchField") });
+
+                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
+                }
                 else
                 {
                     handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
@@ -6865,6 +6877,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = "ResultFromStep" });
 
                 handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = parseTextField(form, "LineageRole") });
             }
@@ -7120,10 +7140,15 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 if (!form.HasKeys()) throw new NoFormDataException("configuration");
                 var id = parseIntField(form, "ID");
                 var ruleStepID = parseIntField(form, "RuleStepID");
-                var currentRule = Company.GetById<FusionRule>(id);
+                var currentRule = Company.GetById<FusionRule>(id);//, i => i.FusionRuleSteps);
                 var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
 
                 if (itemToRemove == null) return new HttpNotFoundResult();
+
+                //foreach (var step in currentRule.FusionRuleSteps)
+                //{
+                //    var resultFromStepSetting = step.FusionRuleStepSettings.Single(s => s.Value == "ResultFromStep")
+                //}
 
                 Company.ObjectContext.DeleteObject(itemToRemove);
 
@@ -7231,7 +7256,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
-        /// <param name="id">FusionAttributePromotionRuleID</param>
+        /// <param name="id">RuleID</param>
         public ActionResult FusionRuleStep_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -7500,7 +7525,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             {
                 var model = new FusionRuleStepMapping
                 {
-                    RuleStepID = parseIntField(form, "FusionAttributePromotionRuleID")
+                    RuleStepID = parseIntField(form, "RuleID")
                 };
 
                 var source = form["Source"].Split('|');
@@ -8558,19 +8583,17 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         public JsonNetResult IntersectType_FormData(int id)
         {
-            var type = Company.GetById<IntersectType>(id, i => i.Nodes, i => i.IntersectTypePredicates);
+            var type = Company.GetById<IntersectType>(id, i => i.IntersectTypePredicates);
             if (type == null) return new JsonNetResult { Data = null };
 
             var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
-            var first = type.Nodes.OrderBy(i => i.Order).First();
-            var last = type.Nodes.OrderBy(i => i.Order).Last();
 
             var model = new Dictionary<string, object> {
                 { "ID", id },
                 { "LimitedChangesOnly", currentIntersects },
-                { "Side1", $"{first.ObjectType}|{first.ObjectID}" },
+                { "Side1", $"{type.Subject}|{type.SubjectID}" },
                 //{ "Side1DisplayText", first.MenuDisplayText },
-                { "Side2", $"{last.ObjectType}|{last.ObjectID}" },
+                { "Side2", $"{type.Object}|{type.ObjectID}" },
                 { "Predicate", type.PredicateID }//{ "Side2DisplayText", last.MenuDisplayText }
             };
 
@@ -8713,7 +8736,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Conflict);
 
-                var model = Company.GetById<IntersectType>(id, i => i.Nodes);
+                var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");
 
                 Company.Delete<IntersectType>(model);
@@ -12959,7 +12982,7 @@ from ArtifactType A
 
             var list = new List<EditableField>();
 
-            var relationshipType = Company.GetById<IntersectType>(it, i => i.Nodes);
+            var relationshipType = Company.GetById<IntersectType>(it);
             var obj = Company.GetObjectDetail(type, id);
 
             if (obj == null || relationshipType == null)
@@ -12969,17 +12992,15 @@ from ArtifactType A
 
             var targetType = "";
             var targetTypeID = 0;
-            var firstNode = relationshipType.Nodes.First();
-            var lastNode = relationshipType.Nodes.Last();
-            if (firstNode.ObjectType == obj.Type && firstNode.ObjectID == obj.TypeID)
+            if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
             {
-                targetType = lastNode.ObjectType;
-                targetTypeID = lastNode.ObjectID;
+                targetType = relationshipType.Object;
+                targetTypeID = relationshipType.ObjectID;
             }
             else
             {
-                targetType = firstNode.ObjectType;
-                targetTypeID = firstNode.ObjectID;
+                targetType = relationshipType.Subject;
+                targetTypeID = relationshipType.SubjectID;
             }
 
             list.Add(new EditableField { FieldName = "IntersectTypeID", FieldType = DataType.Hidden.ToString(), Value = it.ToString() });
@@ -13040,40 +13061,17 @@ else
 		insert into @h values (@id)
 	end;
 
-with attr as	(
-			select	A.ID,
-					A.ParentID,
-					A.FusionAttributeTypeID
-			from	FusionAttributeOwnerRule R with(nolock)
-					inner join FusionAttributeOwnerRuleItem RI with(nolock) on RI.FusionAttributeOwnerRuleID = R.ID and R.RelationshipOwnerObjectType = 'Artifact'
-					inner join @h H on H.ID = R.RelationshipOwnerObjectID
-					inner join FusionAttribute A with(nolock) on (
-													(RI.FusionAttributeID is not null and A.ID = RI.FusionAttributeID) OR 
-													(RI.FusionAttributeID is null and A.FusionAttributeTypeID = R.ObjectID)
-													)
-													AND A.FusionID = R.FusionID
-                                                    AND A.Deleted = 0
-			union all
-			select	C.ID,
-					C.ParentID,
-					C.FusionAttributeTypeID
-			from	FusionAttribute C with(nolock)
-					inner join attr P on C.ParentID = P.ID and C.Deleted = 0
-			)
-
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-		inner join attr on attr.ID = FA.ID
+        inner join FusionOwner FO on FO.FusionID = FA.FusionID
+        inner join @h H on H.ID = FO.ArtifactID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
-					where	(
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) ) --OR
-							 --( (SubjectType = @targetType and SubjectTypeID = @targetTypeID) AND (Object = @source and ObjectID = @id) )
-							)
+					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
 order by F.Name, FA.TextPath";
                     break;
@@ -13223,7 +13221,7 @@ order by D.TextPath";
                 var source = parseTextField(form, "Source");
                 var sourceID = parseIntField(form, "SourceID");
                 int typeID = parseIntField(form, "IntersectTypeID");
-                var relationshipType = Company.GetById<IntersectType>(typeID, i => i.Nodes);
+                var relationshipType = Company.GetById<IntersectType>(typeID);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
                 if (!Company.HasPermission(SystemObjects.IntersectType, typeID, Claim.Create, ClaimObject.Root))
@@ -13236,21 +13234,6 @@ order by D.TextPath";
                     return jsonException("No selected items", HttpStatusCode.BadRequest);
 
                 var items = rawItems.Split(',').ToList();
-
-                var sourceIntersectTypeNodeID = 0;
-                var targetIntersectTypeNodeID = 0;
-                var firstNode = relationshipType.Nodes.First();
-                var lastNode = relationshipType.Nodes.Last();
-                if (firstNode.ObjectType == sourceObject.Type && firstNode.ObjectID == sourceObject.TypeID)
-                {
-                    sourceIntersectTypeNodeID = firstNode.ID;
-                    targetIntersectTypeNodeID = lastNode.ID;
-                }
-                else
-                {
-                    sourceIntersectTypeNodeID = lastNode.ID;
-                    targetIntersectTypeNodeID = firstNode.ID;
-                }
 
                 items.ForEach(item =>
                 {
@@ -13365,13 +13348,13 @@ order by D.TextPath";
                 if (!form.HasKeys()) throw new NoFormDataException("relationship");
 
                 int id = parseIntField(form, "ID");
-                var intersect = Company.GetById<Intersect>(id, i => i.Nodes);
+                var intersect = Company.GetById<Intersect>(id, i => i.IntersectType);
 
                 if (intersect == null) throw new NotFoundException("relationship");
 
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Nodes.First().ObjectType), intersect.Nodes.First().ObjectID, Claim.Update, ClaimObject.Relationship))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.IntersectType.Subject), intersect.IntersectType.SubjectID, Claim.Update, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.Nodes.Last().ObjectType), intersect.Nodes.Last().ObjectID, Claim.Update, ClaimObject.Relationship))
+                if (!Company.HasPermission((SystemObjects)Enum.Parse(typeof(SystemObjects), intersect.IntersectType.Object), intersect.IntersectType.ObjectID, Claim.Update, ClaimObject.Relationship))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 var classification = parseBooleanField(form, "Classification");
@@ -17347,13 +17330,16 @@ SELECT	'ResponsibilityType|'+ cast(ID as varchar) as value,
 from	ResponsibilityType T
 		inner join ResponsibilityTypeRelation R on R.ResponsibilityTypeID = T.ID and R.ObjectType = @type and R.ObjectID = @id
 union
-select	distinct
-		D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		'Relationship :' + D.TextPath as title
-from	utility.RelationshipTypes RT
-		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-where	RT.SourceObjectType = @type
-		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+select  distinct 
+        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
+        'Relationship :' + D.TextPath as title
+from    [IntersectType] RT
+        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+                                            and ( 
+                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
+                                                (RT.Object = @type and RT.ObjectID = @id) 
+                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
                 case StatisticCheckType.PropertyValueCheck:
                 case StatisticCheckType.PropertyPopulated:
@@ -17380,26 +17366,32 @@ where	RT.SourceObjectType = @type
                     break;
                 case StatisticCheckType.Relationship:
                     models.AddRange(Company.Query<KnockoutListItem>(@"
-select	distinct
-		D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		D.TextPath as title
-from	utility.RelationshipTypes RT
-		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-where	RT.SourceObjectType = @type
-		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+select  distinct 
+        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
+        D.TextPath as title
+from    [IntersectType] RT
+        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+                                            and ( 
+                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
+                                                (RT.Object = @type and RT.ObjectID = @id) 
+                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
                 case StatisticCheckType.FusionOwnership:
                     //models.AddRange(Company.GetStatisticTypeCountCheckOptions().Select(i => new { title = i.Name, value = i.ID.ToString() }));
                     break;
                 case StatisticCheckType.ScoreRollupViaRelationship:
                     models.AddRange(Company.Query<KnockoutListItem>(@"
-select	distinct
-		D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		D.TextPath as title
-from	utility.RelationshipTypes RT
-		inner join cache.ObjectDetails D on D.Object = RT.TargetObjectType and D.ObjectID = RT.TargetObjectID
-where	RT.SourceObjectType = @type
-		and RT.SourceObjectID = @id", new { type = type.ToString(), id }).OrderBy(i => i.title));
+select  distinct 
+        D.Object + '|' + cast(D.ObjectID as varchar) as value, 
+        'Relationship :' + D.TextPath as title
+from    [IntersectType] RT
+        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
+                                            and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
+                                            and ( 
+                                                (RT.Subject = @type and RT.SubjectID = @id) OR 
+                                                (RT.Object = @type and RT.ObjectID = @id) 
+                                                )", new { type = type.ToString(), id }).OrderBy(i => i.title));
                     break;
                 case StatisticCheckType.ScoreRollupViaOwnership:
                     models.AddRange(Company.GetStatisticTypeRollupCheckOptions().Select(i => new KnockoutListItem { title = i.Name, value = i.ID.ToString() }));

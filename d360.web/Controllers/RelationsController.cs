@@ -225,7 +225,7 @@ order by	SD.Name,
             #region SQL
             var sql = @"
 select  distinct
-        RT.IntersectTypeID,
+        RT.ID as IntersectTypeID,
         O.SortOrder,
         O.Menu,
 		O.SubMenu,
@@ -301,8 +301,8 @@ from	(
 				'People' as Menu,
 				NULL as SubMenu
 		) O
-		inner join [utility].[RelationshipTypes] RT on RT.SourceObjectType = O.[Type] and RT.SourceObjectID = O.[ID]
-		inner join cache.[Object] SO on SO.[ObjectType] = RT.TargetObjectType and SO.ObjectTypeID = RT.TargetObjectID and SO.[Object] = @type and SO.ObjectID = @id
+		inner join [IntersectType] RT on (RT.Subject = O.[Type] and RT.SubjectID = O.[ID] and RT.Object = @type and RT.ObjectID = @id) 
+										or (RT.Object = O.[Type] and RT.ObjectID = O.[ID] and RT.Subject = @type and RT.SubjectID = @id)  
 order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             #endregion
 
@@ -592,205 +592,6 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
 
         #endregion Hierarchy
 
-        #region Synonym
-
-        //[ValidateHttpAntiForgeryToken, HttpPost]
-        //[Route("synonyms/save")]
-        //public JsonNetResult SaveSynonym(FormCollection model)
-        //{
-        //    var message = "";
-
-        //    var sub = model["Subject"];
-        //    var subID = int.Parse(model["SubjectID"]);
-        //    var obj = model["Object"];
-        //    var objID = int.Parse(model["ObjectID"]);
-
-        //    if (string.IsNullOrEmpty(sub) || subID <= 0)
-        //    {
-        //        message = $"The Subject you provided is invalid.";
-        //    }
-        //    else if (string.IsNullOrEmpty(obj) || objID <= 0)
-        //    {
-        //        message = $"The Object you provided is invalid.";
-        //    }
-        //    else if (sub == obj && subID == objID)
-        //    {
-        //        message = $"A source may not map to itself directly.";
-        //    }
-
-        //    var predicate = Company.Filter<Predicate>(i => i.Type == PredicateType.Synonym).FirstOrDefault();
-
-        //    if (predicate == null)
-        //    {
-        //        message = "No predicate exists to fulfill this request.";
-        //    }
-
-        //    if (message == "")
-        //    {
-        //        Company.AddIntersect(sub, subID, obj, objID, IntersectClassification.Normal, null, null);
-        //        var intersect = Company.Query<IntersectLookupModel>(@"select top 1 
-        //                        S.IntersectID,
-        //                        S.ID as SubjectNodeID, S.[ObjectType] as Subject, S.ObjectID as SubjectID,
-        //                        O.ID as ObjectNodeID, O.[ObjectType] as [Object], O.ObjectID 
-        //                        from [IntersectNode] S 
-        //                        inner join IntersectNode O on O.IntersectID = S.IntersectID 
-        //                        and S.[ObjectType] = @s and S.ObjectID = @sid 
-        //                        and O.[ObjectType] = @o and O.ObjectID = @oid",
-        //            new { s = sub, sid = subID, o = obj, oid = objID }
-        //            ).SingleOrDefault();
-
-        //        if (intersect != null)
-        //        {
-        //            var existingSourceRecordCount = Company.Query<int>(
-        //                "select count(1) from IntersectMap where SubjectIntersectNodeID = @s and ObjectIntersectNodeID = @o and PredicateID = @p",
-        //                new {
-        //                    s = intersect.SubjectNodeID,
-        //                    o = intersect.ObjectNodeID,
-        //                    p = predicate.ID
-        //                }
-        //            ).Single();
-
-        //            if (existingSourceRecordCount <= 0)
-        //            {
-        //                var intersectMap = new IntersectMap
-        //                {
-        //                    ObjectIntersectNodeID = intersect.ObjectNodeID,
-        //                    PredicateID = predicate.ID,
-        //                    SubjectIntersectNodeID = intersect.SubjectNodeID,
-        //                    Type = PredicateType.Synonym
-        //                };
-        //                try
-        //                {
-        //                    Company.Add(intersectMap);
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    message = ex.Message;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    if (string.IsNullOrEmpty(message))
-        //    {
-        //        return new JsonNetResult
-        //        {
-        //            Data = new { type = "success", title = "Success", message = "Updated synonyms" },
-        //            Formatting = Newtonsoft.Json.Formatting.None
-        //        };
-        //    }
-        //    else
-        //    {
-        //        return new JsonNetResult
-        //        {
-        //            Data = new { type = "error", title = "An error occured", message = message },
-        //            Formatting = Newtonsoft.Json.Formatting.None
-        //        };
-        //    }
-        //}
-
-        //[ValidateHttpAntiForgeryToken, HttpPost]
-        //[Route("synonyms/edit")]
-        //public JsonResult EditSynonym(HierarchyPostModel model)
-        //{
-        //    var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
-
-        //    if (intersectMap == null)
-        //        return null;
-
-        //    intersectMap.PredicateID = model.PredicateID;
-        //    Company.Update(intersectMap);
-
-        //    return null;
-
-        //}
-
-        //[HttpDelete]
-        //[Route("synonyms/delete/{id:int}")]
-        //public JsonResult DeleteSynonym(int id)
-        //{
-
-        //    try
-        //    {
-        //        var model = Company.GetById<IntersectMap>(id);
-        //        var group = Company.Filter<IntersectMapGroup>(g => g.IntersectMapID == id).FirstOrDefault();
-        //        if (model == null) throw new NotFoundException("hierarchy");
-
-        //        Company.Delete(model);
-
-        //        if (group != null)
-        //            Company.Delete(group);
-
-        //        return null;//return jsonSuccess("Item successfully removed.", id.ToString(), "hierarchy", "delete", HttpStatusCode.OK, new { IntersectMapId = model.ID });
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return null; //return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        SendException(ex);
-        //        return null; // return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-//        [HttpGet, Route("{type}/{id:int}/synonyms")]
-//        public JsonNetResult GetSynonyms(SystemObjects type, int id)
-//        {
-//            var sql = @"
-//select	D.ID,
-//		D.TextPath as Name,
-//		DT.Name as Type
-//from	(
-//		select	distinct
-//				RT.TargetObjectType,
-//				RT.TargetObjectID 
-//		from	utility.RelationshipTypes RT
-//				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-//				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
-//		) T
-//		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
-//		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
-
-//            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id = id });
-
-//            return new JsonNetResult
-//            {
-//                Data = results,
-//                Formatting = Formatting.None
-//            };
-//        }
-
-//        [HttpGet, Route("synonyms/artifacts")]
-//        public JsonNetResult GetSynonymArtifacts(SystemObjects type, int id)
-//        {
-//            var sql = @"
-//select	D.ID,
-//		D.TextPath as Name,
-//		DT.Name as Type
-//from	(
-//		select	distinct
-//				RT.TargetObjectType,
-//				RT.TargetObjectID 
-//		from	utility.RelationshipTypes RT
-//				inner join IntersectTypePredicate IP on IP.IntersectTypeID = RT.IntersectTypeID and RT.SourceObjectType = @type and RT.SourceObjectID = @id
-//				inner join [Predicate] P on IP.PredicateType = P.Type and P.Type = 6
-//		) T
-//		inner join Artifact D on D.ArtifactTypeID = T.TargetObjectID
-//		inner join ArtifactType DT on DT.ID = D.ArtifactTypeID";
-
-//            var results = Company.Query<dynamic>(sql, new { type = type.ToString(), id });
-
-
-//            return new JsonNetResult
-//            {
-//                Data = results,
-//                Formatting = Newtonsoft.Json.Formatting.None
-//            };
-//        }
-
-        #endregion Synonym
-
         //void processSourceLevel(List<SourcesToObjectModel> list, int id)
         //{
 
@@ -1003,9 +804,11 @@ select	IntersectTypeID,
 				    TargetObjectID,
 				    ID.TextPath,
                     2 as [Level]
-		from	    [utility].[RelationshipTypes] I
-				    inner join cache.ObjectDetails ID on ID.[Object] = I.TargetObjectType and ID.ObjectID = I.TargetObjectID
-		where	    SourceObjectType = 'IntersectType' and SourceObjectID = O.IntersectTypeID
+		from	    IntersectType I
+				    inner join cache.ObjectDetails ID on ( 
+                        (ID.[Object] = I.Object and ID.ObjectID = I.ObjectID and I.Subject = 'IntersectType' and I.SubjectID = O.IntersectTypeID) OR
+                        (ID.[Object] = I.Subject and ID.ObjectID = I.SubjectID and I.Object = 'IntersectType' and I.ObjectID = O.IntersectTypeID)
+                    )
         order by    ID.TextPath
 		for         xml path('relationships'), TYPE
 		),
@@ -1016,9 +819,11 @@ select	IntersectTypeID,
 		order by    P.Name
         for         xml path('predicates'), TYPE
 		)
-from	    [utility].[RelationshipTypes] O
-		    inner join cache.ObjectDetails OD on OD.[Object] = O.TargetObjectType and OD.ObjectID = O.TargetObjectID 
-where	    SourceObjectType = @type and SourceObjectID = @id
+from	    IntersectType O
+		    inner join cache.ObjectDetails OD on (
+                (OD.[Object] = O.Object and OD.ObjectID = O.ObjectID and O.Subject = @type and O.SubjectID = @id) OR
+                (OD.[Object] = O.Subject and OD.ObjectID = O.SubjectID and O.Object = @type and O.ObjectID = @id)
+            )
 order by    OD.TextPath
 for		    xml path('relationship'), root('item')
 ";

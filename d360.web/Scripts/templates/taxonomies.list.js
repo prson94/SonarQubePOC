@@ -104,6 +104,22 @@
                 } catch (e) { }
             }
 
+            function showLineage() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Lineage?type=Taxonomy&id=' + selectedID);
+            }
+
+            function showImpact() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Impact?type=Taxonomy&id=' + selectedID);
+            }
+
             function treeSelect(evt) {
 
                 // event args.
@@ -165,6 +181,8 @@
                 survey = null;
                 $('#AttributesTile').Attributes('destroy');
                 $('#Tree').off('bindingComplete', bindingComplete);
+                $('#ShowImpact').off('click', showImpact);
+                $('#ShowLineage').off('click', showLineage);
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -185,6 +203,9 @@
 
                     $('#AttributesTile').Attributes({ object: 'Taxonomy', objectID: typeID, readOnly: false });
                     $('#SynonymsTile').Synonyms({ object: 'Taxonomy', objectID: 0 });
+                    $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
+
 
                     var updateNodeTitleIndicators = function (name) {
                         var dropDownContent = '<div style="position: relative; margin-left: 3px; margin-top: 5px;">' + name + '</div>';
@@ -199,6 +220,8 @@
                     amplify.subscribe("SaveAction", saveAction);
                     $('#Tree').on('rowSelect', treeSelect);//$("#Tree").on("select", treeSelect);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
+                    $('#ShowImpact').on('click', showImpact);
+                    $('#ShowLineage').on('click', showLineage);
 
                     //#endregion
 

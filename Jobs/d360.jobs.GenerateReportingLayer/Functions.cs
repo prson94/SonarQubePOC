@@ -99,15 +99,16 @@ where	A.{2} = {1}", objectType, typeID, objectTypeKeyName);
             var owningModelColumns = (includeOwningModel) ? "A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, " : "";
             var owningModelJoins = (includeOwningModel) ? "inner join TaxonomyType V on V.ID = A.TaxonomyTypeID " : "";
 
-            var selectSql = string.Format(@"select	A.ID as {0}ID, A.Name as {0}Name, {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
+            var selectSql = string.Format(@"select	A.ID as [{0}ID], A.Name as [{0}Name], {5}[dbo].GenerateObjectUrl('{1}', A.{3}, A.ID) as Url, O.RelationshipType, O.RelationshipTypeID, O.[Count]
 from	{4} A {6}
 		cross apply (
 					select	IT.ID as RelationshipTypeID,
                             IT.Name as RelationshipType,
-							count(N.ID)as [Count]
-					from	IntersectTypeNode ITN
-							inner join IntersectType IT on IT.ID = ITN.IntersectTypeID and ITN.ObjectType = '{1}Type' and ITN.ObjectID = {3}
-							left join IntersectNode N on N.IntersectTypeNodeID = ITN.ID and N.ObjectID = A.ID
+							count(I.ID)as [Count]
+					from	IntersectType IT
+							left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
+					where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
+							and I.ID is null
 					group by IT.ID, IT.Name
 					) O
 where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owningModelColumns, owningModelJoins);
@@ -194,15 +195,16 @@ from	{4} A {6}
 								else cast(0 as bit)
 							end as MissingRelationships
 					from	( 
-							select	case 
-										when count(N.ID) = 0 then cast(1 as bit)
-										else cast(0 as bit)
-									end as O
-							from	IntersectTypeNode ITN
-									inner join IntersectType IT on IT.ID = ITN.IntersectTypeID and ITN.ObjectType = '{1}Type' and ITN.ObjectID = A.{3}
-									left join IntersectNode N on N.IntersectTypeNodeID = ITN.ID and N.ObjectID = A.ID
-							group by ITN.IntersectTypeID having count(N.ID) = 0
-							) R
+					        select	case 
+								        when count(I.ID) = 0 then cast(1 as bit)
+								        else cast(0 as bit)
+							        end as O
+					        from	IntersectType IT
+							        left join [Intersect] I on I.IntersectTypeID = IT.ID and ( (I.Subject = '{1}' and I.SubjectID = A.ID) OR (I.Object = '{1}' and I.ObjectID = A.ID) )
+					        where	( (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) OR (IT.Subject = '{1}Type' and IT.SubjectID = A.{3}) )
+							        and I.ID is null
+					        group by IT.ID having count(I.ID) = 0
+                            ) R
 					) Rel
 		cross apply (
 					select	case 
@@ -283,13 +285,20 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             sql.Append((string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ");
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
-            sql.AppendFormat("select R.IntersectID, A.ID as {0}ID, A.Name as {0}Name, ", name);
+            sql.AppendFormat("select R.ID as IntersectID, A.ID as [{0}ID], A.Name as [{0}Name], ", name);
             if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
-            sql.Append("R.TargetTypeName as TargetType, R.TargetObject as Target, R.TargetObjectID as TargetID, R.TargetObjectName as TargetName, dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as TargetUrl, case R.Classification when 1 then 'Critical' else 'Normal' end as Classification, R.Description, TR.[Count] as ChildRelationshipCount ");
-            sql.Append("from cache.Relationships R ");
-            sql.AppendFormat("inner join {0} A on A.{1} = {2} and R.SourceObject = '{3}' and A.ID = R.SourceObjectID ", tableName, objectTypeKeyName, typeID, objectType);
+            sql.Append(@"case when (R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectTypeName else R.SubjectTypeName end as TargetType, 
+case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Subject end as Target,
+case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
+case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectName else R.SubjectName end as TargetName,
+case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectUrl else R.SubjectUrl end as TargetUrl,
+case R.Classification when 1 then 'Critical' else 'Normal' end as Classification,
+R.Description,
+TR.[Count] as ChildRelationshipCount ");
+            sql.Append("from IntersectDetail R ");
+            sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
             if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
-            sql.Append("outer apply (select	count(1) as [Count] from cache.Relationships where TargetObject = 'Intersect' and TargetObjectID = R.IntersectID) TR");
+            sql.Append("outer apply (select	count(1) as [Count] from [Intersect] where Subject = 'Intersect' and SubjectID = R.ID) TR");
 
             try
             {
@@ -964,7 +973,6 @@ SELECT T.[ID]                                                                as 
       ,T.[TaxonomyTypeID]                             as [Taxonomy Type id]
       ,T.[Name]                                                  as [Taxonomy Name]
       ,T.[Description]                         as [Taxonomy Description]
-      ,T.[Path]
       ,T.[TextPath]
       ,T.[Level]                                                    as [Taxonomy Level]
       ,T.[UpdatedOn]                                        
@@ -1157,16 +1165,12 @@ SELECT [ResponsibilityID]
                         viewNames.Add(objectName);
 
                         selectSql = @"
-SELECT [IntersectID]
-      ,[SourceIntersectTypeNodeID]
-      ,[SourceObject]
-      ,[SourceObjectID]
-      ,[TargetIntersectTypeNodeID]
-      ,[TargetObject]
-      ,[TargetObjectID]
-      ,[SourceIntersectNodeID]
-      ,[TargetIntersectNodeID]
-  FROM [cache].[Relationship]";
+SELECT ID as [IntersectID]
+      ,Subject as [SourceObject]
+      ,SubjectID as [SourceObjectID]
+      ,Object as [TargetObject]
+      ,ObjectID as [TargetObjectID]
+  FROM [Intersect]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1253,7 +1257,7 @@ from	Workflow W
                         viewNames.Add(objectName);
 
                         selectSql = @"
-    select	R.IntersectID,
+    select	R.ID as IntersectID,
 		    case R.Classification 
 			    when 1 then 'Critical' 
 			    else 'Normal' 
@@ -1275,16 +1279,15 @@ from	Workflow W
 		    TL.Name as TargetLevelName,
 		    dbo.GenerateObjectUrl('Taxonomy', T.TaxonomyTypeID, T.ID) as TargetUrl,
 		    TC.Name as TargetClass
-    from	cache.Relationships R
-		    inner join Taxonomy S on S.ID = R.SourceObjectID
-		    inner join Taxonomy T on T.ID = R.TargetObjectID
+    from	[Intersect] R
+		    inner join Taxonomy S on R.Subject = 'Taxonomy' and S.ID = R.SubjectID
+		    inner join Taxonomy T on R.Object = 'Taxonomy' and T.ID = R.ObjectID
 		    inner join TaxonomyType ST on ST.ID = S.TaxonomyTypeID
             inner join TaxonomyTypeClass SC on SC.ID = ST.TaxonomyTypeClassID
             left join TaxonomyTypeLevel SL on SL.TaxonomyTypeID = S.TaxonomyTypeID and S.[Level] = SL.[Level]
 		    inner join TaxonomyType TT on TT.ID = T.TaxonomyTypeID
             inner join TaxonomyTypeClass TC on TC.ID = TT.TaxonomyTypeClassID
-		    left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.TaxonomyTypeID and T.[Level] = TL.[Level]
-    where	R.SourceObject = 'Taxonomy' and R.TargetObject = 'Taxonomy'";
+		    left join TaxonomyTypeLevel TL on TL.TaxonomyTypeID = T.TaxonomyTypeID and T.[Level] = TL.[Level]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

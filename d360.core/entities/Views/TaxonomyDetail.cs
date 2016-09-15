@@ -16,9 +16,6 @@ namespace d360.core.entities
         [DataMember]
         public string Description { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string Path { get; set; }
-
         [DataMember]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string TextPath { get; set; }

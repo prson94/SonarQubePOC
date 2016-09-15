@@ -20,8 +20,6 @@ namespace d360.core.entities
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
 
-        public virtual Intersect Intersect { get; set; }
-
         public virtual IntersectTypeNode IntersectTypeNode { get; set; }
     }
 }

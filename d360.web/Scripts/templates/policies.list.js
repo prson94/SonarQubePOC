@@ -74,12 +74,6 @@
                         PolicyStatusKpi('StatusTile', contextList, permissions, iID);
                         PeopleResponsibilityTile('Responsibilities', contextList, permissions, iType, iID, '');
 
-                        if (CompanySettings.UseNewRelationships == 'true')
-                            NewLineageDiagram('SourcingTile', iType, iID, true);
-                        else
-                            LineageDiagram('SourcingTile', iType, iID, true);
-
-                        //LineageDiagram('SourcingTile', iType, iID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', iType, iID, permissions);
                     }
                     permissions.GetPermissionsForObject(iType, iID).then(loadPermissionsDependentTiles);
@@ -94,15 +88,6 @@
                     switch (data.context) {
                         case contextList.Intersect:
                             RelationshipAggregatesTile('AggregatesTileContainer', type, policyID, permissions);
-                            break;
-                        case contextList.SourceToTarget:
-
-                            if (CompanySettings.UseNewRelationships == 'true')
-                                NewLineageDiagram('SourcingTile', type, policyID, true);
-                            else
-                                LineageDiagram('SourcingTile', type, policyID, true);
-
-                            //LineageDiagram('SourcingTile', type, policyID, true);
                             break;
                         case contextList.Policy:
                             $("#PolicyGrid").jqxTreeGrid('updateBoundData');
@@ -126,11 +111,29 @@
                 }
             }
 
+            function showLineage() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Lineage?type=Policy&id=' + policyID);
+            }
+
+            function showImpact() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Impact?type=Policy&id=' + policyID);
+            }
+
             function unsubscribe(data) {
                 PolicyGridAdapter = null;
                 PolicyGridSource = null;
                 statisticsTileVm = null;
 
+                $('#ShowImpact').off('click', showImpact);
+                $('#ShowLineage').off('click', showLineage);
 
                 $('#AttributesTile').Attributes('destroy');
                 $("#PolicyGrid").off("rowSelect", policyGridRowSelect);
@@ -149,6 +152,8 @@
 
                     $('#SideIcons').PageTools({ type: 'PolicyType', id: policyTypeID, context: 'root' });
                     $('#AttributesTile').Attributes({ object: 'Policy', objectID: 0, readOnly: false });
+                    $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
 
                     statisticsTileVm = new PolicyRuleStatisticsTileModel(type, 0);
                     ko.applyBindings(statisticsTileVm, document.getElementById('StatisticsTile'));
@@ -217,6 +222,8 @@
                     amplify.subscribe("SaveAction", saveAction);
                     amplify.subscribe(AmplifyActions.Unsubscribe, unsubscribe);
                     amplify.subscribe("RefreshActionMenu", refreshActionMenu);
+                    $('#ShowImpact').on('click', showImpact);
+                    $('#ShowLineage').on('click', showLineage);
 
                     //#endregion
                 });

@@ -85,13 +85,6 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
-        public ActionResult FusionConfigurationPromotionRules(int fusionTypeID, int fusionID)
-        {
-            ViewBag.FusionTypeID = fusionTypeID;
-            ViewBag.FusionID = fusionID;
-            return PartialView();
-        }
-
         public ActionResult FusionRules(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;

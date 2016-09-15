@@ -1,4 +1,4 @@
-System.register(['@angular/core', '@angular/platform-browser', './app.component', '@angular/forms', './app.routes', '@angular/http', './pipes/pipes.module', './components/search/search.module', './components/workflow/workflow.module', './components/shared/shared.module', 'primeng/primeng', './components/admin/index', './components/artifact/index', './components/community/index', './components/diagnostic/index', './components/forms/index', './components/fusion/index', './components/header/index', './components/home/home.component', './components/model/index', './components/monitor/index', './components/navbar/navbar.component', './components/navbar/navbar-item.component', './components/navbar/navbar-menu.component', './components/parts/index', './components/policy/index', './components/reference/index', './components/resource/index', './components/rightsidebar/right-sidebar.component', './components/rightsidebar/right-sidebar-item.component', './components/rule/index', './components/social/index', './components/tiles/index'], function(exports_1, context_1) {
+System.register(['@angular/core', '@angular/platform-browser', './app.component', '@angular/forms', './app.routes', '@angular/http', './pipes/pipes.module', './components/search/search.module', './components/workflow/workflow.module', './components/shared/shared.module', './components/social/social.module', './components/navbar/navbar.module', 'primeng/primeng', './components/admin/index', './components/artifact/index', './components/community/index', './components/diagnostic/index', './components/forms/index', './components/fusion/index', './components/header/index', './components/home/home.component', './components/model/index', './components/monitor/index', './components/parts/index', './components/policy/index', './components/reference/index', './components/resource/index', './components/rightsidebar/right-sidebar.component', './components/rightsidebar/right-sidebar-item.component', './components/rule/index', './components/tiles/index'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, platform_browser_1, app_component_1, forms_1, app_routes_1, http_1, pipes_module_1, search_module_1, workflow_module_1, shared_module_1, primeng_1, index_1, index_2, index_3, index_4, index_5, index_6, index_7, home_component_1, index_8, index_9, navbar_component_1, navbar_item_component_1, navbar_menu_component_1, index_10, index_11, index_12, index_13, right_sidebar_component_1, right_sidebar_item_component_1, index_14, index_15, index_16;
+    var core_1, platform_browser_1, app_component_1, forms_1, app_routes_1, http_1, pipes_module_1, search_module_1, workflow_module_1, shared_module_1, social_module_1, navbar_module_1, primeng_1, index_1, index_2, index_3, index_4, index_5, index_6, index_7, home_component_1, index_8, index_9, index_10, index_11, index_12, index_13, right_sidebar_component_1, right_sidebar_item_component_1, index_14, index_15;
     var AppModule;
     return {
         setters:[
@@ -43,6 +43,12 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
             },
             function (shared_module_1_1) {
                 shared_module_1 = shared_module_1_1;
+            },
+            function (social_module_1_1) {
+                social_module_1 = social_module_1_1;
+            },
+            function (navbar_module_1_1) {
+                navbar_module_1 = navbar_module_1_1;
             },
             function (primeng_1_1) {
                 primeng_1 = primeng_1_1;
@@ -77,15 +83,6 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
             function (index_9_1) {
                 index_9 = index_9_1;
             },
-            function (navbar_component_1_1) {
-                navbar_component_1 = navbar_component_1_1;
-            },
-            function (navbar_item_component_1_1) {
-                navbar_item_component_1 = navbar_item_component_1_1;
-            },
-            function (navbar_menu_component_1_1) {
-                navbar_menu_component_1 = navbar_menu_component_1_1;
-            },
             function (index_10_1) {
                 index_10 = index_10_1;
             },
@@ -109,9 +106,6 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
             },
             function (index_15_1) {
                 index_15 = index_15_1;
-            },
-            function (index_16_1) {
-                index_16 = index_16_1;
             }],
         execute: function() {
             AppModule = (function () {
@@ -160,23 +154,23 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
                             index_2.ArtifactItemComponent,
                             index_2.ArtifactListComponent,
                             index_5.ArtifactTypeForm,
-                            index_16.AttributesTile,
+                            index_15.AttributesTile,
                             index_10.ClaimsMatrixPart,
-                            index_16.ClaimsTile,
+                            index_15.ClaimsTile,
                             index_3.CommunityComponent,
                             index_3.CommunitySummaryComponent,
                             index_4.DiagnosticComponent,
                             index_4.DiagnosticIncorrectTextpathComponent,
-                            index_16.FieldDefinitionTile,
+                            index_15.FieldDefinitionTile,
                             index_5.FieldTypeForm,
-                            index_16.FusionAttributesTile,
+                            index_15.FusionAttributesTile,
                             index_6.FusionComponent,
-                            index_16.FusionConfigurationTile,
-                            index_16.FusionFiltersTile,
+                            index_15.FusionConfigurationTile,
+                            index_15.FusionFiltersTile,
                             index_6.FusionItemComponent,
                             index_6.FusionListComponent,
                             index_5.GroupForm,
-                            index_16.GroupMembersTile,
+                            index_15.GroupMembersTile,
                             index_7.HeaderActionsComponent,
                             index_7.HeaderBreadcrumbComponent,
                             index_7.HeaderBreadcrumbItemComponent,
@@ -185,58 +179,53 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
                             index_7.HeaderTypeaheadSearchComponent,
                             home_component_1.HomeComponent,
                             index_5.LoadForm,
-                            index_16.LoadItemTile,
+                            index_15.LoadItemTile,
                             index_10.MenuPart,
                             index_8.ModelComponent,
                             index_8.ModelItemComponent,
-                            index_16.ModelLevelTile,
+                            index_15.ModelLevelTile,
                             index_8.ModelListComponent,
+                            index_8.ModelItemStructureComponent,
                             index_9.MonitorComponent,
                             index_9.MonitorListComponent,
-                            navbar_component_1.NavBarComponent,
-                            navbar_item_component_1.NavBarItemComponent,
-                            navbar_menu_component_1.NavBarMenuComponent,
-                            index_16.ObjectDefinitionTile,
+                            index_15.ObjectDefinitionTile,
                             index_10.ObjectDetailField,
-                            index_16.ObjectDetailTile,
-                            index_16.ObjectGovernanceTile,
-                            index_16.ObjectRelationshipsTile,
-                            index_16.PeopleResponsibilitiesTile,
+                            index_15.ObjectDetailTile,
+                            index_15.ObjectGovernanceTile,
+                            index_15.ObjectRelationshipsTile,
+                            index_15.PeopleResponsibilitiesTile,
                             index_11.PolicyComponent,
                             index_11.PolicyItemComponent,
-                            index_16.PredicatesTile,
+                            index_15.PredicatesTile,
                             index_12.ReferenceComponent,
                             index_12.ReferenceListComponent,
-                            index_16.RelationshipsTile,
-                            index_16.ReportItemsTile,
-                            index_16.ReportLayoutTile,
+                            index_15.RelationshipsTile,
+                            index_15.ReportItemsTile,
+                            index_15.ReportLayoutTile,
                             index_13.ResourceApiComponent,
                             index_13.ResourceComponent,
-                            index_16.ResourceFollowingGridTile,
-                            index_16.ResourceFollowingTile,
+                            index_15.ResourceFollowingGridTile,
+                            index_15.ResourceFollowingTile,
                             index_13.ResourceItemComponent,
-                            index_16.ResourceResponsibilityGridTile,
-                            index_16.ResourceResponsibilityTile,
+                            index_15.ResourceResponsibilityGridTile,
+                            index_15.ResourceResponsibilityTile,
                             index_5.ResponsibilityItemForm,
                             index_5.ResponsibilityTypeForm,
                             right_sidebar_component_1.RightSidebarComponent,
                             right_sidebar_item_component_1.RightSidebarItemComponent,
                             index_14.RuleComponent,
-                            index_16.RuleDimensionsTile,
+                            index_15.RuleDimensionsTile,
                             index_14.RuleItemComponent,
                             index_14.RuleListComponent,
                             index_10.SimpleAccordion,
                             index_10.SimpleDropdown,
-                            index_15.SocialBoardComponent,
-                            index_15.SocialCommentComponent,
-                            index_15.SocialInputComponent,
-                            index_16.StructureTile,
-                            index_16.SurveyQuestionsTile,
-                            index_16.SynonymsTile,
-                            index_16.ActivityTile,
-                            index_16.AssignmentsTile,
-                            index_16.BoardTile,
-                            index_16.ActivityDetailsTile,
+                            index_15.StructureTile,
+                            index_15.SurveyQuestionsTile,
+                            index_15.SynonymsTile,
+                            index_15.ActivityTile,
+                            index_15.AssignmentsTile,
+                            index_15.BoardTile,
+                            index_15.ActivityDetailsTile,
                             index_5.WorkflowItemForm,
                         ],
                         imports: [
@@ -266,11 +255,16 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
                             primeng_1.TooltipModule,
                             primeng_1.DragDropModule,
                             primeng_1.PaginatorModule,
+                            primeng_1.TreeModule,
+                            primeng_1.OverlayPanelModule,
+                            primeng_1.DataListModule,
                             //d3s modules
                             pipes_module_1.PipesModule,
                             search_module_1.SearchModule,
                             workflow_module_1.WorkflowModule,
                             shared_module_1.SharedModule,
+                            social_module_1.SocialModule,
+                            navbar_module_1.NavbarModule,
                         ],
                         bootstrap: [app_component_1.AppComponent],
                         providers: [platform_browser_1.Title],
@@ -283,3 +277,4 @@ System.register(['@angular/core', '@angular/platform-browser', './app.component'
         }
     }
 });
+//# sourceMappingURL=app.module.js.map

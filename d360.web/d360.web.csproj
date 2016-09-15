@@ -833,6 +833,7 @@
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
+    <Content Include="node_modules\core-js\client\shim.min.js" />
     <Content Include="node_modules\lodash\lodash.min.js" />
     <Content Include="node_modules\primeui\primeui-ng-all.min.css" />
     <Content Include="node_modules\primeui\themes\omega\fonts\roboto-v15-latin-regular.svg" />
@@ -876,8 +877,6 @@
     <Content Include="Scripts\moment-with-locales.min.js" />
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
-    <Content Include="Scripts\parts\NewLineageDiagram.js" />
-    <Content Include="Scripts\parts\NewLineageDiagram2.js" />
     <Content Include="Scripts\parts\Survey.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
@@ -890,8 +889,6 @@
     <Content Include="node_modules\reflect-metadata\Reflect.js" />
     <Content Include="node_modules\rxjs\bundles\Rx.js" />
     <Content Include="node_modules\rxjs\bundles\Rx.min.js" />
-    <Content Include="node_modules\rxjs\bundles\Rx.umd.js" />
-    <Content Include="node_modules\rxjs\bundles\Rx.umd.min.js" />
     <Content Include="node_modules\systemjs\dist\system-csp-production.js" />
     <Content Include="node_modules\systemjs\dist\system-csp-production.src.js" />
     <Content Include="node_modules\systemjs\dist\system-polyfills.js" />
@@ -1063,7 +1060,6 @@
     <Content Include="Scripts\parts\EventStatusBreakdownChart.js" />
     <Content Include="Scripts\parts\FieldsGrid.js" />
     <Content Include="Scripts\parts\FusionAttributeDetailTile.js" />
-    <Content Include="Scripts\parts\FusionAttributePromotionRulesGrid.js" />
     <Content Include="Scripts\parts\FusionConfigurationsGrid.js" />
     <Content Include="Scripts\parts\FusionItemsGrid.js" />
     <Content Include="Scripts\parts\FusionRelationshipChartTile.js" />
@@ -1072,7 +1068,6 @@
     <Content Include="Scripts\parts\GroupMembersGrid.js" />
     <Content Include="Scripts\parts\HierarchyTile.js" />
     <Content Include="Scripts\parts\IntersectTypeRolesGrid.js" />
-    <Content Include="Scripts\parts\LineageDiagram.js" />
     <Content Include="Scripts\parts\LookupTypeItemsGrid.js" />
     <Content Include="Scripts\parts\ObjectDetail.js" />
     <Content Include="Scripts\parts\ObjectStatisticsTile.js" />
@@ -1184,8 +1179,6 @@
     <Content Include="Views\Overlays\AttributeTypeCategories.cshtml" />
     <Content Include="Views\Overlays\FusionConfigurationFilters.cshtml" />
     <Content Include="Views\Overlays\FusionConfigurationHistory.cshtml" />
-    <Content Include="Views\Overlays\FusionConfigurationPromotionRules.cshtml" />
-    <Content Include="Views\Overlays\FusionConfigurationOwnershipRules.cshtml" />
     <Content Include="Views\Shared\OverlayEditableForm.cshtml" />
     <Content Include="Views\Shared\OverlayDeleteForm.cshtml" />
     <Content Include="Views\Shared\FusionAttributeTypeFormTreeControl.cshtml" />

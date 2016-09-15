@@ -4,7 +4,7 @@
     @using (Ajax.BeginForm(new AjaxOptions { HttpMethod = Model.FormMethod, Url = Model.FormUri, OnSuccess = "OnSuccess", OnFailure = "OnFailed", OnBegin = "OnStarting" }))
     {
         <input type="hidden" id="ID" name="ID" value="@(Model.Item.ID)" />
-        <input type="hidden" id="FusionAttributePromotionRuleID" name="FusionAttributePromotionRuleID" value="@(Model.Item.RuleID)" />
+        <input type="hidden" id="RuleID" name="RuleID" value="@(Model.Item.RuleID)" />
         <input type="hidden" id="FusionAttributeID" name="FusionAttributeID" />
         <div class="row">
             <div class="col s10">

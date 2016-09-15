@@ -4576,6 +4576,8 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID
     //indexes
     self.selectedBusinessSourceStepIndex = ko.observable(-1);
     self.selectedBusinessTargetStepIndex = ko.observable(-1);
+    self.selectedTechnicalSourceStepIndex = ko.observable(-1);
+    self.selectedTechnicalTargetStepIndex = ko.observable(-1);
     self.selectedRoleIndex = ko.observable(-1);
 
     //arrays
@@ -4585,6 +4587,8 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID
     //initial values
     self.initialBusinessSourceStep = '';
     self.initialBusinessTargetStep = '';
+    self.initialTechnicalSourceStep = '';
+    self.initialTechnicalTargetStep = '';
     self.initialRole = '';
 
     //#region subscriptions
@@ -4621,6 +4625,14 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID
                     self.initialBusinessTargetStep = '';
                     self.selectedBusinessTargetStepIndex(idx);
                 }
+                if (self.initialTechnicalSourceStep == val.ID) {
+                    self.initialTechnicalSourceStep = '';
+                    self.selectedTechnicalSourceStepIndex(idx);
+                }
+                if (self.initialTechnicalTargetStep == val.ID) {
+                    self.initialTechnicalTargetStep = '';
+                    self.selectedTechnicalTargetStepIndex(idx);
+                }
             })
         }).always(function () {
             self.IsLoading(false);
@@ -4651,9 +4663,11 @@ var promotionStepLineageActionViewModel = function (ruleID, ruleStepID, fusionID
         self.LoadSteps();
     }
 
-    self.SetInitialValues = function (sourceBusinessStep, targetBusinessStep, role) {
+    self.SetInitialValues = function (sourceBusinessStep, targetBusinessStep, sourceTechnicalStep, targetTechnicalStep, role) {
         self.initialBusinessSourceStep = sourceBusinessStep;
         self.initialBusinessTargetStep = targetBusinessStep;
+        self.initialTechnicalSourceStep = sourceTechnicalStep;
+        self.initialTechnicalTargetStep = targetTechnicalStep;
         self.initialRole = role;
     }
 }
@@ -4947,6 +4961,7 @@ var promotionStepFindActionViewModel = function (ruleID, ruleStepID, ruleObjectI
             self.initialOwnerRule = objectID;
         }
         else if (searchType.toUpperCase() == 'FUSION') {
+            self.initialFindField = filterField;
             self.selectedFindSearchTypeIndex(3);
             self.initialFusionAttribute = objectID;
         } else if (searchType.toUpperCase() == 'PROMOTION') {

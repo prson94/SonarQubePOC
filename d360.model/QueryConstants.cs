@@ -367,9 +367,9 @@ where   ExecutionID = {0}";
         public static string FilterableAttributeTypesByTypeList = @"
 with relations as	(
 					select	'IntersectType' as [Type],
-							IntersectTypeID as ID
-					from	[utility].[RelationshipTypes]
-					where	SourceObjectType = @type and SourceObjectID = @id
+							ID
+					from	IntersectType
+					where	(Subject = @type and SubjectID = @id) OR (Object = @type and ObjectID = @id)
 					union
 					select	@type as [Type],
 							@id as ID
@@ -478,20 +478,6 @@ else
         order by	Name
 	end";
 
-        public static string FusionOwnershipRuleList = @"
-select	I.ID,
-        I.FusionAttributeOwnerRuleID,
-        I.FusionAttributeID,
-        case 
-			when F.FusionAttributeTypeID = FT.ID then F.TextPath
-			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-		end as FusionAttributeName
-from	FusionAttributeOwnerRuleItem I
-		inner join FusionAttributeOwnerRule R on R.ID = I.FusionAttributeOwnerRuleID
-		inner join FusionAttributeType FT on FT.ID = R.ObjectID
-		left join FusionAttribute F on F.ID = I.FusionAttributeID
-where   I.FusionAttributeOwnerRuleID = @id";
-
         public static string FusionPromotionChildAttributeNodeList = @"
 declare @tbl table (ID int, ParentID int);
 
@@ -519,8 +505,8 @@ if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
 					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
         where       A.ID not in (
                                 select  RI.FusionAttributeID
-                                from    FusionAttributePromotionRuleItem RI
-                                        inner join FusionAttributePromotionRule R on R.ID = RI.FusionAttributePromotionRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
+                                from    fusion.RuleItem RI
+                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
                                 )
 		order by	A.Name
 	end
@@ -537,8 +523,8 @@ else
 								and A.FusionID = @fusionID
         where       A.ID not in (
                                 select  RI.FusionAttributeID
-                                from    FusionAttributePromotionRuleItem RI
-                                        inner join FusionAttributePromotionRule R on R.ID = RI.FusionAttributePromotionRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
+                                from    fusion.RuleItem RI
+                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
                                 )
         order by	Name
 	end";
@@ -557,32 +543,6 @@ from	[fusion].[RuleItem] I
         left join FusionAttribute F on F.ID = I.FusionAttributeID
 where   I.RuleID = @id
         ";
-
-        public static string FusionPromotionRuleList = @"
-select	I.ID,
-        I.FusionAttributePromotionRuleID,
-        I.FusionAttributeID,
-        case 
-			when F.FusionAttributeTypeID = FT.ID then F.TextPath
-			else coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-		end as FusionAttributeName
-from	FusionAttributePromotionRuleItem I
-		inner join FusionAttributePromotionRule R on R.ID = I.FusionAttributePromotionRuleID
-		inner join FusionAttributeType FT on FT.ID = R.ObjectID
-        left join FusionAttribute F on F.ID = I.FusionAttributeID
-where   I.FusionAttributePromotionRuleID = @id";
-
-        public static string FusionPromotionRuleMappingList = @"
-select	I.ID,
-        I.FusionAttributePromotionRuleID,
-        I.SourceFieldTypeID,
-        coalesce(I.SourceFieldName, SF.FriendlyName + ' (' + SF.Name + ')') as SourceFieldName,
-        I.TargetFieldTypeID,
-        coalesce(I.TargetFieldName, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
-from	FusionAttributePromotionRuleMapping I
-		left join FieldType SF on SF.ID = I.SourceFieldTypeID
-		left join FieldType TF on TF.ID = I.TargetFieldTypeID
-where   I.FusionAttributePromotionRuleID = @id";
 
         public static string FusionRuleMappingList = @"
 select	I.ID,
@@ -883,35 +843,20 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
         public static string ObjectRelationships = @"
 select	ID,
         IntersectTypeID,
-        Object,
-		ObjectID,
-		ObjectName as Name,
-        ObjectUrl as Url,
-		ObjectType as Type,
-		ObjectTypeID as TypeID,
-		ObjectTypeName as TypeName,
-        ObjectIconBackColor as IconBackColor,
-		ObjectIconForeColor as IconForeColor,
-		ObjectIconText as IconText,
+        case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
+		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
+		case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end as Name,
+        case when (Subject = @type and SubjectID = @id) then ObjectUrl else SubjectUrl end as Url,
+		case when (Subject = @type and SubjectID = @id) then ObjectType else SubjectType end as Type,
+		case when (Subject = @type and SubjectID = @id) then ObjectTypeID else SubjectTypeID end as TypeID,
+		case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end as TypeName,
+        case when (Subject = @type and SubjectID = @id) then ObjectIconBackColor else SubjectIconBackColor end as IconBackColor,
+		case when (Subject = @type and SubjectID = @id) then ObjectIconForeColor else SubjectIconForeColor end as IconForeColor,
+		case when (Subject = @type and SubjectID = @id) then ObjectIconText else SubjectIconText end as IconText,
         Classification
 from	IntersectDetail
-where	Subject = @type and SubjectID = @id
-union
-select	ID,
-        IntersectTypeID,
-        Subject as Object,
-		SubjectID as ObjectID,
-		SubjectName as Name,
-        SubjectUrl as Url,
-		SubjectType as Type,
-		SubjectTypeID as TypeID,
-		SubjectTypeName as TypeName,
-		SubjectIconBackColor as IconBackColor,
-		SubjectIconForeColor as IconForeColor,
-		SubjectIconText as IconText,
-        Classification
-from	IntersectDetail
-where	Object = @type and ObjectID = @id
+where	(Subject = @type and SubjectID = @id) or (Object = @type and ObjectID = @id)
+order by case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end
 ";
 
         public static string PolicySettingsItem = @"
@@ -927,27 +872,27 @@ from	PolicyType T
 					) R
 where	T.ID = @id";
 
-        public static string PredicateInfoByAllocationList = @"
-select	p.id, p.name, p.type 
-from	predicate p
-		join intersecttypepredicate t on t.predicatetype = p.[type] 
-									and t.intersecttypeid in (
-															select	t.intersecttypeid 
-															from	intersectmap m
-																	join intersectnode n on n.id = subjectintersectnodeid
-																	join intersecttypenode t on t.id = n.intersecttypenodeid
-															where	m.id = @id
-															union all
-															select	t.intersecttypeid 
-															from	intersectmap m
-																	join intersectnode n on n.id = objectintersectnodeid
-																	join intersecttypenode t on t.id = n.intersecttypenodeid
-															where	m.id = @id
-															)
-where	p.type = (select type from intersectmap where id = @id)";
+//        public static string PredicateInfoByAllocationList = @"
+//select	p.id, p.name, p.type 
+//from	predicate p
+//		join intersecttypepredicate t on t.predicatetype = p.[type] 
+//									and t.intersecttypeid in (
+//															select	t.intersecttypeid 
+//															from	intersectmap m
+//																	join intersectnode n on n.id = subjectintersectnodeid
+//																	join intersecttypenode t on t.id = n.intersecttypenodeid
+//															where	m.id = @id
+//															union all
+//															select	t.intersecttypeid 
+//															from	intersectmap m
+//																	join intersectnode n on n.id = objectintersectnodeid
+//																	join intersecttypenode t on t.id = n.intersecttypenodeid
+//															where	m.id = @id
+//															)
+//where	p.type = (select type from intersectmap where id = @id)";
 
-        public static string PredicateInfoByTypeList = @"
-select id, name from predicate where type = @type";
+//        public static string PredicateInfoByTypeList = @"
+//select id, name from predicate where type = @type";
 
         public static string PromotionHistoryList = @"
 select	ID,
@@ -980,21 +925,21 @@ from	AttributeTypeRelation atr
 		cross apply (select count(1) as fieldCount from AttributeType where ParentID = atr.AttributeTypeID) ch
 order by	at.Name";
 
-        public static string RelationshipTypeList = @"
-select  R.ID,
-		R.Subject,
-		R.SubjectID,
-		SD.TextPath as SubjectName,
-		R.Object,
-		R.ObjectID,
-		TD.TextPath as ObjectName,
-        R.PredicateType
-from	RelationType R
-		left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
-		left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
---where R.IsSystem = 0
-order by    SD.Name,
-			TD.Name";
+//        public static string RelationshipTypeList = @"
+//select  R.ID,
+//		R.Subject,
+//		R.SubjectID,
+//		SD.TextPath as SubjectName,
+//		R.Object,
+//		R.ObjectID,
+//		TD.TextPath as ObjectName,
+//        R.PredicateType
+//from	RelationType R
+//		left join cache.ObjectDetails SD on SD.[Object] = R.Subject and SD.ObjectID = R.SubjectID
+//		left join cache.ObjectDetails TD on TD.[Object] = R.Object and TD.ObjectID = R.ObjectID
+//--where R.IsSystem = 0
+//order by    SD.Name,
+//			TD.Name";
 
         public static string ResponsibilityList = @"
 select distinct  

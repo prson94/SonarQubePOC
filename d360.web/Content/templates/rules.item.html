@@ -30,9 +30,12 @@
                 <div id="EventHeadersTile" class="tile tile-detail"></div>
                 <div id="EventsTile" class="tile tile-detail"></div>
                 <div id="GovernanceTile" class="tile tile-detail"></div>
-                <div id="SourcingTile" class="tile tile-detail" style="margin-bottom: 15px"></div>
             </div>
             <div class="col s12 m4 l4">
+                <div id="PanelButtonsTile" class="root-tile" style="text-align: right">
+                    <button id="ShowImpact"><i class="fa fa-lg fa-warning green-text"></i>Display Impact</button>
+                    <button id="ShowLineage"><i class="fa fa-lg fa-code-fork green-text"></i>Display Lineage</button>
+                </div>
                 <div id="StatisticsTile" class="tile tile-detail" style="height: 100%" data-bind="template: {name: 'policyRuleStatisticsTileTmpl' }"></div>
                 <div id="AggregatesTileContainer" class="tile tile-detail"></div>
                 <div id="Fields" class="tile tile-detail" style="display:none"></div>

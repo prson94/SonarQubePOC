@@ -123,9 +123,8 @@
             function unsubscribe(data) {
                 survey = null
                 $('#AttributesTile').Attributes('destroy');
-                if (CompanySettings.UseNewRelationships == 'true') {
-                    $('#ShowLineage').off('click', showLineage);
-                }
+                $('#ShowImpact').off('click', showImpact);
+                $('#ShowLineage').off('click', showLineage);
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
                 amplify.unsubscribe("SaveAction", saveAction);
@@ -145,27 +144,16 @@
                     survey = new Survey('Survey', type, id, 'ArtifactType', typeID);
                     ObjectDetail('DetailTile', type, id);
 
-                    if (CompanySettings.UseNewRelationships == 'true') {
-                        $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
-                        $('#ShowImpact').on('click', showImpact);
-                        $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
-                        $('#ShowLineage').on('click', showLineage);
-                    }
-                    else {
-                        $('#PanelButtonsTile').hide();
-                    }
+                    $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowImpact').on('click', showImpact);
+                    $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowLineage').on('click', showLineage);
 
                     var loadPermissionsDependentTiles = function () {
                         ObjectStatisticsTile('MicroWidget1', type, id);
 
                         RelationshipAggregatesTile('AggregatesTile', type, id, permissions);
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, id, '');
-
-                        if (CompanySettings.UseNewRelationships != 'true') {
-                            $('#SourcingTile').addClass("tile");
-                            $('#SourcingTile').addClass("tile-detail");
-                            LineageDiagram('SourcingTile', type, id, false);
-                        }
 
                         CertificationNotificationTile('CertificationNotification', id);
                         ChallengeNotificationTile('ChallengeNotification', contextList, id);

@@ -124,8 +124,6 @@
     function aggregateRelationsOverlayGridRowSelect(event) {
         var row = event.args.row;
         console.log(row.Name);
-        //aggregateRelationsModel.Object = row.Object;
-        //aggregateRelationsModel.ObjectID = (row.Type == 'TaxonomyType') ? row.TypeID : row.ObjectID;
         aggregateRelationsModel.Name = row.Name;
     }
 
@@ -142,13 +140,6 @@
         $('#TechnicalRelationDetail').load('/parts/' + row.Object + '/' + row.ObjectID + '/detail');
         ObjectDetail('ChildRelationshipDetail', 'Intersect', row.ID);
     }
-
-    //function lineageShow(event) {
-    //    $('#main-rel').hide();
-    //    $('#lineage').show();
-    //    $('#lineage_heading').text('Lineage for ' + aggregateRelationshipSourceName + ' / ' + aggregateRelationsModel.Name);
-    //    LineageDiagram('DiagramTile', aggregateRelationsModel.Object, aggregateRelationsModel.ObjectID, true);
-    //}
 
     function fusionShow(event) {
         $('#main-rel').hide();

@@ -94,3 +94,4 @@ System.register(['@angular/core', './services/index', './components/rightsidebar
         }
     }
 });
+//# sourceMappingURL=app.component.js.map

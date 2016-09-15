@@ -49,8 +49,5 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual IntersectType IntersectType { get; set; }
-
-        [IgnoreDataMember, ForeignKey("IntersectID")]
-        public virtual ICollection<IntersectNode> Nodes { get; set; }
     }
 }

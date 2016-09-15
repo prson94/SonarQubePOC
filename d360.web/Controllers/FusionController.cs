@@ -561,7 +561,7 @@ from	h", new { id = fusionID });
                     {
                         getDynamicFieldJoinStatements(parentFusionAttributeTypeID.Value, "FusionAttribute", out joins, out columns, false);
 
-                        intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", parentFusionAttributeTypeID.Value);
+                        intersectSql = string.Format(@"select ID from [IntersectType] where (Subject = 'FusionAttributeType' and SubjectID = {0}) OR (Object = 'FusionAttributeType' and ObjectID = {0})", parentFusionAttributeTypeID.Value);
                         intersects = Company.Query<int>(intersectSql).Distinct().ToList();
                     }
 
@@ -592,18 +592,17 @@ from	FusionAttribute A {1}
 outer apply (
 			select	{2}
 			from	(
-					select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+					select	'IntersectType' + cast(RT.ID as varchar(10)) as [IntersectType],
 							count(R.IntersectTypeID) as [Count]
 					from	(
-							select	IntersectTypeID 
-							from	utility.RelationshipTypes 
-							where	SourceObjectType = 'FusionAttributeType'
-									and SourceObjectID = A.FusionAttributeTypeID
+							select	ID 
+							from	[IntersectType]
+							where	(Subject = 'FusionAttributeType' and SubjectID = A.FusionAttributeTypeID) OR (Object = 'FusionAttributeType' and ObjectID = A.FusionAttributeTypeID)
 							) RT
-							left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+							left join cache.Relationships R on R.IntersectTypeID = RT.ID 
 																and R.SourceObject = 'FusionAttribute'
 																and R.SourceObjectID = A.ID
-					group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+					group by 'IntersectType' + cast(RT.ID as varchar(10))
 					) as I
 			pivot	(
 					min([Count]) for [IntersectType] in ({3})
@@ -747,12 +746,13 @@ select * from h where ID <> @t order by h.[Level] desc;
             #region Intersects
 
             var intersectSql = $@"
-select  distinct
-        T.ID,
-        T.Name  
-from    utility.RelationshipTypes V 
-        inner join IntersectType T on T.ID = V.IntersectTypeID and V.SourceObjectType = '{type}' and V.SourceObjectID = {fusionAttributeTypeID}
-order by T.Name";
+select      distinct
+            ID,
+            Name  
+from        IntersectType 
+where       (Subject = '{type}' and SubjectID = {fusionAttributeTypeID})
+            or (Object = '{type}' and ObjectID = {fusionAttributeTypeID})
+order by    Name";
             var intersects = Company.Query<dynamic>(intersectSql).Distinct().ToList();
 
             intersects.ForEach(i =>
@@ -785,18 +785,18 @@ order by T.Name";
         outer apply (
 	                select	{intersectColumns}
 	                from	(
-			                select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
+			                select	'IntersectType' + cast(RT.ID as varchar(10)) as [IntersectType],
 					                count(R.IntersectTypeID) as [Count]
 			                from	(
-					                select	IntersectTypeID 
-					                from	utility.RelationshipTypes 
-					                where	SourceObjectType = 'FusionAttributeType'
-							                and SourceObjectID = A.FusionAttributeTypeID
+					                select	ID 
+					                from	[IntersectType]
+					                where	(Subject = 'FusionAttributeType' and SubjectID = A.FusionAttributeTypeID) 
+                                            OR (Object = 'FusionAttributeType' and ObjectID = A.FusionAttributeTypeID)
 					                ) RT
-					                left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
+					                left join cache.Relationships R on R.IntersectTypeID = RT.ID 
 														                and R.SourceObject = 'FusionAttribute'
 														                and R.SourceObjectID = A.ID
-			                group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
+			                group by 'IntersectType' + cast(RT.ID as varchar(10))
 			                ) as I
 	                pivot	(
 			                min([Count]) for [IntersectType] in ({intersectColumns.Replace("P.", "")})
@@ -1119,55 +1119,6 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
         }
-
-//        /// <summary>
-//        /// Gets fusion attribute types based on the given fusion type and possible parent attribute type
-//        /// </summary>
-//        /// <param name="t">The fusion type ID</param>
-//        /// <param name="p">The parent fusion attribute type (optional)</param>
-//        /// <returns>A list of fusion attributes types.</returns>
-//        public JsonNetResult _AttributeTypesByParentType(int t, int? p)
-//        {
-//            Trace.TraceInformation("Calling FusionController._AttributeTypesByParentType : t={0};p={1}", t, p);
-
-//            string sql = 
-//@"select	T.ID,
-//			T.Name,
-//			C.IsLeaf
-//from	    FusionAttributeType T
-//			cross apply (
-//						SELECT	case 
-//									when COUNT(1) > 0 then CAST(0 as bit) 
-//									else 1
-//								end as IsLeaf 
-//						FROM	FusionAttributeType 
-//						where	ParentID = T.ID
-//						) C
-//	where	T.FusionTypeID = @t";
-//            sql += (p.HasValue) ? " and T.ParentID = @p" : " and T.ParentID is null";
-//            sql +=  " order by T.Name";
-
-//            var query = Company.Query<dynamic>(sql, new { t = t, p = p });
-
-//            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-//        }
-
-        /// <summary>
-        /// Gets ownership and promotion rule counts by a specific fusion configuration.
-        /// </summary>
-        /// <param name="id">The Configuration ID</param>
-        /// <returns></returns>
-        //public JsonResult GetFusionRuleStatistics(int id)
-        //{
-        //    var model = new
-        //    {
-        //        OwnershipRuleCount = Company.Count<FusionAttributeOwnerRule>(i => i.FusionID == id),
-        //        PromotionRuleCount = Company.Count<FusionAttributePromotionRule>(i => i.FusionID == id)
-        //    };
-
-        //    return Json(model, JsonRequestBehavior.AllowGet);
-        //}
-
 
         [Route("details/{type}/{id:int}")]
         public JsonResult FusionItemDetails(SystemObjects type, int id)

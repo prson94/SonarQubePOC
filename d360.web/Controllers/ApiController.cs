@@ -418,7 +418,7 @@ namespace d360.web.Controllers
 
                     //Load any fields that are displayed on relationships so we can show them as 
                     // filters in the grid
-                    IEnumerable<int> intersectTypeIDs = Company.Query<int>("select  intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = id });
+                    IEnumerable<int> intersectTypeIDs = Company.Query<int>("select ID from [IntersectType] where (Subject = 'ArtifactType' and SubjectID = @objectid) OR (Object = 'ArtifactType' and ObjectID = @objectid)", new { objectid = id });
 
                     if (intersectTypeIDs.Any())
                     {
@@ -1161,9 +1161,6 @@ where   h.ID <> @t order by h.[Level] desc;
                             //list.Add(new PageActionItem { Context = "FusionConfigurationFilters", Icon = "filter", Title = "Filters", Uri = string.Format("/overlays/FusionConfigurationFilters?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "history", Title = "History", Uri = string.Format("/overlays/FusionConfigurationHistory?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
                             //list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "bolt", Title = "Ownership Rules", Uri = string.Format("/overlays/FusionConfigurationOwnershipRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
-
-                            //old promotion to be removed
-                            //list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "arrow-up", Title = "Promotion Rules", Uri = string.Format("/overlays/FusionConfigurationPromotionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
 
                             //new promotion
                             list.Add(new PageActionItem { Context = "FusionConfigurationHistory", Icon = "map", Title = "Fusion Rules", Uri = string.Format("/overlays/FusionRules?fusionTypeID={0}&fusionID={1}", fusion.FusionTypeID, fusion.ID) });
@@ -2034,7 +2031,7 @@ where   h.ID <> @t order by h.[Level] desc;
          [Route("fusion/{typeID:int}/ownership/relationshiptypes")]
         public List<IntersectType> GetAllowedIntersectTypesForFusionOwnership(int typeID)
         {
-            return Company.Filter<IntersectType>(i => !i.Nodes.Any(n => n.ObjectType == "IntersectType")).OrderBy(i => i.Name).ToList();
+            return Company.Filter<IntersectType>(i => i.Subject != "IntersectType" && i.Object != "IntersectType").OrderBy(i => i.Name).ToList();
         }
 
         [Route("fusion/{fusionID:int}/rules")]
@@ -2081,6 +2078,15 @@ where   h.ID <> @t order by h.[Level] desc;
             return rule.FusionRuleSteps.OrderBy(x=>x.Step);
         }
 
+        [Route("fusion/rule/{ruleID:int}/steps/{ruleStepID:int}")]
+        public IEnumerable<dynamic> GetRuleSteps(int ruleID, int ruleStepID)
+        {
+            return Company.Filter<FusionRuleStep>(x => x.RuleID == ruleID && x.ID != ruleStepID)
+                .Select(i => new { Step = i.Step, Description = i.Description, ID = i.ID })
+                .AsEnumerable()
+                .Select(y => new { Description = $"{y.Step} - {y.Description}", ID = y.ID });            
+        }
+
         [Route("fusion/rule/actions")]
         public IEnumerable<dynamic> GetActions()
         {
@@ -2096,7 +2102,7 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("fusion/rule/fusionattributetypes")]
         public IQueryable GetFusionAttributeTypes()
         {
-            return Company.FusionAttributeTypes.OrderBy(x => x.Name).Select(x=>new { Name = x.Name, ID = x.ID });            
+            return Company.FusionAttributeTypes.OrderBy(x => x.TextPath).Select(x=>new { Name = x.TextPath, ID = x.ID });            
         }
 
         [Route("fusion/rule/fusionOwnerRules/{fusionID:int}")]
@@ -2184,12 +2190,6 @@ where   h.ID <> @t order by h.[Level] desc;
         //    return Company.Filter<FusionAttributeOwnerDetail>(i => i.FusionID == fusionID);
         //}
 
-        [Route("fusion/rule/{ruleID:int}/steps/{ruleStepID:int}")]
-        public IEnumerable<dynamic> GetRuleSteps(int ruleID, int ruleStepID)
-        {
-            return Company.Filter<FusionRuleStep>(x => x.RuleID == ruleID && x.ID != ruleStepID).Select(i => new { Step = i.Step, Description = i.Description, ID = i.ID }).AsEnumerable().Select(y => new { Description = $"{y.Step} - {y.Description}", ID = y.ID });            
-        }
-
         #endregion
 
         #region Promotion
@@ -2199,46 +2199,13 @@ where   h.ID <> @t order by h.[Level] desc;
         {
             return Company.GetFusionPromotionOptions();
         }
-
-        //[Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotion")]
-        //public IQueryable<FusionAttributePromotionDetail> GetFusionAttributePromotionDetails(int typeID, int fusionID)
-        //{
-        //    return Company.Filter<FusionAttributePromotionDetail>(i => i.FusionID == fusionID);
-        //}
-
-        [Route("fusion/{id:int}/OwnershipRuleItems")]
-        public HttpResponseMessage GetFusionAttributeOwnershipRuleItems(int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.FusionOwnershipRuleList, new { id })
-            );
-        }
         
-        [Route("fusion/{id:int}/PromotionRuleItems")]
-        public HttpResponseMessage GetFusionAttributePromotionRuleItems(int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.FusionPromotionRuleList, new { id })
-            );
-        }
-
         [Route("fusion/{id:int}/FusionRuleItems")]
         public HttpResponseMessage GetFusionRuleItems(int id)
         {
             return Request.CreateResponse(
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(QueryConstants.FusionRuleItemList, new { id })
-            );
-        }
-
-        [Route("fusion/{id:int}/PromotionRuleMappings")]
-        public HttpResponseMessage GetFusionAttributePromotionRuleMappings(int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.FusionPromotionRuleMappingList, new { id })
             );
         }
 
@@ -2321,15 +2288,10 @@ where   h.ID <> @t order by h.[Level] desc;
             {
                 return null;
             }
-            var nodes = intersectType.Nodes.ToList();
-
-            if (nodes.Count >= 2)
+            if (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID)
             {
-                if (nodes[0].ObjectType == nodes[1].ObjectType && nodes[0].ObjectID == nodes[1].ObjectID)
-                {
-                    availableTypes.Add((int)PredicateType.TypeHierarchy);
-                    availableTypes.Add((int)PredicateType.GroupHierarchy);
-                }
+                availableTypes.Add((int)PredicateType.TypeHierarchy);
+                availableTypes.Add((int)PredicateType.GroupHierarchy);
             }
 
             var predicates = Company.Filter<Predicate>(p => availableTypes.Contains((int)p.Type));

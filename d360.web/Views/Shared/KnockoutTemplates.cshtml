@@ -1677,9 +1677,37 @@
                 selectedIndex: selectedBusinessTargetStepIndex
              }"></div>
     </div>
-
+    <div>
+        <div class="FieldName">Source From Step (Technical Relation)</div>
+        <div name="LineageTechnicalSubjectStep"
+             id="LineageTechnicalSubjectStep"
+             data-bind="jqxDropDownList: {
+                placeHolder: 'Choose a step:',
+                source: steps,
+                height: field_height,
+                width: field_width,
+                displayMember: 'text',
+                valueMember: 'value',
+                theme: theme,
+                selectedIndex: selectedTechnicalSourceStepIndex
+             }"></div>
+    </div>
+    <div>
+        <div class="FieldName">Target From Step (Technical Relation)</div>
+        <div name="LineageTechnicalObjectStep"
+             id="LineageTechnicalObjectStep"
+             data-bind="jqxDropDownList: {
+                placeHolder: 'Choose a step:',
+                source: steps,
+                height: field_height,
+                width: field_width,
+                displayMember: 'text',
+                valueMember: 'value',
+                theme: theme,
+                selectedIndex: selectedTechnicalTargetStepIndex
+             }"></div>
+    </div>
 </script>
-
 
 <script id="promotionStepFindActionTmpl" type="text/html">
     <div>

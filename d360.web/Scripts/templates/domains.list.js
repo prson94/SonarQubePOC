@@ -83,6 +83,7 @@
                 var fadoutTime = 500;
 
                 if (load) {
+                    $('#PanelButtonsTile').fadeIn(fadoutTime);
                     var loadPermissionsDependentTiles = function () {
                         $('#ItemsTile').fadeIn(fadoutTime);
                         $('#XrefTile').fadeIn(fadoutTime);
@@ -95,13 +96,6 @@
                         $('#AggregatesTile').fadeIn(fadoutTime);
                         RelationshipAggregatesTile('AggregatesTile', selectedType, id, permissions);
 
-                        if (CompanySettings.UseNewRelationships == 'true')
-                            NewLineageDiagram('SourcingTile', selectedType, id, true);
-                        else
-                            LineageDiagram('SourcingTile', selectedType, id, true);
-
-                        //LineageDiagram('SourcingTile', selectedType, id, true);
-
                         if (json.AllowAttributes) {
                             $('#AttributesTile').show();
                             $('#AttributesTile').Attributes('reload', selectedType, id, permissions.HasPermission("Attributes", "Update"));
@@ -113,6 +107,7 @@
                     permissions.GetPermissionsForObject(selectedType, id).then(loadPermissionsDependentTiles);
                 }
                 else {
+                    $('#PanelButtonsTile').fadeOut(fadoutTime);
                     $('#AttributesTile').fadeOut(fadoutTime).html('');
                     //$('#AllocationsTile').fadeOut(fadoutTime).html('');
                     $('#ItemsTile').fadeOut(fadoutTime).html('');
@@ -125,6 +120,22 @@
                 ObjectDetail('DetailTile', selectedType, id);
 
                 ObjectStatisticsTile('SocialTile', selectedType, id);
+            }
+
+            function showLineage() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Lineage?type=Domain&id=' + selectedID);
+            }
+
+            function showImpact() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Impact?type=Domain&id=' + selectedID);
             }
 
             function treeSelect(evt) {
@@ -148,6 +159,8 @@
             }
 
             function unsubscribe(data) {
+                $('#ShowImpact').off('click', showImpact);
+                $('#ShowLineage').off('click', showLineage);
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe("RefreshActionMenu", refreshActionMenu);
@@ -166,6 +179,8 @@
 
                     $('#AttributesTile').Attributes({ object: type, objectID: typeID, readOnly: false });
                     $('#SideIcons').PageTools({ type: type, id: typeID, context: 'root' });
+                    $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
 
                     var DomainTreeGridSource =
                      {
@@ -271,6 +286,8 @@
 
                         amplify.subscribe("CommandExecuted", commandExecuted);
                         amplify.subscribe("RefreshActionMenu", refreshActionMenu);
+                        $('#ShowImpact').on('click', showImpact);
+                        $('#ShowLineage').on('click', showLineage);
                         amplify.subscribe("SaveAction", saveAction);
                         $(document).on('resize', function () {
                             $('#Tree').jqxTreeGrid({ height: $(window).innerHeight() - 250 });

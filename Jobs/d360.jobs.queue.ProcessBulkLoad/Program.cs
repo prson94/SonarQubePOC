@@ -534,195 +534,28 @@ namespace d360.jobs.queue.ProcessBulkLoad
                  */
                 #endregion
 
-                #region Get data to pre-populate
-
-                var relationIntersectTypeDetail = company.Filter<IntersectTypeDetail>(i => i.ID == load.ObjectID).FirstOrDefault();
-                var subjectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.SubjectID, Type = relationIntersectTypeDetail.Subject.Replace("Type", ""), Name = relationIntersectTypeDetail.SubjectName };
-                var objectType = new IntersectTypeOption { ID = relationIntersectTypeDetail.ObjectID, Type = relationIntersectTypeDetail.Object.Replace("Type", ""), Name = relationIntersectTypeDetail.ObjectName };
-
-                #endregion
-
-                #region SubjectArea column check logic
-
-                var subjectCheckSubjectArea = (subjectType.Type == "Artifact");
-                var subjectSubjectAreaColumnIndex = (subjectType.Type == "Artifact") ? 1 : 0;
-                var subjectColumnIndex = (subjectType.Type == "Artifact") ? 2 : 1;
-
-                var objectCheckSubjectArea = (objectType.Type == "Artifact");
-                var objectSubjectAreaColumnIndex = 0;
-                var objectColumnIndex = 0;
-
-                if (subjectType.Type == "Artifact" && objectType.Type == "Artifact")
-                {
-                    objectSubjectAreaColumnIndex = 3;
-                    objectColumnIndex = 4;
-                }
-                else if (subjectType.Type != "Artifact" && objectType.Type == "Artifact")
-                {
-                    objectSubjectAreaColumnIndex = 2;
-                    objectColumnIndex = 3;
-                }
-                else if (subjectType.Type == "Artifact" && objectType.Type != "Artifact")
-                {
-                    objectSubjectAreaColumnIndex = 0;
-                    objectColumnIndex = 3;
-                }
-                else // (subjectType.Type != "Artifact" && objectType.Type != "Artifact")
-                {
-                    objectSubjectAreaColumnIndex = 0;
-                    objectColumnIndex = 2;
-                }
-
-                #endregion
-
                 try
                 {
                     companyConnection.Open();
 
-                    #region perform lookups for the text values in the LoadItemColumns
+                    #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
-                    if (subjectCheckSubjectArea)
-                        companyConnection.Execute(getSubjectAreaColumnLookupSql(load.ID, subjectSubjectAreaColumnIndex), null, null, 600);                                              // subject subject area
-                    if (objectCheckSubjectArea)
-                        companyConnection.Execute(getSubjectAreaColumnLookupSql(load.ID, objectSubjectAreaColumnIndex), null, null, 600);                                               // object subject area
-
-                    var sql = "";
-                    sql = getItemColumnLookupSql(load.ID, subjectType.Type, subjectType.ID, subjectSubjectAreaColumnIndex, subjectColumnIndex);
-                    if (!string.IsNullOrEmpty(sql))
-                        companyConnection.Execute(sql, null, null, 600);   // subject
-                    sql = getItemColumnLookupSql(load.ID, objectType.Type, objectType.ID, objectSubjectAreaColumnIndex, objectColumnIndex);
-                    if (!string.IsNullOrEmpty(sql))
-                        companyConnection.Execute(sql, null, null, 600);       // object
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
                     #endregion
 
-                #region Load temp table we will work with
+                    // Call business lineage procedure.
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.Relationships {load.ID}", 2400);
 
-                companyConnection.Execute($@"
---Load temp table we will work with
-select	S.RowIndex,
-		
-		{relationIntersectTypeDetail.ID} as IntersectTypeID,
-		S.LookupObject as Subject,
-		S.LookupObjectID as SubjectID,
+                    #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
-		O.LookupObject as Object,
-		O.LookupObjectID as ObjectID,
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
+                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
-		cast(0 as int) as IntersectID,
-		cast('' as char(1)) as IntersectChangeType,
-
-		cast(0 as bit) as Status,
-		cast('' as nvarchar(500)) as StatusMessage,
-
-		{load.UpdatedBy} as ResourceID  --THE USER THAT ADDED THE LOAD
-into	#Items{load.ID}
-from	LoadItemColumn S
-		inner join LoadItemColumn O	on O.LoadID = S.LoadID	and O.RowIndex = S.RowIndex and S.ColumnIndex = {subjectColumnIndex} and O.ColumnIndex = {objectColumnIndex}
-
-where	S.LoadID = {load.ID};
-
---Add indexes to temp table
-CREATE NONCLUSTERED INDEX [IX_Temp_Items{load.ID}] ON #Items{load.ID} ( IntersectTypeID ASC, Subject ASC, SubjectID ASC, Object ASC, ObjectID ASC );", 
-    null, null, 600);
-
-                #endregion
-
-                #region Update rows with existing source business intersect
-
-                companyConnection.Execute($@"
-update	T
-set		T.IntersectID = S.ID,
-		T.IntersectChangeType = 'U'
-from	#Items{load.ID} T
-		inner join [Intersect] S on S.IntersectTypeID = T.IntersectTypeID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID;", 
-        null, null, 600);
-
-                #endregion
-
-                #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                companyConnection.Execute($@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", null, null, 600);
-                companyConnection.Execute($@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", null, null, 600);
-
-                #endregion
-
-                #region Insert relationships
-
-                companyConnection.Execute($@"
-declare @dt datetime = getutcdate()
-
-insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-	select	IntersectTypeID, 
-			Subject, SubjectID, Object, ObjectID,
-			0, ResourceID, @dt, ResourceID, @dt
-	from	#Items{load.ID} 
-	where	IntersectTypeID is not null
-			and IntersectID = 0
-			and Subject is not null and SubjectID is not null
-			and Object is not null and ObjectID is not null", null, null, 600);
-
-                #endregion
-
-                #region Update rows with new intersect IDs
-
-                companyConnection.Execute($@"
-update	T
-set		T.IntersectID = S.ID,
-		T.IntersectChangeType = 'A'
-from	#Items{load.ID} T
-		inner join [Intersect] S on S.IntersectTypeID = T.IntersectTypeID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID
-		and T.IntersectChangeType <> 'U'", null, null, 600);
-
-                #endregion
-
-                #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
-
-                companyConnection.Execute($@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", null, null, 600);
-                companyConnection.Execute($@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", null, null, 600);
-
-                #endregion
-
-                #region Update status flag and status messages on temp table
-
-                companyConnection.Execute($@"
-update	#Items{load.ID}
-set		Status = 1
-where	IntersectID > 0 and IntersectID is not null
-
-update	#Items{load.ID}
-set		StatusMessage = case IntersectChangeType
-							when 'A' then 'Relationship created. '
-							when 'U' then 'Relationship updated. '
-						end
-where	Status = 1 and IntersectID > 0 and IntersectID is not null
-
-update	T
-set		T.StatusMessage = T.StatusMessage +
-						'Relationship could not be created nor updated. ' + 
-						IIF(S.LookupObjectID is null, 'Could not find subject. ', '') + 
-						IIF(O.LookupObjectID is null, 'Could not find object. ', '')
-from	#Items{load.ID} T
-		left join LoadItemColumn S on S.LoadID = {load.ID} and S.RowIndex = T.RowIndex and S.ColumnIndex = {subjectColumnIndex}
-		left join LoadItemColumn O on O.LoadID = {load.ID} and O.RowIndex = T.RowIndex and O.ColumnIndex = {objectColumnIndex}
-where	Status = 0 and (IntersectID = 0 or IntersectID is not null)", null, null, 600);
-
-                #endregion
-
-                #region Update LoadItems with status and message, then close out Load job.
-
-                companyConnection.Execute($@"
-update	T
-set		T.Status = S.Status,
-		T.StatusMessage = S.StatusMessage
-from	LoadItem T
-		inner join #Items{load.ID} S on T.LoadID = {load.ID} and S.RowIndex = T.RowIndex
-
-update	[Load]
-set		DateCompleted = getutcdate()
-where	ID = {load.ID}", null, null, 600);
-
-                #endregion
+                    #endregion
 
                     companyConnection.Close();
                 }
@@ -730,8 +563,6 @@ where	ID = {load.ID}", null, null, 600);
                 {
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
-
-
 
                 #endregion
             }

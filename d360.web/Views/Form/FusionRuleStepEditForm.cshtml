@@ -8,6 +8,13 @@
     var @object = Model.RuleStep.GetSettingValueByName("Object");
     var objectID = Model.RuleStep.GetSettingValueByName("ObjectID");
 
+    var technicalSubjectSearch = Model.RuleStep.GetSettingValueByName("TechnicalSubjectSearch");
+    var technicalSubject = Model.RuleStep.GetSettingValueByName("TechnicalSubject");
+    var technicalSubjectID = Model.RuleStep.GetSettingValueByName("TechnicalSubjectID");
+
+    var technicalObjectSearch = Model.RuleStep.GetSettingValueByName("TechnicalObjectSearch");
+    var technicalObject = Model.RuleStep.GetSettingValueByName("TechnicalObject");
+    var technicalObjectID = Model.RuleStep.GetSettingValueByName("TechnicalObjectID");
 
     var promoteParentTypeID = Model.RuleStep.GetSettingValueByName("ParentObjectTypeID");
     var promoteParentSearch = Model.RuleStep.GetSettingValueByName("ParentObjectSearch");
@@ -82,7 +89,7 @@
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "LINEAGE")
         {
-            ruleStepViewModel.actionLineageSettings().SetInitialValues('@(subjectID)', '@(objectID)', '@(role)');
+            ruleStepViewModel.actionLineageSettings().SetInitialValues('@(subjectID)', '@(objectID)', '@(technicalSubjectID)', '@(technicalObjectID)', '@(role)');
         }
 
         ko.applyBindings(ruleStepViewModel, document.getElementById('stepAction'));

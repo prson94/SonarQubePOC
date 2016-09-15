@@ -228,6 +228,7 @@
                 panel.data("hidecount", panel.data("hidecount") + 1);
                 var hiddenFieldCount = panel.data("hidecount");
                 var fieldCount = panel.data("count");
+                //console.log("category: " + c + ", hidden count: " + hiddenFieldCount + ", total field count: " + fieldCount);
                 if (hiddenFieldCount >= fieldCount) {
                     panel.fadeOut();
                 }

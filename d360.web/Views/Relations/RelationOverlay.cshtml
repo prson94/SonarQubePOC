@@ -2,7 +2,6 @@
 
 <div id='TreeGridItemViewer' class="large-overlay">
     <div class="ui segment">
-
         <div class="form-header-info" style="width:98%">
             <h4>Relationships for @Model.Name</h4>
             <p>All relationships for the @Model.Name @Model.TypeName.ToLower() are displayed below.  To add a new relationship please select a type of relationship in the menu below.</p>
@@ -62,9 +61,6 @@
                 <div class="clearfix"></div>
             </div>
         </div>
-        @*<div id="ViewLineage" class="tile" style="display:none; margin-top:20px">
-            <div id="TreeGridLineage"></div>
-        </div>*@
     </div>
 </div>
 <div id="TreeGridRelationshipEditor"></div>
@@ -72,6 +68,8 @@
 <script type="text/javascript">
     var o = "@(ViewData["Object"])";
     var oid = "@(ViewData["ObjectID"])";
+    var ot = "@Model.Type";
+    var otid = "@Model.TypeID";
     var type = "@(Model.ParentType)";
     var typeID = "@(Model.ID)";
     var name = "@(Model.TextPath)";
@@ -185,7 +183,6 @@
             switchToViewer();
             $('#RelationshipLineageTile').show();
             $('#ViewNonLineage').hide();
-            //LineageDiagram('TreeGridLineage', type, typeID, null, false);
             amplify.publish('SaveAction', { context: contextList.SourceToTarget });
         } catch (e) {
             logError("RelationOverlay : SourceSave", e);
@@ -199,32 +196,6 @@
     function treeGridRowDoubleClick(event) {
         var row = $('#TreeGrid').jqxGrid('getrowdata', event.args.rowindex);
         location.assign(row.Url);
-    }
-
-    function treeGridRowSelect(event) {
-        //var row = event.args.row;
-        //try {
-        //    intersectID = row.ID;
-        //    switch (selectedView) {
-        //        case 'Attributes':
-        //            AttributesTile('RelationshipAttributesTile', contextList, null, "Intersect", intersectID, 'Business Attributes');
-        //            break;
-        //        case 'Fusion':
-        //            technicalRelationsSource.url = '/api/Intersect/' + intersectID + '/relations';
-        //            $('#TechnicalRelationsGrid').jqxGrid('updatebounddata');
-        //            break;
-        //        case 'Lineage': // Refresh lineage
-        //            LineageDiagram('TreeGridLineage', type, typeID, null, false);
-        //            break;
-        //    }
-
-        //    //relationsModel.Type = row.Type;
-        //    //relationsModel.TargetID = (row.Type == 'TaxonomyType') ? row.TypeID : row.ID;
-        //}
-        //catch (e) {
-        //    logError("RelationOverlay : TreeGrid.rowSelect", e);
-        //    console.log('IDs no longer exist.');
-        //}
     }
 
     function technicalRelationsGridBindingComplete(event) {
@@ -262,12 +233,9 @@
         amplify.unsubscribe("SourceCancel", sourceCancel);
         amplify.unsubscribe("SourceSave", sourceSave);
 
-        //amplify.unsubscribe('CancelAction', cancelAction);
-        //amplify.unsubscribe('SaveAction', saveAction);
         amplify.unsubscribe('CommandExecuted', commandExecuted);
         amplify.unsubscribe(AmplifyActions.Local, localAction);
 
-        $('#TreeGrid').off('rowselect', treeGridRowSelect);
         $('#TreeGrid').off('rowdoubleclick', treeGridRowDoubleClick);
 
         $('#TechnicalRelationsGrid').off('rowselect', technicalRelationsGridRowSelect);
@@ -295,23 +263,11 @@
         try {
             var relationUri = '/relations/OptionsToRelate';
 
-            $.getJSON(relationUri, { type: o, id: oid }, function (data) {
+            $.getJSON(relationUri, { type: ot, id: otid }, function (data) {
 
                 var addMenuItem = { html: '<span>Add Relationships</span>', items: data };
                 var items = [
                     addMenuItem
-                    //{ html: '<span data-a="Source">Add Source</span>' },
-                    //,{
-                    //    html: '<span>Views</span>', items: [
-                    //        { html: '<span data-a="Relationships">All Relationships</span>' }
-                    //        ,{ html: '<span data-a="Lineage">Lineage</span>' }
-                    //    ]
-                    //}
-                    //{
-                    //    html: '<span>Reports</span>', items: [
-                    //        { html: 'Sample Report' }
-                    //    ]
-                    //}
                 ];
 
                 $('#RelationshipOverlayMenu').jqxMenu({
@@ -331,12 +287,8 @@
 
                         switch (selectedView) {
                             case 'Intersect':
-                                //url = '/Relations/AddRelationship?source=' + type + '&sourceID=' + typeID + '&target=' + span.data('t') + '&targetID=' + span.data('i');
                                 url = '/form/AddRelationship?' + 'intersectTypeID=' + span.data('it') + '&type=' + type + '&id=' + typeID;
                                 break;
-                                //case 'Source':
-                                //    url = '/relations/sources/' + type + '/' + typeID + '/add';
-                                //    break;
                         }
 
                         if (url != '') {
@@ -353,11 +305,6 @@
                                     $('#ViewNonLineage').show();
                                     $('#ViewLineage').hide();
                                     break;
-                                //case 'Lineage':
-                                //    $('#ViewLineage').show();
-                                //    $('#ViewNonLineage').hide();
-                                //    LineageDiagram('TreeGridLineage', type, typeID, false);
-                                //    break;
                             }
                         }
                     }
@@ -426,11 +373,6 @@
                     $('#TechnicalRelationAction').html(html);
                 });
             }
-            //else if ($icon.hasClass('lineage')) {
-            //    $('#Lineage').show();
-            //    setBreadCrumb('#Lineage', row);
-            //    LineageDiagram('DiagramTile', 'Intersect', row.ID, null);
-            //}
         }
     }
 
@@ -454,7 +396,6 @@
             datafields: [
                 { name: 'ID' },
                 { name: 'Description' },
-                //{ name: 'Role' },
                 { name: 'Name' },
                 { name: 'ObjectID' },
                 { name: 'Object' },
@@ -462,8 +403,7 @@
                 { name: 'Type' },
                 { name: 'TypeName' },
                 { name: 'Classification' },
-                { name: 'Url' }//,
-                //{ name: 'HasTechnicalRelationships' }
+                { name: 'Url' }
             ]
         };
         RelationshipsAdapter = new $.jqx.dataAdapter(RelationshipsSource, {
@@ -589,7 +529,6 @@
 
         //#region Event Registration
 
-        $('#TreeGrid').on('rowselect', treeGridRowSelect);
         $('#TreeGrid').on('rowdoubleclick', treeGridRowDoubleClick);
         amplify.subscribe("RelationshipFormStatus", relationshipFormStatus);
         amplify.subscribe("RelationshipCancel", relationshipCancel);
@@ -605,7 +544,6 @@
         $('#TechnicalRelationsGrid').on('rowselect', technicalRelationsGridRowSelect);
         $("#TechnicalRelationsGrid").on("bindingcomplete", technicalRelationsGridBindingComplete);
 
-        //$("#TreeGrid").on("click", ".lineage", activateIconTool);
         $("#TreeGrid").on("click", ".details", activateIconTool);
         $("#TreeGrid").on("click", ".fusion", activateIconTool);
         $("#TreeGrid").on("click", ".attribute", activateIconTool);

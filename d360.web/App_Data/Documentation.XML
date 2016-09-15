@@ -2263,10 +2263,10 @@
             <param name="id">FusionAttributeTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionRule_DeleteFields(System.Int32)">
-            <param name="id">FusionAttributePromotionRuleID</param>
+            <param name="id">RuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionRuleStep_AddFields(System.Int32)">
-            <param name="id">FusionAttributePromotionRuleID</param>
+            <param name="id">RuleID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionType_DeleteFields(System.Int32)">
             <param name="id">FusionTypeID</param>
@@ -2531,13 +2531,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.TooltipTemplate_EditFields(System.Int32)">
             <param name="id">TooltipTemplateID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FusionController.FusionItemDetails(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Gets ownership and promotion rule counts by a specific fusion configuration.
-            </summary>
-            <param name="id">The Configuration ID</param>
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FusionController.GetConfigurationsByType(System.Int32)">
             <summary>

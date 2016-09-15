@@ -188,7 +188,6 @@
     <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />
-    <Compile Include="entities\IntersectNode.cs" />
     <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
     <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
@@ -196,7 +195,6 @@
     <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
     <Compile Include="entities\Views\IntersectDetail.cs" />
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
-    <Compile Include="entities\Views\Relationship.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\ResponsibilityTypeObjectClaim.cs" />
     <Compile Include="entities\ResponsibilityTypeClaim.cs" />
@@ -219,7 +217,6 @@
     <Compile Include="entities\ObjectSecurity.cs" />
     <Compile Include="entities\ResolutionRelation.cs" />
     <Compile Include="entities\EventGroup.cs" />
-    <Compile Include="entities\IntersectTypeNode.cs" />
     <Compile Include="entities\Event.cs" />
     <Compile Include="entities\QuestionType.cs" />
     <Compile Include="entities\Question.cs" />

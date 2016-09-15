@@ -81,12 +81,12 @@
     <div>Info</div>
     <div id="LineageWindowTabs" style="padding: 0px; margin:0px; border-bottom: 0px solid transparent">
         <ul>
-            <li title="Info"><i class="fa fa-2x fa-info-circle"></i></li>
-            <li title="Source Rules"><i class="fa fa-2x fa-code-fork"></i></li>
-            <li title="Mapping Rules"><i class="fa fa-2x fa-exchange"></i></li>
-            <li title="Responsibilities"><i class="fa fa-2x fa-user"></i></li>
-            <li title="Fusion Relationships"><i class="fa fa-2x fa-database"></i></li>
-            @*<li title="Business Transformations"><i class="fa fa-2x fa-random"></i></li>*@
+            <li id="t0" title="Info"><i class="fa fa-2x fa-info-circle"></i></li>
+            <li id="t1" title="Source Rules"><i class="fa fa-2x fa-code-fork"></i></li>
+            <li id="t2" title="Mapping Rules"><i class="fa fa-2x fa-exchange"></i></li>
+            <li id="t3" title="Responsibilities"><i class="fa fa-2x fa-user"></i></li>
+            <li id="t4" title="Fusion Relationships"><i class="fa fa-2x fa-database"></i></li>
+            @*<li id="t5" title="Business Transformations"><i class="fa fa-2x fa-random"></i></li>*@
         </ul>
         <div style="margin:5px"><div id="Lineage_info_detail"></div></div>
         <div style="margin:5px"><div id="Lineage_sourcerules_content"></div></div>
@@ -1476,6 +1476,11 @@
                 $('#LineageWindowTabs').jqxTabs('disableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', true);
                 $('#LineageWindowTabs').jqxTabs('disableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', true);
 
+                $('#t0').hide();
+                $('#t1').hide();
+                $('#t2').hide();
+                $('#t3').hide();
+                $('#t4').hide();
                 //$("#" + controlID_ribbon_sourcerule).hide(delay);
                 //$("#" + controlID_ribbon_multimaprule).show(delay);
                 //$("#" + controlID_ribbon_maprule).hide(delay);
@@ -1488,12 +1493,24 @@
                     $('#LineageWindowTabs').jqxTabs('disableAt', 2); //$('#LineageTools').jqxMenu('disable', 'w_mappings', true);
                     $('#LineageWindowTabs').jqxTabs('enableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', false);
                     $('#LineageWindowTabs').jqxTabs('enableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', false);
+
+                    $('#t0').show();
+                    $('#t1').show();
+                    $('#t2').hide();
+                    $('#t3').show();
+                    $('#t4').show();
                 } else {
                     $('#LineageWindowTabs').jqxTabs('disableAt', 0); //$('#LineageTools').jqxMenu('disable', 'w_info', true);
                     $('#LineageWindowTabs').jqxTabs('disableAt', 1); //$('#LineageTools').jqxMenu('disable', 'w_sourcerules', true);
                     $('#LineageWindowTabs').jqxTabs('enableAt', 2); //$('#LineageTools').jqxMenu('disable', 'w_mappings', false);
                     $('#LineageWindowTabs').jqxTabs('disableAt', 3); //$('#LineageTools').jqxMenu('disable', 'w_roles', true);
                     $('#LineageWindowTabs').jqxTabs('disableAt', 4); //$('#LineageTools').jqxMenu('disable', 'w_fusion', true);
+
+                    $('#t0').hide();
+                    $('#t1').hide();
+                    $('#t2').show();
+                    $('#t3').hide();
+                    $('#t4').hide();
                 }
             }
         }

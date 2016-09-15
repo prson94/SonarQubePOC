@@ -122,7 +122,6 @@
         }
     };
 
-
     function saveAction(data) {
         try {
             console.log(data);
@@ -280,7 +279,7 @@
                 url: null,
                 datafields: [
                     { name: "ID", type: "number" },
-                    { name: "FusionAttributePromotionRuleID", type: "number" },
+                    { name: "RuleID", type: "number" },
                     { name: "FusionAttributeID", type: "number" },
                     { name: "FusionAttributeName", type: "string" },
                 ]
@@ -317,7 +316,7 @@
 
             //#endregion
 
-            //RuleStepGrid
+            //#region RuleStepGrid
 
             FusionRuleStepGridSource = {
                 datatype: 'json',
@@ -343,7 +342,7 @@
                 filterable: true,
                 sortable: true,
                 pageable: true,
-                pagesize: 5,
+                pagesize: 10,
                 theme: list_theme,
                 columns: [
                     { text: 'Action', dataField: 'Action', width: 200 },
@@ -384,7 +383,7 @@
                 url: null, //'/api/fusion//FusionRuleStepMappings',
                 datafields: [
                     { name: "ID", type: "number" },
-                    { name: "FusionAttributePromotionRuleID", type: "number" },
+                    { name: "RuleID", type: "number" },
                     { name: "SourceFieldTypeID", type: "number" },
                     { name: "SourceFieldName", type: "string" },
                     { name: "TargetFieldTypeID", type: "number" },
@@ -423,9 +422,7 @@
                 ]
             });
 
-
             //#endregion
-
 
 
             amplify.subscribe('CancelAction', cancelAction);

@@ -160,8 +160,6 @@ namespace d360.model
 
         public DbSet<Follow> Follows { get; set; }
 
-        //public DbSet<FollowChild> FollowChildren { get; set; }
-
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
 
         public DbSet<FusionExecution> FusionExecutions { get; set; }
@@ -170,38 +168,16 @@ namespace d360.model
 
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
-        //public DbSet<FusionAttributeOwnerDetail> FusionAttributeOwnerDetails { get; set; }          /* VIEW */
-
-        //public DbSet<FusionAttributePromotionDetail> FusionAttributePromotionDetails { get; set; }  /* VIEW */
-
-        //public DbSet<FusionAttributeOwnerRule> FusionAttributeOwnerRules { get; set; }
-
-        //public DbSet<FusionAttributeOwnerRuleItem> FusionAttributeOwnerRuleItems { get; set; }
-
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
-
-        //public DbSet<FusionAttributePromotionRule> FusionAttributePromotionRules { get; set; }
-
-        //public DbSet<FusionAttributePromotionRuleItem> FusionAttributePromotionRuleItems { get; set; }
-
-        //public DbSet<FusionAttributePromotionRuleMapping> FusionAttributePromotionRuleMappings { get; set; }
-
-        //public DbSet<FusionAttributePromotion> FusionAttributePromotions { get; set; }
 
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
-        //public DbSet<FusionAttributeTypePromotion> FusionAttributeTypePromotions { get; set; }
-
         public DbSet<FusionFilter> FusionFilters { get; set; }
-
-        //public DbSet<FusionJobHistory> FusionJobHistories { get; set; }
 
         public DbSet<FusionRule> FusionRules { get; set; }
 
         public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
         
-        //public DbSet<FusionJobSchedule> FusionJobSchedules { get; set; }
-
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
         public DbSet<FusionType> FusionTypes { get; set; }
@@ -209,16 +185,6 @@ namespace d360.model
         public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
 
         public DbSet<Group> Groups { get; set; }
-
-        //public DbSet<IntersectMap> IntersectMaps { get; set; }
-
-        //public DbSet<IntersectMapGroup> IntersectMapGroups { get; set; }
-
-        //public DbSet<IntersectMapSourceRule> IntersectMapSourceRules { get; set; }
-
-        //public DbSet<IntersectMapSourceTargetRule> IntersectMapSourceTargetRules { get; set; }
-
-        //public DbSet<IntersectMapSourceRuleContext> IntersectMapSourceRuleContexts { get; set; }
 
         public DbSet<Intersect> Intersects { get; set; }
 
@@ -228,13 +194,9 @@ namespace d360.model
 
         public DbSet<IntersectGroup> IntersectGroups { get; set; }
 
-        public DbSet<IntersectNode> IntersectNodes { get; set; }
-
         public DbSet<IntersectRole> IntersectRoles { get; set; }
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
-
-        public DbSet<IntersectTypeNode> IntersectTypeNodes { get; set; }
 
         public DbSet<IntersectTypePredicate> IntersectTypePredicates { get; set; }
 
@@ -288,8 +250,6 @@ namespace d360.model
 
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
-        public DbSet<Relationship> Relationships { get; set; }                                              /* VIEW */
-
         public DbSet<ReportLayout> ReportLayouts { get; set; }
 
         public DbSet<Report> Reports { get; set; }
@@ -331,12 +291,6 @@ namespace d360.model
         public DbSet<SecurityDetail> SecurityDetails { get; set; }                                          /* VIEW */
 
         public DbSet<SiteNav> SiteNav { get; set; }
-
-        //public DbSet<SourceRule> SourceRules { get; set; }
-
-        //public DbSet<SourceRuleContext> SourceRuleContexts { get; set; }
-
-        //public DbSet<SourceTargetRule> SourceTargetRules { get; set; }
 
         public DbSet<Statistic> Statistics { get; set; }
 
@@ -1261,9 +1215,7 @@ order by Name");
             var intersectType = Filter<IntersectType>(i => (
                     (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
                     (i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID && i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID)
-                ) //&&
-                //(predicateID.HasValue && i.IntersectTypePredicates.Any(p => p.PredicateType == PredicateType.Synonym), 
-                , i => i.Nodes
+                )
             ).FirstOrDefault();
 
             if (intersectType == null)
@@ -1272,14 +1224,12 @@ order by Name");
             intersect = Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && (
                     (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
                     (i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
-                ), i => i.Nodes
+                )
             ).SingleOrDefault();
 
             if (intersect == null)
             {
-                var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
                 intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification, Description = description };
-                intersect.Nodes = new List<IntersectNode>();
 
                 if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
                 {
@@ -1288,8 +1238,6 @@ order by Name");
                     intersect.Object = @object;
                     intersect.ObjectID = objectID;
 
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = subject, ObjectID = subjectID });
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = @object, ObjectID = objectID });
                     Intersects.Add(intersect);
                 }
                 else
@@ -1299,8 +1247,6 @@ order by Name");
                     intersect.Object = subject;
                     intersect.ObjectID = subjectID;
 
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = @object, ObjectID = objectID });
-                    intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = subject, ObjectID = subjectID });
                     Intersects.Add(intersect);
                 }
 
@@ -1333,7 +1279,7 @@ order by Name");
             if (objectDetail == null)
                 throw new NotFoundException("Object");
 
-            var intersectType = GetById<IntersectType>(intersectTypeID, i => i.Nodes);
+            var intersectType = GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null)
                 throw new NotFoundException("Intersect Type");
@@ -1351,9 +1297,7 @@ order by Name");
 
                 if (dtl == null)
                 {
-                    var nodes = intersectType.Nodes.OrderBy(i => i.Order).ToList();
                     intersect = new Intersect { IntersectTypeID = intersectType.ID };
-                    intersect.Nodes = new List<IntersectNode>();
 
                     if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
                     {
@@ -1362,8 +1306,6 @@ order by Name");
                         intersect.Object = sObject;
                         intersect.ObjectID = objectID;
 
-                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sSubject, ObjectID = subjectID });
-                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sObject, ObjectID = objectID });
                         Intersects.Add(intersect);
                     }
                     else
@@ -1373,8 +1315,6 @@ order by Name");
                         intersect.Object = sSubject;
                         intersect.ObjectID = subjectID;
 
-                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.First().ID, ObjectType = sObject, ObjectID = objectID });
-                        intersect.Nodes.Add(new IntersectNode { IntersectTypeNodeID = nodes.Last().ID, ObjectType = sSubject, ObjectID = subjectID });
                         Intersects.Add(intersect);
                     }
 
@@ -1391,109 +1331,34 @@ order by Name");
             }
         }
 
-        //public void AddRelationship(SystemObjects type, int id, SystemObjects targetType, int targetID, IntersectClassification classification, int? roleID, string description)
-        //{
-        //    AddRelationship(type.ToString(), id, targetType.ToString(), targetID, classification, roleID, description);
-        //}
-
-        //public void AddRelationship(string type, int id, string targetType, int targetID, IntersectClassification classification, int? roleID, string description)
-        //{
-        //    if (!roleID.HasValue) roleID = 0;
-
-        //    Database.Connection.Execute(
-        //        "AddRelationship @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @TargetType, @TargetID",
-        //        new
-        //        {
-        //            ResourceID = CurrentResourceID,
-        //            Date = DateTime.UtcNow,
-        //            Type = type,
-        //            ID = id,
-        //            Classification = (int)classification,
-        //            IntersectRole = roleID,
-        //            Description = description,
-        //            TargetType = targetType,
-        //            TargetID = targetID
-        //        });
-        //}
-
-
-        //public void AddRelationships(SystemObjects type, int id, IntersectClassification classification, int? roleID, string description, List<ObjectModel> objects)
-        //{
-        //    #region Load Objects Parameter
-
-        //    var tObjects = new DataTable();
-        //    tObjects.Columns.Add("ObjectType");
-        //    tObjects.Columns.Add("ObjectID");
-
-        //    objects.ForEach(o =>
-        //    {
-        //        tObjects.Rows.Add(o.ObjectType, o.ObjectID);
-        //    });
-
-        //    #endregion
-
-        //    if (!roleID.HasValue) roleID = 0;
-
-        //    ExecuteNonQueryCommand(
-        //        "EXEC AddRelationships @ResourceID, @Date, @Type, @ID, @Classification, @IntersectRole, @Description, @Objects",
-        //        new List<SqlParameter>() {
-        //            new SqlParameter("ResourceID", CurrentResourceID),
-        //            new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
-        //            new SqlParameter("Type", type.ToString()),
-        //            new SqlParameter("ID", id),
-        //            new SqlParameter("Classification", (int)classification),
-        //            new SqlParameter("IntersectRole", roleID),
-        //            new SqlParameter("Description", description + ""),
-        //            new SqlParameter("Objects", tObjects) { SqlDbType = SqlDbType.Structured, TypeName = "dbo.ObjectsTable" }
-        //        }
-        //    );
-        //}
-
         public bool DeleteRelationship(int id)
         {
 
-            var item = GetById<Intersect>(id, i => i.Nodes);
+            var item = GetById<Intersect>(id);
             if (item == null) throw new NotFoundException("Relationship");
             return Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
         }
 
-        //public void EditRelationship(int id, int? roleID, IntersectClassification classification, string description)
-        //{
-        //    if (!roleID.HasValue) roleID = 0;
-
-        //    ExecuteNonQueryCommand(
-        //        "EditRelationship @ResourceID, @Date, @ID, @Classification, @IntersectRole, @Description",
-        //        new List<SqlParameter>() {
-        //            new SqlParameter("ResourceID", CurrentResourceID),
-        //            new SqlParameter("Date", DateTime.UtcNow) { SqlDbType = SqlDbType.DateTime },
-        //            new SqlParameter("ID", id),
-        //            new SqlParameter("Classification", (int)classification),
-        //            new SqlParameter("IntersectRole", roleID),
-        //            new SqlParameter("Description", description + "")
-        //        }
-        //    );
-        //}
-
         public IQueryable<CriticalRelationshipsByObject> GetCriticalRelationshipsByObject(SystemObjects type, int id)
         {
             return Database.Connection.Query<CriticalRelationshipsByObject>(
-@"select		R.IntersectID,
-				S.IconBackColor,
-				S.IconForeColor,
-				S.IconText,
-				dbo.GenerateObjectUrl(R.TargetObject, R.TargetTypeID, R.TargetObjectID) as Url,
-				R.TargetObjectID as ID,
-				R.TargetObject as ObjectType,
-				R.TargetTypeName as TypeName,
-				R.TargetObjectName as Name,
+@"select		ID as IntersectID,
+				case when (Subject = @type and SubjectID = @id) then ObjectIconBackColor else SubjectIconBackColor end as IconBackColor,
+				case when (Subject = @type and SubjectID = @id) then ObjectIconForeColor else SubjectIconForeColor end as IconForeColor,
+				case when (Subject = @type and SubjectID = @id) then ObjectIconText else SubjectIconText end as IconText,
+				case when (Subject = @type and SubjectID = @id) then ObjectUrl else SubjectUrl end as Url,
+				case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ID,
+				case when (Subject = @type and SubjectID = @id) then Object else Subject end as ObjectType,
+				case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end as TypeName,
+				case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end as Name,
 				Description
-	from		cache.Relationships R
-				left join ObjectStyle R on R.ObjectType = R.TargetType and S.ObjectID = R.TargetTypeID 
-	where		R.SourceObject = @type 
-				and R.SourceObjectID = @id
-				and R.Classification = 1
-	order by	R.TargetTypeName,
-				R.TargetObjectName", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
+	from		IntersectDetail
+	where		(
+                (Subject = @type and SubjectID = @id) OR (Object = @type and ObjectID = @id)
+                )
+				and Classification = 1
+	order by	case when (Subject = @type and SubjectID = @id) then ObjectTypeName else SubjectTypeName end,
+				case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
         public class DetailDisplayableRelationship
@@ -1599,15 +1464,18 @@ where	R.SourceObject = 'FusionAttribute'
 
             if (startType.HasValue && startID.HasValue)
             {
-                sql += string.Format(@" left join [utility].[RelationshipTypes] T on T.SourceObjectType = '{0}' and T.SourceObjectID = {1} and T.TargetObjectType = I.[Type] and T.TargetObjectID = I.ID", startType.Value.ToString(), startID.Value);
+                sql += $@" left join IntersectType T on ( 
+(T.Subject = '{startType.Value.ToString()}' and T.SubjectID = {startID.Value} and T.Object = I.[Type] and T.ObjectID = I.ID) OR
+(T.Object = '{startType.Value.ToString()}' and T.ObjectID = {startID.Value} and T.Subject = I.[Type] and T.SubjectID = I.ID) 
+)";
 
                 if (endType.HasValue && endID.HasValue)
                 {
-                    sql += string.Format(@" where (T.IntersectTypeID is null OR (T.TargetObjectType = '{0}' and T.TargetObjectID = {1}) )", endType.Value.ToString(), endID.Value);
+                    sql += $@" where (T.ID is null OR ( (T.Object = '{endType.Value.ToString()}' and T.ObjectID = {endID.Value}) OR (T.Subject = '{endType.Value.ToString()}' and T.SubjectID = {endID.Value}) ) )";
                 }
                 else
                 {
-                    sql += " where T.IntersectTypeID is null";
+                    sql += " where T.ID is null";
                 }
             }
 
@@ -1615,100 +1483,6 @@ where	R.SourceObject = 'FusionAttribute'
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
         }
-
-//        public List<IntersectTypeOption> GetRelationTypeOptions(SystemObjects? sub = null, int? subID = null, SystemObjects? obj = null, int? objID = null)
-//        {
-//            var sql = @"
-//	SELECT		I.ID,
-//				I.Name,
-//				I.Type
-//	FROM		(
-//				SELECT	ID,
-//						'Artifacts :: ' + Name AS Name,
-//						'ArtifactType' AS Type
-//				FROM	ArtifactType
-//				UNION
-//				SELECT	ID,
-//						'Reference :: ' + Name AS Name,
-//						'DomainType' AS Type
-//				FROM	DomainType
-//				UNION
-//				SELECT	A.ID,
-//						'Fusion Attributes :: ' + A.TextPath AS Name,
-//						'FusionAttributeType' AS Type
-//				FROM	FusionAttributeType A
-//						INNER JOIN FusionType T ON A.FusionTypeID = T.ID
-//				UNION
-//				SELECT	1 as ID,
-//						'Group' as Name,
-//						'GroupType' as Type
-//				UNION
-//				SELECT	ID,
-//						'Models :: ' + Name AS Name,
-//						'TaxonomyType' AS Type
-//				FROM	TaxonomyType
-//				UNION
-//				SELECT	ID,
-//						'Policies :: ' + Name AS Name,
-//						'PolicyType' AS Type
-//				FROM	PolicyType
-//				UNION
-//				SELECT	CAST(ID as int) ID,
-//						'Relationships :: ' + Name AS Name,
-//						'IntersectType' AS Type
-//				FROM	IntersectType
-//				UNION
-//				SELECT	1 as ID,
-//						'Resource' as Name,
-//						'ResourceType' as Type
-//				UNION
-//				SELECT	1 as ID,
-//						'Rules :: Informational' as Name,
-//						'RuleType' as Type
-//				UNION
-//				SELECT	2 as ID,
-//						'Rules :: Quality Check' as Name,
-//						'RuleType' as Type
-//				UNION
-//				SELECT	3 as ID,
-//						'Rules :: Metric' as Name,
-//						'RuleType' as Type
-//				UNION
-//				SELECT	4 as ID,
-//						'Rules :: Profile' as Name,
-//						'RuleType' as Type
-//) I";
-
-//            if (sub.HasValue && subID.HasValue)
-//            {
-//                sql += @"
-// left join [RelationType] T on	(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = I.[Type] and T.ObjectID = I.ID) 
-//                                or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = I.[Type] and T.SubjectID = I.ID)
-// left join Predicate P on P.ID = T.PredicateID and P.Type not in (5)";
-
-//                if (obj.HasValue && objID.HasValue)
-//                {
-//                    sql += @" where P.ID is null OR (
-//(T.[Subject] = @sub and T.SubjectID = @subID and T.[Object] = @obj and T.ObjectID = @objID) 
-//or (T.[Object] = @sub and T.ObjectID = @subID and T.[Subject] = @obj and T.SubjectID = @objID)
-//)";
-//                }
-//                else
-//                {
-//                    sql += " where P.ID is null";
-//                }
-//            }
-//            sql += " GROUP BY I.ID, I.Name, I.Type ORDER BY I.Name";
-
-//            if (obj.HasValue && objID.HasValue)
-//            {
-//                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID, obj = new Dapper.DbString { Value = obj.ToString(), IsAnsi = true }, objID }).ToList();
-//            }
-//            else
-//            {
-//                return Database.Connection.Query<IntersectTypeOption>(sql, new { sub = new Dapper.DbString { Value = sub.ToString(), IsAnsi = true }, subID }).ToList();
-//            }
-//        }
 
         internal class RelationModel
         {
@@ -2404,7 +2178,7 @@ order by Name", new { workflowType, type, id });
         {
             try
             {
-                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type, ObjectID = id, ResourceID = CurrentResourceID });
+                Database.Connection.Execute("DeleteObject @Obj, @ObjectID, @ResourceID", new { Obj = type, ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
                 return true;
             }
             catch (Exception ex)
@@ -2415,23 +2189,10 @@ order by Name", new { workflowType, type, id });
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            //modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectTypeNode>().HasRequired(t => t.IntersectType).WithMany(t => t.Nodes).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
             modelBuilder.Entity<IntersectTypePredicate>().HasRequired(t => t.IntersectType).WithMany(t => t.IntersectTypePredicates).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
-
-            //modelBuilder.Entity<FusionAttributeOwnerRuleItem>().HasRequired(t => t.FusionAttributeOwnerRule).WithMany(t => t.FusionAttributeOwnerRuleItems).HasForeignKey(k => k.FusionAttributeOwnerRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<FusionAttributePromotionRuleItem>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleItems).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<FusionAttributePromotionRuleMapping>().HasRequired(t => t.FusionAttributePromotionRule).WithMany(t => t.FusionAttributePromotionRuleMappings).HasForeignKey(k => k.FusionAttributePromotionRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.IntersectMap).WithMany(t => t.IntersectMapSourceRules).HasForeignKey(k => k.IntersectMapID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<IntersectMapSourceRuleContext>().HasRequired(t => t.IntersectMapSourceRule).WithMany(t => t.Contexts).HasForeignKey(k => k.IntersectMapSourceRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<IntersectMapSourceRule>().HasRequired(t => t.SourceRule).WithMany(t => t.Items).HasForeignKey(k => k.SourceRuleID).WillCascadeOnDelete(true);
-            //modelBuilder.Entity<MapRuleItem>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.MapRuleItems).Map(i =>
-            //{
-            //    i.MapLeftKey("MapRuleItemID").MapRightKey("MapItemID").ToTable("MapRuleItemMapItem");
-            //});
 
             modelBuilder.Entity<Fusion>().HasMany<Artifact>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
                 i.MapLeftKey("FusionID").MapRightKey("ArtifactID").ToTable("FusionOwner");
@@ -2522,7 +2283,7 @@ order by Name", new { workflowType, type, id });
                             break;
                         case EntityState.Deleted:
                             var any = false;
-                            any = Any<IntersectNode>(i => i.ObjectType == "Artifact" && i.ObjectID == o.ID);
+                            any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
 
                             any = Any<Artifact>(i => i.ParentID == o.ID);
@@ -2604,7 +2365,7 @@ order by Name", new { workflowType, type, id });
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Domain" && f.FieldType.LookupObjectID == domainTypeID && f.Value == id);
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
-                            any = Any<IntersectNode>(i => i.ObjectType == "Domain" && i.ObjectID == o.ID);
+                            any = Any<Intersect>(i => (i.Subject == "Domain" && i.SubjectID == o.ID) || (i.Object == "Domain" && i.ObjectID == o.ID));
                             if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
                             break;
                         case EntityState.Modified:
@@ -2811,7 +2572,7 @@ order by Name", new { workflowType, type, id });
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
                             any = Any<core.entities.Attribute>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more attributes reference this relationship.");
-                            any = Any<IntersectNode>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
+                            any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
                             break;
                     }
@@ -3091,7 +2852,7 @@ order by Name", new { workflowType, type, id });
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_FieldReference);
                             if (Any<core.entities.Attribute>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_AttributeReference);
-                            if (Any<IntersectNode>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
+                            if (Any<Intersect>(i => (i.Subject == "Taxonomy" && i.SubjectID == o.ID) || (i.Object == "Taxonomy" && i.ObjectID == o.ID)))
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
                             if (Any<Taxonomy>(i => i.ParentID == o.ID)) 
                                 throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);

@@ -62,10 +62,28 @@
                 }
             }
 
+            function showLineage() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Lineage?type=Rule&id=' + ruleID);
+            }
+
+            function showImpact() {
+                $('#main').hide();
+                $('#Panel').fadeIn();
+                $('#PanelContent')
+                    .html(progressIndicatorHtml)
+                    .load('/relations/Impact?type=Rule&id=' + ruleID);
+            }
+
             function unsubscribe(data) {
                 statisticsTileVm = null;
                 survey = null;
 
+                $('#ShowImpact').off('click', showImpact);
+                $('#ShowLineage').off('click', showLineage);
                 $('#AttributesTile').Attributes('destroy');
                 amplify.unsubscribe("CommandExecuted", commandExecuted);
                 amplify.unsubscribe('EventHeaderSelected', eventHeaderSelected);
@@ -103,6 +121,8 @@
                     survey = new Survey('Survey', type, ruleID, 'RuleType', json.TypeID);
 
                     ObjectDetail('DetailTile', type, ruleID);
+                    $('#ShowImpact').jqxButton({ theme: theme, height: 50 });
+                    $('#ShowLineage').jqxButton({ theme: theme, height: 50 });
 
                     var loadPermissionsDependentTiles = function () {
                         $('#AttributesTile').Attributes({ object: type, objectID: ruleID, readOnly: permissions.HasPermission("Attributes", "Update") });
@@ -111,15 +131,7 @@
                         statisticsTileVm.GetStatistics();
 
                         PeopleResponsibilityTile('GovernanceTile', contextList, permissions, type, ruleID, '');
-
-                        if (CompanySettings.UseNewRelationships == 'true')
-                            NewLineageDiagram('SourcingTile', type, ruleID, true);
-                        else
-                            LineageDiagram('SourcingTile', type, ruleID, true);
-
-                        //LineageDiagram('SourcingTile', type, ruleID, true);
                         RelationshipAggregatesTile('AggregatesTileContainer', type, ruleID, permissions);
-
                         EventStatusBreakdownChart('EventStatusChart', contextList, type, ruleID, timescale);
                         EventAgeBreakdownChart('EventAgeChart', contextList, type, ruleID, timescale);
                         EventCriticalityBreakdownChart('EventCriticalityChart', contextList, type, ruleID, timescale);
@@ -142,6 +154,8 @@
 
                     //#region Event Subscriptions
 
+                    $('#ShowImpact').on('click', showImpact);
+                    $('#ShowLineage').on('click', showLineage);
                     amplify.subscribe("CommandExecuted", commandExecuted);
                     amplify.subscribe('EventHeaderSelected', eventHeaderSelected);
                     amplify.subscribe("SaveAction", saveAction);

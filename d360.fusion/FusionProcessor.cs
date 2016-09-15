@@ -649,7 +649,7 @@ select  ID, SubjectID, ObjectID
 from    [IntersectType]
 where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
-            Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM utility.RelationshipTypes.", _workArea.Relationships.IntersectTypeMapping.Count());
+            Trace.TraceInformation("LOADED {0} INTERSECT TYPE MAPPINGS FROM IntersectType table.", _workArea.Relationships.IntersectTypeMapping.Count());
         }
 
         /// <summary>
