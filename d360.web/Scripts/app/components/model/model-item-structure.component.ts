@@ -22,12 +22,12 @@ import { TreeNode } from 'primeng/primeng';
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !showDelete">                            
-                    <header>{{model.Name}}
-                        <d3s-tile-actions [hasAdd]="true"></d3s-tile-actions>                            
+                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
+                    <header *ngIf="!showDelete && !showEditor">{{model.Name}}
+                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                              
-                    <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
-                    <p-treeTable [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
+                    <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="!showDelete && !showEditor">                      
+                    <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <template let-item="rowData" pTemplate type="body">
                                 <a (click)="showHierarchy(item.data.id)">{{item.data.name}}</a>
@@ -53,14 +53,15 @@ import { TreeNode } from 'primeng/primeng';
                                     </template>
                         </p-column>       
                     </p-treeTable>                                   
-                </div>
-                <delete-form *ngIf="showDelete"
-                    [callback]="theDeleteCallback"
-                    [itemId]="selected?.data?.id"
-                    [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
-                    (onCancel)="showDelete=false;"
-                ></delete-form>                 
+                    <delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.data?.id"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></delete-form>        
+                    <d3s-dynamic-editor rowID="id" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="'Model Taxonomy'" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
+                </div>                
                 `
 })
 
@@ -71,6 +72,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     modelHierarchy: ModelHierarchy[] = [];
     
     modelId: number;
+    selectedParentID: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
 
@@ -216,5 +218,24 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             if (nodes.length == 0) return null;
             node = nodes[0];
         }
+    }
+
+    private saveTaxonomy(event) {
+        this.modelsService.saveModelHierarchy(event.item)
+            .then(result => {
+                this.loadModelHierarchy(this.modelId);
+                this.showEditor = false;
+            });
+    }
+
+    private closeEditor() {
+        this.showEditor = false;        
+    }
+
+    private showAdd() {
+        this.showEditor = true;
+
+        this.selectedParentID = this.selected ? this.selected.data.id : undefined;
+        this.selected = null;
     }
 };

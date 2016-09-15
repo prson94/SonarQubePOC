@@ -373,6 +373,8 @@ namespace d360.web.Controllers
                     return Resource_EditMyInfoFields();
                 case "RESOURCESELFPASSWORD":
                     return Resource_ChangeMyPasswordFields();
+                case "TAXONOMY":
+                    return Taxonomy_EditFields(ID);
                
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -405,6 +407,8 @@ namespace d360.web.Controllers
                     return Rule_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
+                case "TAXONOMY":
+                    return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -561,7 +565,9 @@ namespace d360.web.Controllers
                 case "SURVEYTYPE":
                     return AddSurveyType(form);
                 case "INTERSECT":
-                    return AddRelationship(form);              
+                    return AddRelationship(form);
+                case "TAXONOMY":
+                    return AddTaxonomy(form);         
             }
 
             throw new Exception("Invalid / unsupported create type");

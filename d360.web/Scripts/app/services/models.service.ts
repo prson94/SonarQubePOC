@@ -35,4 +35,11 @@ export class ModelsService extends BaseService {
     deleteModelHierarchy(id: number): Promise<JsonResult>{
         return this.deleteDynamicWithResult(this.http, 'taxonomy', id);
     }
+
+    saveModelHierarchy(hierarchy: ModelHierarchy): Promise<JsonResult> {
+        if (hierarchy.ID == undefined || !hierarchy.ID) {
+            return this.postDynamic(this.http, 'taxonomy', hierarchy);
+        }
+        return this.putDynamic(this.http, 'taxonomy', hierarchy);  
+    }
 }

@@ -73,7 +73,7 @@ export class DynamicEditorComponent {
         });
     }
 
-    getDefinition() {
+    getDefinition() {        
         let id = (this.selection ? this.selection[this.rowID] : null);
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
