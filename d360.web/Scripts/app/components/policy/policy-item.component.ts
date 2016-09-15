@@ -20,6 +20,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, '- Policy');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Put policy name here'));
     }

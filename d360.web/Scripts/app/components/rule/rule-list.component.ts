@@ -87,6 +87,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, 'Rules');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules'));
 
         this.loadRules();

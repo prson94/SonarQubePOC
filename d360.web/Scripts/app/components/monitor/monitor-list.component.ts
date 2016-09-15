@@ -20,6 +20,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, 'Monitor');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor'));
     }
 };

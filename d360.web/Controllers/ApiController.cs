@@ -1911,6 +1911,25 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #endregion
 
+        #region Followers
+        
+        [HttpGet, Route("followinfo/{type}/{id:int}")]
+        public dynamic GetFollowInfo(int id, SystemObjects type)
+        {
+            var following = Company.IsUserFollowing(type, id, null);
+            var followParent = Company.GetFollowingParent(type, id, null);
+            var followingParent = (followParent != null && followParent.FollowTypeID == FollowType.Parent);
+
+            return new
+            {
+                isFollowing = following,
+                isFollowingParent = followingParent,
+                parent = followParent
+            };
+
+        }
+        #endregion
+
         #region Fusion
 
         [Route("fusion")]

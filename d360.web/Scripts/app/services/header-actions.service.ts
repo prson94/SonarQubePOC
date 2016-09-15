@@ -6,10 +6,11 @@ import { Favorite } from '../models/favorite.model';
 @Injectable()
 export class HeaderActionsService {    
     showFavorite: boolean = true;
-    showNotifications: boolean = true;
-    showHelp: boolean = true;
+    showNotifications: boolean = false;
+    showHelp: boolean = false;
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  
+    showFollow: boolean = true;
 
     // Observable sources
     private onFavoritesChangeSource = new Subject<Favorite[]>();

@@ -27,3 +27,25 @@
     FollowerUrl: string;
     HardFollow: boolean;
 }
+
+
+export class Follow {
+    ID: number;
+    ResourceID: number;
+    ObjectType: string;
+    ObjectID: number;
+    DateCreate: string;
+    FollowTypeID: FollowType;
+}
+
+export class FollowInfo {
+    isFollowing: boolean;
+    isFollowingParent: boolean;
+    parent: Follow;
+}
+
+export enum FollowType {
+    Single = 1,
+    Parent = 3,
+    Child = 5
+}

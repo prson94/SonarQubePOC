@@ -38,6 +38,7 @@ export class DiagnosticIncorrectTextpathComponent extends BaseComponent implemen
 
     ngOnInit() {
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Diagnostics", null, false));        
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Invalid Textpaths", null, true));        
         this.setBrowserTitle(this.titleService, "Diagnostic Invalid Textpaths");

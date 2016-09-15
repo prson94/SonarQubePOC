@@ -66,6 +66,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
             let resourceId = +params['resourceId'];
             this.resourceId = resourceId;
 
+            this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
                 .then(r => {
                     this.resource = r;

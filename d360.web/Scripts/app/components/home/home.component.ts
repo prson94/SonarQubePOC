@@ -41,6 +41,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.setBrowserTitle(this.titleService, 'Home');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
         this.clearSidebar();
         this.setCommonRightSideBar(false, false, true);

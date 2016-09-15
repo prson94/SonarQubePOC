@@ -71,6 +71,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
 
+            this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
             this.rulesService.getRule(ruleId)
                 .then(result => {
                     this.rule = result;

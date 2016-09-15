@@ -1387,6 +1387,7 @@
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-favorites.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\header\header-follow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header-typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\header\index.ts" />

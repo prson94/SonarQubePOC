@@ -22,6 +22,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, 'Reference');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
     }
 };

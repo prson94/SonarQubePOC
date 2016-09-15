@@ -90,6 +90,7 @@ export class CommunitySummaryComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, 'Community');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));        
     }
 };

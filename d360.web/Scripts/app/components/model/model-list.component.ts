@@ -56,7 +56,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.sub = this.route.params.subscribe(params => {
             this.modelGroup = params['group'];
 
-                                    
+            this.headerBreadcrumbService.clearCurrentObjectInfo();                      
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', this.modelGroup ? '/a/model/classification' : undefined));
 
