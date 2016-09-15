@@ -158,6 +158,7 @@ import {
     ResourceComponent,
     ResourceItemComponent,
     ResourceApiComponent,
+    ResourceListComponent,
 } from './components/resource/index';
 
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
@@ -300,6 +301,7 @@ import {
         ResourceItemComponent,
         ResourceResponsibilityGridTile,
         ResourceResponsibilityTile,
+        ResourceListComponent,
         ResponsibilityItemForm,
         ResponsibilityTypeForm,
         RightSidebarComponent,

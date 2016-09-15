@@ -1426,6 +1426,7 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar-item.component.ts" />

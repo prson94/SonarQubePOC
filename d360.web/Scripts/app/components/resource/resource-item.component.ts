@@ -71,7 +71,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.resource = r;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', '/a/resource/'));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
 
                     this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);

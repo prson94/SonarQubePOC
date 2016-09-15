@@ -16,7 +16,7 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selectedItem)" [(selection)]="selected" >                                                                       
+               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable"></p-column>
                     <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                             <template let-item="rowData" pTemplate type="body">
@@ -58,6 +58,8 @@ export class DynamicGridComponent implements OnChanges {
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
     @Input() showAddButton: boolean = true;
+
+    @Output() editItemClick = new EventEmitter();
     
     error: any;
     items: any[] = [];
