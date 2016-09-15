@@ -41,7 +41,7 @@ import { TreeNode } from 'primeng/primeng';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-object-relationships-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-relationships-tile>
+                                    <d3s-object-relationships-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships-tile>
                                 </div>
                             </div>
                         </div>

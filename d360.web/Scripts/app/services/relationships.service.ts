@@ -92,7 +92,14 @@ export class RelationshipsService extends BaseService {
 
         return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/${criticalOnly}`)
             .toPromise()
-            .then(response => <ObjectRelationshipCount[]>response.json())
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getTechnicalRelationships(objectType: string, objectId: number): Promise<any> {        
+        return this.http.get(`/api/${objectType}/${objectId}/relations`)
+            .toPromise()
+            .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
 

@@ -52,6 +52,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
 import { PageLinksComponent } from './page-links.component';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { TagInputComponent } from './tag-input.component';
+import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { TileActionsComponent } from './tile-actions.component';
 import { TooltipComponent } from './tooltip.component';
 
@@ -79,6 +80,7 @@ import { TooltipComponent } from './tooltip.component';
         ObjectIssuesComponent,        
         PageLinksComponent,
         PowerBIViewerComponent,
+        RelationshipTechnicalRelationsComponent,
         TagInputComponent,
         TileActionsComponent,
         TooltipComponent,
@@ -106,6 +108,7 @@ import { TooltipComponent } from './tooltip.component';
         ObjectIssuesComponent,        
         PageLinksComponent,
         PowerBIViewerComponent,
+        RelationshipTechnicalRelationsComponent,
         TagInputComponent,
         TileActionsComponent,
         TooltipComponent
