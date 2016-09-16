@@ -256,7 +256,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadGlossaryMenu(glossaryMenu: SiteMenu) {
         if (glossaryMenu == null ) return;
 
-        let glossary = this.addNavItem('Glossary', 'book', null, null, glossaryMenu.SortOrder);
+        let glossary = this.addNavItem('Glossary', 'book', 'a/artifact', null, glossaryMenu.SortOrder);
         
         this.renderChildItems(glossary, glossaryMenu.NavigationItems);
     }
