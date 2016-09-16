@@ -4,7 +4,9 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+
 import { SharedModule } from '../shared/shared.module';
+import { ChartModule } from  '../shared/chart.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionComponent } from './fusion.component';
@@ -68,7 +70,7 @@ import {
 
         //d3s
         SharedModule,
-
+        ChartModule,
     ],
     declarations: [
         FusionAgentHistoryComponent,
@@ -79,6 +81,7 @@ import {
         FusionListComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
+        
     ],
     exports: [
         FusionAgentHistoryComponent,

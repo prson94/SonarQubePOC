@@ -105,3 +105,11 @@ export class FusionPromotionExecutionStats {
     RelationshipsAdded: number;
     TotalNewPromotions: number;
 }
+
+export class FusionSummaryStats {
+    AgentErrors: number;
+    AgentExecutions: number;
+    FusionErrors: number;
+    FusionExecutions: number;
+    PromotionJobsExecuted: number;
+}

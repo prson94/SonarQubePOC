@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { CHART_DIRECTIVES } from 'angular2-highcharts'; 
 
 import {
     GrowlModule,
@@ -30,6 +29,7 @@ import {
 } from 'primeng/primeng';
 
 import { PipesModule } from '../../pipes/pipes.module';
+import { ChartModule} from './chart.module';
 
 import { AuditComponent } from './audit.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
@@ -84,7 +84,7 @@ import { TooltipComponent } from './tooltip.component';
         TagInputComponent,
         TileActionsComponent,
         TooltipComponent,
-        CHART_DIRECTIVES,
+        
     ],
     exports: [
         AuditComponent,
@@ -144,6 +144,7 @@ import { TooltipComponent } from './tooltip.component';
 
         //d3s
         PipesModule,
+        ChartModule,
     ]
 
 })
