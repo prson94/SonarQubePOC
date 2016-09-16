@@ -12,6 +12,7 @@ import { WorkflowModule } from './components/workflow/workflow.module';
 import { SharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
 import { NavbarModule } from './components/navbar/navbar.module';
+import { FusionModule } from './components/fusion/fusion.module';
 
 import {
     GrowlModule,
@@ -103,12 +104,6 @@ import {
     ResponsibilityTypeForm,
     WorkflowItemForm,
 } from './components/forms/index';
-
-import {
-    FusionComponent,
-    FusionItemComponent,
-    FusionListComponent, 
-} from './components/fusion/index';
 
 import {
     HeaderActionsComponent,
@@ -258,12 +253,9 @@ import {
         DiagnosticIncorrectTextpathComponent,
         FieldDefinitionTile,
         FieldTypeForm,
-        FusionAttributesTile,
-        FusionComponent,
+        FusionAttributesTile,        
         FusionConfigurationTile,
-        FusionFiltersTile,
-        FusionItemComponent,
-        FusionListComponent,
+        FusionFiltersTile,        
         GroupForm,
         GroupMembersTile,
         HeaderActionsComponent,
@@ -364,6 +356,7 @@ import {
         SharedModule,  
         SocialModule,   
         NavbarModule,   
+        FusionModule,
     ],
     bootstrap: [AppComponent],
     providers: [Title],    

@@ -8,6 +8,27 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 @Component({
     selector: 'd3s-fusion-list',    
     template: ` 
+                    <div class="row">
+                        <div class="col l6 s12">
+                            <d3s-fusion-configuration></d3s-fusion-configuration>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="row">
+                                <div class="col s12">   
+                                    <d3s-fusion-statistics></d3s-fusion-statistics>                                    
+                                </div>
+                                <div class="col s12">   
+                                    <d3s-fusion-agent-history></d3s-fusion-agent-history>
+                                </div>
+                                <div class="col s12">   
+                                    <d3s-fusion-execution-history></d3s-fusion-execution-history>
+                                </div>
+                                <div class="col s12">   
+                                    <d3s-fusion-promotion-history></d3s-fusion-promotion-history>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 `
 })
 
