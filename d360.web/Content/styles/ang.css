@@ -23384,3 +23384,11 @@ div.powerbi iframe {
   border-bottom: 1px solid #CCCCCC;
 }
 /* overrides to search box*/
+/* icons for enabled diasbled*/
+.enabled {
+  color: #02981B;
+}
+.disabled {
+  color: #BC1B01;
+}
+/* end icons for enabled disabled*/

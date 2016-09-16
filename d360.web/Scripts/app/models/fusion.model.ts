@@ -42,3 +42,12 @@ export class ObjectStyle {
     IconForeColor: string;
     IconText: string;
 }
+
+export class Fusion {
+    Description: string;
+    Enabled: boolean;
+    FusionType: string;
+    FusionTypeID: number;
+    ID: number;
+    Name: string;
+}
