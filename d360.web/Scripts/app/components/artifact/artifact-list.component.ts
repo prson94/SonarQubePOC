@@ -55,7 +55,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .then(artifactType => {
                     this.artifactType = artifactType;
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));   
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink));   
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, null));
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                                         

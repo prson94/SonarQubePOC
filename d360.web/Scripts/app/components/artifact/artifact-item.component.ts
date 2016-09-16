@@ -91,6 +91,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         index++;
                         if (index == this.artifact.Breadcrumbs.length)
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', this.artifactTypeId));
+                        else if (index == 1) //top level link
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink, breadcrumb.Active));                                
                         else
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));                                
                     }             

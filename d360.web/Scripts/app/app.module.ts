@@ -81,6 +81,7 @@ import {
     ArtifactGridComponent,
     ArtifactItemComponent,
     ArtifactListComponent,
+    ArtifactTopLevelListComponent,
 } from './components/artifact/index';
 
 import {
@@ -246,6 +247,7 @@ import {
         ArtifactGridComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
+        ArtifactTopLevelListComponent,
         ArtifactTypeForm,
         AttributesTile,     
         ClaimsMatrixPart,

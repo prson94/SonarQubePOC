@@ -5,10 +5,10 @@ import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
-export class ArtifactBaseComponent extends BaseComponent {    
-    public areaLink: string = undefined;
+export class ArtifactBaseComponent extends BaseComponent {        
     public areaDescription: string = "base";
     public area: string = "Glossary";
+    public areaLink: string = "/a/artifact";
 
     protected isLoading = false;
 
