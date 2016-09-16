@@ -116,6 +116,7 @@ import {
     HeaderComponent,
     HeaderTypeaheadSearchComponent,
     HeaderFavoritesComponent,
+    HeaderFollowComponent,
 } from './components/header/index';
 
 import {
@@ -268,6 +269,7 @@ import {
         HeaderBreadcrumbItemComponent,
         HeaderComponent,
         HeaderFavoritesComponent,
+        HeaderFollowComponent,
         HeaderTypeaheadSearchComponent,
         HomeComponent,    
         LoadForm,
