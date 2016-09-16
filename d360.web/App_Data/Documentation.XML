@@ -1967,6 +1967,12 @@
             </summary>
             <returns>A list of available fusion configurations.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationsToExcel">
+            <summary>
+            Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>A list of available fusion configurations.</returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationsByType(System.Int32)">
             <summary>
             Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
@@ -1974,6 +1980,12 @@
             <returns>A list of available fusion configurations.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetConfiguration(System.Int32,System.Int32)">
+            <summary>
+            Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
+            </summary>
+            <returns>The specific configuration.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationById(System.Int32)">
             <summary>
             Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
             </summary>

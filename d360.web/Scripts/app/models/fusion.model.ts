@@ -51,3 +51,15 @@ export class Fusion {
     ID: number;
     Name: string;
 }
+
+export class FusionConfigurationDetails {
+    Description: string;
+    Enabled: boolean;    
+    ID: number;
+    Name: string;
+    ForceRefresh: boolean;
+    Interval: number;
+    IntervalType: number;
+    LockPromotedItems: boolean;
+    Manual: boolean;
+}

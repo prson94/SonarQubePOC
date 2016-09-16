@@ -4,7 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
 import { JsonResult, FormHelper } from '../models/form.model';
-import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion } from '../models/fusion.model';
+import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
 
@@ -35,6 +35,13 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionConfiguration(fusionId: number): Promise<FusionConfigurationDetails> {
+        return this.http.get(`services/fusion/configurationById/${fusionId}`)
+            .toPromise()
+            .then(response => <FusionConfigurationDetails>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getFusionConfigurations(): Promise<Fusion[]> {
         return this.http.get(`services/fusion/configurations?$orderby=FusionType,Name`)
             .toPromise()
@@ -43,7 +50,7 @@ export class FusionService extends BaseService {
     }
 
     exportFusionConfigurations() {
-        window.location.assign(`services/fusion/configurations/excel`);        
+        window.location.assign(`services/fusion/configurations/excel.xls`);        
     }
 
     getFusionConfigurationsByType(id: number): Promise<any[]> {

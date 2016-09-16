@@ -22,13 +22,13 @@ import { Fusion } from '../../models/fusion.model';
                                                 <span [innerHtml]="item.Description"></span>
                                             </template>
                                         </p-column>
-                                        <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'10%'}">
+                                        <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
                                                 <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
                                             </template>
                                         </p-column>
-                                        <p-column [style]="{width:'5%'}">
+                                        <p-column [style]="{width:'4%'}">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">                                
                                                     <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    

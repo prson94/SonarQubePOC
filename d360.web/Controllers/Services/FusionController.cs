@@ -18,6 +18,8 @@ using System.Text.RegularExpressions;
 using d360.core.exceptions;
 using d360.core.entities.Views;
 using d360.fusion;
+using SpreadsheetLight;
+using System.IO;
 
 namespace d360.web.Controllers.Services
 {
@@ -86,9 +88,73 @@ namespace d360.web.Controllers.Services
         }
 
         /// <summary>
-        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+        /// Get all available fusion configurations accross all types.  These configurations provide required connection and security credentials to connect to the underlying source.
         /// </summary>
         /// <returns>A list of available fusion configurations.</returns>
+        [Route("configurations/excel.xls")]
+        public HttpResponseMessage GetConfigurationsToExcel()
+        {
+            var results = Company.Filter<Fusion>(i => 1 == 1, i => i.FusionType)
+                .Select(i => new {
+                    i.Name,
+                    i.Description,
+                    i.FusionTypeID,
+                    FusionType = i.FusionType.Name,
+                    i.ID,
+                    i.Enabled
+                });
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+
+            #region Create the list sheet
+
+            #region Header
+
+            document.SetCellValue(1, 1, "Type");
+            document.SetCellValue(1, 2, "Name");
+            document.SetCellValue(1, 3, "Description");
+            document.SetCellValue(1, 4, "Enabled");
+
+            #endregion
+
+            int r = 1;
+            foreach (var row in results)
+            {
+                r++;
+                document.SetCellValue(r, 1, row.FusionType);
+                document.SetCellValue(r, 2, row.Name);
+                document.SetCellValue(r, 3, row.Description);
+                document.SetCellValue(r, 4, row.Enabled.ToString());
+            }
+
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            
+            stream.Position = 0;
+
+            HttpResponseMessage result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Fusion configurations as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+        
+    
+
+    /// <summary>
+    /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
+    /// </summary>
+    /// <returns>A list of available fusion configurations.</returns>
         [Route("{id:int}/configurations")]
         public HttpResponseMessage GetConfigurationsByType(int id)
         {
@@ -121,6 +187,21 @@ where A.FusionTypeID = @id", columns, joins);
         /// <returns>The specific configuration.</returns>
         [Route("{typeID:int}/configurations/{id:int}")]
         public HttpResponseMessage GetConfiguration(int typeID, int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
+
+            var model = Company.GetFusionAsDictionary(id);
+            if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+            return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);
+        }
+
+        /// <summary>
+        /// Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
+        /// </summary>
+        /// <returns>The specific configuration.</returns>
+        [Route("configurationById/{id:int}")]
+        public HttpResponseMessage GetConfigurationById(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
