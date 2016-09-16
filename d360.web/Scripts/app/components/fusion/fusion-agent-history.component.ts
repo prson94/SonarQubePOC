@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/fusion.service';
+import { FusionService } from '../../services/index';
 import { FusionAgentExecutionStats } from '../../models/fusion.model';
 
 @Component({
@@ -38,6 +38,8 @@ import { FusionAgentExecutionStats } from '../../models/fusion.model';
 })
 
 export class FusionAgentHistoryComponent extends BaseComponent implements OnInit {
+    @Input() maxRows: number = 100;
+
     private executions: FusionAgentExecutionStats[] = [];
     private selected: FusionAgentExecutionStats;
 
@@ -51,7 +53,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionAgentHistory()
+        this.fusionService.getFusionAgentHistory(this.maxRows)
             .then(res => {
                 this.executions = res;
                 this.selected = this.executions.length > 0 ? this.executions[0] : null;

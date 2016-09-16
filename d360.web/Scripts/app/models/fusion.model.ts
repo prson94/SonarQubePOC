@@ -75,3 +75,33 @@ export class FusionAgentExecutionStats {
     Message: string;
     Success: boolean;
 }
+
+export class FusionWorkerExecution {
+    Adds: number;
+    DateCompleted: Date;
+    DateStarted: Date;
+    Deletes: number;
+    ErrorCount: number;
+    Fusion: string;
+    FusionID: number;
+    FusionType: string;
+    FusionTypeID: number;
+    ID: number;
+    RawLogFileName: string;
+    ResultCount: number;
+    Updates: number;
+}
+
+export class FusionPromotionExecutionStats {
+    AttributesConsidered: number;
+    DateCompleted: Date;
+    DateStarted: Date;
+    ID: number;
+    NumberOfRules: string;
+    PromotedArtifacts: number;
+    PromotedDomainItems: number;
+    PromotedDomains: number;
+    PromotedTaxonomies: number;
+    RelationshipsAdded: number;
+    TotalNewPromotions: number;
+}
