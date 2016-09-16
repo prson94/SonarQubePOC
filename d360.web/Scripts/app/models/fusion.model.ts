@@ -63,3 +63,15 @@ export class FusionConfigurationDetails {
     LockPromotedItems: boolean;
     Manual: boolean;
 }
+
+export class FusionAgentExecutionStats {
+    DateCompleted: Date;
+    DateStarted: Date;
+    Fusion: string;
+    FusionID: number;
+    FusionType: string;
+    FusionTypeID: number;
+    MachineQueuedOn: string;
+    Message: string;
+    Success: boolean;
+}

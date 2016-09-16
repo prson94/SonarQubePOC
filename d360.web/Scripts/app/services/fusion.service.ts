@@ -4,7 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
 import { JsonResult, FormHelper } from '../models/form.model';
-import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails } from '../models/fusion.model';
+import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails, FusionAgentExecutionStats } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
 
@@ -46,6 +46,13 @@ export class FusionService extends BaseService {
         return this.http.get(`services/fusion/configurations?$orderby=FusionType,Name`)
             .toPromise()
             .then(response => <Fusion[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionAgentHistory(maxRows?:number): Promise<FusionAgentExecutionStats[]> {
+        return this.http.get(`services/fusion/agenthistory?$top=${maxRows? maxRows:'100'}&$orderby=DateStarted%20desc`)
+            .toPromise()
+            .then(response => <FusionAgentExecutionStats[]>response.json())
             .catch(err => this.handleError(err));
     }
 
