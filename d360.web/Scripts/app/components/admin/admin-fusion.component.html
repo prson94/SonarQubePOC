@@ -1,7 +1,7 @@
 ﻿<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedRow?.ID" [objectName]="selectedRow?.Name" [objectType]="'FusionType'"></d3s-audit>
 <div *ngIf="!isAuditVisible" class="row">
     <div class="col s12 m12 l3">
-        <div class="root-tile">
+        <div class="tile tile-detail">
             <header>
                 <d3s-tile-actions style="position:relative;top:1px;left:-8px;display:block;" [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>

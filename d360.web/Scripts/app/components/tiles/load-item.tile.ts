@@ -13,7 +13,7 @@ import { GridColumn } from '../../models/grid-definition.model';
 
 export class LoadItemTile implements OnChanges {
     @Input() id: number;
-    @Input() title: string = "History";
+    @Input() title: string = "Load Details";
 
     private isLoading = false;
 
