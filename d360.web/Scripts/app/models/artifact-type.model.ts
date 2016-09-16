@@ -17,3 +17,15 @@ export class ArtifactType {
     UpdatedOn: string;
     UpdatedBy: number;
 }
+
+export class ArtifactTypeSummary {
+    ID: number;
+    Certified: number;
+    Description: string;
+    Draft: number;
+    Name: string;
+    ParentID: number;
+    Total: number;
+    UnderReview: number;
+    expanded: boolean;
+}

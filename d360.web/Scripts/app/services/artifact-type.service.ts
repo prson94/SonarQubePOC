@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { TreeNode } from 'primeng/primeng';
-import { ArtifactTypeEditorModel, ArtifactType } from '../models/artifact-type.model';
+import { ArtifactTypeEditorModel, ArtifactType, ArtifactTypeSummary } from '../models/artifact-type.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
 
@@ -77,6 +77,15 @@ export class ArtifactTypeService extends BaseService {
             node.children.push(child);
             this.formTreeR(child, data);
         });
+    }
+
+
+
+    public getTopLevelSummary(): Promise<ArtifactTypeSummary[]> {
+        return this.http.get('/artifacts/typeswithstatistics')
+            .toPromise()
+            .then(response => <ArtifactTypeSummary[]>response.json())
+            .catch(err => this.handleError(err));
     }
     
 }
