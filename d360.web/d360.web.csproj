@@ -965,7 +965,7 @@
     <Content Include="Scripts\app\components\tiles\claims.tile.html" />
     <Content Include="Scripts\app\components\tiles\field-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\object-detail.tile.html" />
-    <Content Include="Scripts\app\components\tiles\people-responsibilities.tile.html" />
+    <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\admin\admin.component.html" />
@@ -1374,9 +1374,8 @@
     <TypeScriptCompile Include="Scripts\app\components\diagnostic\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\input-forms.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\d3sforms.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\group.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
@@ -1386,6 +1385,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-promotion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.routes.ts" />
@@ -1638,9 +1638,9 @@
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\field-definition.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\form-message.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\forms\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\people-responsibilities.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />

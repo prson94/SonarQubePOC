@@ -30,6 +30,7 @@ import {
 
 import { PipesModule } from '../../pipes/pipes.module';
 import { ChartModule} from './chart.module';
+import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AuditComponent } from './audit.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
@@ -40,7 +41,6 @@ import { DynamicEditorComponent } from './dynamic-editor.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { FollowerGridComponent } from './follower-grid.component';
-import { FormMessagePart } from './form-message.part';
 import { LineageComponent } from './lineage.component';
 import { MessagesComponent } from './messages.component';
 import { ObjectBoardComponent } from './object-board.component';
@@ -50,6 +50,7 @@ import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { PageLinksComponent } from './page-links.component';
+import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { TagInputComponent } from './tag-input.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
@@ -68,8 +69,7 @@ import { TooltipComponent } from './tooltip.component';
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
-        FollowerGridComponent,
-        FormMessagePart,
+        FollowerGridComponent,        
         LineageComponent,
         MessagesComponent,
         ObjectBoardComponent,
@@ -79,6 +79,7 @@ import { TooltipComponent } from './tooltip.component';
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
         PageLinksComponent,
+        PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
         TagInputComponent,
@@ -96,8 +97,7 @@ import { TooltipComponent } from './tooltip.component';
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
-        FollowerGridComponent,
-        FormMessagePart,
+        FollowerGridComponent,        
         LineageComponent,
         MessagesComponent,
         ObjectBoardComponent,
@@ -107,6 +107,7 @@ import { TooltipComponent } from './tooltip.component';
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
         PageLinksComponent,
+        PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
         TagInputComponent,
@@ -144,7 +145,8 @@ import { TooltipComponent } from './tooltip.component';
 
         //d3s
         PipesModule,
-        ChartModule,
+        ChartModule,     
+        D3SFormsModule,   
     ]
 
 })

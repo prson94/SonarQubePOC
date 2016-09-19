@@ -62,6 +62,7 @@ export class FusionConfigurationDetails {
     IntervalType: number;
     LockPromotedItems: boolean;
     Manual: boolean;
+    FusionTypeID: number;
 }
 
 export class FusionAgentExecutionStats {

@@ -157,4 +157,12 @@ export class FusionService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+
+    getFusionFusionAttributeTypes(fusionId: number): Promise<FusionAttributeType[]>{
+        return this.http.get(`services/fusion/${fusionId}/attributetypes`)
+            .toPromise()
+            .then(response => <FusionAttributeType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

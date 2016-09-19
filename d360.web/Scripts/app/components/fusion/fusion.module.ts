@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 import { ChartModule } from  '../shared/chart.module';
+import { PipesModule } from '../../pipes/pipes.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionComponent } from './fusion.component';
@@ -16,6 +17,7 @@ import { FusionItemComponent } from './fusion-item.component';
 import { FusionListComponent } from './fusion-list.component';
 import { FusionPromotionHistoryComponent } from './fusion-promotion-history.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
+import { FusionStructureTreeComponent } from './fusion-structure-tree-component';
 
 import {
     GrowlModule,
@@ -38,6 +40,7 @@ import {
     TooltipModule,
     DragDropModule,
     PaginatorModule,
+    TreeModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -65,12 +68,14 @@ import {
         SpinnerModule,
         EditorModule,
         TooltipModule,
+        TreeModule,
         DragDropModule,
         PaginatorModule,
 
         //d3s
         SharedModule,
         ChartModule,
+        PipesModule,
     ],
     declarations: [
         FusionAgentHistoryComponent,
@@ -81,7 +86,7 @@ import {
         FusionListComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
-        
+        FusionStructureTreeComponent,
     ],
     exports: [
         FusionAgentHistoryComponent,
@@ -92,6 +97,7 @@ import {
         FusionListComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
+        FusionStructureTreeComponent,
     ]
 })
 export class FusionModule { }

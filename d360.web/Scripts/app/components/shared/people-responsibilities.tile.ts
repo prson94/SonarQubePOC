@@ -6,7 +6,7 @@ import { ResponsibilityService } from '../../services/responsibility.service';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
-    templateUrl: 'scripts/app/components/tiles/people-responsibilities.tile.html',
+    templateUrl: 'scripts/app/components/shared/people-responsibilities.tile.html',
     providers: [ResponsibilityService],
 })
 

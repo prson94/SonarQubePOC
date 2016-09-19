@@ -8,7 +8,27 @@ import { FusionConfigurationDetails  } from '../../models/fusion.model';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` Fusion Item
+    template: ` <div class="row" *ngIf="isLoading">
+                    <div class="col s12">
+                        <div>
+                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">   
+                            <d3s-people-responsibilities-tile [objectID]="fusion?.ID" [objectType]="'Fusion'" [title]="'Ownership of ' + fusion?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>        
+                <div class="row"*ngIf="!isLoading && !isOwnershipVisible">
+                    <div class="col l2 m12 s12">
+                        <d3s-fusion-structure-tree [fusion]="fusion"></d3s-fusion-structure-tree>
+                    </div>
+                    <div class="col l10 m12 s12">
+                    </div>
+                </div>
                 `,
     providers: [FusionService],
 })
@@ -21,9 +41,11 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,
             private router: Router,
+            rightSidebarService: RightSidebarService,
             private fusionService: FusionService,
             protected titleService: Title) {
-        super();
+        super(rightSidebarService);
+        this.setCommonRightSideBar(false, true);
     }
 
     ngOnInit() {
@@ -35,25 +57,27 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
 
-            this.fusionService.getFusionConfiguration(this.fusionId)
-                .then(result => {
-                    this.isLoading = false;
-                    this.fusion = result;
+            if (!this.fusion || this.fusion.ID != this.fusionId) {
+                this.fusionService.getFusionConfiguration(this.fusionId)
+                    .then(result => {
+                        this.isLoading = false;
+                        this.fusion = result;
 
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
 
-                    this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
+                        this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
 
-                });
-
+                    });
+            }
 
         });
     }   
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.clearSidebar();
     }
     
 };

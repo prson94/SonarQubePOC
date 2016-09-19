@@ -13,6 +13,8 @@ import { SharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
 import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
+import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
+
 
 import {
     GrowlModule,
@@ -95,15 +97,6 @@ import {
     DiagnosticIncorrectTextpathComponent,    
 } from './components/diagnostic/index';
 
-import {
-    ArtifactTypeForm,    
-    FieldTypeForm,
-    GroupForm,
-    LoadForm,
-    ResponsibilityItemForm,
-    ResponsibilityTypeForm,
-    WorkflowItemForm,
-} from './components/forms/index';
 
 import {
     HeaderActionsComponent,
@@ -181,8 +174,7 @@ import {
     ObjectDefinitionTile,
     ObjectDetailTile,
     ObjectGovernanceTile,
-    ObjectRelationshipsTile,
-    PeopleResponsibilitiesTile,
+    ObjectRelationshipsTile,    
     PredicatesTile,
     RelationshipsTile,
     ReportItemsTile,
@@ -243,7 +235,7 @@ import {
         ArtifactItemComponent,
         ArtifactListComponent,
         ArtifactTopLevelListComponent,
-        ArtifactTypeForm,
+      
         AttributesTile,     
         ClaimsMatrixPart,
         ClaimsTile,
@@ -252,11 +244,9 @@ import {
         DiagnosticComponent,
         DiagnosticIncorrectTextpathComponent,
         FieldDefinitionTile,
-        FieldTypeForm,
         FusionAttributesTile,        
         FusionConfigurationTile,
-        FusionFiltersTile,        
-        GroupForm,
+        FusionFiltersTile,              
         GroupMembersTile,
         HeaderActionsComponent,
         HeaderBreadcrumbComponent,
@@ -265,8 +255,7 @@ import {
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderTypeaheadSearchComponent,
-        HomeComponent,    
-        LoadForm,
+        HomeComponent,         
         LoadItemTile,
         MenuPart,    
         ModelComponent,
@@ -280,8 +269,7 @@ import {
         ObjectDetailField,
         ObjectDetailTile,      
         ObjectGovernanceTile,     
-        ObjectRelationshipsTile,    
-        PeopleResponsibilitiesTile,
+        ObjectRelationshipsTile,            
         PolicyComponent,
         PolicyItemComponent,    
         PredicatesTile,
@@ -297,9 +285,7 @@ import {
         ResourceItemComponent,
         ResourceResponsibilityGridTile,
         ResourceResponsibilityTile,
-        ResourceListComponent,
-        ResponsibilityItemForm,
-        ResponsibilityTypeForm,
+        ResourceListComponent,     
         RightSidebarComponent,
         RightSidebarItemComponent,
         RuleComponent,
@@ -315,7 +301,7 @@ import {
         AssignmentsTile,
         BoardTile,
         ActivityDetailsTile,     
-        WorkflowItemForm,     
+    
     ],
     imports: [
         BrowserModule,
@@ -357,6 +343,8 @@ import {
         SocialModule,   
         NavbarModule,   
         FusionModule,
+        D3SFormsModule,
+      
     ],
     bootstrap: [AppComponent],
     providers: [Title],    
