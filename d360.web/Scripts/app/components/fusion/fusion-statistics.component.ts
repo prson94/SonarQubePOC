@@ -76,7 +76,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                 text: title,
                 align: 'center',
                 verticalAlign: 'middle',
-                y: 0
+                y: 5
             },
             credits: {
                 enabled: false

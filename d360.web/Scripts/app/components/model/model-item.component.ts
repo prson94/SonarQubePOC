@@ -191,6 +191,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         for (let root of rootNodes) {
             res.push({
                 label: root.Name,
+                expanded: true,
                 data: {
                     id: root.ID, hasRelations: root.HasChildren
                 },                
