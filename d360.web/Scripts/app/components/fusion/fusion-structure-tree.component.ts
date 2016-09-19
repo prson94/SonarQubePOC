@@ -44,7 +44,12 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
         this.fusionService.getFusionFusionAttributeTypes(this.fusion.FusionTypeID).then(res => {
             this.fusionAttributeTypes = res;
             this.treeItems = this.buildTreeNodeArray(this.fusionAttributeTypes);
-            if (this.fusionAttributeTypeId) this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);            
+            if (this.fusionAttributeTypeId) this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
+            else if (this.treeItems.length > 0){
+                this.fusionAttributeTypeId = this.treeItems[0].data.id;
+                this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
+                this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+            }
             this.isLoading = false;
         });
     }

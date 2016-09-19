@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
-import { FusionAttributePagedResults } from '../models/fusion-attribute.model';
+import { FusionAttributePagedResults, FusionAttributeValueDetails } from '../models/fusion-attribute.model';
 import { SortOrder } from '../models/enums.model';
 
 @Injectable()
@@ -27,4 +27,10 @@ export class FusionAttributeService extends BaseService {
         window.location.assign(`fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&filterscount=0`);
     }
 
+    getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
+        return this.http.get(`fusion/details/FusionAttribute/${fusionAttributeId}`)
+            .toPromise()
+            .then(response => <FusionAttributeValueDetails>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

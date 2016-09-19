@@ -59,8 +59,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
-            console.log(changes['fusionAttributeTypeId']);
+        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.getFieldsDefinition();
         }
     }
@@ -86,6 +85,11 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionAttributeTypeId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder)
             .then(res => {
                 this.results = res;
+
+                if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
+                    this.fusionAttribute = this.results.results[0];
+                    this.fusionAttributeChange.emit(this.fusionAttribute);
+                }
             });
     }
 

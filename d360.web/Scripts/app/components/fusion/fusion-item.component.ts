@@ -28,9 +28,12 @@ import { FusionConfigurationDetails  } from '../../models/fusion.model';
                     </div>
                     <div class="col l10 m12 s12">
                         <d3s-fusion-attribute-summary [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
+                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">                            
+                            <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID"></d3s-fusion-attribute-item-details>
+                        </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-object-relationships [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
-                        </div>
+                        </div>                        
                     </div>
                 </div>
                 `,

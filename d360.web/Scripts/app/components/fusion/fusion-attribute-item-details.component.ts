@@ -1,0 +1,63 @@
+﻿///<reference path="../../es6-shim.d.ts"/>
+import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+import { BaseComponent } from '../shared/base.component';
+import { FusionAttributeService } from '../../services/index';
+import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
+
+@Component({
+    selector: 'd3s-fusion-attribute-item-details',
+    template: ` 
+                <header>Details</header>
+                <div *ngIf="isLoading">
+                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+                <div *ngIf="!isLoading" class="row">
+                    <div class="col l6 m6">
+                        <div class="FieldName">Name</div>
+                        <div class="FieldContent">{{fusionAttributeValueDetails?.Name}}</div>
+                    </div>
+                    <div class="col l6 m6">
+                        <div class="FieldName">Path</div>
+                        <div class="FieldContent">{{fusionAttributeValueDetails?.TextPath}}</div>
+                    </div>
+                    <div *ngFor="let field of fusionAttributeValueDetails.Fields" class="col l6 m6">
+                        <div class="FieldName">{{field.Name}}</div>
+                        <div class="FieldContent scrollLargeText" [title]="field?.Value">{{field?.Value}}</div>
+                    </div>
+                </div>                
+                `,
+    styles: [`
+            .scrollLargeText{
+                overflow:auto;
+                max-height:150px;
+                white-space:normal;
+                word-wrap:break-word;
+            }
+        `],
+    providers: [FusionAttributeService],
+})
+
+export class FusionAttributeItemDetailsComponent extends BaseComponent implements OnChanges {
+    @Input() fusionAttributeId: number;
+
+    private fusionAttributeValueDetails: FusionAttributeValueDetails;
+
+    constructor(private fusionAttributeService: FusionAttributeService) {
+        super();
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['fusionAttributeId'] && this.fusionAttributeId) {            
+            this.load();
+        }
+    }
+
+    private load() {
+        this.isLoading = true;
+        this.fusionAttributeService.getFusionAttributeDetails(this.fusionAttributeId)
+            .then(res => {
+                this.isLoading = false;
+                this.fusionAttributeValueDetails = res;
+            });
+    }
+};
