@@ -19,16 +19,17 @@ import { Model } from '../../models/model.model';
                         <div class="tile tile-detail" *ngIf="!isLoading">                            
                             <header>{{modelGroup}} Models
                                 <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
-                            </header>                              
-                            <p-dataTable #dt [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'200px'}"></p-column>                                                                                                                        
-                                <p-column field="TaxonomyTypeClass" [hidden]="modelGroup" header="Classification" [sortable]="true" [filter]="true" [style]="{width:'200px'}"></p-column>
-                                <p-column field="Description" header="Description" [sortable]="true" [filter]="true" [style]="{width:'500px'}">
+                            </header>         
+                            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                   
+                            <p-dataTable #dt [globalFilter]="gb"  [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}"></p-column>                                                                                                                        
+                                <p-column field="TaxonomyTypeClass" [hidden]="modelGroup" header="Classification" [sortable]="true" [style]="{width:'200px'}"></p-column>
+                                <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'500px'}">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.Description"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true" [style]="{width:'100px'}"></p-column>                                
+                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [style]="{width:'100px'}"></p-column>                                
                             </p-dataTable>      
                         </div>
                     </div>
