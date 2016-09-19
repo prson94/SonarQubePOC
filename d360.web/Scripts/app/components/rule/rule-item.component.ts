@@ -42,7 +42,7 @@ import { RuleDetail } from '../../models/rule.model';
                             <div class="row">
                                 <div class="col s12">
                                     <div class="tile tile-detail">
-                                        <d3s-object-relationships-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name"></d3s-object-relationships-tile>
+                                        <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
                                     </div>
                                 </div>
                             </div>

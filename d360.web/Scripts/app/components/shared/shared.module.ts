@@ -56,6 +56,7 @@ import { TagInputComponent } from './tag-input.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { TileActionsComponent } from './tile-actions.component';
 import { TooltipComponent } from './tooltip.component';
+import { ObjectRelationshipsComponent } from './object-relationships.component';
 
 
 @NgModule({
@@ -77,7 +78,8 @@ import { TooltipComponent } from './tooltip.component';
         ObjectFollowersComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
-        ObjectIssuesComponent,        
+        ObjectIssuesComponent,       
+        ObjectRelationshipsComponent, 
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
@@ -106,6 +108,7 @@ import { TooltipComponent } from './tooltip.component';
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
+        ObjectRelationshipsComponent,
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,

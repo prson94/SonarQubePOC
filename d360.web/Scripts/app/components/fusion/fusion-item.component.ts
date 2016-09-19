@@ -24,9 +24,13 @@ import { FusionConfigurationDetails  } from '../../models/fusion.model';
                 </div>        
                 <div class="row"*ngIf="!isLoading && !isOwnershipVisible">
                     <div class="col l2 m12 s12">
-                        <d3s-fusion-structure-tree [fusion]="fusion"></d3s-fusion-structure-tree>
+                        <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
                     </div>
                     <div class="col l10 m12 s12">
+                        <d3s-fusion-attribute-summary [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
+                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
+                            <d3s-object-relationships [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
+                        </div>
                     </div>
                 </div>
                 `,
@@ -36,7 +40,9 @@ import { FusionConfigurationDetails  } from '../../models/fusion.model';
 export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private fusionId: number;
-    private fusion: FusionConfigurationDetails ;
+    private fusion: FusionConfigurationDetails;
+    private selectedFusionAttributeTypeId: number;
+    private selectedFusionAttribute: any;
 
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,
@@ -54,6 +60,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.sub = this.route.params.subscribe(params => {
 
             this.fusionId = +params['fusionId'];
+            this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
 
@@ -79,5 +86,9 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.sub.unsubscribe();
         this.clearSidebar();
     }
-    
+
+    private changeFusionAttributeTypeId(event) {
+        this.selectedFusionAttribute = null;
+        this.router.navigateByUrl(`/a/fusion/${this.fusionId};fusionAttributeTypeId=${event}`);
+    }    
 };

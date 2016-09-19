@@ -22,7 +22,6 @@ import { ModelLevelTile } from './model-level.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectDetailTile } from './object-detail.tile';
 import { ObjectGovernanceTile } from './object-governance-tile';
-import { ObjectRelationshipsTile } from './object-relationships.tile';
 import { PredicatesTile } from './predicates.tile';
 import { RelationshipsTile } from './relationships.tile';
 import { ReportItemsTile } from './report-items.tile';
@@ -70,8 +69,7 @@ import {
         ModelLevelTile,
         ObjectDefinitionTile,
         ObjectDetailTile,
-        ObjectGovernanceTile,
-        ObjectRelationshipsTile,        
+        ObjectGovernanceTile,         
         PredicatesTile,
         RelationshipsTile,
         ReportItemsTile,
@@ -102,8 +100,7 @@ import {
         ModelLevelTile,
         ObjectDefinitionTile,
         ObjectDetailTile,
-        ObjectGovernanceTile,
-        ObjectRelationshipsTile,        
+        ObjectGovernanceTile,          
         PredicatesTile,
         RelationshipsTile,
         ReportItemsTile,

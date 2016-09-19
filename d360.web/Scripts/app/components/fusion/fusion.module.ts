@@ -10,6 +10,7 @@ import { ChartModule } from  '../shared/chart.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
+import { FusionAttributeSummaryComponent } from './fusion-attribute-summary.component';
 import { FusionComponent } from './fusion.component';
 import { FusionConfigurationComponent } from './fusion-configurations.component';
 import { FusionExecutionHistoryComponent } from './fusion-execution-history.component';
@@ -79,6 +80,7 @@ import {
     ],
     declarations: [
         FusionAgentHistoryComponent,
+        FusionAttributeSummaryComponent,
         FusionComponent,
         FusionConfigurationComponent,
         FusionExecutionHistoryComponent,
@@ -90,6 +92,7 @@ import {
     ],
     exports: [
         FusionAgentHistoryComponent,
+        FusionAttributeSummaryComponent,
         FusionComponent,
         FusionConfigurationComponent,
         FusionExecutionHistoryComponent,

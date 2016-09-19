@@ -1379,6 +1379,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-configurations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
@@ -1469,7 +1470,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-relationship-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
@@ -1504,7 +1504,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-governance-tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\object-relationships.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\report-items.tile.ts" />
@@ -1534,6 +1534,7 @@
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\follower.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\fusion-attribute.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
@@ -1593,6 +1594,7 @@
     <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\fusion-attribute.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />

@@ -6,7 +6,7 @@ import { ObjectRelationshipCount } from '../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
 
 @Component({
-    selector: 'd3s-object-relationships-tile',
+    selector: 'd3s-object-relationships',
     providers: [RelationshipsService],    
     styles: [`
     div.relationship-container{
@@ -65,7 +65,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
                 `,
 })
 
-export class ObjectRelationshipsTile extends BaseComponent implements OnChanges {
+export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;

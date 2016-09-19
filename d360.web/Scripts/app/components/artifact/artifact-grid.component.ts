@@ -117,8 +117,7 @@ export class ArtifactGridComponent implements OnChanges {
 
     error: any;
     items: any[];
-    columns: GridColumn[] = [];
-    fields: GridField[] = [];
+    columns: GridColumn[] = [];    
     filtercolumns: GridFilterColumn[] = [];
     
     showDelete: boolean = false;
