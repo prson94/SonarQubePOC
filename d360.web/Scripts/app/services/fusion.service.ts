@@ -160,7 +160,7 @@ export class FusionService extends BaseService {
 
 
     getFusionFusionAttributeTypes(fusionId: number): Promise<FusionAttributeType[]>{
-        return this.http.get(`services/fusion/${fusionId}/attributetypes`)
+        return this.http.get(`services/fusion/${fusionId}/attributetypes?$orderby=Name`)
             .toPromise()
             .then(response => <FusionAttributeType[]>response.json())
             .catch(err => this.handleError(err));

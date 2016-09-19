@@ -1,10 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HeaderBreadcrumbService, FusionService, RightSidebarService } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { FusionConfigurationDetails  } from '../../models/fusion.model';
+import { FusionConfigurationDetails, FusionAttributeType  } from '../../models/fusion.model';
+import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -29,7 +30,7 @@ import { FusionConfigurationDetails  } from '../../models/fusion.model';
                     <div class="col l10 m12 s12">
                         <d3s-fusion-attribute-summary [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">                            
-                            <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID"></d3s-fusion-attribute-item-details>
+                            <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
                         </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-object-relationships [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
@@ -46,6 +47,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private fusion: FusionConfigurationDetails;
     private selectedFusionAttributeTypeId: number;
     private selectedFusionAttribute: any;
+    @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
+    
 
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,
@@ -72,14 +75,15 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                     .then(result => {
                         this.isLoading = false;
                         this.fusion = result;
-
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
+                        
+                        this.buildBreadcrumb();
 
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
 
                     });
+            }
+            else {
+                this.buildBreadcrumb();
             }
 
         });
@@ -89,6 +93,36 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.sub.unsubscribe();
         this.clearSidebar();
     }
+
+    private loadFusionTypeStructure() {
+        
+    }
+    
+
+    private buildBreadcrumb() {
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
+
+        if (this.selectedFusionAttributeTypeId && this.fusionTreeComponent.fusionAttributeTypes) {
+            this.addFusionAttributeTypeBreadcrumb(this.selectedFusionAttributeTypeId);
+        }
+
+    }
+
+    private addFusionAttributeTypeBreadcrumb(id: number) {
+        var items = this.fusionTreeComponent.fusionAttributeTypes.filter(x => x.ID == id);
+
+        if (items.length > 0) {
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/a/fusion/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));
+
+      //      if (items[0].ParentID)
+        //        this.addFusionAttributeTypeBreadcrumb(items[0].ParentID);
+        }
+
+        
+    }
+
 
     private changeFusionAttributeTypeId(event) {
         this.selectedFusionAttribute = null;

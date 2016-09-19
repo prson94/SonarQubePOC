@@ -20,7 +20,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                             <template let-col let-item="rowData" pTemplate type="body">
-                                <div [innerHtml]="item[column.datafield]"></div>
+                                <div [innerHtml]="item[column.datafield]" class="truncate"></div>
                             </template>
                         </p-column>                            
                     </p-dataTable>                   

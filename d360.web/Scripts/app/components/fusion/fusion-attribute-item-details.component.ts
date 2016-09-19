@@ -7,7 +7,7 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
 @Component({
     selector: 'd3s-fusion-attribute-item-details',
     template: ` 
-                <header>Details</header>
+                <header>{{name}} Details</header>
                 <div *ngIf="isLoading">
                     <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
@@ -39,6 +39,7 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
 
 export class FusionAttributeItemDetailsComponent extends BaseComponent implements OnChanges {
     @Input() fusionAttributeId: number;
+    @Input() name: string;
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 

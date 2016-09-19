@@ -32,7 +32,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     private treeItems: TreeNode[];
     private selected: TreeNode;
 
-    private fusionAttributeTypes: FusionAttributeType[] = [];
+    public fusionAttributeTypes: FusionAttributeType[] = [];
 
     constructor(private fusionService: FusionService) {
         super();

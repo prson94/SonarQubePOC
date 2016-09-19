@@ -75,7 +75,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
-
+    
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
     
     constructor(protected relationshipsService : RelationshipsService) {
