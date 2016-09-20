@@ -18,25 +18,28 @@ import { Title } from '@angular/platform-browser';
                             </header>   
                             <div *ngIf="isLoading">
                                 <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>                         
-                            <p-dataTable *ngIf="!showEditor && !showDelete && !isLoading" [value]="lookups" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedLookup"  (onRowDblclick)="selectedLookup=$event.data;showEditor=true;" >                                                        
-                                <p-column field="ID" header="ID" [sortable]="true" [filter]="true"></p-column>                                                            
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
-                                <p-column [style]="{width:'40px'}">
-                                    <template let-lookup="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selectedLookup=lookup;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                                <p-column  [style]="{width:'40px'}">
-                                    <template let-lookup="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selectedLookup=lookup;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                            </p-dataTable>   
+                            </div>          
+                            <span *ngIf="!showEditor && !showDelete && !isLoading">       
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                      
+                                <p-dataTable [globalFilter]="gb" [value]="lookups" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedLookup"  (onRowDblclick)="selectedLookup=$event.data;showEditor=true;" >                                                        
+                                    <p-column field="ID" header="ID" [sortable]="true"></p-column>                                                            
+                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                            
+                                    <p-column [style]="{width:'40px'}">
+                                        <template let-lookup="rowData" pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selectedLookup=lookup;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                    <p-column  [style]="{width:'40px'}">
+                                        <template let-lookup="rowData" pTemplate type="body">
+                                            <div class="RowTools">                                
+                                                <a style="cursor:pointer;" (click)="selectedLookup=lookup;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                </p-dataTable>  
+                            </span> 
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selectedLookup?.ID"

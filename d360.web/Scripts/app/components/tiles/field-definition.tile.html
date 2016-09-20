@@ -20,15 +20,16 @@
         </delete-form>
     </div>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
-        <p-dataTable [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
-            <p-column field="FriendlyName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
-            <p-column field="Category" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }"></p-column>
-            <p-column field="IsRequired" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
+        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
+        <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
+            <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '22%' }"></p-column>
+            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '22%' }"></p-column>
+            <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '22%' }">
                 <template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
                 </template>
             </p-column>
-            <p-column field="IsListable" header="Listable?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '22%' }">
+            <p-column field="IsListable" header="Listable?" sortable="true" [style]="{ 'width': '22%' }">
                 <template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsListable" disabled />
                 </template>

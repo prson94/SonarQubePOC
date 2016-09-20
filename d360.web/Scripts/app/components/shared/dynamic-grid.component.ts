@@ -2,7 +2,7 @@
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
-import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService } from '../../services/index';
 
 
@@ -16,23 +16,31 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>           
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
-                    <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable"></p-column>
-                    <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
+                <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                    <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
                             <template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                </div>
+                                <span *ngIf="isColumnDate(column)">{{item[column.datafield] | date:'short'}}</span>
+                                <span *ngIf="!isColumnDate(column)">{{item[column.datafield]}}</span>
                             </template>
-                    </p-column>                            
-                    <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
-                            <template let-item="rowData" pTemplate type="body">
-                                <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                </div>
-                            </template>
-                    </p-column>                            
-                </p-dataTable>   
+                        </p-column>
+                        <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </template>
+                        </p-column>                            
+                        <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">                                
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
+                                </template>
+                        </p-column>                            
+                    </p-dataTable>   
+                </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
@@ -64,6 +72,7 @@ export class DynamicGridComponent implements OnChanges {
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];   
+    fields: GridField[] = [];
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -96,7 +105,8 @@ export class DynamicGridComponent implements OnChanges {
     getFieldsDefinition() {        
         this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
             .then(result => {
-                this.columns = result.Columns;                
+                this.columns = result.Columns;
+                this.fields = result.Fields;              
             });
     }    
 
@@ -135,6 +145,14 @@ export class DynamicGridComponent implements OnChanges {
                 this.showEditor = false;                
                 this.getData();                
             });
+    }
+
+    isColumnDate(column: GridColumn) {
+        var fields = this.fields.filter(x => x.name == column.datafield);
+
+        if (fields.length > 0)
+            return fields[0].type == 'date';
+        return false;
     }
 }
 

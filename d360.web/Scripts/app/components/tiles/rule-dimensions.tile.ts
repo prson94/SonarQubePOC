@@ -14,28 +14,31 @@ import { MessagesService, RulesService  } from '../../services/index';
                 <div *ngIf="isLoading" style="width:100%; text-align:center;">
                     <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
-                <p-column field="Description" header="Description" [sortable]="true" [filter]="true">
-                    <template let-col let-dimension="rowData" pTemplate type="body">
-                        <div [innerHtml]="dimension?.Description"></div>
-                    </template>                                                        
-                </p-column>    
-                    <p-column [style]="{width:'40px'}">
-                        <template let-dimension="rowData" pTemplate type="body">
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                            </div>
-                        </template>
-                    </p-column>                            
-                    <p-column  [style]="{width:'40px'}">
-                        <template let-dimension="rowData" pTemplate type="body">
-                            <div class="RowTools">                                
-                                <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                            </div>
-                        </template>
-                    </p-column>                            
-                </p-dataTable> 
+                <span  *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                   <p-dataTable [globalFilter]="gb" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
+                    <p-column field="Description" header="Description" [sortable]="true">
+                        <template let-col let-dimension="rowData" pTemplate type="body">
+                            <div [innerHtml]="dimension?.Description"></div>
+                        </template>                                                        
+                    </p-column>    
+                        <p-column [style]="{width:'40px'}">
+                            <template let-dimension="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=dimension;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                </div>
+                            </template>
+                        </p-column>                            
+                        <p-column  [style]="{width:'40px'}">
+                            <template let-dimension="rowData" pTemplate type="body">
+                                <div class="RowTools">                                
+                                    <a style="cursor:pointer;" (click)="selected=dimension;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </template>
+                        </p-column>                            
+                    </p-dataTable> 
+                </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RuleDimension'" [title]="'Rule Dimension'" [selection]="selected" (saveClick)="saveDimension($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
