@@ -20,6 +20,7 @@ import { FusionPromotionHistoryComponent } from './fusion-promotion-history.comp
 import { FusionStatisticsComponent } from './fusion-statistics.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
+import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
 
 import {
     GrowlModule,
@@ -83,6 +84,7 @@ import {
         FusionAgentHistoryComponent,
         FusionAttributeItemDetailsComponent,
         FusionAttributeSummaryComponent,
+        FusionAttributeSummaryFiltersComponent,
         FusionComponent,
         FusionConfigurationComponent,
         FusionExecutionHistoryComponent,
@@ -96,6 +98,7 @@ import {
         FusionAgentHistoryComponent,
         FusionAttributeItemDetailsComponent,
         FusionAttributeSummaryComponent,
+        FusionAttributeSummaryFiltersComponent,
         FusionComponent,
         FusionConfigurationComponent,
         FusionExecutionHistoryComponent,

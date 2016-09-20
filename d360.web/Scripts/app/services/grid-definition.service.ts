@@ -10,8 +10,14 @@ export class GridDefinitionService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getGridDefinition(objectID: number, objectType: string): Promise<GridDefinition> {
-        return this.http.get(`api/${objectType}/${objectID}/grid/definition`)
+    getGridDefinition(objectID: number, objectType: string, parentID?: number, parentType?: string): Promise<GridDefinition> {
+        let url = `api/${objectType}/${objectID}/grid/definition`;
+
+        if (parentID && parentType) {
+            url += `?${parentType}=${parentID}`;
+        }
+        
+        return this.http.get(url)
             .toPromise()
             .then(response => <GridDefinition>response.json())
             .catch(err => this.handleError(err));

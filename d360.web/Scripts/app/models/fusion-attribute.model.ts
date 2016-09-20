@@ -14,3 +14,9 @@ export class FusionAttributeValueDetails {
     TextPath: string;
     Fields: FusionAttributeFieldValue[];
 }
+
+export class FusionAttributeFilter {
+    dataField: string;
+    value: string;
+    condition: string = 'CONTAINS';
+}

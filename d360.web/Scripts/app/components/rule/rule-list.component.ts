@@ -22,16 +22,17 @@ import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
                                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
-                                    </header>                              
-                                    <p-dataTable [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
-                                        <p-column field="ID" header="ID" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
-                                        <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'45%'}"></p-column>                                                                                                                        
-                                        <p-column field="RuleType" header="Type" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
+                                    </header>      
+                                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
+                                    <p-dataTable [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
+                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
+                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'45%'}"></p-column>                                                                                                                        
+                                        <p-column field="RuleType" header="Type" [sortable]="true" [style]="{width:'15%'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{getRuleTypeText(data.RuleType)}}</span>
                                             </template>                          
                                         </p-column>
-                                        <p-column field="Dimension" header="Dimension" [sortable]="true" [filter]="true" [style]="{width:'15%'}">
+                                        <p-column field="Dimension" header="Dimension" [sortable]="true" [style]="{width:'15%'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.Dimension?.Name}}</span>
                                             </template>                          

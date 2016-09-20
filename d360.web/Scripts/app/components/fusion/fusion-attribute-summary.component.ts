@@ -4,7 +4,7 @@ import { FusionAttributeService, GridDefinitionService } from '../../services/in
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
 import { LazyLoadEvent } from 'primeng/primeng';
-import { FusionAttributePagedResults } from '../../models/fusion-attribute.model';
+import { FusionAttributePagedResults, FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 
@@ -16,7 +16,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 </div>
                 <div class="tile tile-detail" *ngIf="!isLoading">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
-                 <!--   <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">  -->
+                    <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
                     <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                             <template let-col let-item="rowData" pTemplate type="body">
@@ -39,9 +39,10 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     
     
-    private totalRecords: number;
+    //private totalRecords: number;
     private rowsPerPage: number = 10;
     private results: FusionAttributePagedResults;
+    private filters: FusionAttributeFilter[] = [];
     columns: GridColumn[] = [];    
     filtercolumns: GridFilterColumn[] = [];
 
@@ -60,13 +61,14 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
+            this.filters = [];
             this.getFieldsDefinition();
         }
     }
 
     getFieldsDefinition() {
         this.isLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.fusionAttributeTypeId, 'FusionAttributeType')
+        this.gridDefinitionService.getGridDefinition(this.fusionAttributeTypeId, 'FusionAttributeType', this.fusionId, 'FusionID')
             .then(result => {
                 if (result) {
                     this.columns = result.Columns;
@@ -76,13 +78,19 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             });
     }
 
+    private doFilterResults(event) {
+        this.filters = event;
+        this.currentPageNumber = 0;        
+        this.getData();
+    }
+
     private getData() {        
         if (!this.fusionId || !this.fusionAttributeTypeId) {
             console.log("ERROR - NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
         }
 
-        this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionAttributeTypeId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder)
+        this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionAttributeTypeId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
             .then(res => {
                 this.results = res;
 
