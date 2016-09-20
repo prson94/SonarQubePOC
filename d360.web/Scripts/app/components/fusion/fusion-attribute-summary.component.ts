@@ -10,20 +10,20 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
 
 @Component({
     selector: 'd3s-fusion-attribute-summary',
-    template: ` 
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
-                <div class="tile tile-detail" *ngIf="!isLoading">
+    template: `                 
+                <div class="tile tile-detail">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
-                    <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
-                    <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
-                            <template let-col let-item="rowData" pTemplate type="body">
-                                <div [innerHtml]="item[column.datafield]" class="truncate"></div>
-                            </template>
-                        </p-column>                            
-                    </p-dataTable>                   
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    <span *ngIf="!isLoading">
+                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
+                        <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
+                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <div [innerHtml]="item[column.datafield]" class="truncate"></div>
+                                </template>
+                            </p-column>                            
+                        </p-dataTable>                   
+                    </span>
                 </div>
                 `,
     providers: [FusionAttributeService, GridDefinitionService],

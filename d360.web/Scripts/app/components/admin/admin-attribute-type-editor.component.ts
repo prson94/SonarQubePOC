@@ -54,8 +54,8 @@ import * as _ from 'lodash';
                         </div>                           
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!attributeForm.form.valid" style="width: '150px';" label="Save"></button>                            
-                            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
+                            <button pButton type="submit" [disabled]="!attributeForm.form.valid" style="width: 150px;" label="Save"></button>                            
+                            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: 150px;"></button>
                         </div>                    
                     </form>                           
                 </div>

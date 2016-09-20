@@ -43,6 +43,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { LineageComponent } from './lineage.component';
+import { LoadingComponent } from './loading.component';
 import { MessagesComponent } from './messages.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
@@ -74,6 +75,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         FollowerGridComponent,
         FusionAttributeItemDetailsComponent,        
         LineageComponent,
+        LoadingComponent,
         MessagesComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
@@ -104,6 +106,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,       
         LineageComponent,
+        LoadingComponent,
         MessagesComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,

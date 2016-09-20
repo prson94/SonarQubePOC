@@ -114,3 +114,21 @@ export class FusionSummaryStats {
     FusionExecutions: number;
     PromotionJobsExecuted: number;
 }
+
+export class FusionProcessError {
+    Date: Date;
+    Error: string;
+    ExecutionID: number;
+    Fusion: string;
+    FUsionID: number;
+    FusionType: string;
+    FusionTypeID: number;
+}
+
+export class FusionAgentError {
+    Date: Date;
+    Fusion: string;
+    FusionID: number;
+    MachineName: string;
+    Message: string;
+}

@@ -8,34 +8,34 @@ import { Fusion } from '../../models/fusion.model';
 @Component({
     selector: 'd3s-fusion-configuration',
     template: ` 
-                <div *ngIf="isLoading">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
-                <div class="tile tile-detail" *ngIf="!isLoading">
+                <div class="tile tile-detail">
                     <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                    <p-dataTable [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion();" >
-                                        <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'20%'}"></p-column>
-                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}"></p-column>
-                                        <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'25%'}">
-                                            <template let-item="rowData" pTemplate type="body">
-                                                <span [innerHtml]="item.Description"></span>
-                                            </template>
-                                        </p-column>
-                                        <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}">
-                                            <template let-item="rowData" pTemplate type="body">
-                                                <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
-                                                <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
-                                            </template>
-                                        </p-column>
-                                        <p-column [style]="{width:'4%'}">
-                                            <template let-item="rowData" pTemplate type="body">
-                                                <div class="RowTools">                                
-                                                    <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    
-                                                </div>
-                                            </template>
-                                        </p-column>
-                    </p-dataTable>      
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    <span *ngIf="!isLoading">
+                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <p-dataTable [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion();" >
+                                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'20%'}"></p-column>
+                                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}"></p-column>
+                                            <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'25%'}">
+                                                <template let-item="rowData" pTemplate type="body">
+                                                    <span [innerHtml]="item.Description"></span>
+                                                </template>
+                                            </p-column>
+                                            <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}">
+                                                <template let-item="rowData" pTemplate type="body">
+                                                    <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                                                    <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+                                                </template>
+                                            </p-column>
+                                            <p-column [style]="{width:'4%'}">
+                                                <template let-item="rowData" pTemplate type="body">
+                                                    <div class="RowTools">                                
+                                                        <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    
+                                                    </div>
+                                                </template>
+                                            </p-column>
+                        </p-dataTable>      
+                    </span>
                 </div>
                 `,
     providers: [FusionService],        

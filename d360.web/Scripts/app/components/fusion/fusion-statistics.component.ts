@@ -7,11 +7,11 @@ import { FusionSummaryStats } from '../../models/fusion.model';
 @Component({
     selector: 'd3s-fusion-statistics',
     template: ` 
-                <div class="tile tile-detail">
+                <div class="tile tile-detail" *ngIf="!showAgentHistory && !showFusionHistory">
                     <header>Statistics</header>
                     <div class="row">                        
                         <div class="col l6 s12">
-                            <div class="row">
+                            <div class="row" (click)="showAgentHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Agent % Success</div>
                                 <div class="col s12">
                                     <chart [options]="agentPie"></chart>
@@ -19,13 +19,26 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                             </div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="row">
+                            <div class="row" (click)="showFusionHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Processing % Success</div>
                                 <div class="col s12">
                                     <chart [options]="workerPie"></chart>
                                 </div>
+                            </div>
                         </div>
-                    </div>                    
+                    </div>  
+                </div> 
+                <div class="tile tile-detail" *ngIf="showAgentHistory">
+                    <div class="row">
+                        <d3s-fusion-agent-errors></d3s-fusion-agent-errors>
+                        <button pButton type="button" (click)="showAgentHistory=false;" label="Close" style="width: 150px;"></button>
+                    </div>                 
+                </div>
+                <div class="tile tile-detail" *ngIf="showFusionHistory">
+                    <div class="row" *ngIf="showFusionHistory">                        
+                        <d3s-fusion-process-errors></d3s-fusion-process-errors>
+                        <button pButton type="button" (click)="showFusionHistory=false;" label="Close" style="width: 150px;"></button>
+                    </div>   
                 </div>
                 `,
     providers: [FusionService],
@@ -35,6 +48,9 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
     private fusionSummaryStats: FusionSummaryStats;
     private agentPie: Object;
     private workerPie: Object;
+
+    private showAgentHistory: boolean;
+    private showFusionHistory: boolean;
 
     constructor(private fusionService: FusionService) {
         super();

@@ -8,15 +8,15 @@ import { TreeNode } from 'primeng/primeng';
 @Component({
     selector: 'd3s-fusion-structure-tree',
     template: ` 
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
-                <div class="tile tile-detail" *ngIf="!isLoading">
+                <div class="tile tile-detail">
                     <header>Structure</header>
-                    <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;"> 
-                    <p-tree [value]="treeItems | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" [style]="{'line-height':'25px','width':'auto'}" 
-                            (onNodeSelect)="nodeSelect($event)">                 
-                    </p-tree>
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                    <span *ngIf="!isLoading">
+                        <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;"> 
+                        <p-tree [value]="treeItems | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" [style]="{'line-height':'25px','width':'auto'}" 
+                                (onNodeSelect)="nodeSelect($event)">                 
+                        </p-tree>
+                    </span>
                 </div>
                 `,
     providers: [FusionService],
