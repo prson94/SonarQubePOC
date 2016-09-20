@@ -7,7 +7,7 @@ export const FusionRoutes = [
         path: 'a/fusion',
         component: FusionComponent,        
         children: [
-            { path: ':fusionId', component: FusionItemComponent },
+            { path: ':fusionId', component: FusionItemComponent },            
             { path: '', component: FusionListComponent }
         ]
     }

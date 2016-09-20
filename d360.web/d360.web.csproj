@@ -1379,7 +1379,7 @@
     <TypeScriptCompile Include="Scripts\app\components\forms\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-configurations.component.ts" />

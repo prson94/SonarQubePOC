@@ -1,5 +1,5 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
@@ -20,7 +20,7 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
                         <div class="FieldName">Path</div>
                         <div class="FieldContent">{{fusionAttributeValueDetails?.TextPath}}</div>
                     </div>
-                    <div *ngFor="let field of fusionAttributeValueDetails.Fields" class="col l6 m6">
+                    <div *ngFor="let field of fusionAttributeValueDetails?.Fields" class="col l6 m6">
                         <div class="FieldName">{{field.Name}}</div>
                         <div class="FieldContent scrollLargeText" [title]="field?.Value">{{field?.Value}}</div>
                     </div>
@@ -43,7 +43,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
 
     private fusionAttributeValueDetails: FusionAttributeValueDetails;
 
-    constructor(private fusionAttributeService: FusionAttributeService) {
+    constructor(private fusionAttributeService: FusionAttributeService, private router: Router) {
         super();
     }
 
@@ -60,5 +60,9 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
                 this.isLoading = false;
                 this.fusionAttributeValueDetails = res;
             });
+    }
+
+    public openItemInFusion() {
+        this.router.navigateByUrl(`/a/fusion/${this.fusionAttributeValueDetails.FusionID};fusionAttributeTypeId=${this.fusionAttributeValueDetails.FusionAttributeTypeID};fusionAttributeId=${this.fusionAttributeId}`);
     }
 };

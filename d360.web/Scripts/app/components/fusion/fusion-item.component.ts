@@ -6,6 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FusionConfigurationDetails, FusionAttributeType  } from '../../models/fusion.model';
 import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
+import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -28,7 +29,7 @@ import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
                         <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
                     </div>
                     <div class="col l10 m12 s12">
-                        <d3s-fusion-attribute-summary [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
+                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">                            
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
                         </div>
@@ -47,6 +48,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private fusion: FusionConfigurationDetails;
     private selectedFusionAttributeTypeId: number;
     private selectedFusionAttribute: any;
+    private initialFusionAttributeId: number;
+
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
     
 
@@ -67,8 +70,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
             this.fusionId = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
-
-            this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
+            this.initialFusionAttributeId = +params['fusionAttributeId'];
+            
 
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.fusionService.getFusionConfiguration(this.fusionId)
@@ -79,6 +82,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         this.buildBreadcrumb();
 
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
+
+                        this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
 
                     });
             }

@@ -109,12 +109,13 @@ export class RelationshipsService extends BaseService {
         window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls`);        
     }
 
-    deleteRelationshipItem(id : number) {
+    deleteRelationshipItem(id: number): Promise<any> {
         let url = `/api/relationships/${id}`;
 
         return this.http
             .delete(url)
             .toPromise()
+            .then(response => response)
             .catch(err => this.handleError(err));
     }
 

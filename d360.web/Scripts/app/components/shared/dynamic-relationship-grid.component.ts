@@ -5,6 +5,7 @@ import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 
+
 @Component({
     selector: 'd3s-dynamic-relationship-grid',    
     providers: [GridDefinitionService, RelationshipsService],
@@ -70,6 +71,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() relationshipAdded = new EventEmitter();
     @Output() relationshipRemoved = new EventEmitter();
 
+    
     relations: any[] = [];
     columns: GridColumn[] = [];
     
@@ -86,7 +88,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         
-        if (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null) this.load();                
+        if (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null) this.load();  
+        this.showTechnical = false;
     }
 
     load() {
@@ -154,11 +157,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item.ID);
+        this.relationshipsService.deleteRelationshipItem(item.ID).then(res => {
+            this.relations.splice(this.findItemIndex(item.ID), 1);
 
-        this.relations.splice(this.findItemIndex(item.ID), 1);
-
-        this.relationshipRemoved.emit();
+            this.relationshipRemoved.emit();
+        });
     }
     
 }

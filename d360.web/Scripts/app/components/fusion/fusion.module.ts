@@ -19,7 +19,6 @@ import { FusionListComponent } from './fusion-list.component';
 import { FusionPromotionHistoryComponent } from './fusion-promotion-history.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
-import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
 
 import {
@@ -81,8 +80,7 @@ import {
         PipesModule,
     ],
     declarations: [
-        FusionAgentHistoryComponent,
-        FusionAttributeItemDetailsComponent,
+        FusionAgentHistoryComponent,        
         FusionAttributeSummaryComponent,
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,
@@ -95,8 +93,7 @@ import {
         FusionStructureTreeComponent,
     ],
     exports: [
-        FusionAgentHistoryComponent,
-        FusionAttributeItemDetailsComponent,
+        FusionAgentHistoryComponent,        
         FusionAttributeSummaryComponent,
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,

@@ -4,11 +4,12 @@ import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';
 import { FusionAttributeValueDetails, FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-attribute-summary-filters',
-    template: ` <form (ngSubmit)="filtersChange.emit(this.filters);" #filterForm="ngForm">
-                <div class="row advSearchRow" *ngFor="let filter of filters;let last = last;let i = index">
+    template: ` <form (ngSubmit)="filterResults()" #filterForm="ngForm">
+                <div class="row advSearchRow" *ngFor="let filter of internalFilters;let last = last;let i = index">
                     <div class="col s1 center-align">Field:</div>
                     <div class="col s3">                        
                         <select [name]="'field'+i" required [(ngModel)]="filter.dataField" style="width:100%;" #field="ngModel">
@@ -26,7 +27,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                         <button pButton type="button" (click)="addFilter()" label="+" [disabled]="!filterForm.form.valid"></button>
                     </div>
                     <div class="col s1" *ngIf="!last">
-                        <button pButton type="button" (click)="removeFilter(i)" label="-" [disabled]="!filterForm.form.valid"></button>
+                        <button pButton type="button" (click)="removeFilter(i)" label="-" ></button>
                     </div>
                     <div class="col s1 offset-s1" *ngIf="last">
                         <button pButton type="button" (click)="removeAllFilters()" label="Clear All" style="width: 100px;"></button>
@@ -46,18 +47,33 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
 
     @Input() filterColumns: GridFilterColumn[];
 
+    private internalFilters: FusionAttributeFilter[] = [];
+
     constructor(private fusionAttributeService: FusionAttributeService) {
         super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['filterColumns'] && this.filterColumns.length > 0 && this.filters.length == 0) {
-            this.filters.push(new FusionAttributeFilter());            
+        if (changes['filterColumns'] && this.filterColumns.length > 0) {
+            if (this.filters.length == 0 && this.internalFilters.length == 0)
+                this.internalFilters.push(new FusionAttributeFilter());
+            else
+                this.internalFilters = _.cloneDeep(this.filters);
+
+        }
+        else if (changes['filters'] && this.filters.length > 0) {
+            console.log(this.filters);
+            this.internalFilters = _.cloneDeep(this.filters);
         }
     }
 
     private addFilter() {
-        this.filters.push(new FusionAttributeFilter());            
+        this.internalFilters.push(new FusionAttributeFilter());            
+    }
+
+    private filterResults() {        
+        this.filters = _.cloneDeep(this.internalFilters);
+        this.filtersChange.emit(this.filters);
     }
 
     private removeFilter(index) {
@@ -66,11 +82,12 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
 
             return;
         }
-        this.filters.splice(index, 1);
+        this.internalFilters.splice(index, 1);
     }
 
     private removeAllFilters() {
         this.filters.splice(0, this.filters.length);
+        this.internalFilters.splice(0, this.filters.length);
         this.filtersChange.emit(this.filters);
 
         this.filters.push(new FusionAttributeFilter());            

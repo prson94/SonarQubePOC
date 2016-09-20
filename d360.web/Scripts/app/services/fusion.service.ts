@@ -42,6 +42,13 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionConfigurationFromObjectId(fusionAttributeId: number): Promise<FusionConfigurationDetails> {
+        return this.http.get(`services/fusion/configurationByObjectId/${fusionAttributeId}`)
+            .toPromise()
+            .then(response => <FusionConfigurationDetails>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getFusionConfigurations(): Promise<Fusion[]> {
         return this.http.get(`services/fusion/configurations?$orderby=FusionType,Name`)
             .toPromise()

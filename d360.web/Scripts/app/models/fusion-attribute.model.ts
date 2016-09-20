@@ -13,6 +13,8 @@ export class FusionAttributeValueDetails {
     Name: string;
     TextPath: string;
     Fields: FusionAttributeFieldValue[];
+    FusionID: number;
+    FusionAttributeTypeID: number;
 }
 
 export class FusionAttributeFilter {

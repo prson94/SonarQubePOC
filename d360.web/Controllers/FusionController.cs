@@ -1143,7 +1143,9 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             {
                 Fields = res,
                 Name = fusionAttribute.Name,
-                TextPath = fusionAttribute.TextPath
+                TextPath = fusionAttribute.TextPath,
+                FusionID = fusionAttribute.FusionID,
+                FusionAttributeTypeID = fusionAttribute.FusionAttributeTypeID
             };
 
             return Json(model, JsonRequestBehavior.AllowGet);

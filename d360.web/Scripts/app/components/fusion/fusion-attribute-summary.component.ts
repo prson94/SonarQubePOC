@@ -16,7 +16,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 </div>
                 <div class="tile tile-detail" *ngIf="!isLoading">
                     <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
-                    <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
+                    <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
                     <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                             <template let-col let-item="rowData" pTemplate type="body">
@@ -37,12 +37,14 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     @Input() fusionAttribute: any;
     @Output() fusionAttributeChange = new EventEmitter();
 
-    
+    @Input() initialFusionAttributeId: number;
+
+    private filters: FusionAttributeFilter[] = [];
+        
     
     //private totalRecords: number;
     private rowsPerPage: number = 10;
-    private results: FusionAttributePagedResults;
-    private filters: FusionAttributeFilter[] = [];
+    private results: FusionAttributePagedResults;    
     columns: GridColumn[] = [];    
     filtercolumns: GridFilterColumn[] = [];
 
@@ -60,8 +62,12 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
-            this.filters = [];
+        if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
+            if (this.initialFusionAttributeId > 0)
+                this.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS' }];
+            else   
+                this.filters = [];
+
             this.getFieldsDefinition();
         }
     }
@@ -78,7 +84,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             });
     }
 
-    private doFilterResults(event) {
+    private doFilterResults(event) {        
         this.filters = event;
         this.currentPageNumber = 0;        
         this.getData();
@@ -88,6 +94,16 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         if (!this.fusionId || !this.fusionAttributeTypeId) {
             console.log("ERROR - NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
+        }
+
+        //remove any invalid filters
+        if (this.filters && this.filters.length > 0) {
+            for (var i = this.filters.length - 1; i >= 0; i--) {
+                if (!this.filters[i].dataField || !this.filters[i].value) {
+                    console.log("REMOVING FILTER", i);
+                    this.filters.splice(i, 1);
+                }
+            }
         }
 
         this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionAttributeTypeId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
