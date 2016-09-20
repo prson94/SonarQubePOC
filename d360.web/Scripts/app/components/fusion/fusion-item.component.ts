@@ -10,13 +10,7 @@ import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` <div class="row" *ngIf="isLoading">
-                    <div class="col s12">
-                        <div>
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
-                    </div>
-                </div>
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   

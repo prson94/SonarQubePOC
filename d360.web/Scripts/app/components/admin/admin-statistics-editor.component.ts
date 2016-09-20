@@ -9,10 +9,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-statistic-editor',
     template: ` 
-                <header>{{action}} Model</header>
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <header>{{action}} Model</header>                
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <form (ngSubmit)="onSubmit()" #statisticEditorForm="ngForm">                        
                         <div class="col s12">

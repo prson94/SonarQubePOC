@@ -11,9 +11,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
     template: ` 
                 <div class="row">
                     <div class="col s12">
-                        <div *ngIf="isLoading">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail" >    
                             <d3s-dynamic-grid [title]="'Users'" objectType="ResourceType" [objectID]="objectID" 
                               [rowID]="'ResourceID'"

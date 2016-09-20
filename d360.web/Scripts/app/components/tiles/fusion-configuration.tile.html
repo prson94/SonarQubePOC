@@ -1,6 +1,4 @@
-﻿    <div *ngIf="isLoading">
-        <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-    </div>
+﻿    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"></d3s-tile-actions></header>

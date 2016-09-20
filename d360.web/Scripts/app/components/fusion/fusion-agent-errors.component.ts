@@ -7,9 +7,7 @@ import { FusionAgentError } from '../../models/fusion.model';
 @Component({
     selector: 'd3s-fusion-agent-errors',
     template: ` 
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading">
                     <header>Agent Error History</header>
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              

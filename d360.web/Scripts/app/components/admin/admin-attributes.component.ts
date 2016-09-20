@@ -16,9 +16,7 @@ import { Title } from '@angular/platform-browser';
                             <header *ngIf="!isLoading && !showDelete && !showEditor">Attribute Types
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
-                            <div *ngIf="isLoading">
-                                <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>                                          
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>v>                                          
                             <p-treeTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="attributes" selectionMode="single" [(selection)]="selected">
                                 <p-column field="ID" header="ID"></p-column>
                                 <p-column field="Name" header="Name"></p-column>

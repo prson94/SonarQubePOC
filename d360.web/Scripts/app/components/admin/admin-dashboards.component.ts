@@ -16,9 +16,7 @@ import { Title } from '@angular/platform-browser';
                             <header *ngIf="!showEditor && !showDelete">Dashboards
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
-                            <div *ngIf="isLoading">
-                                <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>   
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <p-dataTable *ngIf="!isLoading && !showEditor && !showDelete" [value]="reports" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
                                 <p-column [style]="{width:'40px'}">

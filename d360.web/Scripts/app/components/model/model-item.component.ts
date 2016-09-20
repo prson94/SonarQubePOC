@@ -19,9 +19,7 @@ import { TreeNode } from 'primeng/primeng';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible" class="row">
                     <div class="col s12">
                         <div class="row">

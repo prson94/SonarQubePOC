@@ -65,9 +65,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                         <d3s-search-result-item [result]="result"></d3s-search-result-item>
                                     </div>
                                 </span>
-                                <div *ngIf="loading">
-                                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                                </div>
+                                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                                 <p-paginator [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></p-paginator>
                             </div>
                         </div>

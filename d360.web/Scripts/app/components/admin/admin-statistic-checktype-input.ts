@@ -7,9 +7,8 @@ import { StatisticService } from '../../services/index';
 @Component({
     selector: 'd3s-admin-statistic-checktype-input',
     template: `             
-                  <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                  </div>           
+                  
+                  <d3s-loading [isLoading]="isLoading"></d3s-loading>
                   <span *ngIf="!isLoading" [ngSwitch]="statistic?.CheckType">                                                
                         <div *ngSwitchCase="statisticCheckTypes.Existence" class="col s12">
                             <div class="FieldName">{{title()}}</div>

@@ -8,9 +8,7 @@ import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model
     selector: 'd3s-fusion-attribute-item-details',
     template: ` 
                 <header>{{name}} Details</header>
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l6 m6">
                         <div class="FieldName">Name</div>

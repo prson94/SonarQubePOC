@@ -1,8 +1,6 @@
 ﻿<div class="row">
     <div class="col s12 m6 l4">
-        <div *ngIf="isLoading">
-            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-        </div>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading" class="tile tile-detail">
             <header>History<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;"></d3s-tile-actions></header>
             <p-dataTable [value]="loads" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">

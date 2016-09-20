@@ -10,9 +10,7 @@ import { Relationship } from '../../models/relationship.model';
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
                     <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                 </header>    
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>    
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">
                     <div *ngIf="showFilter" class="col l10 m9 s12">                                                                         
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search Relationships" style="width: 100%;">

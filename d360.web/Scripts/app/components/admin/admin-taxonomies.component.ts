@@ -16,9 +16,7 @@ import { Title } from '@angular/platform-browser';
                             <header *ngIf="!showEditor">Models
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
-                            <div *ngIf="isLoading">
-                                <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>                         
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <p-dataTable *ngIf="!showEditor && !showDelete && !isLoading" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  (onRowDblclick)="showEditor=true;" >                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
                                 <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="true"></p-column>                            

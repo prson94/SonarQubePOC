@@ -14,9 +14,7 @@ import { Title } from '@angular/platform-browser';
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
                 <div class="row">
                     <div class="col s12">
-                        <div *ngIf="isLoading">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible">
                             <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>

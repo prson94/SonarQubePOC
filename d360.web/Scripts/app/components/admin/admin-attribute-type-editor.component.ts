@@ -10,10 +10,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-attribute-type-editor',
     template: ` 
-                <header>{{action}} Attribute Group</header>
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <header>{{action}} Attribute Group</header>                
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <div class="form-instructions">Add a report to the list of reports, which can then be exposed in other areas of this system.</div>            
                     <form (ngSubmit)="onSubmit()" #attributeForm="ngForm">                                                

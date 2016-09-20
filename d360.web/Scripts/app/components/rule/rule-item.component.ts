@@ -20,9 +20,7 @@ import { RuleDetail } from '../../models/rule.model';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="isLoading">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                      
                         <div class="col s12">
                             <div class="row">

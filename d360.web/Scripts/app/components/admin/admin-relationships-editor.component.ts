@@ -11,10 +11,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-relationships-editor',
     template: ` 
-                <header>{{action}} Relationship</header>
-                <div *ngIf="isLoading || isLoadingItem">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <header>{{action}} Relationship</header>                
+                <d3s-loading [isLoading]="isLoading || isLoadingItem"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isLoadingItem">
                     <div class="form-instructions">When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>            
                     <form (ngSubmit)="onSubmit()" #relationshipEditorForm="ngForm">                        
@@ -27,10 +25,8 @@ import * as _ from 'lodash';
                                 </select>
                             </div>
                             <div [hidden]="side1.valid || side1.pristine">Relationship Side 1 is required</div>
-                        </div>                        
-                        <div *ngIf="isLoadingSide2" class="col l12 s12">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        </div>                                                
+                        <d3s-loading [isLoading]="isLoadingSide2"></d3s-loading>
                         <div class="col l12 s12" *ngIf="!isLoadingSide2">
                             <div class="FieldName">Relationship Side 2</div>
                             <div>                                

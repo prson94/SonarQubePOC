@@ -11,9 +11,7 @@ import * as _ from 'lodash';
     selector: 'd3s-admin-survey-question-editor',
     template: ` 
                 <header>{{action}} Question</header>
-                <div *ngIf="isLoading">
-                    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">                        
                         <div class="col s6">

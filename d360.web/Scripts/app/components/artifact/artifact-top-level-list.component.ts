@@ -13,9 +13,7 @@ import { TreeNode } from 'primeng/primeng';
     template: `                 
                 <div class="row">
                     <div class="col s12">
-                        <div *ngIf="isLoading">
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="tile tile-detail" *ngIf="!isLoading">                            
                         <header>Glossary</header>                              
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">  
