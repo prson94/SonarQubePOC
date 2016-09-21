@@ -142,7 +142,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             .then(result => {
                 this.modelHierarchy = result;
 
-                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy)
+                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
+                console.log(this.treeNodeArray);
 
                 this.selectModelHierarchy(selectedHierarchyId);                
             });

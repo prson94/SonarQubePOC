@@ -28,8 +28,9 @@ import { TreeNode } from 'primeng/primeng';
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.id)">{{item.data.name}}</a>
+                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </template>
+
                         </p-column>                        
                         <p-column field="description" header="Description">
                             <template let-item="rowData" pTemplate type="body">
@@ -237,4 +238,5 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.selectedParentID = this.selected ? this.selected.data.id : undefined;
         this.selected = null;
     }
+    
 };
