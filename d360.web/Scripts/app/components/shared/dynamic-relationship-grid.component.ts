@@ -14,18 +14,6 @@ import { BaseComponent } from '../shared/base.component';
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
-                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
-                            <template let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.Name}}</d3s-tooltip>
-                            </template> 
-                        </p-column>                                                                                                              
-                        <p-column  [style]="{width:'28px'}">
-                                <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="item.HasTechnicalRelationships">                                
-                                        <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
-                                    </div>
-                                </template>
-                        </p-column>                   
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
@@ -40,6 +28,18 @@ import { BaseComponent } from '../shared/base.component';
                                     </div>
                                 </template>
                         </p-column>           
+                        <p-column  [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools" *ngIf="item.HasTechnicalRelationships">                                
+                                        <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
+                                    </div>
+                                </template>
+                        </p-column>   
+                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
+                            <template let-item="rowData" pTemplate type="body">
+                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.Name}}</d3s-tooltip>
+                            </template> 
+                        </p-column>                                                                                                                                                                              
                         <p-column header="Classification" field="ClassificationText" [sortable]="true" [style]="{'width':'150px'}"></p-column>    
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>        
                     </p-dataTable>   

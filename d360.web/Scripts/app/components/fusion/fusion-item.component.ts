@@ -25,9 +25,17 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         <d3s-fusion-agent-history [fusion]="fusion"></d3s-fusion-agent-history>
                     </div>
                 </div>      
-                <div class="row"*ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible">
+                <div class="row" *ngIf="!isLoading && isManualLoadVisible">
+                    <div class="col s12">
+                        <d3s-fusion-manual-load [fusion]="fusion"></d3s-fusion-manual-load>
+                    </div>
+                </div>      
+                <div class="row"*ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible">
                     <div class="col l2 m12 s12">
-                        <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                        <div class="tile tile-detail">
+                            <header>Structure</header>
+                            <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                        </div>
                     </div>
                     <div class="col l10 m12 s12">
                         <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
@@ -51,6 +59,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private selectedFusionAttribute: any;
     private initialFusionAttributeId: number;
     private isHistoryVisible: boolean = false;
+    private isManualLoadVisible: boolean = false;
 
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
     
@@ -86,6 +95,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
 
                         this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
+
+                        if (this.fusion.Manual)
+                            this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload'));           
+                                
 
                     });
             }
@@ -131,7 +144,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     }   
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
-        if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;        
+        if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;
+        else if (activatedItem.tag == 'fusionload') this.isManualLoadVisible = !this.isManualLoadVisible;       
     }
 
 };

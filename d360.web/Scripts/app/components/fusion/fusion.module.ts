@@ -19,6 +19,7 @@ import { FusionExecutionHistoryComponent } from './fusion-execution-history.comp
 import { FusionExecutionResultsComponent } from './fusion-execution-results.component';
 import { FusionItemComponent } from './fusion-item.component';
 import { FusionListComponent } from './fusion-list.component';
+import { FusionManualLoadComponent } from './fusion-manual-load.component';
 import { FusionProcessErrorsComponent } from './fusion-process-errors.component';
 import { FusionPromotionHistoryComponent } from './fusion-promotion-history.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
@@ -47,6 +48,7 @@ import {
     DragDropModule,
     PaginatorModule,
     TreeModule,
+    FileUploadModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -77,6 +79,7 @@ import {
         TreeModule,
         DragDropModule,
         PaginatorModule,
+        FileUploadModule,
 
         //d3s
         SharedModule,
@@ -95,6 +98,7 @@ import {
         FusionExecutionResultsComponent,
         FusionItemComponent,
         FusionListComponent,
+        FusionManualLoadComponent,
         FusionProcessErrorsComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
@@ -112,6 +116,7 @@ import {
         FusionExecutionResultsComponent,
         FusionItemComponent,
         FusionListComponent,
+        FusionManualLoadComponent,
         FusionProcessErrorsComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,

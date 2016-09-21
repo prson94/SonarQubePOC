@@ -1382,6 +1382,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />

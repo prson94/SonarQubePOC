@@ -8,16 +8,13 @@ import { TreeNode } from 'primeng/primeng';
 @Component({
     selector: 'd3s-fusion-structure-tree',
     template: ` 
-                <div class="tile tile-detail">
-                    <header>Structure</header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;"> 
                         <p-tree [value]="treeItems | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" [style]="{'line-height':'25px','width':'auto'}" 
                                 (onNodeSelect)="nodeSelect($event)">                 
                         </p-tree>
-                    </span>
-                </div>
+                    </span>                
                 `,
     providers: [FusionService],
 })

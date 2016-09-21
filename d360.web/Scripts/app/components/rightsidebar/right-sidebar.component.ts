@@ -2,6 +2,7 @@
 import { RightSidebarService  } from '../../services/index';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs/Subscription';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-right-sidebar',  
@@ -41,6 +42,7 @@ export class RightSidebarComponent implements OnChanges {
                     this.visible = true;
                     this.visibleChange.emit(this.visible);
                 }
+                this.items = _.sortBy(this.items, 'title');
             });
         this.subscription = rightSidebarService.rightSidebarClear$.subscribe(
             item => {

@@ -212,4 +212,8 @@ export class FusionService extends BaseService {
             .then(response => <FusionExecutionResult[]>response.json().results)
             .catch(err => this.handleError(err));
     }
+
+    downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
+        window.location.assign(`fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`);
+    }
 }

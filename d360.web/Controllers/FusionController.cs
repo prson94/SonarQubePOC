@@ -178,57 +178,113 @@ namespace d360.web.Controllers
         {
             try
             {
-                var file = Request.Files[0];
-                var fileExt = Path.GetExtension(file.FileName);
-                var target = new MemoryStream();
-                file.InputStream.CopyTo(target);
-
-                var xls = new SLDocument(target);
-                var stats = xls.GetWorksheetStatistics();
-                var endRowIndex = stats.EndRowIndex;
-                var currentRowIndex = 0;
-                var currentRowNumber = 1;
-
-                var fusion = Company.GetById<Fusion>(id, i => i.FusionType.FusionAttributeTypes);
-
-                var mXml = new XElement("ms");
-
-                var targetAttributeType = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == attributeTypeID);
-                var targetAttributeTypeFields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
-
-                if (targetAttributeType != null)
+                for(var indx = 0; indx < Request.Files.Count; indx++)
                 {
-                    var parentAttributeTypeIDs = new List<int>();
-                    int? parentID = targetAttributeType.ParentID;
+                    var file = Request.Files[indx];
+                    var fileExt = Path.GetExtension(file.FileName);
+                    var target = new MemoryStream();
+                    file.InputStream.CopyTo(target);
 
-                    #region Determine the correct order of the fusion attribute IDs (1. Schema / 2. Table / 3. Column)
+                    var xls = new SLDocument(target);
+                    var stats = xls.GetWorksheetStatistics();
+                    var endRowIndex = stats.EndRowIndex;
+                    var currentRowIndex = 0;
+                    var currentRowNumber = 1;
 
-                    while (parentID.HasValue)
+                    var fusion = Company.GetById<Fusion>(id, i => i.FusionType.FusionAttributeTypes);
+
+                    var mXml = new XElement("ms");
+
+                    var targetAttributeType = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == attributeTypeID);
+                    var targetAttributeTypeFields = Company.Filter<FieldTypeWithRelation>(i => i.Object == "FusionAttributeType" && i.ObjectID == attributeTypeID).ToList();
+
+                    if (targetAttributeType != null)
                     {
-                        var parent = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == parentID.Value);
-                        if (parent != null)
+                        var parentAttributeTypeIDs = new List<int>();
+                        int? parentID = targetAttributeType.ParentID;
+
+                        #region Determine the correct order of the fusion attribute IDs (1. Schema / 2. Table / 3. Column)
+
+                        while (parentID.HasValue)
                         {
-                            parentAttributeTypeIDs.Insert(0, parent.ID);
-                            parentID = parent.ParentID;
+                            var parent = fusion.FusionType.FusionAttributeTypes.SingleOrDefault(i => i.ID == parentID.Value);
+                            if (parent != null)
+                            {
+                                parentAttributeTypeIDs.Insert(0, parent.ID);
+                                parentID = parent.ParentID;
+                            }
                         }
-                    }
 
-                    #endregion
-                    
-                    var currentColumnIndex = 1;
+                        #endregion
 
-                    var models = new List<Dictionary<string, string>>();
+                        var currentColumnIndex = 1;
 
-                    #region Parse raw ancestor nodes.
-                    
-                    foreach (var nodeID in parentAttributeTypeIDs)
-                    {
+                        var models = new List<Dictionary<string, string>>();
+
+                        #region Parse raw ancestor nodes.
+
+                        foreach (var nodeID in parentAttributeTypeIDs)
+                        {
+                            currentRowIndex = 2;    // Reset the current row index.
+                            var sourceIDs = new List<string>();
+
+                            while (currentRowIndex <= endRowIndex)
+                            {
+
+                                #region Create SourceID
+
+                                var sourceID = "";
+                                for (int i = 1; i <= currentColumnIndex; i++)
+                                {
+                                    sourceID += ((sourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
+                                }
+
+                                #endregion
+
+                                //Check to see if we already added this.
+                                if (!sourceIDs.Any(i => i == sourceID))
+                                {
+                                    sourceIDs.Add(sourceID);
+
+                                    #region Create ParentSourceID
+
+                                    var parentSourceID = "";
+                                    for (int i = 1; i < currentColumnIndex; i++)
+                                    {
+                                        parentSourceID += ((parentSourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
+                                    }
+
+                                    #endregion
+
+                                    var jsonFields = new Dictionary<string, string>();
+
+                                    jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
+                                    jsonFields.Add("SourceID", sourceID);
+                                    jsonFields.Add("FusionAttributeTypeID", nodeID.ToString());
+                                    if (!string.IsNullOrEmpty(parentSourceID))
+                                    {
+                                        jsonFields.Add("ParentSourceID", parentSourceID);
+                                    }
+
+                                    models.Add(jsonFields);
+
+
+                                    currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.                            
+                                }
+
+                                currentRowIndex++;
+                            }
+
+                            currentColumnIndex++;
+                        }
+
+                        #endregion
+
+                        #region Get the target fusion attribute type rows
+
                         currentRowIndex = 2;    // Reset the current row index.
-                        var sourceIDs = new List<string>();
-
                         while (currentRowIndex <= endRowIndex)
                         {
-
                             #region Create SourceID
 
                             var sourceID = "";
@@ -239,120 +295,68 @@ namespace d360.web.Controllers
 
                             #endregion
 
-                            //Check to see if we already added this.
-                            if (!sourceIDs.Any(i => i == sourceID))
+                            #region Create ParentSourceID
+
+                            var parentSourceID = "";
+                            for (int i = 1; i < currentColumnIndex; i++)
                             {
-                                sourceIDs.Add(sourceID);
-
-                                #region Create ParentSourceID
-
-                                var parentSourceID = "";
-                                for (int i = 1; i < currentColumnIndex; i++)
-                                {
-                                    parentSourceID += ((parentSourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
-                                }
-
-                                #endregion
-
-                                var jsonFields = new Dictionary<string, string>();
-
-                                jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
-                                jsonFields.Add("SourceID", sourceID);
-                                jsonFields.Add("FusionAttributeTypeID", nodeID.ToString());
-                                if (!string.IsNullOrEmpty(parentSourceID))
-                                {
-                                    jsonFields.Add("ParentSourceID", parentSourceID);
-                                }
-
-                                models.Add(jsonFields);
-
-
-                                currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.                            
+                                parentSourceID += ((parentSourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
                             }
 
+                            #endregion
+
+                            var jsonFields = new Dictionary<string, string>();
+
+                            jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
+                            jsonFields.Add("SourceID", sourceID);
+                            jsonFields.Add("FusionAttributeTypeID", attributeTypeID.ToString());
+                            if (!string.IsNullOrEmpty(parentSourceID))
+                            {
+                                jsonFields.Add("ParentSourceID", parentSourceID);
+                            }
+
+                            for (int i = 0; i < targetAttributeTypeFields.Count; i++)
+                            {
+                                jsonFields.Add(targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(currentRowIndex, i + currentColumnIndex + 1));
+                            }
+
+                            models.Add(jsonFields);
+
+                            currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.
                             currentRowIndex++;
                         }
 
-                        currentColumnIndex++;
-                    }
-                    
-                    #endregion
-
-                    #region Get the target fusion attribute type rows
-
-                    currentRowIndex = 2;    // Reset the current row index.
-                    while (currentRowIndex <= endRowIndex)
-                    {
-                        #region Create SourceID
-
-                        var sourceID = "";
-                        for (int i = 1; i <= currentColumnIndex; i++)
-                        {
-                            sourceID += ((sourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
-                        }
-
                         #endregion
 
-                        #region Create ParentSourceID
+                        #region Save to queue for processing
 
-                        var parentSourceID = "";
-                        for (int i = 1; i < currentColumnIndex; i++)
+                        var import = new BulkFusionImport { Models = models, Relationships = new FusionRelationshipModels() };
+
+                        var json = JsonConvert.SerializeObject(import);
+
+                        var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss");
+
+                        var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
+                        Storage.CreateFolder(folder);
+                        var fileName = $"{typeID}.{id}.{dateString}.json";
+                        Storage.CreateFile(folder, fileName, json);
+
+                        var db = Community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = Company.CurrentCompanyID }).SingleOrDefault();
+
+                        var fusionQueue = new FusionQueueManager(db.FusionQueue);
+
+                        await fusionQueue.SendMessageAsync(new FusionProcessingData
                         {
-                            parentSourceID += ((parentSourceID != "") ? "." : "") + xls.GetCellValueAsString(currentRowIndex, i).ToLower();
-                        }
+                            CompanyID = Company.CurrentCompanyID,
+                            FusionID = id,
+                            LogFileName = fileName
+                        });
 
                         #endregion
-
-                        var jsonFields = new Dictionary<string, string>();
-
-                        jsonFields.Add("Name", xls.GetCellValueAsString(currentRowIndex, currentColumnIndex));
-                        jsonFields.Add("SourceID", sourceID);
-                        jsonFields.Add("FusionAttributeTypeID", attributeTypeID.ToString());
-                        if (!string.IsNullOrEmpty(parentSourceID))
-                        {
-                            jsonFields.Add("ParentSourceID", parentSourceID);
-                        }
-
-                        for (int i = 0; i < targetAttributeTypeFields.Count; i++)
-                        {
-                            jsonFields.Add(targetAttributeTypeFields[i].Name, xls.GetCellValueAsString(currentRowIndex, i + currentColumnIndex + 1));
-                        }
-
-                        models.Add(jsonFields);
-
-                        currentRowNumber++;    // This number must be unique.  A unique number per fusion attribute.
-                        currentRowIndex++;
                     }
-
-                    #endregion
-
-                    #region Save to queue for processing
-
-                    var import = new BulkFusionImport { Models = models, Relationships = new FusionRelationshipModels() };
-
-                    var json = JsonConvert.SerializeObject(import);
-
-                    var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_hh.mm.ss");
-
-                    var folder = string.Format("bulk-fusion-{0}", Company.CurrentCompanyID);
-                    Storage.CreateFolder(folder);
-                    var fileName = $"{typeID}.{id}.{dateString}.json";
-                    Storage.CreateFile(folder, fileName, json);
-
-                    var db = Community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = Company.CurrentCompanyID }).SingleOrDefault();
-
-                    var fusionQueue = new FusionQueueManager(db.FusionQueue);
-
-                    await fusionQueue.SendMessageAsync(new FusionProcessingData {
-                        CompanyID = Company.CurrentCompanyID,
-                        FusionID = id,
-                        LogFileName = fileName
-                    });
-
-                    #endregion                
                 }
-
-                return new HttpStatusCodeResult(HttpStatusCode.Created, "File uploaded and queued for processing.");
+                
+                return new HttpStatusCodeResult(HttpStatusCode.OK, "File uploaded and queued for processing.");
             }
             catch (BaseException ex)
             {
