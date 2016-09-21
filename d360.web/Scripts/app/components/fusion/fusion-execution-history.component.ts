@@ -2,13 +2,13 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
-import { FusionWorkerExecution } from '../../models/fusion.model';
+import { FusionWorkerExecution, FusionConfigurationDetails } from '../../models/fusion.model';
 
 @Component({
     selector: 'd3s-fusion-execution-history',
     template: `                 
                 <div class="tile tile-detail" *ngIf="!showExecutionErrors && !showExecutionResults">
-                    <header>Execution History</header>
+                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
@@ -66,6 +66,8 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
     private showExecutionResults: boolean = false;
     private showExecutionErrors: boolean = false;
 
+    @Input() fusion: FusionConfigurationDetails;
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -76,7 +78,7 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionWorkerExecutionHistory(this.maxRows)
+        this.fusionService.getFusionWorkerExecutionHistory(this.maxRows, this.fusion ? this.fusion.ID : undefined)
             .then(res => {
                 this.executions = res;
                 this.selected = this.executions.length > 0 ? this.executions[0] : null;

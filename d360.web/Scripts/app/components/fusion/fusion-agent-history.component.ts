@@ -1,13 +1,13 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
-import { FusionAgentExecutionStats } from '../../models/fusion.model';
+import { FusionAgentExecutionStats, FusionConfigurationDetails } from '../../models/fusion.model';
 
 @Component({
         selector: 'd3s-fusion-agent-history',
         template: `                 
                 <div class="tile tile-detail">
-                    <header>Agent History</header>
+                    <header>Agent History<span *ngIf="fusion"> - {{fusion.Name}}</span></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span  *ngIf="!isLoading">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
@@ -43,6 +43,8 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
     private executions: FusionAgentExecutionStats[] = [];
     private selected: FusionAgentExecutionStats;
 
+    @Input() fusion: FusionConfigurationDetails;
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -53,7 +55,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionAgentHistory(this.maxRows)
+        this.fusionService.getFusionAgentHistory(this.maxRows, this.fusion ? this.fusion.ID : undefined)
             .then(res => {
                 this.executions = res;
                 this.selected = this.executions.length > 0 ? this.executions[0] : null;

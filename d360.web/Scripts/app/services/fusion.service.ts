@@ -56,8 +56,14 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionAgentHistory(maxRows?:number): Promise<FusionAgentExecutionStats[]> {
-        return this.http.get(`services/fusion/agenthistory?$top=${maxRows? maxRows:'100'}&$orderby=DateStarted%20desc`)
+    getFusionAgentHistory(maxRows?: number, fusionId?: number): Promise<FusionAgentExecutionStats[]> {
+        var url = `services/fusion/agenthistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`;
+
+        if (fusionId) {
+            url += `&$filter=FusionID%20eq%20${fusionId}`;
+        }
+
+        return this.http.get(url)
             .toPromise()
             .then(response => <FusionAgentExecutionStats[]>response.json())
             .catch(err => this.handleError(err));
@@ -77,8 +83,14 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionWorkerExecutionHistory(maxRows?: number): Promise<FusionWorkerExecution[]> {
-        return this.http.get(`services/fusion/executionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`)
+    getFusionWorkerExecutionHistory(maxRows?: number, fusionId?: number): Promise<FusionWorkerExecution[]> {
+        let url = `services/fusion/executionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`;
+
+        if (fusionId) {
+            url += `&$filter=FusionID%20eq%20${fusionId}`;
+        }
+
+        return this.http.get(url)
             .toPromise()
             .then(response => <FusionWorkerExecution[]>response.json())
             .catch(err => this.handleError(err));

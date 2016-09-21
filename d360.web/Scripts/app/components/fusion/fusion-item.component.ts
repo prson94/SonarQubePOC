@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FusionConfigurationDetails, FusionAttributeType  } from '../../models/fusion.model';
 import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -17,8 +18,14 @@ import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
                             <d3s-people-responsibilities-tile [objectID]="fusion?.ID" [objectType]="'Fusion'" [title]="'Ownership of ' + fusion?.Name"></d3s-people-responsibilities-tile>
                         </div>
                     </div>
-                </div>        
-                <div class="row"*ngIf="!isLoading && !isOwnershipVisible">
+                </div>  
+                <div class="row" *ngIf="!isLoading && isHistoryVisible">
+                    <div class="col s12">
+                        <d3s-fusion-execution-history [fusion]="fusion"></d3s-fusion-execution-history>
+                        <d3s-fusion-agent-history [fusion]="fusion"></d3s-fusion-agent-history>
+                    </div>
+                </div>      
+                <div class="row"*ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible">
                     <div class="col l2 m12 s12">
                         <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
                     </div>
@@ -43,10 +50,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private selectedFusionAttributeTypeId: number;
     private selectedFusionAttribute: any;
     private initialFusionAttributeId: number;
+    private isHistoryVisible: boolean = false;
 
     @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
     
-
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,
             private router: Router,
@@ -55,6 +62,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             protected titleService: Title) {
         super(rightSidebarService);
         this.setCommonRightSideBar(false, true);
+
+        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory'));           
     }
 
     ngOnInit() {
@@ -66,7 +75,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];
             
-
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.fusionService.getFusionConfiguration(this.fusionId)
                     .then(result => {
@@ -92,12 +100,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.sub.unsubscribe();
         this.clearSidebar();
     }
-
-    private loadFusionTypeStructure() {
-        
-    }
     
-
     private buildBreadcrumb() {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
@@ -106,7 +109,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         if (this.selectedFusionAttributeTypeId && this.fusionTreeComponent.fusionAttributeTypes) {
             this.addFusionAttributeTypeBreadcrumb(this.selectedFusionAttributeTypeId);
         }
-
     }
 
     private addFusionAttributeTypeBreadcrumb(id: number) {
@@ -126,5 +128,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private changeFusionAttributeTypeId(event) {
         this.selectedFusionAttribute = null;
         this.router.navigateByUrl(`/a/fusion/${this.fusionId};fusionAttributeTypeId=${event}`);
-    }    
+    }   
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
+        if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;        
+    }
+
 };
