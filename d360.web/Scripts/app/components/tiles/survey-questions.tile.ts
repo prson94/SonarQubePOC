@@ -11,9 +11,7 @@ import { MessagesService, SurveysService  } from '../../services/index';
                <header *ngIf="!showEditor && !showDelete">Questions
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
                     <p-column field="DisplayStyle" header="Display Type" [sortable]="true" [filter]="true"></p-column>

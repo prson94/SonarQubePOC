@@ -13,9 +13,7 @@ import { Title } from '@angular/platform-browser';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor">Rule Types</header>  
-                            <div *ngIf="isLoading">
-                                <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                            </div>                          
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>                        
                             <p-dataTable *ngIf="!isLoading && !showEditor" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
                             </p-dataTable>                                

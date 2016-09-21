@@ -8,9 +8,7 @@ import { Dashboard, DashboardTokens } from '../../models/dashboard.model'
 @Component({
     selector: 'd3s-powerbi-viewer',  
     template: ` 
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>              
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading" #biContainer style="height:75vh" class="powerbi"
                     powerbi-type="report"
                     [attr.powerbi-embed-url]="powerBIDetails?.Report?.embedUrl"

@@ -10,9 +10,7 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-dynamic-relationship-grid',    
     providers: [GridDefinitionService, RelationshipsService],
     template: `                   
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>     
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  

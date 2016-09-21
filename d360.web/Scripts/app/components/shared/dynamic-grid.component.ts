@@ -13,9 +13,7 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
                 <header *ngIf="!showEditor && !showDelete">{{title}}
                     <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()"></d3s-tile-actions>                            
                 </header>           
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>           
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       

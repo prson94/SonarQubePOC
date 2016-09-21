@@ -12,9 +12,7 @@ import { Count} from '../../models/counts.model';
                    <header>Activity <span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
-                    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                    </div>
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()" [rows]="10" [paginator]="true" [pageLinks]="3">                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                           
                         <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          

@@ -11,9 +11,7 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
     selector: 'd3s-audit',
     providers: [AuditService],
     template: `
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail" *ngIf="!isLoading">   

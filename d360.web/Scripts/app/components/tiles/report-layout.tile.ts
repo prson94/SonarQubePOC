@@ -9,9 +9,7 @@ import { MessagesService, ReportsService  } from '../../services/index';
     providers: [ReportsService],
     template: `
                <header>Dashboard Layout</header>
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="report" *ngIf="!isLoading">
                     <div class="row">
                         <div *ngFor="let cell of layout.cells" [class]="'col s'+ cell.length" >

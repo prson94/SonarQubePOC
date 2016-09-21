@@ -11,9 +11,7 @@ import { Title } from '@angular/platform-browser';
                 <div class="row">
                 <div class="col" [ngClass]="{'s8':isDeleting||isEditing||isAdding}" [ngClass]="{'s12':!isDeleting&&!isEditing&&!isAdding}">                    
                    <div class="tile tile-detail">
-                        <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                            <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <header  *ngIf="!isLoading">Tooltip Templates
                             <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
                         </header>                        

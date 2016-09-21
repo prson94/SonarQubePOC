@@ -11,9 +11,7 @@ import { DiagnosticInvalidTextPath } from '../../models/diagnostic.model';
     template: `                 
                 <div class="tile tile-detail">                                              
                     <header *ngIf="!isLoading">Objects with Invalid Textpaths values</header>           
-                    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                    </div>    
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <p-dataTable *ngIf="!isLoading" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="4" [(selection)]="selected">                                                                       
                         <p-column field="object" header="Object Type" [sortable]="true" [filter]="true"></p-column>
                         <p-column field="objectid" header="Object ID" [sortable]="true" [filter]="true"></p-column>

@@ -43,9 +43,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
                 <header>Relationships
                     <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="add()"></d3s-tile-actions>                            
                 </header>
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
                         <div class="row relationship" *ngFor="let rel of relationshipItems; let i = index" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">

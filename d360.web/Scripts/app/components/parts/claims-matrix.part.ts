@@ -8,9 +8,7 @@ import { ClaimsService } from '../../services/claims.service';
     selector: 'd3s-claims-matrix',
     providers: [ClaimsService],
     template: `
-<div *ngIf="isLoading">
-    <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-</div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
         <table class="striped">
             <thead>

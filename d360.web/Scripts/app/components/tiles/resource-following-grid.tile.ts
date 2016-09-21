@@ -9,9 +9,7 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'd3s-resource-following-grid-tile',
     template: `
-<div *ngIf="isLoading" style="width:100%; text-align:center;">
-    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-</div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
    <p-dataTable [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
         <p-column header="Name">

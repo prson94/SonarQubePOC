@@ -24,9 +24,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
                     <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>           
-                <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                    <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                </div>    
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
                     <div class="col s12">                                                
                         <div class="search-input-container" style="padding-bottom:10px;">

@@ -14,9 +14,7 @@ import { Artifact } from '../../models/artifacts.model';
                    <header>Activity for {{objectName}}
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
-                    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                    </div>
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <p-dataTable *ngIf="!isLoading" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="true">
                             <template let-col let-item="rowData" pTemplate type="body">

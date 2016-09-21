@@ -17,9 +17,7 @@ import { WorkflowType } from '../../models/workflow.model';
                    <header *ngIf="resourceId == null || resourceId < 0">Your Assignments
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
-                    <div *ngIf="isLoading" style="width:100%; text-align:center;">
-                        <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                    </div>
+                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()" >                    
                         <p-column field="Name" header="Name" [sortable]="true"></p-column>           
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
