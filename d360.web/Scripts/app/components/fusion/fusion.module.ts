@@ -14,7 +14,9 @@ import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
 import { FusionAttributeSummaryComponent } from './fusion-attribute-summary.component';
 import { FusionComponent } from './fusion.component';
 import { FusionConfigurationComponent } from './fusion-configurations.component';
+import { FusionExecutionErrorsComponent } from './fusion-execution-errors.component';
 import { FusionExecutionHistoryComponent } from './fusion-execution-history.component';
+import { FusionExecutionResultsComponent } from './fusion-execution-results.component';
 import { FusionItemComponent } from './fusion-item.component';
 import { FusionListComponent } from './fusion-list.component';
 import { FusionProcessErrorsComponent } from './fusion-process-errors.component';
@@ -88,7 +90,9 @@ import {
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,
         FusionConfigurationComponent,
+        FusionExecutionErrorsComponent,
         FusionExecutionHistoryComponent,
+        FusionExecutionResultsComponent,
         FusionItemComponent,
         FusionListComponent,
         FusionProcessErrorsComponent,
@@ -103,7 +107,9 @@ import {
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,
         FusionConfigurationComponent,
+        FusionExecutionErrorsComponent,
         FusionExecutionHistoryComponent,
+        FusionExecutionResultsComponent,
         FusionItemComponent,
         FusionListComponent,
         FusionProcessErrorsComponent,

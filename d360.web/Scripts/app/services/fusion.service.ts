@@ -4,7 +4,7 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
 import { JsonResult, FormHelper } from '../models/form.model';
-import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails, FusionAgentExecutionStats, FusionWorkerExecution, FusionPromotionExecutionStats, FusionSummaryStats, FusionAgentError, FusionProcessError } from '../models/fusion.model';
+import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails, FusionAgentExecutionStats, FusionWorkerExecution, FusionPromotionExecutionStats, FusionSummaryStats, FusionAgentError, FusionProcessError, FusionExecutionError, FusionExecutionResult } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
 
@@ -184,6 +184,20 @@ export class FusionService extends BaseService {
         return this.http.get(`services/fusion/${fusionId}/attributetypes?$orderby=Name`)
             .toPromise()
             .then(response => <FusionAttributeType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionExecutionErrors(executionId: number): Promise<FusionExecutionError[]> {
+        return this.http.get(`services/fusion/executionerrors?$filter=ExecutionID%20eq%20${executionId}&$orderby=Date%20desc`)
+            .toPromise()
+            .then(response => <FusionExecutionError[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionExecutionResults(executionId: number): Promise<FusionExecutionResult[]> {
+        return this.http.get(`services/fusion/executions/${executionId}/results`)
+            .toPromise()
+            .then(response => <FusionExecutionResult[]>response.json().results)
             .catch(err => this.handleError(err));
     }
 }

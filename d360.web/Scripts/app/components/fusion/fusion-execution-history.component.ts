@@ -7,7 +7,7 @@ import { FusionWorkerExecution } from '../../models/fusion.model';
 @Component({
     selector: 'd3s-fusion-execution-history',
     template: `                 
-                <div class="tile tile-detail">
+                <div class="tile tile-detail" *ngIf="!showExecutionErrors && !showExecutionResults">
                     <header>Execution History</header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
@@ -25,20 +25,33 @@ import { FusionWorkerExecution } from '../../models/fusion.model';
                                     <span>{{data.DateCompleted | date: 'short'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="ErrorCount" header="Errors" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="ResultCount" header="Results" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column [style]="{width:'40px'}">
-                                <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <i class="fa fa-info"></i>
-                                    </div>
+                            <p-column field="ErrorCount" header="Errors" [sortable]="true" [style]="{width:'100px'}">
+                                <template let-col let-data="rowData" pTemplate type="body">
+                                    <a *ngIf="data.ErrorCount" (click)="selected=data;showExecutionErrors=true;">{{data.ErrorCount}} <i class="fa fa-times disabled"></i></a>
+                                    <span *ngIf="!data.ErrorCount">{{data.ErrorCount}}</span>
                                 </template>
                             </p-column>
+                            <p-column field="ResultCount" header="Results" [sortable]="true" [style]="{width:'100px'}">
+                                <template let-col let-data="rowData" pTemplate type="body">
+                                    <a *ngIf="data.ResultCount" (click)="selected=data;showExecutionResults=true;">{{data.ResultCount}} <i class="fa fa-check enabled"></i></a>
+                                    <span *ngIf="!data.ResultCount">{{data.ResultCount}}</span>
+                                </template>
+                            </p-column>
+                            <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}"></p-column>
+                            <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}"></p-column>
+                            <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}"></p-column>                            
                         </p-dataTable>      
-                    </span>
+                    </span>                    
+                </div>                
+                <div class="tile tile-detail" *ngIf="showExecutionErrors && selected">
+                    <header>Execution History - Error Details</header>
+                    <d3s-fusion-execution-errors [executionId]="selected.ID"></d3s-fusion-execution-errors>
+                    <button pButton type="button" (click)="showExecutionErrors=false;" label="Close" style="width: 150px;"></button>
+                </div>
+                <div class="tile tile-detail" *ngIf="showExecutionResults && selected">
+                    <header>Execution History - Result Details</header>
+                    <d3s-fusion-execution-results [executionId]="selected.ID"></d3s-fusion-execution-results>
+                    <button pButton type="button" (click)="showExecutionResults=false;" label="Close" style="width: 150px;"></button>
                 </div>
           `,
         providers: [FusionService],                
@@ -49,7 +62,10 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
 
     private executions: FusionWorkerExecution[] = [];
     private selected: FusionWorkerExecution;
-    
+
+    private showExecutionResults: boolean = false;
+    private showExecutionErrors: boolean = false;
+
     constructor(private fusionService: FusionService) {
         super();
     }

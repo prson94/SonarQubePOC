@@ -132,3 +132,31 @@ export class FusionAgentError {
     MachineName: string;
     Message: string;
 }
+
+
+export class FusionExecutionError {
+    Date: Date;
+    Error: string;
+    ExecutionID: number;
+    Fusion: string;
+    FusionID: number;
+    FusionType: string;
+    FusionTypeID: number;
+}
+
+export class FusionExecutionResult {
+    Action: string;
+    Body: string;
+    ExecutionID: number;
+    FieldName: string;
+    FieldTypeID: number;
+    Fusion: string;
+    FusionAttribute: string;
+    FusionAttributeType: string;
+    FusionID: number;
+    FusionType: string;
+    FusionTypeID: number;
+    ID: string;
+    NewValue: string;
+    OldValue: string;
+}
