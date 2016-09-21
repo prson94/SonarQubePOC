@@ -1084,7 +1084,8 @@ select
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
-	Tc.Name as ClassificationName	
+	Tc.Name as ClassificationName,
+    (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
 from	TaxonomyType T
 		inner join taxonomytypeclass Tc on (T.TaxonomyTypeClassID = Tc.ID)		
 		cross apply (

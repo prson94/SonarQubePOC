@@ -10,11 +10,8 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
                 <div class="row">
                     <div class="col s12">
                         <header>{{socialMessage}}</header>  
-                        <d3s-social-input (commented)="addComment($event);" *ngIf="hasNewInput"></d3s-social-input>
-                        <div *ngIf="isLoading" style="postion:relative;overflow:hidden;width100%;">
-                            <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
-                            <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
+                        <d3s-social-input (commented)="addComment($event);" *ngIf="hasNewInput"></d3s-social-input>                        
+                        <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
                         <div *ngFor="let comment of comments">
                             <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
                         </div>                

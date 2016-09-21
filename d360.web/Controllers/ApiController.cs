@@ -6815,7 +6815,8 @@ SELECT (
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "AllowSynonyms", (bool)row.AllowSynonyms },
-                    { "ClassificationName", row.ClassificationName }
+                    { "ClassificationName", row.ClassificationName },
+                    { "HasDashboards", row.HasDashboards }
                 }
             );
         }

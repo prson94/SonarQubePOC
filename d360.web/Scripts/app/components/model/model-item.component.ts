@@ -12,6 +12,8 @@ import { TreeNode } from 'primeng/primeng';
     selector: 'd3s-model-item',
     providers: [ModelsService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
+                <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -20,7 +22,7 @@ import { TreeNode } from 'primeng/primeng';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible" class="row">
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible" class="row">
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
@@ -64,8 +66,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             protected titleService: Title,
             protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
-
-        this.setCommonRightSideBar(true, true);
     }
 
     ngOnInit() {        
@@ -99,6 +99,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.loadModelHierarchy(this.modelId, hierarchyId);
 
                         this.setBrowserTitle(this.titleService, this.model.Name);
+
+                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true);
 
                     });
             }

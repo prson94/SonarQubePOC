@@ -3,7 +3,7 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } 
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model } from '../../models/model.model';
 
@@ -14,7 +14,15 @@ import { Model } from '../../models/model.model';
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading">                            
+                        <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'TaxonomyTypeClass'"></d3s-audit>                
+                        <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                            <div class="col s12">
+                                <div class="tile tile-detail">   
+                                    <d3s-people-responsibilities-tile [objectID]="selected?.ID" [objectType]="'TaxonomyTypeClass'" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
                             <header>{{modelGroup}} Models
                                 <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                             </header>         
@@ -44,11 +52,12 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     constructor(
                 private route: ActivatedRoute,
                 private router: Router,
+                rightSidebarService: RightSidebarService,
                 protected titleService: Title,
                 protected headerBreadcrumbService: HeaderBreadcrumbService,
                 protected modelsService: ModelsService) {
-        super();
-        
+        super(rightSidebarService);
+        this.setCommonRightSideBar(true, true);
     }
 
     ngOnInit() {
@@ -70,6 +79,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();        
     }
 

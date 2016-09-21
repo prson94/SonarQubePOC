@@ -4,11 +4,12 @@
     MaximumDepth: number;
     TaxonomyTypeClass: string;
     ClassificationName: string;
+    HasDashboards: boolean;
     ID: number;
 }
 
 export class ModelHierarchy {
-    HasChildren: boolean;
+    HasChildren: boolean;    
     ID: number;
     Name: string;
     ParentID: number;

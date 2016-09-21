@@ -11,13 +11,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-artifact-item',
-    template: `  <div class="row" *ngIf="isLoading">
-                    <div class="col s12">
-                        <div>
-                            <div style="padding:10px;text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-                        </div>
-                    </div>
-                </div>
+    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -57,8 +51,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
-    private sub: any;    
-    private isLineageVisible: boolean = false;    
+    private sub: any;        
     private artifactTypeId: number;
     
     constructor(private route: ActivatedRoute,
@@ -98,9 +91,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards);
-                                        
-                    this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));           
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true);
+                                                            
                     this.isLoading = false;
                 });
         });
@@ -114,12 +106,4 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     protected isTabVisible() {
         return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible;
     }
-
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
-        // put logic to show hide lineage / dashboard / ownership here
-        if (activatedItem.tag == 'dashboards') this.isDashboardVisible = !this.isDashboardVisible;
-        else if (activatedItem.tag == 'lineage') this.isLineageVisible = !this.isLineageVisible;        
-    }
-
-
 };
