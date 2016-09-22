@@ -1,14 +1,21 @@
 ﻿<div class="row">
     <div class="col l3 m4 s12">
         <div class="tile tile-detail">
-            <header><d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
+            <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
-                <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
-                    <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '75%' }"></p-column>
-                    <p-column>
+                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
+                    <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '100px' }"></p-column>
+                    <p-column [style]="{ 'width': '20px' }">
                         <template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
-                                <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                
+                            </div>
+                        </template>
+                    </p-column>
+                    <p-column [style]="{ 'width': '20px' }">
+                        <template let-col let-item="rowData" pTemplate type="body">
+                            <div class="RowTools">                                
                                 <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </template>

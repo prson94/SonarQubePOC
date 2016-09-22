@@ -16,20 +16,23 @@ import { Title } from '@angular/platform-browser';
                             <header *ngIf="!isLoading && !showDelete && !showEditor">Attribute Types
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>v>                                          
-                            <p-treeTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="attributes" selectionMode="single" [(selection)]="selected">
-                                <p-column field="ID" header="ID"></p-column>
-                                <p-column field="Name" header="Name"></p-column>
-                                <p-column>
-                                    <template let-col let-item="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
-                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
-                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-treeTable>      
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                                <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">                      
+                                <p-treeTable [value]="attributes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selected">
+                                    <p-column field="ID" header="ID"></p-column>
+                                    <p-column field="Name" header="Name"></p-column>
+                                    <p-column>
+                                        <template let-col let-item="rowData" pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
+                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                            
+                                            </div>
+                                        </template>
+                                    </p-column>
+                                </p-treeTable>      
+                            </span>
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.data?.ID"

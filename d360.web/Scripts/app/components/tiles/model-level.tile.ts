@@ -12,29 +12,32 @@ import { MessagesService, TaxonomiesService  } from '../../services/index';
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
-                <p-column field="Level" header="Level" [sortable]="true" [filter]="true"></p-column>                                                            
-                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
-                <p-column field="Description" header="Description" [sortable]="true" [filter]="true">
-                    <template let-col let-taxonomy="rowData" pTemplate type="body">
-                        <div [innerHtml]="taxonomy?.Description"></div>
-                    </template>                                                        
-                </p-column>    
-                    <p-column [style]="{width:'40px'}">
-                        <template let-template="rowData" pTemplate type="body">
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                            </div>
-                        </template>
-                    </p-column>                            
-                    <p-column  [style]="{width:'40px'}">
-                        <template let-template="rowData" pTemplate type="body">
-                            <div class="RowTools">                                
-                                <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                            </div>
-                        </template>
-                    </p-column>                            
-                </p-dataTable>      
+                <span *ngIf="!isLoading && !showDelete && !showEditor">
+                   <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                   <p-dataTable [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
+                    <p-column field="Level" header="Level" [sortable]="true"></p-column>                                                            
+                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
+                    <p-column field="Description" header="Description" [sortable]="true">
+                        <template let-col let-taxonomy="rowData" pTemplate type="body">
+                            <div [innerHtml]="taxonomy?.Description"></div>
+                        </template>                                                        
+                    </p-column>    
+                        <p-column [style]="{width:'40px'}">
+                            <template let-template="rowData" pTemplate type="body">
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                </div>
+                            </template>
+                        </p-column>                            
+                        <p-column  [style]="{width:'40px'}">
+                            <template let-template="rowData" pTemplate type="body">
+                                <div class="RowTools">                                
+                                    <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </template>
+                        </p-column>                            
+                    </p-dataTable>      
+                </span>
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selectedLevel?.Level"

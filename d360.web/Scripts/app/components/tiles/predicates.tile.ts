@@ -12,25 +12,28 @@ import { MessagesService, PredicatesService  } from '../../services/index';
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
-                    <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
-                    <p-column field="Inverse" header="Inverse" [sortable]="true" [filter]="true"></p-column>
-                    <p-column field="Type" header="Type" [sortable]="true" [filter]="true"></p-column>                
-                    <p-column [style]="{width:'40px'}">
-                        <template let-predicate="rowData" pTemplate type="body">
-                            <div class="RowTools" *ngIf="!predicate.IsSystem">
-                                <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                            </div>
-                        </template>
-                    </p-column>                            
-                    <p-column  [style]="{width:'40px'}">
-                        <template let-predicate="rowData" pTemplate type="body">
-                            <div class="RowTools" *ngIf="!predicate.IsUsed && !predicate.IsSystem">                                
-                                <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                            </div>
-                        </template>
-                    </p-column>                            
-                </p-dataTable> 
+                <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                    <p-dataTable [globalFilter]="gb" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
+                        <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
+                        <p-column field="Inverse" header="Inverse" [sortable]="true"></p-column>
+                        <p-column field="Type" header="Type" [sortable]="true"></p-column>                
+                        <p-column [style]="{width:'40px'}">
+                            <template let-predicate="rowData" pTemplate type="body">
+                                <div class="RowTools" *ngIf="!predicate.IsSystem">
+                                    <a style="cursor:pointer;" (click)="selected=predicate;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                </div>
+                            </template>
+                        </p-column>                            
+                        <p-column  [style]="{width:'40px'}">
+                            <template let-predicate="rowData" pTemplate type="body">
+                                <div class="RowTools" *ngIf="!predicate.IsUsed && !predicate.IsSystem">                                
+                                    <a style="cursor:pointer;" (click)="selected=predicate;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                </div>
+                            </template>
+                        </p-column>                            
+                    </p-dataTable> 
+                </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Predicate'" [title]="'Predicate'" [selection]="selected" (saveClick)="savePredicate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"

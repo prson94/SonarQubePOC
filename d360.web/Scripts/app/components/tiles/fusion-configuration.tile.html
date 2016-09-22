@@ -2,14 +2,33 @@
     <div *ngIf="!isLoading" [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"></d3s-tile-actions></header>
-            <p-dataTable [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" [rows]="20" [paginator]="true" >
-                <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [filter]="true"></p-column>
-                <p-column>
+            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+            <p-dataTable scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" [rows]="20" [paginator]="true" >
+                <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }"></p-column>
+                <p-column [style]="{ 'width': '30px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>                            
+                        </div>
+                    </template>
+                </p-column>
+                <p-column [style]="{ 'width': '30px' }">
+                    <template let-col let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">                            
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.Editing" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
+                        </div>
+                    </template>
+                </p-column>
+                <p-column [style]="{ 'width': '30px' }">
+                    <template let-col let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">                            
+                            <a (click)="selectedRow = item; formMode = FormModeConfig.Deleting" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                            
+                        </div>
+                    </template>
+                </p-column>
+                <p-column [style]="{ 'width': '30px' }">
+                    <template let-col let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">                            
                             <a (click)="selectedRow = item; formMode = FormModeConfig.Filters" style="cursor:pointer;"><i class="fa fa-filter"></i></a>
                         </div>
                     </template>

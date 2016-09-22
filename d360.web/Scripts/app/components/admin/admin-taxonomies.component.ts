@@ -10,32 +10,8 @@ import { Title } from '@angular/platform-browser';
     selector: 'd3s-admin-models-component',    
     providers: [TaxonomiesService, FieldsService],
     template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
-                <div *ngIf="!isAuditVisible" class="row">
-                    <div class="col l4 s12">                    
-                        <div class="tile tile-detail">
-                            <header *ngIf="!showEditor">Models
-                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
-                            </header>
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <p-dataTable *ngIf="!showEditor && !showDelete && !isLoading" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTaxonomy"  (onRowDblclick)="showEditor=true;" >                                                        
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                            
-                                <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="true"></p-column>                            
-                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="true"></p-column>                            
-                                <p-column [style]="{width:'40px'}">
-                                    <template let-template="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                                <p-column  [style]="{width:'40px'}">
-                                    <template let-template="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                            </p-dataTable>
+                <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading" class="row">
+                    <div class="tile tile-detail">                            
                             <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
                             <delete-form *ngIf="showDelete"
                                         [callback]="theDeleteCallback"
@@ -43,7 +19,38 @@ import { Title } from '@angular/platform-browser';
                                          [method]="'callback'"
                                          [prompt]="'Are you sure you want to delete the model [' + [selectedTaxonomy?.Name] + ']?'"                                         
                                          (onCancel)="showDelete=false;"
-                                ></delete-form>
+                            ></delete-form>
+                    </div>
+                </div>
+                <div *ngIf="!showEditor && !showDelete && !isAuditVisible" class="row">
+                    <div class="col l4 s12">                    
+                        <div class="tile tile-detail">
+                            <header *ngIf="!showEditor">Models
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                            </header>
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                            <span *ngIf="!isLoading">
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <p-dataTable [globalFilter]="gb" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selectedTaxonomy"  (onRowDblclick)="selectedTaxonomy=$event.data;showEditor=true;" >                                                        
+                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                            
+                                    <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true"></p-column>                            
+                                    <p-column field="MaximumDepth" header="Max Depth" [sortable]="true"></p-column>                            
+                                    <p-column [style]="{width:'40px'}">
+                                        <template let-model="rowData" pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selectedTaxonomy=model;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                    <p-column  [style]="{width:'40px'}">
+                                        <template let-model="rowData" pTemplate type="body">
+                                            <div class="RowTools">                                
+                                                <a style="cursor:pointer;" (click)="selectedTaxonomy=model;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                </p-dataTable>
+                            </span>                            
                         </div>
                     </div>
                     <div class="col l8 s12">                                            
@@ -107,22 +114,28 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     saveModel(event) {
         this.taxonomiesService
              .saveTaxonomy(event.taxonomy)
-            .then(response => {                
+            .then(response => {
                 this.showEditor = false;
-                let actionName = "Created";
-                if (event.action == "new") {
-                    event.taxonomy.ID = Number(response.id);
-                    event.taxonomy.Class = undefined;
-                    this.taxonomies[this.taxonomies.length] = event.taxonomy;                     
+                if (response.type == 'error') {
+                    this.messagesService.showError("Error", "Cannot create new taxonomy");
+                    this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
                 }
-                else {
-                    var index = this.findTaxonomyIndex(event.taxonomy.ID);
-                    actionName = "Edited";
-                    if (index >= 0)
-                        this.taxonomies[index] = event.taxonomy;
+                else {                    
+                    let actionName = "Created";
+                    if (event.action == "new") {
+                        event.taxonomy.ID = Number(response.id);
+                        event.taxonomy.Class = undefined;
+                        this.taxonomies[this.taxonomies.length] = event.taxonomy;
+                    }
+                    else {
+                        var index = this.findTaxonomyIndex(event.taxonomy.ID);
+                        actionName = "Edited";
+                        if (index >= 0)
+                            this.taxonomies[index] = event.taxonomy;
+                    }
+                    this.messagesService.showInfoMessage("Success", `${actionName} model [${event.taxonomy.Name}] Successfully`);
+                    this.selectedTaxonomy = event.taxonomy;
                 }
-                this.messagesService.showInfoMessage("Success", `${actionName} model [${event.taxonomy.Name}] Successfully`);
-                this.selectedTaxonomy = event.taxonomy;                
             })
              .catch(error => this.error = error);        
     }

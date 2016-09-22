@@ -10,11 +10,12 @@
     </div>
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
-            <p-dataTable [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
-                <p-column field="Role" header="Role" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
-                <p-column field="ResponsibleObjectName" header="Resource" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
-                <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
-                <p-column field="ContextItems" header="Context" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
+            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <p-dataTable [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
+                <p-column field="Role" header="Role" sortable="true" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="ResponsibleObjectName" header="Resource" sortable="true" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="PrimaryOwnerResourceName" header="Group Owner" sortable="true" [style]="{ 'width': '20%' }"></p-column>
+                <p-column field="ContextItems" header="Context" sortable="true" [style]="{ 'width': '30%' }"></p-column>
                 <p-column>
                     <template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">

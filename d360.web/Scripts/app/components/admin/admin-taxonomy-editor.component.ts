@@ -1,5 +1,5 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
 import { TaxonomiesService, ObjectStyleService } from '../../services/index';
 import { Taxonomy, TaxonomyClassification } from '../../models/taxonomy.model';
@@ -9,37 +9,41 @@ import * as _ from 'lodash';
     selector: 'd3s-admin-model-editor',
     template: ` 
                 <header>{{action}} Model</header>
+                <form (ngSubmit)="onSubmit()" #modelForm="ngForm">
                 <div class="row">
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>
-                        <div><input type="text" pInputText [(ngModel)]="editedTaxonomy.Name" style="width: 100%;" /></div>
+                        <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomy.Name" style="width: 100%;" #name="ngModel" /></div>
+                        <div [hidden]="name.valid || name.pristine">Model name is required</div>
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Classification</div>
-                        <div><p-dropdown [options]="classifications" [(ngModel)]="editedTaxonomy.Class" [style]="{width:'100%'}"></p-dropdown></div>
+                        <div><p-dropdown required name="classification" [options]="classifications" [(ngModel)]="editedTaxonomy.Class" [style]="{width:'100%'}" #classification="ngModel"></p-dropdown></div>
+                        <div [hidden]="classification.valid || classification.pristine">Model classification is required</div>
                     </div>
                     <div class="col l12 s12">
                         <div class="FieldName">Maximum Depth</div>
-                        <div><p-spinner size="30" [(ngModel)]="editedTaxonomy.MaximumDepth" [min]="0" [max]="100"></p-spinner></div>
+                        <div><p-spinner size="30" name="depth" [(ngModel)]="editedTaxonomy.MaximumDepth" [min]="0" [max]="100"></p-spinner></div>
                     </div>                    
                     <div class="col s12">
                         <div class="FieldName">Description</div>
-                        <p-editor [style]="{'height':'150px'}" [(ngModel)]="editedTaxonomy.Description"></p-editor>
+                        <p-editor [style]="{'height':'150px'}" name="description" [(ngModel)]="editedTaxonomy.Description"></p-editor>
                     </div>                    
                     <div class="col l6 s12">
                         <div class="FieldName">Background Color</div>
-                        <div><input type="text" pInputText [(ngModel)]="editedTaxonomy.IconBackColor" style="width: 100%;" /></div>
+                        <div><input type="text" name="background" pInputText [(ngModel)]="editedTaxonomy.IconBackColor" style="width: 100%;" /></div>
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Text Color</div>
-                        <div><input type="text" pInputText [(ngModel)]="editedTaxonomy.IconForeColor" style="width: 100%;" /></div>
+                        <div><input type="text" name="color" pInputText [(ngModel)]="editedTaxonomy.IconForeColor" style="width: 100%;" /></div>
                     </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
-                        <button pButton type="button" (click)="update()" label="Save" style="width: '150px';"></button>
-                        <button pButton type="button" (click)="close()" label="Close" style="width: '150px';"></button>
+                        <button pButton type="submit" [disabled]="!modelForm.form.valid" label="Save" style="width: 150px;"></button>
+                        <button pButton type="button" (click)="close()" label="Close" style="width: 150px;"></button>
                     </div>                    
                 </div>
+                </form>
                 `,
     providers: [TaxonomiesService, ObjectStyleService],
 })
@@ -62,7 +66,8 @@ export class AdminTaxonomyEditorComponent {
         if (this.taxonomy != undefined)
             this.editedTaxonomy = _.cloneDeep(this.taxonomy);
         else {
-            this.editedTaxonomy = new Taxonomy();
+            this.editedTaxonomy = new Taxonomy();            
+            this.editedTaxonomy.MaximumDepth = 1;
             this.action = "New";
         }
         this.getClassifications();
@@ -96,11 +101,12 @@ export class AdminTaxonomyEditorComponent {
                         label: classification.Name, value: classification.ID
                     });
                 }
+                if (this.editedTaxonomy.Class == undefined && this.classifications.length > 0) this.editedTaxonomy.Class = this.classifications[0].value;
             })
             .catch(error => this.error = error);                
     }
 
-    update() {
+    onSubmit() {
         //update the text that goes with the classification
         this.editedTaxonomy.TaxonomyTypeClass = this.getClassificationName(this.editedTaxonomy.Class);
         

@@ -7,10 +7,11 @@
     </div>
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <p-dataTable [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" (onRowSelect)="select($event)">
-                <p-column field="LastName" header="Field" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
-                <p-column field="FirstName" header="Category" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '30%' }"></p-column>
-                <p-column field="Owner?" header="Required?" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '20%' }"></p-column>
+            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <p-dataTable [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" (onRowSelect)="select($event)">
+                <p-column field="LastName" header="Field" sortable="true" [style]="{ 'width': '30%' }"></p-column>
+                <p-column field="FirstName" header="Category" sortable="true" [style]="{ 'width': '30%' }"></p-column>
+                <p-column field="Owner?" header="Required?" sortable="true" [style]="{ 'width': '20%' }"></p-column>
                 <p-column [style]="{ 'width': '20%' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">

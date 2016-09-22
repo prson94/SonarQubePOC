@@ -14,30 +14,33 @@ import { Title } from '@angular/platform-browser';
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <header  *ngIf="!isLoading">Tooltip Templates
                             <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
-                        </header>                        
-                        <p-dataTable *ngIf="!isLoading" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width : '150px' }"></p-column>
-                            <p-column field="Action" header="Action" [sortable]="true" [filter]="true" [style]="{width : '100px' }"></p-column>                            
-                            <p-column header="Description" sortable="true" filter="true">
-                                <template let-col let-template="rowData" pTemplate type="body">
-                                    <div [innerHtml]="template?.Description"></div>
-                                </template>
-                            </p-column>                             
-                            <p-column [style]="{width:'40px'}">
-                                <template let-template="rowData" pTemplate type="body">
-                                    <div class="RowTools">
-                                        <a (click)="selectedTemplate=template;isEditing=true;isDeleting=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
-                                    </div>
-                                </template>
-                            </p-column>                            
-                            <p-column  [style]="{width:'40px'}">
-                                <template let-template="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
-                                        <a (click)="selectedTemplate=template;isEditing=false;isDeleting=true;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                                </template>
-                            </p-column>                            
-                        </p-dataTable>
+                        </header>    
+                        <span  *ngIf="!isLoading">
+                            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                  
+                            <p-dataTable [globalFilter]="gb" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width : '150px' }"></p-column>
+                                <p-column field="Action" header="Action" [sortable]="true"  [style]="{width : '100px' }"></p-column>                            
+                                <p-column header="Description" sortable="true">
+                                    <template let-col let-template="rowData" pTemplate type="body">
+                                        <div [innerHtml]="template?.Description"></div>
+                                    </template>
+                                </p-column>                             
+                                <p-column [style]="{width:'40px'}">
+                                    <template let-template="rowData" pTemplate type="body">
+                                        <div class="RowTools">
+                                            <a (click)="selectedTemplate=template;isEditing=true;isDeleting=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                        
+                                        </div>
+                                    </template>
+                                </p-column>                            
+                                <p-column  [style]="{width:'40px'}">
+                                    <template let-template="rowData" pTemplate type="body">
+                                        <div class="RowTools">                                
+                                            <a (click)="selectedTemplate=template;isEditing=false;isDeleting=true;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>                                    
+                                        </div>
+                                    </template>
+                                </p-column>                            
+                            </p-dataTable>
+                        </span>
                     </div>
                 </div>  
                 <div class="col" [ngClass]="{'s4':isDeleting||isEditing||isAdding}">

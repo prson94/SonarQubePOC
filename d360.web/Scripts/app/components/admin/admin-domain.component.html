@@ -1,11 +1,12 @@
 <d3s-audit *ngIf="isAuditVisible" [objectID]="selectedRow?.ID" [objectName]="selectedRow?.Name" [objectType]="objectType"></d3s-audit>
 <div *ngIf="!isAuditVisible" class="row">
-    <div class="col l4 m6 s12">        
+    <div class="col l4 m6 s12">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail" *ngIf="!isLoading">
-            <header><d3s-tile-actions [hasAdd]="true" (addClick)="selectedRow=newRow;formMode=FormMode.Adding;"></d3s-tile-actions></header>
-            <p-dataTable [value]="domainTypes" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">
-                <p-column field="Name" header="Name" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '70%' }"></p-column>
+            <header>Domain<d3s-tile-actions [hasAdd]="true" (addClick)="selectedRow=newRow;formMode=FormMode.Adding;"></d3s-tile-actions></header>
+            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <p-dataTable [globalFilter]="gb" [value]="domainTypes" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">
+                <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '70%' }"></p-column>
                 <p-column [style]="{ 'width': '30%' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">

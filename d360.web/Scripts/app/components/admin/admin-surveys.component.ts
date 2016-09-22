@@ -15,18 +15,21 @@ import { SurveyType } from '../../models/survey.model';
                             <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="true" [style]="{width:'25%'}"></p-column>                                                                                        
-                            <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [filter]="true" [style]="{width:'10%'}"></p-column>
-                                <p-column [style]="{width:'60px'}">
-                                    <template let-survey="rowData" pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=survey;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                            <a style="cursor:pointer;" (click)="selected=survey;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </template>
-                                </p-column>                                                                                    
-                            </p-dataTable>  
+                            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <p-dataTable [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}"></p-column>                                                                                        
+                                <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}"></p-column>
+                                    <p-column [style]="{width:'60px'}">
+                                        <template let-survey="rowData" pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selected=survey;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                                <a style="cursor:pointer;" (click)="selected=survey;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </template>
+                                    </p-column>                                                                                    
+                                </p-dataTable>  
+                            </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"

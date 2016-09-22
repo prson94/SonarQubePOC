@@ -13,10 +13,13 @@ import { Title } from '@angular/platform-browser';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor">Rule Types</header>  
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>                        
-                            <p-dataTable *ngIf="!isLoading && !showEditor" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
-                            </p-dataTable>                                
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>     
+                            <span *ngIf="!isLoading && !showEditor">
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <p-dataTable [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
+                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
+                                </p-dataTable>                                
+                            </span>
                         </div>
                     </div>                    
                     <div class="col l8 s12">

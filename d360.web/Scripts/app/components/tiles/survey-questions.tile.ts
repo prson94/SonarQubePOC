@@ -12,24 +12,27 @@ import { MessagesService, SurveysService  } from '../../services/index';
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-               <p-dataTable *ngIf="!isLoading && !showDelete && !showEditor" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                    <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                            
-                    <p-column field="DisplayStyle" header="Display Type" [sortable]="true" [filter]="true"></p-column>
-                    <p-column [style]="{width:'40px'}">
-                            <template let-question="rowData" pTemplate type="body">
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=question;showEditor=true"><i class="fa fa-pencil"></i></a>                                      
-                                </div>
-                            </template>
-                    </p-column>                                                
-                    <p-column [style]="{width:'40px'}">
-                            <template let-question="rowData" pTemplate type="body">
-                                <div class="RowTools">                                    
-                                    <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </template>
-                    </p-column>                                                
-               </p-dataTable>      
+                <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                    
+                    <p-dataTable [globalFilter]="gb" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                        <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
+                        <p-column field="DisplayStyle" header="Display Type" [sortable]="true"></p-column>
+                        <p-column [style]="{width:'40px'}">
+                                <template let-question="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=question;showEditor=true"><i class="fa fa-pencil"></i></a>                                      
+                                    </div>
+                                </template>
+                        </p-column>                                                
+                        <p-column [style]="{width:'40px'}">
+                                <template let-question="rowData" pTemplate type="body">
+                                    <div class="RowTools">                                    
+                                        <a style="cursor:pointer;" (click)="selected=question;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </template>
+                        </p-column>                                                
+                    </p-dataTable>      
+                </span>
                 <delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"

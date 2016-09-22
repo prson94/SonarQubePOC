@@ -2,22 +2,21 @@
     <div class="col l5 m5">
         <div class="tile tile-detail">
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <div *ngIf="!isLoading">                
-                <header *ngIf="!isEditing && !isAdding && !isDeleting">                    
+            <div *ngIf="!isLoading">
+                <header>
+                    Workflows
                     <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>
                 </header>
-                <!--<div class="pull-right">
-                <d3s-action-bar [actions]="actions"></d3s-action-bar>
-            </div>-->
-                <p-dataTable [value]="workflowItems" selectionMode="single" [(selection)]="selectedRow" (onRowSelect)="select();" [rows]="20" [paginator]="true">
-                    <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '28%' }"></p-column>
-                    <p-column field="ObjectName" header="Type" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '28%' }"></p-column>
-                    <p-column field="ParentName" header="Subject Area" sortable="true" [filter]="true" filterMatchMode="contains" [style]="{ 'width': '28%' }"></p-column>
+                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                <p-dataTable [globalFilter]="gb" [value]="workflowItems" selectionMode="single" (onRowDblclick)="selectedRow=$event.data;isEditing=true" [(selection)]="selectedRow" (onRowClick)="isAdding=false;" [rows]="20" [paginator]="true">
+                    <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [style]="{ 'width': '28%' }"></p-column>
+                    <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '28%' }"></p-column>
+                    <p-column field="ParentName" header="Subject Area" sortable="true" [style]="{ 'width': '28%' }"></p-column>
                     <p-column [style]="{ 'width': '16%' }">
-                        <template let-col let-item="rowData" pTemplate type="body">
+                        <template let-workflow="rowData" pTemplate type="body">
                             <div class="RowTools">
-                                <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                <a (click)="editRow(workflow)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                <a (click)="selectedRow=workflow;isDeleting=true;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </template>
                     </p-column>
@@ -30,7 +29,7 @@
             <object-detail [objectType]="'WorkflowTypeRelation'" [objectID]="selectedRow?.ID"></object-detail>
         </div>
     </div>
-    <div class="col l7 m7" *ngIf="isEditing">
+    <div class="col l7 m7" *ngIf="isEditing && selectedRow">
         <div class="tile tile-detail">
             <workflow-item-form [item]="selectedRow" (onCancel)="isEditing = false;"></workflow-item-form>
         </div>
@@ -40,7 +39,7 @@
             <workflow-item-form [item]="addingRow" (onCancel)="isAdding = false;"></workflow-item-form>
         </div>
     </div>
-    <div  class="col l7 m7" *ngIf="isDeleting">
+    <div class="col l7 m7" *ngIf="isDeleting">
         <div class="title title-detail">
             <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
                          [method]="'delete'"

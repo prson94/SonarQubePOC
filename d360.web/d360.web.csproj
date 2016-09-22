@@ -1588,7 +1588,7 @@
     <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\pipes\breadcrumb-tree-search.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\tree-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\pipes.module.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\classification-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\dropdown-to-selectitem.pipe.ts" />

@@ -16,23 +16,26 @@ import { Title } from '@angular/platform-browser';
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <p-dataTable *ngIf="!isLoading && !showEditor && !showDelete" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
-                                <p-column field="Name" header="Name" [sortable]="true" [filter]="true"></p-column>                                                        
-                                <p-column [style]="{width:'40px'}">
-                                    <template let-policy="rowData"  pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=policy;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
-                                        </div>
-                                    </template>
-                                </p-column>                            
-                                <p-column  [style]="{width:'40px'}">
-                                    <template let-policy="rowData" pTemplate type="body">
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selected=policy;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
-                                        </div>
-                                    </template>
-                                </p-column>    
-                            </p-dataTable>      
+                            <span *ngIf="!isLoading && !showEditor && !showDelete">
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <p-dataTable [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
+                                    <p-column [style]="{width:'40px'}">
+                                        <template let-policy="rowData"  pTemplate type="body">
+                                            <div class="RowTools">
+                                                <a style="cursor:pointer;" (click)="selected=policy;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                            </div>
+                                        </template>
+                                    </p-column>                            
+                                    <p-column  [style]="{width:'40px'}">
+                                        <template let-policy="rowData" pTemplate type="body">
+                                            <div class="RowTools">                                
+                                                <a style="cursor:pointer;" (click)="selected=policy;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                            </div>
+                                        </template>
+                                    </p-column>    
+                                </p-dataTable>      
+                            </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'PolicyType'" [title]="'Policy Type'" [selection]="selected" (saveClick)="savePolicyType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                             <delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"

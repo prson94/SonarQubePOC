@@ -13,7 +13,7 @@ import { Relationship } from '../../models/relationship.model';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">
                     <div *ngIf="showFilter" class="col l10 m9 s12">                                                                         
-                        <input type="text" [(ngModel)]="searchValue" placeholder="Search Relationships" style="width: 100%;">
+                        <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">
                     </div>
                     <div *ngIf="showFilter" class="col l2 m3 s12">                                                                         
                         <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>

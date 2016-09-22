@@ -24,8 +24,8 @@ import { TreeNode } from 'primeng/primeng';
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                              
-                    <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="!showDelete && !showEditor">                      
-                    <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
+                    <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="!showDelete && !showEditor">                      
+                    <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <template let-item="rowData" pTemplate type="body">
                                 <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                

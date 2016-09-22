@@ -17,7 +17,7 @@ import { TreeNode } from 'primeng/primeng';
                     <div class="tile tile-detail" *ngIf="!isLoading">                            
                         <header>Glossary</header>                              
                         <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">  
-                        <p-treeTable [value]="treeNodeArray | breadcrumbTreeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
+                        <p-treeTable [value]="treeNodeArray | treeSearch: searchValue : 'Name'" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                             <p-column field="Name" header="Name">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="showItem(item)">{{item.data.Name}}</a>

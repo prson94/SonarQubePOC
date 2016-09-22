@@ -21,9 +21,9 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
     isDeleting = false;
     isAdding = false;
 
-    workflowItems = new Array<WorkflowItem>();
-    selectedRow = new WorkflowItem();
-    addingRow = new WorkflowItem();
+    private workflowItems : WorkflowItem[] = [];
+    private selectedRow: WorkflowItem;
+    private addingRow = new WorkflowItem();
 
     actions = new Array<ActionBarItem>();
 
@@ -59,30 +59,24 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
             this.isLoading = false;
         });
     }
-
-    delete(id: number): void {
-        this.selectedRow = this.workflowItems.find(w => w.ID == id);
-        this.isDeleting = true;
-    }
-
-    edit(id: number): void {
-        this.selectedRow = this.workflowItems.find(w => w.ID == id);
-        this.isEditing = true;
-    }
-
+    
     add(): void {
         this.addingRow = new WorkflowItem();
         //TODO: replace with menu item list so user can choose workflowtype
         this.addingRow.WorkflowType = WorkflowType.CertifyArtifact
         this.isAdding = true;
     }
-
-    select(): void {
-            this.isAdding = false;
-    }
+    
 
     deleteRow(id: number): void {
         this.messages.push({ severity: 'info', summary: 'Workflow allocation deleted successfully', detail: '' });
         this.load();
     }
+
+    editRow(workflow: WorkflowItem) {
+     //   this.selectedRow = workflow;
+      //  console.log(this.selectedRow);
+        this.isEditing= true;
+    }
+    
 }

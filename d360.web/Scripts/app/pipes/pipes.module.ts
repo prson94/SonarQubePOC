@@ -7,12 +7,12 @@ import { ModelTypePipe } from './model-type.pipe';
 import { RelationshipSearchPipe } from './relationship-search.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { ScoreDisplayPipe } from './score-display.pipe';
-import { BreadcrumbTreeSearchPipe } from './breadcrumb-tree-search.pipe';
+import { TreeSearchPipe } from './tree-search.pipe';
 
 @NgModule({
     imports: [CommonModule],
     declarations: [
-        BreadcrumbTreeSearchPipe,
+        TreeSearchPipe,
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,
@@ -22,7 +22,7 @@ import { BreadcrumbTreeSearchPipe } from './breadcrumb-tree-search.pipe';
         TechnicalNameToDisplayValuePipe,        
     ],
     exports: [
-        BreadcrumbTreeSearchPipe,
+        TreeSearchPipe,
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,

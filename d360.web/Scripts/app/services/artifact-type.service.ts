@@ -61,7 +61,7 @@ export class ArtifactTypeService extends BaseService {
         var tree = new Array<TreeNode>();
 
         data.filter(d => d.ParentID == null).forEach(d => {
-            tree.push({ data: d, children: [] });
+            tree.push({ data: d, children: [], expanded:true });
         });
 
         tree.forEach(t => {
