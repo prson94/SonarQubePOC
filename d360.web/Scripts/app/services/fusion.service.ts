@@ -4,7 +4,28 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './index';
 import { JsonResult, FormHelper } from '../models/form.model';
-import { FusionType, FusionAttributeType, FusionConfiguration, FusionFilter, ObjectStyle, Fusion, FusionConfigurationDetails, FusionAgentExecutionStats, FusionWorkerExecution, FusionPromotionExecutionStats, FusionSummaryStats, FusionAgentError, FusionProcessError, FusionExecutionError, FusionExecutionResult } from '../models/fusion.model';
+import {
+    FusionType,
+    FusionAttributeType,
+    FusionConfiguration,
+    FusionFilter,
+    ObjectStyle,
+    Fusion,
+    FusionConfigurationDetails,
+    FusionAgentExecutionStats,
+    FusionWorkerExecution,
+    FusionPromotionExecutionStats,
+    FusionSummaryStats,
+    MapRuleItemDetail,
+    FusionRule,
+    FusionRuleStep,
+    FusionRuleItem,
+    FusionRuleMapping,
+    FusionAgentError,
+    FusionExecutionError,
+    FusionExecutionResult,
+    FusionProcessError
+} from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
 
@@ -191,11 +212,53 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionTechnicalMappings(): Promise<MapRuleItemDetail[]> {
+        return this.http.get('api/fusion/technicalmapping')
+            .toPromise()
+            .then(response => <MapRuleItemDetail[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 
     getFusionFusionAttributeTypes(fusionId: number): Promise<FusionAttributeType[]>{
         return this.http.get(`services/fusion/${fusionId}/attributetypes?$orderby=Name`)
             .toPromise()
             .then(response => <FusionAttributeType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRules(fusionID: number): Promise<FusionRule[]> {
+        return this.http.get(`api/fusion/${fusionID}/rules`)
+            .toPromise()
+            .then(response => <FusionRule[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRuleSteps(ruleID: number): Promise<FusionRuleStep[]> {
+        return this.http.get(`api/fusion/rules/${ruleID}/steps`)
+            .toPromise()
+            .then(response => <FusionRuleStep[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRuleSteps(ruleID: number, ruleStepID: number) {
+        return this.http.get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRuleItems(id: number): Promise<FusionRuleItem[]> {
+        return this.http.get(`api/fusion/${id}/FusionRuleItems`)
+            .toPromise()
+            .then(response => <FusionRuleItem[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRuleStepMappings(id: number): Promise<FusionRuleMapping[]> {
+        return this.http.get(`api/fusion/${id}/FusionRuleStepMappings`)
+            .toPromise()
+            .then(response => <FusionRuleMapping[]>response.json())
             .catch(err => this.handleError(err));
     }
 

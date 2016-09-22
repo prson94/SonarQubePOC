@@ -115,6 +115,63 @@ export class FusionSummaryStats {
     PromotionJobsExecuted: number;
 }
 
+
+export class MapRuleItemDetail {
+    ID: number;
+    Type: string;
+    TextID: string;
+    ParentTextID: string;
+    Transformation: string;
+    SourceFusion: string;
+    SourceFusionAttributeID: number;
+    SourceFusionAttributeTextPath: string;
+    SourceObjectName: string;
+    SourceObjectID: number;
+    SourceObject: string;
+    TargetFusion: string;
+    TargetFusionAttributeID: number;        
+    TargetFusionAttributeTextPath: string;
+    TargetObjectName: string;
+    TargetObjectID: number;
+    TargetObject: string;
+
+    children: MapRuleItemDetail[];
+}
+
+export class FusionRule {
+    ID: number;
+    Enabled: boolean;
+    FusionID: number;
+    ObjectType: string;
+    ObjectID: number;
+    ObjectName: string;
+}
+
+export class FusionRuleStep {
+    ID: number;
+    RuleID: number;
+    Step: number;
+    Action: string;
+    Description: string;
+}
+
+
+export class FusionRuleItem {
+    ID: number;
+    RuleID: number;
+    FusionAttributeID: number;
+    FusionAttributeName: string;
+}
+
+export class FusionRuleMapping {
+    ID: number;
+    SourceFieldTypeID: number;
+    SourceFieldName: string;
+    TargetFieldTypeID: number;
+    TargetFieldName: string;
+}
+
+
 export class FusionProcessError {
     Date: Date;
     Error: string;

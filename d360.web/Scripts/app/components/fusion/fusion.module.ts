@@ -23,8 +23,10 @@ import { FusionManualLoadComponent } from './fusion-manual-load.component';
 import { FusionProcessErrorsComponent } from './fusion-process-errors.component';
 import { FusionPromotionHistoryComponent } from './fusion-promotion-history.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
+import { FusionTechnicalMappingsComponent } from './fusion-technical-mappings.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
+import { FusionRulesComponent } from './fusion-rules.component';
 
 import {
     GrowlModule,
@@ -102,7 +104,9 @@ import {
         FusionProcessErrorsComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
+        FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
+        FusionRulesComponent,
     ],
     exports: [
         FusionAgentErrorsComponent,
@@ -120,7 +124,9 @@ import {
         FusionProcessErrorsComponent,
         FusionPromotionHistoryComponent,
         FusionStatisticsComponent,
+        FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
+        FusionRulesComponent,
     ]
 })
 export class FusionModule { }

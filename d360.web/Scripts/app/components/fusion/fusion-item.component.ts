@@ -29,8 +29,13 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <div class="col s12">
                         <d3s-fusion-manual-load [fusion]="fusion"></d3s-fusion-manual-load>
                     </div>
-                </div>      
-                <div class="row"*ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible">
+                </div>   
+                <div class="row" *ngIf="!isLoading && showFusionRules">
+                    <div class="col s12">
+                        <d3s-fusion-rules [fusionID]="fusionId" [fusionTypeID]="fusion.FusionTypeID"></d3s-fusion-rules>
+                    </div>
+                </div>   
+                <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
                     <div class="col l2 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
@@ -53,11 +58,13 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    //private subRight: any;
     private fusionId: number;
     private fusion: FusionConfigurationDetails;
     private selectedFusionAttributeTypeId: number;
     private selectedFusionAttribute: any;
     private initialFusionAttributeId: number;
+    private showFusionRules: boolean = false;
     private isHistoryVisible: boolean = false;
     private isManualLoadVisible: boolean = false;
 
@@ -66,10 +73,11 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,
             private router: Router,
-            rightSidebarService: RightSidebarService,
             private fusionService: FusionService,
+            protected rightSidebarService: RightSidebarService,
             protected titleService: Title) {
         super(rightSidebarService);
+        this.rightSidebarService.clearItems();
         this.setCommonRightSideBar(false, true);
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory'));           
@@ -78,11 +86,18 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Fusion');
 
+        this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules'));
+
+        //this.subRight = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
+        //    this.showFusionRules = s.active;
+        //});
+
         this.sub = this.route.params.subscribe(params => {
 
             this.fusionId = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];
+            
             
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.fusionService.getFusionConfiguration(this.fusionId)
@@ -145,7 +160,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
         if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;
-        else if (activatedItem.tag == 'fusionload') this.isManualLoadVisible = !this.isManualLoadVisible;       
+        else if (activatedItem.tag == 'fusionload') this.isManualLoadVisible = !this.isManualLoadVisible;
+        else if (activatedItem.tag == 'fusionrules') this.showFusionRules = !this.showFusionRules;  
     }
 
 };

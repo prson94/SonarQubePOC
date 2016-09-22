@@ -1384,6 +1384,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
@@ -1393,6 +1394,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-promotion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-technical-mappings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.module.ts" />

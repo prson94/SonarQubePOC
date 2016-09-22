@@ -164,7 +164,7 @@ export class AttributesTile implements OnInit {
                     this.selectedRow = this.items[0];
                     this.loadMenu();
                 }
-                //console.log(this.items);
+                console.log(this.items);
                 this.isLoading = false; 
             });
     }
