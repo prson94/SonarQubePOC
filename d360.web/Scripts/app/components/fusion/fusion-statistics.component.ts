@@ -67,6 +67,9 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                 this.fusionSummaryStats = res;
                 let agentSuccess = this.calculateSuccess(res.AgentExecutions, res.AgentErrors);
                 let workerSuccess = this.calculateSuccess(res.FusionExecutions, res.FusionErrors);
+
+                agentSuccess = +agentSuccess.toFixed(2);
+                workerSuccess = +workerSuccess.toFixed(2);
                 
                 this.agentPie = this.getKpi(agentSuccess, 100 - (agentSuccess), agentSuccess+' %',"Agent % Success");               
                 this.workerPie = this.getKpi(workerSuccess, 100 - (workerSuccess), workerSuccess + ' %', "Processing % Success");               

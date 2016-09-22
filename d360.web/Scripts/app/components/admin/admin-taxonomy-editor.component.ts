@@ -61,8 +61,7 @@ export class AdminTaxonomyEditorComponent {
         
     }
 
-    ngOnInit() {
-        console.log(this.taxonomy);
+    ngOnInit() {        
         if (this.taxonomy != undefined)
             this.editedTaxonomy = _.cloneDeep(this.taxonomy);
         else {
