@@ -15,7 +15,6 @@ import { ClaimsTile } from './claims.tile';
 import { FieldDefinitionTile } from './field-definition.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { FusionFiltersTile } from './fusion-filters.tile';
 import { GroupMembersTile } from './group-members.tile';
 import { LoadItemTile } from './load-item.tile';
 import { ModelLevelTile } from './model-level.tile';
@@ -61,11 +60,9 @@ import {
         ClaimsTile, 
         FieldDefinitionTile,
         FusionAttributesTile,
-        FusionConfigurationTile,
-        FusionFiltersTile,
+        FusionConfigurationTile,        
         GroupMembersTile,
         LoadItemTile,
-        //MenuBarItem,
         ModelLevelTile,
         ObjectDefinitionTile,
         ObjectDetailTile,
@@ -92,11 +89,9 @@ import {
         ClaimsTile,
         FieldDefinitionTile,
         FusionAttributesTile,
-        FusionConfigurationTile,
-        FusionFiltersTile,
+        FusionConfigurationTile,        
         GroupMembersTile,
-        LoadItemTile,
-        //MenuBarItem,
+        LoadItemTile,        
         ModelLevelTile,
         ObjectDefinitionTile,
         ObjectDetailTile,

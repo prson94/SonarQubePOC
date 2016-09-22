@@ -7,11 +7,11 @@ import { FormMode, FormHelper } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-fusion-filters-tile',
-    templateUrl: 'scripts/app/components/tiles/fusion-filters.tile.html',
+    templateUrl: 'scripts/app/components/shared/fusion-filters.component.html',
     providers: [FusionService]
 })
 
-export class FusionFiltersTile implements OnChanges {
+export class FusionFiltersComponent implements OnChanges {
     @Input() fusionTypeID: number;
     @Input() fusionID: number;
     @Input() title: string = 'Synchronization Filters';

@@ -868,7 +868,7 @@
     <Content Include="Scripts\app\components\shared\lineage.component.html" />
     <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
-    <Content Include="Scripts\app\components\tiles\fusion-filters.tile.html" />
+    <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
@@ -1509,7 +1509,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-filters.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />

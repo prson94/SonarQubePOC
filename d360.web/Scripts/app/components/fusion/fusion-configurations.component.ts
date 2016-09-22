@@ -8,7 +8,11 @@ import { Fusion } from '../../models/fusion.model';
 @Component({
     selector: 'd3s-fusion-configuration',
     template: ` 
-                <div class="tile tile-detail">
+                <div class="tile tile-detail" *ngIf="showFusionFilter">
+                    <d3s-fusion-filters-tile [fusionTypeID]="selected?.FusionTypeID" [fusionID]="selected?.ID"></d3s-fusion-filters-tile>                
+                    <button pButton type="button" (click)="showFusionFilter=false;" label="Close" style="width: 150px;"></button>
+                </div>
+                <div class="tile tile-detail" *ngIf="!showFusionFilter">
                     <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
@@ -27,13 +31,20 @@ import { Fusion } from '../../models/fusion.model';
                                                     <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
                                                 </template>
                                             </p-column>
-                                            <p-column [style]="{width:'4%'}">
-                                                <template let-item="rowData" pTemplate type="body">
-                                                    <div class="RowTools">                                
-                                                        <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    
-                                                    </div>
-                                                </template>
-                                            </p-column>
+                            <p-column [style]="{width:'30px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">                                
+                                        <d3s-tooltip objectType="Fusion" [objectId]="item.ID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>                                    
+                                    </div>
+                                </template>
+                            </p-column>
+                            <p-column [style]="{width:'30px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools" (click)="showFusionFilter=true;">                                
+                                        <i class="fa fa-filter"></i>
+                                    </div>
+                                </template>
+                            </p-column>
                         </p-dataTable>      
                     </span>
                 </div>
@@ -45,6 +56,8 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
 
     private fusions: Fusion[] = [];
     private selected: Fusion;
+
+    private showFusionFilter: boolean = false;
      
     constructor(private fusionService: FusionService, private router: Router) {
         super();
@@ -76,4 +89,5 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
     private doExport() {
         this.fusionService.exportFusionConfigurations();
     }
+    
 };

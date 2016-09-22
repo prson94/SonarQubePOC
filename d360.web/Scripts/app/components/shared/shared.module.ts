@@ -42,6 +42,7 @@ import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
+import { FusionFiltersComponent } from './fusion-filters.component';
 import { LineageComponent } from './lineage.component';
 import { LoadingComponent } from './loading.component';
 import { MessagesComponent } from './messages.component';
@@ -74,6 +75,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         DashboardTabComponent,
         FollowerGridComponent,
         FusionAttributeItemDetailsComponent,        
+        FusionFiltersComponent,
         LineageComponent,
         LoadingComponent,
         MessagesComponent,
@@ -104,7 +106,8 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
         FollowerGridComponent, 
-        FusionAttributeItemDetailsComponent,       
+        FusionAttributeItemDetailsComponent,      
+        FusionFiltersComponent, 
         LineageComponent,
         LoadingComponent,
         MessagesComponent,
