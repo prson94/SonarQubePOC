@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { Predicate } from '../../models/predicate.model';
 import { MessagesService, PredicatesService  } from '../../services/index';
+import { BaseComponent } from '../shared/base.component';
 
 
 @Component({
@@ -9,15 +10,15 @@ import { MessagesService, PredicatesService  } from '../../services/index';
     providers: [PredicatesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Predicates
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                     <p-dataTable [globalFilter]="gb" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
-                        <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
-                        <p-column field="Inverse" header="Inverse" [sortable]="true"></p-column>
-                        <p-column field="Type" header="Type" [sortable]="true"></p-column>                
+                        <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
+                        <p-column field="Inverse" header="Inverse" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                
                         <p-column [style]="{width:'40px'}">
                             <template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsSystem">
@@ -45,7 +46,7 @@ import { MessagesService, PredicatesService  } from '../../services/index';
                 `
 })
 
-export class PredicatesTile {
+export class PredicatesTile extends BaseComponent {
     error: any;
     predicates: Predicate[] = [];
 
@@ -56,6 +57,7 @@ export class PredicatesTile {
     theDeleteCallback: Function;
 
     constructor(private predicatesService: PredicatesService) {
+        super();
         this.theDeleteCallback = this.deletePredicate.bind(this);
     }
 

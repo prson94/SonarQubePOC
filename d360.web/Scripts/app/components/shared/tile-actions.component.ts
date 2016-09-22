@@ -22,12 +22,16 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() editClick = new EventEmitter();
     @Output() dateClick = new EventEmitter();
     @Output() closeClick = new EventEmitter();
+
+    @Input() filterMode: boolean = false;        
+    @Output() filterModeChange = new EventEmitter();
     
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
     @Input() hasEdit: boolean = false;
     @Input() hasDate: boolean = false;
     @Input() hasClose: boolean = false;
+    @Input() hasFilterMode: boolean = false;
 
     private items: MenuItem[] = [];
 
@@ -77,6 +81,12 @@ export class TileActionsComponent implements OnInit, OnChanges {
                     { label: 'Past Year', command: () => this.dateClick.emit({ days: 365 }) },
                     { label: 'All', command: () => this.dateClick.emit({ days: 0 }) }
                 ]
+            });
+        }
+
+        if (this.hasFilterMode) {
+            this.items.push({
+                icon: 'fa-filter', command: () => { this.filterMode = !this.filterMode; this.filterModeChange.emit(this.filterMode); }
             });
         }
     }

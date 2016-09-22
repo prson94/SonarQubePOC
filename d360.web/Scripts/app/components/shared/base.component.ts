@@ -16,6 +16,9 @@ export class BaseComponent {
     isDashboardVisible: boolean = false;
     isLineageVisible: boolean = false;
 
+    //filter mode
+    showSimpleFilter: boolean = true;
+
     constructor(protected rightSidebarService?: RightSidebarService, protected webAnalyticsService?: WebAnalyticsService) { }
 
     protected setBrowserTitle(tileService: Title, area: string) {

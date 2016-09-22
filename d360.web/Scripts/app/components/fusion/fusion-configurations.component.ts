@@ -9,8 +9,8 @@ import { Fusion } from '../../models/fusion.model';
     selector: 'd3s-fusion-configuration',
     template: ` 
                 <div class="tile tile-detail" *ngIf="showFusionFilter">
-                    <d3s-fusion-filters-tile [fusionTypeID]="selected?.FusionTypeID" [fusionID]="selected?.ID"></d3s-fusion-filters-tile>                
-                    <button pButton type="button" (click)="showFusionFilter=false;" label="Close" style="width: 150px;"></button>
+                    <div style="text-align:right;"><a (click)="showFusionFilter=false;" style="cursor:pointer;color:black;display:block; padding:0 5px 0 5px; background-color: #c3c3c3;"><i class="fa fa-2x fa-remove"></i></a></div>
+                    <d3s-fusion-filters-tile [fusionTypeID]="selected?.FusionTypeID" [fusionID]="selected?.ID"></d3s-fusion-filters-tile>                                    
                 </div>
                 <div class="tile tile-detail" *ngIf="!showFusionFilter">
                     <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
