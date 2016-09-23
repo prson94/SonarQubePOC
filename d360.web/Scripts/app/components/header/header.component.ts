@@ -3,11 +3,12 @@ import { Component } from '@angular/core';
 
 @Component({
     selector: 'd3s-header',
-    template: ` 
+    template: ` <div class="navbar-fixed">
                 <nav class="top">                                   
                     <d3s-header-breadcrumb></d3s-header-breadcrumb>                    
                     <d3s-header-actions></d3s-header-actions>
                 </nav>
+                </div>
               `,
 })
 
