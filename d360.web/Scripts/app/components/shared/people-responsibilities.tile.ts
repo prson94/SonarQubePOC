@@ -3,6 +3,7 @@ import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core
 import { ResponsibilityItem, IResponsibilityService } from '../../models/responsibility.model';
 import { FormMessage } from '../../models/form.model';
 import { ResponsibilityService } from '../../services/responsibility.service';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -10,7 +11,7 @@ import { ResponsibilityService } from '../../services/responsibility.service';
     providers: [ResponsibilityService],
 })
 
-export class PeopleResponsibilitiesTile implements OnChanges {
+export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() title: string = "Responsibilities";
@@ -19,12 +20,13 @@ export class PeopleResponsibilitiesTile implements OnChanges {
     responsibilities = new Array<ResponsibilityItem>();
     selectedRow = new ResponsibilityItem();
     addingRow = new ResponsibilityItem();
-    private isLoading = false;
+    
     private isEditing = false;
     private isDeleting = false;
     private isAdding = false;
 
     constructor(private responsibilityService: ResponsibilityService) {
+        super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

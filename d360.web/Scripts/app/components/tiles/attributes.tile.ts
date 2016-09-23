@@ -163,8 +163,7 @@ export class AttributesTile implements OnInit {
                 if (this.items.length > 0) {
                     this.selectedRow = this.items[0];
                     this.loadMenu();
-                }
-                console.log(this.items);
+                }                
                 this.isLoading = false; 
             });
     }

@@ -2,7 +2,7 @@
     <div>
         <header>
             {{title}}            
-            <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+            <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
         </header>
     </div>
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -20,10 +20,10 @@
         </delete-form>
     </div>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
-        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
+        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
         <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
-            <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '22%' }"></p-column>
-            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '22%' }"></p-column>
+            <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>
+            <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '22%' }">
                 <template let-item="rowData" pTemplate type="body">
                     <input type="checkbox" [(ngModel)]="item.IsRequired" disabled />
