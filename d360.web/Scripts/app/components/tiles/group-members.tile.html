@@ -2,20 +2,20 @@
     <div>
         <header>
             {{title}}
-            <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>
+            <d3s-tile-actions [hasAdd]="true" (addClick)="add()"  [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
     </div>
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-            <p-dataTable [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" (onRowSelect)="select($event)">
-                <p-column field="LastName" header="Field" sortable="true" [style]="{ 'width': '30%' }"></p-column>
-                <p-column field="FirstName" header="Category" sortable="true" [style]="{ 'width': '30%' }"></p-column>
-                <p-column field="Owner?" header="Required?" sortable="true" [style]="{ 'width': '20%' }"></p-column>
+            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <p-dataTable [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedRow">
+                <p-column field="LastName" header="Last Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
+                <p-column field="FirstName" header="First Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
+                <p-column field="Owner" header="Owner" sortable="true" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{ 'width': '20%' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                            <d3s-tooltip [objectType]="'Resource'" [objectId]="item.ResourceID" tooltipType="preview"><i class="fa fa-info"></i></d3s-tooltip>
                             <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>

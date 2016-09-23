@@ -2,21 +2,21 @@
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Report, ReportTile } from '../../models/report.model';
 import { MessagesService, ReportsService  } from '../../services/index';
-
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-report-item-tile',
     providers: [ReportsService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Tiles on this Dashboard
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                   <p-dataTable [globalFilter]="gb" [value]="tiles" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
-                    <p-column field="ContentAreaNumber" header="Content Area #" [sortable]="true"></p-column>
+                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                   <p-dataTable [globalFilter]="gb" [value]="tiles" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
+                    <p-column field="ContentAreaNumber" header="Content Area #" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                     <p-column [style]="{width:'40px'}">
                         <template let-template="rowData" pTemplate type="body">
                             <div class="RowTools">
@@ -43,7 +43,7 @@ import { MessagesService, ReportsService  } from '../../services/index';
                 `
 })
 
-export class ReportItemsTile implements OnChanges {
+export class ReportItemsTile extends BaseComponent implements OnChanges {
     @Input() report: Report = null;
 
     error: any;
@@ -58,6 +58,7 @@ export class ReportItemsTile implements OnChanges {
     theDeleteCallback: Function;
 
     constructor(private reportsService: ReportsService) {
+        super();
         this.theDeleteCallback = this.deleteTile.bind(this);
     }
 

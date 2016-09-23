@@ -13,14 +13,14 @@ import { Title } from '@angular/platform-browser';
                    <div class="tile tile-detail">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <header  *ngIf="!isLoading">Tooltip Templates
-                            <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;"></d3s-tile-actions>                            
+                            <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                         </header>    
                         <span  *ngIf="!isLoading">
-                            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                  
+                            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                  
                             <p-dataTable [globalFilter]="gb" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width : '150px' }"></p-column>
-                                <p-column field="Action" header="Action" [sortable]="true"  [style]="{width : '100px' }"></p-column>                            
-                                <p-column header="Description" sortable="true">
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width : '150px' }" [filter]="!showSimpleFilter"></p-column>
+                                <p-column field="Action" header="Action" [sortable]="true"  [style]="{width : '100px' }" [filter]="!showSimpleFilter"></p-column>                            
+                                <p-column header="Description" sortable="true" [filter]="!showSimpleFilter">
                                     <template let-col let-template="rowData" pTemplate type="body">
                                         <div [innerHtml]="template?.Description"></div>
                                     </template>

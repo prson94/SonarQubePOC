@@ -1,14 +1,14 @@
 ﻿    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"></d3s-tile-actions></header>
-            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-            <p-dataTable scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" [rows]="20" [paginator]="true" >
-                <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }"></p-column>
+            <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"  [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+            <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+            <p-dataTable scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true" >
+                <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{ 'width': '30px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="null" style="cursor:pointer;"><i class="fa fa-info"></i></a>                            
+                            <a (click)="openFusion(item);" style="cursor:pointer;"><i class="fa fa-info"></i></a>                            
                         </div>
                     </template>
                 </p-column>

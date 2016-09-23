@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { RuleDimension } from '../../models/rule.model';
 import { MessagesService, RulesService  } from '../../services/index';
+import { BaseComponent } from '../shared/base.component';
 
 
 @Component({
@@ -9,14 +10,14 @@ import { MessagesService, RulesService  } from '../../services/index';
     providers: [RulesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Dimensions
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span  *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                    <p-dataTable [globalFilter]="gb" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
-                    <p-column field="Description" header="Description" [sortable]="true">
+                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
+                    <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
                         <template let-col let-dimension="rowData" pTemplate type="body">
                             <div [innerHtml]="dimension?.Description"></div>
                         </template>                                                        
@@ -48,17 +49,18 @@ import { MessagesService, RulesService  } from '../../services/index';
                 `
 })
 
-export class RuleDimensionsTile {    
+export class RuleDimensionsTile extends BaseComponent {    
     error: any;
     dimensions: RuleDimension[] = [];
 
     showEditor: boolean = false;
     showDelete: boolean = false;
-    isLoading: boolean = false;
+    
     selected: RuleDimension = null;
     theDeleteCallback: Function;
 
     constructor(private rulesService: RulesService) {
+        super();
         this.theDeleteCallback = this.deleteDimension.bind(this);
     }
     

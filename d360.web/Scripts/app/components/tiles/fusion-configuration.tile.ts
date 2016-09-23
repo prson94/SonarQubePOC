@@ -1,8 +1,9 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { Router } from '@angular/router';
 import { FusionConfiguration, FusionType, FusionFilter } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';
 import { GridColumn } from '../../models/grid-definition.model';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
@@ -10,11 +11,10 @@ import { GridColumn } from '../../models/grid-definition.model';
     providers: [FusionService]
 })
 
-export class FusionConfigurationTile implements OnChanges {
+export class FusionConfigurationTile extends BaseComponent implements OnChanges {
     @Input() fusionType: FusionType;
     @Input() title: string = 'Configurations';
-
-    isLoading = false;
+    
     formMode: FormModeConfig = FormModeConfig.Default;
     FormModeConfig = FormModeConfig;
 
@@ -27,7 +27,8 @@ export class FusionConfigurationTile implements OnChanges {
 
     columns: GridColumn[];
 
-    constructor(private fusionService: FusionService) {
+    constructor(private router: Router, private fusionService: FusionService) {
+        super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -57,6 +58,10 @@ export class FusionConfigurationTile implements OnChanges {
                 this.selectedRow = this.fusionConfigurations[0];
                 this.isLoading = false;
             });
+    }
+
+    private openFusion(fusion) {
+        this.router.navigateByUrl(`/a/fusion/${fusion.ID}`);
     }
 }
 

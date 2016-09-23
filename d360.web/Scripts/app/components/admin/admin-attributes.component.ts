@@ -43,7 +43,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-admin-attribute-type-editor *ngIf="showEditor && !isLoading" [parentID]="parentID" [attribute]="selected?.data" (saveClick)="saveAttributeType($event)" (closeClick)="closeEditor()"></d3s-admin-attribute-type-editor>
                         </div>
                     </div>                    
-                    <div class="col l8 s12">
+                    <div class="col l8 s12" *ngIf="!showDelete && !showEditor">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

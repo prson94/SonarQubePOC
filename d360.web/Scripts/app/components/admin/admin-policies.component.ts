@@ -46,7 +46,7 @@ import { Title } from '@angular/platform-browser';
                             ></delete-form>        
                         </div>
                     </div>               
-                    <div class="col l8 s12">
+                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

@@ -2,22 +2,22 @@
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
 import { MessagesService, TaxonomiesService  } from '../../services/index';
-
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-model-level-tile',
     providers: [TaxonomiesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Levels
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                   <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                   <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                    <p-dataTable [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
-                    <p-column field="Level" header="Level" [sortable]="true"></p-column>                                                            
-                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                            
-                    <p-column field="Description" header="Description" [sortable]="true">
+                    <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
+                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
+                    <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
                         <template let-col let-taxonomy="rowData" pTemplate type="body">
                             <div [innerHtml]="taxonomy?.Description"></div>
                         </template>                                                        
@@ -49,17 +49,17 @@ import { MessagesService, TaxonomiesService  } from '../../services/index';
                 `
 })
 
-export class ModelLevelTile implements OnChanges {
+export class ModelLevelTile extends BaseComponent implements OnChanges {
     @Input() taxonomy: Taxonomy = null;
     error: any;    
     levels: TaxonomyLevel[] = [];
     showEditor: boolean = false;
-    showDelete: boolean = false;
-    isLoading: boolean = false;
+    showDelete: boolean = false;    
     selectedLevel: TaxonomyLevel = null;
     theDeleteCallback: Function;
 
     constructor(private taxonomiesService: TaxonomiesService) {
+        super();
         this.theDeleteCallback = this.deleteLevel.bind(this);  
     }
     

@@ -12,14 +12,14 @@ import { SurveyType } from '../../models/survey.model';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Surveys
-                            <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                            <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                                 <p-dataTable [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}"></p-column>                                                                                        
-                                <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}"></p-column>
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
+                                <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'60px'}">
                                         <template let-survey="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -40,7 +40,7 @@ import { SurveyType } from '../../models/survey.model';
                             ></delete-form>   
                     </div>
                 </div>  
-                    <div class="col l8 s12">
+                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

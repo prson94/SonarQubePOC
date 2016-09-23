@@ -47,7 +47,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-admin-dashboards-editor *ngIf="!isLoading && showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
                         </div>
                     </div>                                        
-                    <div class="col l8 s12">
+                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

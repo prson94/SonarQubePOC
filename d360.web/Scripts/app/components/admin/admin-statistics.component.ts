@@ -13,15 +13,15 @@ import { Title } from '@angular/platform-browser';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Analytic Types
-                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading && !showEditor && !showDelete">
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                                 <p-dataTable [value]="statistics" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
-                                    <p-column field="ObjectName" header="Object" [sortable]="true" ></p-column>                                                        
-                                    <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
-                                    <p-column field="Score" header="Score" [sortable]="true"></p-column>                                                        
+                                    <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
+                                    <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
+                                    <p-column field="Score" header="Score" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
                                         <template let-analytic="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -48,7 +48,7 @@ import { Title } from '@angular/platform-browser';
                             ></delete-form>
                         </div>
                     </div>                    
-                    <div class="col l8 s12">                        
+                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">                        
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           

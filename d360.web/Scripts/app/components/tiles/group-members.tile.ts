@@ -3,6 +3,7 @@ import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core
 import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { GroupService } from '../../services/group.service';
 import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.model';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-group-members-tile',
@@ -10,13 +11,12 @@ import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.
     providers: [GroupService]
 })
 
-export class GroupMembersTile implements OnChanges {
+export class GroupMembersTile extends BaseComponent implements OnChanges {
     @Input() item: GroupSearchResultModel;
     @Input() title: string = 'Members';
 
     private groupItems = new Array<GroupResourceInfo>();
-    private selectedRow = new GroupResourceInfo();
-    private isLoading = false;
+    private selectedRow = new GroupResourceInfo();    
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
     private resourceList: SelectItem[];
@@ -24,13 +24,12 @@ export class GroupMembersTile implements OnChanges {
 
 
     constructor(private groupService: GroupService) {
+        super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'item') {
-                //console.log('change');
-                //console.log(this.item);
+            if (p == 'item') {                
                 this.formMode = FormMode.Default;
                 this.load();
             }
@@ -38,17 +37,15 @@ export class GroupMembersTile implements OnChanges {
         }
     }
 
-    load(): void {
-        //console.log('load'); 
-        //console.log(this.item);
+    load(): void {        
         if (!this.item || !this.item.ID) {
             return;
         }
         this.isLoading = true;
         this.groupService.getGroupResourceList(this.item.ID)
             .then(d => {
-                this.groupItems = d;
-                //console.log(this.groupItems);
+                this.groupItems = d;       
+                if (this.groupItems.length > 0) this.selectedRow = this.groupItems[0];         
                 this.isLoading = false;
             });
 
@@ -79,18 +76,14 @@ export class GroupMembersTile implements OnChanges {
             });
     }
 
-    select(e) {
-        this.selectedRow = e.row;
-    }
+    
 
     add(): void {
         this.isLoading = true;
         this.groupService.getGroupUserList(this.item.ID)
             .then(d => {
-                this.resourceList = d.resourceList;
-                console.log(d);
-                FormHelper.mapSelectItems(this.resourceList);
-
+                this.resourceList = d.resourceList;                
+                FormHelper.mapSelectItems(this.resourceList);                
                 this.formMode = FormMode.Adding;
                 this.isLoading = false;
             });

@@ -111,9 +111,7 @@ export class AdminStatisticCheckTypeInput implements OnChanges{
                 return "Related Type To Check For";
         }
     }
-
-    //get isValid() { return (this.field.Required && this.field.Value && this.field.Value.length > 0) || !this.field.Required || this.field.FieldType == 'Boolean'; }
-
+        
     load() {
         console.log(3);
         this.isLoading = true;
@@ -121,8 +119,7 @@ export class AdminStatisticCheckTypeInput implements OnChanges{
             .getStatisticCheckObjects(this.object, this.objectID, this.statistic.CheckType)
             .then(targets => {
                 this.targetTypes = [];
-                for (let target of targets) {
-                    console.log(target.value);                 
+                for (let target of targets) {                    
                     this.targetTypes.push({
                         label: target.title, value: target.value
                     });

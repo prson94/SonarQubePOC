@@ -4,20 +4,20 @@ import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService } from '../../services/index';
-
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-dynamic-grid',
     providers: [GridDefinitionService, UriBasedService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable">
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
                             <template let-item="rowData" pTemplate type="body">
                                 <span *ngIf="isColumnDate(column)">{{item[column.datafield] | date:'short'}}</span>
                                 <span *ngIf="!isColumnDate(column)">{{item[column.datafield]}}</span>
@@ -50,7 +50,7 @@ import { MessagesService, GridDefinitionService, UriBasedService } from '../../s
                 `
 })
 
-export class DynamicGridComponent implements OnChanges {
+export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() rowID: string = 'ID';
     @Input() objectID: number;
@@ -74,7 +74,6 @@ export class DynamicGridComponent implements OnChanges {
 
     showDelete: boolean = false;
     showEditor: boolean = false;
-    isLoading: boolean = false;
     
     selected: any = null;
 
@@ -82,6 +81,7 @@ export class DynamicGridComponent implements OnChanges {
     
 
     constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService) {
+        super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
