@@ -46,6 +46,7 @@ import { FusionFiltersComponent } from './fusion-filters.component';
 import { LineageComponent } from './lineage.component';
 import { LoadingComponent } from './loading.component';
 import { MessagesComponent } from './messages.component';
+import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
 import { ObjectFollowersComponent } from './object-followers.component';
@@ -60,6 +61,7 @@ import { RelationshipTechnicalRelationsComponent } from './relationship-technica
 import { TileActionsComponent } from './tile-actions.component';
 import { TooltipComponent } from './tooltip.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
+import { TakeSurveyComponent } from './take-survey.component';
 
 
 @NgModule({
@@ -78,7 +80,8 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         FusionFiltersComponent,
         LineageComponent,
         LoadingComponent,
-        MessagesComponent,
+        MessagesBarComponent,        
+        MessagesComponent,        
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectFollowersComponent,
@@ -91,6 +94,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
         TagInputComponent,
+        TakeSurveyComponent,
         TileActionsComponent,
         TooltipComponent,
         
@@ -110,6 +114,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         FusionFiltersComponent, 
         LineageComponent,
         LoadingComponent,
+        MessagesBarComponent,        
         MessagesComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
@@ -123,6 +128,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
         TagInputComponent,
+        TakeSurveyComponent,
         TileActionsComponent,
         TooltipComponent
         ]

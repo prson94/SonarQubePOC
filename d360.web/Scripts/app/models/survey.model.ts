@@ -32,3 +32,7 @@ export class SurveyQuestionTypeDetails {
     SurveyTypeID: number;
     Items: SurveyQuestionOption[];
 }
+
+export class SurveyResponse {
+    Comments: string;
+}

@@ -23392,3 +23392,21 @@ div.powerbi iframe {
   color: #BC1B01;
 }
 /* end icons for enabled disabled*/
+/* message bar styles*/
+.message-bar {
+  background: #275075;
+  color: white;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+.message-bar a {
+  color: white;
+  cursor: pointer;
+}
+.message-bar span.close {
+  color: white;
+  cursor: pointer;
+  float: right;
+}
+/* end message bar styles*/

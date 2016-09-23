@@ -79,5 +79,12 @@ export class SurveysService extends BaseService {
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
     }
-    
+
+    getObjectSurvey(parentObjectID: number, parentObjectType: string, objectID: number, objectType: string): Promise<SurveyType> {
+        return this.http.get(`api/surveys/${parentObjectType}/${parentObjectID}/${objectType}/${objectID}/survey`)
+            .toPromise()
+            .then(response => <SurveyType>response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

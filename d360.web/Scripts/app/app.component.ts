@@ -11,12 +11,10 @@ import 'rxjs/Rx';
                     <d3s-header></d3s-header>
                     <d3s-navbar></d3s-navbar>
                 </header>
-                <main>
-                    <div class="row PageHeader" #pageheader>                                             
-                    </div>
-                    <div class="row"> 
-                        <div class="col s12">
-                            <div class="maincontent">                                            
+                <main>                                        
+                    <div class="row">                         
+                        <div class="col s12">            
+                            <div class="maincontent">                                                                                                            
                                 <router-outlet></router-outlet>                                                
                             </div>  
                         </div>                                                

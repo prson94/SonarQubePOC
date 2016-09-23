@@ -1,13 +1,15 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService } from '../../services/index';
+import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService, SurveysService } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { MessageBarItem } from '../../models/message-bar-item.model';
+import { SurveyType } from '../../models/survey.model';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -22,7 +24,15 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
-                <div *ngIf="!isLoading && !isTabVisible()">
+                <div *ngIf="!isLoading && !isTabVisible()">                                    
+                    <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
+                    <div class="row" *ngIf="showSurvey && surveyType">
+                        <div class="col s12">
+                            <div class="tile tile-detail">
+                                <d3s-take-survey [surveyType]="surveyType" (surveyCancel)="showSurvey=false" (surveyComplete)="showSurvey=false"></d3s-take-survey>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
@@ -46,14 +56,17 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     </div>
                 </div>                
                 `,
-    providers: [ArtifactService]
+    providers: [ArtifactService, SurveysService]
 })
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
     private sub: any;        
     private artifactTypeId: number;
-    
+    private messages: MessageBarItem[]=[];
+    private surveyType: SurveyType;
+    private showSurvey: boolean = false;
+
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
@@ -61,7 +74,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         pageHeader: PageHeader,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
-        headerBreadcrumbService: HeaderBreadcrumbService) {
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private surveysService: SurveysService) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService, webAnalyticsService);
 
     }
@@ -74,6 +88,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.headerBreadcrumbService.setCurrentObjectInfo('Artifact', artifactId);
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
+            this.messages = [];
             this.artifactService.getArtifact(artifactId)
                 .then(artifact => {
                     this.artifact = artifact;
@@ -92,7 +107,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                     this.clearSidebar();
                     this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true);
-                                                            
+
+                    this.loadItemSurvey(artifactId);
+                    
                     this.isLoading = false;
                 });
         });
@@ -101,6 +118,20 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    private loadItemSurvey(artifactId: number) {
+        this.surveysService.getObjectSurvey(this.artifactTypeId, 'ArtifactType', artifactId, 'Artifact')        
+            .then(result => {
+                this.surveyType = undefined;
+                if (result) {
+                    this.surveyType = result;
+                    this.messages.push({
+                        content: `<u>Click here</u> to take the survey. <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
+                    });
+                }
+
+            });
     }
 
     protected isTabVisible() {
