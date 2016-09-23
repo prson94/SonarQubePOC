@@ -48,7 +48,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-admin-lookup-type-editor *ngIf="showEditor" [lookup]="selectedLookup" (saveClick)="saveLookup($event)" (closeClick)="closeEditor()"></d3s-admin-lookup-type-editor>                       
                         </div>
                     </div>                    
-                    <div class="col l8 s12">
+                    <div class="col l8 s12" *ngIf="!showDelete && !showEditor">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

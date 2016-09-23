@@ -12,7 +12,7 @@ import { BaseComponent } from '../shared/base.component';
     template: `                   
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                    <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
@@ -35,13 +35,13 @@ import { BaseComponent } from '../shared/base.component';
                                     </div>
                                 </template>
                         </p-column>   
-                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}">
+                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
                             <template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.Name}}</d3s-tooltip>
                             </template> 
                         </p-column>                                                                                                                                                                              
-                        <p-column header="Classification" field="ClassificationText" [sortable]="true" [style]="{'width':'150px'}"></p-column>    
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{'width':'250px'}"></p-column>        
+                        <p-column header="Classification" field="ClassificationText" [sortable]="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>    
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                     </p-dataTable>   
                 </span>
                 <div *ngIf="showTechnical">
@@ -69,6 +69,9 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() relationshipAdded = new EventEmitter();
     @Output() relationshipRemoved = new EventEmitter();
 
+
+    @Input() simpleFilter: boolean;
+    
     
     relations: any[] = [];
     columns: GridColumn[] = [];
@@ -84,10 +87,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         super();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        
-        if (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null) this.load();  
-        this.showTechnical = false;
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+        if ((changes['objectID'] || changes['objectType'] || changes['intersectTypeID'] || changes['targetTypeID']) && (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null)) {
+            this.load();
+            this.showTechnical = false;
+        }
     }
 
     load() {

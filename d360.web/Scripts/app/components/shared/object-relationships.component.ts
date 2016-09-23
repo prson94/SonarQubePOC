@@ -41,7 +41,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
   `],
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
@@ -52,7 +52,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
                         </div>                        
                     </div>
                     <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        
+                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        
                     </div>                    
                 </div>
                 <div class="row" *ngIf="!isLoading && !hasRelationships">
