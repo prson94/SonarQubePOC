@@ -84,6 +84,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 .then(() => this.isLoading = false);
         } else {
             this.actionName = 'Add';
+            this.isLoading = true;
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldType();
 
@@ -91,7 +92,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 .then(d => {
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
-                });
+                })
+                .then(() => this.isLoading = false);;
         }
     }
 
