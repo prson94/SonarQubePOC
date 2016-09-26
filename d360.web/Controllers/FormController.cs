@@ -6410,6 +6410,47 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         }
 
+        [HttpGet]
+        public JsonNetResult GetAddFusionRule(int typeID)
+        {
+            return new JsonNetResult
+            {
+                Data = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).ToList(),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostAddFusionRule(FusionRule r)
+        {
+            try
+            {
+                var item = new FusionRule
+                {
+                    Enabled = r.Enabled,
+                    Description = r.Description,
+                    FusionID = r.FusionID,
+                    ObjectID = r.ObjectID,
+                    ObjectType = "FusionAttributeType",
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                };
+
+                Company.Add<FusionRule>(item);
+
+                return jsonSuccess("Items marked for auto-promotion", "0", ContextList.FusionRule, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionRule(FormCollection form)
@@ -6441,7 +6482,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
 
         public ActionResult DeleteFusionRule(int id)
         {
@@ -6481,6 +6521,71 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleById(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusionRule(form);
+        }
+
+        [HttpGet]
+        public JsonNetResult GetEditFusionRule(int id)
+        {
+            var a = Company.GetById<FusionRule>(id);
+            if (a == null) return null;
+
+            var model = new FusionRuleEditorModel
+            {
+                FusionID = a.Fusion.ID,
+                FusionTypeID = a.Fusion.FusionTypeID,
+                FormUri = "/Form/EditFusionRule",
+                FormMethod = "PUT",
+                FormName = "Edit Fusion Rule",
+                AttributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).ToList(),
+                Rule = a
+            };
+
+            return new JsonNetResult
+            {
+                Data = model,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPost]
+        public JsonResult PostEditFusionRule(FusionRule r)
+        {
+            try
+            {
+                //if (!form.HasKeys()) throw new NoFormDataException("fusion rule");
+
+                var model = Company.GetById<FusionRule>(r.ID);
+                if (model == null) throw new NotFoundException("promotion rule");
+
+                model.Enabled = r.Enabled;
+                model.Description = r.Description;
+                model.FusionID = r.FusionID;
+                model.ObjectID = r.ObjectID;
+                model.ObjectType = "FusionAttributeType";
+
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<FusionRule>(model);
+
+                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), null , "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
 
         public ActionResult EditFusionRule(int id)
         {
@@ -6719,6 +6824,75 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     FusionID = rule.FusionID,
                     FusionTypeID = rule.Fusion.FusionTypeID
                 });
+        }
+
+        [HttpGet]
+        public JsonNetResult GetAddFusionRuleStep(int ruleID)
+        {
+            if (ruleID <= 0) return null;
+
+            var rule = Company.GetById<FusionRule>(ruleID);
+
+            if (rule == null) return null;
+
+            return new JsonNetResult
+            {
+                Data = new FusionRuleStepEditorModel
+                {
+                    FormUri = "/form/AddFusionRuleStep",
+                    FormMethod = "POST",
+                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count + 1, RuleID = ruleID, FusionRule = rule },
+                    FormName = "Add Fusion Rule Step",
+                    FusionID = rule.FusionID,
+                    FusionTypeID = rule.Fusion.FusionTypeID
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostAddFusionRuleStep(FusionRuleStep s)
+        {
+            try
+            {
+                var ruleID = s.RuleID;
+
+                if (ruleID <= 0) return jsonException("", HttpStatusCode.NotFound, "");
+
+                var rule = Company.GetById<FusionRule>(ruleID);
+
+                var item = new FusionRuleStep
+                {
+                    Action = s.Action,
+                    Description = s.Description,
+                    Step = s.Step,
+                    RuleID = rule.ID
+                };
+
+                rule.FusionRuleSteps.Add(item);
+                if (rule != null)
+                {
+                    rule.UpdatedBy = Company.CurrentResourceID;
+                    rule.UpdatedOn = DateTime.UtcNow;
+                }
+
+                //TODO: rewrite to accept non-form logic
+                //AddPromotionStepSettings(item, form);
+
+                Company.SaveChanges();
+
+                return jsonSuccess("New Fusion Rule Step Added", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
 
         [ValidateHttpAntiForgeryToken]
@@ -7063,6 +7237,81 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 });
         }
 
+        [HttpGet]
+        public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
+        {
+            var rule = Company.GetById<FusionRule>(ruleID);
+            if (rule == null) return null;
+
+            var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
+            if (step == null) return null;
+
+            return new JsonNetResult
+            {
+
+                Data = new FusionRuleStepEditorModel
+                {
+                    FormUri = "/form/EditFusionRuleStep",
+                    FormMethod = "PUT",
+                    RuleStep = step,
+                    FormName = "Edit Fusion Rule Step",
+                    FusionID = rule.FusionID,
+                    FusionTypeID = rule.Fusion.FusionTypeID
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutEditFusionRuleStep(FusionRuleStep s)
+        {
+            try
+            {
+                var ruleID = s.RuleID;
+                var ruleStepID = s.ID;
+
+                if (ruleID <= 0 || ruleStepID <= 0) return null;
+
+                var rule = Company.GetById<FusionRule>(ruleID);
+
+                if (rule == null) return null;
+
+                var step = rule.FusionRuleSteps.First(x => x.ID == ruleStepID);
+
+                if (step == null) return null;
+
+                step.Description = s.Description;
+                step.Step = s.Step;
+                step.Action = s.Action;
+
+                rule.UpdatedBy = Company.CurrentResourceID;
+                rule.UpdatedOn = DateTime.UtcNow;
+
+                //remove old step settings                
+                for (int i = step.FusionRuleStepSettings.Count - 1; i >= 0; i--)
+                {
+                    Company.ObjectContext.DeleteObject(step.FusionRuleStepSettings.ElementAt(i));
+                }
+
+
+                //TODO: rewrite to accept non-form object
+                //AddPromotionStepSettings(step, form);
+
+                Company.SaveChanges();
+
+                return jsonSuccess("Step updated", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Accepted);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [ValidateHttpAntiForgeryToken]
         [HttpPut, ValidateInput(false)]
         public ActionResult EditFusionRuleStep(FormCollection form)
@@ -7181,6 +7430,17 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpDelete]
+        public ActionResult DeleteFusionRuleStepByID(int ruleID, int ruleStepID)
+        {
+            var form = new FormCollection();
+            form.Add("ID", ruleID.ToString());
+            form.Add("RuleStepID", ruleStepID.ToString());
+
+
+            return DeleteFusionRuleStep(form);
         }
 
         [Route("fusion/rule/{ruleID:int}/step/move/{direction}/{ruleStepID:int}")]

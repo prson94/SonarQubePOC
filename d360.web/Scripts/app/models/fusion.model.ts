@@ -145,6 +145,7 @@ export class FusionRule {
     ObjectType: string;
     ObjectID: number;
     ObjectName: string;
+    Description: string;
 }
 
 export class FusionRuleStep {
@@ -216,4 +217,25 @@ export class FusionExecutionResult {
     ID: string;
     NewValue: string;
     OldValue: string;
+}
+
+export class FusionRuleEditorModel {
+    FusionTypeID: number;
+    FusionID: number;
+    FormUri: string;
+    FormMethod: string;
+    FormName: string;
+    Rule: FusionRule;
+    AttributeTypes: FusionAttributeType[] = [];
+
+
+}
+
+export class FusionRuleStepEditorModel {
+    FormUri: string;
+    FormMethod: string;
+    FormName: string;
+    RuleStep: FusionRuleStep;
+    FusionID: number;
+    FusionTypeID: number;
 }
