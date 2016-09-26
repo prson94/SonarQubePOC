@@ -6,8 +6,6 @@ import { RouterModule } from '@angular/router';
 
 
 import { SharedModule } from '../shared/shared.module';
-//import { AdminModule } from '../admin/admin.module';
-//import { PartsModule } from '../parts/parts.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AttributesTile } from './attributes.tile';
@@ -15,7 +13,6 @@ import { ClaimsTile } from './claims.tile';
 import { FieldDefinitionTile } from './field-definition.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { GroupMembersTile } from './group-members.tile';
 import { LoadItemTile } from './load-item.tile';
 import { ModelLevelTile } from './model-level.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
@@ -35,7 +32,6 @@ import { BoardTile} from './board-tile.component';
 import { ActivityDetailsTile} from './activity-details-tile.component';
 import { ResourceResponsibilityTile } from './resource-responsibility.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
-import { ResourceResponsibilityGridTile } from './resource-responsibility-grid.tile';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 
 import {
@@ -60,8 +56,7 @@ import {
         ClaimsTile, 
         FieldDefinitionTile,
         FusionAttributesTile,
-        FusionConfigurationTile,        
-        GroupMembersTile,
+        FusionConfigurationTile,                
         LoadItemTile,
         ModelLevelTile,
         ObjectDefinitionTile,
@@ -72,8 +67,7 @@ import {
         ReportItemsTile,
         ReportLayoutTile,
         ResourceFollowingGridTile,
-        ResourceFollowingTile,
-        ResourceResponsibilityGridTile,
+        ResourceFollowingTile,       
         ResourceResponsibilityTile,
         RuleDimensionsTile,
         StructureTile,
@@ -89,8 +83,7 @@ import {
         ClaimsTile,
         FieldDefinitionTile,
         FusionAttributesTile,
-        FusionConfigurationTile,        
-        GroupMembersTile,
+        FusionConfigurationTile,                
         LoadItemTile,        
         ModelLevelTile,
         ObjectDefinitionTile,
@@ -101,8 +94,7 @@ import {
         ReportItemsTile,
         ReportLayoutTile,
         ResourceFollowingGridTile,
-        ResourceFollowingTile,
-        ResourceResponsibilityGridTile,
+        ResourceFollowingTile,        
         ResourceResponsibilityTile,
         RuleDimensionsTile,
         StructureTile,

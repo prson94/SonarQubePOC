@@ -1,4 +1,4 @@
-﻿<div *ngIf="item && item?.ID">
+﻿<div *ngIf="groupId">
     <div>
         <header>
             {{title}}
@@ -25,7 +25,7 @@
         <div *ngSwitchCase="FormMode.Adding">
             <div class="row">
                 <div class="col s12">
-                    Add a user to {{item.Name}}
+                    Add a user to {{groupName}}
                 </div>
             </div>
             <div class="row">

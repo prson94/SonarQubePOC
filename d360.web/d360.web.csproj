@@ -869,7 +869,7 @@
     <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
-    <Content Include="Scripts\app\components\tiles\group-members.tile.html" />
+    <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
@@ -1383,6 +1383,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.routes.ts" />
@@ -1503,7 +1504,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility-grid.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
@@ -1515,7 +1516,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\model-level.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\group-members.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-governance-tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />

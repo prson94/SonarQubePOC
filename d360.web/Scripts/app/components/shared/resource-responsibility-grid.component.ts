@@ -6,7 +6,7 @@ import { FormHelper } from '../../models/form.model';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'd3s-resource-responsibility-grid-tile',
+    selector: 'd3s-resource-responsibility-grid-component',
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
@@ -26,10 +26,11 @@ import { Router } from '@angular/router';
 </div>
 `,
 })
-export class ResourceResponsibilityGridTile implements OnInit, OnChanges {
-    @Input() resourceId: number;
+export class ResourceResponsibilityGridComponent implements OnInit, OnChanges {
+    @Input() Id: number;
     @Input() objectId: number;
     @Input() objectType: string;
+    @Input() type: string;
     isLoading = false;
     private items: ResponsibilityDetailForResource[] = new Array<ResponsibilityDetailForResource>();
 
@@ -46,7 +47,7 @@ export class ResourceResponsibilityGridTile implements OnInit, OnChanges {
 
     load() {
         this.isLoading = true;
-        this.resourcesService.getResponsibilitiesByResourceByType(this.resourceId, this.objectType, this.objectId)
+        this.resourcesService.getResponsibilitiesByResourceByType(this.type, this.Id, this.objectType, this.objectId)
             .then(r => {
                 this.items = r;
                 FormHelper.convertToNgUrl(this.items, 'ObjectUrl');

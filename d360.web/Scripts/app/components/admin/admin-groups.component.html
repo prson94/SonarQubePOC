@@ -9,6 +9,13 @@
                     <p-column [style]="{ 'width': '20px' }">
                         <template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
+                                <a [routerLink]="'/a/group/'+item.ID" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                            </div>
+                        </template>
+                    </p-column>
+                    <p-column [style]="{ 'width': '20px' }">
+                        <template let-col let-item="rowData" pTemplate type="body">
+                            <div class="RowTools">
                                 <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                                
                             </div>
                         </template>
@@ -26,7 +33,7 @@
     </div>
     <div class="col l9 m8 s12" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-group-members-tile [item]="selectedRow"></d3s-group-members-tile>
+            <d3s-group-members [groupId]="selectedRow?.ID" [groupName]="selectedRow?.Name"></d3s-group-members>
         </div>
         <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
             <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel();" (onSuccess)="formMode = FormMode.Default; load();"></d3s-group-form>

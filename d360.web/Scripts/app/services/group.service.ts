@@ -5,6 +5,7 @@ import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { IGroupService, GroupSearchResultModel, GroupResourceInfo, Group, GroupEditorModel, ResourceGroup } from '../models/group.model';
 import { JsonResult } from '../models/form.model';
+import { CountObject } from '../models/resource.model';
 
 @Injectable()
 export class GroupService extends BaseService implements IGroupService {
@@ -71,6 +72,13 @@ export class GroupService extends BaseService implements IGroupService {
         return this.http.get(`form/GetGroupUserList?id=${id}`)
             .toPromise()
             .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+    
+    getResponsibilityBreakdownByGroup(id: number): Promise<CountObject[]> {
+        return this.http.get(`tiles/ResponsibilityBreakdownByGroup?id=${id}`)
+            .toPromise()
+            .then(response => <CountObject[]>response.json())
             .catch(err => this.handleError(err));
     }
 

@@ -161,8 +161,7 @@ import {
     FusionAttributesTile,    
     ClaimsTile,
     FieldDefinitionTile,
-    FusionConfigurationTile,    
-    GroupMembersTile,
+    FusionConfigurationTile,        
     LoadItemTile,
     MenuBarItem,
     ModelLevelTile,
@@ -183,8 +182,7 @@ import {
     ActivityDetailsTile,
     ResourceFollowingTile,
     ResourceResponsibilityTile,
-    ResourceFollowingGridTile,
-    ResourceResponsibilityGridTile,
+    ResourceFollowingGridTile,    
 } from './components/tiles/index';
 
 @NgModule({
@@ -237,8 +235,7 @@ import {
         CommunitySummaryComponent,        
         FieldDefinitionTile,
         FusionAttributesTile,        
-        FusionConfigurationTile,        
-        GroupMembersTile,
+        FusionConfigurationTile,                
         HeaderActionsComponent,
         HeaderBreadcrumbComponent,
         HeaderBreadcrumbItemComponent,
@@ -272,8 +269,7 @@ import {
         ResourceComponent,
         ResourceFollowingGridTile,
         ResourceFollowingTile,
-        ResourceItemComponent,
-        ResourceResponsibilityGridTile,
+        ResourceItemComponent,        
         ResourceResponsibilityTile,
         ResourceListComponent,     
         RightSidebarComponent,
@@ -290,8 +286,7 @@ import {
         ActivityTile,
         AssignmentsTile,
         BoardTile,
-        ActivityDetailsTile,     
-    
+        ActivityDetailsTile,         
     ],
     imports: [
         BrowserModule,

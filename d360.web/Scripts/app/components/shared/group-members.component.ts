@@ -6,13 +6,14 @@ import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-group-members-tile',
-    templateUrl: 'scripts/app/components/tiles/group-members.tile.html',
+    selector: 'd3s-group-members',
+    templateUrl: 'scripts/app/components/shared/group-members.component.html',
     providers: [GroupService]
 })
 
-export class GroupMembersTile extends BaseComponent implements OnChanges {
-    @Input() item: GroupSearchResultModel;
+export class GroupMembersComponent extends BaseComponent implements OnChanges {
+    @Input() groupId: number;
+    @Input() groupName: string;
     @Input() title: string = 'Members';
 
     private groupItems = new Array<GroupResourceInfo>();
@@ -29,7 +30,7 @@ export class GroupMembersTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'item') {                
+            if (p == 'groupId') {                
                 this.formMode = FormMode.Default;
                 this.load();
             }
@@ -38,11 +39,11 @@ export class GroupMembersTile extends BaseComponent implements OnChanges {
     }
 
     load(): void {        
-        if (!this.item || !this.item.ID) {
+        if (!this.groupId) {
             return;
         }
         this.isLoading = true;
-        this.groupService.getGroupResourceList(this.item.ID)
+        this.groupService.getGroupResourceList(this.groupId)
             .then(d => {
                 this.groupItems = d;       
                 if (this.groupItems.length > 0) this.selectedRow = this.groupItems[0];         
@@ -61,7 +62,7 @@ export class GroupMembersTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
         try {
             var rg = new ResourceGroup();
-            rg.GroupID = this.item.ID;
+            rg.GroupID = this.groupId;
             rg.IsOwner = false;
             rg.ResourceID = parseInt(this.selectedResource);
         } catch (e) {
@@ -80,7 +81,7 @@ export class GroupMembersTile extends BaseComponent implements OnChanges {
 
     add(): void {
         this.isLoading = true;
-        this.groupService.getGroupUserList(this.item.ID)
+        this.groupService.getGroupUserList(this.groupId)
             .then(d => {
                 this.resourceList = d.resourceList;                
                 FormHelper.mapSelectItems(this.resourceList);                

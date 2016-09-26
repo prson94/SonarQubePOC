@@ -11,6 +11,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { GroupComponent } from './group.component';
 import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
+import { GroupResponsibilityComponent } from './group-responsibility.component';
 
 import {
     GrowlModule,    
@@ -36,11 +37,13 @@ import {
         GroupComponent,
         GroupItemComponent,
         GroupListComponent,
+        GroupResponsibilityComponent,
     ],
     exports: [
         GroupComponent,
         GroupItemComponent,
         GroupListComponent,
+        GroupResponsibilityComponent,
     ]
 })
 export class GroupModule { }

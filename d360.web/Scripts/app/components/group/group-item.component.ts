@@ -2,32 +2,30 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { HeaderBreadcrumbService, GroupService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-
+import { GroupEditorModel } from '../../models/group.model';
 
 @Component({
     selector: 'd3s-group-item',
-
+    providers: [GroupService],
     template: ` 
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" >    
-                            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
-                                <div class="col s12">
-                                    <header>{{modelGroup}} Groups                                
-                                        <d3s-tile-actions [hasAdd]="false" ></d3s-tile-actions>                                                     
-                                    </header>      
-                                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
-                                    <p-dataTable [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
-                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
-                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'45%'}"></p-column>                                                                                                                                                                
-                                    </p-dataTable>      
+                        <div class="row" *ngIf="!isLoading">                        
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-group-responsibility [group]="model?.group"></d3s-group-responsibility>
                                 </div>
                             </div>
-                            
-                        </div>                        
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-group-members [groupId]="groupId" [groupName]="model?.group?.Name"></d3s-group-members>
+                                </div>
+                            </div>                            
+                        </div>                            
+                        
                     </div>
                 </div>
                 `
@@ -35,23 +33,44 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 
 export class GroupItemComponent extends BaseComponent implements OnInit {
 
+    private sub: any;
+    private model: GroupEditorModel;
+    private groupId: number;
+
     constructor(private route: ActivatedRoute,
         private router: Router,
+        private groupService: GroupService,
         protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
-
-
     }
 
     ngOnInit() {
-     /*   this.setBrowserTitle(this.titleService, 'Groups');
+        this.sub = this.route.params.subscribe(params => {
+            this.groupId = +params['groupId']; // (+) converts string 'id' to a number
+            this.headerBreadcrumbService.setCurrentObjectInfo('Group', this.groupId);
+            this.logAction('open', 'Group', this.groupId);
+            this.isLoading = true;
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups'));
+            this.groupService.getGroup(this.groupId)
+                .then(group => {
+                    this.model = group;
+                    this.headerBreadcrumbService.clearBreadcrumbs();
 
-        this.load();*/
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups', 'a/group'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.group.Name));
+
+                    this.setBrowserTitle(this.titleService, this.model.group.Name);
+
+                    this.isLoading = false;
+                });
+            });
+        }
+
+    ngOnDestroy() {
+        this.sub.unsubscribe();
+        this.clearSidebar();
     }
+
 
     private load() {
 

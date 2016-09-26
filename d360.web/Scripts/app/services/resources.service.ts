@@ -38,8 +38,8 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getResponsibilitiesByResourceByType(resourceID: number, type: string, id: number): Promise<ResponsibilityDetailForResource[]> {
-        return this.http.get(`api/resources/${resourceID}/ownership/${type}/${id}`)
+    getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number): Promise<ResponsibilityDetailForResource[]> {
+        return this.http.get(`api/${type}/${id}/ownership/${targetType}/${targetId}`)
             .toPromise()
             .then(response => <ResponsibilityDetailForResource[]>response.json())
             .catch(err => this.handleError(err));

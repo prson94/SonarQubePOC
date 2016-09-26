@@ -93,5 +93,35 @@ namespace d360.web.Controllers
 
                     return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
+
+        public async Task<JsonNetResult> ResponsibilityBreakdownByGroup(int id)
+        {
+            var query = await Company.QueryAsync<dynamic>(
+            @"            
+            select
+					O.ObjectType as [Type],
+					O.ObjectTypeName as TypeName,
+					O.ObjectTypeID as TypeID,
+					O.Count as [Count],
+					coalesce(S.IconBackColor, '#000') as IconBackColor,
+					coalesce(S.IconForeColor, '#fff') as IconForeColor,
+					coalesce(S.IconText, substring(O.ObjectTypeName, 1, 2)) as IconText
+				from(
+						select	r.ObjectType, 
+						        r.ObjectTypeName, 
+						        case r.ObjectType 
+							            when 'Policy' then 0 
+							            when 'Rule' then 0 
+							            else r.ObjectTypeID 
+						        end as ObjectTypeID,													            
+								count(1) as [Count]
+				            from ResponsibilityDetail r							
+				            where ResponsibleObjectType = 'Group' and ResponsibleObjectID = @r and Visible = 1 and ObjectTypeName is not null
+				            group by r.ObjectType, r.ObjectTypeName, ObjectTypeID) O
+				left join ObjectStyle S on  O.ObjectType + 'Type' = S.ObjectType and O.ObjectTypeID = S.ObjectID order by typename
+            ", new { r = id });
+
+            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
+        }
     }
 }

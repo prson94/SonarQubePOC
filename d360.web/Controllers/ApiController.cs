@@ -3770,6 +3770,20 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             }
         }
 
+
+        [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
+        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroupByType(int groupID, string type, int id)
+        {
+            if (type == "Policy" || type == "Rule")
+            {
+                return Company.Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == groupID && i.ObjectType == type);
+            }
+            else
+            {
+                return Company.Filter<ResponsibilityDetail>(i => i.ResponsibleObjectType == "Group" && i.ResponsibleObjectID == groupID && i.ObjectType == type && i.ObjectTypeID == id);
+            }
+        }
+
         [Route("ownership/types")]
         public IQueryable<dynamic> GetResponsibilityTypes()
         {

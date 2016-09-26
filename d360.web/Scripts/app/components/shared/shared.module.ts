@@ -43,6 +43,7 @@ import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.co
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
+import { GroupMembersComponent } from './group-members.component';
 import { LineageComponent } from './lineage.component';
 import { LoadingComponent } from './loading.component';
 import { MessagesComponent } from './messages.component';
@@ -53,14 +54,15 @@ import { ObjectFollowersComponent } from './object-followers.component';
 import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
+import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { TagInputComponent } from './tag-input.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
+import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { TileActionsComponent } from './tile-actions.component';
 import { TooltipComponent } from './tooltip.component';
-import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { TakeSurveyComponent } from './take-survey.component';
 
 
@@ -78,6 +80,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         FollowerGridComponent,
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
+        GroupMembersComponent,
         LineageComponent,
         LoadingComponent,
         MessagesBarComponent,        
@@ -93,6 +96,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
+        ResourceResponsibilityGridComponent,
         TagInputComponent,
         TakeSurveyComponent,
         TileActionsComponent,
@@ -112,6 +116,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
+        GroupMembersComponent,
         LineageComponent,
         LoadingComponent,
         MessagesBarComponent,        
@@ -127,6 +132,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         RelationshipTechnicalRelationsComponent,
+        ResourceResponsibilityGridComponent,
         TagInputComponent,
         TakeSurveyComponent,
         TileActionsComponent,
