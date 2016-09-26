@@ -29,7 +29,7 @@ import { SurveyType } from '../../models/survey.model';
                     <div class="row" *ngIf="showSurvey && surveyType">
                         <div class="col s12">
                             <div class="tile tile-detail">
-                                <d3s-take-survey [surveyType]="surveyType" (surveyCancel)="showSurvey=false" (surveyComplete)="showSurvey=false"></d3s-take-survey>
+                                <d3s-take-survey [surveyType]="surveyType" [objectID]="artifact?.ID" [objectType]="'Artifact'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
                             </div>
                         </div>
                     </div>
@@ -127,7 +127,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 if (result) {
                     this.surveyType = result;
                     this.messages.push({
-                        content: `<u>Click here</u> to take the survey. <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
+                        content: `<u>Click here</u> to take the survey: <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
                     });
                 }
 
@@ -136,5 +136,12 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     protected isTabVisible() {
         return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible;
+    }
+
+    private completeSurvey() {
+        this.showSurvey = false;
+        var index = this.messages.findIndex(x => x.data == 'Survey');
+        if (index >= 0 && index < this.messages.length)
+            this.messages.splice(index, 1);
     }
 };

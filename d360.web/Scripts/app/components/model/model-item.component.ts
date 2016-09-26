@@ -3,14 +3,16 @@ import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angu
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService, SurveysService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
+import { MessageBarItem } from '../../models/message-bar-item.model';
+import { SurveyType } from '../../models/survey.model';
 
 @Component({
     selector: 'd3s-model-item',
-    providers: [ModelsService],
+    providers: [ModelsService, SurveysService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
@@ -22,8 +24,16 @@ import { TreeNode } from 'primeng/primeng';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible" class="row">
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible" class="row">                    
                     <div class="col s12">
+                        <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
+                        <div class="row" *ngIf="showSurvey && surveyType">
+                            <div class="col s12">
+                                <div class="tile tile-detail">
+                                    <d3s-take-survey [surveyType]="surveyType" [objectID]="selected?.ID" [objectType]="'Taxonomy'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
@@ -58,12 +68,16 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     selected: ModelHierarchy;
     modelId: number;
     treeNodeArray: TreeNode[] = [];
+    private messages: MessageBarItem[] = [];
+    private surveyType: SurveyType;
+    private showSurvey: boolean = false;
     
     constructor(private route: ActivatedRoute,
             private router: Router,
             rightSidebarService: RightSidebarService,
             protected modelsService: ModelsService,
             protected titleService: Title,
+            protected surveysService: SurveysService,
             protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
     }
@@ -101,6 +115,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.setBrowserTitle(this.titleService, this.model.Name);
 
                         this.setCommonRightSideBar(true, true, this.model.HasDashboards, true);
+
+                        
 
                     });
             }
@@ -143,9 +159,10 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
-                console.log(this.treeNodeArray);
+                
+                this.selectModelHierarchy(selectedHierarchyId);            
 
-                this.selectModelHierarchy(selectedHierarchyId);                
+                this.loadItemSurvey(this.modelId);
             });
     }
 
@@ -205,5 +222,31 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(`/a/model/${this.modelId};hierarchyId=${id}`);       
+    }
+
+    private loadItemSurvey(modelId: number) {
+        if (!this.selected) {
+            console.log("ERROR NO MODEL HEIRARCY ITEM SELECTED TO LOAD SURVEY INFO FOR.");
+
+            return;
+        }
+        this.surveysService.getObjectSurvey(modelId, 'TaxonomyType', this.selected.ID, 'Taxonomy')
+            .then(result => {
+                this.surveyType = undefined;
+                if (result) {
+                    this.surveyType = result;
+                    this.messages.push({
+                        content: `<u>Click here</u> to take the survey: <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
+                    });
+                }
+
+            });
+    }
+
+    private completeSurvey() {
+        this.showSurvey = false;
+        var index = this.messages.findIndex(x => x.data == 'Survey');
+        if (index >= 0 && index < this.messages.length)
+            this.messages.splice(index, 1);
     }
 };

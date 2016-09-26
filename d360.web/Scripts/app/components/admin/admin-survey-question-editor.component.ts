@@ -87,7 +87,8 @@ export class AdminSurveyQuestionEditorEditor {
             this.editedQuestion.Items.push({
                 ID: -1,
                 Name: '',
-                Value: 0
+                Value: 0,
+                IsChecked: false,
             });
             this.action = "New";
         }        
@@ -99,6 +100,6 @@ export class AdminSurveyQuestionEditorEditor {
     }
 
     addItem() {
-        this.editedQuestion.Items.push({ Name: '', Value: 0, ID:0 });
+        this.editedQuestion.Items.push({ Name: '', Value: 0, ID: 0, IsChecked:false });
     }
 };

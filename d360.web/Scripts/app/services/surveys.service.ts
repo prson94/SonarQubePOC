@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
-import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails } from '../models/survey.model';
+import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyResponse } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
@@ -85,6 +85,24 @@ export class SurveysService extends BaseService {
             .toPromise()
             .then(response => <SurveyType>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    saveSurveyResponse(response: SurveyQuestionTypeDetails[], surveyId: number, objectType:string, objectId: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+
+        let surveyResponse = new SurveyResponse();
+        for (let question of response) {
+            question.Values = question.Items;
+        }
+        surveyResponse.Questions = response;
+
+        return this.http
+            .post(`api/survey/${surveyId}/${objectId}/${objectType}`, JSON.stringify(surveyResponse), { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
 
 }
