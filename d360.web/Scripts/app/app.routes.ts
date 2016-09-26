@@ -3,7 +3,6 @@ import { HomeComponent} from './components/index';
 import { AdminRoutes } from './components/admin/admin.routes';
 import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
-import { DiagnosticRoutes } from './components/diagnostic/diagnostic.routes';
 import { ModelRoutes } from './components/model/model.routes';
 import { PolicyRoutes } from './components/policy/policy.routes';
 import { FusionRoutes } from './components/fusion/fusion.routes';
@@ -13,6 +12,7 @@ import { MonitorRoutes } from './components/monitor/monitor.routes';
 import { CommunityRoutes } from './components/community/community.routes';
 import { ReferenceRoutes } from './components/reference/reference.routes';
 import { SearchRoutes } from './components/search/search.routes';
+import { GroupRoutes } from './components/group/group.routes';
 
 export const routes: Routes = [
     //{ path: 'a/admin', component: AdminComponent }
@@ -20,7 +20,7 @@ export const routes: Routes = [
     ...AdminRoutes,
     ...HomeRoutes,
     ...ArtifactRoutes,
-    ...DiagnosticRoutes,
+    ...GroupRoutes,
     ...ModelRoutes,
     ...PolicyRoutes,
     ...FusionRoutes,

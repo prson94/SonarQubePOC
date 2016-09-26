@@ -1,10 +1,8 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component } from '@angular/core';
 
-import 'rxjs/Rx';
-
 @Component({
-    selector: 'd3s-diagnostic',
+    selector: 'd3s-group',
     template: `
                 <div id="main">
                     <router-outlet></router-outlet>
@@ -12,6 +10,6 @@ import 'rxjs/Rx';
              ` ,
 })
 
-export class DiagnosticComponent {
+export class GroupComponent {
 
 }

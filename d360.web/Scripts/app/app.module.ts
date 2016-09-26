@@ -13,6 +13,7 @@ import { SharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
 import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
+import { GroupModule } from './components/group/group.module';
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
 
@@ -91,11 +92,6 @@ import {
     CommunityComponent,
     CommunitySummaryComponent,
 } from './components/community/index';
-
-import {
-    DiagnosticComponent,
-    DiagnosticIncorrectTextpathComponent,    
-} from './components/diagnostic/index';
 
 
 import {
@@ -238,9 +234,7 @@ import {
         ClaimsMatrixPart,
         ClaimsTile,
         CommunityComponent,
-        CommunitySummaryComponent,
-        DiagnosticComponent,
-        DiagnosticIncorrectTextpathComponent,
+        CommunitySummaryComponent,        
         FieldDefinitionTile,
         FusionAttributesTile,        
         FusionConfigurationTile,        
@@ -340,6 +334,7 @@ import {
         NavbarModule,   
         FusionModule,
         D3SFormsModule,
+        GroupModule,
       
     ],
     bootstrap: [AppComponent],

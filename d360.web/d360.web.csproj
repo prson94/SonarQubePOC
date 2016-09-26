@@ -1368,10 +1368,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\index.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic-incorrect-textpath.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\diagnostic\diagnostic.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\diagnostic\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\d3sforms.module.ts" />
@@ -1385,6 +1381,11 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\group\group.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
