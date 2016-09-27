@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { GroupService } from '../../services/group.service';

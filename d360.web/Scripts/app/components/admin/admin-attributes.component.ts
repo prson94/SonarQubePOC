@@ -1,5 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component} from '@angular/core';
+﻿import { Component} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, AttributeTypeService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { AttributeType } from '../../models/attribute-type.model';

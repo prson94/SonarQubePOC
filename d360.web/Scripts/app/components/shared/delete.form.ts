@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, EventEmitter } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { FormMessage, JsonResult } from '../../models/form.model';

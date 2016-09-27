@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, NgZone, OnInit } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';

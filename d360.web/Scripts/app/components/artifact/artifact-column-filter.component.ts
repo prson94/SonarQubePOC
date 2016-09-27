@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem  } from 'primeng/primeng';
 import { ArtifactService, RelationshipsService, AttributeTypeService } from '../../services/index';

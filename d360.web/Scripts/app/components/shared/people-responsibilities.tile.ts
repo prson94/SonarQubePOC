@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { ResponsibilityItem, IResponsibilityService } from '../../models/responsibility.model';
 import { FormMessage } from '../../models/form.model';

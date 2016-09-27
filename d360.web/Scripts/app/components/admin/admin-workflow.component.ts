@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, NgZone, OnDestroy } from '@angular/core';
 import { PageHeader, HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../services/index';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';

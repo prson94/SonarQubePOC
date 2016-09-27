@@ -1,4 +1,3 @@
-///<reference path="./es6-shim.d.ts"/>
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit } from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';

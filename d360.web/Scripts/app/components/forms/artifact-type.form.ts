@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { ArtifactType, ArtifactTypeEditorModel } from '../../models/artifact-type.model';
 import { ArtifactTypeService } from '../../services/artifact-type.service';

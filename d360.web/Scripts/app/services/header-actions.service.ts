@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { Injectable, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';

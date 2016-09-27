@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';

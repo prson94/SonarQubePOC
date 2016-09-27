@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 
 import {  NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';

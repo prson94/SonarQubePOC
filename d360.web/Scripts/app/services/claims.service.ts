@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { ClaimItem, ClaimsMatrixDisplayModel, ClaimsMatrixEditorItemModel, IClaimsService } from '../models/claims.model';

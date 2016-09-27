@@ -14,7 +14,7 @@ gulp.task('clean', function (done) {
 });
 
 gulp.task('compile', ['clean'], function (done) {    
-    var tsres = tsproj.src().pipe(ts(tsproj, {  }, ts.reporter.fullReporter(false)));
+    var tsres = tsproj.src().pipe(tsproj());
     return tsres.pipe(gulp.dest(app));
 });
 

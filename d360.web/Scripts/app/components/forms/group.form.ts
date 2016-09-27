@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
 import { MessagesService, TaxonomiesService  } from '../../services/index';

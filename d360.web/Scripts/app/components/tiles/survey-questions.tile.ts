@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../models/survey.model';
 import { MessagesService, SurveysService  } from '../../services/index';

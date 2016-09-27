@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component } from '@angular/core';
 import { RuleDimension } from '../../models/rule.model';
 import { MessagesService, RulesService  } from '../../services/index';

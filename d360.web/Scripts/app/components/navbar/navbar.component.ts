@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { transition, style, animate, trigger, state } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';

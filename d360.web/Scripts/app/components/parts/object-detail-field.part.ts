@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../models/object-detail.model';
 

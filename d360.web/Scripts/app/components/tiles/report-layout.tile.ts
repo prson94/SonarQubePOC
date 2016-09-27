@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Report, ReportLayout } from '../../models/report.model';
 import { MessagesService, ReportsService  } from '../../services/index';

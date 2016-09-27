@@ -28,8 +28,9 @@ import {
     PaginatorModule,
 } from 'primeng/primeng';
 
+import { ChartModule } from 'angular2-highcharts';
+
 import { PipesModule } from '../../pipes/pipes.module';
-import { ChartModule} from './chart.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AuditComponent } from './audit.component';
@@ -170,9 +171,11 @@ import { TakeSurveyComponent } from './take-survey.component';
         DragDropModule,
         PaginatorModule,       
 
+        //highcharts
+        ChartModule,
+
         //d3s
-        PipesModule,
-        ChartModule,     
+        PipesModule,             
         D3SFormsModule,   
     ]
 

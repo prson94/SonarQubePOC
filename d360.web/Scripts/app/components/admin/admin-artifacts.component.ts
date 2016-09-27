@@ -1,5 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
-import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { TreeNode } from 'primeng/primeng';
 import { Breadcrumb } from '../../models/breadcrumb.model';

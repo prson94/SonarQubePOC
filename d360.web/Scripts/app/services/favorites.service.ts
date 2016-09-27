@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { Injectable, EventEmitter } from '@angular/core';
 import { Http } from '@angular/http';
 import { Subject } from 'rxjs/Subject';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { HierarchyModel, PredicateType, HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../../models/relations.model';
 import { ObjectDetailService } from '../../services/object-detail.service';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnInit } from '@angular/core';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';

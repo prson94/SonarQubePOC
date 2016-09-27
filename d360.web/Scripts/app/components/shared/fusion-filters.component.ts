@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { FusionFilter, FusionAttributeType } from '../../models/fusion.model';

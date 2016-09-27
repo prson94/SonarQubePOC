@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component } from '@angular/core';
 import { HeaderActionsService } from '../../services/header-actions.service';
 

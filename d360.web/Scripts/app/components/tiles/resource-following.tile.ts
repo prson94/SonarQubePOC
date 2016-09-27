@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { ResourcesService } from '../../services/index';
 import { Resource, CountObject } from '../../models/resource.model';

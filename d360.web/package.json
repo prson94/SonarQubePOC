@@ -32,13 +32,13 @@
     "systemjs-builder": "^0.15.23",
     "typings": "^0.7.12",
     "zone.js": "^0.6.23",
-    "angular2-highcharts": "0.2.1"
+    "angular2-highcharts": "0.3.2"
   },
   "devDependencies": {
-    "typescript": "^1.8.10",
+    "typescript": "^2.0.3",
     "typings": "^0.7.5",
     "gulp": "^3.9.1",
-    "gulp-typescript": "^2.13.6",
+    "gulp-typescript": "^3.0.1",
     "gulp-typings": "^2.0.0",
     "del": "^2.2.0"
   }

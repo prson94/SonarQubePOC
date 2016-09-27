@@ -1467,7 +1467,6 @@
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\chart.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\follower-grid.component.ts" />
@@ -1538,7 +1537,6 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\workflow-item.form.ts" />

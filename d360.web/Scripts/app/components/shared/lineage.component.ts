@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, OnInit, AfterViewInit, ElementRef } from '@angular/core';
 
 declare var LineageDiagramWrapper: LineageAdapter;

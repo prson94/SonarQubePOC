@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService, ResourcesService } from '../../services/index';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component } from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, RulesService  } from '../../services/index';
 import {AdminBaseComponent } from './admin-base.component';

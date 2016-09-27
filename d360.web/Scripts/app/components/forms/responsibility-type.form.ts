@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelation } from '../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';

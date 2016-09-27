@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { SelectItem } from '../models/form.model';
 
 export interface IResponsibilityService {

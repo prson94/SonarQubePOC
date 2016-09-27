@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, OnInit, Input, Output, EventEmitter, ElementRef } from '@angular/core';
 import { NavBarMode } from '../../models/nav-bar.model';
 

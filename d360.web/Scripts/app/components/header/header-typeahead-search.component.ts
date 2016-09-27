@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, ElementRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../services/index';
 import { SearchResult } from '../../models/search-result.model';

@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { Injectable } from '@angular/core';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../models/grid-definition.model';

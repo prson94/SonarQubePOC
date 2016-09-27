@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import {Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import {MenuItem} from 'primeng/primeng';
 

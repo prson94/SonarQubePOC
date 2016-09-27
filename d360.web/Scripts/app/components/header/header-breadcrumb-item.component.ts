@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';

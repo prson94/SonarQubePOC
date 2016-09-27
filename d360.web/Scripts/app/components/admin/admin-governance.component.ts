@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, PageHeader } from '../../services/index';

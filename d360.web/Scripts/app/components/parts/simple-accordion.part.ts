@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Component, OnInit, Output, EventEmitter, transition, animate, style, trigger, state } from '@angular/core';
 
 @Component({

@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { SelectItem, FormMessage } from '../models/form.model';
 
 export interface IWorkflowService {

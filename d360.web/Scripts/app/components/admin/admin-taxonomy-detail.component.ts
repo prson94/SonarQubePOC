@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input} from '@angular/core';
 import { Taxonomy } from '../../models/taxonomy.model';
 import { MessagesService } from '../../services/index';

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { ClaimItem } from '../../models/claims.model';
 import { ClaimsService } from '../../services/claims.service';

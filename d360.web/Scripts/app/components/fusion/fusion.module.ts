@@ -4,9 +4,9 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { ChartModule } from 'angular2-highcharts';
 
 import { SharedModule } from '../shared/shared.module';
-import { ChartModule } from  '../shared/chart.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
@@ -83,9 +83,11 @@ import {
         PaginatorModule,
         FileUploadModule,
 
-        //d3s
-        SharedModule,
+        //highcharts
         ChartModule,
+
+        //d3s
+        SharedModule,        
         PipesModule,
     ],
     declarations: [

@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, OnDestroy, OnInit} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';

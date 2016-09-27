@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
 import { LazyLoadEvent } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';

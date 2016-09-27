@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader } from '../../services/index';

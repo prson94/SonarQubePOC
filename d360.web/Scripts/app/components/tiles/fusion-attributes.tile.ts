@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
 import { FusionAttributeType, FusionType } from '../../models/fusion.model';

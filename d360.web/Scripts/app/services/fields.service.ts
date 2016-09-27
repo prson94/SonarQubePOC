@@ -1,4 +1,4 @@
-﻿///<reference path="../es6-shim.d.ts"/>
+﻿
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';

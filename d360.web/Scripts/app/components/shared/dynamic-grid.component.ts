@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';

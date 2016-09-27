@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ScoreService } from '../../services/index';

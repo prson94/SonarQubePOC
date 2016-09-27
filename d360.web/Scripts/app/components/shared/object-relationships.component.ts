@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';

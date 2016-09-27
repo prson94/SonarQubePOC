@@ -25,8 +25,7 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
 
     ngOnInit() {
         this.sub = this.router.events.subscribe(path => {
-            //dont show raise issue button on raise issue screen or any admin screens
-            console.log(path);
+            //dont show raise issue button on raise issue screen or any admin screens            
             this.hasRaiseIssueButton = (!path.url.toLowerCase().endsWith('workflow/raiseissue') && (path.url.toLowerCase().indexOf('/admin/')==-1));
         });
     }

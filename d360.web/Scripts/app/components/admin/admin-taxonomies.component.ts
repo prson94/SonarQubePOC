@@ -1,4 +1,4 @@
-﻿///<reference path="../../es6-shim.d.ts"/>
+﻿
 import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Taxonomy} from '../../models/taxonomy.model';
 import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService  } from '../../services/index';
