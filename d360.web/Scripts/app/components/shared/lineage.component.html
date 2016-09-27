@@ -1,14 +1,14 @@
 ﻿<!--workaround template for new lineage to replace cshtml -->
 <div class="tile tile-detail">
+    <input type="hidden" id="objectType_Value" [value]="objectType" />
+    <input type="hidden" id="objectID_Value" [value]="objectID" />
     <header>
         <span id="LineageHeaderText">Lineage</span>
+        <span id="LoadingProgress" style="display:none;color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <div class="TileTools" style="right: 5px; top: 5px; z-index: 1003">
             <div id="LineageTools" style="border: none !important; background-color: transparent !important">
                 <ul>
-                    <li>
-                        <div id="LineageZoomSlider"></div>
-
-                    </li>
+                    <li><div id="LineageZoomSlider"></div></li>
                     <li data-action="reset"><i class="fa fa-2x fa-refresh" title="Refresh"></i></li>
                     <li id="ToolView">
                         <i class="fa fa-2x fa-eye" title="Views"></i>
@@ -19,19 +19,15 @@
                             <li data-action="view3">Technical Lineage</li>
                         </ul>
                     </li>
-                    <li id="ToolWindows">
-                        <i class="fa fa-2x fa-universal-access" title="Toolbars"></i>
+                    <li id="ToolManage">
+                        <i class="fa fa-2x fa-gears" title="Manage"></i>
                         <i class="fa fa-chevron-down" style="color: #999;line-height: 1.3;vertical-align: super;"></i>
                         <ul style="width:200px">
-                            <li id="w_info" data-action="w_info"><i class="fa fa-info" title="Node Info"></i> Node Info</li>
-                            <li id="w_sourcerules" data-action="w_sourcerules"><i class="fa fa-code-fork" title="Source Rules"></i> Source Rules</li>
-                            <li id="w_mappings" data-action="w_mappings"><i class="fa fa-exchange" title="Mapping Rules"></i> Mapping Rules</li>
-                            <li id="w_roles" data-action="w_roles"><i class="fa fa-user" title="Roles"></i> Roles</li>
-                            <li id="w_fusion" data-action="w_fusion"><i class="fa fa-database" title="Fusion"></i> Fusion</li>
+                            <li data-action="sourcerules">Source Rules</li>
                         </ul>
                     </li>
-
-                    <!--<li data-action="close"><i class="fa fa-2x fa-close" title="Close Lineage"></i></li>-->
+                    <li id="ToolWindows" data-action="openwindow"><i class="fa fa-2x fa-info-circle" title="Toolbars"></i></li>
+                    <li data-action="close"><i class="fa fa-2x fa-close" title="Close Lineage"></i></li>
                 </ul>
             </div>
             <div id="ManageLineageTools" style="border: none !important; background-color: transparent !important">
@@ -72,41 +68,26 @@
          style="margin-top: 25px; display: none"></div>
 
     <div id="LineageSourceRuleManager"
-         data-bind="template: {name: 'lineageEditTmpl' }"
+         data-bind="template: {name: 'mapSequencesTmpl' }"
          style="margin-top: 25px; display: none"></div>
 
     <div id="LineageDiagram" style="overflow: hidden" class="diagram"></div>
 
-    <div id="LineageWindow0">
-        <div><i class="fa fa-info-circle"></i>&#160;Info</div>
-        <div id="Lineage_info_detail"></div>
+    <div id="LineageWindow">
+        <div>Info</div>
+        <div id="LineageWindowTabs" style="padding: 0px; margin:0px; border-bottom: 0px solid transparent">
+            <ul>
+                <li id="t0" title="Info"><i class="fa fa-2x fa-info-circle"></i></li>
+                <li id="t1" title="Source Rules"><i class="fa fa-2x fa-code-fork"></i></li>
+                <li id="t2" title="Mapping Rules"><i class="fa fa-2x fa-exchange"></i></li>
+                <li id="t3" title="Responsibilities"><i class="fa fa-2x fa-user"></i></li>
+                <li id="t4" title="Fusion Relationships"><i class="fa fa-2x fa-database"></i></li>
+            </ul>
+            <div style="margin:5px"><div id="Lineage_info_detail"></div></div>
+            <div style="margin:5px"><div id="Lineage_sourcerules_content"></div></div>
+            <div style="margin:5px"><div id="Lineage_mappingrules_content"></div></div>
+            <div style="margin:5px"><div id="Lineage_responsibilities_content"></div></div>
+            <div style="margin:5px"><div id="Lineage_fusion_content"></div></div>
+        </div>
     </div>
-
-    <div id="LineageWindow1">
-        <div><i class="fa fa-code-fork"></i>&#160;Source Rules</div>
-        <div id="Lineage_sourcerules_content"></div>
-    </div>
-
-    <div id="LineageWindow2">
-        <div><i class="fa fa-exchange"></i>&#160;Mapping Rules</div>
-        <div id="Lineage_mappingrules_content"></div>
-    </div>
-
-    <div id="LineageWindow3">
-        <div><i class="fa fa-user"></i>&#160;Responsibilities</div>
-        <div id="Lineage_responsibilities_content"></div>
-    </div>
-
-    <div id="LineageWindow4">
-        <div><i class="fa fa-database"></i>&#160;Fusion Relationships</div>
-        <div id="Lineage_fusion_content"></div>
-    </div>
-
-    <div id="LineageWindow5">
-        <div><i class="fa fa-random"></i>&#160;Business Transformations</div>
-        <div id="Lineage_transformations_content"></div>
-    </div>
-
-    <input id="objectType_Value" type="hidden" [value]="objectType" />
-    <input id="objectID_Value" type="hidden" [value]="objectID" />
 </div>

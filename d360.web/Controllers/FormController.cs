@@ -6698,6 +6698,85 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleItemEditForm", editorModel);
         }
 
+        [HttpGet]
+        public JsonNetResult GetAddFusionRuleItem(int id)
+        {
+            var rule = Company.GetById<FusionRule>(id);
+
+            if (rule == null)
+                return null;
+
+            if (!Company.HasPermission(SystemObjects.Fusion, rule.FusionID, Claim.Create))
+                return null;
+
+            var editorModel = new FusionRuleItemEditorModel
+            {
+                FormUri = "/Form/AddFusionRuleItem",
+                FormMethod = "POST",
+                FormName = "Add Promotion Target Item",
+                FusionID = rule.FusionID,
+                TargetFusionAttributeTypeID = rule.ObjectID,
+                Item = new FusionRuleItem { RuleID = id }
+            };
+
+            return new JsonNetResult
+            {
+                Data = editorModel,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+
+        [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken]
+        public JsonResult PostAddFusionRuleItem(FusionRuleItem item)
+        {
+            try
+            {
+                var ruleID = item.RuleID;
+                var rule = Company.GetById<FusionRule>(ruleID);
+                if (rule != null)
+                {
+                    rule.UpdatedBy = Company.CurrentResourceID;
+                    rule.UpdatedOn = DateTime.UtcNow;
+                }
+
+                //TODO: handle fusion attribute list
+                //var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
+                //if (fusionAttributeIDs.Count == 0)
+                //{
+                //    Company.Set<FusionRuleItem>().Add(
+                //        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                //        );
+                //}
+                //else
+                //{
+                //    fusionAttributeIDs.ForEach(fa =>
+                //    {
+                //        int? fusionAttributeID = null;
+                //        if (!string.IsNullOrEmpty(fa))
+                //        {
+                //            fusionAttributeID = int.Parse(fa);
+                //        }
+                //        Company.Set<FusionRuleItem>().Add(
+                //            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                //            );
+                //    });
+                //}
+                Company.SaveChanges();
+
+                return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionRuleItem(FormCollection form)
@@ -6798,6 +6877,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleItemByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusionRuleItem(form);
+        }
         #endregion
 
         #endregion
@@ -7777,6 +7863,101 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleStepMappingEditForm", editorModel);
         }
 
+        [HttpGet]
+        public JsonNetResult GetAddFusionRuleStepMapping(int id)
+        {
+            var ruleStep = Company.GetById<FusionRuleStep>(id);
+
+            if (ruleStep == null)
+                return null;
+
+            if (!Company.HasPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Claim.Create))
+                return null;
+
+            var editorModel = new FusionRuleStepMappingEditorModel
+            {
+                FormUri = "/Form/AddFusionRuleStepMapping",
+                FormMethod = "POST",
+                FormName = "Add Promotion Field Mapping",
+                Item = new FusionRuleStepMapping { RuleStepID = id, FusionRuleStep = ruleStep },
+                SourceFields = loadSourceItemOptions(ruleStep),
+                TargetFields = loadTargetItemOptions(ruleStep)
+            };
+
+            return new JsonNetResult
+            {
+                Data = editorModel,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PostAddFusionRuleStepMapping(FusionRuleStepMapping map)
+        {
+            try
+            {
+                var model = new FusionRuleStepMapping
+                {
+                    RuleStepID = map.RuleStepID
+                };
+
+                //var source = form["Source"].Split('|');
+                //var target = form["Target"].Split('|');
+                //var constantValue = form["ConstantValue"];
+                //var isConstantValue = form["isConstantValue"];
+
+                //if (source[1] == "0")
+                //{
+                model.SourceFieldName = map.SourceFieldName;
+                //}
+                //else
+                model.SourceFieldTypeID = map.SourceFieldTypeID;
+
+                //if (target[1] == "0")
+                //{
+                    model.TargetFieldName = map.TargetFieldName;
+                    model.TargetFieldTypeID = map.TargetFieldTypeID;
+                //}
+                //else
+                    //model.TargetFieldTypeID = int.Parse(target[1]);
+
+
+                if (map.IsConstantValue)
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = map.ConstantValue;
+                    model.SourceFieldName = null;
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = string.Empty;
+                }
+
+                Company.Add<FusionRuleStepMapping>(model);
+
+                var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
+                if (ruleStep != null)
+                {
+                    ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                    ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
+                    Company.SaveChanges();
+                }
+
+                return jsonSuccess("Field mapping successfully created.", "0", ContextList.FusionPromotionRuleMapping, "add", HttpStatusCode.Created);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddFusionRuleStepMapping(FormCollection form)
@@ -7885,6 +8066,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteFusionRuleStepMappingByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeleteFusionRuleStepMapping(form);
+        }
 
         public ActionResult EditFusionRuleStepMapping(int id)
         {
@@ -7902,6 +8090,87 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
 
             return PartialView("FusionRuleStepMappingEditForm", editorModel);
+        }
+
+        public JsonNetResult GetEditFusionRuleStepMapping(int id)
+        {
+            var a = Company.GetById<FusionRuleStepMapping>(id);
+            if (a == null) return null;
+
+            var editorModel = new FusionRuleStepMappingEditorModel
+            {
+                FormUri = "/Form/EditFusionAttributePromotionRuleMapping",
+                FormMethod = "PUT",
+                FormName = "Update Promotion Field Mapping",
+                Item = a,
+                SourceFields = loadSourceItemOptions(a.FusionRuleStep, a),
+                TargetFields = loadTargetItemOptions(a.FusionRuleStep, a)
+            };
+
+            return new JsonNetResult
+            {
+                Data = editorModel,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        public JsonResult PutEditFusionRuleStepMapping(FusionRuleStepMapping map)
+        {
+            try
+            {
+
+                var model = Company.GetById<FusionRuleStepMapping>(map.ID, i => i.FusionRuleStep.FusionRule);
+                if (model == null) throw new NotFoundException("field mapping");
+
+                //var source = form["Source"].Split('|');
+                //var target = form["Target"].Split('|');
+                //var constantValue = form["ConstantValue"];
+                //var isConstantValue = form["isConstantValue"];
+
+                //if (source[1] == "0")
+                //{
+                model.SourceFieldName = map.SourceFieldName;
+                //  model.SourceFieldTypeID = 0;
+                //}
+                //else
+                model.SourceFieldTypeID = map.SourceFieldTypeID;
+
+                //if (target[1] == "0")
+                //{
+                model.TargetFieldName = map.TargetFieldName;
+                //    model.TargetFieldTypeID = 0;
+                //}
+                //else
+                model.TargetFieldTypeID = map.TargetFieldTypeID;
+
+                if (map.IsConstantValue)
+                {
+                    model.IsConstantValue = true;
+                    model.SourceFieldTypeID = 0;
+                    model.ConstantValue = map.ConstantValue;
+                }
+                else
+                {
+                    model.IsConstantValue = false;
+                    model.ConstantValue = null;
+                }
+                model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
+                model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<FusionRuleStepMapping>(model);
+
+                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), ContextList.FusionPromotionRuleMapping, "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpPut, ValidateInput(false)]

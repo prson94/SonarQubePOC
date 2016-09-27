@@ -170,8 +170,10 @@ export class FusionRuleMapping {
     SourceFieldName: string;
     TargetFieldTypeID: number;
     TargetFieldName: string;
+    RuleStepID: number;
+    IsConstantValue: boolean;
+    ConstantValue: string;
 }
-
 
 export class FusionProcessError {
     Date: Date;
@@ -238,4 +240,24 @@ export class FusionRuleStepEditorModel {
     RuleStep: FusionRuleStep;
     FusionID: number;
     FusionTypeID: number;
+}
+
+export class FusionRuleItemEditorModel {
+    FormMethod: string;
+    FormName: string;
+    FusionID: number;
+    TargetFusionAttributeTypeID: number;
+    Item: FusionRuleItem;
+}
+
+export class FusionRuleMappingEditorModel {
+    FormUri: string;
+    FormName: string;
+    FormMethod: string;
+    SourceFields: any[];
+    TargetFields: any[];
+    Item: FusionRuleMapping;
+
+    sourceValue: string;
+    targetValue: string;
 }

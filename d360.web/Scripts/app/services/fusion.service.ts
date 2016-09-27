@@ -27,6 +27,8 @@ import {
     FusionProcessError,
     FusionRuleEditorModel,
     FusionRuleStepEditorModel,
+    FusionRuleItemEditorModel,
+    FusionRuleMappingEditorModel
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
@@ -348,6 +350,62 @@ export class FusionService extends BaseService {
 
     deleteFusionRuleStep(ruleID: number, ruleStepID: number) {
         return this.http.delete(`form/DeleteFusionRuleStepByID?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAddFusionRuleStepMapping(id: number): Promise<FusionRuleMappingEditorModel> {
+        return this.http.get(`form/GetAddFusionRuleStepMapping?id=${id}`)
+            .toPromise()
+            .then(response => <FusionRuleMappingEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postAddFusionRuleStepMapping(map: FusionRuleMapping) {
+        return this.http.post('form/PostAddFusionRuleStepMapping', map)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteFusionRuleStepMapping(id: number) {
+        return this.http.delete(`form/DeleteFusionRuleStepMappingByID?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getEditFusionRuleStepMapping(id: number): Promise<FusionRuleMappingEditorModel> {
+        return this.http.get(`form/GetEditFusionRuleStepMapping?id=${id}`)
+            .toPromise()
+            .then(response => <FusionRuleMappingEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    putEditFusionRuleStepMapping(map: FusionRuleMapping) {
+        return this.http.put('form/PutEditFusionRuleStepMapping', map)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getAddFusionRuleItem(id: number): Promise<FusionRuleItemEditorModel> {
+        return this.http.get(`form/GetAddFusionRuleItem?id=${id}`)
+            .toPromise()
+            .then(response => <FusionRuleItemEditorModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postAddFusionRuleItem(item: FusionRuleItem) {
+        return this.http.post('form/PostAddFusionRuleItem', item)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteFusionRuleItem(id: number) {
+        return this.http.delete(`form/DeleteFusionRuleItemByID?id=${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

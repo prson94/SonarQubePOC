@@ -1,7 +1,7 @@
 ﻿///<reference path="../../es6-shim.d.ts"/>
 import { Component, Input, OnInit, AfterViewInit, ElementRef } from '@angular/core';
 
-declare var NewLineageDiagram2: LineageAdapter;
+declare var LineageDiagramWrapper: LineageAdapter;
 
 @Component({
     selector: 'd3s-lineage',
@@ -28,7 +28,7 @@ export class LineageComponent implements OnInit, AfterViewInit {
 
     public ngAfterViewInit() {
         //TODO: clean this up after changes to Lineage Diagram in old UI stop
-        NewLineageDiagram2(this.myElement.nativeElement); 
+        LineageDiagramWrapper(this.myElement.nativeElement); 
     }
 
 
