@@ -8,38 +8,38 @@ import { FusionWorkerExecution, FusionConfigurationDetails } from '../../models/
     selector: 'd3s-fusion-execution-history',
     template: `                 
                 <div class="tile tile-detail" *ngIf="!showExecutionErrors && !showExecutionResults">
-                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span></header>
+                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                         <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
-                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'175px'}"></p-column>
-                            <p-column field="Fusion" header="Configuration" [sortable]="true" [style]="{width:'175px'}"></p-column>
-                            <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'150px'}">
+                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'175px'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Fusion" header="Configuration" [sortable]="true" [style]="{width:'175px'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateStarted | date: 'short'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="DateCompleted" header="Completed" [sortable]="true" [style]="{width:'150px'}">
+                            <p-column field="DateCompleted" header="Completed" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateCompleted | date: 'short'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="ErrorCount" header="Errors" [sortable]="true" [style]="{width:'100px'}">
+                            <p-column field="ErrorCount" header="Errors" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <a *ngIf="data.ErrorCount" (click)="selected=data;showExecutionErrors=true;">{{data.ErrorCount}} <i class="fa fa-times disabled"></i></a>
                                     <span *ngIf="!data.ErrorCount">{{data.ErrorCount}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="ResultCount" header="Results" [sortable]="true" [style]="{width:'100px'}">
+                            <p-column field="ResultCount" header="Results" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <a *ngIf="data.ResultCount" (click)="selected=data;showExecutionResults=true;">{{data.ResultCount}} <i class="fa fa-check enabled"></i></a>
                                     <span *ngIf="!data.ResultCount">{{data.ResultCount}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}"></p-column>
-                            <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}"></p-column>                            
+                            <p-column field="Adds" header="Adds" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Deletes" header="Deletes" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Updates" header="Updates" [sortable]="true" [style]="{width:'100px'}" [filter]="!showSimpleFilter"></p-column>                            
                         </p-dataTable>      
                     </span>                    
                 </div>                

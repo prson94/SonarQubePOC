@@ -68,4 +68,10 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getUserGroups(resourceID: number): Promise<any[]> {
+        return this.http.get(`resources/_GroupsByResourceID/${resourceID}`)
+            .toPromise()
+            .then(response => <any[]>response.json())
+            .catch(err => this.handleError(err));
+    }
 }

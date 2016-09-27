@@ -33,6 +33,7 @@
                 <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
                 <d3s-assignments-tile *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
             </div>
+            <d3s-resource-groups [resourceId]="resourceId"></d3s-resource-groups>
         </div>
     </div>
     <div *ngSwitchCase="PageMode.EditingInfo">

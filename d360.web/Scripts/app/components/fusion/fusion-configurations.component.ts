@@ -13,19 +13,19 @@ import { Fusion } from '../../models/fusion.model';
                     <d3s-fusion-filters-tile [fusionTypeID]="selected?.FusionTypeID" [fusionID]="selected?.ID"></d3s-fusion-filters-tile>                                    
                 </div>
                 <div class="tile tile-detail" *ngIf="!showFusionFilter">
-                    <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
+                    <header>Configuration <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                         <p-dataTable [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion();" >
-                                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'20%'}"></p-column>
-                                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}"></p-column>
-                                            <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'25%'}">
+                                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
+                                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+                                            <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <span [innerHtml]="item.Description"></span>
                                                 </template>
                                             </p-column>
-                                            <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}">
+                                            <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
                                                     <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
