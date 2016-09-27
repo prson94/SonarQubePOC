@@ -1475,6 +1475,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\raise-issue-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social.module.ts" />
@@ -1532,9 +1533,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\es6-shim.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />

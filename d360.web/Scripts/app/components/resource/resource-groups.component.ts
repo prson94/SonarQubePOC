@@ -19,7 +19,7 @@ import { ResourcesService } from '../../services/index';
                             <p-column [style]="{ 'width': '30px' }">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
-                                        <a [routerLink]="'/a/group/'+item.ID" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                                        <d3s-tooltip objectType="Group" [objectId]="item.ID" tooltipType="preview"><a [routerLink]="'/a/group/'+item.ID" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>                                        
                                     </div>
                                </template>
                             </p-column>

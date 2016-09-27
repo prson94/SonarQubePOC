@@ -58,6 +58,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
+import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { TagInputComponent } from './tag-input.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
@@ -95,6 +96,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
+        RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,
         TagInputComponent,
@@ -131,6 +133,7 @@ import { TakeSurveyComponent } from './take-survey.component';
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
+        RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,
         TagInputComponent,

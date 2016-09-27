@@ -13,6 +13,7 @@ import { CommunityRoutes } from './components/community/community.routes';
 import { ReferenceRoutes } from './components/reference/reference.routes';
 import { SearchRoutes } from './components/search/search.routes';
 import { GroupRoutes } from './components/group/group.routes';
+import { WorkflowRoutes } from './components/workflow/workflow.routes';
 
 export const routes: Routes = [
     //{ path: 'a/admin', component: AdminComponent }
@@ -30,6 +31,7 @@ export const routes: Routes = [
     ...CommunityRoutes,
     ...ReferenceRoutes,
     ...SearchRoutes,
+    ...WorkflowRoutes,
 ];
 
 export const routing = RouterModule.forRoot(routes);

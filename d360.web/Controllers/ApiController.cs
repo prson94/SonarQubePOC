@@ -7011,5 +7011,43 @@ SELECT (
         }
 
         #endregion
+
+        #region Raise Issue - Angular supports all object types not just artifact
+
+        [HttpPost]
+        [Route("issue/raise/{type}/{objectId:int}")]
+        public CreateResponse PostIssue(SystemObjects type, int objectId, [FromBody]string issue)
+        {
+            var relations = new List<CommentRelation>();
+            var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
+            var comment = new Comment();
+
+            relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
+
+            comment.OwnerObjectType = SystemObjects.Resource.ToString();
+            comment.OwnerObjectID = Company.CurrentResourceID;
+            comment.CommentTypeID = CommentType.Issue;
+            comment.Body = issue;
+
+            //add relation to current artifact
+            relations.Add(new CommentRelation { ObjectType = type.ToString(), ObjectID = objectId, Date = DateTime.UtcNow });
+
+            var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
+
+            if (dtl != null)
+            {
+                var processor = new Processor();
+                var dictionary = new Dictionary<string, object>();
+                dictionary.Add("CompanyID", Company.CurrentCompanyID);
+                dictionary.Add("CommentID", dtl.ID);
+
+                processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
+            }
+
+            return new CreateResponse { Message = "Created" };
+
+        }
+
+        #endregion
     }
 }

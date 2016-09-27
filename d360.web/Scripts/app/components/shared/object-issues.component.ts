@@ -79,6 +79,6 @@ export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
 
         if (minutes > 0) return "Last issue came in " + minutes + " minutes ago.";
                 
-        return "Last discussion was a moment ago.";
+        return "Last issue was a moment ago.";
     }
 }

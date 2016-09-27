@@ -12,6 +12,7 @@ import { WorkflowIssueDetailsComponent } from './workflow-issue-details.componen
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
 import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.component';
 import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.component';
+import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
 
 import {
@@ -59,27 +60,30 @@ import {
         SpinnerModule,
         TooltipModule,
         PaginatorModule,
+        EditorModule,
 
         //d3s
         SharedModule,
 
     ],
     declarations: [
-        WorkflowIssueEditorComponent,
-        WorkflowDetailComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowSuggestDetailsComponent,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,
+        WorkflowDetailComponent,
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
+        WorkflowRaiseIssueComponent,
+        WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
     ],
     exports: [
-        WorkflowIssueEditorComponent,
-        WorkflowDetailComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowSuggestDetailsComponent,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,
+        WorkflowDetailComponent,
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
+        WorkflowRaiseIssueComponent,
+        WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
     ]
 })

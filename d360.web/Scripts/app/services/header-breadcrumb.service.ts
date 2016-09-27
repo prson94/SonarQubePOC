@@ -19,13 +19,17 @@ export class HeaderBreadcrumbService {
     breadcrumbPopLastSource$ = this.breadcrumbPopLastSource.asObservable();
     currentObjectInfo$ = this.currentObjectInfoSource.asObservable();
 
+    currentObject: any;
+
     // Service message commands
     
     clearCurrentObjectInfo() {
+        this.currentObject = { type: null, id: null };
         this.currentObjectInfoSource.next({ type: null, id: null });
     }
 
     setCurrentObjectInfo(type: string, id: number) {
+        this.currentObject = { type: type, id: id };
         this.currentObjectInfoSource.next({ type: type, id: id });
     }
 

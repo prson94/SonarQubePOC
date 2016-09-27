@@ -23410,3 +23410,13 @@ div.powerbi iframe {
   float: right;
 }
 /* end message bar styles*/
+/* raise issue*/
+.issue-button {
+  background: #FFB230;
+  border-radius: 5px;
+  border: 1px solid #AAAAAA;
+  line-height: 25px;
+  padding: 0 20px;
+  font-weight: bold;
+}
+/* end raise issue*/
