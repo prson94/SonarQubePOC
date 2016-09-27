@@ -61,6 +61,7 @@ import {
         TooltipModule,
         PaginatorModule,
         EditorModule,
+        AutoCompleteModule,
 
         //d3s
         SharedModule,

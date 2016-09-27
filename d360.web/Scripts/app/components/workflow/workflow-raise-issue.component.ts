@@ -3,13 +3,14 @@ import { Location } from '@angular/common';
 import { NgForm } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, WorkflowService, WebAnalyticsService, ObjectDetailService } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, WorkflowService, WebAnalyticsService, ObjectDetailService, TagService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
+import { Tag } from '../../models/tag.model';
 
 @Component({
     selector: 'd3s-workflow-raise-issue',
@@ -28,19 +29,32 @@ import { ObjectDetail } from '../../models/object-detail.model';
                         <form (ngSubmit)="onSubmit()" #issueForm="ngForm">                        
                             <div class="row">
                                 <div class="col s12">
-                                    <div class="FieldName">Raise An Issue For</div>
-                                    <div *ngIf="objectDetail"><label><input name="objectSelection" type="radio" [(ngModel)]="issueObject" value="current">{{objectDetail.Name}}</label></div>
-                                    <div><label><input name="objectSelection" type="radio" value="other" [(ngModel)]="issueObject">Other item</label></div>
-                                </div>
-                                <div class="col s12" *ngIf="issueObject">
-                                    <div class="FieldName">Issue Details</div>
+                                    <div class="FieldName">What would you like to raise an issue for?</div>
+                                    <div *ngIf="objectDetail"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
+                                    <div>
+                                        <label><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="showObjectSearch=true">Other item</label>
+                                        <p-autoComplete size="50"
+                                                *ngIf="showObjectSearch && selectedOption=='other'"
+                                                scrollHeight="400px"
+                                                name="other"
+                                                [(ngModel)]="term" 
+                                                [suggestions]="terms" 
+                                                (completeMethod)="search($event)" 
+                                                field="TextPath"  
+                                                placeholder="Select an item"
+                                                (onSelect)="selectItem()">                       
+                                        </p-autoComplete>                                        
+                                    </div>
+                                </div>                            
+                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                    <div class="FieldName">Issue Description</div>
                                     <div><p-editor name="Issue" [style]="{'height':'400px'}" [(ngModel)]="issue" #issueText="ngModel"></p-editor></div>                                                        
                                     <div [hidden]="issueText.valid || issueText.pristine">Issue details are required</div>
                                 </div>       
                                 <div class="col s12">&nbsp;</div>
                                 <div class="col s12">
-                                    <button pButton type="submit" [disabled]="!issueForm.form.valid" style="width: 150px;" label="Save"></button>                            
-                                    <button pButton type="button" (click)="cancel();" label="Close" style="width: 150px;"></button>
+                                    <button pButton type="submit" [disabled]="!issueForm.form.valid" label="Save"></button>                            
+                                    <button pButton type="button" (click)="cancel();" label="Cancel"></button>
                                 </div>
                             </div>
                         </form>
@@ -48,17 +62,23 @@ import { ObjectDetail } from '../../models/object-detail.model';
                 </div>
             </div>
         `,
-    providers: [WorkflowService, ObjectDetailService]
+    providers: [WorkflowService, ObjectDetailService, TagService]
 })
 
 export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit {
     private issue: string;
     private objectType: string;
     private objectId: number;
-    private issueObject: string;
+    private selectedObjectType: string;
+    private selectedObjectId: number;
+    private showObjectSearch: boolean = false;
     private objectDetail: ObjectDetail;
+    private terms: Tag[] = [];
+    private term: Tag;
+    private selectedOption: string;
 
     constructor(
+        private tagService: TagService,
         private workflowService: WorkflowService,
         private objectDetailService: ObjectDetailService,
         private location: Location,
@@ -101,14 +121,27 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private onSubmit() {
-        this.workflowService.raiseIssue(this.objectId, this.objectType, this.issue)
+        this.isLoading = true;            
+        this.workflowService.raiseIssue(this.selectedObjectId, this.selectedObjectType, this.issue)
             .then(res => {
+                this.isLoading = false;
                 this.location.back();
             });
     }
 
     private cancel() {
         this.location.back();
+    }
+
+    private search(event) {
+        this.tagService.getTags(event.query).then(data => {
+            this.terms = data;
+        });
+    }
+
+    private selectItem() {
+        this.selectedObjectType = this.term.Object;
+        this.selectedObjectId = this.term.ObjectID;       
     }
 
 }
