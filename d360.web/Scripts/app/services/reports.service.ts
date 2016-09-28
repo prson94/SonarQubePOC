@@ -70,4 +70,18 @@ export class ReportsService extends BaseService {
             .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
     }    
+
+    setPowerBICredentials(user: string, password: string): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        });
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
 }

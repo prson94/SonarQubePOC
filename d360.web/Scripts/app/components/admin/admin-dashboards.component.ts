@@ -1,5 +1,5 @@
-﻿
-import { Component, OnDestroy, OnInit} from '@angular/core';
+﻿import { Component, OnDestroy, OnInit} from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, ReportsService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Report, ReportType } from '../../models/report.model';
@@ -14,10 +14,10 @@ import { Title } from '@angular/platform-browser';
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor && !showDelete">Dashboards
-                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasAuthenticate]="true" (authenticateClick)="showCredentials=true;powerBiUser='';powerBiPassword=''"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <span *ngIf="!isLoading && !showEditor && !showDelete">
+                            <span *ngIf="!isLoading && !showEditor && !showDelete && !showCredentials">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                                 <p-dataTable [globalFilter]="gb" [value]="reports" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
@@ -45,6 +45,28 @@ import { Title } from '@angular/platform-browser';
                                 (onCancel)="showDelete=false;"
                             ></delete-form>   
                             <d3s-admin-dashboards-editor *ngIf="!isLoading && showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
+                            <span *ngIf="showCredentials">
+                                <form (ngSubmit)="onSubmitPowerCreds()" #powerBICredsForm="ngForm">
+                                    <div class="form-instructions">Specify the credentials to be used for Power BI Direct Query type queries.</div>
+                                    <div class="row">                                
+                                        <div class="col s12">
+                                            <div class="FieldName">Username:</div>
+                                            <div><input name="user" required type="text" [(ngModel)]="powerBiUser" #name="ngModel" style="width:100%"></div>
+                                            <div [hidden]="name.valid || name.pristine">Name is required</div>
+                                        </div>
+                                        <div class="col s12">
+                                            <div class="FieldName">Password:</div>
+                                            <div><input required name="pwd" type="password" [(ngModel)]="powerBiPassword" #pwd="ngModel" style="width:100%"></div>
+                                            <div [hidden]="pwd.valid || pwd.pristine">Password is required</div>
+                                        </div>
+                                        <div class="col s12">&nbsp;</div>
+                                        <div class="col s12">
+                                            <button pButton type="submit" [disabled]="!powerBICredsForm.form.valid" label="Save"></button>                            
+                                            <button pButton type="button" (click)="showCredentials=false;" label="Close"></button>
+                                        </div>  
+                                    </div>
+                                </form>
+                            </span>
                         </div>
                     </div>                                        
                     <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
@@ -77,9 +99,12 @@ import { Title } from '@angular/platform-browser';
 export class AdminDashboardsComponent extends AdminBaseComponent implements OnDestroy, OnInit {    
     showEditor: boolean = false;
     showDelete: boolean = false;
+    showCredentials: boolean = false;
     reports: Report[] = [];
     selected: Report;
     theDeleteCallback: Function;
+    powerBiUser: string;
+    powerBiPassword: string;
 
     constructor(rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
@@ -159,5 +184,19 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     private isBasicReport(report: Report): boolean {        
         return (report != null && ReportType[report.ReportType] == ReportType.legacy);
+    }
+
+    private onSubmitPowerCreds() {
+        this.isLoading = true;
+        this.reportsService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
+            .then(result => {
+                this.isLoading = false;
+                if (result.type == 'error') {
+                    this.messagesService.showError("Error", "Cannot update power bi credentials, check that you have entered the correct user / password.");
+                }
+                else {
+                    this.showCredentials = false;
+                }
+            });        
     }
 }
