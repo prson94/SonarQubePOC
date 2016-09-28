@@ -12,6 +12,7 @@ export class ArtifactTypeFilters {
     filters: GridFilterExpression[] = [];
     relationships: GridRelationshipFilterExpression;
     attributes: GridAttributeFilterExpression;
+    showSimpleFilter: boolean = true;
 }
 
 

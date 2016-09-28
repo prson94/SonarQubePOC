@@ -1,11 +1,12 @@
-﻿
-import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit} from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit, ViewChild} from '@angular/core';
 import { LazyLoadEvent } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService} from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Router, ActivatedRoute }       from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { ArtifactColumnFilterComponent } from './artifact-column-filter.component'
 
 
 @Component({
@@ -22,30 +23,14 @@ import { Router, ActivatedRoute }       from '@angular/router';
         `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
-                    <div class="col s12">                                                
-                        <div class="search-input-container" style="padding-bottom:10px;">
-                            <div class="search-input-text-container" style="padding-left:0;">
-                                <input type="text" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." class="search-input-text" autofocus autocomplete="off" />
-                            </div>                            
-                            <div class="search-input-button-container">
-                                <button type="button" name="action" id="home-search-btn" class="search-input-btn" (click)="doSimpleSearch()">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div *ngIf="showTypeFilter" class="col l10 m9 s12">                                                                         
-                        <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">
-                    </div>
-                    <div *ngIf="showTypeFilter" class="col l2 m3 s12">                                                                         
-                        <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
-                    </div>
-                    <d3s-artifact-column-filter [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
+                    <div class="col s12" *ngIf="stateService.artifactTypeFilters.showSimpleFilter">                                                
+                        <input type="text" style="width: 100%;" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                    </div>                                        
+                    <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">                                
@@ -56,7 +41,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
                                             <i *ngIf="item[column.datafield]" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="!item[column.datafield]" class="fa fa-times disabled" title="False"></i>
                                         </span>
-                                        <span *ngSwitchDefault>{{item[column.datafield]}}</span>
+                                        <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                     </span>
                                 </template>
                             </p-column>
@@ -104,15 +89,16 @@ import { Router, ActivatedRoute }       from '@angular/router';
 
 
 
-export class ArtifactGridComponent implements OnChanges {    
+export class ArtifactGridComponent extends BaseComponent implements OnChanges {    
     @Input() rowID: string = 'ID';
     @Input() artifactType: ArtifactType;
+
+    @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
         
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
-    showTypeFilter: boolean = false;
-
+    
     totalRecords: number;
     rowsPerPage: number = 20;
     
@@ -137,6 +123,7 @@ export class ArtifactGridComponent implements OnChanges {
     theDeleteCallback: Function;
     
     constructor(private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+        super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
@@ -156,6 +143,11 @@ export class ArtifactGridComponent implements OnChanges {
     filterGridData(filterData) {
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
+    }
+
+    clearFilters() {        
+        this.stateService.artifactTypeFilters.simpleTextFilter = '';
+        this.filtersComponent.clearFilter();
     }
 
     deleteItem(id: number) {

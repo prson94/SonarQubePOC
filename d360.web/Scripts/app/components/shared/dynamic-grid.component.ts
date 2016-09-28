@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';

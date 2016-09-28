@@ -160,7 +160,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnDestroy, OnChang
         this.filterChanged.emit({ filter: this.filters, relationships: this.relationshipFilter, attributes: this.attributeFilter });
     }
 
-    private clearFilter() {
+    public clearFilter() {
         this.filters.splice(0, this.filters.length);
         this.filtersChange.emit(this.filters);
 
