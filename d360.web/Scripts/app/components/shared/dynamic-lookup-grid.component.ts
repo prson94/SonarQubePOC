@@ -9,23 +9,35 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
     template: `                
                <p-dataTable [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">  
                     <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable">
-                        <template let-row="rowData" pTemplate type="body">
-                                <div [innerHtml]="row[column.datafield]"></div>
-                        </template>
+                        <template let-item="rowData" pTemplate type="body">
+                                    <span [ngSwitch]="columnDataType(column)">
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                        <span *ngSwitchCase="'bool'">
+                                            <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
+                                            <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
+                                        </span>
+                                        <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
+                                    </span>
+                         </template>
                     </p-column>                                                                                         
                 </p-dataTable>                                    
                 `
 })
 
-export class DynamicLookupGridComponent implements OnInit {
+export class DynamicLookupGridComponent {
     @Input() data: LookupGrid;
 
     constructor() {
     }
+    
 
-    ngOnInit() {
-        //console.log(this.data);
-    } 
+    private columnDataType(column: GridColumn): string {
+        var fields = this.data.Fields.filter(x => x.name == column.datafield);
+
+        if (fields.length > 0)
+            return fields[0].type;
+        return 'string';
+    }
 }
 
 

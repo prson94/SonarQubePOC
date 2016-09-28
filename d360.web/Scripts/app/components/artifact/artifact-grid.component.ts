@@ -48,9 +48,16 @@ import { Router, ActivatedRoute }       from '@angular/router';
                     <d3s-artifact-column-filter [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
                        <p-dataTable [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
-                                <template let-col let-item="rowData" pTemplate type="body">
-                                        <div [innerHtml]="item[column.datafield]"></div>
+                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">                                
+                                <template let-item="rowData" pTemplate type="body">
+                                    <span [ngSwitch]="columnDataType(column)">
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                        <span *ngSwitchCase="'bool'">
+                                            <i *ngIf="item[column.datafield]" class="fa fa-check enabled" title="True"></i>
+                                            <i *ngIf="!item[column.datafield]" class="fa fa-times disabled" title="False"></i>
+                                        </span>
+                                        <span *ngSwitchDefault>{{item[column.datafield]}}</span>
+                                    </span>
                                 </template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
@@ -116,6 +123,7 @@ export class ArtifactGridComponent implements OnChanges {
     error: any;
     items: any[];
     columns: GridColumn[] = [];    
+    fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
     
     showDelete: boolean = false;
@@ -163,6 +171,7 @@ export class ArtifactGridComponent implements OnChanges {
             .then(result => {
                 this.columns = result.Columns;
                 this.filtercolumns = result.FilterColumns;
+                this.fields = result.Fields;  
             });
     }
     
@@ -255,6 +264,14 @@ export class ArtifactGridComponent implements OnChanges {
 
     private doSimpleSearch() {        
         this.getData();
+    }
+
+    private columnDataType(column: GridColumn): string {
+        var fields = this.fields.filter(x => x.name == column.datafield);
+
+        if (fields.length > 0)
+            return fields[0].type;
+        return 'string';
     }
 }
 

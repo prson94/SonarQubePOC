@@ -16,11 +16,17 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                    <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
+                    <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
                             <template let-item="rowData" pTemplate type="body">
-                                <span *ngIf="isColumnDate(column)">{{item[column.datafield] | date:'short'}}</span>
-                                <span *ngIf="!isColumnDate(column)">{{item[column.datafield]}}</span>
+                                <span [ngSwitch]="columnDataType(column)">
+                                    <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                    <span *ngSwitchCase="'bool'">
+                                        <i *ngIf="item[column.datafield]" class="fa fa-check enabled" title="True"></i>
+                                        <i *ngIf="!item[column.datafield]" class="fa fa-times disabled" title="False"></i>
+                                    </span>
+                                    <span *ngSwitchDefault>{{item[column.datafield]}}</span>
+                                </span>
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
@@ -145,12 +151,12 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
             });
     }
 
-    isColumnDate(column: GridColumn) {
+    columnDataType(column: GridColumn) : string {
         var fields = this.fields.filter(x => x.name == column.datafield);
 
         if (fields.length > 0)
-            return fields[0].type == 'date';
-        return false;
+            return fields[0].type;
+        return 'string';
     }
 }
 
