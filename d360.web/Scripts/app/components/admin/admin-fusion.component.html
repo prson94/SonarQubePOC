@@ -26,29 +26,33 @@
         </div>
     </div>
     <div *ngIf="formMode == FormMode.Default">
-        <div class="col hide-on-small-and-down m12 l4">
-            <div class="tile tile-detail">
-                <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
+        <div class="col s12 m12 l9">
+            <div class="row">
+                <div class="col hide-on-small-and-down m12 l6">
+                    <div class="tile tile-detail">
+                        <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
+                    </div>
+                    <div class="tile tile-detail">
+                        <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
+                    </div>
+                </div>
+                <div class="col s12 m12 l6">
+                    <div class="tile tile-detail">
+                        <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
+                    </div>
+                    <div class="tile tile-detail">
+                        <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
+                    </div>
+                </div>        
             </div>
-            <div class="tile tile-detail">
-                <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
-            </div>
-        </div>
-        <div class="col s12 m12 l5">
-            <div class="tile tile-detail">
-                <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
-            </div>
-            <div class="tile tile-detail">
-                <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col s12 m12 l9 offset-l3">
-                <div class="tile tile-detail">
-                    <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+            <div class="row">
+                <div class="col s12">
+                    <div class="tile tile-detail">
+                        <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div>       
     </div>
     <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
         <div class="row">
