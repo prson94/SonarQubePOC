@@ -22,6 +22,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() editClick = new EventEmitter();
     @Output() dateClick = new EventEmitter();
     @Output() closeClick = new EventEmitter();
+    @Output() refreshClick = new EventEmitter();
 
     @Input() filterMode: boolean = false;        
     @Output() filterModeChange = new EventEmitter();
@@ -32,6 +33,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasDate: boolean = false;
     @Input() hasClose: boolean = false;
     @Input() hasFilterMode: boolean = false;
+    @Input() hasRefresh: boolean = false;
 
     private items: MenuItem[] = [];
 
@@ -87,6 +89,12 @@ export class TileActionsComponent implements OnInit, OnChanges {
         if (this.hasFilterMode) {
             this.items.push({
                 icon: 'fa-filter', command: () => { this.filterMode = !this.filterMode; this.filterModeChange.emit(this.filterMode); }
+            });
+        }
+
+        if (this.hasRefresh) {
+            this.items.push({
+                icon: 'fa-refresh', command: () => this.refreshClick.emit(null)
             });
         }
     }

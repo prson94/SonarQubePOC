@@ -2,11 +2,7 @@
 <div *ngIf="!isLoading">
     <header>
         {{title}}
-        <div class="TileTools">
-            <a class="btn btn-floating waves-effect waves-light brown lighten-1" (click)="load()">
-                <i class="fa fa-refresh" title="Refresh"></i>
-            </a>
-        </div>     
+        <d3s-tile-actions [hasRefresh]="true" (refreshClick)="load()"></d3s-tile-actions>                                    
     </header>
     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
     <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" scrollable="true" scrollWidth="100%">
