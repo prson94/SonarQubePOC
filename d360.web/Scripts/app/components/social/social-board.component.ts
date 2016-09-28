@@ -179,6 +179,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     let index = this.comments.findIndex(x => x.ID == res.ParentID);
 
                     if (index >= 0) {
+                        if (!this.comments[index].Comments)
+                            this.comments[index].Comments = [];
                         this.comments[index].Comments.push(res);
                     }                           
                 }

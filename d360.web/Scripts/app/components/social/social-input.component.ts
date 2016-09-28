@@ -24,8 +24,8 @@ import { Tag } from '../../models/tag.model';
                         <d3s-tag-input (selectTag)="addTag($event)"></d3s-tag-input>                                               
                     </div>         
                     <div class="col s2">
-                        <button class="right" pButton type="button" (click)="handleCommentClick();" label="Comment" style="width: '150px';"></button>
-                        <button class="right" pButton type="button" (click)="isEditing=false;" label="Cancel" style="width: '150px';"></button>
+                        <button class="right" pButton type="button" (click)="isEditing=false;" label="Cancel"></button>
+                        <button class="right" pButton type="button" (click)="handleCommentClick();" label="Post"></button>                        
                     </div>
                 </div> 
                 `,

@@ -34,8 +34,8 @@ import { Router, NavigationEnd } from '@angular/router';
                                 <p-editor name="Edit" [style]="{'height':'50px'}" [(ngModel)]="editText" ></p-editor>                 
                             </div>
                             <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                                <button pButton type="button" (click)="handleEditClick();" label="Edit" style="width: '150px';"></button>
-                                <button pButton type="button" (click)="showEdit = false;" label="Cancel" style="width: '150px';"></button>
+                                <button pButton type="button" (click)="handleEditClick();" label="Edit"></button>
+                                <button pButton type="button" (click)="showEdit = false;" label="Cancel"></button>
                             </div>
                         </div>
                     </div>                                    
@@ -45,8 +45,8 @@ import { Router, NavigationEnd } from '@angular/router';
                         <p-editor placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
                     </div>
                     <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                        <button pButton type="button" (click)="handleReplyClick();" label="Reply" style="width: '150px';"></button>
-                        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel" style="width: '150px';"></button>
+                        <button pButton type="button" (click)="handleReplyClick();" label="Post"></button>
+                        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel"></button>
                     </div>
                 </div>   
                 <div class="row reply" *ngFor="let response of comment?.Comments">
@@ -120,13 +120,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private showReply: boolean = false;
     private showEdit: boolean = false;
     
-
-    private replyText: string = "";
+    private replyText: string = "";    
     private editText: string = "";
 
     private socialVoteType = SocialVoteType; // for template to use enum
-    
-    
+       
 
     constructor(private socialService: SocialService, private router: Router) {
         super();
@@ -176,7 +174,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         return "Other";
     }
 
-    private handleReplyClick() {
+    private handleReplyClick() {        
         this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
         this.showReply = false;
     }
@@ -198,5 +196,4 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     private isIssue(): boolean {
         return this.comment.CommentTypeID == SocialCommentType.Issue;
     }
-
 };
