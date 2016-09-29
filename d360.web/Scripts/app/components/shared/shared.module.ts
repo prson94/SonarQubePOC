@@ -30,7 +30,9 @@ import {
 
 import { ChartModule } from 'angular2-highcharts';
 
+import { SocialModule } from '../social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { CoreModule } from './core.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AuditComponent } from './audit.component';
@@ -46,12 +48,12 @@ import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-det
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
 import { LineageComponent } from './lineage.component';
-import { LoadingComponent } from './loading.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
 import { ObjectFollowersComponent } from './object-followers.component';
+import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
@@ -60,13 +62,12 @@ import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
-import { TagInputComponent } from './tag-input.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { TileActionsComponent } from './tile-actions.component';
-import { TooltipComponent } from './tooltip.component';
 import { TakeSurveyComponent } from './take-survey.component';
-
+import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
+import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 
 @NgModule({
     declarations: [
@@ -83,13 +84,13 @@ import { TakeSurveyComponent } from './take-survey.component';
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
         GroupMembersComponent,
-        LineageComponent,
-        LoadingComponent,
+        LineageComponent,        
         MessagesBarComponent,        
         MessagesComponent,        
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectFollowersComponent,
+        ObjectGovernanceComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,       
@@ -99,12 +100,11 @@ import { TakeSurveyComponent } from './take-survey.component';
         PowerBIViewerComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
-        ResourceResponsibilityGridComponent,
-        TagInputComponent,
+        ResourceResponsibilityGridComponent,        
         TakeSurveyComponent,
-        TileActionsComponent,
-        TooltipComponent,
-        
+        TileActionsComponent,        
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
     ],
     exports: [
         AuditComponent,
@@ -120,13 +120,13 @@ import { TakeSurveyComponent } from './take-survey.component';
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
         GroupMembersComponent,
-        LineageComponent,
-        LoadingComponent,
+        LineageComponent,        
         MessagesBarComponent,        
         MessagesComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectFollowersComponent,
+        ObjectGovernanceComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
@@ -136,11 +136,11 @@ import { TakeSurveyComponent } from './take-survey.component';
         PowerBIViewerComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
-        ResourceResponsibilityGridComponent,
-        TagInputComponent,
+        ResourceResponsibilityGridComponent,        
         TakeSurveyComponent,
-        TileActionsComponent,
-        TooltipComponent
+        TileActionsComponent,        
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
         ]
     , imports: [
         CommonModule,
@@ -177,6 +177,8 @@ import { TakeSurveyComponent } from './take-survey.component';
         //d3s
         PipesModule,             
         D3SFormsModule,   
+        SocialModule,
+        CoreModule,
     ]
 
 })

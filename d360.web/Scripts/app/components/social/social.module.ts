@@ -4,11 +4,12 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { SharedModule } from '../shared/shared.module';
+import { CoreModule } from '../shared/core.module';
 
 import { SocialBoardComponent } from './social-board.component';
 import { SocialCommentComponent} from './social-comment.component';
 import { SocialInputComponent } from './social-input.component';
+import { SocialTagInputComponent } from './social-tag-input.component';
 
 import {
     GrowlModule,
@@ -27,8 +28,7 @@ import {
     AutoCompleteModule,
     MultiSelectModule,
     SpinnerModule,
-    EditorModule,
-    TooltipModule,
+    EditorModule,    
     DragDropModule,
     PaginatorModule,
 } from 'primeng/primeng';
@@ -56,24 +56,25 @@ import {
         AutoCompleteModule,
         MultiSelectModule,
         SpinnerModule,
-        EditorModule,
-        TooltipModule,
+        EditorModule,        
         DragDropModule,
         PaginatorModule,
 
         //d3s
-        SharedModule,
+        CoreModule,
 
     ],
     declarations: [
         SocialBoardComponent,
         SocialCommentComponent,
-        SocialInputComponent,        
+        SocialInputComponent,       
+        SocialTagInputComponent, 
     ],
     exports: [
         SocialBoardComponent,
         SocialCommentComponent,
         SocialInputComponent,
+        SocialTagInputComponent,
     ]
 })
 export class SocialModule { }

@@ -26,7 +26,7 @@ import { RuleDetail } from '../../models/rule.model';
                             <div class="row">
                                 <div class="col s12">
                                      <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                        <d3s-object-governance-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-object-governance-tile>
+                                        <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-object-governance>
                                     </div>
                                 </div>
                             </div>

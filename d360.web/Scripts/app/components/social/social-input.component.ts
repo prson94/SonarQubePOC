@@ -21,7 +21,7 @@ import { Tag } from '../../models/tag.model';
                         <d3s-tooltip *ngFor="let tag of tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [tooltipType]="'preview'" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}} <i class="fa fa-times" (click)="removeTag(tag)"></i></d3s-tooltip>
                     </div>
                     <div class="col s10">
-                        <d3s-tag-input (selectTag)="addTag($event)"></d3s-tag-input>                                               
+                        <d3s-social-tag-input (selectTag)="addTag($event)"></d3s-social-tag-input>                                               
                     </div>         
                     <div class="col s2">
                         <button class="right" pButton type="button" (click)="isEditing=false;" label="Cancel"></button>

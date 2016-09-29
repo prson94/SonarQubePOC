@@ -4,11 +4,10 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { CoreModule } from '../shared/core.module';
 import { SharedModule } from '../shared/shared.module';
 
-import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
-import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
 import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.component';
 import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.component';
@@ -65,14 +64,13 @@ import {
 
         //d3s
         SharedModule,
+        CoreModule,
 
     ],
     declarations: [
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,
-        WorkflowDetailComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
+        WorkflowDetailComponent,                
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
@@ -80,9 +78,7 @@ import {
     exports: [
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,
-        WorkflowDetailComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
+        WorkflowDetailComponent,                
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,

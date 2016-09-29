@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 
 import { ChartModule } from 'angular2-highcharts';
 
+import { CoreModule } from '../shared/core.module';
 import { SharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
@@ -87,6 +88,7 @@ import {
         ChartModule,
 
         //d3s
+        CoreModule,
         SharedModule,        
         PipesModule,
     ],

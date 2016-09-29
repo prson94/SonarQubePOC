@@ -8,14 +8,12 @@ import { CoreModule } from '../shared/core.module';
 import { SharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
-import { GroupComponent } from './group.component';
-import { GroupItemComponent } from './group-item.component';
-import { GroupListComponent } from './group-list.component';
-import { GroupResponsibilityComponent } from './group-responsibility.component';
+import { CommunityComponent } from './community.component';
+import { CommunitySummaryComponent } from './community-summary.component';
+
 
 import {
-    GrowlModule,    
-    DataTableModule,    
+    GrowlModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -25,26 +23,21 @@ import {
         RouterModule,
 
         //primeng
-        GrowlModule,        
-        DataTableModule,
+        GrowlModule,
         
 
         //d3s
-        SharedModule,        
+        SharedModule,
         CoreModule,
         PipesModule,
     ],
     declarations: [
-        GroupComponent,
-        GroupItemComponent,
-        GroupListComponent,
-        GroupResponsibilityComponent,
+        CommunityComponent,
+        CommunitySummaryComponent,        
     ],
     exports: [
-        GroupComponent,
-        GroupItemComponent,
-        GroupListComponent,
-        GroupResponsibilityComponent,
+        CommunityComponent,
+        CommunitySummaryComponent,        
     ]
 })
-export class GroupModule { }
+export class CommunityModule { }

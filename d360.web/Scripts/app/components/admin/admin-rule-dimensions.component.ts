@@ -6,7 +6,7 @@ import { BaseComponent } from '../shared/base.component';
 
 
 @Component({
-    selector: 'd3s-rule-dimensions-tile',
+    selector: 'd3s-admin-rule-dimensions',
     providers: [RulesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Dimensions
@@ -49,7 +49,7 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class RuleDimensionsTile extends BaseComponent {    
+export class AdminRuleDimensionsComponent extends BaseComponent {    
     error: any;
     dimensions: RuleDimension[] = [];
 

@@ -5,6 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
+import { CoreModule } from '../shared/core.module';
 
 import { HomeSearchComponent} from './home-search.component'
 import { SearchResultsComponent } from './search-results.component'
@@ -61,6 +62,7 @@ import {
 
         //d3s
         SharedModule,
+        CoreModule,
 
     ],
     declarations: [

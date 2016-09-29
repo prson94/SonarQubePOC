@@ -1,11 +1,12 @@
-﻿import * as community from './index'
+﻿import { CommunityComponent } from './community.component';
+import { CommunitySummaryComponent } from './community-summary.component';
 
 export const CommunityRoutes = [
     {
         path: 'a/community',
-        component: community.CommunityComponent,
+        component: CommunityComponent,
         children: [
-            { path: '', component: community.CommunitySummaryComponent }
+            { path: '', component: CommunitySummaryComponent }
         ]
     }
 ];

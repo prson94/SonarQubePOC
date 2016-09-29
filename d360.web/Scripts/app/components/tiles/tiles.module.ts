@@ -17,14 +17,9 @@ import { LoadItemTile } from './load-item.tile';
 import { ModelLevelTile } from './model-level.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectDetailTile } from './object-detail.tile';
-import { ObjectGovernanceTile } from './object-governance-tile';
 import { PredicatesTile } from './predicates.tile';
 import { RelationshipsTile } from './relationships.tile';
-import { ReportItemsTile } from './report-items.tile';
-import { ReportLayoutTile } from './report-layout.tile';
-import { RuleDimensionsTile } from './rule-dimensions.tile';
 import { StructureTile } from './structure.tile';
-import { SurveyQuestionsTile } from './survey-questions.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { ActivityTile } from './activity-tile.component';
 import { AssignmentsTile } from './assignments-tile.component';
@@ -60,18 +55,13 @@ import {
         LoadItemTile,
         ModelLevelTile,
         ObjectDefinitionTile,
-        ObjectDetailTile,
-        ObjectGovernanceTile,         
+        ObjectDetailTile,         
         PredicatesTile,
-        RelationshipsTile,
-        ReportItemsTile,
-        ReportLayoutTile,
+        RelationshipsTile,        
         ResourceFollowingGridTile,
         ResourceFollowingTile,       
-        ResourceResponsibilityTile,
-        RuleDimensionsTile,
-        StructureTile,
-        SurveyQuestionsTile,
+        ResourceResponsibilityTile,        
+        StructureTile,        
         SynonymsTile,        
     ],
     exports: [
@@ -87,18 +77,13 @@ import {
         LoadItemTile,        
         ModelLevelTile,
         ObjectDefinitionTile,
-        ObjectDetailTile,
-        ObjectGovernanceTile,          
+        ObjectDetailTile,        
         PredicatesTile,
-        RelationshipsTile,
-        ReportItemsTile,
-        ReportLayoutTile,
+        RelationshipsTile,        
         ResourceFollowingGridTile,
         ResourceFollowingTile,        
-        ResourceResponsibilityTile,
-        RuleDimensionsTile,
-        StructureTile,
-        SurveyQuestionsTile,
+        ResourceResponsibilityTile,        
+        StructureTile,        
         SynonymsTile,        
         ]
     , imports: [

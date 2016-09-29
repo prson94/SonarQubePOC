@@ -92,8 +92,8 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
                         shadow: false
                     },
                     tooltip: {
-                        headerFormat: '<b>{point.x}</b><br/>',
-                        pointFormat: 'Responsibility {series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                        headerFormat: 'Responsibility - <b>{point.x}</b><br/>',
+                        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
                     },
                     plotOptions: {
                         column: {

@@ -80,14 +80,14 @@ import { Title } from '@angular/platform-browser';
                         <div class="row" *ngIf="isBasicReport(selected)">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-report-item-tile [report]="selected"></d3s-report-item-tile>
+                                    <d3s-admin-report-item [report]="selected"></d3s-admin-report-item>
                                 </div>
                             </div>
                         </div>
                         <div class="row" *ngIf="isBasicReport(selected)">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-report-layout-tile [report]="selected"></d3s-report-layout-tile>
+                                    <d3s-admin-report-layout [report]="selected"></d3s-admin-report-layout>
                                 </div>
                             </div>
                         </div>

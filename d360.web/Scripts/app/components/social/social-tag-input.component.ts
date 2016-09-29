@@ -5,7 +5,7 @@ import { TagService } from '../../services/index';
 import { Tag } from '../../models/tag.model';
 
 @Component({
-    selector: 'd3s-tag-input',
+    selector: 'd3s-social-tag-input',
     template: `
            <p-autoComplete size="50"
                             scrollHeight="400px"
@@ -20,7 +20,7 @@ import { Tag } from '../../models/tag.model';
     providers: [TagService],
 })
 
-export class TagInputComponent extends BaseComponent {
+export class SocialTagInputComponent extends BaseComponent {
     @Output() selectTag = new EventEmitter();
         
     private tags : Tag[] = [];

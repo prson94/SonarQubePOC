@@ -5,7 +5,7 @@ import { MessagesService, ReportsService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-report-item-tile',
+    selector: 'd3s-admin-report-item',
     providers: [ReportsService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Tiles on this Dashboard
@@ -43,7 +43,7 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class ReportItemsTile extends BaseComponent implements OnChanges {
+export class AdminReportItemsComponent extends BaseComponent implements OnChanges {
     @Input() report: Report = null;
 
     error: any;

@@ -5,7 +5,7 @@ import { ObjectStatisticsService } from '../../services/index';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 
 @Component({
-    selector: 'd3s-object-governance-tile',    
+    selector: 'd3s-object-governance',    
     template: `     
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
@@ -54,7 +54,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
     providers: [ObjectStatisticsService]
 })
 
-export class ObjectGovernanceTile extends BaseComponent implements OnInit, OnChanges {
+export class ObjectGovernanceComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;

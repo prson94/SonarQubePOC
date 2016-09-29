@@ -5,7 +5,7 @@ import { MessagesService, SurveysService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-survey-questions-tile',
+    selector: 'd3s-admin-survey-questions',
     providers: [SurveysService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Questions
@@ -44,7 +44,7 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class SurveyQuestionsTile extends BaseComponent implements OnChanges {
+export class AdminSurveyQuestionsComponent extends BaseComponent implements OnChanges {
     @Input() survey: SurveyType = null;
     error: any;
     questions: SurveyQuestionType[] = [];

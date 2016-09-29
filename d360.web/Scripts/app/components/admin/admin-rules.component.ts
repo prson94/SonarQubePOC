@@ -26,7 +26,7 @@ import { Title } from '@angular/platform-browser';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-rule-dimensions-tile></d3s-rule-dimensions-tile>
+                                    <d3s-admin-rule-dimensions></d3s-admin-rule-dimensions>
                                 </div>
                             </div>
                         </div>

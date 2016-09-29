@@ -8,6 +8,7 @@ import { HttpModule }     from '@angular/http';
 import { ChartModule } from 'angular2-highcharts';
 
 import { PipesModule } from './pipes/pipes.module';
+import { CoreModule } from './components/shared/core.module';
 import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { SharedModule } from './components/shared/shared.module';
@@ -15,6 +16,8 @@ import { SocialModule } from './components/social/social.module';
 import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
+import { CommunityModule } from './components/community/community.module';
+
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
 
@@ -76,6 +79,10 @@ import {
     AdminTaxonomyLevelEditorComponent,
     AdminTemplateEditorComponent,
     AdminStatisticCheckTypeInput,
+    AdminReportItemsComponent,
+    AdminReportLayoutComponent,
+    AdminSurveyQuestionsComponent,
+    AdminRuleDimensionsComponent,
 } from './components/admin/index';
 
 import {
@@ -89,12 +96,6 @@ import {
     ArtifactTopLevelListComponent,
     ArtifactTypeMetricsComponent,
 } from './components/artifact/index';
-
-import {
-    CommunityComponent,
-    CommunitySummaryComponent,
-} from './components/community/index';
-
 
 import {
     HeaderActionsComponent,
@@ -169,15 +170,10 @@ import {
     MenuBarItem,
     ModelLevelTile,
     ObjectDefinitionTile,
-    ObjectDetailTile,
-    ObjectGovernanceTile,    
+    ObjectDetailTile,    
     PredicatesTile,
-    RelationshipsTile,
-    ReportItemsTile,
-    ReportLayoutTile,
-    RuleDimensionsTile,
-    StructureTile,
-    SurveyQuestionsTile,
+    RelationshipsTile,            
+    StructureTile,    
     SynonymsTile,
     ActivityTile,
     AssignmentsTile,
@@ -211,6 +207,10 @@ import {
         AdminRulesComponent,
         AdminSettingsComponent,
         AdminStatisticCheckTypeInput,
+        AdminReportItemsComponent,
+        AdminReportLayoutComponent,
+        AdminSurveyQuestionsComponent,
+        AdminRuleDimensionsComponent,
         AdminStatisticEditor,
         AdminStatisticsComponent,
         AdminSurveyQuestionEditorEditor,
@@ -234,9 +234,7 @@ import {
       
         AttributesTile,     
         ClaimsMatrixPart,
-        ClaimsTile,
-        CommunityComponent,
-        CommunitySummaryComponent,        
+        ClaimsTile,        
         FieldDefinitionTile,
         FusionAttributesTile,        
         FusionConfigurationTile,                
@@ -259,16 +257,13 @@ import {
         MonitorListComponent,
         ObjectDefinitionTile,
         ObjectDetailField,
-        ObjectDetailTile,      
-        ObjectGovernanceTile,                      
+        ObjectDetailTile,                               
         PolicyComponent,
         PolicyItemComponent,    
         PredicatesTile,
         ReferenceComponent,
         ReferenceListComponent,
-        RelationshipsTile,
-        ReportItemsTile,
-        ReportLayoutTile,
+        RelationshipsTile,                
         ResourceApiComponent,
         ResourceComponent,
         ResourceFollowingGridTile,
@@ -279,14 +274,12 @@ import {
         ResourceGroupsComponent,
         RightSidebarComponent,
         RightSidebarItemComponent,
-        RuleComponent,
-        RuleDimensionsTile,
+        RuleComponent,        
         RuleItemComponent,
         RuleListComponent,
         SimpleAccordion,
         SimpleDropdown,    
-        StructureTile,
-        SurveyQuestionsTile,
+        StructureTile,        
         SynonymsTile,
         ActivityTile,
         AssignmentsTile,
@@ -337,6 +330,8 @@ import {
         FusionModule,
         D3SFormsModule,
         GroupModule,
+        CommunityModule,
+        CoreModule,
       
     ],
     bootstrap: [AppComponent],

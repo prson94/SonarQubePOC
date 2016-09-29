@@ -1,11 +1,9 @@
-﻿
-import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Report, ReportLayout } from '../../models/report.model';
 import { MessagesService, ReportsService  } from '../../services/index';
 
-
 @Component({
-    selector: 'd3s-report-layout-tile',
+    selector: 'd3s-admin-report-layout',
     providers: [ReportsService],
     template: `
                <header>Dashboard Layout</header>
@@ -27,7 +25,7 @@ import { MessagesService, ReportsService  } from '../../services/index';
                 `
 })
 
-export class ReportLayoutTile implements OnChanges {
+export class AdminReportLayoutComponent implements OnChanges {
     @Input() report: Report = null;
             
     isLoading: boolean = false;

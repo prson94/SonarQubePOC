@@ -51,7 +51,7 @@ import { SurveyType } from '../../models/survey.model';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-survey-questions-tile [survey]="selected"></d3s-survey-questions-tile>
+                                    <d3s-admin-survey-questions [survey]="selected"></d3s-admin-survey-questions>
                                 </div>
                             </div>
                         </div>
