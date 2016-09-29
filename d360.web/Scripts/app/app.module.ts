@@ -95,6 +95,7 @@ import {
     ArtifactListComponent,
     ArtifactTopLevelListComponent,
     ArtifactTypeMetricsComponent,
+    ArtifactTypeWorkflowStatusComponent,
 } from './components/artifact/index';
 
 import {
@@ -231,7 +232,7 @@ import {
         ArtifactListComponent,
         ArtifactTopLevelListComponent,
         ArtifactTypeMetricsComponent,
-      
+        ArtifactTypeWorkflowStatusComponent,
         AttributesTile,     
         ClaimsMatrixPart,
         ClaimsTile,        

@@ -12,10 +12,11 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     template: ` 
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
                 <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-artifact-type-metrics>
+                <d3s-artifact-type-workflow-status *ngIf="!isLoading && isWorkflowStatusVisible"></d3s-artifact-type-workflow-status>
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible">
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible">
                             <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
@@ -28,6 +29,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private artifactType: ArtifactType;
     private sub: any;
     private isMetricsVisible: boolean = false;
+    private isWorkflowStatusVisible: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -65,6 +67,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, actions.HasDashboards);
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics'));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus'));
                 });
         });
     }
@@ -76,6 +79,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;
+        else if (activatedItem.tag == 'workflowstatus') this.isWorkflowStatusVisible = !this.isWorkflowStatusVisible;
     }
 
 };
