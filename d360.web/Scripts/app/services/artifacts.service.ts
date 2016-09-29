@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
@@ -8,6 +7,7 @@ import { ArtifactType } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -93,5 +93,19 @@ export class ArtifactService extends BaseService {
             .toPromise()
             .then(response => <Artifact[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    requestCertification(objectId: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        });
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .post('form/RequestCertification', `ID=${objectId}`, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
 }

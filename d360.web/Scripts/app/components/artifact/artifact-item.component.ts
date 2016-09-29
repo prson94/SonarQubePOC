@@ -36,7 +36,7 @@ import { SurveyType } from '../../models/survey.model';
                     <div class="row">
                         <div class="col s12">
                              <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [status]="artifact?.Status"></d3s-object-governance>
+                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
                             </div>
                         </div>
                     </div>

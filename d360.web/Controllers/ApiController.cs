@@ -1722,6 +1722,9 @@ where   h.ID <> @t order by h.[Level] desc;
                 //check if this object has dashboards             
                 bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();                
                 model.Add("HasDashboards", hasDashboards);
+
+                var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
+                model.Add("HasWorkflow", workflowEnabled);
             }
 
             try

@@ -12,6 +12,7 @@ export class Artifact {
     AllowSynonyms: boolean;
     ArtifactTypeID: number;
     HasDashboards: boolean;
+    HasWorkflow: boolean;
     Description: string;
     ID: number;
     Name: string;

@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ObjectStatisticsService } from '../../services/index';
 import { ObjectStatistics } from '../../models/object-statistics.model';
@@ -19,7 +18,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
                             <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="statistics?.CommentLast" [showDetails]="showBoardDetails" (showDetailsChange)="showBoardDetails=$event;showIssueDetails=false;showHealthDetails=false;"></d3s-object-board>                            
                         </div>
                         <div class="col s12" *ngIf="showStatus"  [ngClass]="{'inactive': (hasActiveTab() && !showStatusDetails), 'active-right':showStatusDetails, 'l3':showStatus}">
-                            <d3s-artifact-status [objectID]="objectID" [status]="status"></d3s-artifact-status>
+                            <d3s-artifact-status [objectID]="objectID" [status]="status" [isWorkflowEnabled]="isWorkflowEnabled"></d3s-artifact-status>
                         </div>
                     </div>
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
@@ -62,6 +61,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
     @Input() objectID: number;
     @Input() objectName: string;
     @Input() status: string;
+    @Input() isWorkflowEnabled: boolean;
 
     statistics: ObjectStatistics;
 
