@@ -23364,6 +23364,20 @@ span.breadcrumbs .sep {
   color: #02981B;
 }
 /* end object governance styles*/
+/* artifact status styles*/
+.status-value {
+  font-weight: bold;
+  font-size: 3.0em;
+  padding: 0 5px;
+  color: #646464;
+}
+.status-value-certified {
+  color: #02981B;
+}
+.status-value-review {
+  color: #e2792a;
+}
+/* end artifact status styles*/
 /* power bi*/
 div.powerbi iframe {
   border: 0;

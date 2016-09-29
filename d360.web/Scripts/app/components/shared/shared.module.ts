@@ -35,6 +35,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
+import { ArtifactStatusComponent } from './artifact-status.component';
 import { AuditComponent } from './audit.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
 import { DeleteForm } from './delete.form';
@@ -71,6 +72,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
 
 @NgModule({
     declarations: [
+        ArtifactStatusComponent,
         AuditComponent,
         DashboardTabComponent,
         DeleteForm,
@@ -107,6 +109,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         WorkflowIssueEditorComponent,
     ],
     exports: [
+        ArtifactStatusComponent,
         AuditComponent,
         DashboardTabComponent,
         DeleteForm,

@@ -9,14 +9,17 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
     template: `     
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="row" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
-                        <div class="col l4 s12" [ngClass]="{'inactive': (hasActiveTab() && !showHealthDetails), 'active-left':showHealthDetails}">                                                        
+                        <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showHealthDetails), 'active-left':showHealthDetails, 'l3':showStatus, 'l4':!showStatus}">                                                        
                             <d3s-object-health [score]="statistics?.Score" [objectType]="objectType" [objectID]="objectID" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
                         </div>
-                        <div class="col l4 s12" [ngClass]="{'inactive': (hasActiveTab() && !showIssueDetails), 'active':showIssueDetails}">                                                        
+                        <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showIssueDetails), 'active':showIssueDetails, 'l3':showStatus, 'l4':!showStatus}">                                                        
                             <d3s-object-issues [issueCount]="statistics?.IssueCount" [lastIssueDate]="statistics?.IssueLast" [showDetails]="showIssueDetails" (showDetailsChange)="showIssueDetails=$event;showHealthDetails=false;showBoardDetails=false;"></d3s-object-issues>
                         </div>                      
-                        <div class="col l4 s12"  [ngClass]="{'inactive': (hasActiveTab() && !showBoardDetails), 'active-right':showBoardDetails}">
+                        <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showBoardDetails), 'active-right':showBoardDetails, 'l3':showStatus, 'l4':!showStatus}">
                             <d3s-object-board [commentCount]="statistics?.CommentCount" [lastCommentDate]="statistics?.CommentLast" [showDetails]="showBoardDetails" (showDetailsChange)="showBoardDetails=$event;showIssueDetails=false;showHealthDetails=false;"></d3s-object-board>                            
+                        </div>
+                        <div class="col s12" *ngIf="showStatus"  [ngClass]="{'inactive': (hasActiveTab() && !showStatusDetails), 'active-right':showStatusDetails, 'l3':showStatus}">
+                            <d3s-artifact-status [objectID]="objectID" [status]="status"></d3s-artifact-status>
                         </div>
                     </div>
                     <div style="padding:20px;" *ngIf="showHealthDetails || showIssueDetails || showBoardDetails">
@@ -58,12 +61,15 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
+    @Input() status: string;
 
     statistics: ObjectStatistics;
 
     showHealthDetails: boolean = false;
     showIssueDetails: boolean = false;
     showBoardDetails: boolean = false;
+    showStatusDetails: boolean = false;
+    showStatus: boolean = false;
 
     constructor(protected objectStatisticsService: ObjectStatisticsService) {
         super();
@@ -80,6 +86,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
 
     load() {
         this.isLoading = true;
+        if (this.objectType.toUpperCase() == 'ARTIFACT') this.showStatus = true;
         this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType)
             .then(result => {
                 this.statistics = result;
