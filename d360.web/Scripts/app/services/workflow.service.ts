@@ -1,7 +1,7 @@
 ﻿
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem } from '../models/workflow.model';
+import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
@@ -159,5 +159,12 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .toPromise()
             .then(res => <any>res)
             .catch(this.handleError);
+    }
+
+    getWorkflowStepBreakdownByArtifactType(artifactTypeId: number): Promise<ArtifactTypeWorkflowBreakdown[]> {
+        return this.http.get(`workflow/WorkflowStepBreakdownByArtifactType?id=${artifactTypeId}`)
+            .toPromise()
+            .then(response => <ArtifactTypeWorkflowBreakdown[]>response.json())
+            .catch(err => this.handleError(err));
     }
 }

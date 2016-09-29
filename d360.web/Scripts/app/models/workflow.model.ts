@@ -78,3 +78,17 @@ export class SuggestedItem {
     WorkflowID: string;
     Activity: number;
 }
+
+export class WorkflowStepStatistic {
+    Count: number;
+    ID: number;
+    Name: string;
+    WorkflowType: number;
+}
+
+export class ArtifactTypeWorkflowBreakdown {
+    Description: string;
+    Name: string;
+    ID: number;
+    Steps: WorkflowStepStatistic[];
+}

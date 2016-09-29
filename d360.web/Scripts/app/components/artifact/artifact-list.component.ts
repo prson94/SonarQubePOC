@@ -12,7 +12,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
     template: ` 
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
                 <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-artifact-type-metrics>
-                <d3s-artifact-type-workflow-status *ngIf="!isLoading && isWorkflowStatusVisible"></d3s-artifact-type-workflow-status>
+                <d3s-artifact-type-workflow-status [artifactType]="artifactType" *ngIf="!isLoading && isWorkflowStatusVisible"></d3s-artifact-type-workflow-status>
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
