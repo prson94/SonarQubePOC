@@ -35,3 +35,12 @@ export class ArtifactTypeStatusCount {
     Count: number;
     BackColor: string;
 }
+
+export class ArtifactTypeUsedVsUnusedResponsibility {
+    ArtifactType: string;
+    ArtifactTypeID: number;
+    AssignedCount: number;
+    Responsibility: string;
+    Total: number;
+    UnassignedCount: number;
+}
