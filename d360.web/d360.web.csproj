@@ -1361,6 +1361,7 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-type-metrics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />

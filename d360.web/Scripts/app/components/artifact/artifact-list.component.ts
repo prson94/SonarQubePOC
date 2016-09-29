@@ -1,21 +1,21 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
-
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-artifact-list',
     template: ` 
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-dashboard-tab>
+                <d3s-artifact-type-metrics *ngIf="!isLoading && isMetricsVisible" [objectID]="artifactType?.ID" [objectName]="artifactType?.Name" [objectType]="'ArtifactType'"></d3s-artifact-type-metrics>
                 <div class="row">
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible">
+                        <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible">
                             <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
@@ -27,6 +27,7 @@ import { Title } from '@angular/platform-browser';
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifactType: ArtifactType;
     private sub: any;
+    private isMetricsVisible: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -63,6 +64,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .then(actions => {                     
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, actions.HasDashboards);
+                    this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics'));
                 });
         });
     }
@@ -70,6 +72,10 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+        if (activatedItem.tag == 'metrics') this.isMetricsVisible = !this.isMetricsVisible;
     }
 
 };

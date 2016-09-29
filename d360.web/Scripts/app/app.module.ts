@@ -5,6 +5,8 @@ import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
 
+import { ChartModule } from 'angular2-highcharts';
+
 import { PipesModule } from './pipes/pipes.module';
 import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
@@ -85,6 +87,7 @@ import {
     ArtifactItemComponent,
     ArtifactListComponent,
     ArtifactTopLevelListComponent,
+    ArtifactTypeMetricsComponent,
 } from './components/artifact/index';
 
 import {
@@ -227,6 +230,7 @@ import {
         ArtifactItemComponent,
         ArtifactListComponent,
         ArtifactTopLevelListComponent,
+        ArtifactTypeMetricsComponent,
       
         AttributesTile,     
         ClaimsMatrixPart,
@@ -320,6 +324,8 @@ import {
         TreeModule,
         OverlayPanelModule,
         DataListModule,
+
+        ChartModule,
 
         //d3s modules
         PipesModule,

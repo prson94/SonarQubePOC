@@ -6,6 +6,7 @@ import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
+import { ArtifactTypeMetricsComponent } from './artifact-type-metrics.component';
 
 
 
@@ -17,4 +18,5 @@ export * from './artifact-grid.component';
 export * from './artifact-item.component';
 export * from './artifact-list.component';
 export * from './artifact-top-level-list.component';
+export * from './artifact-type-metrics.component';
 

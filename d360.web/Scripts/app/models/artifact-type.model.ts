@@ -29,3 +29,9 @@ export class ArtifactTypeSummary {
     UnderReview: number;
     expanded: boolean;
 }
+
+export class ArtifactTypeStatusCount {
+    Status: string;
+    Count: number;
+    BackColor: string;
+}
