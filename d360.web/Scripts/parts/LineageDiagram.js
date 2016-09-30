@@ -1593,3 +1593,7 @@
         populateDiagram();
     });
 }
+
+function LineageCloseWindow() {
+    $('#LineageWindow').jqxWindow('close');
+}

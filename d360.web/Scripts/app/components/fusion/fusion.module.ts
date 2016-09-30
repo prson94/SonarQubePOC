@@ -28,6 +28,7 @@ import { FusionTechnicalMappingsComponent } from './fusion-technical-mappings.co
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
 import { FusionRulesComponent } from './fusion-rules.component';
+import { FusionRuleStepComponent } from './fusion-rule-step.component';
 
 import {
     GrowlModule,
@@ -111,6 +112,7 @@ import {
         FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
         FusionRulesComponent,
+        FusionRuleStepComponent,
     ],
     exports: [
         FusionAgentErrorsComponent,
@@ -131,6 +133,7 @@ import {
         FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
         FusionRulesComponent,
+        FusionRuleStepComponent,
     ]
 })
 export class FusionModule { }

@@ -22,6 +22,7 @@ import { SurveyType } from '../../models/survey.model';
                     </div>
                 </div>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
+                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-audit>
                 <div *ngIf="!isLoading && !isTabVisible()">                                    
@@ -81,7 +82,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     ngOnInit() {
-
+        
         this.sub = this.route.params.subscribe(params => {            
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
             this.artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
@@ -106,7 +107,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true);
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true);
 
                     this.loadItemSurvey(artifactId);
                     

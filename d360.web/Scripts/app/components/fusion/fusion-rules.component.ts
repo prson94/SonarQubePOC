@@ -256,6 +256,12 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+        <div *ngSwitchCase="FormMode.AddStep">
+            <d3s-fusion-rule-step [ruleID]="selectedFusionRule.ID" (onClose)="formMode = FormMode.Default;" (onSave)="formMode.Default; loadSteps();"></d3s-fusion-rule-step>
+        </div>
+        <div *ngSwitchCase="FormMode.EditStep">
+            <d3s-fusion-rule-step [ruleID]="selectedFusionRuleStep.RuleID" [ruleStepID]="selectedFusionRuleStep.ID" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; loadSteps();"></d3s-fusion-rule-step>
+        </div>
     </div>   
 </div>
                 `,
@@ -385,12 +391,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
     editStep(row: FusionRuleStep) {
         this.selectedFusionRuleStep = row;
-        this.fusionService.getEditFusionRuleStep(this.selectedFusionRuleStep.RuleID, this.selectedFusionRuleStep.ID)
-            .then(r => {
-                this.fusionRuleStepEditorModel = r;
-                console.log(r);
-                this.formMode = FormMode.EditStep;
-            });
+        this.formMode = FormMode.EditStep;
     }
 
     deleteStep(row: FusionRuleStep) {
@@ -411,12 +412,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     addStep() {
-        this.fusionService.getAddFusionRuleStep(this.selectedFusionRule.ID)
-            .then(r => {
-                this.fusionRuleStepEditorModel = r;
-                console.log(r);
-                this.formMode = FormMode.AddStep;
-            });
+        this.formMode = FormMode.AddStep;
     }
 
     saveAddStep() {

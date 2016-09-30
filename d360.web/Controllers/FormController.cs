@@ -6965,6 +6965,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 //TODO: rewrite to accept non-form logic
                 //AddPromotionStepSettings(item, form);
+                AddPromotionStepSettings(item);
 
                 Company.SaveChanges();
 
@@ -7150,6 +7151,122 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        private void AddPromotionStepSettings(FusionRuleStep item)
+        {
+
+            var action = item.Action.ToUpper();
+            var settings = item.Settings;
+
+            if (action == "PROMOTE")
+            {
+                var objectType = settings["Object"];
+                var objectID = settings["ObjectID"];
+                var parentObjectType = settings["ParentObjectTypeID"] ?? "";
+                var parentObjectSearch = settings["ParentObjectSearch"];
+
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectID });
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = objectType });
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectSearch", Value = parentObjectSearch });
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectTypeID", Value = parentObjectType });
+
+                var parentObjectID = settings["ParentObjectID"];
+
+                if ((parentObjectSearch ?? "").ToUpper().Trim() == "DIRECT")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = objectType });
+                }
+                else if ((parentObjectSearch ?? "").ToUpper().Trim() == "RESULTFROMSTEP")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Step" });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
+                }
+                else if ((parentObjectSearch ?? "").ToUpper().Trim() == "FUSIONOWNER")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObject", Value = "Owner" });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
+                }
+
+            }
+            else if (action == "FIND")
+            {
+                var findSearchType = settings["FindSearchType"]; //ObjectSearch
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
+
+                //if the search type is result from step the object is step and the object id is the step id
+                var findType = (findSearchType ?? "").ToUpper();
+
+                if (findType == "GLOSSARY")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = settings["Object"] });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = settings["ObjectID"] });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = settings["FilterField"] });
+
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TargetField", Value = settings["TargetField"] });
+                }
+                else if (findType == "FUSION")
+                {
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "FilterField", Value = settings["FilterField"] });
+
+                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, settings);
+                }
+                else
+                {
+                    handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, settings);
+                }
+            }
+            else if (action == "RELATE")
+            {
+                var intersectType = settings["IntersectType"];
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
+
+                //subject settings
+                var subjectSearch = settings["RelateSubjectSearchType"];
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = subjectSearch });
+
+                handleSearchParameters("Relate", "Subject", item.FusionRuleStepSettings, subjectSearch, item.ID, settings);
+
+                // object settings
+                var objectSearch = settings["RelateObjectSearchType"];
+
+                handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, settings);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
+            }
+            else if (action == "LINEAGE")
+            {
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
+
+                handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = settings["Role"] });
+            }
+          
+        }
         private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
         {
             var searchUpper = (searchType ?? "").ToUpper();
@@ -7302,6 +7419,158 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, Dictionary<string, string> settings)
+        {
+               var searchUpper = (searchType ?? "").ToUpper();
+            if (searchUpper == "RESULTFROMSTEP")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Step"
+                            });
+
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = settings[$"{area}{target}Step"]
+                    });
+
+                //special find parent option
+                if (string.Compare(area, "FIND", true) == 0)
+                {
+                    var findParent = (settings["FindParent"] == "true");
+
+                    if (findParent)
+                    {
+                        fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = "FindParent",
+                                Value = "1"
+                            });
+                    }
+                }
+            }
+            else if (searchUpper == "SELF")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Self"
+                            });
+
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = "0"
+                    });
+            }
+            else if (searchUpper == "DIRECT")
+            {
+                var subjectObject = settings[$"{area}{target}Item"].Split('|');
+
+                if (subjectObject.Length >= 2)
+                {
+                    fusionRuleStepSettings.Add(
+                                new FusionRuleStepSetting
+                                {
+                                    RuleStepID = id,
+                                    Name = target,
+                                    Value = subjectObject[0]
+                                });
+
+                    fusionRuleStepSettings.Add(
+                        new FusionRuleStepSetting
+                        {
+                            RuleStepID = id,
+                            Name = $"{target}ID",
+                            Value = subjectObject[1]
+                        });
+                }
+            }
+            else if (searchUpper == "FUSIONOWNER")
+            {
+                fusionRuleStepSettings.Add(
+                            new FusionRuleStepSetting
+                            {
+                                RuleStepID = id,
+                                Name = target,
+                                Value = "Owner"
+                            });
+
+                fusionRuleStepSettings.Add(
+                    new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = $"{target}ID",
+                        Value = settings[$"{area}{target}OwnerRule"]
+                    });
+
+            }
+            else if (searchUpper == "FUSION")
+            {
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = $"{target}",
+                    Value = "FusionAttributeType"
+                });
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = $"{target}ID",
+                    Value = settings[$"{area}{target}FusionAttribute"]
+                });
+            }
+            else if (searchUpper == "PROMOTION")
+            {
+                var filterField = settings["FindSearchField"];
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "FilterField",
+                    Value = filterField
+                });
+
+                if (filterField != "-2")
+                {
+                    fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                    {
+                        RuleStepID = id,
+                        Name = "TargetField",
+                        Value = settings["TargetSearchField"]
+                    });
+                }
+
+
+
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "PromotionStepID",
+                    Value = settings["PromotionStepName"]
+                });
+                fusionRuleStepSettings.Add(new FusionRuleStepSetting
+                {
+                    RuleStepID = id,
+                    Name = "PromotionFusionAttributeTypeID",
+                    Value = settings["FusionAttributeTypeName"]
+                });
+            }
+
+        }
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
         public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)
         {
@@ -7331,6 +7600,35 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
             if (step == null) return null;
+
+            step.Settings.Add("SubjectSearch", step.GetSettingValueByName("SubjectSearch"));
+            step.Settings.Add("Subject", step.GetSettingValueByName("Subject"));
+            step.Settings.Add("SubjectID", step.GetSettingValueByName("SubjectID"));
+            step.Settings.Add("ObjectSearch", step.GetSettingValueByName("PbjectSearch"));
+            step.Settings.Add("Object", step.GetSettingValueByName("Object"));
+            step.Settings.Add("ObjectID", step.GetSettingValueByName("ObjectID"));
+
+            step.Settings.Add("TechnicalSubjectSearch", step.GetSettingValueByName("TechnicalSubjectSearch"));
+            step.Settings.Add("TechnicalSubject", step.GetSettingValueByName("TechnicalSubject"));
+            step.Settings.Add("TechnicalSubjectID", step.GetSettingValueByName("TechnicalSubjectID"));
+
+            step.Settings.Add("TechnicalObjectSearch", step.GetSettingValueByName("TechnicalObjectSearch"));
+            step.Settings.Add("TechnicalObject", step.GetSettingValueByName("TechnicalObject"));
+            step.Settings.Add("TechnicalObjectID", step.GetSettingValueByName("TechnicalObjectID"));
+
+            step.Settings.Add("ParentObjectTypeID", step.GetSettingValueByName("ParentObjectTypeID"));
+            step.Settings.Add("ParentObjectSearch", step.GetSettingValueByName("ParentObjectSearch"));
+            step.Settings.Add("ParentObjectID", step.GetSettingValueByName("ParentObjectID"));
+
+            step.Settings.Add("FilterField", step.GetSettingValueByName("FilterField"));
+            step.Settings.Add("TargetField", step.GetSettingValueByName("TargetField"));
+            step.Settings.Add("IntersectType", step.GetSettingValueByName("IntersectType"));
+
+            step.Settings.Add("Role", step.GetSettingValueByName("Role"));
+            step.Settings.Add("FindParent", step.GetSettingValueByName("FindParent"));
+
+            step.Settings.Add("PromotionFusionAttributeTypeID", step.GetSettingValueByName("PromotionFusionAttributeTypeID"));
+            step.Settings.Add("PromotionStepID", step.GetSettingValueByName("PromotionStepID"));
 
             return new JsonNetResult
             {
@@ -7369,6 +7667,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 step.Description = s.Description;
                 step.Step = s.Step;
                 step.Action = s.Action;
+                step.Settings = s.Settings;
 
                 rule.UpdatedBy = Company.CurrentResourceID;
                 rule.UpdatedOn = DateTime.UtcNow;
@@ -7382,6 +7681,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 //TODO: rewrite to accept non-form object
                 //AddPromotionStepSettings(step, form);
+                AddPromotionStepSettings(step);
 
                 Company.SaveChanges();
 

@@ -154,6 +154,8 @@ export class FusionRuleStep {
     Step: number;
     Action: string;
     Description: string;
+    Settings: any;
+    FormSettings: any;
 }
 
 
@@ -260,4 +262,13 @@ export class FusionRuleMappingEditorModel {
 
     sourceValue: string;
     targetValue: string;
+}
+
+export class PromotionObject {
+    Name: string;
+    ParentObjectTypeID: number;
+    PromotionObjectID: number;
+    PromotionObjectType: string;
+
+    id: string;
 }

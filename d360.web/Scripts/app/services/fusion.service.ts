@@ -28,7 +28,8 @@ import {
     FusionRuleEditorModel,
     FusionRuleStepEditorModel,
     FusionRuleItemEditorModel,
-    FusionRuleMappingEditorModel
+    FusionRuleMappingEditorModel,
+    PromotionObject,
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
@@ -410,4 +411,89 @@ export class FusionService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    getFusionPromotionItems(fusionID: number, fusionTypeID: number): Promise<PromotionObject[]> {
+        return this.http.get(`api/fusion/${fusionTypeID}/configurations/${fusionID}/promotion/options`)
+            .toPromise()
+            .then(response => <PromotionObject[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getPromotionParents(parentTypeID: number, objectType: string ) {
+        return this.http.get(`api/${objectType}/${parentTypeID}/fieldlookup`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getPromotionRuleSteps(ruleID: number, ruleStepID: number) {
+        return this.http.get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getPromotionFusionOwnerRules(fusionID: number) {
+        return this.http.get(`api/fusion/rule/fusionOwnerRules/${fusionID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindSourceFields(ruleObjectType: string, ruleObjectID: number) {
+        return this.http.get(`fields/${ruleObjectType}/${ruleObjectID}.json`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindModels() {
+        return this.http.get('api/catalogs')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindArtifactTypes() {
+        return this.http.get('api/artifacttypes?$orderby=Name')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindFusionAttributeTypes() {
+        return this.http.get('api/fusion/rule/fusionattributetypes')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindAttributeTypes() {
+        return this.http.get('services/fusion/attributetypes')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFindPromotions(fusionAttributeID: number) {
+        return this.http.get(`services/fusion/promotions/${fusionAttributeID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getLineageRoles() {
+        return this.http.get('/api/fusion/rule/lineage/roles')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getRelateIntersectTypes() {
+        return this.http.get('/api/fusion/rule/relate/intersectTypes')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }

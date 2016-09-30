@@ -10,13 +10,14 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <p-dataTable [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
-        <p-column header="Name">
+    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">  
+    <p-dataTable [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
+        <p-column header="Name" field="ObjectName" filter="true">
             <template let-row="rowData" pTemplate type="body">
                 <d3s-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID" tooltipType="preview">{{row.ObjectName}}</d3s-tooltip>
             </template>
         </p-column>
-        <p-column field="Role" header="Role"></p-column>
+        <p-column field="Role" header="Role" filter="true"></p-column>
         <p-column header="Current Score">
             <template let-row="rowData" pTemplate type="body">
                 <div>{{row.CurrentScore | scoreDisplay }}</div>

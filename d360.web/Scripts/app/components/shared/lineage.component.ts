@@ -1,14 +1,12 @@
 ﻿
-import { Component, Input, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
 
 declare var LineageDiagramWrapper: LineageAdapter;
+declare var LineageCloseWindow: LineageWindowAdapter;
 
 @Component({
     selector: 'd3s-lineage',
     templateUrl: 'scripts/app/components/shared/lineage.component.html'
-    //template: `
-    //        <div id="lineage_diagram"></div>
-    //    `
 })
 
 export class LineageComponent implements OnInit, AfterViewInit {
@@ -31,9 +29,17 @@ export class LineageComponent implements OnInit, AfterViewInit {
         LineageDiagramWrapper(this.myElement.nativeElement); 
     }
 
+    public ngOnDestroy() {
+        LineageCloseWindow();
+    }
+
 
 }
 
 interface LineageAdapter {
     (w: any): any;
+}
+
+interface LineageWindowAdapter {
+    (): any;
 }

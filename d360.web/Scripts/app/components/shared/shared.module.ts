@@ -48,6 +48,7 @@ import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
+import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
@@ -86,7 +87,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
         GroupMembersComponent,
-        LineageComponent,        
+        ImpactComponent,
+        LineageComponent,
         MessagesBarComponent,        
         MessagesComponent,        
         ObjectBoardComponent,
@@ -123,7 +125,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
         GroupMembersComponent,
-        LineageComponent,        
+        ImpactComponent,
+        LineageComponent,
         MessagesBarComponent,        
         MessagesComponent,
         ObjectBoardComponent,
