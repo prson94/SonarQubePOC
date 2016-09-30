@@ -1,12 +1,12 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
+import { WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { DynamicGridResultsInData } from '../models/grid-definition.model';
 
 @Injectable()
 export class WorkflowService extends BaseService implements IWorkflowService {
@@ -165,6 +165,20 @@ export class WorkflowService extends BaseService implements IWorkflowService {
         return this.http.get(`workflow/WorkflowStepBreakdownByArtifactType?id=${artifactTypeId}`)
             .toPromise()
             .then(response => <ArtifactTypeWorkflowBreakdown[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowsByArtifactTypeAndStep(artifactTypeId: number, workflowTypeId: number, stepId: number): Promise<DynamicGridResultsInData>{
+        return this.http.get(`workflow/WorkflowsByArtifactTypeAndWorkflowTypeAndStep?id=${artifactTypeId}&type=${workflowTypeId}&step=${stepId}&isNg=true`)
+            .toPromise()
+            .then(response => <DynamicGridResultsInData>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowStatus(workflowId: string): Promise<WorkflowStatusDetails> {
+        return this.http.get(`services/workflow/${workflowId}/status`)
+            .toPromise()
+            .then(response => <WorkflowStatusDetails>response.json())
             .catch(err => this.handleError(err));
     }
 }

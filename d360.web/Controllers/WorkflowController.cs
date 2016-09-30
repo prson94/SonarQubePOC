@@ -184,7 +184,7 @@ group by	WorkflowType,
             };
         }
 
-        public JsonNetResult WorkflowsByArtifactTypeAndWorkflowTypeAndStep(int id, WorkflowType type, int step)
+        public JsonNetResult WorkflowsByArtifactTypeAndWorkflowTypeAndStep(int id, WorkflowType type, int step, bool? isNg = false)
         {
             string sql = "";
             var columns = new List<GridColumn>();
@@ -198,13 +198,38 @@ group by	WorkflowType,
             { 
                 case WorkflowType.CertifyArtifact:
                     #region SQL
-                    sql = @"
+                    if (!isNg.GetValueOrDefault()) sql = @"
 select	W.ID,
 		W.Data.value('(/fields/ArtifactID)[1]', 'int') as ArtifactID,
 		W.Data.value('(/fields/StartDate)[1]', 'datetime') as StartDate,
 		W.Data.value('(/fields/DueDate)[1]', 'datetime') as DueDate,
 		W.DateCompleted,
 		'<a data-context=""Preview"" data-type=""Artifact"" data-id=""' + cast(A.ID as varchar(15)) + '"" href=""' + dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) + '"">' + A.Name + '</a>' as Artifact,
+		WA.[Count] as ResourcesAssigned,
+		WC.[Count] as ResourcesCompleted
+from	Workflow W
+		inner join Artifact A on A.ID = W.Data.value('(/fields/ArtifactID)[1]', 'int')
+		cross apply (
+					select	count(1) as [Count]
+					from	WorkflowResource
+					where	WorkflowID = W.ID
+					) WA
+		cross apply (
+					select	count(1) as [Count]
+					from	WorkflowResource
+					where	WorkflowID = W.ID and IsComplete = 1
+					) WC
+where   coalesce(A.ArtifactTypeID, W.Data.value('(/fields/ArtifactTypeID)[1]', 'int')) = @id
+		and W.WorkflowType = 2
+		and W.Step = @step";
+                    else
+                        sql = @"
+select	W.ID,
+		W.Data.value('(/fields/ArtifactID)[1]', 'int') as ArtifactID,
+		W.Data.value('(/fields/StartDate)[1]', 'datetime') as StartDate,
+		W.Data.value('(/fields/DueDate)[1]', 'datetime') as DueDate,
+		W.DateCompleted,
+		A.Name as Artifact,
 		WA.[Count] as ResourcesAssigned,
 		WC.[Count] as ResourcesCompleted
 from	Workflow W

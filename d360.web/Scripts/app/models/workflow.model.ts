@@ -42,6 +42,7 @@ export enum WorkflowType {
     CertifyArtifact = 2,
     WorkIssue = 3,
     ChallengeArtifact = 4,
+    SuggestNewArtifactMulti = 5,
 }
 
 export class Issue {
@@ -89,6 +90,39 @@ export class WorkflowStepStatistic {
 export class ArtifactTypeWorkflowBreakdown {
     Description: string;
     Name: string;
-    ID: number;
+    ID: WorkflowType;
     Steps: WorkflowStepStatistic[];
+}
+
+export class WorkflowStep {
+    Date: Date;
+    ID: number;
+    Name: string;
+    TraceLevel: string;
+}
+
+export class WorkflowStatusDetailField {
+    Name: string;
+    Value: string;
+}
+
+export class WorkflowAssignment {
+    ActivityType: number;
+    ActivityTypeDescription: string;
+    ActivityTypeName: string;
+    IsComplete: boolean;
+    ResourceID: number;
+    ResourceName: string;
+}
+
+export class WorkflowStatusDetails {
+    Assignments: WorkflowAssignment[];
+    DateCompleted: Date;
+    DateStarted: Date;
+    Fields: WorkflowStatusDetailField[];
+    ID: string;
+    Steps: WorkflowStep[];
+    WorkflowType: WorkflowType;
+    WorkflowTypeDescription: string;
+    WorkflowTypeName: string;
 }

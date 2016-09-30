@@ -1,15 +1,5 @@
 ﻿import { ObjectRelationship} from './relationship.model';
 
-export class GridDefinition {
-    Columns: GridColumn[];
-    Fields: GridField[];
-    FieldsCount: number;
-    FilterColumns: GridFilterColumn[];
-    ID: number;
-    Title: string;
-    Type: string;
-}
-
 export class GridField {
     name: string;
     type: string;
@@ -55,8 +45,27 @@ export class GridFilterColumn {
     id: string;
 }
 
-export class LookupGrid {
+export class GridDefinition {
+    Columns: GridColumn[];
+    Fields: GridField[];
+    FieldsCount: number;
+    FilterColumns: GridFilterColumn[];
+    ID: number;
+    Title: string;
+    Type: string;
+}
+
+
+export class DynamicGridDefinitionBase {
     Columns: GridFilterColumn[];
     Fields: GridField[];
+}
+
+
+export class LookupGrid extends DynamicGridDefinitionBase {    
     Values: any[];
+}
+
+export class DynamicGridResultsInData extends DynamicGridDefinitionBase {    
+    Data: any[];    
 }

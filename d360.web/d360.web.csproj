@@ -1485,6 +1485,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow-detailed-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-editor.component.ts" />

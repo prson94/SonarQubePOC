@@ -68,6 +68,7 @@ import { RelationshipTechnicalRelationsComponent } from './relationship-technica
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { TileActionsComponent } from './tile-actions.component';
 import { TakeSurveyComponent } from './take-survey.component';
+import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 
@@ -107,6 +108,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ResourceResponsibilityGridComponent,        
         TakeSurveyComponent,
         TileActionsComponent,        
+        WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
     ],
@@ -144,7 +146,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
         TakeSurveyComponent,
-        TileActionsComponent,        
+        TileActionsComponent,   
+        WorkflowDetailedViewComponent,     
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
         ]
