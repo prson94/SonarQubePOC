@@ -91,7 +91,7 @@ export class ArtifactTypeWorkflowBreakdown {
     Description: string;
     Name: string;
     ID: WorkflowType;
-    Steps: WorkflowStepStatistic[];
+    Steps: WorkflowStepStatistic[];    
 }
 
 export class WorkflowStep {

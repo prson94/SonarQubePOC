@@ -4,44 +4,42 @@ import { BaseComponent} from '../shared/base.component';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactTypeWorkflowBreakdown, WorkflowStepStatistic, WorkflowType } from '../../models/workflow.model';
 import { DynamicGridResultsInData } from '../../models/grid-definition.model';
+import { Highcharts } from 'angular2-highcharts';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-type-workflow-status',
     template: `     
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>            
-                <div class="row" *ngIf="!isLoading">                    
-                    <div class="col s12 m12 l4">                        
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                            
-                                    <header>{{artifactType?.Name}} Workflow Type Status</header>
-                                    <div class="form-instructions">Select the workflow you would like to see current status information for {{artifactType?.Name}}</div>
-                                    <p-dataTable [value]="workflowTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;workflowTypeChanged();">                    
-                                        <p-column field="Name" header="" [sortable]="false"></p-column>                                                                                               
-                                    </p-dataTable> 
-                                </div>  
-                            </div>
-                            <div class="col s12">
-                                <div class="tile tile-detail">                            
-                                    <header>{{selected?.Name}} Workflow</header>
-                                    <div class="form-instructions">{{selectedWorkflow?.Description}}</div>
-                                    <p-dataTable [value]="selectedWorkflow?.Steps" selectionMode="single" [selection]="selectedWorkflowStep" (selectionChange)="selectedWorkflowStep=$event;workflowTypeStepChanged()">                    
-                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{'width':'50px'}"></p-column>
-                                        <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                                               
-                                        <p-column field="Count" header="Count" [sortable]="true"></p-column>
-                                    </p-dataTable> 
-                                </div>  
-                            </div>                            
-                        </div>
-                    </div>                
-                    <div class="col s12 m12 l8">                
+                <div class="row" *ngIf="!isLoading">                  
+                    <div class="col s12 m12 l8">
+                        <div class="tile tile-detail">                            
+                            <header>{{artifactType?.Name}} Workflow Type Breakdown</header>
+                            <chart [options]="workflowColumn">
+                                <series (click)="onSeriesClick($event)">
+                                </series>
+                            </chart>
+                        </div>  
+                    </div>
+                    <div class="col s12 m12 l4">
+                        <div class="tile tile-detail">                            
+                            <header>{{selected?.Name}} Workflow</header>
+                            <div class="form-instructions">{{selectedWorkflow?.Description}}</div>
+                            <p-dataTable [value]="selectedWorkflow?.Steps" selectionMode="single" [selection]="selectedWorkflowStep" (selectionChange)="selectedWorkflowStep=$event;workflowTypeStepChanged()">                    
+                                <p-column field="ID" header="ID" [sortable]="true" [style]="{'width':'50px'}"></p-column>
+                                <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                                               
+                                <p-column field="Count" header="Count" [sortable]="true"></p-column>
+                            </p-dataTable> 
+                        </div>  
+                    </div>
+                    <div class="col s12 m12 l6">                                      
                         <div class="tile tile-detail">                            
                             <header>{{selected?.Name}} - {{selectedWorkflowStep?.Name}} Details</header>
                             <d3s-loading [isLoading]="isDetailsLoading"></d3s-loading>
                             <span *ngIf="!isDetailsLoading">
                                 <div class="form-instructions">Items in the selected workflow step.</div>                                    
                                 <p-dataTable [rows]="10" [paginator]="true" [pageLinks]="3" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selectedWorkflowStepItem" [value]="workflowStepDetails?.Data" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
-                                    <p-column *ngFor="let column of workflowStepDetails?.Columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">                                
+                                    <p-column *ngFor="let column of workflowStepDetails?.Columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'200px'}">                                
                                     <template let-item="rowData" pTemplate type="body">                                    
                                         <span *ngIf="column.datafield != 'Artifact'">
                                             <span [ngSwitch]="columnDataType(column)">
@@ -60,13 +58,15 @@ import { DynamicGridResultsInData } from '../../models/grid-definition.model';
                                 </p-column>
                                 </p-dataTable> 
                             </span>                            
-                        </div>  
+                        </div> 
+                    </div>
+                    <div class="col s12 m12 l6">                                       
                         <div class="tile tile-detail" *ngIf="selectedWorkflowStepItem">                            
                             <header>Selected Workflow Details</header>
                             <d3s-workflow-detailed-view [workflowId]="selectedWorkflowStepItem.ID"></d3s-workflow-detailed-view>
-                        </div>
+                        </div>        
                     </div>
-                </div>
+                </div>                
                 `,
     providers: [ArtifactTypeService,WorkflowService],
 })
@@ -88,6 +88,8 @@ export class ArtifactTypeWorkflowStatusComponent extends BaseComponent implement
 
     private selectedWorkflowStepItem: any; //has to be any type dynamic fields
 
+    private workflowColumn: Object;
+
     constructor(private workflowService: WorkflowService) {
         super();
     }
@@ -103,9 +105,10 @@ export class ArtifactTypeWorkflowStatusComponent extends BaseComponent implement
         this.isLoading = true;
         this.workflowService.getWorkflowStepBreakdownByArtifactType(this.artifactType.ID)
             .then(result => {
-                this.workflowStats = result;                
+                this.workflowStats = _.sortBy(result, 'Name');
                 this.selected = this.workflowTypes[0];
                 this.workflowTypeChanged();
+                this.generateChart();
                 this.isLoading = false;
             });
     }
@@ -144,4 +147,66 @@ export class ArtifactTypeWorkflowStatusComponent extends BaseComponent implement
         return 'string';
     }
     
-};
+    private generateChart() {
+        
+        this.workflowColumn =
+            {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: null
+                },
+                subtitle: {
+                    text: 'Click the column to see details for that workflow type'
+                },
+                xAxis: {
+                    type: 'category'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Number of Items'
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    series: {
+                        borderWidth: 0,
+                        dataLabels: {
+                            enabled: true,                         
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:11px">Workflow Type</span><br>',
+                    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> items<br/>'
+                },
+
+                series: [{
+                    name: 'Workflows',
+                    colorByPoint: true,
+                    data: this.workflowStats.map(x => ({
+                        name: x.Name,                        
+                        y: x.Steps.reduce(function (a, b) { return a + b.Count; }, 0),
+                        id: x.ID
+                        }))
+                }]
+            };
+    }
+
+
+    onSeriesClick(e) {        
+        var selected = this.workflowTypes.filter(x => x.ID == e.originalEvent.point.id);
+        console.log(selected);
+        if (selected.length > 0) {
+            this.selected = selected[0];
+            this.workflowTypeChanged();
+        }        
+    }
+        
+}
