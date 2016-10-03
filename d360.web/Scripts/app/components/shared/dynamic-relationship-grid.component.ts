@@ -44,9 +44,8 @@ import { BaseComponent } from '../shared/base.component';
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                     </p-dataTable>   
                 </span>
-                <div *ngIf="showTechnical">
-                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected"></d3s-relationship-technical-relations>
-                    <button pButton type="button" (click)="showTechnical=false" label="Close" style="width: 150px;"></button>
+                <div *ngIf="showTechnical && !shouldShowEditor()">
+                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" (closeClick)="showTechnical=false"></d3s-relationship-technical-relations>                    
                 </div>
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="'Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">

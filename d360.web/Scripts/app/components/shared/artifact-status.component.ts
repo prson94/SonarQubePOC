@@ -43,7 +43,7 @@ export class ArtifactStatusComponent extends BaseComponent implements OnChanges 
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log(this.isWorkflowEnabled)
+        
     }
 
     private isCertified(): boolean {

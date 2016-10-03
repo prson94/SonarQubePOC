@@ -41,7 +41,7 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteRelationship(id: number) {
+    deleteRelationship(id: number){
         return this.deleteDynamic(this.http, 'intersecttype', id);
     }
 
