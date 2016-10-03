@@ -20,6 +20,8 @@ import { CommunityModule } from './components/community/community.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
+import { AdminUserGuard } from './guards/admin-user.guard';
+import { AuthenticationService } from './services/authentication.service';
 
 import {
     GrowlModule,
@@ -336,7 +338,7 @@ import {
       
     ],
     bootstrap: [AppComponent],
-    providers: [Title],    
+    providers: [Title, AdminUserGuard, AuthenticationService],    
 })
 export class AppModule { }
 

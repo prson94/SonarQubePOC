@@ -13,7 +13,7 @@ export class SiteMenuService extends BaseService {
     getMenu(): Promise<SiteMenuModel> {
         return this.http.get('navigation/sitemenu')
             .toPromise()
-            .then(response => <SiteMenuModel>response.json())
+            .then(response => <SiteMenuModel>response.json())            
             .catch(err => this.handleError(err));
     }
 

@@ -1,11 +1,12 @@
 ﻿import * as admin from './index'
 import { RouterModule } from '@angular/router';
-
+import { AdminUserGuard } from '../../guards/admin-user.guard';
 
 export const AdminRoutes = [
     {
         path: 'a/admin',
         component: admin.AdminComponent,
+        canActivate: [AdminUserGuard],        
         // index: true,
         children: [
             { path: 'fusion', component: admin.AdminFusionComponent},

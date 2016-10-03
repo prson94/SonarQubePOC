@@ -4,7 +4,7 @@ import { transition, style, animate, trigger, state } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
-import { SiteMenuService } from '../../services/index';
+import { SiteMenuService, AuthenticationService } from '../../services/index';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { FavoritesService } from '../../services/favorites.service';
@@ -121,7 +121,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
     adminItems: NavBarItem[] = new Array<NavBarItem>();
 
-    constructor(private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+    constructor(private authenticationService: AuthenticationService, private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
     }
 
     ngOnInit() {
@@ -217,7 +217,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.adminItems = new Array<NavBarItem>();
 
                 this.siteMenu = result.MenuItems;
-                
+
+                // used to enable guard that allows access to administrative routes
+                console.log('reloading menu');
+                this.authenticationService.admin$.next(result.IsAdmin);
+                this.authenticationService.admin$.complete();
+
                 this.isAdmin = result.IsAdmin;
 
                 this.loadGlossaryMenu(this.siteMenu.find(i => i.MenuID == '#Glossary'));

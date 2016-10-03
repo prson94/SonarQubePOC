@@ -203,9 +203,6 @@ where A.FusionTypeID = @id", columns, joins);
         [Route("configurationById/{id:int}")]
         public HttpResponseMessage GetConfigurationById(int id)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
-
             var model = Company.GetFusionAsDictionary(id);
             if (model == null) return Request.CreateResponse(HttpStatusCode.NotFound);
             return Request.CreateResponse<Dictionary<string, object>>(HttpStatusCode.OK, model);

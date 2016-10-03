@@ -49,6 +49,7 @@ import { FollowerService } from './follower.service';
 import { StateService} from './state.service';
 import { FusionAttributeService } from './fusion-attribute.service'
 import { GroupService } from './group.service';
+import { AuthenticationService } from './authentication.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -101,3 +102,4 @@ export * from './follower.service';
 export * from './state.service';
 export * from './fusion-attribute.service'
 export * from './group.service';
+export * from './authentication.service';
