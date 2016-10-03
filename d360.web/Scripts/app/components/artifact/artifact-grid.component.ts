@@ -22,7 +22,7 @@ import { ArtifactColumnFilterComponent } from './artifact-column-filter.componen
             }
         `],
     template: ` 
-                <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}
+                <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -92,7 +92,9 @@ import { ArtifactColumnFilterComponent } from './artifact-column-filter.componen
 export class ArtifactGridComponent extends BaseComponent implements OnChanges {    
     @Input() rowID: string = 'ID';
     @Input() artifactType: ArtifactType;
-
+    @Input() titlePostfix: string = ''; // added to end of header title.
+    @Input() rowsPerPage: number = 20;
+        
     @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
         
     showEditButton: boolean = true;
@@ -100,7 +102,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showAddButton: boolean = true;
     
     totalRecords: number;
-    rowsPerPage: number = 20;
+    
     
     searchValue: string = "";
     
@@ -140,7 +142,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getFieldsDefinition();              
     }
 
-    filterGridData(filterData) {
+    public filterGridData(filterData) {
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         this.getData();
     }
@@ -168,7 +170,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
     
     getData() {
-        this.artifactService.getArtifacts(this.artifactType, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter)
+        this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter)
             .then(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;                

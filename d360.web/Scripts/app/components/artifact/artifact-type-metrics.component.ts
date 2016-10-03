@@ -1,8 +1,11 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
-import { ArtifactTypeService } from '../../services/index';
+﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
+import { ArtifactTypeService, StateService } from '../../services/index';
 import { BaseComponent} from '../shared/base.component';
 import { ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../../models/artifact-type.model';
+import { ArtifactType } from '../../models/artifact-type.model';
 import { Highcharts } from 'angular2-highcharts';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { ArtifactGridComponent} from './artifact-grid.component';
 
 @Component({
     selector: 'd3s-artifact-type-metrics',
@@ -18,7 +21,15 @@ import { Highcharts } from 'angular2-highcharts';
                     <div class="col s12 m12 l6">                        
                         <div class="tile tile-detail">                            
                             <header>Status Breakdown</header>                                                      
-                            <chart [options]="statusPie"></chart> 
+                            <chart [options]="statusPie">
+                                <series (click)="onStatusSeriesClick($event)">
+                                </series>
+                            </chart> 
+                        </div>
+                    </div>
+                    <div class="col s12" [hidden]="!showArtifactStatusGrid">       
+                        <div class="tile tile-detail">                                                                       
+                            <d3s-artifact-grid [artifactType]="artifactType" [titlePostfix]="statusHeader" rowsPerPage="10"></d3s-artifact-grid>
                         </div>
                     </div>
                 </div>
@@ -26,10 +37,10 @@ import { Highcharts } from 'angular2-highcharts';
     providers: [ArtifactTypeService],
 })
 
-export class ArtifactTypeMetricsComponent extends BaseComponent implements OnInit {
-    @Input() objectID: number;
-    @Input() objectName: string;
-    @Input() objectType: string;
+export class ArtifactTypeMetricsComponent extends BaseComponent implements OnInit {    
+    @Input() artifactType: ArtifactType;
+
+    @ViewChild(ArtifactGridComponent) artifactTypeGrid: ArtifactGridComponent;
 
     private responsibilitiesBar: Object;
     private statusPie: Object;
@@ -37,7 +48,10 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
     private status: ArtifactTypeStatusCount[] = [];
     private responsibilities: ArtifactTypeUsedVsUnusedResponsibility[] = [];
 
-    constructor(private artifactTypeService: ArtifactTypeService) {
+    private showArtifactStatusGrid: boolean = false;
+    private statusHeader: string;
+    
+    constructor(private stateService: StateService, private artifactTypeService: ArtifactTypeService) {
         super();
     }
 
@@ -48,7 +62,7 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
 
     private loadResponsibilityBar() {
         this.isLoading = true;
-        this.artifactTypeService.getArtifactTypeUsedVsUnusedResponsibilities(this.objectID)
+        this.artifactTypeService.getArtifactTypeUsedVsUnusedResponsibilities(this.artifactType.ID)
             .then(result => {
                 this.responsibilities = result;
                 this.isLoading = false;
@@ -117,7 +131,7 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
 
     private loadStatusPie() {
         this.isLoading = true;
-        this.artifactTypeService.getArtifactTypeStatus(this.objectID)
+        this.artifactTypeService.getArtifactTypeStatus(this.artifactType.ID)
             .then(result => {
                 this.status = result;
 
@@ -131,6 +145,9 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
                     },
                     title: {
                         text: null
+                    },
+                    subtitle: {
+                        text: 'Click on a pie piece for more details.'
                     },
                     credits: {
                         enabled: false
@@ -162,4 +179,27 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
                 this.isLoading = false;
             });           
     }    
+
+    private onStatusSeriesClick(e) {        
+        //reset any filters on the grid and add a new one for status
+        this.stateService.artifactTypeFilters.filters = [];
+        let filter = new GridFilterExpression();
+        
+        filter.field = 'Status';
+        filter.value = e.originalEvent.point.name;
+        filter.condition = 'EQUALS';
+        filter.fieldtype = GridFilterFieldType.Normal;
+
+        this.statusHeader = ` - With Status of ${e.originalEvent.point.name}`;
+
+        this.stateService.artifactTypeFilters.attributes = undefined;
+        this.stateService.artifactTypeFilters.relationships = undefined;
+        this.stateService.artifactTypeFilters.simpleTextFilter = '';
+
+        this.stateService.artifactTypeFilters.filters.push(filter);
+
+        this.artifactTypeGrid.filterGridData(1);
+
+        this.showArtifactStatusGrid = !e.originalEvent.point.sliced; // appears to be 1 behind        
+    }
 };
