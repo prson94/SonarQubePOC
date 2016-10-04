@@ -15,6 +15,8 @@ using System.Net;
 using d360.workflow.entities;
 using d360.web.Models;
 using System.Web.Http.OData;
+using System.IO;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.Services
 {
@@ -265,6 +267,92 @@ namespace d360.web.Controllers.Services
 
                   return res.Distinct();                  
         }
+
+        [Route("all/issues/excel/excel.xls"), HttpGet]
+        public HttpResponseMessage GetIssuesForAllUsersExcel()
+        {
+            var res = from workflows in Company.WorkflowIssues
+                      join comments in Company.Comments on workflows.CommentID equals comments.ID
+                      from resources in Company.WorkflowResources
+                       .Where(o => workflows.WorkflowID == o.WorkflowID && o.IsComplete == false && o.ResourceID == Company.CurrentResourceID)
+                       .DefaultIfEmpty()
+                      select new
+                      {
+                          WorkflowID = workflows.WorkflowID,
+                          Issue = comments.Body,
+                          DateStarted = workflows.DateStarted,
+                          DateCompleted = workflows.DateCompleted,
+                          IsCompleted = workflows.IsCompleted,
+                          Name = workflows.Name,
+                          Object = workflows.Object,
+                          AllowAction = resources != null,
+                          RaisedBy = workflows.RaisedBy,
+                          ObjectID = workflows.ObjectID,
+                          RaisedByResourceID = workflows.CreatingResourceID,
+                          Url = workflows.Url,
+                          ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
+                          Notes = workflows.Comments
+                      };
+
+            var results = res.Distinct();
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            var colIndex = 0;
+
+            document.SetCellValue(1, ++colIndex, "Issue");
+            document.SetCellValue(1, ++colIndex, "Name");
+            document.SetCellValue(1, ++colIndex, "Type");
+            document.SetCellValue(1, ++colIndex, "Created By");
+            document.SetCellValue(1, ++colIndex, "Created On");
+            document.SetCellValue(1, ++colIndex, "Closed On");
+            document.SetCellValue(1, ++colIndex, "Status");
+            document.SetCellValue(1, ++colIndex, "Closing Notes");
+
+            #endregion
+
+            int rowIndex = 1;
+            foreach (var row in results)
+            {
+                var dataColIndex = 0;
+                rowIndex++;
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Issue);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Name);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Object);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.RaisedBy);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.DateStarted.ToShortDateString());
+                document.SetCellValue(rowIndex, ++dataColIndex, row.DateCompleted.HasValue ? row.DateCompleted.Value.ToShortDateString(): "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName);
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Notes);
+            }
+
+            #endregion
+
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            //  result.
+            result.Content = new StreamContent(stream);
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Issues as of {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            return result;
+        }
+
 
         /// <summary>
         /// Gets a list of open workflow tasks for the current user, based on the workflow type.

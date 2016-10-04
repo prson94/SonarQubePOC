@@ -13,6 +13,7 @@ import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.comp
 import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
+import { WorkflowWorkIssueComponent } from './workflow-work-issue.component';
 
 import {
     GrowlModule,
@@ -74,6 +75,7 @@ import {
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
+        WorkflowWorkIssueComponent,
     ],
     exports: [
         WorkflowCertifyDetailsComponent,
@@ -82,6 +84,7 @@ import {
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
+        WorkflowWorkIssueComponent,
     ]
 })
 export class WorkflowModule { }

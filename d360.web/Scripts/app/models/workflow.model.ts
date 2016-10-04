@@ -1,5 +1,4 @@
-﻿
-import { SelectItem, FormMessage } from '../models/form.model';
+﻿import { SelectItem, FormMessage } from '../models/form.model';
 
 export interface IWorkflowService {
     getWorkflow(id: number, workflowType: WorkflowType): Promise<WorkflowTypeRelationEditorModel>;
@@ -51,6 +50,23 @@ export class Issue {
     ResourceID: number;
     ActivityName: string;
     DateStarted: string;
+    WorkflowID: string;
+}
+
+export class IssueDetail {
+    ActivityName: string;
+    AllowAction: boolean;
+    DateCompleted: Date;
+    DateStarted: Date;
+    IsCompleted: boolean;
+    Issue: string;
+    Name: string;
+    Notes: string;
+    Object: string;
+    ObjectID: number;
+    RaisedBy: string;
+    RaisedByResourceID: number;
+    Url: string;
     WorkflowID: string;
 }
 

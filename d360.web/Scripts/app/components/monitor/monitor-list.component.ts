@@ -1,21 +1,22 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { HeaderBreadcrumbService, WorkflowService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Issue, IssueDetail } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-monitor-list',
     template: ` 
                 <div class="tile tile-detail">
                     <header>Monitor
-                        <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                        <p-dataTable [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="20" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
+                        <p-dataTable [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
                             <p-column field="Issue" header="Issue" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span [innerHtml]="item.Issue"></span>
@@ -26,18 +27,46 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
                                     <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
                                 </template>
                             </p-column>
+                            <p-column field="Object" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="RaisedBy" header="Created By" [sortable]="true" [filter]="!showSimpleFilter">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <d3s-tooltip [objectType]="'Resource'" [objectId]="item.RaisedByResourceID" [tooltipType]="'Preview'">{{item.RaisedBy}}</d3s-tooltip>
+                                </template>
+                            </p-column>
+                            <p-column field="DateStarted" header="Created On" [sortable]="true" [filter]="!showSimpleFilter">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span>{{item.DateStarted | date : 'short'}}</span>
+                                </template>
+                            </p-column>
+                            <p-column field="DateCompleted" header="Closed On" [sortable]="true" [filter]="!showSimpleFilter">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span>{{item.DateCompleted | date : 'short'}}</span>
+                                </template>
+                            </p-column>
+                            <p-column field="ActivityName" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Notes" header="Closing Notes" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
+                            <p-column [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <i class="fa fa-check-circle-o" style="pointer:cursor" *ngIf="item.AllowAction" (click)="handleIssue(item)"></i>
+                                    </div>
+                                </template>
+                            </p-column>
                         </p-dataTable>        
                     </span>
                 </div>
-              `
+              `,
+    providers: [WorkflowService],      
 })
 
 export class MonitorListComponent extends BaseComponent implements OnInit {
 
-    private issues: any[] = [];
-    private selected: any;
+    private issues: IssueDetail[] = [];
+    private selected: IssueDetail;
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+    private showEditor: boolean = false;
+
+    constructor(protected workflowService: WorkflowService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, protected router: Router) {
         super();
     }
 
@@ -46,6 +75,26 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor', 'a/monitor'));
+
+        this.load();
+    }
+
+    private load() {
+        this.isLoading = true;
+        this.workflowService.getAllIssueDetails()
+            .then(result => {
+                this.issues = result;
+                this.isLoading = false;
+            });
+    }
+
+    private handleIssue(issue: IssueDetail) {
+        this.showEditor = true;
+        this.router.navigateByUrl(`/a/workflow/work/issue/${issue.WorkflowID}`);
+    }
+
+    private export() {
+        this.workflowService.exportAllIssueDetails();
     }
 };

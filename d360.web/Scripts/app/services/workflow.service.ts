@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
+import { WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, IssueDetail, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesService } from './index';
 import { BaseService } from './base.service';
@@ -100,6 +100,27 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(err => this.handleError(err));
     }
 
+    exportAllIssueDetails() {
+        window.location.assign('services/workflow/all/issues/excel/excel.xls');        
+    }
+
+    getAllIssueDetails(): Promise<IssueDetail[]> {
+        let url = 'services/workflow/all/issues?$orderby=DateStarted%20desc,Issue';
+        
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <IssueDetail[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getWorkflowDetails(workflowId: string): Promise<any> {
+        let url = `services/workflow/tasks/${workflowId}`;
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
 
     getIssues(objectID: number, objectType: string): Promise<Issue[]> {
         let url = 'services/workflow/tasks/types/3/';
