@@ -859,6 +859,10 @@
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\theme.css" />
+    <Content Include="Scripts\all-ang.js" />
+    <Content Include="Scripts\all-ang.min.js">
+      <DependentUpon>all-ang.js</DependentUpon>
+    </Content>
     <Content Include="Scripts\app\app.js" />
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />

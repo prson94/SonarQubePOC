@@ -38,8 +38,25 @@
       "Scripts/parts/*.js",
       //"Scripts/parts/_Utils.js",
       "Scripts/templates/*.js",
-      "Scripts/typeahead.bundle.js"//,
+      "Scripts/typeahead.bundle.js" //,
       //"Scripts/powerbi.js"
+    ]
+  },
+  {
+    "outputFileName": "scripts/all-ang.js",
+    "inputFiles": [  
+      "Scripts/handlebars.js",     
+      "Scripts/amplify.js",
+     
+      "Scripts/jquery.gritter.js",
+      "Scripts/jquery.qtip.js",      
+      "Scripts/jqx/3.7.1/jqx-all.js",
+            
+      "Scripts/Common.js",
+      
+      "Scripts/parts/_utils.js",
+      "Scripts/parts/impactdiagram.js",
+      "Scripts/parts/lineagediagram.js"
     ]
   },
   {
