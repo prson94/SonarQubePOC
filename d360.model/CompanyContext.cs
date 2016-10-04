@@ -250,6 +250,10 @@ namespace d360.model
 
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
+        public DbSet<ReferenceItem> ReferenceItems { get; set; }
+
+        public DbSet<ReferenceItemType> ReferenceItemTypes { get; set; }
+
         public DbSet<ReportLayout> ReportLayouts { get; set; }
 
         public DbSet<Report> Reports { get; set; }

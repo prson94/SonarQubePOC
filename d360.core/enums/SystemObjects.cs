@@ -134,7 +134,11 @@ namespace d360.core
         [Description("Map"), AllowSurvey(false)]
         Map= 62,
         [Description("Intersect Role"), AllowSurvey(false)]
-        IntersectRole = 63
+        IntersectRole = 63,
+        [Description("Reference Item"), AllowSurvey(false)]
+        ReferenceItem = 64,
+        [Description("Reference Item Type"), AllowSurvey(false)]
+        ReferenceItemType = 65
     }
 
     public class SystemObjectInfo
