@@ -1,11 +1,12 @@
-﻿import * as monitor from './index'
+﻿import { MonitorComponent } from './monitor.component';
+import { MonitorListComponent } from './monitor-list.component';
 
 export const MonitorRoutes = [
     {
         path: 'a/monitor',
-        component: monitor.MonitorComponent,
+        component: MonitorComponent,
         children: [            
-            { path: '', component: monitor.MonitorListComponent }
+            { path: '', component: MonitorListComponent }
         ]
     }
 ];

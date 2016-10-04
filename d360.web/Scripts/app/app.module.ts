@@ -17,6 +17,7 @@ import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
 import { CommunityModule } from './components/community/community.module';
+import { MonitorModule } from './components/monitor/monitor.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -120,11 +121,6 @@ import {
     ModelListComponent,
     ModelItemStructureComponent,
 } from './components/model/index';
-
-import {
-    MonitorComponent,
-    MonitorListComponent,
-} from './components/monitor/index';
 
 import {
     ActionBar,
@@ -255,9 +251,7 @@ import {
         ModelItemComponent,
         ModelLevelTile,
         ModelListComponent,
-        ModelItemStructureComponent,
-        MonitorComponent,
-        MonitorListComponent,
+        ModelItemStructureComponent,        
         ObjectDefinitionTile,
         ObjectDetailField,
         ObjectDetailTile,                               
@@ -335,6 +329,7 @@ import {
         GroupModule,
         CommunityModule,
         CoreModule,
+        MonitorModule,
       
     ],
     bootstrap: [AppComponent],

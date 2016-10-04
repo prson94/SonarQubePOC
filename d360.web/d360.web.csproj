@@ -1354,6 +1354,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
@@ -1427,7 +1428,6 @@
     <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\monitor\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
