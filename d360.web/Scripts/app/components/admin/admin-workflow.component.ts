@@ -70,6 +70,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
 
     deleteRow(id: number): void {
         this.messages.push({ severity: 'info', summary: 'Workflow allocation deleted successfully', detail: '' });
+        this.isDeleting = false;
         this.load();
     }
 
@@ -77,6 +78,18 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
      //   this.selectedRow = workflow;
       //  console.log(this.selectedRow);
         this.isEditing= true;
+    }
+
+    confirmEdit(e: any) {
+        this.messages.push({ severity: 'info', summary: e.message, detail: '' });
+        this.isEditing = false;
+        this.load();
+    }
+
+    confirmAdd(e: any) {
+        this.messages.push({ severity: 'info', summary: e.message, detail: '' });
+        this.isAdding = false;
+        this.load();
     }
     
 }

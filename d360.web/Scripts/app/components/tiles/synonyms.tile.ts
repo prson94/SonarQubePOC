@@ -1,9 +1,10 @@
 ﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { Input, Output, Component, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { Synonym, SynonymItem, SynonymEditModel } from '../../models/object-detail.model';
 import { FormMode, FormHelper } from '../../models/form.model';
 
+declare var CompanySettings: any;
 
 @Component({
     selector: 'd3s-synonyms-tile',
@@ -16,16 +17,25 @@ import { FormMode, FormHelper } from '../../models/form.model';
         <div *ngSwitchDefault>
             <header><d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="true"></d3s-tile-actions></header>
             <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">
-                <p-column field="ObjectTypeName" header="Type" sortable="true" [style]="{ 'width': '28%' }"></p-column>
-                <p-column field="Name" header="Name" sortable="true"></p-column>
-                <p-column [style]="{ 'width': '16%' }" *ngIf="!readonly">
+                <p-column *ngIf="!readonly" [style]="{ 'width': '32px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="selectedItem=item;" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template> 
                 </p-column>
+                <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
+                <p-column header="Parent" sortable="true">
+                    <template pTemplate type="body" let-item="rowData">
+                        <a [href]="item.ParentUrl">{{item.ParentName}}</a>
+                    </template>
+                </p-column>
+                <p-column header="Name" sortable="true">
+                    <template pTemplate type="body" let-item="rowData">
+                        <a [href]="item.Url">{{item.Name}}</a>
+                    </template>
+                </p-column>
+                <p-column field="SubjectArea" [header]="subjectAreaName" sortable="true"></p-column>
             </p-dataTable>
         </div>
         <div *ngSwitchCase="FormMode.Adding">
@@ -58,7 +68,7 @@ import { FormMode, FormHelper } from '../../models/form.model';
     providers: [ObjectDetailService],
 })
 
-export class SynonymsTile implements OnChanges {
+export class SynonymsTile implements OnChanges, OnInit {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() readonly: boolean = true;
@@ -73,8 +83,15 @@ export class SynonymsTile implements OnChanges {
     private synonymItems;
     private typeIsSubject;
     private selectedSynonym;
+    private subjectAreaName = 'SubjectArea';
 
     constructor(private objectDetailService: ObjectDetailService) {
+    }
+
+    ngOnInit() {
+        if (CompanySettings != null && CompanySettings.ArtifactType_TaxonomyTypeID && CompanySettings.ArtifactType_TaxonomyTypeID != '') {
+            this.subjectAreaName = CompanySettings.ArtifactType_TaxonomyTypeID;
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -99,6 +116,7 @@ export class SynonymsTile implements OnChanges {
         this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType)
             .then(d => {
                 this.items = d;
+                console.log(this.items);
                 this.itemCount = this.items.length;
                 this.isLoading = false;
             })

@@ -25,7 +25,7 @@ import * as _ from 'lodash';
     ],
     template:
     `
-        <span (click)="handleClick()" [class.active]="active" class="favorite">
+        <span *ngIf="!isAdminUri()" (click)="handleClick()" [class.active]="active" class="favorite">
             <i *ngIf="!isLoading" class="fa fa-star"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
@@ -86,6 +86,9 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
     handleClick() {
         if (this.isLoading)
             return;
+
+        if (this.isAdminUri())
+            return;
         this.isLoading = true;
         this.favoritesService.toggleFavorite(this.name, this.uri)
             .then(() => this.favoritesService.getFavorites())
@@ -115,6 +118,12 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
         this.subBread.unsubscribe();
         this.subFavorites.unsubscribe();
+    }
+
+    isAdminUri() {
+        //TODO: remove a/ after url refactor
+        //TODO: need a better way to do this
+        return (this.uri || '').toLowerCase().startsWith('a/admin');
     }
 }
 

@@ -16,6 +16,7 @@ import { SurveyType } from '../../models/survey.model';
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
+                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-impact>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -114,7 +115,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
                         this.setBrowserTitle(this.titleService, this.model.Name);
 
-                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true);
+                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true);
 
                         
 

@@ -1,7 +1,7 @@
 ﻿
 import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
-import { SelectItem, FormMessage } from '../../models/form.model';
+import { SelectItem } from '../../models/form.model';
 import { CompanySettings as cs } from '../../models/company-settings.model';
 import { WorkflowService } from '../../services/workflow.service';
 import * as _ from 'lodash';
@@ -25,7 +25,7 @@ export class WorkflowItemForm implements OnInit {
     private ObjectTypes = new Array<SelectItem>();
     private ParentTypes = new Array<SelectItem>();
     private ResponsibilityTypes = new Array<SelectItem>();
-    private message: FormMessage = new FormMessage();
+    //private message: FormMessage = new FormMessage();
     private initialItem: WorkflowItem;
 
     private ObjectType: string;
@@ -101,8 +101,8 @@ export class WorkflowItemForm implements OnInit {
             this.item.ParentID = parseInt(this.ParentType.split('|')[1]);
         } catch (exception) {
             this.isSaving = false;
-            this.message.Error("An error occurred while parsing the select item values.");
-            this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
+            //this.message.Error("An error occurred while parsing the select item values.");
+            this.onSaveComplete.emit({ item: this.item, message: 'An error occurred while parsing the select item values.', initialItem: this.initialItem });
             return;
         }
 
@@ -113,8 +113,8 @@ export class WorkflowItemForm implements OnInit {
 
         this.workflowService.postWorkflow(this.item).then(p => {
             this.isSaving = false;
-            this.message.Success("Save completed successfully.");
-            this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
+            //this.message.Success("Save completed successfully.");
+            this.onSaveComplete.emit({ item: this.item, message: 'Save completed successfully.', initialItem: this.initialItem });
         });
     }
 

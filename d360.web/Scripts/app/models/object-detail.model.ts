@@ -61,6 +61,10 @@ export class Synonym {
     ObjectID: number;
     ObjectTypeName: string;
     Url: string;
+    SubjectArea: string;
+    ParentName: string;
+    ParentID: number;
+    ParentUrl: string;
 }
 
 export class SynonymItem {
