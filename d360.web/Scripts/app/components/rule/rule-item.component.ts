@@ -13,6 +13,8 @@ import { RuleDetail } from '../../models/rule.model';
     providers: [RulesService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-lineage>
+                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-impact>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -20,8 +22,15 @@ import { RuleDetail } from '../../models/rule.model';
                         </div>
                     </div>
                 </div>
+                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                      
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible">                      
                         <div class="col s12">
                             <div class="row">
                                 <div class="col s12">
@@ -36,14 +45,7 @@ import { RuleDetail } from '../../models/rule.model';
                                         <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID"></d3s-object-definition-tile>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col s12">
-                                    <div class="tile tile-detail">
-                                        <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
-                                    </div>
-                                </div>
-                            </div>
+                            </div>                            
                         </div>
                 </div>
                 `
@@ -59,7 +61,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             rightSidebarService: RightSidebarService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
 
-        this.setCommonRightSideBar(true, true);
+        this.setCommonRightSideBar(true, true,false,true,true,true);
     }
 
     ngOnInit() {

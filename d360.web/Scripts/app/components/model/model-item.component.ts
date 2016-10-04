@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -17,6 +16,13 @@ import { SurveyType } from '../../models/survey.model';
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-impact>
+                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-relationships [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -25,7 +31,7 @@ import { SurveyType } from '../../models/survey.model';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible" class="row">                    
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible" class="row">                    
                     <div class="col s12">
                         <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                         <div class="row" *ngIf="showSurvey && surveyType">
@@ -48,14 +54,7 @@ import { SurveyType } from '../../models/survey.model';
                                     <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">
-                                    <d3s-object-relationships [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
-                                </div>
-                            </div>
-                        </div>
+                        </div>                        
                     </div>                   
                 </div>
                 `
@@ -115,7 +114,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
                         this.setBrowserTitle(this.titleService, this.model.Name);
 
-                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true);
+                        this.clearSidebar();
+                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true);
 
                         
 

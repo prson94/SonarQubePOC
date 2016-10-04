@@ -20,7 +20,14 @@ import { SurveyType } from '../../models/survey.model';
                             <d3s-people-responsibilities-tile [objectID]="artifact?.ID" [objectType]="'Artifact'" [title]="'Ownership of ' + artifact?.Name"></d3s-people-responsibilities-tile>
                         </div>
                     </div>
-                </div>                
+                </div>    
+                <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>            
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
@@ -47,14 +54,7 @@ import { SurveyType } from '../../models/survey.model';
                                 <d3s-object-definition-tile [objectID]="artifact?.ID" [objectType]="'Artifact'"></d3s-object-definition-tile>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="tile tile-detail">
-                                <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-object-relationships>
-                            </div>
-                        </div>
-                    </div>
+                    </div>                    
                 </div>                
                 `,
     providers: [ArtifactService, SurveysService]
@@ -107,7 +107,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true);
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true,true);
 
                     this.loadItemSurvey(artifactId);
                     
@@ -136,7 +136,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     protected isTabVisible() {
-        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible;
+        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible;
     }
 
     private completeSurvey() {

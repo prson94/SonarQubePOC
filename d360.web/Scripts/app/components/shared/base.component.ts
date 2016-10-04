@@ -16,6 +16,7 @@ export class BaseComponent {
     isDashboardVisible: boolean = false;
     isLineageVisible: boolean = false;
     isImpactVisible: boolean = false;
+    isRelationshipsVisible: boolean = false;
 
     //filter mode
     showSimpleFilter: boolean = true;
@@ -37,13 +38,14 @@ export class BaseComponent {
     }
 
 
-    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean) {
+    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean) {
         if (this.rightSidebarService) {
             if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
             if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership'));
             if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards'));
             if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));
             if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact'));
+            if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship'));
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
@@ -57,6 +59,8 @@ export class BaseComponent {
                         this.isLineageVisible = !this.isLineageVisible;
                     else if (item.tag == 'impact')
                         this.isImpactVisible = !this.isImpactVisible;
+                    else if (item.tag == 'relationship')
+                        this.isRelationshipsVisible = !this.isRelationshipsVisible;
                     else
                         this.showHideBreadcrumbItem(item);
                 });
