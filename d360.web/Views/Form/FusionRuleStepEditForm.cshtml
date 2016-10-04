@@ -1,5 +1,8 @@
 ﻿@model d360.web.Models.FusionRuleStepEditorModel
-@{    
+@{  
+    var search = Model.RuleStep.GetSettingValueByName("Search");
+    var stepID = Model.RuleStep.GetSettingValueByName("ID");
+
     var subjectSearch = Model.RuleStep.GetSettingValueByName("SubjectSearch");
     var subject = Model.RuleStep.GetSettingValueByName("Subject");
     var subjectID = Model.RuleStep.GetSettingValueByName("SubjectID");
@@ -82,6 +85,10 @@
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FIND")
         {
             ruleStepViewModel.actionFindSettings().SetInitialValues('@(objectSearch)', '@(@object)', '@(objectID)', '@(filterField)','@(targetField)','@(findParent)', '@(promotionFusionAttributeTypeID)', '@(promotionStepID)');
+        }
+        else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "FINDRELATION")
+        {
+            ruleStepViewModel.actionFindRelationSettings().SetInitialValues('@(@intersectTypeID)', '@(search)', '@(stepID)');
         }
         else if("@((Model.RuleStep.Action ?? "").ToUpper())" == "RELATE")
         {

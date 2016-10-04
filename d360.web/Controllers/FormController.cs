@@ -7032,6 +7032,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             if (action == "PROMOTE")
             {
+                #region PROMOTE
+
                 var promoteTo = parseTextField(form, "PrOptionsDropdown"); // Pipe delimited Object | ObjectID
 
                 var promoteToInfo = promoteTo.Split('|');
@@ -7078,9 +7080,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                     item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parseTextField(form, "PromotionParentOwnerRule") });
                 }
+
+                #endregion PROMOTE
             }
             else if (action == "FIND")
             {
+                #region FIND
+
                 var findSearchType = parseTextField(form, "FindSearchType"); //ObjectSearch
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
@@ -7108,9 +7114,27 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, form);
                 }
+
+                #endregion FIND
+            }
+            else if (action == "FINDRELATION")
+            {
+                #region FINDRELATION
+
+                var intersectType = parseTextField(form, "FindIntersectType");
+                var searchType = parseTextField(form, "FindSearchType");
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Search", Value = searchType });
+
+                handleSearchParameters("Find", "", item.FusionRuleStepSettings, searchType, item.ID, form);
+
+                #endregion FINDRELATION
             }
             else if (action == "RELATE")
             {
+                #region RELATE
+
                 var intersectType = parseTextField(form, "RelateIntersectType");
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
@@ -7128,9 +7152,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, form);
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
+
+                #endregion RELATE
             }
             else if (action == "LINEAGE")
             {
+                #region LINEAGE
+
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
 
                 handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
@@ -7148,6 +7176,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, form);
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = parseTextField(form, "LineageRole") });
+
+                #endregion LINEAGE
             }
         }
 
@@ -7159,6 +7189,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             if (action == "PROMOTE")
             {
+                #region PROMOTE
+
                 var objectType = settings["Object"];
                 var objectID = settings["ObjectID"];
                 var parentObjectType = settings["ParentObjectTypeID"] ?? "";
@@ -7194,9 +7226,12 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectID", Value = parentObjectID });
                 }
 
+                #endregion PROMOTE
             }
             else if (action == "FIND")
             {
+                #region FIND
+
                 var findSearchType = settings["FindSearchType"]; //ObjectSearch
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
@@ -7224,9 +7259,27 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, findType, item.ID, settings);
                 }
+
+                #endregion FIND
+            }
+            else if (action == "FINDRELATION")
+            {
+                #region FINDRELATION
+
+                var intersectType = settings["FindIntersectType"];
+                var searchType = settings["FindSearchType"];
+
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Search", Value = searchType });
+
+                handleSearchParameters("Find", "", item.FusionRuleStepSettings, searchType, item.ID, settings);
+
+                #endregion FINDRELATION
             }
             else if (action == "RELATE")
             {
+                #region RELATE
+
                 var intersectType = settings["IntersectType"];
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
@@ -7244,9 +7297,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 handleSearchParameters("Relate", "Object", item.FusionRuleStepSettings, objectSearch, item.ID, settings);
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = objectSearch });
+
+                #endregion RELATE
             }
             else if (action == "LINEAGE")
             {
+                #region LINEAGE
+
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "SubjectSearch", Value = "ResultFromStep" });
 
                 handleSearchParameters("Lineage", "Subject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
@@ -7264,9 +7321,12 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = settings["Role"] });
+
+                #endregion LINEAGE
             }
           
         }
+
         private void handleSearchParameters(string area, string target, ICollection<FusionRuleStepSetting> fusionRuleStepSettings, string searchType, int id, FormCollection form)
         {
             var searchUpper = (searchType ?? "").ToUpper();
@@ -7571,6 +7631,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
 
         }
+
         [Route("fusion/rule/{ruleID:int}/step/edit/{ruleStepID:int}")]
         public ActionResult EditFusionRuleStep(int ruleID, int ruleStepID)
         {
@@ -7600,6 +7661,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
             if (step == null) return null;
+
+            step.Settings.Add("Search", step.GetSettingValueByName("Search"));
+            step.Settings.Add("ID", step.GetSettingValueByName("ID"));
 
             step.Settings.Add("SubjectSearch", step.GetSettingValueByName("SubjectSearch"));
             step.Settings.Add("Subject", step.GetSettingValueByName("Subject"));
@@ -13811,7 +13875,7 @@ from ArtifactType A
 
             var list = new List<EditableField>();
 
-            var relationshipType = Company.GetById<IntersectType>(it);
+            var relationshipType = Company.GetById<IntersectType>(it, i => i.Predicate);
             var obj = Company.GetObjectDetail(type, id);
 
             if (obj == null || relationshipType == null)
@@ -13843,7 +13907,24 @@ from ArtifactType A
             switch (targetType)
             {
                 case "FusionAttributeType":
-                    sql = @"
+                    if (relationshipType.Predicate.Type == PredicateType.FusionMapping)
+                    {
+                        sql = @"
+select	'FusionAttribute' as [Object], 
+        FA.ID as ObjectID, 
+        F.Name + '.' + FA.TextPath as Name
+from	FusionAttribute FA with(nolock)
+		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
+where	FA.ID not in (
+					select	1 
+					from	[IntersectDetail]
+					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
+					)
+order by F.Name, FA.TextPath";
+                    }
+                    else
+                    {
+                        sql = @"
 declare @OwnerSourceType varchar(50)
 declare @owners table (ID int)
 IF @source = 'Intersect'
@@ -13903,6 +13984,7 @@ where	FA.ID not in (
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
 order by F.Name, FA.TextPath";
+                    }
                     break;
                 case "Group":
                 case "GroupType":

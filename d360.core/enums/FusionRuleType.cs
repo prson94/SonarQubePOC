@@ -13,6 +13,8 @@ namespace d360.core.enums
         [Name("Find")]
         Find,
         [Name("Relate")]
-        Relate
+        Relate,
+        [Name("Lineage")]
+        Lineage
     }
 }

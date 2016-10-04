@@ -17,7 +17,7 @@
         var valueID = '#' + f.valueID;
 
         //#region Create tooltips where there are field descriptions
-        if (f.FieldDescription && f.FieldDescription != '') {
+        if (f.FieldDescription && f.FieldDescription !== '') {
             $(labelID).qtip({
                 content: {
                     text: f.FieldDescription,
@@ -44,7 +44,7 @@
                 "' data-id='" + f.TooltipID + "'>" +
                 f.Value + "</a>");
 
-            if (f.Value == '' || !f.Value) {
+            if (f.Value === '' || !f.Value) {
                 $(valueID).closest('div[data-category]').data("hidden", true);
                 $(valueID).closest('div[data-category]').hide();
             }
@@ -74,7 +74,7 @@
 
                     var cn = null;
                     $.each(cols, function () {
-                        if (this.datafield == "Name") {
+                        if (this.datafield === "Name") {
                             cn = this;
                         }
                     });
@@ -87,7 +87,7 @@
 
                     var cp = null;
                     $.each(cols, function () {
-                        if (this.datafield == "TextPath") {
+                        if (this.datafield === "TextPath") {
                             cp = this;
                         }
                     });
@@ -142,12 +142,12 @@
             });
         }
         else {
-            if (f.Value != null && f.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) {
+            if (f.Value !== null && f.Value.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})/)) {
                 f.Value = f.Value.replace(/["]/g, "");
                 var d = new Date(f.Value);
                 $(valueID).html(d.toLocaleString());
             }
-            else if(f.FieldName == 'ResourceEmail')
+            else if(f.FieldName === 'ResourceEmail')
             {                
                 $(valueID).html(
                         $("<a>").attr("href", "mailto:" + f.Value).text(f.Value)
@@ -156,7 +156,7 @@
             else
                 $(valueID).html(f.Value);
 
-            if (f.Value == '' || !f.Value) {
+            if (f.Value === '' || !f.Value) {
                 $(valueID).closest('div[data-category]').data("hidden", true);
                 $(valueID).closest('div[data-category]').hide();
             }
@@ -174,7 +174,7 @@
 
         //#region Update friendly names where there are script code items
         $.each(model.rows, function (rix, r) {
-            r.hasOneColumn = (r.columns == 1);
+            r.hasOneColumn = (r.columns === 1);
             $.each(r.FirstColumnFields, processFieldLabel);
             $.each(r.SecondColumnFields, processFieldLabel);
         });
@@ -188,7 +188,7 @@
             $.each(r.FirstColumnFields, processFieldDetails);
             $.each(r.SecondColumnFields, processFieldDetails);
             if (r.Category) {
-                if (categories.indexOf(r.Category) == -1) {
+                if (categories.indexOf(r.Category) === -1) {
                     categories.push(r.Category);
                 }
             }
@@ -230,7 +230,7 @@
                 var fieldCount = panel.data("count");
                 //console.log("category: " + c + ", hidden count: " + hiddenFieldCount + ", total field count: " + fieldCount);
                 if (hiddenFieldCount >= fieldCount) {
-                    panel.fadeOut();
+                    //panel.fadeOut();
                 }
             }
         }

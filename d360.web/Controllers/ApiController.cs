@@ -2127,25 +2127,40 @@ where   h.ID <> @t order by h.[Level] desc;
             return Company.FusionAttributeTypes.OrderBy(x => x.TextPath).Select(x=>new { Name = x.TextPath, ID = x.ID });            
         }
 
-        [Route("fusion/rule/fusionOwnerRules/{fusionID:int}")]
-        public IEnumerable<dynamic> GetRuleFusionOwnerRules(int fusionID)
+        [Route("fusion/rule/fusionOwners/{fusionID:int}")]
+        public IEnumerable<dynamic> GetRuleFusionOwners(int fusionID)
         {
-            var sql = @"select r.id as ID, 
-		                    f.name as FusionAttributeName,
-		                    r.relationshipownerobjecttype as OwnerObject,
-		                    c.name as OwnerName		
-                        from fusionattributeownerrule r
-                            left outer join [cache].objectdetails c on(c.[object] = r.relationshipownerobjecttype and c.[objectid] = r.relationshipownerobjectid)
-                            left outer join fusionattributetype f on(f.id = r.objectid)
-                        where r.fusionid = @fusion";
+            var sql = @"
+with cte as (
+	select	a.ID,
+			a.ParentID,
+			a.ArtifactTypeID,
+			a.TextPath
+	from	FusionOwner fo
+			inner join Artifact a on a.ID = fo.ArtifactID 
+	where	fo.fusionID = @fusionID
+	union all
+	select	c.ID,
+			c.ParentID,
+			c.ArtifactTypeID,
+			c.TextPath
+	from	Artifact c
+			inner join ArtifactType ct on ct.ID = c.ArtifactTypeID and ct.CanOwnFusion = 1
+			inner join cte p on p.ID = c.ParentID
+)
 
-            return Company.Query<dynamic>(sql, new { fusion = fusionID } );            
+select	a.ID,
+		t.Name + ': ' + a.TextPath as Name
+from	cte a
+		inner join ArtifactType t on t.ID = a.ArtifactTypeID";
+
+            return Company.Query<dynamic>(sql, new { fusionID } );            
         }
 
         [Route("fusion/rule/relate/intersectTypes")]
         public IQueryable GetIntersectTypes()
         {            
-            return Company.Filter<IntersectType>(x=>x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object)).Select(x=>new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x=>x.Name);
+            return Company.Filter<IntersectType>(x=>x.SubjectID > 0 && x.ObjectID > 0 && !string.IsNullOrEmpty(x.Subject) && !string.IsNullOrEmpty(x.Object) && (!x.IsSystem ?? true)).OrderBy(x => x.Name).Select(x=>new { Name = x.Name, ID = x.ID, Subject = x.Subject, SubjectID = x.SubjectID, Object = x.Object, ObjectID = x.ObjectID }).OrderBy(x=>x.Name);
         }
 
         [Route("fusion/rule/lineage/roles")]

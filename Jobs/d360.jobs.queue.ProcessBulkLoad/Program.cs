@@ -540,7 +540,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    //executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
@@ -551,7 +551,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
+                    //executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
@@ -1111,7 +1111,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 while (writeStatus && (task.Exception == null))
                 {
                     logger.Write(".");
-                    System.Threading.Thread.Sleep(45000);
+                    Thread.Sleep(45000);
                 }
 
                 #endregion

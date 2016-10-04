@@ -52,8 +52,7 @@ AS
 		select 'Update', [queue].WriteIndexXml('', 'TaxonomyType', ID, coalesce(UpdatedBy, 0)), 'TaxonomyType', ID from inserted
 
 	update	T
-	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Taxonomy', S.ID, '/'),
-			T.[Path] = utility.GetBreadcrumbWrapper('Taxonomy', S.ID)
+	set		T.TextPath = utility.GetBreadcrumbStringWrapper('Taxonomy', S.ID, '/')
 	from	Taxonomy T
 			inner join inserted S on S.ID = T.TaxonomyTypeID
 

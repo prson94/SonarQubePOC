@@ -84,7 +84,18 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false)
         ]
-        Simple = 7
+        Simple = 7,
+        [
+            Name("Mapping"),
+            Graph("Fusion"),
+            Description("Allows you to create mappings that are used in fusion rules."),
+            ReadOnly(true),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(false),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true)
+        ]
+        FusionMapping = 8
     }
 
     public class PredicateTypeInfo

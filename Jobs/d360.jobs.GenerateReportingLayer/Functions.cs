@@ -560,7 +560,7 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
     from Taxonomy A {2} 
     inner join TaxonomyType T on T.ID = A.TaxonomyTypeID
     inner join TaxonomyTypeClass C on C.ID = T.TaxonomyTypeClassID
-    left join TaxonomyTypeLevel L on L.TaxonomyTypeID = L.TaxonomyTypeID and L.[Level] = A.[Level]
+    left join TaxonomyTypeLevel L on L.TaxonomyTypeID = A.TaxonomyTypeID and L.[Level] = A.[Level]
     cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC 
     cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels
     where A.TaxonomyTypeID = {1}", columns, o.ID, joins, objectType);
@@ -962,6 +962,41 @@ from      Artifact A
 
                         #endregion
 
+                        #region Glossary_Fields
+
+                        objectName = $"{SCHEMA}.[Glossary_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select 	O.ID, 
+		O.ArtifactTypeID, 
+		O.Name, 
+		O.TextPath, 
+		F.FieldTypeID, 
+        F.Name as FieldName, 
+        F.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	Artifact O 
+		inner join FieldWithRelation F on F.ObjectType = 'Artifact' and F.ObjectID = O.ID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
                         #region All Models
 
                         objectName = $"{SCHEMA}.[Model_All]";
@@ -985,6 +1020,41 @@ SELECT T.[ID]                                                                as 
   inner join TaxonomyType Ty on TY.ID = t.TaxonomyTypeID
   inner join TaxonomyTypeClass TC on TC.ID = TY.[TaxonomyTypeClassID]
   inner join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = TY.ID and TL.[Level] = T.[Level]";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region Model_Fields
+
+                        objectName = $"{SCHEMA}.[Model_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select  O.ID, 
+		O.TaxonomyTypeID, 
+		O.Name, 
+		O.TextPath, 
+		F.FieldTypeID, 
+        F.Name as FieldName, 
+        F.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	Taxonomy O 
+		inner join FieldWithRelation F on F.ObjectType = 'Taxonomy' and F.ObjectID = O.ID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -1170,6 +1240,7 @@ SELECT ID as [IntersectID]
       ,SubjectID as [SourceObjectID]
       ,Object as [TargetObject]
       ,ObjectID as [TargetObjectID]
+      ,IntersectTypeID 
   FROM [Intersect]";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -1190,6 +1261,46 @@ SELECT ID as [IntersectID]
 
                         #endregion
 
+                        #region Relationship_Fields
+
+                        objectName = $"{SCHEMA}.[Relationship_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select 	O.ID, 
+		O.IntersectTypeID, 
+		O.Subject, 
+		O.SubjectID, 
+		O.SubjectTypeName, 
+		O.SubjectName, 
+		O.Object, 
+		O.ObjectID, 
+		O.ObjectTypeName, 
+		O.ObjectName, 
+		F.FieldTypeID, 
+        F.Name as FieldName, 
+        F.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	IntersectDetail O 
+		inner join FieldWithRelation F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
 
                         #region All Workflows
 

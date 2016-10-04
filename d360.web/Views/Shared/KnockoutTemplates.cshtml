@@ -1634,46 +1634,46 @@
 <script id="promotionStepLineageActionTmpl" type="text/html">
     <div>
         <div class="FieldNameRequired">Role</div>
-        <div name="LineageRole" 
-             id="LineageRole" 
+        <div name="LineageRole"
+             id="LineageRole"
              data-bind="jqxDropDownList: {
                 placeHolder: 'Choose a role:',
-                source: roles, 
-                height: field_height, 
-                width: field_width, 
-                displayMember: 'text', 
+                source: roles,
+                height: field_height,
+                width: field_width,
+                displayMember: 'text',
                 valueMember: 'value',
-                theme: theme, 
+                theme: theme,
                 selectedIndex: selectedRoleIndex
              }"></div>
     </div>
     <div>
         <div class="FieldNameRequired">Source From Step (Business Relation)</div>
-        <div name="LineageSubjectStep" 
-             id="LineageSubjectStep" 
+        <div name="LineageSubjectStep"
+             id="LineageSubjectStep"
              data-bind="jqxDropDownList: {
                 placeHolder: 'Choose a step:',
-                source: steps, 
-                height: field_height, 
-                width: field_width, 
-                displayMember: 'text', 
+                source: steps,
+                height: field_height,
+                width: field_width,
+                displayMember: 'text',
                 valueMember: 'value',
-                theme: theme, 
+                theme: theme,
                 selectedIndex: selectedBusinessSourceStepIndex
              }"></div>
     </div>
     <div>
         <div class="FieldNameRequired">Target From Step (Business Relation)</div>
-        <div name="LineageObjectStep" 
-             id="LineageObjectStep" 
-             data-bind="jqxDropDownList: { 
-                placeHolder: 'Choose a step:', 
-                source: steps, 
-                height: field_height, 
-                width: field_width, 
-                displayMember: 'text', 
-                valueMember: 'value', 
-                theme: theme, 
+        <div name="LineageObjectStep"
+             id="LineageObjectStep"
+             data-bind="jqxDropDownList: {
+                placeHolder: 'Choose a step:',
+                source: steps,
+                height: field_height,
+                width: field_width,
+                displayMember: 'text',
+                valueMember: 'value',
+                theme: theme,
                 selectedIndex: selectedBusinessTargetStepIndex
              }"></div>
     </div>
@@ -1762,6 +1762,21 @@
     </div>
 </script>
 
+<script id="promotionStepFindRelationActionTmpl" type="text/html">
+    <div>
+        <div class="FieldNameRequired">Intersect Type</div>
+        <div name="FindIntersectType" data-bind="jqxDropDownList: {placeHolder: 'Choose a intersect type:',source: intersectTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedIntersectTypeIndex}"></div>
+    </div>
+    <div>
+        <div class="FieldNameRequired">Search Type</div>
+        <div name="FindSearchType" data-bind="jqxDropDownList: {placeHolder: 'Choose a search type:',source: searchTypes, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindSearchTypeIndex}"></div>
+    </div>
+    <div data-bind="visible: showResultFromStepSearch()">
+        <div class="FieldNameRequired">Result from Step</div>
+        <div name="FindStep" data-bind="jqxDropDownList: {placeHolder: 'Choose a step:',source: steps, height: field_height, width: field_width, displayMember: 'text', valueMember: 'value',theme: theme, selectedIndex: selectedFindStepIndex}"></div>
+    </div>
+</script>
+
 <script id="promotionStepPromoteActionTmpl" type="text/html">
     <div id="PromoteTo">
         <div id='PromotionTip' class="FieldNameRequired">Promote To</div>
@@ -1829,14 +1844,17 @@
         </div>
     </div>
 
-    <!--ko if: showPromoteAction-->
-    <div class="row" data-bind="template: {name: 'promotionStepPromoteActionTmpl', data: actionPromoteSettings }"></div>
-    <!-- /ko-->
     <!--ko if: showFindAction-->
     <div class="row" data-bind="template: {name: 'promotionStepFindActionTmpl', data: actionFindSettings }"></div>
     <!-- /ko-->
+    <!--ko if: showFindRelationAction-->
+    <div class="row" data-bind="template: {name: 'promotionStepFindRelationActionTmpl', data: actionFindRelationSettings }"></div>
+    <!-- /ko-->
     <!--ko if: showLineageAction-->
     <div class="row" data-bind="template: {name: 'promotionStepLineageActionTmpl', data: actionLineageSettings }"></div>
+    <!-- /ko-->
+    <!--ko if: showPromoteAction-->
+    <div class="row" data-bind="template: {name: 'promotionStepPromoteActionTmpl', data: actionPromoteSettings }"></div>
     <!-- /ko-->
     <!--ko if: showRelateAction-->
     <div class="row" data-bind="template: {name: 'promotionStepRelateActionTmpl', data: actionRelateSettings }"></div>
