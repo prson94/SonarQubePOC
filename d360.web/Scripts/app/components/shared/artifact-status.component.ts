@@ -10,7 +10,7 @@ import { ArtifactService, MessagesService } from '../../services/index';
                 <span *ngIf="!showRequestCertification">
                     <div class="status-value" [ngClass]="{'status-value-certified':isCertified(), 'status-value-review': isUnderReview()}">{{status}}</div>            
                     <div class="row">
-                        &nbsp;<a *ngIf="isDraft() && isWorkflowEnabled" (click)="showRequestCertification=true" style="cursor:pointer">Request Certification</a>
+                        <div class="col s12">&nbsp;<a *ngIf="isDraft() && isWorkflowEnabled" (click)="showRequestCertification=true" style="cursor:pointer">Request Certification</a></div>
                     </div>
                 </span>
                 <span *ngIf="showRequestCertification">

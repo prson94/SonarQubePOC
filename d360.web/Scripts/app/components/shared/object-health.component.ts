@@ -14,7 +14,7 @@ import { Highcharts } from 'angular2-highcharts';
                     <div class="col s12">
                         <table>
                             <tr>
-                                <td>{{scoreValue()}} <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i><i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i></td>                                
+                                <td nowrap>{{scoreValue()}} <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i><i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i></td>                                
                                 <td><chart [options]="smallChart"></chart></td>
                             </tr>
                         </table>
