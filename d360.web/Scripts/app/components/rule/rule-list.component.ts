@@ -123,7 +123,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     }
 
     private showRule() {
-        this.router.navigateByUrl(`/a/rule/${this.selected.ID}`)
+        this.router.navigateByUrl(`/a/quality/rule/${this.selected.ID}`)
     }
 
     findRuleIndex(id: number) {

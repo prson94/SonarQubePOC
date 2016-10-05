@@ -218,8 +218,9 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
                 this.siteMenu = result.MenuItems;
 
+
                 // used to enable guard that allows access to administrative routes
-                console.log('reloading menu');
+                //console.log('reloading menu');
                 this.authenticationService.admin$.next(result.IsAdmin);
                 this.authenticationService.admin$.complete();
 
@@ -232,6 +233,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 this.loadFusionMenu(this.siteMenu.find(i => i.MenuID == '#Fusion'));
                 this.loadMonitorMenu(this.siteMenu.find(i => i.MenuID == '#Monitor'));                
                 this.loadCommunityMenu(this.siteMenu.find(i => i.MenuID == '#Community'));                                   
+                this.loadQualityMenu(this.siteMenu.find(i => i.MenuID == '#Data Quality'));
                 this.loadAdminMenu(this.siteMenu.find(i => i.MenuID == '#Admin'));
                 this.loadCustomMenu(this.siteMenu.filter(i => i.MenuID.startsWith('~')));
 
@@ -244,6 +246,13 @@ export class NavBarComponent implements OnInit, OnDestroy {
             let m = this.addNavItem(c.MenuID.substr(1), 'folder', null, null, c.SortOrder);
             this.renderChildItems(m, c.NavigationItems);
         });
+    }
+
+    loadQualityMenu(qualityMenu: SiteMenu) {
+        if (qualityMenu == null) return;
+        let quality = this.addNavItem('Data Quality', 'pie-chart', null, null, qualityMenu.SortOrder);
+
+        this.renderChildItems(quality, qualityMenu.NavigationItems);
     }
 
     loadFusionMenu(fusionMenu: SiteMenu) {

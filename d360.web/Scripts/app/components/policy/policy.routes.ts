@@ -5,7 +5,8 @@ export const PolicyRoutes = [
         path: 'a/policy',
         component: policy.PolicyComponent,
         children: [
-            { path: ':policyId', component: policy.PolicyItemComponent }
+            { path: ':policyTypeId', component: policy.PolicyItemComponent },
+            { path: ':policyTypeId/structure', component: policy.PolicyItemStructureComponent },
         ]
     }
 ];

@@ -2,7 +2,7 @@
 
 export const RuleRoutes = [
     {
-        path: 'a/rule',
+        path: 'a/quality/rule',
         component: rule.RuleComponent,
         children: [
             { path: '', component: rule.RuleListComponent },

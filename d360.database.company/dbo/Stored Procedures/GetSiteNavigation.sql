@@ -71,38 +71,18 @@ FROM SiteNav n
 WHERE n.Name = '#Models'
 
 UNION ALL
-
 		
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		1 as Feature, 
 		(
-        select  *
-        from    (
-		        SELECT	ft.name, 
-				        'a/' As url,
-				        0 as feature,
-				        (
-				        SELECT	p.name, 
-						        dbo.GenerateNgObjectUrl('PolicyType', p.ID, 0)  As url,
-						        0 as feature
-				        FROM	PolicyType p
-						LEFT JOIN SiteNav v on v.ObjectID = p.id and v.Object = 'PolicyType'
-				        WHERE	PolicyTypeClassID = FT.ID and v.ObjectID is null
-				        FOR XML PATH('nav'), TYPE
-				        ) AS items	
-		        FROM	(
-                        select top 100 percent ID, name from PolicyTypeClass C where exists(select 1 from PolicyType where PolicyTypeClassID = C.ID) order by name
-				        ) FT
-				LEFT JOIN SiteNav v on v.ObjectID = ft.ID and v.Object = 'PolicyTypeClass'
-				WHERE v.ObjectID is null
-				union all
-				SELECT	'Rules' AS name, 
-						'a/rule' AS url, 
-						0 as feature,
-						NULL AS items
-                ) as mo
-		FOR XML PATH('nav'), TYPE
+			SELECT	p.name, 
+					dbo.GenerateNgObjectUrl('PolicyType', p.ID, 0)  As url,
+					0 as feature
+			FROM	PolicyType p
+			LEFT JOIN SiteNav v on v.ObjectID = p.id and v.Object = 'PolicyType'
+			WHERE	 v.ObjectID is null
+			FOR XML PATH('nav'), TYPE
 		) AS Items
 FROM SiteNav n
 WHERE n.Name = '#Policy'
@@ -332,6 +312,21 @@ SELECT	'#Admin' as MenuID,
 		) as Items
 
 	where 1 = 1
+
+	UNION ALL
+
+	SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		(
+		SELECT	'Rules' AS name, 
+		'a/quality/rule' AS url, 
+		0 as feature,
+		NULL AS items
+		for xml path('nav'), type
+		) AS Items
+	FROM SiteNav n
+	WHERE n.Name = '#Data Quality'
 
 	UNION ALL
 

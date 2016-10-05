@@ -135,7 +135,8 @@ import {
 
 import {
     PolicyComponent,
-    PolicyItemComponent,  
+    PolicyItemComponent, 
+    PolicyItemStructureComponent, 
 } from './components/policy/index';
 
 import {
@@ -253,7 +254,8 @@ import {
         ObjectDetailTile,                               
         PolicyComponent,
         PolicyItemComponent,    
-        PredicatesTile,        
+        PolicyItemStructureComponent,
+        PredicatesTile,
         RelationshipsTile,                
         ResourceApiComponent,
         ResourceComponent,
