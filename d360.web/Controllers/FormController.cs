@@ -375,7 +375,8 @@ namespace d360.web.Controllers
                     return Resource_ChangeMyPasswordFields();
                 case "TAXONOMY":
                     return Taxonomy_EditFields(ID);
-               
+                
+
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -409,6 +410,8 @@ namespace d360.web.Controllers
                     return SurveyType_AddFields();
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
+                case "REFERENCEITEMTYPE":
+                    return ReferenceItem_AddFields(objectID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -574,6 +577,8 @@ namespace d360.web.Controllers
                     return AddTaxonomy(form);
                 case "REFERENCEITEMTYPE":
                     return AddReferenceItemType(form);
+                case "REFERENCEITEM":
+                    return AddReferenceItem(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -20813,6 +20818,23 @@ order by TextPath
                 };
 
                 Company.Add<ReferenceItemType>(model);
+                
+                if (model.ID > 0)
+                {
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.ReferenceItemType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        FriendlyName = "Code",
+                        Name = "Code",
+                        MaximumLength = 250,
+                        MinimumLength = 1,
+                        SortOrder = 1,
+                        Type = DataType.Text.ToString()
+                    });
+                }
 
                 dynamic custom = new
                 {
@@ -20822,6 +20844,64 @@ order by TextPath
                 };
 
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        /// <param name="id">LookupTypeID</param>
+        public JsonResult ReferenceItem_AddFields(int id)
+        {
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var type = Company.GetById<ReferenceItemType>(id);
+
+            list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, id).ToList(), 1);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("lookup");
+
+                int typeID = parseIntField(form, "ReferenceItemTypeID");
+                var type = Company.GetById<ReferenceItemType>(typeID);
+
+                if (type == null) throw new NotFoundException("referenceitemtype");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, typeID, Claim.Create))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                var a = new ReferenceItem
+                {
+                    ReferenceItemTypeID = typeID,
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow//,
+                    //DisplayValue = 
+                };
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
+                Company.SaveOrUpdate<ReferenceItem>(a, fields);
+
+                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

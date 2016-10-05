@@ -1,16 +1,15 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-field-definition-tile',
-    templateUrl: 'scripts/app/components/tiles/field-definition.tile.html',
+    templateUrl: 'scripts/app/components/shared/field-definition.component.html',
     providers: [ FieldsService ]
 })
 
-export class FieldDefinitionTile extends BaseComponent implements OnChanges {
+export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() title: string = 'Field Definition';

@@ -975,7 +975,7 @@
     <Content Include="Scripts\app\components\forms\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\forms\workflow-item.form.html" />
     <Content Include="Scripts\app\components\tiles\claims.tile.html" />
-    <Content Include="Scripts\app\components\tiles\field-definition.tile.html" />
+    <Content Include="Scripts\app\components\shared\field-definition.component.html" />
     <Content Include="Scripts\app\components\shared\object-detail.component.html" />
     <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
@@ -1681,7 +1681,7 @@
     <TypeScriptCompile Include="Scripts\app\services\responsibility.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\field-definition.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\field-definition.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\people-responsibilities.tile.ts" />

@@ -7,8 +7,8 @@ import { ReferenceItemType } from '../../models/reference.model';
     selector: 'd3s-reference-item-type-list',
     template: ` 
                 <div class="tile tile-detail">
-                    <header>Reference Item Types
-                        <d3s-tile-actions [hasAdd]="!showDelete && !showEditor" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
+                    <header *ngIf="!showEditor">Reference Types
+                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor && !showDelete">
@@ -69,11 +69,16 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.referenceService.getReferenceItemTypes()
             .then(result => {
                 this.referenceTypes = result;
+                if (this.referenceTypes.length > 0) {
+                    this.selected = this.referenceTypes[0];
+                    this.selectedChange.emit(this.selected);
+                }
                 this.isLoading = false;
             });
     }
 
     private deleteReferenceItemType(id: number) {
+        this.isLoading = true;
         this.referenceService.deleteReferenceItemType(id).then(
             result => {
                 if (result.type == 'error') {
@@ -86,12 +91,14 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                         this.referenceTypes.splice(index, 1);
                     }
                 }
+                this.isLoading = false;
                 this.showDelete = false;
             });        
     }
 
 
     private saveReferenceItemType(event) {
+        this.isLoading = true;
         this.referenceService.saveReferenceItemType(event.referenceItemType)
             .then(result => {
                 if (result.type == 'error') {
@@ -112,6 +119,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     }
                     this.selected = event.referenceItemType;
                 }
+                this.isLoading = false;
                 this.showEditor = false;
             });
         //add / edit reference item type

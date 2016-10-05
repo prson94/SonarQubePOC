@@ -39,6 +39,20 @@ import { ReferenceItemType } from '../../models/reference.model';
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-field-definition-tile [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">           
+                                    <d3s-dynamic-grid [title]="'Items'" [itemName]="'Lookup'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                `
@@ -65,4 +79,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     ngOnDestroy() {
         this.clearSidebar();
     }
+
+    referenceItemUri() {
+        if (this.selectedReferenceItemType == null) return "";
+
+        return `resources/lookups/${this.selectedReferenceItemType.ID}/items.json`;
+    }    
 };

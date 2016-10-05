@@ -1,6 +1,5 @@
 ﻿import { AttributesTile } from './attributes.tile';
 import { ClaimsTile } from './claims.tile';
-import { FieldDefinitionTile } from './field-definition.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { LoadItemTile } from './load-item.tile';
@@ -20,7 +19,6 @@ import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 
 export * from './attributes.tile';
 export * from './claims.tile';
-export * from './field-definition.tile';
 export * from './fusion-attributes.tile';
 export * from './fusion-configuration.tile';
 export * from './load-item.tile';

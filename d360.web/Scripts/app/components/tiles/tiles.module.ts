@@ -10,7 +10,6 @@ import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AttributesTile } from './attributes.tile';
 import { ClaimsTile } from './claims.tile';
-import { FieldDefinitionTile } from './field-definition.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { LoadItemTile } from './load-item.tile';
@@ -47,8 +46,7 @@ import {
         AssignmentsTile,
         AttributesTile,
         BoardTile,
-        ClaimsTile, 
-        FieldDefinitionTile,
+        ClaimsTile,         
         FusionAttributesTile,
         FusionConfigurationTile,                
         LoadItemTile,
@@ -68,8 +66,7 @@ import {
         AssignmentsTile,
         AttributesTile,
         BoardTile,
-        ClaimsTile,
-        FieldDefinitionTile,
+        ClaimsTile,        
         FusionAttributesTile,
         FusionConfigurationTile,                
         LoadItemTile,        

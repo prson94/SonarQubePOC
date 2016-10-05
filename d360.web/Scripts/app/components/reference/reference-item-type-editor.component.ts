@@ -50,7 +50,7 @@ export class ReferenceItemTypeEditorComponent {
             this.editedReferenceItemType = _.cloneDeep(this.referenceItemType);
         else {
             this.editedReferenceItemType = new ReferenceItemType();
-            
+            this.editedReferenceItemType.DisplayFormat = "{Code}";
             this.action = "New";
         }        
     }

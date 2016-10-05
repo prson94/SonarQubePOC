@@ -44,6 +44,7 @@ import { DynamicGridComponent } from './dynamic-grid.component';
 import { DynamicEditorComponent } from './dynamic-editor.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
+import { FieldDefinitionComponent } from './field-definition.component';
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
@@ -87,6 +88,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
+        FieldDefinitionComponent,
         FollowerGridComponent,
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
@@ -129,6 +131,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
+        FieldDefinitionComponent,
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
