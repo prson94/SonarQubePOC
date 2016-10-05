@@ -1364,6 +1364,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
@@ -1457,7 +1459,6 @@
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\reference\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
@@ -1577,6 +1578,7 @@
     <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
@@ -1639,6 +1641,7 @@
     <TypeScriptCompile Include="Scripts\app\services\object-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\reference.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\reports.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\resources.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\right-sidebar.service.ts" />

@@ -1,11 +1,12 @@
-﻿import * as reference from './index'
+﻿import { ReferenceComponent } from './reference.component';
+import { ReferenceListComponent } from './reference-list.component';
 
 export const ReferenceRoutes = [
     {
         path: 'a/reference',
-        component: reference.ReferenceComponent,
+        component: ReferenceComponent,
         children: [
-            { path: '', component: reference.ReferenceListComponent },            
+            { path: '', component: ReferenceListComponent },            
         ]
     }
 ];

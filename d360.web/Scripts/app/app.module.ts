@@ -18,6 +18,7 @@ import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
 import { CommunityModule } from './components/community/community.module';
 import { MonitorModule } from './components/monitor/monitor.module';
+import { ReferenceModule } from './components/reference/reference.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -138,11 +139,6 @@ import {
 } from './components/policy/index';
 
 import {
-    ReferenceComponent,
-    ReferenceListComponent,
-} from './components/reference/index';
-
-import {
     ResourceComponent,
     ResourceItemComponent,
     ResourceApiComponent,
@@ -257,9 +253,7 @@ import {
         ObjectDetailTile,                               
         PolicyComponent,
         PolicyItemComponent,    
-        PredicatesTile,
-        ReferenceComponent,
-        ReferenceListComponent,
+        PredicatesTile,        
         RelationshipsTile,                
         ResourceApiComponent,
         ResourceComponent,
@@ -330,7 +324,7 @@ import {
         CommunityModule,
         CoreModule,
         MonitorModule,
-      
+        ReferenceModule,
     ],
     bootstrap: [AppComponent],
     providers: [Title, AdminUserGuard, AuthenticationService],    

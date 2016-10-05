@@ -7067,5 +7067,22 @@ SELECT (
         }
 
         #endregion
+
+        #region Reference - new replaces domain
+
+        [Route("referenceItemTypes")]
+        public IQueryable<ReferenceItemType> GetReferenceItemTypes()
+        {
+            return Company.Table<ReferenceItemType>();
+        }
+
+
+        [Route("referenceItems/{referenceItemTypeID:int}")]
+        public IQueryable<ReferenceItem> GetReferenceItem(int referenceItemTypeID)
+        {
+            return Company.Filter<ReferenceItem>(x => x.ReferenceItemTypeID == referenceItemTypeID);            
+        }
+
+        #endregion
     }
 }

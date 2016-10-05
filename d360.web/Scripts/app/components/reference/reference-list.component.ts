@@ -1,21 +1,50 @@
-﻿
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/index';
+import { RightSidebarService, HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { ReferenceItemType } from '../../models/reference.model';
 
 @Component({
     selector: 'd3s-reference-list',   
    
     template: ` 
+                <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-audit>                
+                <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-lineage>
+                <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name" [objectType]="'ReferenceItemType'"></d3s-impact>
+                <div class="row" *ngIf="!isLoading && isOwnershipVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">   
+                            <d3s-people-responsibilities-tile [objectID]="selectedReferenceItemType?.ID" [objectType]="'ReferenceItemType'" [title]="'Ownership of ' + selectedReferenceItemType?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-relationships [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [objectName]="selectedReferenceItemType?.Name"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible">                                      
+                    <div class="col s12 l3">
+                        <d3s-reference-item-type-list [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
+                    </div>
+                    <div class="col s12 l9">
+                    </div>
+                </div>
                `
 })
 
-export class ReferenceListComponent extends BaseComponent implements OnInit {    
-    
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
-        super();
+export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {    
+
+    private selectedReferenceItemType: ReferenceItemType;
+
+    constructor(rightSidebarService: RightSidebarService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        super(rightSidebarService);
+
+        this.setCommonRightSideBar(true, true, false, true, true, true);
     }
 
     ngOnInit() {
@@ -24,5 +53,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 };
