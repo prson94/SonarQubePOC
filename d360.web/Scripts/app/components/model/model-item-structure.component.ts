@@ -40,6 +40,13 @@ import { TreeNode } from 'primeng/primeng';
                         <p-column [style]="{width:'40px'}" >
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
+                                            <a style="cursor:pointer;" (click)="selected=item;showAdd()"><i class="fa fa-plus"></i></a>                                        
+                                        </div>
+                                    </template>
+                        </p-column>     
+                        <p-column [style]="{width:'40px'}" >
+                                    <template let-item="rowData" pTemplate type="body">
+                                        <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
