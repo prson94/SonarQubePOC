@@ -1161,4 +1161,10 @@
   <data name="SourceArtifact_Name" xml:space="preserve">
     <value>Source</value>
   </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>The format of the display value.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Display Format</value>
+  </data>
 </root>

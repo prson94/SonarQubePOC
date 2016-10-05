@@ -32,6 +32,13 @@ import { ReferenceItemType } from '../../models/reference.model';
                         <d3s-reference-item-type-list [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
                     </div>
                     <div class="col s12 l9">
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <object-detail [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID"></object-detail>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                `

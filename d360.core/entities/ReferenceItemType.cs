@@ -3,6 +3,7 @@ using d360.core.entities.Contracts;
 using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -10,12 +11,15 @@ namespace d360.core.entities
     public class ReferenceItemType : BaseIntObject, IIntObject, ISearchable, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
 
         [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "DisplayFormat_Name", Description = "DisplayFormat_Description")]
         public string DisplayFormat { get; set; }
 
         [DataMember]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Description { get; set; }
 
         public DateTime? CreatedOn { get; set; }

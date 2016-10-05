@@ -1051,6 +1051,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The format of the display value..
+        /// </summary>
+        public static string DisplayFormat_Description {
+            get {
+                return ResourceManager.GetString("DisplayFormat_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display Format.
+        /// </summary>
+        public static string DisplayFormat_Name {
+            get {
+                return ResourceManager.GetString("DisplayFormat_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The domain prefix for your account..
         /// </summary>
         public static string DomainPrefix_Description {

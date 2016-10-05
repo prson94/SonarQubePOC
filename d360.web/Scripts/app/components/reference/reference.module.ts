@@ -10,11 +10,16 @@ import { PipesModule } from '../../pipes/pipes.module';
 
 import { ReferenceComponent } from './reference.component';
 import { ReferenceListComponent } from './reference-list.component';
+import { ReferenceItemTypeEditorComponent } from './reference-item-type-editor.component';
 import { ReferenceItemTypeGridComponent } from './reference-item-type-list.component';
 
+
 import {
+    ButtonModule,
     GrowlModule,
     DataTableModule,
+    EditorModule,
+
 } from 'primeng/primeng';
 
 @NgModule({
@@ -24,8 +29,10 @@ import {
         RouterModule,
 
         //primeng
+        ButtonModule,
         GrowlModule,
         DataTableModule,
+        EditorModule,
 
 
         //d3s
@@ -35,13 +42,16 @@ import {
     ],
     declarations: [
         ReferenceComponent,
+        ReferenceItemTypeEditorComponent,
         ReferenceItemTypeGridComponent,
         ReferenceListComponent,
     ],
     exports: [
         ReferenceComponent,
+        ReferenceItemTypeEditorComponent,
         ReferenceItemTypeGridComponent,
         ReferenceListComponent,
     ]
+    
 })
 export class ReferenceModule { }

@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { LookupGrid } from '../../models/grid-definition.model';
@@ -8,12 +7,12 @@ declare var CompanySettings;
 
 @Component({
     selector: 'object-detail',
-    templateUrl: 'scripts/app/components/tiles/object-detail.tile.html',
+    templateUrl: 'scripts/app/components/shared/object-detail.component.html',
     providers: [ObjectDetailService]
 })
 
 
-export class ObjectDetailTile implements OnChanges {
+export class ObjectDetailComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
 

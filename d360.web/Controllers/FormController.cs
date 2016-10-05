@@ -475,6 +475,8 @@ namespace d360.web.Controllers
                     return ChangeMyPassword(form);
                 case "TAXONOMY":
                     return EditTaxonomy(form);
+                case "REFERENCEITEMTYPE":
+                    return EditReferenceItemType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -514,6 +516,8 @@ namespace d360.web.Controllers
                     return DeleteQuestionType(form);
                 case "TAXONOMY":
                     return DeleteTaxonomy(form);
+                case "REFERENCEITEMTYPE":
+                    return DeleteReferenceItemType(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -567,7 +571,9 @@ namespace d360.web.Controllers
                 case "INTERSECT":
                     return AddRelationship(form);
                 case "TAXONOMY":
-                    return AddTaxonomy(form);         
+                    return AddTaxonomy(form);
+                case "REFERENCEITEMTYPE":
+                    return AddReferenceItemType(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -20699,6 +20705,135 @@ order by TextPath
         }
 
         #endregion
+
+        #endregion
+
+        #region Reference Item Types
+
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditReferenceItemType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItemType>(id);
+                if (model == null) throw new NotFoundException("ReferenceItemType");
+
+                if ((!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Update)))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Name = parseTextField(form, "Name");
+                model.Description = parseTextField(form, "Description");
+                model.DisplayFormat = parseTextField(form, "DisplayFormat");
+                model.UpdatedBy = Company.CurrentResourceID;
+                model.UpdatedOn = DateTime.UtcNow;
+
+                Company.Update<ReferenceItemType>(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "edit",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        [HttpDelete]
+        public JsonResult DeleteReferenceItemType(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItemType>(id);
+                if (model == null) throw new NotFoundException("ReferenceItemType");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "delete",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false)]
+        public JsonResult AddReferenceItemType(FormCollection form)
+        {
+            try
+            {                
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, 0, Claim.Create, ClaimObject.Root))
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
+
+                var model = new ReferenceItemType
+                {
+                    Name = parseTextField(form, "Name"),
+                    Description = parseTextField(form, "Description"),
+                    DisplayFormat = parseTextField(form, "DisplayFormat"),
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow
+                };
+
+                Company.Add<ReferenceItemType>(model);
+
+                dynamic custom = new
+                {
+                    Name = model.Name,
+                    action = "add",
+                    Context = form["_context"]
+                };
+
+                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), form["_context"], "add", HttpStatusCode.Created, custom);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         #endregion
     }

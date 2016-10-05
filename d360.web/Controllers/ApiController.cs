@@ -5360,6 +5360,35 @@ from    (
                     policyType = null;
                     break;
                 #endregion
+                case SystemObjects.ReferenceItemType:
+                    #region Fields
+                    var refType = Company.GetById<ReferenceItemType>(id);
+                    if (refType != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = refType.GetName(i => i.Name), FieldName = "Name", FieldDescription = refType.GetDescription(i => i.Name), Value = refType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = refType.GetName(i => i.DisplayFormat), FieldName = "DisplayFormat", FieldDescription = refType.GetDescription(i => i.DisplayFormat), Value = refType.DisplayFormat }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = refType.GetName(i => i.Description), FieldName = "Description", FieldDescription = refType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(refType.Description) ? "None provided" : refType.Description }
+                            }
+                        });
+                    }
+                    break;
+                #endregion
                 case SystemObjects.Report:
                     #region Fields
                     var report = Company.GetById<Report>(id, i => i.ReportLayout);
@@ -5979,7 +6008,8 @@ from    (
                     }
                     wtr = null;
                     break;
-                    #endregion
+                #endregion
+                
             }
 
             sections.Add(new ReadOnlySection { Name = "Governance", Fields = list, ID = 0 });

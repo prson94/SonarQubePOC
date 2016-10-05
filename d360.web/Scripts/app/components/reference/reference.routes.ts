@@ -4,7 +4,7 @@ import { ReferenceListComponent } from './reference-list.component';
 export const ReferenceRoutes = [
     {
         path: 'a/reference',
-        component: ReferenceComponent,
+        component: ReferenceComponent,        
         children: [
             { path: '', component: ReferenceListComponent },            
         ]

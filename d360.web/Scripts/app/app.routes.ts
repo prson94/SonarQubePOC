@@ -29,7 +29,7 @@ export const routes: Routes = [
     ...RuleRoutes,
     ...MonitorRoutes,
     ...CommunityRoutes,
-    ...ReferenceRoutes,
+    ...ReferenceRoutes,    
     ...SearchRoutes,
     ...WorkflowRoutes,
 ];

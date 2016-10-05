@@ -4,9 +4,9 @@
     DisplayFormat: string;
     Description: string;
     CreatedOn: Date;
-    CreatedBy: string;
+    CreatedBy: number;
     UpdatedOn: Date;
-    UpdatedBy: string;
+    UpdatedBy: number;
 }
 
 export class ReferenceItem {
@@ -14,7 +14,7 @@ export class ReferenceItem {
     ReferenceItemTypeID: number;
     DisplayValue: string;
     CreatedOn: Date;
-    CreatedBy: string;
+    CreatedBy: number;
     UpdatedOn: Date;
-    UpdatedBy: string;
+    UpdatedBy: number;
 }

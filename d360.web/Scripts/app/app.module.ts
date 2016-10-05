@@ -124,13 +124,11 @@ import {
 } from './components/model/index';
 
 import {
-    ActionBar,
-    SimpleAccordion,
+    ActionBar,    
     ClaimsMatrixPart,    
     MenuPartItem,
     MenuPart,
-    SimpleDropdown,
-    ObjectDetailField,
+    SimpleDropdown,    
 } from './components/parts/index';
 
 import {
@@ -165,8 +163,7 @@ import {
     LoadItemTile,
     MenuBarItem,
     ModelLevelTile,
-    ObjectDefinitionTile,
-    ObjectDetailTile,    
+    ObjectDefinitionTile,    
     PredicatesTile,
     RelationshipsTile,            
     StructureTile,    
@@ -249,9 +246,7 @@ import {
         ModelLevelTile,
         ModelListComponent,
         ModelItemStructureComponent,        
-        ObjectDefinitionTile,
-        ObjectDetailField,
-        ObjectDetailTile,                               
+        ObjectDefinitionTile,                                      
         PolicyComponent,
         PolicyItemComponent,    
         PolicyItemStructureComponent,
@@ -269,8 +264,7 @@ import {
         RightSidebarItemComponent,
         RuleComponent,        
         RuleItemComponent,
-        RuleListComponent,
-        SimpleAccordion,
+        RuleListComponent,        
         SimpleDropdown,    
         StructureTile,        
         SynonymsTile,

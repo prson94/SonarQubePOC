@@ -1,10 +1,6 @@
-﻿
-
-import {  NgModule } from '@angular/core';
+﻿import {  NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-
-//import * as parts from './index';
 
 import {
     TreeTableModule,
@@ -22,7 +18,6 @@ import {
     ActionBar,
     ClaimsMatrixPart,    
     MenuPart,
-    SimpleAccordion,
     SimpleDropdown
 } from './index';
 
@@ -30,15 +25,13 @@ import {
     declarations: [
         ActionBar,
         ClaimsMatrixPart,        
-        MenuPart,
-        SimpleAccordion,
+        MenuPart,        
         SimpleDropdown
     ],
     exports: [
         ActionBar,
         ClaimsMatrixPart,        
-        MenuPart,
-        SimpleAccordion,
+        MenuPart,        
         SimpleDropdown
         ]
     , imports: [

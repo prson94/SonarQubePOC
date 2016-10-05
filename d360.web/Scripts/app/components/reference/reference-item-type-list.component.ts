@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService, ReferenceService } from '../../services/index';
+import { HeaderBreadcrumbService, ReferenceService, MessagesService } from '../../services/index';
 import { ReferenceItemType } from '../../models/reference.model';
 
 @Component({
@@ -8,15 +8,37 @@ import { ReferenceItemType } from '../../models/reference.model';
     template: ` 
                 <div class="tile tile-detail">
                     <header>Reference Item Types
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="addReferenceItemTypeList()"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="!showDelete && !showEditor" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
+                    <span *ngIf="!isLoading && !showEditor && !showDelete">
                         <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                         <p-dataTable [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                
                             <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
-                        </p-dataTable>        
+                            <p-column [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
+                                    </div>
+                                </template>
+                            </p-column>                            
+                            <p-column  [style]="{width:'28px'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <div class="RowTools">                                
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                    </div>
+                                </template>
+                            </p-column>       
+                        </p-dataTable>  
                     </span>
+                    <d3s-reference-item-type-editor *ngIf="showEditor" [referenceItemType]="selected" (closeClick)="showEditor = false;" (saveClick)="saveReferenceItemType($event)"></d3s-reference-item-type-editor>
+                    <delete-form *ngIf="showDelete"
+                        [callback]="theDeleteCallback"
+                        [itemId]="selected?.ID"
+                        [method]="'callback'"
+                        [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                        (onCancel)="showDelete=false;"
+                    ></delete-form>  
                 </div>
               `,
     providers: [ReferenceService],
@@ -27,9 +49,15 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     @Output() selectedChange = new EventEmitter();
 
     private referenceTypes: ReferenceItemType[];
+    private showEditor: boolean = false;
+    private showDelete: boolean = false;
+
+    theDeleteCallback: Function;
     
-    constructor(private referenceService: ReferenceService) {
+    constructor(private referenceService: ReferenceService, private messagesService: MessagesService) {
         super();
+
+        this.theDeleteCallback = this.deleteReferenceItemType.bind(this);
     }
 
     ngOnInit() {
@@ -37,7 +65,59 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     }
 
     private load() {
+        this.isLoading = true;
+        this.referenceService.getReferenceItemTypes()
+            .then(result => {
+                this.referenceTypes = result;
+                this.isLoading = false;
+            });
+    }
+
+    private deleteReferenceItemType(id: number) {
+        this.referenceService.deleteReferenceItemType(id).then(
+            result => {
+                if (result.type == 'error') {
+                    this.messagesService.showError(result.title, result.message);
+                }
+                else {
+                    this.messagesService.showInfoMessage('Success', 'Successfully deleted the selected reference list.');
+                    let index = this.referenceTypes.findIndex(x => x.ID == id);
+                    if (index >= 0 && index < this.referenceTypes.length) {
+                        this.referenceTypes.splice(index, 1);
+                    }
+                }
+                this.showDelete = false;
+            });        
+    }
+
+
+    private saveReferenceItemType(event) {
+        this.referenceService.saveReferenceItemType(event.referenceItemType)
+            .then(result => {
+                if (result.type == 'error') {
+                    this.messagesService.showError(result.title, result.message);
+                }
+                else {
+                    if (event.referenceItemType.ID == undefined) {
+                        event.referenceItemType.ID = Number(result.id);
+                        this.referenceTypes[this.referenceTypes.length] = event.referenceItemType;
+                        this.messagesService.showInfoMessage('Succes', 'Reference List Type Created');
+                    }
+                    else {
+                        let index = this.referenceTypes.findIndex(x => x.ID == event.referenceItemType.ID);
+                        if (index >= 0 && index < this.referenceTypes.length) {
+                            this.referenceTypes[index] = event.referenceItemType;
+                            this.messagesService.showInfoMessage('Succes', 'Reference List Type Updated');
+                        }
+                    }
+                    this.selected = event.referenceItemType;
+                }
+                this.showEditor = false;
+            });
+        //add / edit reference item type
         
     }
+
+
     
 };

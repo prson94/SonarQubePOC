@@ -976,7 +976,7 @@
     <Content Include="Scripts\app\components\forms\workflow-item.form.html" />
     <Content Include="Scripts\app\components\tiles\claims.tile.html" />
     <Content Include="Scripts\app\components\tiles\field-definition.tile.html" />
-    <Content Include="Scripts\app\components\tiles\object-detail.tile.html" />
+    <Content Include="Scripts\app\components\shared\object-detail.component.html" />
     <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
@@ -1364,6 +1364,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-issue.component.ts" />
@@ -1451,9 +1452,9 @@
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\object-detail-field.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-detail-field.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\parts.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\simple-accordion.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
@@ -1682,7 +1683,7 @@
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\field-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\forms\form-message.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\object-detail.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />

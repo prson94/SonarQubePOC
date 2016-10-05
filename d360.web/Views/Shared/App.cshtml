@@ -68,27 +68,22 @@
             border-bottom: 1px solid @(settings["HeaderBackgroundColor"]);            
         }    
     </style>
+    <!-- Scripts for legacy carry over -->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script type="text/javascript" src="/Scripts/GoJS/GoJS-1-5-18.js"></script>
-    <script type="text/javascript" src="/scripts/all-ang@(suffix).js?version=@(VersionNumber)"></script>
-    <script type="text/javascript" src="/Scripts/powerbi.js"></script>
-
-    
+    <script type="text/javascript" src="/scripts/all-ang@(suffix).js?version=@(VersionNumber)"></script>            
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
     
-
+    <!-- Polyfill(s) for older browsers -->
     <script src="../../node_modules/core-js/client/shim.min.js"></script>
 
     <script src="../../node_modules/systemjs/dist/system.src.js"></script>
-    <script src="../../node_modules/rxjs/bundles/Rx.min.js"></script>
-
     <script src="../../node_modules/zone.js/dist/zone.js"></script>
     <script src="../../node_modules/reflect-metadata/Reflect.js"></script>
 
-    <script src="../../node_modules/lodash/lodash.min.js"></script>
-
-
+    <!-- Additional dependencies-->
     <script src="https://cdn.quilljs.com/1.0.0-beta.3/quill.min.js"></script>
+    <script type="text/javascript" src="/Scripts/powerbi.js"></script>
 
     <link rel="stylesheet" type="text/css" href="../../node_modules/primeng/resources/primeng.min.css" />
     <link rel="stylesheet" type="text/css" href="../../Content/primeng/d3s/theme.css" />

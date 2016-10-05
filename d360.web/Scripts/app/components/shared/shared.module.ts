@@ -54,6 +54,8 @@ import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
+import { ObjectDetailComponent } from './object-detail.component';
+import { ObjectDetailField } from './object-detail-field.part';
 import { ObjectFollowersComponent } from './object-followers.component';
 import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthComponent } from './object-health.component';
@@ -66,6 +68,7 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
+import { SimpleAccordion } from './simple-accordion.part';
 import { TileActionsComponent } from './tile-actions.component';
 import { TakeSurveyComponent } from './take-survey.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
@@ -94,6 +97,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         MessagesComponent,        
         ObjectBoardComponent,
         ObjectChallengeComponent,
+        ObjectDetailComponent,
+        ObjectDetailField,
         ObjectFollowersComponent,
         ObjectGovernanceComponent,
         ObjectHealthComponent,
@@ -106,6 +111,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
+        SimpleAccordion,
         TakeSurveyComponent,
         TileActionsComponent,        
         WorkflowDetailedViewComponent,
@@ -133,6 +139,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         MessagesComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
+        ObjectDetailComponent,
+        ObjectDetailField,
         ObjectFollowersComponent,
         ObjectGovernanceComponent,
         ObjectHealthComponent,
@@ -145,6 +153,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
+        SimpleAccordion,
         TakeSurveyComponent,
         TileActionsComponent,   
         WorkflowDetailedViewComponent,     

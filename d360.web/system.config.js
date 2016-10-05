@@ -1,7 +1,7 @@
 ﻿System.config({
     baseURL: "/",
     transpiler: 'typescript',
-    typescriptOptions: { emitDecoratorMetadata: true },
+    typescriptOptions: { emitDecoratorMetadata: true },    
     map: {
         'rxjs': './node_modules/rxjs',
         '@angular': './node_modules/@angular',
