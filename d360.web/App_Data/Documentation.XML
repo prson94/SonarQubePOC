@@ -2553,6 +2553,9 @@
         <member name="M:d360.web.Controllers.FormController.ReferenceItem_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.ReferenceItem_EditFields(System.Int32)">
+            <param name="id">LookupID</param>
+        </member>
         <member name="M:d360.web.Controllers.FusionController.GetConfigurationsByType(System.Int32)">
             <summary>
             Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.

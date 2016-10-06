@@ -375,7 +375,8 @@ namespace d360.web.Controllers
                     return Resource_ChangeMyPasswordFields();
                 case "TAXONOMY":
                     return Taxonomy_EditFields(ID);
-                
+                case "REFERENCEITEMTYPE":
+                    return ReferenceItem_EditFields(ID);
 
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -480,6 +481,8 @@ namespace d360.web.Controllers
                     return EditTaxonomy(form);
                 case "REFERENCEITEMTYPE":
                     return EditReferenceItemType(form);
+                case "REFERENCEITEM":
+                    return EditReferenceItem(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -521,6 +524,8 @@ namespace d360.web.Controllers
                     return DeleteTaxonomy(form);
                 case "REFERENCEITEMTYPE":
                     return DeleteReferenceItemType(form);
+                case "REFERENCEITEM":
+                    return DeleteReferenceItem(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -20863,6 +20868,64 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult ReferenceItem_DeleteFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<ReferenceItem>(id);
+
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Delete))
+                return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">LookupID</param>
+        public JsonResult ReferenceItem_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<ReferenceItem>(id);
+
+            if (!Company.HasPermission(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID, Claim.Update))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 1);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpDelete]
+        public JsonResult DeleteReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItem>(id);
+                if (model == null) throw new NotFoundException("ReferenceItem");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Delete))
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                Company.Delete<ReferenceItem>(model);
+
+                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
         [ValidateHttpAntiForgeryToken]
         [HttpPost, ValidateInput(false)]
         public JsonResult AddReferenceItem(FormCollection form)
@@ -20904,6 +20967,39 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
+
+        [HttpPut, ValidateInput(false)]
+        public JsonResult EditReferenceItem(FormCollection form)
+        {
+            try
+            {
+                if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
+
+                var id = parseIntField(form, "ID");
+                var model = Company.GetById<ReferenceItem>(id);
+
+                if (model == null) throw new NotFoundException("referenceitem");
+
+                if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
+                Company.SaveOrUpdate<ReferenceItem>(model, fields);
+
+                return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
 
 
         #endregion
