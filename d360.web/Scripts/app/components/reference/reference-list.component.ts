@@ -83,6 +83,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     referenceItemUri() {
         if (this.selectedReferenceItemType == null) return "";
 
-        return `resources/lookups/${this.selectedReferenceItemType.ID}/items.json`;
+        return `resources/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
     }    
 };

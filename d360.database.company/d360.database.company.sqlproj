@@ -508,6 +508,7 @@
     <None Include="dbo\Functions\CustomSiteNavigation.sql" />
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
+    <None Include="dbo\Functions\GetFormattedFieldReferenceItemValue.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

@@ -834,7 +834,69 @@ order by	ColumnIndex", new { id });
 
             return items;
         }
-        
+
+        class ReferenceItemFieldValueModel
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public int SortOrder { get; set; }
+            public int ObjectID { get; set; }
+            public string FormattedValue { get; set; }
+        }
+
+        public List<Dictionary<string, object>> GetReferenceItemsAsDictionary(int typeID)
+        {
+            var items = new List<Dictionary<string, object>>();
+
+            var values = Filter<ReferenceItem>(i => i.ReferenceItemTypeID == typeID).ToList();
+
+            var lookupIDs = values.Select(i => i.ID).ToList();
+            var sType = SystemObjects.ReferenceItem.ToString();
+
+            // you cant use fields with relation cause this is called from setup page and cache is not updated instananiously
+            var fields = new List<ReferenceItemFieldValueModel>();
+
+            int pageSize = 2000;
+            int pageNumbers = lookupIDs.Count / pageSize;
+
+            pageNumbers += ((lookupIDs.Count % pageSize) > 0) ? 1 : 0;
+
+            for (var i = 0; i < pageNumbers; i++)
+            {
+                var subList = pageNumbers > 1 ? lookupIDs.Skip(i * pageSize).Take(pageSize) : lookupIDs;
+                fields.AddRange(Query<ReferenceItemFieldValueModel>(@"
+                        select 
+                            ft.ID,
+                            ft.Name,
+	                        ft.SortOrder,
+	                        f.ObjectID,	
+	                        f.FormattedValue
+                        from 
+	                        [FieldType] ft
+	                        inner join [field] f on (f.fieldTypeID = ft.id)
+                        where 
+	                        f.[objecttype] = @ty and f.objectid in @ids;
+                    "
+                    , new { ids = subList, ty = sType }));
+            }
+
+            values.ForEach(e =>
+            {
+                var item = new Dictionary<string, object>();
+
+                item.Add("ID", e.ID.ToString());
+                foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
+                {
+                    var fieldName = $"Field{field.ID}";
+                    if (!item.ContainsKey(fieldName)) item.Add(fieldName, field.FormattedValue);
+                }
+
+                items.Add(item);
+            });
+
+            return items;
+        }
+
 
         public ObjectDetail GetObjectDetail(SystemObjects type, long id)
         {

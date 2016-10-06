@@ -677,6 +677,13 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             return Json(Company.GetLookupItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
         }
 
+
+        [Route("referenceItems/{typeID:int}/items.json")]
+        public JsonResult GetReferenceItems(int typeID)
+        {
+            return Json(Company.GetReferenceItemsAsDictionary(typeID), JsonRequestBehavior.AllowGet);
+        }
+
         [HttpPost]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {

@@ -504,6 +504,18 @@ namespace d360.web.Controllers
                     fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
                     break;
                 #endregion                                
+                case SystemObjects.ReferenceItemType:
+                    #region
+                    staticFieldCount = 1;
+                    remainingWidth = 90;
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+
+                    fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
+                    break;
+                #endregion
                 case SystemObjects.Rule:
                     #region
                     staticFieldCount = 4;
