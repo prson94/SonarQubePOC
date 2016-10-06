@@ -8996,7 +8996,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     FusionTypeID = typeID,
                     ParentID = parentID,
-                    Assignable = true,//bool.Parse(form["Assignable"]),
                     Name = parseTextField(form, "Name", null, true)
                 };
 
@@ -9019,14 +9018,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         {
             try
             {
-                //if (!form.HasKeys()) throw new NoFormDataException("fusion attribute type");
-
-                int typeID = fusion.FusionTypeID; // parseIntField(form, "FusionTypeID");
+                int typeID = fusion.FusionTypeID; 
                 int? parentID = fusion.ParentID;
-                //if (form.AllKeys.Contains("ParentID"))
-                //{
-                //    parentID = parseIntField(form, "ParentID");
-                //}
+
                 var type = Company.GetById<FusionType>(typeID);
                 if (type == null) throw new NotFoundException("fusion type");
 
@@ -9037,8 +9031,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     FusionTypeID = typeID,
                     ParentID = parentID,
-                    Assignable = true,//bool.Parse(form["Assignable"]),
-                    Name = fusion.Name //parseTextField(form, "Name", null, true)
+                    Name = fusion.Name
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -9160,15 +9153,13 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         {
             try
             {
-                //if (!form.HasKeys()) throw new NoFormDataException("fusion attibute type");
-
                 var model = Company.GetById<FusionAttributeType>(fusion.ID);
                 if (model == null) throw new NotFoundException("fusion attibute type");
 
                 if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = fusion.Name;  //parseTextField(form, "Name", null, true);
+                model.Name = fusion.Name;
 
                 Company.Update<FusionAttributeType>(model);
 

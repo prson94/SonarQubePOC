@@ -8,7 +8,7 @@ using System.ComponentModel;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.FusionAttributeType, "FusionAttributeType")]
+    [DataContract(Namespace = NAMESPACE)]
     public class FusionAttributeType : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         [DataMember]
@@ -17,14 +17,8 @@ namespace d360.core.entities
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "FusionType_Name", Description = "FusionType_Description")]
         public int FusionTypeID { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Assignable_Name", Description = "Assignable_Description")]
-        public bool Assignable { get; set; }
-
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description")]
         public string Name { get; set; }
-
-        [ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
-        public string Path { get; set; }
 
         [ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }

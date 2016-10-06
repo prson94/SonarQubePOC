@@ -378,7 +378,6 @@
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\WorkflowController.cs" />
-    <Compile Include="Controllers\OfficeAppsController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
     <Compile Include="Controllers\Services\DomainsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />

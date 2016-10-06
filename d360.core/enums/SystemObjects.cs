@@ -138,7 +138,11 @@ namespace d360.core
         [Description("Reference Item"), AllowSurvey(false)]
         ReferenceItem = 64,
         [Description("Reference Item Type"), AllowSurvey(false)]
-        ReferenceItemType = 65
+        ReferenceItemType = 65,
+        [Description("Fusion Query Attribute")]
+        FusionQueryAttribute = 66,
+        [Description("Fusion Query Attribute Type")]
+        FusionQueryAttributeType = 67
     }
 
     public class SystemObjectInfo

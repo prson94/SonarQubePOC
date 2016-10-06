@@ -105,6 +105,8 @@
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
+    <Compile Include="entities\FusionQueryAttribute.cs" />
+    <Compile Include="entities\FusionQueryAttributeType.cs" />
     <Compile Include="entities\ReferenceItemType.cs" />
     <Compile Include="entities\ReferenceItem.cs" />
     <Compile Include="entities\DomainItemXref.cs" />

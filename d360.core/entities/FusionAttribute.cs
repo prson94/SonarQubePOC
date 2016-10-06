@@ -25,9 +25,6 @@ namespace d360.core.entities
         [DataMember]
         public int FusionAttributeTypeID { get; set; }
 
-        [ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
-        public string Path { get; set; }
-
         [DataMember]
         public string SourceID { get; set; }
 

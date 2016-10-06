@@ -174,6 +174,10 @@ namespace d360.model
 
         public DbSet<FusionFilter> FusionFilters { get; set; }
 
+        public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
+
+        public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
+
         public DbSet<FusionRule> FusionRules { get; set; }
 
         public DbSet<FusionRuleItem> FusionRuleItem { get; set; }

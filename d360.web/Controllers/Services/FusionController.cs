@@ -197,6 +197,21 @@ where A.FusionTypeID = @id", columns, joins);
         }
 
         /// <summary>
+        /// Get a specific fusion configuration's query attribute types.  This list will provide required SQL statement to execute against the underlying relational source.
+        /// </summary>
+        /// <returns>The specific configuration's query attribute types.</returns>
+        [Route("{typeID:int}/configurations/{id:int}/queries")]
+        public HttpResponseMessage GetConfigurationQueries(int typeID, int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to see the fusion configuration details.");
+
+            var models = Company.Filter<FusionQueryAttributeType>(i => i.FusionID == id);
+            if (models == null) return Request.CreateResponse(HttpStatusCode.NotFound);
+            return Request.CreateResponse<IQueryable<FusionQueryAttributeType>>(HttpStatusCode.OK, models);
+        }
+
+        /// <summary>
         /// Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
         /// </summary>
         /// <returns>The specific configuration.</returns>

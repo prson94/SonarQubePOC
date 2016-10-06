@@ -4892,15 +4892,6 @@ from    (
                                 new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.TextPath), FieldName = "FATTextPath", FieldDescription = fusionAttributeType.GetDescription(i => i.TextPath), Value = fusionAttributeType.TextPath }
                             }
                         });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = fusionAttributeType.GetName(i => i.Assignable), FieldName = "FATAssignable", FieldDescription = fusionAttributeType.GetDescription(i => i.Assignable), Value = fusionAttributeType.Assignable.FormatBooleanReadOnlyValue() }
-                            }
-                        });
                     }
                     fusionAttributeType = null;
                     break;

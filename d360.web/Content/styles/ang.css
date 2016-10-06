@@ -23105,7 +23105,7 @@ ul.hierarchy :last-child {
 /* Main Secondary color (2) */
 /* Main Complement color */
 body {
-  background-color: #F8F3EF;
+  background-color: #efefef;
 }
 select,
 input {
@@ -23161,7 +23161,7 @@ nav.top,
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
 d3s-navbar-item > div.router-link-active > span > a {
-  background-color: #F8F3EF;
+  background-color: #efefef;
   color: #383127 !important;
 }
 d3s-navbar-item > div .nav-item {

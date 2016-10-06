@@ -1985,6 +1985,12 @@
             </summary>
             <returns>The specific configuration.</returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationQueries(System.Int32,System.Int32)">
+            <summary>
+            Get a specific fusion configuration's query attribute types.  This list will provide required SQL statement to execute against the underlying relational source.
+            </summary>
+            <returns>The specific configuration's query attribute types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.FusionController.GetConfigurationById(System.Int32)">
             <summary>
             Get a specific fusion configuration.  This configuration will provide required connection and security credentials to connect to the underlying source.
