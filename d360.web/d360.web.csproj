@@ -711,7 +711,6 @@
       <DependentUpon>Root.css</DependentUpon>
     </Content>
     <Content Include="Content\templates\reporting.admin.html" />
-    <Content Include="gulpfile.js" />
     <Content Include="images\loader-small.gif" />
     <Content Include="images\gritter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -863,7 +862,6 @@
     <Content Include="Scripts\all-ang.min.js">
       <DependentUpon>all-ang.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\app\app.js" />
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
@@ -881,6 +879,7 @@
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
+    <Content Include="Scripts\app\webpack.config.js" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
@@ -1113,7 +1112,6 @@
     <Content Include="Scripts\typeahead.bundle.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
-    <Content Include="system.config.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -1627,6 +1625,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\polyfills.ts" />
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\authentication.service.ts" />
@@ -1689,6 +1688,7 @@
     <TypeScriptCompile Include="Scripts\app\services\uri-based.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\vendor.ts" />
     <TypeScriptCompile Include="Scripts\typings\gojs\goJS-1.5.12.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\powerbi.d.ts" />
   </ItemGroup>

@@ -28,8 +28,6 @@
     "primeng": "^1.0.0-beta.17",    
     "reflect-metadata": "^0.1.8",
     "rxjs": "5.0.0-beta.12",
-    "systemjs": "0.19.39",
-    "systemjs-builder": "^0.15.32",
     "typings": "^0.7.12",
     "zone.js": "^0.6.25",
     "angular2-highcharts": "0.3.2"
@@ -37,9 +35,16 @@
   "devDependencies": {
     "typescript": "^2.0.3",
     "typings": "^0.7.5",
-    "gulp": "^3.9.1",
-    "gulp-typescript": "^3.0.1",
-    "gulp-typings": "^2.0.0",
-    "del": "^2.2.0"
+    "del": "^2.2.0",
+    "@types/core-js": "^0.9.32",
+    "@types/node": "^6.0.38",
+    "angular2-template-loader": "^0.4.0",
+    "awesome-typescript-loader": "^1.1.1",
+    "css-loader": "^0.23.1",
+    "raw-loader": "^0.5.1",
+    "to-string-loader": "^1.1.4",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0",
+    "webpack-merge": "^0.8.4"
   }
 }
