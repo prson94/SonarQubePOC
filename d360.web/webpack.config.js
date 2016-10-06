@@ -12,7 +12,7 @@ var webpackConfig = {
   },
 
   output: {
-    path: './',
+    path: './scripts/app/',
   },
 
   plugins: [
@@ -45,7 +45,7 @@ var defaultConfig = {
   },
 
   resolve: {
-    root: [ path.join(__dirname,'/scripts/app') ],
+    root: [ path.join(__dirname,'/scripts/app/') ],
     extensions: ['', '.ts', '.js']
   },
 
