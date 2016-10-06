@@ -4,7 +4,7 @@ import { Http } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';
 import { BaseService } from './base.service';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 
 @Injectable()
 export class FavoritesService extends BaseService {

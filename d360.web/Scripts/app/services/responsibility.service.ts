@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityContextItem, IResponsibilityService } from '../models/responsibility.model';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 
 @Injectable()

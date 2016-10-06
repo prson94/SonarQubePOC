@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-load-form',
-    templateUrl: 'scripts/app/components/forms/load.form.html',
+    templateUrl: './load.form.html',
     providers: [LoadService],
 })
 

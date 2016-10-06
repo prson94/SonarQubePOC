@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { FusionAttributePagedResults, FusionAttributeValueDetails, FusionAttributeFilter } from '../models/fusion-attribute.model';
 import { SortOrder } from '../models/enums.model';
 

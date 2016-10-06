@@ -1,7 +1,7 @@
 ﻿
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { SocialComment, SocialVote, SocialVoteType, SocialEditCommentData } from '../models/social.model';
 import { Count } from '../models/counts.model';

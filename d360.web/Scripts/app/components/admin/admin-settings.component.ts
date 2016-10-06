@@ -15,8 +15,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'admin-settings',
     providers: [CompanySettingsService, SiteMenuService],
-    templateUrl: 'scripts/app/components/admin/admin-settings.component.html',
-    styleUrls: ['scripts/app/components/admin/admin-settings.component.css']
+    templateUrl: './admin-settings.component.html',
+    styleUrls: ['./admin-settings.component.css']
 })
 
 export class AdminSettingsComponent extends AdminBaseComponent {

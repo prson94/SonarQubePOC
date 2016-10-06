@@ -11,7 +11,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'home',
-    templateUrl: 'scripts/app/components/home/home.component.html'
+    templateUrl: './home.component.html'
 })
 
 export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -20,7 +20,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private showAssignmentDetails: boolean = false;
 
     private activityDaysToLookBack: number = 7;
-    private boardDaysToLookBack: number = 7;
+    private boardDaysToLookBack: number = 6;
 
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;

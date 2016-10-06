@@ -13,7 +13,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-groups',
     providers: [ GroupService ],
-    templateUrl: 'scripts/app/components/admin/admin-groups.component.html'  
+    templateUrl: './admin-groups.component.html'  
 })
 
 export class AdminGroupsComponent extends AdminBaseComponent {

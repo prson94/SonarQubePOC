@@ -7,7 +7,7 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
-    templateUrl: 'scripts/app/components/shared/people-responsibilities.tile.html',
+    templateUrl: './people-responsibilities.tile.html',
     providers: [ResponsibilityService],
 })
 

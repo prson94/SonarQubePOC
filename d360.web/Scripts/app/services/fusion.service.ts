@@ -1,8 +1,7 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { JsonResult, FormHelper } from '../models/form.model';
 import {
     FusionType,

@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'admin-governance',
     providers: [ResponsibilityTypeService],
-    templateUrl: 'scripts/app/components/admin/admin-governance.component.html',
+    templateUrl: './admin-governance.component.html',
 })
 
 export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {    

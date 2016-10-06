@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { SelectItem } from 'primeng/primeng';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 
 @Injectable()

@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'admin-domain',
     providers: [DomainService],
-    templateUrl: 'scripts/app/components/admin/admin-domain.component.html',
+    templateUrl: './admin-domain.component.html',
 })
 
 export class AdminDomainComponent extends AdminBaseComponent implements OnDestroy {

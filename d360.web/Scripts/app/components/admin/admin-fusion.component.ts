@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-fusion',
     providers: [FusionService],
-    templateUrl: 'scripts/app/components/admin/admin-fusion.component.html',
+    templateUrl: './admin-fusion.component.html',
 })
 
 export class AdminFusionComponent extends AdminBaseComponent implements OnDestroy {

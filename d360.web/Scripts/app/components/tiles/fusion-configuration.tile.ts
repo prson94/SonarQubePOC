@@ -7,7 +7,7 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
-    templateUrl: 'scripts/app/components/tiles/fusion-configuration.tile.html',
+    templateUrl: './fusion-configuration.tile.html',
     providers: [FusionService]
 })
 

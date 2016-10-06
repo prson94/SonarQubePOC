@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-attributes-tile',
-    templateUrl: 'scripts/app/components/tiles/fusion-attributes.tile.html',
+    templateUrl: './fusion-attributes.tile.html',
     providers: [FusionService]
 })
 

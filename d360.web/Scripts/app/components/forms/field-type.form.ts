@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-field-type-form',
-    templateUrl: 'scripts/app/components/forms/field-type.form.html',
+    templateUrl: './field-type.form.html',
     providers: [FieldsService],
 })
 

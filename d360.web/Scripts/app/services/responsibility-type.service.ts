@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { IResponsibilityTypeService, ResponsibilityType, ResponsibilityTypeGroup, ResponsibilityTypeRelation } from '../models/responsibility-type.model';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 
 @Injectable()

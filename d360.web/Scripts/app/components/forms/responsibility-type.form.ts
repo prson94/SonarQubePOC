@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-responsibility-type-form',
-    templateUrl: 'scripts/app/components/forms/responsibility-type.form.html',
+    templateUrl: './responsibility-type.form.html',
     providers: [ResponsibilityTypeService],
 })
 

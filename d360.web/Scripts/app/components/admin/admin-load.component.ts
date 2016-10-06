@@ -12,7 +12,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-load',
     providers: [LoadService],
-    templateUrl: 'scripts/app/components/admin/admin-load.component.html',
+    templateUrl: './admin-load.component.html',
 })
 
 export class AdminLoadComponent extends AdminBaseComponent {

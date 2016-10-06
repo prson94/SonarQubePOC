@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-group-form',
-    templateUrl: 'scripts/app/components/forms/group.form.html',
+    templateUrl: './group.form.html',
     providers: [GroupService],
 })
 

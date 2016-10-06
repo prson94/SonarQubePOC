@@ -7,7 +7,7 @@ declare var CompanySettings;
 
 @Component({
     selector: 'object-detail',
-    templateUrl: 'scripts/app/components/shared/object-detail.component.html',
+    templateUrl: './object-detail.component.html',
     providers: [ObjectDetailService]
 })
 

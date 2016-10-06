@@ -5,7 +5,7 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-field-definition-tile',
-    templateUrl: 'scripts/app/components/shared/field-definition.component.html',
+    templateUrl: './field-definition.component.html',
     providers: [ FieldsService ]
 })
 

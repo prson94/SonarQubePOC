@@ -6,7 +6,7 @@ import { ClaimsService } from '../../services/claims.service';
 
 @Component({
     selector: 'd3s-claims-tile',
-    templateUrl: 'scripts/app/components/tiles/claims.tile.html',
+    templateUrl: './claims.tile.html',
     providers: [ClaimsService]
 })
 

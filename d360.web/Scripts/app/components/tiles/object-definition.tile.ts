@@ -8,7 +8,7 @@ import { ObjectDetail } from '../../models/object-detail.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
-    templateUrl: 'scripts/app/components/tiles/object-definition.tile.html',
+    templateUrl: './object-definition.tile.html',
     providers: [ObjectDetailService],
 })
 

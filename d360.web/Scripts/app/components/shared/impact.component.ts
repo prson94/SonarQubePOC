@@ -5,7 +5,7 @@ declare var ImpactDiagramWrapper: ImpactAdapter;
 
 @Component({
     selector: 'd3s-impact',
-    templateUrl: 'scripts/app/components/shared/impact.component.html'
+    templateUrl: './impact.component.html'
 })
 
 export class ImpactComponent implements OnInit, AfterViewInit {

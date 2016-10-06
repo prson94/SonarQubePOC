@@ -6,7 +6,7 @@ declare var LineageCloseWindow: LineageWindowAdapter;
 
 @Component({
     selector: 'd3s-lineage',
-    templateUrl: 'scripts/app/components/shared/lineage.component.html'
+    templateUrl: './lineage.component.html'
 })
 
 export class LineageComponent implements OnInit, AfterViewInit {

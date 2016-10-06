@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-type-form',
-    templateUrl: 'scripts/app/components/forms/artifact-type.form.html',
+    templateUrl: './artifact-type.form.html',
     providers: [ArtifactTypeService],
 })
 

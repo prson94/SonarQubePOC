@@ -12,7 +12,7 @@ declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-resource-item',
-    templateUrl: 'scripts/app/components/resource/resource-item.component.html',
+    templateUrl: './resource-item.component.html',
     providers: [ResourcesService, ObjectStatisticsService, UriBasedService ]
 })
 

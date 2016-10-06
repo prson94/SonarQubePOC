@@ -16,15 +16,24 @@ var webpackConfig = {
   },
 
   plugins: [
-    new webpack.optimize.OccurenceOrderPlugin(true),
+    //new webpack.optimize.OccurrenceOrderPlugin(true),
     //new webpack.optimize.UglifyJsPlugin({compress: { warnings: false }}),
+    // Workaround needed for angular 2 angular/angular#11580
+      new webpack.ContextReplacementPlugin(
+        // The (\\|\/) piece accounts for path separators in *nix and Windows
+        /angular(\\|\/)core(\\|\/)(esm(\\|\/)src|src)(\\|\/)linker/,
+         path.join(__dirname, '/scripts/app/') // location of your src
+      ),
+      /*new webpack.optimize.UglifyJsPlugin({
+          compress: { warnings: false }
+      }),*/
     new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
   ],
 
   module: {
     loaders: [
       // .ts files for TypeScript
-      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader'] },
+      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'] },
       { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
       { test: /\.html$/, loader: 'raw-loader' }
     ]

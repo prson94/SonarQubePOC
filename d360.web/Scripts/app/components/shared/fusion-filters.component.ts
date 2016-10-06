@@ -7,7 +7,7 @@ import { FormMode, FormHelper } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-fusion-filters-tile',
-    templateUrl: 'scripts/app/components/shared/fusion-filters.component.html',
+    templateUrl: './fusion-filters.component.html',
     providers: [FusionService]
 })
 

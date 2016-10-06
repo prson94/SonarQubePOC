@@ -7,7 +7,7 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-group-members',
-    templateUrl: 'scripts/app/components/shared/group-members.component.html',
+    templateUrl: './group-members.component.html',
     providers: [GroupService]
 })
 

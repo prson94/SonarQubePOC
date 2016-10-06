@@ -11,7 +11,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'admin-workflow',
     providers: [WorkflowService],
-    templateUrl: 'scripts/app/components/admin/admin-workflow.component.html'
+    templateUrl: './admin-workflow.component.html'
 })
 
 export class AdminWorkflowComponent extends AdminBaseComponent  {

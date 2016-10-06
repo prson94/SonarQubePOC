@@ -11,7 +11,7 @@ declare var CompanySettings: cs;
 
 @Component({
     selector: 'workflow-item-form',
-    templateUrl: 'scripts/app/components/forms/workflow-item.form.html',
+    templateUrl: './workflow-item.form.html',
     providers: [WorkflowService],
 })
 

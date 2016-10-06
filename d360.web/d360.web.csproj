@@ -33,6 +33,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+	<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>	
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
@@ -1222,7 +1223,6 @@
     <Content Include="Views\Form\FusionRuleStepMappingEditForm.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
     <Content Include="typings.json" />
-    <Content Include="Views\Navigation\HeaderActions.cshtml" />
     <Content Include="Views\Reports\PowerBIOverlay.cshtml" />
     <Content Include="Views\Overlays\FusionTechMapping.cshtml" />
     <Content Include="Views\Overlays\Predicates.cshtml" />

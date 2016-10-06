@@ -3,7 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { TreeNode } from 'primeng/primeng';
 import { ArtifactTypeEditorModel, ArtifactType, ArtifactTypeSummary, ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../models/artifact-type.model';
 import { BaseService } from './base.service';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 
 @Injectable()
 export class ArtifactTypeService extends BaseService {

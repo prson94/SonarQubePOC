@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { DomainType, IDomainService } from '../models/domain.model';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 
 @Injectable()

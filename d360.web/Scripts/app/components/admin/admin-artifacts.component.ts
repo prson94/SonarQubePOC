@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 @Component({
     selector: 'd3s-admin-artifacts',
     providers: [ArtifactTypeService, AuditService],
-    templateUrl: 'scripts/app/components/admin/admin-artifacts.component.html',
+    templateUrl: './admin-artifacts.component.html',
 })
 
 export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy { 

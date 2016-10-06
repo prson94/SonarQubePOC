@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-resources',
-    templateUrl: 'scripts/app/components/admin/admin-resources.component.html'
+    templateUrl: './admin-resources.component.html'
 })
 
 export class AdminResourcesComponent extends AdminBaseComponent {

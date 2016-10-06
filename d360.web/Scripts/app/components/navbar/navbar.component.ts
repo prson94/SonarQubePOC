@@ -93,7 +93,7 @@ import * as _ from 'lodash';
         `
     ],
     providers: [SiteMenuService, FavoritesService],
-    templateUrl: 'scripts/app/components/navbar/navbar.component.html',
+    templateUrl: './navbar.component.html',
 })
 
 export class NavBarComponent implements OnInit, OnDestroy { 

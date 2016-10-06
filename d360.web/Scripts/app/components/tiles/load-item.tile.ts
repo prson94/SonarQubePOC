@@ -7,7 +7,7 @@ import { GridColumn } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-load-item-tile',
-    templateUrl: 'scripts/app/components/tiles/load-item.tile.html',
+    templateUrl: './load-item.tile.html',
     providers: [LoadService]
 })
 

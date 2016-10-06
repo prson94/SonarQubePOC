@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { WorkflowStatusDetails, WorkflowItem, WorkflowType, IWorkflowService, WorkflowTypeRelationEditorModel, Issue, IssueDetail, SuggestedItem, CertifyItem, ArtifactTypeWorkflowBreakdown } from '../models/workflow.model';
 import { SelectItem, FormHelper } from '../models/form.model';
-import { MessagesService } from './index';
+import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
