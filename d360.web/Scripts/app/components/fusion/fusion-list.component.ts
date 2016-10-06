@@ -43,8 +43,8 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
     sub: any;
     
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, protected rightSidebarService: RightSidebarService ) {
-        super();
+    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService?: RightSidebarService ) {
+        super(rightSidebarService);
     }
 
     ngOnInit() {
@@ -57,7 +57,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.rightSidebarService.showItem({
             title: 'Technical Mappings',
             active: false,
-            tag: null
+            tag: 'technical'
         });
 
        this.sub =  this.rightSidebarService.rightSidebarClicked$.subscribe(s => {

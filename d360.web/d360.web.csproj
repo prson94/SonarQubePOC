@@ -513,6 +513,7 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="webpack.config.js" />
     <None Include="Content\styles\typeahead.less" />
     <Content Include="Content\templates\actionsmonitor.list.html" />
     <Content Include="Content\templates\artifacts.root.html" />
@@ -879,7 +880,6 @@
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
-    <Content Include="Scripts\app\webpack.config.js" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
@@ -1362,6 +1362,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\policy\policy-item-structure.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\policy\policy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />

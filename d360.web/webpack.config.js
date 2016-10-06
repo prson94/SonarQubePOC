@@ -1,3 +1,4 @@
+/// <binding ProjectOpened='Watch - Development' />
 var webpack = require('webpack');
 var path = require('path');
 
@@ -5,9 +6,9 @@ var path = require('path');
 // Webpack Config
 var webpackConfig = {
   entry: {
-    'polyfills': './polyfills.ts',
-    'vendor':    './vendor.ts',
-    'main':       './main.ts',
+    'polyfills': './scripts/app/polyfills.ts',
+    'vendor':    './scripts/app/vendor.ts',
+    'main':       './scripts/app/main.ts',
   },
 
   output: {
@@ -23,7 +24,7 @@ var webpackConfig = {
   module: {
     loaders: [
       // .ts files for TypeScript
-      { test: /\.ts$/, loaders: ['awesome-typescript-loader', 'angular2-template-loader'] },
+      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader'] },
       { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
       { test: /\.html$/, loader: 'raw-loader' }
     ]
@@ -44,7 +45,7 @@ var defaultConfig = {
   },
 
   resolve: {
-    root: [ __dirname ],
+    root: [ path.join(__dirname,'/scripts/app') ],
     extensions: ['', '.ts', '.js']
   },
 

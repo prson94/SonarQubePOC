@@ -19,6 +19,7 @@ import { GroupModule } from './components/group/group.module';
 import { CommunityModule } from './components/community/community.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
+import { PolicyModule } from './components/policy/policy.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -131,11 +132,11 @@ import {
     SimpleDropdown,    
 } from './components/parts/index';
 
-import {
-    PolicyComponent,
-    PolicyItemComponent, 
-    PolicyItemStructureComponent, 
-} from './components/policy/index';
+//import {
+//    PolicyComponent,
+//    PolicyItemComponent, 
+//    PolicyItemStructureComponent, 
+//} from './components/policy/index';
 
 import {
     ResourceComponent,
@@ -245,9 +246,9 @@ import {
         ModelListComponent,
         ModelItemStructureComponent,        
         ObjectDefinitionTile,                                      
-        PolicyComponent,
-        PolicyItemComponent,    
-        PolicyItemStructureComponent,
+        //PolicyComponent,
+        //PolicyItemComponent,    
+        //PolicyItemStructureComponent,
         PredicatesTile,
         RelationshipsTile,                
         ResourceApiComponent,
@@ -319,6 +320,7 @@ import {
         CoreModule,
         MonitorModule,
         ReferenceModule,
+        PolicyModule,
     ],
     bootstrap: [AppComponent],
     providers: [Title, AdminUserGuard, AuthenticationService],    
