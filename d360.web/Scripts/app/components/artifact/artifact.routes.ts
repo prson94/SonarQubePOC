@@ -1,8 +1,9 @@
 ﻿import * as artifact from './index'
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export const ArtifactRoutes = [
     {
-        path: 'a/artifact',
+        path: SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT,
         component: artifact.ArtifactComponent,        
         children: [            
             { path: '', component: artifact.ArtifactTopLevelListComponent },

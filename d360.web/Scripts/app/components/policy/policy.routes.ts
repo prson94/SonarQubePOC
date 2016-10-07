@@ -1,8 +1,9 @@
 ﻿import * as policy from './index'
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export const PolicyRoutes = [
     {
-        path: 'a/policy',
+        path: SiteUrlHelpers.SITE_URL_POLICY_ROOT,
         component: policy.PolicyComponent,
         children: [
             { path: ':policyTypeId', component: policy.PolicyItemComponent },

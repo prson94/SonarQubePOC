@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/index';
 import { SearchFullResult } from '../../models/search-result.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-search-result-item',
@@ -25,18 +26,6 @@ export class SearchResultItemComponent extends BaseComponent  {
     }
 
     private navigateLink() {
-        this.router.navigateByUrl(this.convertUrl(this.result));
-    }
-
-    public convertUrl(item: SearchFullResult): string {
-        switch (item.Group.toUpperCase()) {
-            case 'ARTIFACT':
-                return item.Url.replace('#/artifacts', '/a/artifact');
-            case 'USERS':            
-                return item.Url.replace('#/resources', '/a/resource');    
-                        
-        }
-
-        return item.Url.replace('#', '/a');
-    }
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectLinkFromOldUrl(this.result.Group, this.result.Url));
+    }    
 };

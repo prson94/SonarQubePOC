@@ -1,9 +1,10 @@
 ﻿import { MonitorComponent } from './monitor.component';
 import { MonitorListComponent } from './monitor-list.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export const MonitorRoutes = [
     {
-        path: 'a/monitor',
+        path: SiteUrlHelpers.SITE_URL_MONITOR_ROOT,
         component: MonitorComponent,
         children: [            
             { path: '', component: MonitorListComponent }

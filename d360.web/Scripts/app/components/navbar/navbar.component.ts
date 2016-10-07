@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { transition, style, animate, trigger, state } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
@@ -9,6 +8,7 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { FavoritesService } from '../../services/favorites.service';
 import { Favorite } from '../../models/favorite.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 @Component({
@@ -258,19 +258,19 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadFusionMenu(fusionMenu: SiteMenu) {
         if (fusionMenu == null || !fusionMenu.ShouldDisplay) return;
 
-        let fusion = this.addNavItem('Fusion', 'database', 'a/fusion', null, fusionMenu.SortOrder);
+        let fusion = this.addNavItem('Fusion', 'database', SiteUrlHelpers.SITE_URL_FUSION_ROOT, null, fusionMenu.SortOrder);
     }
 
     loadReferenceMenu(referenceMenu: SiteMenu) {
         if (referenceMenu == null ) return;
 
-        let fusion = this.addNavItem('Reference', 'cubes', 'a/reference', null, referenceMenu.SortOrder);
+        let fusion = this.addNavItem('Reference', 'cubes', SiteUrlHelpers.SITE_URL_REFERENCE_ROOT, null, referenceMenu.SortOrder);
     }
 
     loadGlossaryMenu(glossaryMenu: SiteMenu) {
         if (glossaryMenu == null ) return;
 
-        let glossary = this.addNavItem('Glossary', 'book', 'a/artifact', null, glossaryMenu.SortOrder);
+        let glossary = this.addNavItem('Glossary', 'book', SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT, null, glossaryMenu.SortOrder);
         
         this.renderChildItems(glossary, glossaryMenu.NavigationItems);
     }
@@ -278,11 +278,11 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadCommunityMenu(communityMenu: SiteMenu) {
         if (communityMenu == null || !communityMenu.ShouldDisplay) return;
 
-        let community = this.addNavItem('Community', 'group', 'a/community', null, communityMenu.SortOrder);
+        let community = this.addNavItem('Community', 'group', SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, null, communityMenu.SortOrder);
     }
 
     loadMonitorMenu(monitorMenu: SiteMenu) {        
-        let monitor = this.addNavItem('Monitor', 'dashboard', 'a/monitor', null, monitorMenu.SortOrder);
+        let monitor = this.addNavItem('Monitor', 'dashboard', SiteUrlHelpers.SITE_URL_MONITOR_ROOT, null, monitorMenu.SortOrder);
     }
 
     loadPoliciesMenu(policiesMenus: SiteMenu) {
@@ -296,7 +296,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     loadModelMenu(modelMenus: SiteMenu) {
         if (modelMenus == null ) return;
 
-        let models = this.addNavItem('Models', 'sitemap', 'a/model/classification', null, modelMenus.SortOrder);
+        let models = this.addNavItem('Models', 'sitemap', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`, null, modelMenus.SortOrder);
 
         this.renderChildItems(models, modelMenus.NavigationItems);
     }
@@ -310,39 +310,40 @@ export class NavBarComponent implements OnInit, OnDestroy {
 
         let integrationModel = this.addSubItem(admin, 'Integration', null, null);
         this.addSubItem(integrationModel, 'API', null, null, '/swagger/ui/index');
-        this.addSubItem(integrationModel, 'Bulk Loader', null, 'a/admin/load');
-        this.addSubItem(integrationModel, 'Fusion', null, 'a/admin/fusion');
+        this.addSubItem(integrationModel, 'Bulk Loader', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`);
+        this.addSubItem(integrationModel, 'Fusion', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`);
         integrationModel.expanded = true;
 
         // meta model sub
         let metaModel = this.addSubItem(admin, 'MetaModel', null, null);
-        this.addSubItem(metaModel, 'Artifacts', null, 'a/admin/artifacts');
-        this.addSubItem(metaModel, 'Attributes', null, 'a/admin/attributes');
-        this.addSubItem(metaModel, 'Lookups', null, 'a/admin/lookups');
-        this.addSubItem(metaModel, 'Models', null, 'a/admin/taxonomies');
-        this.addSubItem(metaModel, 'Policies', null, 'a/admin/policies');
-        this.addSubItem(metaModel, 'Relationships', null, 'a/admin/relationships');
-        this.addSubItem(metaModel, 'Rules', null, 'a/admin/rules');
-        this.addSubItem(metaModel, 'Surveys', null, 'a/admin/surveys');
+        this.addSubItem(metaModel, 'Artifacts', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`);
+        this.addSubItem(metaModel, 'Attributes', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`);
+        this.addSubItem(metaModel, 'Lookups', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`);
+        this.addSubItem(metaModel, 'Models', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`);
+        this.addSubItem(metaModel, 'Policies', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`);
+        this.addSubItem(metaModel, 'Relationships', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`);
+        this.addSubItem(metaModel, 'Rules', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`);
+        this.addSubItem(metaModel, 'Surveys', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`);
         metaModel.expanded = true;
 
         let metricsModel = this.addSubItem(admin, 'Metrics', null, null);
-        this.addSubItem(metricsModel, 'Analytics', null, 'a/admin/analytics');
-        this.addSubItem(metricsModel, 'Dashboards', null, 'a/admin/dashboards');
+        this.addSubItem(metricsModel, 'Analytics', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`);
+        this.addSubItem(metricsModel, 'Dashboards', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`);
         metricsModel.expanded = true;
 
-        this.addSubItem(admin, 'Reference', null, 'a/admin/domain');
+        // THIS IS HIDDEN IN FAVOR OF NEW REFERENCE DESIGN THIS UI IS THE ADMIN FOR THE DOMAINS ONE...
+     //   this.addSubItem(admin, 'Reference', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DOMAIN}`);
 
         //security sub menu
         let security = this.addSubItem(admin, 'Security', null, null);
-        this.addSubItem(security, 'Groups', null, 'a/admin/groups');
-        this.addSubItem(security, 'Responsibilities', null, 'a/admin/responsibilities');
-        this.addSubItem(security, 'Users', null, 'a/admin/resources');
+        this.addSubItem(security, 'Groups', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`);
+        this.addSubItem(security, 'Responsibilities', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`);
+        this.addSubItem(security, 'Users', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`);
         security.expanded = true;
 
-        this.addSubItem(admin, 'Settings', null, 'a/admin/settings');
-        this.addSubItem(admin, 'Templates', null, 'a/admin/templates');
-        this.addSubItem(admin, 'Workflow', null, 'a/admin/workflow');        
+        this.addSubItem(admin, 'Settings', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`);
+        this.addSubItem(admin, 'Templates', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES}`);
+        this.addSubItem(admin, 'Workflow', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`);        
     }
        
     private renderChildItems(navBar: NavBarItem, siteMenuItems: SiteMenuItem[]) {

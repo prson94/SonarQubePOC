@@ -14,10 +14,11 @@ import { ReferenceRoutes } from './components/reference/reference.routes';
 import { SearchRoutes } from './components/search/search.routes';
 import { GroupRoutes } from './components/group/group.routes';
 import { WorkflowRoutes } from './components/workflow/workflow.routes';
+import { SiteUrlHelpers } from './static/site-url-helpers';
 
 export const routes: Routes = [
     //{ path: 'a/admin', component: AdminComponent }
-    { path: 'a', redirectTo: 'a/home', pathMatch: 'full' },
+    { path: SiteUrlHelpers.SITE_URL_PREFIX, redirectTo: SiteUrlHelpers.SITE_URL_HOME_ROOT, pathMatch: 'full' },
     ...AdminRoutes,
     ...HomeRoutes,
     ...ArtifactRoutes,
