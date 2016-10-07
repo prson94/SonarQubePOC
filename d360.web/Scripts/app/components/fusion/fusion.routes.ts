@@ -10,8 +10,8 @@ export const FusionRoutes = [
         component: FusionComponent,        
         children: [
             { path: ':fusionId', component: FusionItemComponent },            
-            { path: '', component: FusionListComponent },
-            { path: 'fusionattribute/:fusionAttributeTypeId/:fusionAttributeId', component: FusionAttributeItemComponent },
+            { path: SiteUrlHelpers.SITE_URL_FUSION_LIST, component: FusionListComponent },
+            { path: `${SiteUrlHelpers.SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/:fusionAttributeTypeId/:fusionAttributeId`, component: FusionAttributeItemComponent },
         ]
     }
 ];

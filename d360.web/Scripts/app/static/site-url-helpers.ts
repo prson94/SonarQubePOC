@@ -28,7 +28,10 @@
     //workflow child routes
     export var SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
     export var SITE_URL_WORKFLOW_VIEW_ISSUE = 'work/issue';
-    
+
+    //fusion child routes
+    export var SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute'
+    export var SITE_URL_FUSION_LIST = '';
 
     //admin child routes
     export var SITE_URL_ADMIN_BULK_LOAD = `load`;
@@ -61,14 +64,43 @@
     }
 
 
-    // this is used by search
+    // Used by search.  Elastic search has the url's indexed and doesnt contain the parent id needed to generate the url by itself
+    // for now we will update the old site url's stored in the elastic search
     export function getObjectLinkFromOldUrl(type, url) {
         console.log("convert", type, url);
         switch (type.toUpperCase()) {
+            case 'ATTRIBUTES': //ATTRIBUTES GOES TO AN ARTIFACT WITH THE ATTRIBUTE
+            case 'SYNONYM':
             case 'ARTIFACT':
                 return url.replace('#/artifacts', SITE_URL_ARTIFACT_ROOT);
             case 'USERS':
                 return url.replace('#/resources', SITE_URL_RESOURCE_ROOT);
+            case 'TAXONOMY':
+                var parts = url.split('/');
+                if (parts.length == 4) {
+                    return `${SITE_URL_MODEL_ROOT}/${parts[2]};hierarchyId=${parts[3]}`;
+                }
+                console.log('ERROR INVALID FORMAT FOR MODEL URL', url);
+                break;      
+            case 'GROUP':
+                return url.replace('#/groups', SITE_URL_GROUP_ROOT);
+            case 'FUSIONTYPE':
+                var parts = url.split('/');
+                if (parts.length == 4) {
+                    return `${SITE_URL_FUSION_ROOT}/${SITE_URL_FUSION_LIST}${parts[3]}`;
+                }
+                console.log('ERROR INVALID FORMAT FOR FUSION TYPE URL', url);
+                break;      
+            case 'FUSIONATTRIBUTES':
+                var parts = url.split('/');
+                if (parts.length == 5) {
+                    return `${SITE_URL_FUSION_ROOT}/${SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/${parts[3]}/${parts[4]}`;
+                }
+                console.log('ERROR INVALID FORMAT FOR FUSION ATTRIBUTE URL', url);
+                break;
+            case 'DOMAIN': //DOMAINS NOT SUPPORTED BY NEW UI
+                console.log('ERROR DOMAINS ARE NOT SUPPORTED BY NEW UI', url);
+                break;
             default:
                 console.log('unable to update url');
                 return url.replace('#', '/a');                
