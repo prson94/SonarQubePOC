@@ -47,11 +47,6 @@ export class DetailField {
     Data: any;
 }
 
-export class ObjectStyle {
-    IconBackColor: string;
-    IconForeColor: string;
-}
-
 export class Synonym {
     IntersectID: number;
     IntersectMapID: number;

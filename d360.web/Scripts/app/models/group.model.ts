@@ -1,4 +1,5 @@
-﻿import { SelectItem, JsonResult } from '../models/form.model';
+﻿import { SelectItem } from '../models/form.model';
+import { JsonResult } from './jsonresult.model';
 
 export interface IGroupService {
     getGroupList(): Promise<GroupSearchResultModel[]>; 

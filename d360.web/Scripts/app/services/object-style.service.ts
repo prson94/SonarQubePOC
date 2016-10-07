@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { ObjectStyle } from '../models/object-detail.model';
+import { ObjectStyle } from '../models/object-style.model';
 
 @Injectable()
 export class ObjectStyleService extends BaseService {

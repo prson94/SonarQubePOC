@@ -2,13 +2,14 @@
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
-import { JsonResult, FormHelper } from '../models/form.model';
+import { FormHelper } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
+import { ObjectStyle } from '../models/object-style.model';
 import {
     FusionType,
     FusionAttributeType,
     FusionConfiguration,
-    FusionFilter,
-    ObjectStyle,
+    FusionFilter,    
     Fusion,
     FusionConfigurationDetails,
     FusionAgentExecutionStats,

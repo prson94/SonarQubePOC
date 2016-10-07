@@ -1,10 +1,9 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Model, ModelHierarchy } from '../models/model.model';
-import { JsonResult } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class ModelsService extends BaseService {

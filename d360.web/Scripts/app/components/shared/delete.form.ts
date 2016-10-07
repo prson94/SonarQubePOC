@@ -1,7 +1,7 @@
-﻿
-import { Input, Output, Component, EventEmitter } from '@angular/core';
+﻿import { Input, Output, Component, EventEmitter } from '@angular/core';
 import { Http, Headers } from '@angular/http';
-import { FormMessage, JsonResult } from '../../models/form.model';
+import { FormMessage} from '../../models/form.model';
+import { JsonResult } from '../../models/jsonresult.model';
 
 @Component({
     selector: 'delete-form',

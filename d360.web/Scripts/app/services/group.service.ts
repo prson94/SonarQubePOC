@@ -1,10 +1,9 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { IGroupService, GroupSearchResultModel, GroupResourceInfo, Group, GroupEditorModel, ResourceGroup } from '../models/group.model';
-import { JsonResult } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 import { CountObject } from '../models/resource.model';
 
 @Injectable()

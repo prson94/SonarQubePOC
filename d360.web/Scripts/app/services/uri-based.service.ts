@@ -1,9 +1,8 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { ObjectStyle } from '../models/object-detail.model';
+import { ObjectStyle } from '../models/object-style.model';
 import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()

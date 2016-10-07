@@ -1,8 +1,8 @@
-﻿
-import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
+import { MessagesService } from '../../services/messages.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -30,7 +30,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private testPatternValidationText: string;
     private syncApiNameWithName: boolean = true;
 
-    constructor(private fieldsService: FieldsService) {
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType(); 
         this.model.FieldType.Object = this.objectType;
@@ -73,9 +73,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
-                        this.model.FusionItems = f.FusionItems;
-                        console.log('Model');
-                        console.log(this.model);
+                        this.model.FusionItems = f.FusionItems;                        
                     }
                 })
                 .then(() => {
@@ -203,13 +201,25 @@ export class FieldTypeForm implements OnInit, OnChanges {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
                     this.isLoading = false;
-                    this.onComplete.emit({ action: 'edit', field: this.model });
+                    if (r.isError) {
+                        this.messagesService.showError(r.title, r.message);
+                    }
+                    else {
+                        this.messagesService.showInfoMessage("Success", "Field Definition Edited");
+                        this.onComplete.emit({ action: 'edit', field: this.model });
+                    }
                 });
         } else {
             this.fieldsService.postFieldType(this.model)
                 .then(r => {                    
                     this.isLoading = false;
-                    this.onComplete.emit({ action: 'add', field: this.model });
+                    if (r.isError) {
+                        this.messagesService.showError(r.title, r.message);
+                    }
+                    else {
+                        this.messagesService.showInfoMessage("Success", "Field Definition Created");
+                        this.onComplete.emit({ action: 'add', field: this.model });
+                    }
                 });
         }
     }

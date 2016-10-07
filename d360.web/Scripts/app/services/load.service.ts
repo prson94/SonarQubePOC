@@ -1,12 +1,11 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { LoadDetail, LoadFilePostModel } from '../models/load.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { GridColumn } from '../models/grid-definition.model';
 import { SelectItem } from 'primeng/primeng';
-import { JsonResult } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 
 @Injectable()

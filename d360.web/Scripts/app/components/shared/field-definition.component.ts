@@ -1,6 +1,7 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
+import { MessagesService } from '../../services/messages.service';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -21,9 +22,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     private isAdding = false;
     private isDeleting = false;
 
+    private theDeleteCallback: Function;
+
     
-    constructor(private fieldsService: FieldsService) {
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         super();
+
+        this.theDeleteCallback = this.deleteFieldType.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -77,6 +82,22 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     editComplete(event) {
         this.isEditing = false;
         this.load();
+    }
+
+    deleteFieldType(id: number) {
+        this.fieldsService.deleteFieldType(id).then(res => {
+            if (res.isError) {
+                this.messagesService.showError(res.title, res.message);
+            }
+            else {
+                this.isDeleting = false;
+                this.messagesService.showInfoMessage("Success", "Field Definition Deleted");
+                let index = this.fieldDefinitions.findIndex(f => f.ID == id);
+                if (index >= 0 && index < this.fieldDefinitions.length)
+                    this.fieldDefinitions.splice(index, 1);
+            }
+        });
+        
     }
 }
 

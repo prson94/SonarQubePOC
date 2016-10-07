@@ -1,10 +1,10 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { SelectItem } from 'primeng/primeng';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class FieldsService extends BaseService implements IFieldsService {
@@ -69,9 +69,7 @@ export class FieldsService extends BaseService implements IFieldsService {
         return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}`)
             .toPromise()
             .then(response => <any>response.json())
-            .then(r => {
-                //console.log('Lookups');
-                //console.log(r);
+            .then(r => {                
                 let l = new Lookups();
                 l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
                 l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
@@ -109,21 +107,24 @@ export class FieldsService extends BaseService implements IFieldsService {
         ];
     }
 
-    putFieldType(model: FieldTypeEditorModel): Promise<any> {
+    putFieldType(model: FieldTypeEditorModel): Promise<JsonResult> {
         return this.http.put('form/EditFieldType', model)
             .toPromise()
+            .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
     }
 
-    postFieldType(model: FieldTypeEditorModel): Promise<any> {
+    postFieldType(model: FieldTypeEditorModel): Promise<JsonResult> {
         return this.http.post('form/AddFieldType', model)
             .toPromise()
+            .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
     }
 
-    deleteFieldType(id: number): Promise<any> {
+    deleteFieldType(id: number): Promise<JsonResult> {
         return this.http.delete(`form/DeleteFieldTypeByID?id=${id}`)
             .toPromise()
+            .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
     }
 

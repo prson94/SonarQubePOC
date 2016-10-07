@@ -11,14 +11,12 @@
     <div *ngIf="isEditing">
         <d3s-field-type-form [id]="selectedRow != null? selectedRow.ID : 0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false;" (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>    
-    <div *ngIf="isDeleting">
-        <delete-form [uri]="'/form/DeleteFieldTypeByID?id=' + selectedRow.ID"
-                     [method]="'delete'"
-                     [prompt]="'Are you sure you want to delete this field type definition?'"
-                     (onDeleteSuccess)="isDeleting=false;"
-                     (onCancel)="isDeleting=false;">
-        </delete-form>
-    </div>
+    <delete-form *ngIf="isDeleting"
+                     [callback]="theDeleteCallback"
+                     [itemId]="selectedRow?.ID"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
+                     (onCancel)="isDeleting=false;"></delete-form>            
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
         <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">

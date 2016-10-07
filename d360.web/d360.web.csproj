@@ -33,7 +33,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
-	<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>	
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
@@ -1577,6 +1577,7 @@
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />

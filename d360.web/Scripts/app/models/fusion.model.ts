@@ -35,14 +35,6 @@ export class FusionFilter {
 
 }
 
-export class ObjectStyle {
-    ObjectType: string;
-    ObjectID: number;
-    IconBackColor: string;
-    IconForeColor: string;
-    IconText: string;
-}
-
 export class Fusion {
     Description: string;
     Enabled: boolean;

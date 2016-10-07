@@ -1,9 +1,9 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
 import { GroupService } from '../../services/group.service';
-import { FormMode, JsonResult, FormHelper, SelectItem } from '../../models/form.model';
+import { FormMode, FormHelper, SelectItem } from '../../models/form.model';
 import { BaseComponent } from '../shared/base.component';
+import { JsonResult } from '../../models/jsonresult.model';
 
 @Component({
     selector: 'd3s-group-members',

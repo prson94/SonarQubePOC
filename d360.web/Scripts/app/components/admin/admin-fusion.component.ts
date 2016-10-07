@@ -1,10 +1,10 @@
-﻿
-import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, PageHeader, FusionService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
-import { FusionType, ObjectStyle } from '../../models/fusion.model';
+import { FusionType } from '../../models/fusion.model';
+import { ObjectStyle } from '../../models/object-style.model';
 import { Title } from '@angular/platform-browser';
 import * as _ from 'lodash';
 
