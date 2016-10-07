@@ -1,9 +1,9 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { Fusion } from '../../models/fusion.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-configuration',
@@ -83,7 +83,7 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
 
             return;
         }
-        this.router.navigateByUrl(`/a/fusion/${this.selected.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.selected.ID }`);
     }
 
     private doExport() {

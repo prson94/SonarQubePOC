@@ -1,5 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 declare var CurrentResourceID;
 
@@ -12,7 +13,7 @@ declare var CurrentResourceID;
                     <li *ngIf="headerActionsService.showHelp"><a href="#" class="help"><i class="fa fa-question-circle"></i></a></li>
                     <li *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                     <li *ngIf="headerActionsService.showNotifications"><a href="#"><i class="fa fa-bell-o"></i></a></li>
-                    <li><a [routerLink]="'/a/resource/' + resourceId" class="photo"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></li>
+                    <li><a [routerLink]="resourceUrl()" class="photo"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></li>
                 </ul> 
                 `,
 })
@@ -21,5 +22,9 @@ export class HeaderActionsComponent {
     private resourceId: number = CurrentResourceID;
 
     constructor(private headerActionsService: HeaderActionsService) { }
+
+    private resourceUrl() {
+        return `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${this.resourceId}`;
+    }
 }
 

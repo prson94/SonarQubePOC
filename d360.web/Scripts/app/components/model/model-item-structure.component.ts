@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -7,6 +6,7 @@ import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-model-item-structure',
@@ -114,9 +114,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.model = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', '/a/model/classification'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `/a/model/classification/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `/a/model/${this.model.ID}/structure`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION }/${this.model.ClassificationName}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.model.ID}/structure`));
 
                         this.loadModelHierarchy(this.modelId);
 

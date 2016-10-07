@@ -1,9 +1,9 @@
-﻿
-import { Input, Component  } from '@angular/core';
+﻿import { Input, Component  } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionConfigurationDetails } from '../../models/fusion.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-manual-load',
@@ -68,6 +68,6 @@ export class FusionManualLoadComponent extends BaseComponent {
     }
 
     private goToFusion() {
-        this.router.navigateByUrl("/a/fusion");
+        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT );
     }
 };

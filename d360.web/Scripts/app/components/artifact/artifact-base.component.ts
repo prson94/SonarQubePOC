@@ -4,11 +4,12 @@ import { Title } from '@angular/platform-browser';
 import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export class ArtifactBaseComponent extends BaseComponent {        
     public areaDescription: string = "base";
     public area: string = "Glossary";
-    public areaLink: string = "/a/artifact";
+    public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
 
     protected isLoading = false;
 

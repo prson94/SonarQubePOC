@@ -69,7 +69,7 @@
     export function getObjectLinkFromOldUrl(type, url) {
         console.log("convert", type, url);
         switch (type.toUpperCase()) {
-            case 'ATTRIBUTES': //ATTRIBUTES GOES TO AN ARTIFACT WITH THE ATTRIBUTE
+            case 'ATTRIBUTE': //ATTRIBUTES GOES TO AN ARTIFACT WITH THE ATTRIBUTE
             case 'SYNONYM':
             case 'ARTIFACT':
                 return url.replace('#/artifacts', SITE_URL_ARTIFACT_ROOT);
@@ -105,6 +105,22 @@
                 console.log('unable to update url');
                 return url.replace('#', '/a');                
         }
+    }
+
+    //should get rid of used by suggest right now.
+    export function convertUrl(url) {
+        if (url.startsWith('#/artifacts'))
+            return url.replace('#/artifacts', SITE_URL_ARTIFACT_ROOT);
+        else if (url.startsWith('#/resources'))
+            return url.replace('#/resources', SITE_URL_RESOURCE_ROOT);
+        else if (url.startsWith('#/catalogs')) {
+            var parts = url.split('/');
+            if (parts.length == 4) {
+                return `${SITE_URL_MODEL_ROOT}/${parts[2]};hierarchyId=${parts[3]}`;
+            }
+            console.log('ERROR INVALID FORMAT FOR MODEL URL', url);
+        }
+        return url;
     }
     
 }

@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, WorkflowService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Issue, IssueDetail } from '../../models/workflow.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -75,7 +76,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor', 'a/monitor'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Monitor', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
 
         this.load();
     }
@@ -91,7 +92,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private handleIssue(issue: IssueDetail) {
         this.showEditor = true;
-        this.router.navigateByUrl(`/a/workflow/work/issue/${issue.WorkflowID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ISSUE}/${issue.WorkflowID}`);
     }
 
     private export() {

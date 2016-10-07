@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, GroupService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GroupSearchResultModel } from '../../models/group.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-group-list',
@@ -27,7 +28,7 @@ import { GroupSearchResultModel } from '../../models/group.model';
                                         <p-column [style]="{ 'width': '30px' }">
                                             <template let-col let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
-                                                    <a [routerLink]="'/a/group/'+item.ID" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                                                    <a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                                                 </div>
                                             </template>
                                         </p-column>
@@ -62,6 +63,10 @@ export class GroupListComponent extends BaseComponent implements OnInit {
         this.load();
     }
 
+    private groupUrl(id): string {
+        return SiteUrlHelpers.SITE_URL_GROUP_ROOT + '/' + id;
+    }
+
     private load() {
         this.isLoading = true;
         this.groupService.getGroupList()
@@ -77,7 +82,7 @@ export class GroupListComponent extends BaseComponent implements OnInit {
 
             return;
         }
-        this.router.navigateByUrl(`/a/group/${this.selected.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${this.selected.ID}`);
     }
     
 };

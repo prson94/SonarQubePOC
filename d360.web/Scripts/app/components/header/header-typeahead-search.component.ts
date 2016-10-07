@@ -1,8 +1,8 @@
-﻿
-import { Component, ElementRef } from '@angular/core';
+﻿import { Component, ElementRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../services/index';
 import { SearchResult } from '../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-header-typeahead-search',
@@ -46,18 +46,10 @@ export class HeaderTypeaheadSearchComponent {
         });       
     }
 
-    public convertUrl(item: SearchResult): string {
-        if (item.Url.startsWith('#/artifacts'))
-            return item.Url.replace('#/artifacts', '/a/artifact');
-        else if (item.Url.startsWith('#/resources'))
-            return item.Url.replace('#/resources', '/a/resource');
-        else if (item.Url.startsWith('#/catalogs'))
-            return item.Url.replace('#/catalogs', '/a/model');
-        return item.Url;
-    }
+    
 
     selectItem() {
-        let url = this.convertUrl(this.result);
+        let url = SiteUrlHelpers.convertUrl(this.result.Url);
 
         if (url.startsWith('/a')) {
             this.router.navigateByUrl(url);
@@ -91,7 +83,7 @@ export class HeaderTypeaheadSearchComponent {
     checkKey(event) {
         if (event.keyCode == 13) {
             this.showSearch = false;
-            this.router.navigateByUrl(`/a/search?query=${encodeURIComponent(this.searchText)}`);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(this.searchText)}`);
         }
     }
 }

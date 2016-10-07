@@ -8,6 +8,7 @@ import { FusionConfigurationDetails, FusionAttributeType  } from '../../models/f
 import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -131,7 +132,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     
     private buildBreadcrumb() {
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', '/a/fusion'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion', SiteUrlHelpers.SITE_URL_FUSION_ROOT));
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name));
 
         if (this.selectedFusionAttributeTypeId && this.fusionTreeComponent.fusionAttributeTypes) {
@@ -143,7 +144,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         var items = this.fusionTreeComponent.fusionAttributeTypes.filter(x => x.ID == id);
 
         if (items.length > 0) {
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/a/fusion/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));
 
       //      if (items[0].ParentID)
         //        this.addFusionAttributeTypeBreadcrumb(items[0].ParentID);
@@ -155,7 +156,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
     private changeFusionAttributeTypeId(event) {
         this.selectedFusionAttribute = null;
-        this.router.navigateByUrl(`/a/fusion/${this.fusionId};fusionAttributeTypeId=${event}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);
     }   
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        

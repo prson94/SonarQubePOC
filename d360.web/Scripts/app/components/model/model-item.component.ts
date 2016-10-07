@@ -8,6 +8,7 @@ import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-model-item',
@@ -106,9 +107,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.model = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', '/a/model/classification'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `/a/model/classification/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `/a/model/${this.model.ID}/structure`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.model.ID}/structure`));
 
                         this.loadModelHierarchy(this.modelId, hierarchyId);
 
@@ -222,7 +223,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`/a/model/${this.modelId};hierarchyId=${id}`);       
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.modelId};hierarchyId=${id}`);       
     }
 
     private loadItemSurvey(modelId: number) {

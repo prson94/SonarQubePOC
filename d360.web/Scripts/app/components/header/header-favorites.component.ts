@@ -1,10 +1,10 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { FavoritesService } from '../../services/favorites.service';
 import { Favorite } from '../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 
@@ -120,10 +120,9 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
         this.subFavorites.unsubscribe();
     }
 
-    isAdminUri() {
-        //TODO: remove a/ after url refactor
+    isAdminUri() {        
         //TODO: need a better way to do this
-        return (this.uri || '').toLowerCase().startsWith('a/admin');
+        return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT);
     }
 }
 

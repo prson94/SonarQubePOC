@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader } from '../../services/index';
 import { ArtifactTypeSummary } from '../../models/artifact-type.model';
@@ -7,6 +6,7 @@ import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/primeng';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-artifact-top-level-list',
@@ -115,6 +115,6 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
             console.log("ERROR : MISSING ID ON THE SELECTED ROW");
             return;
         }
-        this.router.navigateByUrl(`/a/artifact/${item.data.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${item.data.ID}`);
     }
 };

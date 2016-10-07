@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, GroupService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GroupEditorModel } from '../../models/group.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-group-item',
@@ -56,7 +57,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
 
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups', 'a/group'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.group.Name));
 
                     this.setBrowserTitle(this.titleService, this.model.group.Name);

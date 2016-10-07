@@ -1,11 +1,11 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model } from '../../models/model.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-model-list',
@@ -66,7 +66,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
 
             this.headerBreadcrumbService.clearCurrentObjectInfo();                      
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', this.modelGroup ? '/a/model/classification' : undefined));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
 
             if (this.modelGroup) {
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));
@@ -94,7 +94,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     showModel() {
-        this.router.navigateByUrl(`/a/model/${this.selected.ID}/structure`)
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.selected.ID}/structure`)
     }
 
 };
