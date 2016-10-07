@@ -509,6 +509,7 @@
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
     <None Include="dbo\Functions\GetFormattedFieldReferenceItemValue.sql" />
+    <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

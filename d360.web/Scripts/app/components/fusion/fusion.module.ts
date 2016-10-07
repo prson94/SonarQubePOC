@@ -12,6 +12,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
+import { FusionAttributeItemComponent } from './fusion-attribute-item.component';
 import { FusionAttributeSummaryComponent } from './fusion-attribute-summary.component';
 import { FusionComponent } from './fusion.component';
 import { FusionConfigurationComponent } from './fusion-configurations.component';
@@ -95,7 +96,8 @@ import {
     ],
     declarations: [
         FusionAgentErrorsComponent,
-        FusionAgentHistoryComponent,        
+        FusionAgentHistoryComponent,  
+        FusionAttributeItemComponent,      
         FusionAttributeSummaryComponent,
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,
@@ -117,6 +119,7 @@ import {
     exports: [
         FusionAgentErrorsComponent,
         FusionAgentHistoryComponent,        
+        FusionAttributeItemComponent,
         FusionAttributeSummaryComponent,
         FusionAttributeSummaryFiltersComponent,
         FusionComponent,

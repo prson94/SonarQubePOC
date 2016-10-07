@@ -31,7 +31,7 @@ export class GroupResourceInfo {
 }
 
 export class Group {
-    ID: number;
+    ID: number;    
     Name: string;
     Description: string;
     PrimaryOwnerResourceID: number;

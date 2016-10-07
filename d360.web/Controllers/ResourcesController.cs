@@ -485,7 +485,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         }
 
         [Route("{type}/{itemid:int}/templates/tooltip/{templateAction}")]
-        public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction)
+        public ContentResult _RenderTooltip(SystemObjects type, string itemid, string templateAction, bool isNg = false)
         {
             string html = "";
 
@@ -493,8 +493,8 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             {
                 int id = int.Parse(itemid);
 
-                html = Company.RenderTooltip(templateAction, type, id);
-
+                html = Company.RenderTooltip(templateAction, type, id, isNg);
+                
                 if (type == SystemObjects.Resource)
                 {
 
