@@ -378,6 +378,14 @@ namespace d360.web.Controllers
                 case "REFERENCEITEMTYPE":
                     return ReferenceItem_EditFields(ID);
 
+                case "POLICY":
+                    return Policy_EditFields(ID);
+                case "MAPRULE":
+                    return MapRule_EditFields(ID);
+                case "MAPRULEITEM":
+                    return MapRuleItem_EditFields(ID);
+                
+
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -413,6 +421,12 @@ namespace d360.web.Controllers
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "REFERENCEITEMTYPE":
                     return ReferenceItem_AddFields(objectID.GetValueOrDefault());
+                case "POLICY":
+                    return Policy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                case "MAPRULE":
+                    return MapRule_AddFields();
+                case "MAPRULEITEM":
+                    return MapRuleItem_AddFields(objectID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -483,6 +497,12 @@ namespace d360.web.Controllers
                     return EditReferenceItemType(form);
                 case "REFERENCEITEM":
                     return EditReferenceItem(form);
+                case "POLICY":
+                    return EditPolicy(form);
+                case "MAPRULE":
+                    return EditMapRule(form);
+                case "MAPRULEITEM":
+                    return EditMapRuleItem(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -526,6 +546,12 @@ namespace d360.web.Controllers
                     return DeleteReferenceItemType(form);
                 case "REFERENCEITEM":
                     return DeleteReferenceItem(form);
+                case "POLICY":
+                    return DeletePolicy(form);
+                case "MAPRULE":
+                    return DeleteMapRule(form);
+                case "MAPRULEITEM":
+                    return DeleteMapRuleItem(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -584,6 +610,12 @@ namespace d360.web.Controllers
                     return AddReferenceItemType(form);
                 case "REFERENCEITEM":
                     return AddReferenceItem(form);
+                case "POLICY":
+                    return AddPolicy(form);
+                case "MAPRULE":
+                    return AddMapRule(form);
+                case "MAPRULEITEM":
+                    return AddMapRuleItem(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -12926,6 +12958,14 @@ from ArtifactType A
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+        
+        [HttpDelete]
+        public JsonResult DeletePolicyByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("ID", id.ToString());
+            return DeletePolicy(form);
         }
 
         public ActionResult EditPolicy(int id)

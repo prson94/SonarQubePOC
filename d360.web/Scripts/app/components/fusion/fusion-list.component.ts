@@ -5,9 +5,10 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, FusionService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MapRuleItemDetail } from '../../models/fusion.model';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
-    selector: 'd3s-fusion-list',    
+    selector: 'd3s-fusion-list',        
     template: ` 
                     <div class="row" *ngIf="!showTechnicalMappings">
                         <div class="col l6 s12">
@@ -31,7 +32,9 @@ import { MapRuleItemDetail } from '../../models/fusion.model';
                         </div>
                     </div>
                     <div class="row" *ngIf="showTechnicalMappings">
-                        <d3s-fusion-technical-mappings></d3s-fusion-technical-mappings>
+                        <div class="col s12">   
+                            <d3s-fusion-technical-mappings></d3s-fusion-technical-mappings>
+                        </div>
                     </div>
                 `
 })
@@ -43,7 +46,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
     sub: any;
     
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService?: RightSidebarService ) {
+    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService: RightSidebarService ) {
         super(rightSidebarService);
     }
 
@@ -51,22 +54,20 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.setBrowserTitle(this.titleService, 'Fusion');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));    
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));
 
+        this.clearSidebar();
+        this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
 
-        this.rightSidebarService.showItem({
-            title: 'Technical Mappings',
-            active: false,
-            tag: 'technical'
-        });
-
-       this.sub =  this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
-           this.showTechnicalMappings = s.active
+        this.sub = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
+            if (s.tag == 'technical')
+                this.showTechnicalMappings = s.active
         });
 
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();
     }
     

@@ -58,15 +58,15 @@ export module FormHelper {
         });
     }
 
-    export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID'): TreeNode[] {
+    export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID', expandAll: boolean = true): TreeNode[] {
         var tree = new Array<TreeNode>();
         if (data && data.filter) {
             data.filter(d => d[parentField] == null).forEach(d => {
-                tree.push({ data: d, children: [] });
+                tree.push({ data: d, children: [], expanded: expandAll });
             });
 
             tree.forEach(t => {
-                FormHelper.formTreeR(t, data, idField, parentField);
+                FormHelper.formTreeR(t, data, idField, parentField, expandAll);
             });
         }
 
@@ -74,11 +74,11 @@ export module FormHelper {
         return tree;
     }
 
-    export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string) {
+    export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string, expandAll: boolean = true) {
         data.filter(d => d[parentField] == node.data[idField]).forEach(d => {
-            let child: TreeNode = { data: d, children: [] };
+            let child: TreeNode = { data: d, children: [], expanded: expandAll };
             node.children.push(child);
-            FormHelper.formTreeR(child, data, idField, parentField);
+            FormHelper.formTreeR(child, data, idField, parentField, expandAll);
         });
      }
 
