@@ -198,15 +198,17 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
             });
         }
-
+        this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
+                    this.isLoading = false;
                     this.onComplete.emit({ action: 'edit', field: this.model });
                 });
         } else {
             this.fieldsService.postFieldType(this.model)
                 .then(r => {                    
+                    this.isLoading = false;
                     this.onComplete.emit({ action: 'add', field: this.model });
                 });
         }
