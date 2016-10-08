@@ -3,6 +3,7 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { AuthenticationService } from '../services/authentication.service';
 import { Observable } from 'rxjs/Observable';
 import {take} from "rxjs/operator/take";
+import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 @Injectable()
 export class AdminUserGuard implements CanActivate {
@@ -16,7 +17,7 @@ export class AdminUserGuard implements CanActivate {
             res => {         
                 // Navigate to the home page
                 if (!res) {
-                    this.router.navigate(['a/home']);
+                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
                 }                                
             },
             err => console.log(err),

@@ -2,7 +2,7 @@
 import { Router }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService } from '../../services/index';
-
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-resource-groups',
@@ -19,7 +19,7 @@ import { ResourcesService } from '../../services/index';
                             <p-column [style]="{ 'width': '30px' }">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
-                                        <d3s-tooltip objectType="Group" [objectId]="item.ID" tooltipType="preview"><a [routerLink]="'/a/group/'+item.ID" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>                                        
+                                        <d3s-tooltip objectType="Group" [objectId]="item.ID" tooltipType="preview"><a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>                                        
                                     </div>
                                </template>
                             </p-column>
@@ -51,7 +51,11 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
             });
     }
 
+    private groupUrl(id) {
+        return `${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${id}`;
+    }
+
     private doSelect(group) {
-        this.router.navigateByUrl(`/a/group/${group.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${group.ID}`);
     }
 };

@@ -4,6 +4,7 @@ import { FusionConfiguration, FusionType, FusionFilter } from '../../models/fusi
 import { FusionService } from '../../services/fusion.service';
 import { GridColumn } from '../../models/grid-definition.model';
 import { BaseComponent } from '../shared/base.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
@@ -61,7 +62,7 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
     }
 
     private openFusion(fusion) {
-        this.router.navigateByUrl(`/a/fusion/${fusion.ID}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${fusion.ID}`);
     }
 }
 

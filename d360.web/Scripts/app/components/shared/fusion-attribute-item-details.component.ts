@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-attribute-item-details',
@@ -61,6 +62,6 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
     }
 
     public openItemInFusion() {
-        this.router.navigateByUrl(`/a/fusion/${this.fusionAttributeValueDetails.FusionID};fusionAttributeTypeId=${this.fusionAttributeValueDetails.FusionAttributeTypeID};fusionAttributeId=${this.fusionAttributeId}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionAttributeValueDetails.FusionID};fusionAttributeTypeId=${this.fusionAttributeValueDetails.FusionAttributeTypeID};fusionAttributeId=${this.fusionAttributeId}`);
     }
 };

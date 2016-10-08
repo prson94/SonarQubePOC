@@ -6,6 +6,7 @@ import {SelectItem} from 'primeng/primeng';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-search-input',
@@ -211,7 +212,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges {
             this.isAdvancedModeChange.emit(this.isAdvancedMode);
         }
         else {
-            this.router.navigateByUrl(`/a/search?query=${this.searchText ? encodeURIComponent(this.searchText):''}&advanced=1&types=${this.searchTypes? this.searchTypes.join(','):''}`);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=1&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
         }
     }
     

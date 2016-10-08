@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-policy-item',
@@ -128,8 +129,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.policyType = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy', '/a/policy'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `/a/policy/${this.policyType.ID}/structure`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy', SiteUrlHelpers.SITE_URL_POLICY_ROOT));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
 
                         this.loadPolicyItems(this.policyTypeId, hierarchyId);
 
@@ -237,7 +238,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`/a/policy/${this.policyTypeId};hierarchyId=${id}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
     }
 
     private edit() {

@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-raise-issue-button',
@@ -21,7 +22,7 @@ export class RaiseIssueButtonComponent extends BaseComponent {
     }
 
     private raiseIssue() {
-        this.router.navigateByUrl(`/a/workflow/raiseissue`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`);
     }
     
 }

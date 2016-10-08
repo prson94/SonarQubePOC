@@ -7,6 +7,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+
 
 declare var CurrentResourceID;
 
@@ -72,7 +74,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.resource = r;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', '/a/resource/'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
 
                     this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);

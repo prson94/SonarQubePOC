@@ -1,10 +1,10 @@
-﻿
-import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService} from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-resource-list',    
@@ -47,7 +47,7 @@ export class ResourceListComponent extends BaseComponent{
         return `/api/resources/${this.objectID}?$orderby=LastName,FirstName`;
     }
 
-    private openResource(event) {        
-        this.router.navigateByUrl(`/a/resource/${event.ResourceID}`);
+    private openResource(event) {
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${event.ResourceID}`);
     }
 };

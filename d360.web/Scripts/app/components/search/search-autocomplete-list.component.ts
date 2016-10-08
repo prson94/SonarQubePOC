@@ -3,6 +3,7 @@ import { Component, Input, ElementRef, HostBinding, OnChanges, OnInit, SimpleCha
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchResult} from '../../models/search-result.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-search-autocomplete-list',
@@ -47,19 +48,9 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     }
 
     private goTo(item: SearchResult) {
-        this.router.navigateByUrl(this.convertUrl(item));
+        this.router.navigateByUrl(SiteUrlHelpers.convertUrl(item.Url));
     }
-
-    public convertUrl(item: SearchResult): string {
-        if (item.Url.startsWith('#/artifacts'))
-            return item.Url.replace('#/artifacts', '/a/artifact');
-        else if (item.Url.startsWith('#/resources'))
-            return item.Url.replace('#/resources', '/a/resource');
-        else if (item.Url.startsWith('#/catalogs'))
-            return item.Url.replace('#/catalogs', '/a/model');        
-        return item.Url.replace('#', '/a');
-    }
-
+    
     onClick(event) {
         if (this.showResults && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
             this.showResults = false;

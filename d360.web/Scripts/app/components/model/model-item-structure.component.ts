@@ -164,7 +164,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`/a/model/${this.modelId};hierarchyId=${id}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.modelId};hierarchyId=${id}`);
     }
     
     setTreeNodeStyles(node) {

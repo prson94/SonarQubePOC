@@ -7,7 +7,7 @@ import { ArtifactType } from '../../models/artifact-type.model';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactColumnFilterComponent } from './artifact-column-filter.component'
-
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -222,7 +222,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     selectArtifact(artifact) {
-        this.router.navigateByUrl(`/a/artifact/${this.artifactType.ID}/${artifact.ID}`)
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.artifactType.ID}/${artifact.ID }`)
     }
 
     simpleSearchChanged(event) {

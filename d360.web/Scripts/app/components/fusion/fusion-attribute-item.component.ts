@@ -8,6 +8,7 @@ import { FusionConfigurationDetails, FusionAttributeType  } from '../../models/f
 import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -75,8 +76,8 @@ export class FusionAttributeItemComponent extends BaseComponent implements OnIni
             var fusionAttributeId = +params['fusionAttributeId'];
 
             this.fusionService.getFusionConfigurationFromAttributeId(fusionAttributeId)
-                .then(res => {                    
-                    this.router.navigateByUrl(`/a/fusion/${res.ID};fusionAttributeTypeId=${fusionAttributeTypeId};fusionAttributeId=${fusionAttributeId}`);                    
+                .then(res => {
+                    this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${res.ID};fusionAttributeTypeId=${fusionAttributeTypeId};fusionAttributeId=${fusionAttributeId}`);                    
                 });
 
         });

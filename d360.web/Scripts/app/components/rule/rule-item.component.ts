@@ -1,11 +1,11 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDetail } from '../../models/rule.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 
 @Component({
@@ -77,7 +77,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                     this.rule = result;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', 'a/rule'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', SiteUrlHelpers.SITE_URL_RULE_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
 
                     this.setBrowserTitle(this.titleService, this.rule.Name);

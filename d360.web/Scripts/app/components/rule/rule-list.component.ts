@@ -1,11 +1,11 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 
 @Component({
@@ -123,7 +123,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     }
 
     private showRule() {
-        this.router.navigateByUrl(`/a/quality/rule/${this.selected.ID}`)
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.selected.ID}`)
     }
 
     findRuleIndex(id: number) {
