@@ -87,6 +87,12 @@ BEGIN
 					FROM	[LookupType]
 					WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
 					UNION
+					SELECT	ID,
+							Name,
+							'ReferenceItem' as ObjectType
+					FROM	[ReferenceItemType]
+					WHERE	@LookupObjectType = 'ReferenceItem' and ID = @LookupObjectID
+					UNION
 					SELECT	1 as ID,
 							'User' as Name,
 							'Resource' as ObjectType
@@ -258,3 +264,4 @@ BEGIN
 
 	return @formattedValue
 END
+

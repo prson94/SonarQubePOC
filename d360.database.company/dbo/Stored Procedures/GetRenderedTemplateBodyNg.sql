@@ -1,5 +1,4 @@
-﻿
-CREATE PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
+﻿CREATE PROCEDURE [dbo].[GetRenderedTemplateBodyNg]-- 'Tooltip', 'Resource', 2, 'Preview'
 --declare
 	@TemplateType varchar(25),
 	@Type varchar(50),
@@ -398,6 +397,34 @@ BEGIN
 			set @resourceItemsHtml = @resourceItemsHtml + '</table>'
  
 			insert into @tbl values ('Items', @resourceItemsHtml)
+			------------------------------------------------------------------
+		end;
+
+		if @Type = 'ReferenceItem'
+		begin
+
+			declare @myReferenceListID int
+
+			select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
+			-- BUILD Domain LIST HTML -----------------------------------------
+			declare @referenceItemHtml nvarchar(max)
+
+			set @referenceItemHtml = '<table class="hoverable bordered striped" style="width:100%">'
+			set @referenceItemHtml = @referenceItemHtml + '<thead><th style="margin-right: 15px">Name</th></thead>'
+			set @referenceItemHtml = @referenceItemHtml + '<tbody>'
+
+
+
+			select		top 10 
+						@referenceItemHtml = @referenceItemHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
+			from		ReferenceItem
+			where		ReferenceItemTypeID = @myReferenceListID
+			order by	DisplayValue desc
+
+			set @referenceItemHtml = @referenceItemHtml + '</tbody>'
+			set @referenceItemHtml = @referenceItemHtml + '</table>'
+ 
+			insert into @tbl values ('Items', @referenceItemHtml)
 			------------------------------------------------------------------
 		end;
 
@@ -883,5 +910,3 @@ BEGIN
 END
 
 GO
-
-

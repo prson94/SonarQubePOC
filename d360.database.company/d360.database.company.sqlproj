@@ -480,6 +480,7 @@
     <Build Include="Security\bulkload.sql" />
     <Build Include="bulkload\Stored Procedures\UpdateItemColumnByType.sql" />
     <Build Include="quality\Functions\CalculatePassedWrapper.sql" />
+    <None Include="utility\Functions\GetFormattedFieldReferenceItemValue.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -508,7 +509,6 @@
     <None Include="dbo\Functions\CustomSiteNavigation.sql" />
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
-    <None Include="dbo\Functions\GetFormattedFieldReferenceItemValue.sql" />
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
   </ItemGroup>
   <ItemGroup>

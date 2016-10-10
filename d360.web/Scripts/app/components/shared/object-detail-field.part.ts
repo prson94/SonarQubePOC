@@ -24,10 +24,11 @@ export class ObjectDetailField implements OnInit {
     DetailFieldType = DetailFieldType;
 
     constructor() {
+        
     }
 
     ngOnInit() {
-
+        console.log(this.field);
     }
 }
 

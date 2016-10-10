@@ -57,7 +57,7 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
-    getLookupTokens(id: number, type: string): Promise<SelectItem[]> {
+    getLookupTokens(id: number, type: string): Promise<SelectItem[]> {        
         return this.http.get(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
             .toPromise()
             .then(response => <FtItem[]>response.json())
@@ -66,7 +66,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     }
 
     getLookups(id: number, type: string): Promise<Lookups> {
-        return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}`)
+        return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}&isNg=true`)
             .toPromise()
             .then(response => <any>response.json())
             .then(r => {                

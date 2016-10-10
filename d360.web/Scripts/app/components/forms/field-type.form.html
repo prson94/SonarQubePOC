@@ -46,10 +46,10 @@
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
             <div class="col s6">
                 <div id='LookupDisplayFormatTip' class="FieldNameRequired">Type of List</div>
-                <p-dropdown name="lookup" [options]="lookups.Lookups" [(ngModel)]="model.selectedLookup" [style]="{ 'width': '98%' }" (onChange)="loadTokens($event.value)" ngDefaultControl></p-dropdown>
+                <p-dropdown name="lookup" [options]="lookups.Lookups" [ngModel]="model.selectedLookup" (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
             </div>
             <div class="col s3">
-                <div id='LookupDisplayFormatTip' class="FieldNameRequired">List Display Format</div><!--<span class="FieldNameError" data-bind="visible: LookupDisplayFormatInvalid">*</span></div>-->
+                <div id='LookupDisplayFormatTip' class="FieldNameRequired">List Display Format</div>
                 <input name="lookupFormat" pInputText type="text" [(ngModel)]="model.FieldType.LookupDisplayFormat" style="width: 98%; display: block;" />
             </div>
             <div class="col s3">

@@ -76,7 +76,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" [parentID]="artifactType?.ParentID" [objectType]="'Artifact'" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" [objectType]="'Artifact'" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"

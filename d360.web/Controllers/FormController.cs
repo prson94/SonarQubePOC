@@ -4781,7 +4781,7 @@ order by  D.TextPath", new { id });
             };
         }
 
-        public JsonNetResult FieldType_Lookups(string type, int id)
+        public JsonNetResult FieldType_Lookups(string type, int id, bool isNg = false)
         {
             #region Load static lists
 
@@ -4797,97 +4797,24 @@ order by  D.TextPath", new { id });
                                                             (RT.Object = @type and RT.ObjectID = @id) 
                                                             )
             order by  D.TextPath", new { type, id });
-
-            //#region
-            //var sql = @"
-            //declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
-
-            //insert into @tbl
-            //	select	T.ID,
-            //			NULL,
-            //			case 
-            //				when (T.Subject = @type and T.SubjectID = @id) then T.Object
-            //				else T.Subject 
-            //			end,
-            //			case 
-            //				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-            //				else T.SubjectID
-            //			end,
-            //			D.TextPath,
-            //			0
-            //	from	IntersectType T
-            //			inner join cache.ObjectDetails D on 
-            //												D.Object = case 
-            //																when (T.Subject = @type and T.SubjectID = @id) then T.Object
-            //																else T.Subject 
-            //															end 
-            //											and D.ObjectID = case 
-            //																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-            //																else T.SubjectID
-            //															end
-            //	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
-
-            //-- Get inferred relationship types
-            //insert into @tbl
-            //	select	T.ID,
-            //			P.ID,
-            //			case 
-            //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-            //				else T.Subject 
-            //			end,
-            //			case 
-            //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-            //				else T.SubjectID
-            //			end,
-            //			'Inferred :: ' + D.TextPath,
-            //			1
-            //	from	@tbl P
-            //			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
-            //			inner join cache.ObjectDetails D on 
-            //												D.Object = case 
-            //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-            //																else T.Subject 
-            //															end 
-            //											and D.ObjectID = case 
-            //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-            //																else T.SubjectID
-            //															end
-
-            //-- Get child relationship types
-            //insert into @tbl
-            //	select	T.ID,
-            //			P.ID,
-            //			case 
-            //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-            //				else T.Subject 
-            //			end,
-            //			case 
-            //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-            //				else T.SubjectID
-            //			end,
-            //			'Child :: ' + D.TextPath,
-            //			0
-            //	from	@tbl P
-            //			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
-            //			inner join cache.ObjectDetails D on 
-            //												D.Object = case 
-            //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-            //																else T.Subject 
-            //															end 
-            //											and D.ObjectID = case 
-            //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-            //																else T.SubjectID
-            //															end
-
-
-
-            //select * from @tbl order by ParentID, Name";
-            //#endregion
-
-            //var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+                        
             var attributes = Company.Filter<AttributeType>(x => !x.ParentID.HasValue).OrderBy(x => x.Name).ToList().Select(i => new { title = i.Name, value = $"AttributeType|{i.ID}" });
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
+
+            //if is angular append the new reference type lookups to this list of lookups
+            if (isNg)
+            {
+                lookups.AddRange(Company.Query<KnockoutListItem>(@"
+                        select
+                            'Reference List : ' + [Name] as title
+                            ,'ReferenceItem|' + cast(ID as varchar) as value
+                        from 
+                            [dbo].[ReferenceItemType]
+                        order by Name  
+                    "));
+            }
+
             var filteredLookups = Company.Query<KnockoutListItem>($@"
 select	L.Name as title,
 		'Lookup|' + cast(L.ID as varchar) as value
@@ -4908,9 +4835,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 { "Choose sample...", "" },
                 { "Email", @"^$|\b([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
                 { "IP Address", @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
-                { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
-                //{ "International Phone", @"^$|\b\\+(9[976]\d|8[987530]\d|6[987]\d|5[90]\d|42\d|3[875]\d|2[98654321]\d|9[8543210]|8[6421]|6[6543210]|5[87654321]|4[987654310]|3[9643210]|2[70]|7|1)\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*\d\W*(\d{1,2})\b" },
-                //{ "Unc/Network Path", @"^$|^([A-Za-z]:){1}\\.+$|^\\\\.+$|^\/.+$" },
+                { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },                
                 { "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^$|\b[0-9]{5}(?:-[0-9]{4})?\b" }

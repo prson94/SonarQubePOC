@@ -99,7 +99,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         let promises = [];
         switch (value.toLowerCase()) {
             case 'lookup':
-                promises.push(this.loadTokens(this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID));
+                promises.push(this.loadTokens(this.model.FieldType.LookupObjectType,this.model.FieldType.LookupObjectID));                
             case 'fusionlookup':
                 if (this.model.FusionItems && this.model.FusionItems.length)
                     this.model.FusionItems.forEach(i => {
@@ -115,11 +115,36 @@ export class FieldTypeForm implements OnInit, OnChanges {
         return Promise.all(promises).then(() => { });
     }
 
-    private loadTokens(value: string): Promise<void> {
+    // called when the lookup type field is changed
+    private lookupTypeSelected(value: string) {
+                
+        if (value == undefined) {
+            console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
+
+            return;
+        }
+
+        //update the model to have correct lookuptype object and id
         let id = parseInt(value.split('|')[1]);
         let type = value.split('|')[0];
-        if (type != "DomainItem") type += 'Type';
-        return this.fieldsService.getLookupTokens(id, type)
+
+        this.model.FieldType.LookupObjectID = id;
+        this.model.FieldType.LookupObjectType = type;
+
+        this.loadTokens(type, id);
+    }
+
+
+    private loadTokens(objectType: string, objectId: number): Promise<void> {
+        if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
+            console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
+
+            return;
+        }
+
+        if (objectType != "DomainItem") objectType += 'Type';
+        
+        return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
                 this.model.LookupTokens = r;
                 if (this.model.LookupTokens.length > 0)
