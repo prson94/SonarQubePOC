@@ -48,7 +48,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     }
 
     private goTo(item: SearchResult) {
-        this.router.navigateByUrl(SiteUrlHelpers.convertUrl(item.Url));
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(item.Url));
     }
     
     onClick(event) {

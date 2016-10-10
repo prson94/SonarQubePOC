@@ -26,6 +26,6 @@ export class SearchResultItemComponent extends BaseComponent  {
     }
 
     private navigateLink() {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectLinkFromOldUrl(this.result.Group, this.result.Url));
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }    
 };

@@ -1,5 +1,4 @@
-﻿
-import { Component, NgZone, OnInit } from '@angular/core';
+﻿import { Component, NgZone, OnInit } from '@angular/core';
 import { PageHeader } from '../../services/page-header.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -49,10 +48,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     edit(id: number) {
-        this.selectedRow = this.groupItems.find(i => i.ID == id);
-        //console.log(id);
-        //console.log(this.groupItems);
-        //console.log(this.selectedRow);
+        this.selectedRow = this.groupItems.find(i => i.ID == id);        
         this.formMode = FormMode.Editing;
 
     }
@@ -71,7 +67,10 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     select(e) {
-        this.selectedRow = e.data;
-        //console.log(this.selectedRow);
+        this.selectedRow = e.data;        
+    }
+
+    private groupUrl(id:number): string {
+        return `/a/group/${id}`;
     }
 }

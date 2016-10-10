@@ -49,14 +49,7 @@ export class HeaderTypeaheadSearchComponent {
     
 
     selectItem() {
-        let url = SiteUrlHelpers.convertUrl(this.result.Url);
-
-        if (url.startsWith('/a')) {
-            this.router.navigateByUrl(url);
-        }
-        else {
-            window.location.href = url;
-        }
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
 
     hide() {        
