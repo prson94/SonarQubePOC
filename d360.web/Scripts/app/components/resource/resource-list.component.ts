@@ -48,6 +48,6 @@ export class ResourceListComponent extends BaseComponent{
     }
 
     private openResource(event) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${event.ResourceID}`);
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource',event.ResourceID));
     }
 };

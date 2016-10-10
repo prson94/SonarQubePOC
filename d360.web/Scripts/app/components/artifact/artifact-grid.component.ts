@@ -222,7 +222,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     selectArtifact(artifact) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.artifactType.ID}/${artifact.ID }`)
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID));
     }
 
     simpleSearchChanged(event) {

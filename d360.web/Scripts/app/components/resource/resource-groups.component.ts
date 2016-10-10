@@ -56,6 +56,6 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     }
 
     private doSelect(group) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${group.ID}`);
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('group', group.ID));
     }
 };

@@ -94,7 +94,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     showModel() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.selected.ID}/structure`)
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.selected.ID));        
     }
 
 };

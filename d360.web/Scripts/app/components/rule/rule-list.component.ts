@@ -123,7 +123,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     }
 
     private showRule() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.selected.ID}`)
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', this.selected.ID));
     }
 
     findRuleIndex(id: number) {

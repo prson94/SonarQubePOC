@@ -24,7 +24,7 @@ export class HeaderActionsComponent {
     constructor(private headerActionsService: HeaderActionsService) { }
 
     private resourceUrl() {
-        return `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${this.resourceId}`;
+        return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
 }
 

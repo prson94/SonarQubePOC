@@ -114,7 +114,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         if (!item.data || !item.data.ID) {
             console.log("ERROR : MISSING ID ON THE SELECTED ROW");
             return;
-        }
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${item.data.ID}`);
+        }        
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.data.ID));
     }
 };

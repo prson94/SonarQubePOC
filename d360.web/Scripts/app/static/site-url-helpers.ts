@@ -54,10 +54,27 @@
     export var SITE_URL_ADMIN_WORKFLOW = 'workflow';
     export var SITE_URL_ADMIN_DOMAIN = 'domain';
 
-    export function getObjectUrl(objectType, objectId, objectName, parentId) {
+    // getObjectUrl - Generates the url for an object based on its type
+    export function getObjectUrl(objectType:string, objectId:number, parentId?:number, objectName?: string) {
         switch (objectType.toUpperCase()) {
+            case 'ARTIFACTTYPE':
+                return `${SITE_URL_ARTIFACT_ROOT}/${objectId}`;                
             case 'ARTIFACT':
                 return `${SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;                
+            case 'FUSIONTYPE':
+                return `${SITE_URL_FUSION_ROOT}/${objectId}`;
+            case 'GROUP':
+                return `${SITE_URL_GROUP_ROOT}/${objectId}`;
+            case 'RESOURCE':
+                return `${SITE_URL_RESOURCE_ROOT}/${objectId}`;
+            case 'TAXONOMY':
+                return `${SITE_URL_MODEL_ROOT}/${parentId};hierarchyId=${objectId}`;                
+            case 'TAXONOMYTYPE':
+                return `${SITE_URL_MODEL_ROOT}/${objectId}/structure`;                
+            case 'TAXONOMYTYPECLASS':
+                break;
+            case 'RULE':
+                return `${SITE_URL_RULE_ROOT}/${objectId}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

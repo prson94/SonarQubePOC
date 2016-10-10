@@ -83,7 +83,7 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
 
             return;
         }
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.selected.ID }`);
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', this.selected.ID));        
     }
 
     private doExport() {

@@ -109,7 +109,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.model.ID}/structure`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
 
                         this.loadModelHierarchy(this.modelId, hierarchyId);
 
@@ -117,9 +117,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
                         this.clearSidebar();
                         this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true);
-
-                        
-
                     });
             }
             else {
@@ -223,7 +220,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.modelId};hierarchyId=${id}`);       
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMY', id, this.modelId));        
     }
 
     private loadItemSurvey(modelId: number) {

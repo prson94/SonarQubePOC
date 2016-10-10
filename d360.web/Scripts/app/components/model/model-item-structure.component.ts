@@ -115,8 +115,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION }/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.model.ID}/structure`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
 
                         this.loadModelHierarchy(this.modelId);
 
@@ -164,7 +164,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private showHierarchy(id: number) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${this.modelId};hierarchyId=${id}`);
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMY', id, this.modelId));
     }
     
     setTreeNodeStyles(node) {
