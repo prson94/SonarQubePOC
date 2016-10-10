@@ -75,9 +75,7 @@ export class FieldsService extends BaseService implements IFieldsService {
                 l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
                 l.IntersectTypes = this.ftItemToSelectItem(r.IntersectTypes);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
-                l.Patterns = this.ftItemToSelectItem(r.Patterns);
-                console.log('Lookups');
-                console.log(l);
+                l.Patterns = this.ftItemToSelectItem(r.Patterns);                
                 return l;
             })
             .catch(err => this.handleError(err));

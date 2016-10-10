@@ -175,6 +175,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private addFusion() {
         let i = new FieldTypeFusionItemEditorModel();
         i.ReferenceType = this.lookups.ReferenceTypes[0].value;
+        if (this.model.FusionItems == null) {            
+            this.model.FusionItems = [];
+        }
         this.model.FusionItems.push(i);
     }
     private removeFusion(i: number) {
