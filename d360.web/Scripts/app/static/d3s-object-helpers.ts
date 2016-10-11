@@ -1,8 +1,8 @@
-﻿export module D3SObjectHelpers {
+﻿export class D3SObjectHelpers {
 
 
     // Given an d3s object name get its friendly name to display to users
-    export function getObjectTypeFriendlyName(objectType: string) {
+    static getObjectTypeFriendlyName(objectType: string) : string {
         switch (objectType.toUpperCase()) {
             case "FUSIONATTRIBUTES":
                 return "Fusion";
