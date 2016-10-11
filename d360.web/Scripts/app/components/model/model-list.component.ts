@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model } from '../../models/model.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-model-list',
@@ -28,14 +29,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </header>         
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                   
                             <p-dataTable #dt [globalFilter]="gb"  [value]="models | modelType: modelGroup" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showModel();" >
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                        
                                 <p-column field="TaxonomyTypeClass" [hidden]="modelGroup" header="Classification" [sortable]="true" [style]="{width:'200px'}"  [filter]="!showSimpleFilter"></p-column>
+                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                        
                                 <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
                                     <template let-col let-data="rowData" pTemplate type="body">
-                                        <div [innerHtml]="data?.Description"></div>
+                                        <span [innerHtml]="data?.Description"></span>
                                     </template>                                                        
-                                </p-column>
-                                <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [style]="{width:'100px'}"  [filter]="!showSimpleFilter"></p-column>                                
+                                </p-column>                                
                             </p-dataTable>      
                         </div>
                     </div>
@@ -88,7 +88,8 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.modelsService.getModels()
             .then(result => {
                 this.isLoading = false;
-                this.models = result;                
+                this.models = result;           
+                this.models = _.sortBy(this.models, 'TaxonomyTypeClass');     
                 if (this.models.length && this.models.length > 0) this.selected = this.models[0];
             });
     }
