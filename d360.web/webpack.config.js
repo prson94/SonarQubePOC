@@ -25,7 +25,7 @@ var webpackConfig = {
          path.join(__dirname, '/scripts/app/') // location of your src
       ),
       /*new webpack.optimize.UglifyJsPlugin({
-          compress: { warnings: false }
+          compress: { warnings: false },comments:false
       }),*/
     new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
   ],
