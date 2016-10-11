@@ -11,6 +11,7 @@ import { Subscription }   from 'rxjs/Subscription';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
+import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 
 @Component({
     selector: 'd3s-workflow-raise-issue',
@@ -33,17 +34,19 @@ import { Tag } from '../../models/tag.model';
                                     <div *ngIf="objectDetail"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
                                     <div>
                                         <label><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="showObjectSearch=true">Other item</label>
-                                        <p-autoComplete size="50"
-                                                *ngIf="showObjectSearch && selectedOption=='other'"
+                                        <div *ngIf="showObjectSearch && selectedOption=='other'" style="padding-left:20px"><p-autoComplete size="100"                                                
                                                 scrollHeight="400px"
                                                 name="other"
                                                 [(ngModel)]="term" 
                                                 [suggestions]="terms" 
-                                                (completeMethod)="search($event)" 
-                                                field="TextPath"  
+                                                (completeMethod)="search($event)"                                                 
                                                 placeholder="Select an item"
-                                                (onSelect)="selectItem()">                       
-                                        </p-autoComplete>                                        
+                                                field="TextPath" 
+                                                (onSelect)="selectItem()">     
+                                            <template let-item>
+                                                <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}}
+                                            </template>                  
+                                        </p-autoComplete></div>                                        
                                     </div>
                                 </div>                            
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
@@ -142,6 +145,10 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectItem() {
         this.selectedObjectType = this.term.Object;
         this.selectedObjectId = this.term.ObjectID;       
+    }
+
+    private userFriendlyObjectName(objectType: string) {
+        return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
     }
 
 }
