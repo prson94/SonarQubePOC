@@ -23,7 +23,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
-                    </header>                              
+                    </header>                                                
+                    <div *ngIf="model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
