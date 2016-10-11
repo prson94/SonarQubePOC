@@ -57,7 +57,8 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     @Input() hasCloseButton: boolean = false;
     @Input() hasCertifyButton: boolean = false;
 
-    @Output() close = new EventEmitter();    
+    @Output() close = new EventEmitter();
+    @Output() countsChanged = new EventEmitter();
 
     constructor(private workflowService: WorkflowService) {
         super();
@@ -81,7 +82,8 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     private handleSave() {
         this.showEditor = false;
-        this.loadIssues();        
+        this.loadIssues();
+        this.countsChanged.emit();       
     }
 
     private handleRowDblClick() {
