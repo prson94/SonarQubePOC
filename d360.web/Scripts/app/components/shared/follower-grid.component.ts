@@ -43,7 +43,7 @@ export class FollowerGridComponent extends BaseComponent implements OnInit, OnCh
         this.followerService.getFollowers(this.objectType, this.objectID)
             .then(r => {
                 this.items = r;
-                console.log(r);
+                //console.log(r);
                 this.isLoading = false;
             });
     }

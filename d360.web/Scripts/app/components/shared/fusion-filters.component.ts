@@ -33,7 +33,7 @@ export class FusionFiltersComponent implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log('ngOnChanges');
+        //console.log('ngOnChanges');
         for (let p in changes) {
             if (p == 'fusionTypeID' || p == 'fusionID') {
                 this.load();

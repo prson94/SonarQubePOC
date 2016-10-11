@@ -513,6 +513,9 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Scripts\app\main.bundle.js" />
+    <Content Include="Scripts\app\polyfills.bundle.js" />
+    <Content Include="Scripts\app\vendor.bundle.js" />
     <Content Include="webpack.config.js" />
     <None Include="Content\styles\typeahead.less" />
     <Content Include="Content\templates\actionsmonitor.list.html" />
@@ -900,14 +903,6 @@
     <Content Include="node_modules\reflect-metadata\Reflect.js" />
     <Content Include="node_modules\rxjs\bundles\Rx.js" />
     <Content Include="node_modules\rxjs\bundles\Rx.min.js" />
-    <Content Include="node_modules\systemjs\dist\system-csp-production.js" />
-    <Content Include="node_modules\systemjs\dist\system-csp-production.src.js" />
-    <Content Include="node_modules\systemjs\dist\system-polyfills.js" />
-    <Content Include="node_modules\systemjs\dist\system-polyfills.src.js" />
-    <Content Include="node_modules\systemjs\dist\system-register-only.js" />
-    <Content Include="node_modules\systemjs\dist\system-register-only.src.js" />
-    <Content Include="node_modules\systemjs\dist\system.js" />
-    <Content Include="node_modules\systemjs\dist\system.src.js" />
     <Content Include="node_modules\zone.js\dist\async-test.js" />
     <Content Include="node_modules\zone.js\dist\fake-async-test.js" />
     <Content Include="node_modules\zone.js\dist\jasmine-patch.js" />
@@ -926,10 +921,6 @@
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="package.json" />
     <Content Include="Content\styles\_VariablesAng.less" />
-    <Content Include="node_modules\systemjs\dist\system-csp-production.js.map" />
-    <Content Include="node_modules\systemjs\dist\system-polyfills.js.map" />
-    <Content Include="node_modules\systemjs\dist\system-register-only.js.map" />
-    <Content Include="node_modules\systemjs\dist\system.js.map" />
     <Content Include="fonts\FontAwesome.otf" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\fontawesome-webfont.woff" />

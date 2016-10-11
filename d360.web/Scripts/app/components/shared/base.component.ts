@@ -68,15 +68,15 @@ export class BaseComponent {
     }
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
-        console.log('show/hide :');
-        console.log(activatedItem);
+        //console.log('show/hide :');
+        //console.log(activatedItem);
     }
 
     clearSidebar(unsubscribe?: boolean) {
         if (this.rightSidebarService) {
             this.rightSidebarService.clearItems();
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {
-                console.log("DEV INFO - UNSUBSCRIBING FROM RIGHT SIDE BAR SUBSCRIPTION");
+                //console.log("DEV INFO - UNSUBSCRIBING FROM RIGHT SIDE BAR SUBSCRIPTION");
                 this.sidebarSubscription.unsubscribe();
             }
         }

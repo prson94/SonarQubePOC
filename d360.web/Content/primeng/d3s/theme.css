@@ -19,12 +19,13 @@
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Arial,Helvetica,sans-serif; font-size: 1em; }
 .ui-widget-content { border: none; background: #ffffff; color: #646464; }
 .ui-widget-content a { color: #222222; }
-.ui-widget-header { border: 1px solid #D5D5D5; background: #cccccc; color: #222222; font-weight: bold; }
+.ui-widget-header { border: 1px solid #D5D5D5; background-color: #999; color: #222222; font-weight: bold; }
 .ui-widget-header a { color: #222222; }
 
 /* Interaction states
 ----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {  border: 1px solid #d6d6d6; background-color: #999; }
+th.ui-state-default { background-color: #999; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {  border: 1px solid #d6d6d6; }
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { text-decoration: none; }
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #c0c0c0; background: #eeeeee; /*font-weight: normal;*/ color: #212121; }
 .ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }
@@ -748,12 +749,16 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
     width:20px;
 }
 
+.ui-state-highlight > label {
+    color: #fff;
+}
+
 .ui-multiselect-item .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { 
     /*border: none;*/ background: #eeeeee; font-weight: normal; color: #212121;background:#A8D6F4;;
 }
 
 .ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {
-    border: none; background: #76BBE8; color: #FFFFFF; 
+    border: none; background: #76BBE8; color: #FFFFFF !important; 
 }
 
 .ui-multiselect-item .ui-corner-all .ui-state-hover {

@@ -1034,12 +1034,12 @@ from		cache.ObjectDetails D
 									else cast(1 as bit)
 								end as TargetingSubject
 						from	IntersectType IT
-								inner join IntersectTypePredicate ITP on ITP.IntersectTypeID = IT.ID 
-																		 and ITP.PredicateType = 6
-																		 and (
-																				(IT.Subject = @ot and IT.SubjectID = @otid) OR
-																				(IT.Object = @ot and IT.ObjectID = @otid)
-																			 )
+                                inner join Predicate P on   P.ID = IT.PredicateID 
+                                                            and P.Type = 6
+														    and (
+															    (IT.Subject = @ot and IT.SubjectID = @otid) OR
+															    (IT.Object = @ot and IT.ObjectID = @otid)
+															    )
 						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @type + '|' + cast(@id as varchar)
             inner join [Predicate] P on P.Type = 6
 order by	D.ObjectTypeName,

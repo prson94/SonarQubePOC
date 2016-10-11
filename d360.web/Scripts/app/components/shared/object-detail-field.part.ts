@@ -28,7 +28,7 @@ export class ObjectDetailField implements OnInit {
     }
 
     ngOnInit() {
-        console.log(this.field);
+        //console.log(this.field);
     }
 }
 

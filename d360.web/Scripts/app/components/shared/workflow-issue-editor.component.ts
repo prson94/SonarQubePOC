@@ -96,7 +96,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
 
     onSubmit() {
         this.isLoading = true;
-        console.log(this.assignToId);
+        //console.log(this.assignToId);
         this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
             res => {
                 this.isLoading = false;

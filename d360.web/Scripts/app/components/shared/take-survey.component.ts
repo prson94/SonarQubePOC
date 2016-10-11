@@ -130,7 +130,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     }
 
     private selectRadioValue(event, option) {
-        console.log(event);
+        //console.log(event);
     }
 }
 
