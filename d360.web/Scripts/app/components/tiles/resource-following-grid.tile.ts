@@ -11,9 +11,9 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">   
+    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;" *ngIf="simpleFilter">   
    <p-dataTable [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
-        <p-column header="Name" field="Name" filter="true">
+        <p-column header="Name" field="Name" [filter]="!simpleFilter">
             <template let-row="rowData" pTemplate type="body">
                 <d3s-tooltip [objectType]="row.ObjectType" [objectId]="row.ObjectID" tooltipType="preview">{{row.Name}}</d3s-tooltip>
             </template>
@@ -31,6 +31,9 @@ export class ResourceFollowingGridTile implements OnInit, OnChanges {
     @Input() resourceId: number;
     @Input() objectId: number;
     @Input() objectType: string;
+
+    @Input() simpleFilter: boolean = false;
+
     isLoading = false;
     private items: FollowingDetailForResource[] = new Array<FollowingDetailForResource>();
 

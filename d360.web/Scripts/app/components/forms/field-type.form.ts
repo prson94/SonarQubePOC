@@ -62,17 +62,29 @@ export class FieldTypeForm implements OnInit, OnChanges {
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.id)
                 .then(data => {
+                    console.log('data: ');
+                    console.log(data);
                     this.model = data;
                     this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
+                    console.log('lookups: ');
+                    console.log(d);
                     this.lookups = d;
+
+                    this.lookups.IntersectTypes.forEach(i => {
+                        i.id = i.value.split('|')[0];
+                    });
+
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                 })
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
+                        console.log("form data: ");
+                        console.log(f);
+                        this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;                        
                     }
                 })

@@ -24,6 +24,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() closeClick = new EventEmitter();
     @Output() refreshClick = new EventEmitter();
     @Output() authenticateClick = new EventEmitter();
+    @Output() apiClick = new EventEmitter();
+    @Output() passwordClick = new EventEmitter();
 
     @Input() filterMode: boolean = false;        
     @Output() filterModeChange = new EventEmitter();
@@ -36,6 +38,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasFilterMode: boolean = false;
     @Input() hasRefresh: boolean = false;
     @Input() hasAuthenticate: boolean = false;
+    @Input() hasApi: boolean = false;
+    @Input() hasPassword: boolean = false;
 
     private items: MenuItem[] = [];
 
@@ -105,6 +109,19 @@ export class TileActionsComponent implements OnInit, OnChanges {
                 icon: 'fa-sign-in', command: () => this.authenticateClick.emit(null)
             });
         }
+
+        if (this.hasApi) {
+            this.items.push({
+                icon: 'fa-key', command: () => this.apiClick.emit(null)
+            });
+        }
+
+        if (this.hasPassword) {
+            this.items.push({
+                icon: 'fa-asterisk', command: () => this.passwordClick.emit(null)
+            });
+        }
+
     }
 
 }

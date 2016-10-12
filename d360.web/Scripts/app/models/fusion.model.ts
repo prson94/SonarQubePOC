@@ -283,3 +283,12 @@ export class PromotionObject {
 
     id: string;
 }
+
+export class RelationIntersectType {
+    ID: number;
+    Name: string;
+    Subject: string;
+    Object: string;
+    SubjectID: number;
+    ObjectID: number;
+}

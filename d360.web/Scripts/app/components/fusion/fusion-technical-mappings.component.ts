@@ -91,7 +91,6 @@ export class FusionTechnicalMappingsComponent extends BaseComponent implements O
 
     selection: TreeNode;
     formMode: FormMode = FormMode.Default;
-    //isItem = false;
     FormMode = FormMode;
     searchValue: string;
     selectedParentID: number = null;

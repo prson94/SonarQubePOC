@@ -257,9 +257,35 @@ import { TreeNode, Column } from 'primeng/primeng';
                             <option *ngFor="let i of relateFusionOwnerItems" [value]="i.ID">{{i.text}}</option>
                         </select>
                     </div>
+                </div> 
+            </div>
+            <div *ngSwitchCase="'findrelation'"> 
+                <div class="row">
+                    <div class="col s8 offset-s2">
+                        <div class="FieldName" style="display:block">Intersect Type</div>
+                        <select [(ngModel)]="selectedFindRelationIntersectType" style="width:95%" > 
+                            <option *ngFor="let i of findRelationIntersectTypes" [value]="i.ID">{{i.Name}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s8 offset-s2">
+                        <div class="FieldName" style="display:block">Search Type</div>
+                        <select [(ngModel)]="selectedFindRelationSearchType" style="width:95%"  (ngModelChange)="changeFindRelationSearchType()">
+                            <option *ngFor="let i of findRelationSearchTypes" [value]="i.value">{{i.text}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row" *ngIf="selectedFindRelationSearchType && selectedFindRelationSearchType == 'resultfromstep'">
+                    <div class="col s8 offset-s2">
+                        <div class="FieldName" style="display:block">Result From Step</div>
+                        <select [(ngModel)]="selectedFindRelationStep" style="width:95%" >
+                            <option *ngFor="let i of findRelationSteps" [value]="i.ID">{{i.Description}}</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div> 
         <div class="row">
             <div class="col s12">
                 <button type="button" label="Save" pButton (click)="save();"></button>
@@ -269,23 +295,24 @@ import { TreeNode, Column } from 'primeng/primeng';
     </div>
 </div>
                 `,
-    providers: [FusionService]
+    providers: [FusionService] 
 })
 
 export class FusionRuleStepComponent extends BaseComponent implements OnInit {
     @Input() ruleID: number;
     @Input() ruleStepID: number = 0;
-
+     
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
-    model: FusionRuleStepEditorModel;
+    model: FusionRuleStepEditorModel; 
     rule: FusionRule;
 
 
     actionTypes: any[] = [
         { text: 'Promote', value: 'promote' },
         { text: 'Find', value: 'find' },
+        { text: 'Find via Relationship', value: 'findrelation' },
         { text: 'Lineage', value: 'lineage' },
         { text: 'Relate', value: 'relate' },
     ];
@@ -369,6 +396,17 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
     selectedRelateSubjectFusionOwnerItem;
     selectedRelateObjectFusionOwnerItem;
 
+
+    //find relation
+    findRelationSearchTypes: any[] = [
+        { value: "self", text: "Self" },
+        { value: "resultfromstep", text: "Result From Step" }
+    ];
+    selectedFindRelationSearchType;
+    findRelationIntersectTypes: any[] = [];
+    selectedFindRelationIntersectType;
+    findRelationSteps: any[] = [];
+    selectedFindRelationStep;
 
     constructor(private fusionService: FusionService) {
         super();
@@ -530,6 +568,12 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     .then(r => {
                         this.relateIntersectTypes = r;
                     });
+            case 'findrelation':
+                this.findRelationIntersectTypes = [];
+                return this.fusionService.getFusionRelationIntersectTypes()
+                    .then(r => {
+                        this.findRelationIntersectTypes = r;
+                    });
             default:
                 return Promise.resolve();
         }
@@ -548,6 +592,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 s.ParentObjectSearch = this.selectedPromotionSearchType;
                 if (this.selectedPromotionSearchType == 'resultfromstep') {
                     s.ParentObjectID = this.selectedPromotionStep;
+                    s.FindObjectStep = this.selectedPromotionStep;
                 } else if (this.selectedPromotionSearchType == 'direct') {
                     s.ParentObjectID = this.selectedPromotionParent;
                 } else if (this.selectedPromotionSearchType == 'fusionowner') {
@@ -565,6 +610,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     s.Object = 'Step';
                     s.ObjectID = this.selectedFindStep;
                     s.FindParent = this.findByParent;
+                    s.FindObjectStep = this.selectedFindStep;
                 } else if (this.selectedFindSearchType == 'fusion') {
                     s.Object = 'FusionAttributeType';
                     s.ObjectID = this.selectedFindFusionItem;
@@ -581,6 +627,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 if (this.selectedRelateSubjectSearchType = 'resultfromstep') {
                     s.Subject = 'Step';
                     s.SubjectID = this.selectedRelateSubjectStep;
+                    s.RelateSubjectStep = this.selectedRelateSubjectStep;
                 } else if (this.selectedRelateSubjectSearchType == 'fusionowner') {
                     s.Subject = 'Owner';
                     s.SubjectID = this.selectedRelateSubjectFusionOwnerItem;
@@ -592,6 +639,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 if (this.selectedRelateObjectSearchType = 'resultfromstep') {
                     s.Object = 'Step';
                     s.ObjectID = this.selectedRelateObjectStep;
+                    s.RelateObjectStep = this.selectedRelateObjectStep;
                 } else if (this.selectedRelateObjectSearchType == 'fusionowner') {
                     s.Object = 'Owner';
                     s.ObjectID = this.selectedRelateObjectFusionOwnerItem;
@@ -607,7 +655,20 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 s.ObjectID = this.selectedBusinessTarget;
                 s.TechnicalSubjectID = this.selectedTechnicalSource;
                 s.TechnicalObjectID = this.selectedTechnicalTarget;
+                s.LineageSubjectStep = this.selectedBusinessSource;
+                s.LineageObjectStep = this.selectedBusinessTarget;
+                s.LineageTechnicalSubjectStep = this.selectedTechnicalSource;
+                s.LineageTechnicalObjectStep = this.selectedTechnicalTarget;
+                break;
 
+            case 'findrelation':
+                s.FindIntersectType = this.selectedFindRelationIntersectType;
+                s.FindSearchType = this.selectedFindRelationSearchType;
+                if (this.selectedFindRelationSearchType == 'resultfromstep') {
+                    s.Object = 'Step';
+                    s.ObjectID = this.selectedFindRelationStep;
+                    s.FindObjectStep = this.selectedFindRelationStep;
+                }
                 break;
         }
 
@@ -775,6 +836,19 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
             default:
                 return Promise.resolve();
         }
+    }
+
+    changeFindRelationSearchType(): Promise<any> {
+        if (this.selectedFindRelationSearchType && this.selectedFindRelationSearchType == 'resultfromstep') {
+            this.findRelationSteps = [];
+            return this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
+                .then(r => {
+                    this.findRelationSteps = r;
+                });
+        }
+
+        return Promise.resolve();
+
     }
 
     save() {

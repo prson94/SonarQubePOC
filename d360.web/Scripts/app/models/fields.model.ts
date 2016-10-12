@@ -34,7 +34,7 @@ export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
     FieldType: FieldType;
     FusionItems: FieldTypeFusionItemEditorModel[] = new Array<FieldTypeFusionItemEditorModel>();
-    RelationItem: FieldTypeRelationItemEditorModel;
+    RelationItems: FieldTypeRelationItemEditorModel[] = [];
 
     selectedLookup: string;
     LookupTokens: SelectItem[] = new Array<SelectItem>();
@@ -102,7 +102,7 @@ export class FieldTypeRelationItemEditorModel {
     IntersectType: number;
     ReferenceType: number;
     ChildIntersectType: number;
-    DisplayFields: FieldTypeItemDisplayFieldEditorModel[];
+    DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
     HideHeader: boolean;
     HideFooter: boolean;
 }
@@ -155,9 +155,15 @@ export class Lookups {
     
     DataTypes: SelectItem[];
     Patterns: SelectItem[];
-    IntersectTypes: SelectItem[];
+    IntersectTypes: LookupItem[];
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
 
     ReferenceTypes: SelectItem[] = new Array<SelectItem>();
+}
+
+export class LookupItem {
+    value: string;
+    id: string;
+    label: string;
 }

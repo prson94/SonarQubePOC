@@ -42,11 +42,11 @@ declare var CurrentResourceID;
     template: `
                 <header *ngIf="isMe">
                     Items You Own
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions> 
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions> 
                 </header>
                 <header *ngIf="!isMe">
                     Items {{resource?.FirstName}} Owns
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions> 
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions> 
                 </header>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
@@ -56,7 +56,7 @@ declare var CurrentResourceID;
                         </div>                        
                     </div>
                     <div class="col l9 s12">       
-                        <d3s-resource-responsibility-grid-component *ngIf="selected != null" [type]="'resources'" [Id]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-component>
+                        <d3s-resource-responsibility-grid-component *ngIf="selected != null" [simpleFilter]="showFilter" [type]="'resources'" [Id]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-component>
                     </div>                    
                 </div>
 `
@@ -71,6 +71,7 @@ export class ResourceResponsibilityTile implements OnInit, OnChanges {
     private selected: CountObject;
     isLoading = false;
     isMe = false;
+    showFilter = true;
 
     constructor(private resourcesService: ResourcesService) { }
 

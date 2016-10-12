@@ -41,11 +41,11 @@ declare var CurrentResourceID;
     template: `
                 <header *ngIf="isMe">
                     Items You Follow
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>    
+                    <d3s-tile-actions hasExport="true" (exportClick)="export()" hasFilterMode="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions>    
                 </header>
                 <header *ngIf="!isMe">
                     Items {{resource?.FirstName}} Follows
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>      
+                    <d3s-tile-actions hasExport="true" (exportClick)="export()" hasFilter="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions>      
                 </header>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
@@ -55,7 +55,7 @@ declare var CurrentResourceID;
                         </div>                        
                     </div>
                     <div class="col l9 s12">       
-                        <d3s-resource-following-grid-tile *ngIf="selected != null" [resourceId]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-following-grid-tile>
+                        <d3s-resource-following-grid-tile *ngIf="selected != null" [simpleFilter]="showFilter" [resourceId]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-following-grid-tile>
                     </div>                    
                 </div>
 `
@@ -68,6 +68,8 @@ export class ResourceFollowingTile implements OnInit, OnChanges {
     @Input() resource: Resource = null;
     private items: CountObject[] = new Array<CountObject>();
     private selected: CountObject;
+
+    showFilter = true;
     isLoading = false;
     isMe = false;
 

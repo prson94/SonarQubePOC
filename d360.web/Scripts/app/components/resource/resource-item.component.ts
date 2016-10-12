@@ -27,7 +27,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
     PageMode = PageMode;
-    private actions: any[] = [];
 
     constructor(
         protected titleService: Title,
@@ -41,28 +40,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
     ngOnInit() {
         this.isLoading = true;
-
-        this.actions = [];
-
-        this.actions.push({
-            icon: 'pencil',
-            title: 'edit info',
-            key: 'edit'
-        });
-
-        this.actions.push({
-            icon: 'key',
-            title: 'view api credentials',
-            key: 'api'
-        });
-
-        this.actions.push({
-            icon: 'asterisk',
-            title: 'change password',
-            key: 'password'
-        });
-
-
 
         this.sub = this.route.params.subscribe(params => {
             let resourceId = +params['resourceId'];
@@ -109,8 +86,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.pageMode = PageMode.Assignment;
     }
 
-    action(e: any) {
-        switch (e.key) {
+    action(e: string) {
+        switch (e) {
             case 'edit':
                 this.pageMode = PageMode.EditingInfo;
                 break;

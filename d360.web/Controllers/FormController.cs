@@ -6929,6 +6929,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     RuleID = rule.ID
                 };
 
+                item.Settings = s.Settings;
+
                 rule.FusionRuleSteps.Add(item);
                 if (rule != null)
                 {
@@ -7245,7 +7247,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "IntersectType", Value = intersectType });
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Search", Value = searchType });
 
-                handleSearchParameters("Find", "", item.FusionRuleStepSettings, searchType, item.ID, settings);
+                handleSearchParameters("Find", "Object", item.FusionRuleStepSettings, searchType, item.ID, settings);
 
                 #endregion FINDRELATION
             }
@@ -7476,7 +7478,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 //special find parent option
                 if (string.Compare(area, "FIND", true) == 0)
                 {
-                    var findParent = (settings["FindParent"] == "true");
+                    
+                    var findParent = (settings.ContainsKey("FindParent") && settings["FindParent"] == "true");
 
                     if (findParent)
                     {

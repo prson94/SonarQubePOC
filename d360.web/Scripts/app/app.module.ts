@@ -7,6 +7,7 @@ import { HttpModule }     from '@angular/http';
 
 import { ChartModule } from 'angular2-highcharts';
 
+
 import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
 import { SearchModule } from './components/search/search.module';
@@ -305,6 +306,7 @@ import {
         DataListModule,
 
         ChartModule,
+
 
         //d3s modules
         PipesModule,

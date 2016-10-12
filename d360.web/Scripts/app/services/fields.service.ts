@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
+import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
 import { SelectItem } from 'primeng/primeng';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -18,10 +18,10 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err)); 
     }
 
-    getFieldTypeEditor(id: number): Promise<FieldTypeEditorModel> {
+    getFieldTypeEditor(id: number): Promise<any> {
         return this.http.get(`form/FieldType?id=${id}`)
             .toPromise()
-            .then(response => <FieldTypeEditorModel>response.json())
+            .then(response => <any>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -73,7 +73,12 @@ export class FieldsService extends BaseService implements IFieldsService {
                 let l = new Lookups();
                 l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
                 l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
-                l.IntersectTypes = this.ftItemToSelectItem(r.IntersectTypes);
+                let i = this.ftItemToSelectItem(r.IntersectTypes);
+                l.IntersectTypes = [];
+                i.forEach(j => {
+                    l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
+                });
+
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);                
                 return l;
@@ -129,7 +134,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();
         items.forEach(i => {
-            s.push({label: i.title, value: i.value });
+            s.push({label: i.title, value: i.value }); 
         });
         return s;
     }

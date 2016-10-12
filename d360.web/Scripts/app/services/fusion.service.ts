@@ -30,6 +30,7 @@ import {
     FusionRuleItemEditorModel,
     FusionRuleMappingEditorModel,
     PromotionObject,
+    RelationIntersectType,
 } from '../models/fusion.model';
 import { TreeNode, SelectItem } from 'primeng/primeng';
 import { GridColumn } from '../models/grid-definition.model';
@@ -500,6 +501,13 @@ export class FusionService extends BaseService {
         return this.http.get(`api/fusion/${fusionAtttributeId}/configurations/fromFusionAttribute`)
             .toPromise()
             .then(response => <FusionConfigurationDetails>response.json()[0])
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionRelationIntersectTypes(): Promise<RelationIntersectType[]> {
+        return this.http.get('/api/fusion/rule/relate/intersectTypes')
+            .toPromise()
+            .then(response => <RelationIntersectType[]>response.json())
             .catch(err => this.handleError(err));
     }
 
