@@ -4,6 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { SocialComment, SocialVoteType, SocialCommentType } from '../../models/social.model';
 import { Router, NavigationEnd } from '@angular/router';
+import { CurrentCompanySettings } from '../../static/company-settings'
 
 @Component({
     selector: 'd3s-social-comment',    
@@ -17,7 +18,7 @@ import { Router, NavigationEnd } from '@angular/router';
                             <div class="col s12 toolbox">                                
                                 <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span> <span class="user"><d3s-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID" [tooltipType]="'preview'" >{{comment.ResourceName}}</d3s-tooltip></span> <span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
-                                    <a class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
+                                    <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
                                     <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
                                     <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
@@ -195,5 +196,9 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private isIssue(): boolean {
         return this.comment.CommentTypeID == SocialCommentType.Issue;
+    }
+
+    private canReply(): boolean {
+        return !CurrentCompanySettings.disableCommunityPosting;
     }
 };

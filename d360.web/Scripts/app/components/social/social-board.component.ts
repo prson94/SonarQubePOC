@@ -3,6 +3,7 @@ import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@an
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../models/social.model';
+import { CurrentCompanySettings } from '../../static/company-settings'
 
 @Component({
     selector: 'd3s-social-board',
@@ -10,7 +11,7 @@ import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../m
                 <div class="row">
                     <div class="col s12">
                         <header>{{socialMessage}}</header>  
-                        <d3s-social-input (commented)="addComment($event);" *ngIf="hasNewInput"></d3s-social-input>                        
+                        <d3s-social-input (commented)="addComment($event);" *ngIf="allowComments()"></d3s-social-input>                        
                         <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
                         <div *ngFor="let comment of comments">
                             <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
@@ -79,6 +80,10 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 this.hasMore = (res.length && res.length > 0);
             });
         this.pageNumber++;
+    }
+
+    private allowComments(): boolean {
+        return this.hasNewInput && !CurrentCompanySettings.disableCommunityPosting;
     }
 
     private deleteComment(event) {
