@@ -41,3 +41,11 @@ export class ObjectRelationshipCount {
     Count: number;
     IntersectTypeID: number;
 }
+
+
+export class PossibleTechnicalRelationship {
+    Title: string;
+    IntersectTypeID: number;
+    ObjectType: string;
+    ParentIntersectTypeID: number;
+}

@@ -341,4 +341,33 @@ div.item-description {
 div.item-description p {
   margin: 0;
 }
-/* end models*/
+/* end object header description*/
+.InActiveRowTools {
+  margin: 4px;
+  float: right;
+  width: 100%;
+  color: #b0b2b6;
+  font-weight: 400;
+  height: 25px;
+  text-align: right;
+  vertical-align: middle;
+  line-height: 16px;
+  font-size: 16px;
+}
+.InActiveRowTools a {
+  color: #b0b2b6;
+  text-decoration: none;
+  border: 1px solid transparent;
+  margin: 0px 10px 0px 5px;
+  padding: 11px 3px 1px 3px;
+}
+.InActiveRowTools a span {
+  margin-left: 5px;
+  font-size: 0.6em;
+}
+.InActiveRowTools a:hover {
+  color: #51a6dc;
+}
+.InActiveRowTools a i {
+  color: #b0b2b6;
+}

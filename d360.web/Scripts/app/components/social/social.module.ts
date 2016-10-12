@@ -12,7 +12,7 @@ import { SocialInputComponent } from './social-input.component';
 import { SocialTagInputComponent } from './social-tag-input.component';
 
 import {
-  //  GrowlModule,
+    GrowlModule,
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -40,7 +40,7 @@ import {
         RouterModule,
 
         //primeng
-    //    GrowlModule,
+        GrowlModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

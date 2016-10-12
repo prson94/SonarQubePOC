@@ -30,7 +30,7 @@ import { BaseComponent } from '../shared/base.component';
                         </p-column>           
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools" *ngIf="item.HasTechnicalRelationships">                                
+                                    <div class="RowTools" [ngClass]="{'RowTools': item.HasTechnicalRelationships, 'InActiveRowTools': !item.HasTechnicalRelationships}">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showTechnical=true;" title="Technical Relationships"><i class="fa fa-bolt"></i></a>                                                                           
                                     </div>
                                 </template>
@@ -45,7 +45,7 @@ import { BaseComponent } from '../shared/base.component';
                     </p-dataTable>   
                 </span>
                 <div *ngIf="showTechnical && !shouldShowEditor()">
-                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" (closeClick)="showTechnical=false"></d3s-relationship-technical-relations>                    
+                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);" (closeClick)="showTechnical=false"></d3s-relationship-technical-relations>                    
                 </div>
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="'Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
@@ -128,7 +128,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     private shouldShowEditor(): boolean {
-        return this.addRelationship || this.showEditor;
+        return (this.addRelationship || this.showEditor) && !this.showTechnical;
     }
 
     public export() {

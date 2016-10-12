@@ -41,7 +41,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
   `],
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
@@ -104,14 +104,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 this.isLoading = false;
             });
     }
+    
 
-    add() {
-        this.showAddRelationship = true;
-    }
-
-    export() {
-        //if (this.relGrid)
-        //  this.relGrid.export();
+    export() {        
         if (!this.selected) return;
         this.relationshipsService.exportObjectRelationshipsToExcel(this.objectType, this.objectID, this.selected.Object, this.selected.ObjectID, this.selected.IntersectTypeID, false);
     }

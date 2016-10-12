@@ -1,9 +1,8 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount } from '../models/relationship.model';
+import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
@@ -24,6 +23,13 @@ export class RelationshipsService extends BaseService {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
             .toPromise()
             .then(response => <RelationshipDetail>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getPossibleTechnicalRelations(id: number): Promise<PossibleTechnicalRelationship[]> {
+        return this.http.get(`relations/GetPossibleRelationshipsObjectByIntersect?id=${id}`)
+            .toPromise()
+            .then(response => <PossibleTechnicalRelationship[]>response.json())
             .catch(err => this.handleError(err));
     }
 

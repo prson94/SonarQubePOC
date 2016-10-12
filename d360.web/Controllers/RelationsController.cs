@@ -360,7 +360,20 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
                 Icon = "plus",
                 Title = i.TargetName,
                 Type = "local",
-                Uri = "/form/AddRelationship?intersectTypeID=" + i.IntersectTypeID + "&type=Intersect&id=" + i.ParentIntersectID
+                Uri = "/form/AddRelationship?intersectTypeID=" + i.IntersectTypeID + "&type=Intersect&id=" + i.ParentIntersectID                
+            });
+            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
+        [HttpGet]
+        public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
+        {
+            var list = Company.Query<AllowedIntersectionType>("GetAllowedIntersectionTypesByIntersect @intersectID", new { intersectID = id }).ToList().Select(i => new 
+            {                
+                Title = i.TargetName,                
+                IntersectTypeID = i.IntersectTypeID,
+                ParentIntersectID = i.ParentIntersectID,
+                ObjectType = i.TargetType
             });
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }

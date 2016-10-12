@@ -408,4 +408,35 @@ div.item-description{
 
 
 
-/* end models*/
+/* end object header description*/
+
+
+.InActiveRowTools{
+    margin: 4px; 
+    float: right;
+    width: 100%;
+    color: @d3s-gray-3;
+    font-weight: 400;
+    height: 25px;
+    text-align: right;
+    vertical-align: middle;
+    line-height: 16px;
+    font-size: 16px;
+    a {
+        color: @d3s-gray-3;
+        text-decoration: none;
+        border: 1px solid transparent;
+        margin: 0px 10px 0px 5px;
+        padding: 11px 3px 1px 3px;
+        span {
+            margin-left: 5px;
+            font-size: @font-size-base * .75;
+        }
+        &:hover {
+            color: @d3s-blue-2;
+        }
+        i {
+            color: @d3s-gray-3;
+        }
+    }
+}
