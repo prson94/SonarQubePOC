@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
-
+import { CurrentCompanySettings } from '../../static/company-settings'
 
 @Component({
     selector: 'd3s-home-search',
@@ -20,13 +20,13 @@ export class HomeSearchComponent extends BaseComponent {
     private selectedCategory: SearchCategories;
     private searchText: string;
     private isExactMatch: boolean = true;
-    private searchTypes: string[] = ["Artifact", "Synonym"];
+    private searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
 
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
        
     constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
-        super();
+        super();        
     }
     
     private doSearch(filterCategory?: SearchCategories) {        

@@ -72,7 +72,8 @@ export module SettingsHelper {
             { title: "Group", value: "Group", selected: false },
             { title: "Model", value: "Taxonomy", selected: false },
             { title: "Reference", value: "Domain", selected: false },
-            { title: "User", value: "Users", selected: false }
+            { title: "User", value: "Users", selected: false },
+            { title: "Synonym", value: "Synonym", selected: false }
         ];
     }
 

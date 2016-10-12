@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -7,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { CurrentCompanySettings } from '../../static/company-settings'
 
 @Component({
     selector: 'd3s-search',
@@ -23,7 +23,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private selectedCategory: SearchCategories;
     private searchText: string;
     private isExactMatch: boolean = true;
-    private searchTypes: string[] = ["Artifact", "Synonym"];
+    private searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
     private advancedFilters: AdvancedSearchFilter[] = [];
 
     private resultsPerPage: number = 10;
