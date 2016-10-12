@@ -8,6 +8,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactColumnFilterComponent } from './artifact-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -23,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
         `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="hasRootCreatePermissions()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
@@ -59,14 +60,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         </div>
                                     </template>
                             </p-column>
-                            <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
+                            <p-column [style]="{width:'40px'}" *ngIf="showEditButton && hasRootUpdatePermissions()">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                             </p-column>                            
-                            <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
+                            <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton && hasRootDeletePermissions()">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -102,8 +103,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showAddButton: boolean = true;
     
     totalRecords: number;
-    
-    
+        
     searchValue: string = "";
     
     searchDelayMilliSeconds: number = 1000;
@@ -139,6 +139,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     load() {
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID);
         this.getFieldsDefinition();              
     }
 
@@ -161,7 +162,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, 'ArtifactType')
+        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, StringConstants.ObjectArtifactType)
             .then(result => {
                 this.columns = result.Columns;
                 this.filtercolumns = result.FilterColumns;

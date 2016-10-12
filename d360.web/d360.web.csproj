@@ -1616,6 +1616,7 @@
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />
     <TypeScriptCompile Include="Scripts\app\static\site-url-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\tree-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\pipes.module.ts" />

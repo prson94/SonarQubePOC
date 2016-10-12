@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -10,10 +9,10 @@ export class PermissionsService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getPermissions(objectID: number, objectType: string): Promise<Permission> {        
+    getPermissions(objectID: number, objectType: string): Promise<Permission[]> {        
         return this.http.get(`api/${objectType}/${objectID}/permissions`)
             .toPromise()
-            .then(response => <Permission>response.json())
+            .then(response => <Permission[]>response.json())
             .catch(err => this.handleError(err));
     }
 }
