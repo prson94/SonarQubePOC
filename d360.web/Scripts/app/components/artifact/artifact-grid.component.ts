@@ -24,7 +24,7 @@ import { StringConstants } from '../../static/string-constants';
         `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" [hasExport]="true" (addClick)="hasRootCreatePermissions()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;clearFilters();"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
