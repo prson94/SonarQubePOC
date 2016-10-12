@@ -122,8 +122,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
         this.companySettingsService.putSettings(this.companySettings)
             .then(data => {
-                this.load();
+                //this.load();
                 this.isLoading = false;
+                window.location.reload();
             });
     }
 
