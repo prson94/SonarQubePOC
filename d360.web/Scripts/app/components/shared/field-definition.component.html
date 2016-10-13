@@ -2,21 +2,21 @@
     <div>
         <header>
             {{title}}            
-            <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+            <d3s-tile-actions *ngIf="!isLoading && !isEditing && !isDeleting" [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
         </header>
     </div>
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="isEditing">
-        <d3s-field-type-form [id]="selectedRow != null? selectedRow.ID : 0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false;" (onComplete)="editComplete($event)"></d3s-field-type-form>
+        <d3s-field-type-form [id]="selectedRow != null? selectedRow.ID : 0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false; onCancel.emit()" (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>    
     <delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.ID"
                      [method]="'callback'"
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
-                     (onCancel)="isDeleting=false;"></delete-form>            
+                     (onCancel)="isDeleting=false; onCancel.emit();"></delete-form>            
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
         <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">

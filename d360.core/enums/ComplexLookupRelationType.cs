@@ -21,6 +21,7 @@ namespace d360.core
     {
         public ComplexLookupRelationType ID { get; set; }
         public string Name { get; set; }
+        public string DisplayName { get; set; }
     }
 
     public static class ComplexLookupRelationTypeExtensions
@@ -34,7 +35,8 @@ namespace d360.core
                 var info = new ComplexLookupRelationTypeInfo
                 {
                     ID = (ComplexLookupRelationType)Enum.Parse(typeof(ComplexLookupRelationType), tm.Name),
-                    Name = tm.Name
+                    Name = tm.Name,
+                    DisplayName = ((DescriptionAttribute)(tm.GetCustomAttributes(typeof(DescriptionAttribute), false)[0]))?.Description ?? tm.Name
                 };
                 list.Add(info);
             }

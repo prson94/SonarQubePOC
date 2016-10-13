@@ -133,62 +133,102 @@
         </div>
         <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup'">
             <div class="col s12" style="margin: 10px 0 10px 0">
-                <table cellpadding="5">
+                <table cellpadding="5" class="relation-table">
                     <thead>
                         <tr>
                             <th>Relation</th>
                             <th>Reference Type</th>
-                            <th>Child Relation</th>
-                            <th>Reference Columns</th>
+                            <th>Relation Item</th>
+                            <!--<th>Reference Columns</th>
+                            <th>Table Settings</th>-->
                             <th>Table Settings</th>
                         </tr>
                     </thead>
-                    <tbody *ngFor="let i of model.RelationItems">
-                        <tr>
-                            <td style="vertical-align: top">
-                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.IntersectType" style="width:95%">
+                    <tbody *ngFor="let i of model.RelationItems; let x=index;">
+                        <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
+                            <td colspan="5">
+                                &nbsp;
+                            </td>
+                        </tr>
+                        <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
+                            <td style="vertical-align: top; width:30%" *ngIf="x == 0">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.IntersectType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
                                     <option *ngFor="let j of lookups.IntersectTypes" [value]="j.id">{{j.label}}</option>
                                 </select>
                             </td>
-                            <td style="vertical-align: top">
-                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%">
-                                    <option *ngFor="let j of lookups.ReferenceTypes" [value]="j.id">{{j.label}}</option>
+                            <td style="vertical-align: top; width:30%" *ngIf="x > 0">
+                                {{i.displayValue}}
+                            </td>
+                            <td style="vertical-align: top; width:30%">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
+                                    <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID">{{j.DisplayName}}</option>
                                 </select>
                             </td>
-                            <td style="vertical-align: top">
-                                {{i.ChildIntersectType}}
+                            <td *ngIf="i.relationsLoading" style="vertical-align: top; width:30%">
+                                <span><i class="fa fa-spinner fa-spin"></i></span>
                             </td>
-                            <td style="vertical-align: top">
-                                <table class="striped highlight">
+                            <td *ngIf="!i.relationsLoading" style="vertical-align: top; width:30%">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.selectedRelationItemID" style="width:95%" (ngModelChange)="changeRel(i)" [disabled]="x < relationItemCount-1">
+                                    <option *ngFor="let j of i.relationItems" [value]="j.value">{{j.label}}</option>
+                                </select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr  [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
+                            <td colspan="4" class="display-table-title">Reference Columns</td>
+                            <td></td>
+                        </tr>
+                        <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
+                            <td style="vertical-align: top" colspan="3">
+                                <table class="striped highlight display-table">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
                                             <th>Show?</th>
                                             <th>Sort</th>
+                                            <th>Display Name Override</th>
                                             <th>Filter</th>
+                                            <th>Order</th>
                                         </tr>
                                     </thead>
                                     <tbody style="max-height:250px; height: 250px; overflow-y: scroll">
                                         <tr *ngFor="let d of i.DisplayFields">
-                                            <td style="width: 30%">
-                                                {{d.Value}}
+                                            <td>
+                                                {{d.FieldTypeName}}
                                             </td>
-                                            <td style="width: 20%">
+                                            <td style="width: 10%">
                                                 <input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="d.Show" />
                                             </td>
-                                            <td style="width: 15%">
-                                                {{d.SortOrder}}
+                                            <td style="width: 10%">
+                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                    <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                </select>
                                             </td>
-                                            <td>
-                                                <input [ngModelOptions]="{standalone: true}"  type="text" [(ngModel)]="d.FilterValue" />
+                                            <td style="width: 25%">
+                                                <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" />
+                                            </td>
+                                            <td style="width: 20%">
+                                                <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" />
+                                            </td>
+                                            <td style="width: 10%">
+                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d)">
+                                                    <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                </select>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </td>
                             <td>
-                                <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> HideFooter?</div>
-                                <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> HideHeader?</div>
+                                <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> Hide Footer?</div>
+                                <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> Hide Header?</div>
+                            </td>
+                            <td>
+                                <div class="RowTools">
+                                    <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
+                                    <a *ngIf="x == relationItemCount-1 && x > 0" (click)="deleteRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
+                                </div>
                             </td>
                         </tr>
                     </tbody>

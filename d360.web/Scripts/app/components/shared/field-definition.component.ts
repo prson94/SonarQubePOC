@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { FieldDefinition, IFieldsService } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
@@ -15,12 +15,17 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() objectID: number;
     @Input() title: string = 'Field Definition';
 
+    @Output() onEdit = new EventEmitter();
+    @Output() onAdd = new EventEmitter();
+    @Output() onDelete = new EventEmitter();
+    @Output() onCancel = new EventEmitter();
+
+    @Input() isEditing = false;
+    @Input() isAdding = false;
+    @Input() isDeleting = false;
+
     private fieldDefinitions = new Array<FieldDefinition>();
     private selectedRow = new FieldDefinition();
-    
-    private isEditing = false; 
-    private isAdding = false;
-    private isDeleting = false;
 
     private theDeleteCallback: Function;
 
@@ -53,23 +58,28 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
         this.fieldsService.getFields(this.objectID, this.objectType)
             .then(data => {
+                console.log('fields data: ');
+                console.log(data);
                 this.fieldDefinitions = data;
                 this.selectedRow = null;
                 this.isLoading = false;
             });
+
     }
 
     edit(id: number): void {
         this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
         this.isEditing = true;
         this.isDeleting = false;
-        this.isAdding = false;        
+        this.isAdding = false;       
+        this.onEdit.emit(); 
     }
 
     add(): void {
         this.selectedRow = null;
         this.isEditing = true;
-        this.isDeleting = false;        
+        this.isDeleting = false;  
+        this.onAdd.emit();      
     }
 
     delete(id: number): void {
@@ -77,11 +87,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
+        this.onDelete.emit();
     }
     
     editComplete(event) {
         this.isEditing = false;
+        this.onCancel.emit();
         this.load();
+
     }
 
     deleteFieldType(id: number) {

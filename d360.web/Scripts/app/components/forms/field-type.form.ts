@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField } from '../../models/fields.model';
+import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
 import * as _ from 'lodash';
@@ -8,6 +8,28 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-field-type-form',
     templateUrl: './field-type.form.html',
+    styles: [
+        `
+        .display-table tr td {
+            padding:3px;
+            border-radius: 0;
+        }
+
+        .relation-table tr td {
+            border-radius: 0;
+        }
+
+        .display-table-title {
+            text-align:center;
+            width:100%;
+            font-family: "Roboto", Tahoma !important;
+            text-transform: uppercase;
+            color: #5c5e60 !important;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+`
+    ],
     providers: [FieldsService],
 })
 
@@ -29,6 +51,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private testPattern: string;
     private testPatternValidationText: string;
     private syncApiNameWithName: boolean = true;
+
+    private relationItemCount = 0;
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         this.model = new FieldTypeEditorModel();
@@ -75,6 +99,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
                     this.lookups.IntersectTypes.forEach(i => {
                         i.id = i.value.split('|')[0];
+                        
                     });
 
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
@@ -85,7 +110,34 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         console.log("form data: ");
                         console.log(f);
                         this.model.RelationItems = f.RelationItems;
-                        this.model.FusionItems = f.FusionItems;                        
+
+                        this.model.RelationItems.forEach(r => {
+                            let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
+                            r.Object = intersectType.value.split('|')[1];
+                            r.ObjectID = parseInt(intersectType.value.split('|')[2]);
+
+                            r.DisplayFields.forEach(d => {
+                                d.FieldTypeID = parseInt(d.value.split('|')[0]);
+                                d.FieldTypeName = d.value.split('|')[1];
+                            });
+                        });
+                        this.model.FusionItems = f.FusionItems; 
+
+
+                        if (this.model.FieldType.Type == 'RelationLookup') {
+                            this.model.RelationItems.forEach(r => {
+                                let s = [];
+                                for (let i = 1; i <= r.DisplayFields.length; i++) {
+                                    r.DisplayFields[i-1].DisplayOrder = i;
+                                    s.push({ id: i , text: i  });
+                                }
+                                r.SortOrderList = s;
+                                
+                            });
+                            this.relationItemCount = this.model.RelationItems.length;
+                            console.log(this.relationItemCount);
+                        }
+
                     }
                 })
                 .then(() => {
@@ -262,5 +314,109 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     }
                 });
         }
+    }
+
+    changeRefType(item: FieldTypeRelationItemEditorModel) {
+        item.relationsLoading = true;
+        item.DisplayFields = [];
+        item.selectedRelationItemID = null;
+        console.log(item);
+        switch (item.ReferenceType.toString()) {
+            case ComplexLookupRelationType.ChildItem.toString(): //child item
+                item.relationsLoading = false;
+                break;
+            case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
+                this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(z => {
+                    item.relationItems = z;
+                    item.relationsLoading = false;
+                });
+                break;
+            case ComplexLookupRelationType.ParentItem.toString():
+                item.relationsLoading = false;
+                break;
+            case ComplexLookupRelationType.StandardRelationhip.toString():
+                this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                    .then(z => {
+                        console.log(z);
+                        item.relationItems = z;
+                        item.relationItems.forEach(i => {
+                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
+                            i.label = i.TargetName;
+                        });
+                        item.relationsLoading = false;
+                    });
+                break;
+        }
+    }
+
+    changeRel(item: FieldTypeRelationItemEditorModel) {
+        console.log(item.selectedRelationItemID);
+
+        item.DisplayFields = [];
+        let params = item.selectedRelationItemID.split('|');
+
+        try {
+            if (params.length < 3)
+                return;
+            let id = parseInt(params[2]);
+            let type = params[1];
+            let intersectType = parseInt(params[0]);
+            this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
+                .then(r => {
+                    console.log(r);
+                    item.DisplayFields = [];
+                    r.forEach(i => {
+                        let params = i.value.split('|');
+                        let d = new FieldTypeItemDisplayFieldEditorModel();
+                        d.FieldTypeID = parseInt(params[0]);
+                        d.FieldTypeName = params[1];
+                        d.Show = false;
+                        d.FilterValue = "";
+                        d.SortOrder = null;
+                        d.value = i.value;
+                        item.DisplayFields.push(d);
+                    });
+
+                    let s = [];
+                    for (let i = 1; i <= item.DisplayFields.length; i++) {
+                        item.DisplayFields[i - 1].DisplayOrder = i;
+                        s.push({ id: i, text: i });
+                    }
+                    item.SortOrderList = s;
+
+                });
+
+        } catch (e) {
+            return;
+        }
+    }
+
+    addRelation(item: FieldTypeRelationItemEditorModel) {
+        let i = new FieldTypeRelationItemEditorModel();
+        let params = item.selectedRelationItemID.split('|');
+        let id = parseInt(params[2]);
+        let type = params[1];
+        let intersectType = parseInt(params[0]);
+
+
+        i.ObjectID = id;
+        i.Object = type;
+        i.IntersectTypeID = intersectType;
+        i.IntersectType = intersectType;
+        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).label;
+
+        this.model.RelationItems.push(i);
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    deleteRelation(item: FieldTypeRelationItemEditorModel) {
+
+        //only last item can be deleted
+        this.model.RelationItems.pop();
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel) {
+        console.log(item);
     }
 }

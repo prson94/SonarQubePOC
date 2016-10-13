@@ -95,6 +95,13 @@ export class FieldTypeItemDisplayFieldEditorModel {
     Show: boolean;
     SortOrder: number;
     FilterValue: string;
+    value: string;
+
+    Object: string;
+    ObjectID: number;
+    Filter: string;
+    OverrideDisplayName: string;
+    DisplayOrder: number;
 }
 
 export class FieldTypeRelationItemEditorModel {
@@ -105,6 +112,19 @@ export class FieldTypeRelationItemEditorModel {
     DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
     HideHeader: boolean;
     HideFooter: boolean;
+
+    SortOrderList: any[] = [];
+    selectedRelationItemID: string;
+    relationItems: any[];
+    relationsLoading = false;
+    displayValue: string;
+
+    //new complex relation
+    IntersectTypeID: number;
+    Object: string;
+    ObjectID: number;
+    RelationType: number; 
+
 }
 
 export class FieldTypeFusionLookupDefinition {
@@ -158,6 +178,7 @@ export class Lookups {
     IntersectTypes: LookupItem[];
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
+    ComplexLookupRelations: any[] = [];
 
     ReferenceTypes: SelectItem[] = new Array<SelectItem>();
 }
@@ -166,4 +187,11 @@ export class LookupItem {
     value: string;
     id: string;
     label: string;
+}
+
+export enum ComplexLookupRelationType {
+        StandardRelationhip = 1,
+        ChildRelationship = 2,
+        ChildItem = 3,
+        ParentItem = 4
 }

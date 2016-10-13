@@ -4802,6 +4802,7 @@ order by  D.TextPath", new { id });
             var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
             var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
 
+            var complexLookupRelations = ComplexLookupRelationType.ChildItem.GetComplexLookupRelationTypeInfoList().ToList();
             //if is angular append the new reference type lookups to this list of lookups
             if (isNg)
             {
@@ -4862,7 +4863,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
                     IntersectTypes = intersectTypes,
                     FusionAttributeTypes = fusionAttributeTypes,
-                    Lookups = lookups
+                    Lookups = lookups,
+                    ComplexLookupRelations = complexLookupRelations
                 },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
@@ -4932,7 +4934,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                                 ChildIntersectType = i.ChildIntersectTypeID,
                                 DisplayFields = (i.FieldTypeRelationLookupDisplayFields != null) ? i.FieldTypeRelationLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", FilterValue = df.FilterValue, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
                                 HideHeader = i.HideHeader,
-                                HideFooter = i.HideFooter
+                                HideFooter = i.HideFooter,
+                                
                             });
                         }
                     }

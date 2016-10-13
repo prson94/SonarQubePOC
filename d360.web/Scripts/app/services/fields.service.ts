@@ -80,7 +80,8 @@ export class FieldsService extends BaseService implements IFieldsService {
                 });
 
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
-                l.Patterns = this.ftItemToSelectItem(r.Patterns);                
+                l.Patterns = this.ftItemToSelectItem(r.Patterns);      
+                l.ComplexLookupRelations = r.ComplexLookupRelations;          
                 return l;
             })
             .catch(err => this.handleError(err));
@@ -138,6 +139,17 @@ export class FieldsService extends BaseService implements IFieldsService {
         });
         return s;
     }
+
+
+    getStandardRelations(type: string, id: number): Promise<any> {
+        return this.http.get(`api/${type}/${id}/relationshiptypes`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    //RelationshipObjectsByType        public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
+    //getChildItem(
 }
 
 

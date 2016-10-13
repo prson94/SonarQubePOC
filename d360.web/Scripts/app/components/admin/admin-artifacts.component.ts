@@ -21,6 +21,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     isAdding = false;
     isEditing = false;
     isDeleting = false;
+    isEditingFieldType = false;
+    isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
     
 
