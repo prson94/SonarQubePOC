@@ -1,8 +1,8 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange, OnInit } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { Synonym, SynonymItem, SynonymEditModel } from '../../models/object-detail.model';
 import { FormMode, FormHelper } from '../../models/form.model';
+import { BaseComponent } from '../shared/base.component';
 
 declare var CompanySettings: any;
 
@@ -16,26 +16,33 @@ declare var CompanySettings: any;
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
-            <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">
-                <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '32px' }">
+            <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">                
+                <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
+                <p-column header="Parent" sortable="true">
+                    <template pTemplate type="body" let-item="rowData">                        
+                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">{{item.ParentName}}</d3s-tooltip>
+                    </template>
+                </p-column>
+                <p-column header="Name" sortable="true">
+                    <template pTemplate type="body" let-item="rowData">                        
+                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
+                    </template>
+                </p-column>
+                <p-column field="SubjectArea" [header]="subjectAreaName" sortable="true"></p-column>
+                <p-column [style]="{ 'width': '28px' }">
+                    <template let-col let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">
+                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>
+                        </div>
+                    </template> 
+                </p-column>
+                <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '28px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template> 
                 </p-column>
-                <p-column field="ObjectTypeName" header="Type" sortable="true"></p-column>
-                <p-column header="Parent" sortable="true">
-                    <template pTemplate type="body" let-item="rowData">
-                        <a [href]="item.ParentUrl">{{item.ParentName}}</a>
-                    </template>
-                </p-column>
-                <p-column header="Name" sortable="true">
-                    <template pTemplate type="body" let-item="rowData">
-                        <a [href]="item.Url">{{item.Name}}</a>
-                    </template>
-                </p-column>
-                <p-column field="SubjectArea" [header]="subjectAreaName" sortable="true"></p-column>
             </p-dataTable>
         </div>
         <div *ngSwitchCase="FormMode.Adding">
@@ -68,7 +75,7 @@ declare var CompanySettings: any;
     providers: [ObjectDetailService],
 })
 
-export class SynonymsTile implements OnChanges, OnInit {
+export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() readonly: boolean = true;
@@ -77,7 +84,7 @@ export class SynonymsTile implements OnChanges, OnInit {
     @Input() hasAdd: boolean = true;    
     @Input() hasDelete: boolean = true;
 
-    private isLoading = false;
+    
     private formMode = FormMode.Default;
     private FormMode = FormMode;
     private items;
@@ -87,8 +94,10 @@ export class SynonymsTile implements OnChanges, OnInit {
     private typeIsSubject;
     private selectedSynonym;
     private subjectAreaName = 'SubjectArea';
+    private areSynonymOptionsLoaded: boolean = false;
 
     constructor(private objectDetailService: ObjectDetailService) {
+        super();
     }
 
     ngOnInit() {
@@ -97,16 +106,7 @@ export class SynonymsTile implements OnChanges, OnInit {
         }
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
-            //if (p == 'objectType') {
-            //    this.objectType = changes['objectType'].currentValue;
-            //}
-            //if (p == 'objectID') {
-            //    this.objectID = changes['objectID'].currentValue;
-            //}
-        }
-
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         this.load();
     }
 
@@ -119,23 +119,26 @@ export class SynonymsTile implements OnChanges, OnInit {
         this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType)
             .then(d => {
                 this.items = d;
-                console.log(this.items);
                 this.itemCount = this.items.length;
                 this.isLoading = false;
-            })
-            .then(() => this.objectDetailService.getSynonymOptions(this.objectID, this.objectType))
-            .then(d => {
-                this.typeIsSubject = d.typeIsSubject;
-                this.synonymItems = d.items;
-                //console.log(this.synonymItems);
-                //this.synonymOptions = FormHelper.getSelectList(this.synonymItems, 'Name', 'ID');
-                //console.log(this.synonymOptions);
-                //console.log(d);
-            });
+            });            
     }
 
     add() {
-        this.formMode = FormMode.Adding;
+        // only load synonym optons when we need to add things.
+        if (!this.areSynonymOptionsLoaded) {
+            this.isLoading = true;
+            this.objectDetailService.getSynonymOptions(this.objectID, this.objectType)
+                .then(d => {
+                    this.typeIsSubject = d.typeIsSubject;
+                    this.synonymItems = d.items;
+                    this.formMode = FormMode.Adding;
+                    this.areSynonymOptionsLoaded = true;
+                    this.isLoading = false;
+                });
+        }
+        else
+            this.formMode = FormMode.Adding;
     }
 
     delete() {
