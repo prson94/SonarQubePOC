@@ -11,7 +11,6 @@ using d360.extensions.info;
 using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
-using d360.core.enums;
 using Newtonsoft.Json;
 using d360.core.queue;
 using System.Threading;
@@ -228,7 +227,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
             #endregion
 
-            if (load.Action == "O")         // Ownership/Responsibilities
+            if (load.Action == "O")                  // Ownership/Responsibilities
             {
                 #region Ownership
 
@@ -516,6 +515,23 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
             }
+            else if (load.Action == "P" && isDev)    // Relation
+            {
+                #region Promotions
+
+                try
+                {
+                    companyConnection.Open();
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.Promotions {load.ID}", 2400);
+                    companyConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
+
+                #endregion
+            }
             else if (load.Action == "R" && isDev)    // Relation
             {
                 #region Relationship
@@ -557,6 +573,23 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     #endregion
 
+                    companyConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
+
+                #endregion
+            }
+            else if (load.Action == "S" && isDev)    // Relation
+            {
+                #region Synonyms
+
+                try
+                {
+                    companyConnection.Open();
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.Synonyms {load.ID}", 2400);
                     companyConnection.Close();
                 }
                 catch (Exception ex)
@@ -1129,56 +1162,6 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 logger.WriteLine(lineageSql);
                 logger.WriteLine(ex.GetFullExceptionData());
             }
-        }
-
-        static string getSubjectAreaColumnLookupSql(int loadID, int subjectAreaColumn)
-        {
-            return $@"update	T
-set		T.LookupObject = 'TaxonomyType',
-		T.LookupObjectID = S.ID
-from	LoadItemColumn T
-		inner join TaxonomyType S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = {subjectAreaColumn} and T.LoadID = {loadID}";
-        }
-
-        static string getItemColumnLookupSql(int loadID, string type, int typeID, int subjectAreaColumn, int itemColumn)
-        {
-            if (type.Contains("Type")) type = type.Replace("Type", "");
-
-            var sql = $"update T ";
-            sql += $"set T.LookupObject = '{type}', T.LookupObjectID = O.ID ";
-            sql += $"from LoadItemColumn T ";
-            if (type == "Artifact")
-                sql += $"inner join LoadItemColumn TS on TS.LoadID = T.LoadID and TS.RowIndex = T.RowIndex and TS.ColumnIndex = {subjectAreaColumn}";
-
-            switch (type)
-            {
-                case "Artifact":
-                    sql += $"inner join Artifact O on lower(O.TextPath) = lower(T.Value) and O.TaxonomyTypeID = TS.LookupObjectID and O.ArtifactTypeID = {typeID}";
-                    break;
-                case "Domain":
-                    sql += $"inner join Domain O on lower(O.Name) = lower(T.Value) and O.DomainTypeID = {typeID}";
-                    break;
-                case "FusionAttribute":
-                    sql += $"inner join [FusionAttribute] O on lower(O.TextPath) = lower(T.Value) and O.FusionAttributeTypeID = {typeID}";
-                    break;
-                case "Intersect":
-                    sql += $"inner join [Intersect] O on lower(O.Name) = lower(T.Value) and O.IntersectTypeID = {typeID}";
-                    break;
-                case "Policy":
-                    sql += $"inner join [Policy] O on lower(O.TextPath) = lower(T.Value) and O.PolicyTypeID = {typeID}";
-                    break;
-                case "Rule":
-                    sql += $"inner join [Rule] O on lower(O.Name) = lower(T.Value) and O.RuleType = {typeID}";
-                    break;
-                case "Taxonomy":
-                    sql += $"inner join [Taxonomy] O on lower(O.TextPath) = lower(T.Value) and O.TaxonomyTypeID = {typeID}";
-                    break;
-                default:
-                    sql = "";
-                    break;
-            }
-
-            return sql;
         }
     }
 }
