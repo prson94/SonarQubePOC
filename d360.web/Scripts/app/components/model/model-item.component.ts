@@ -2,17 +2,18 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService, SurveysService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService, SurveysService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-model-item',
-    providers: [ModelsService, SurveysService],
+    providers: [ModelsService, SurveysService, PermissionsService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-audit>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-lineage>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Taxonomy'"></d3s-dashboard-tab>
@@ -20,7 +21,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                            <d3s-object-relationships [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>
@@ -52,7 +53,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-object-definition-tile [objectType]="'Taxonomy'" [objectID]="selected?.ID"></d3s-object-definition-tile>
+                                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [hasAttributes]="model.AllowAttributes" [hasSynonyms]="model.AllowSynonyms"></d3s-object-definition-tile>
                                 </div>
                             </div>
                         </div>                        
@@ -79,7 +80,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             protected modelsService: ModelsService,
             protected titleService: Title,
             protected surveysService: SurveysService,
-            protected headerBreadcrumbService: HeaderBreadcrumbService) {
+            protected headerBreadcrumbService: HeaderBreadcrumbService,
+            protected permissionsService: PermissionsService
+    ) {
         super(rightSidebarService);
     }
 
@@ -148,6 +151,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         else {
             this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
         }
+
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
     }

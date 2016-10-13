@@ -25,14 +25,14 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                         </p-column>  
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
+                                    <div class="RowTools" *ngIf="hasEdit">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
                                     </div>
                                 </template>
                         </p-column>                   
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                                    
+                                    <div class="RowTools" *ngIf="hasDelete">                                                    
                                         <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </template>
@@ -83,6 +83,9 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
     @Output() addTechnicalRelationshipChange = new EventEmitter();
     
     @ViewChild(FusionAttributeItemDetailsComponent) private fusionAttributeItemDetailsComponent: FusionAttributeItemDetailsComponent;
+
+    @Input() hasEdit: boolean = true;
+    @Input() hasDelete: boolean = true;
 
     private relations: any[] = [];
     private selected: any;

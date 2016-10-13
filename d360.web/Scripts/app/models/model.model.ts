@@ -5,6 +5,8 @@
     TaxonomyTypeClass: string;
     ClassificationName: string;
     HasDashboards: boolean;
+    AllowAttributes: boolean;
+    AllowSynonyms: boolean;
     ID: number;
 }
 

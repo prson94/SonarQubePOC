@@ -1,9 +1,9 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { RelationshipsService } from '../../services/index';
 import { ObjectRelationshipCount } from '../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
+import { Permission } from '../../models/permission.model'
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -41,7 +41,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
   `],
     template: `
                 <header>Relationships
-                    <d3s-tile-actions [hasAdd]="hasRelationships" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasRelationships && hasRelationshipCreatePermissions()" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
@@ -52,7 +52,7 @@ import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship
                         </div>                        
                     </div>
                     <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID"></d3s-dynamic-relationship-grid>                        
+                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
                     </div>                    
                 </div>
                 <div class="row" *ngIf="!isLoading && !hasRelationships">
@@ -67,6 +67,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
+    @Input() objectPermissions: Permission[] = [];
 
     relationshipItems: ObjectRelationshipCount[] = [];
     selected: ObjectRelationshipCount;
@@ -88,6 +89,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
         if (this.objectType == null || this.objectID == null)
             return;
+
+        this.permissions = this.objectPermissions;
 
         this.isLoading = true;
 

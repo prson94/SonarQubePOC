@@ -2,15 +2,16 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, RulesService } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, RulesService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDetail } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 
 @Component({
     selector: 'd3s-rule-item',
-    providers: [RulesService],    
+    providers: [RulesService, PermissionsService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-lineage>
@@ -25,7 +26,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name"></d3s-object-relationships>
+                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>
@@ -42,7 +43,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <div class="row">
                                 <div class="col s12">
                                     <div class="tile tile-detail">
-                                        <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID"></d3s-object-definition-tile>
+                                        <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false"></d3s-object-definition-tile>
                                     </div>
                                 </div>
                             </div>                            
@@ -58,7 +59,11 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
             private router: Router,
-            rightSidebarService: RightSidebarService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+            rightSidebarService: RightSidebarService,
+            protected titleService: Title,
+            protected headerBreadcrumbService: HeaderBreadcrumbService,
+            protected permissionsService: PermissionsService
+    ) {
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true,false,true,true,true);
@@ -72,6 +77,9 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = true;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
+
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
+
             this.rulesService.getRule(ruleId)
                 .then(result => {
                     this.rule = result;

@@ -24,7 +24,7 @@ import { StringConstants } from '../../static/string-constants';
                 <div class="row"  *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-object-relationships>
+                            <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>            

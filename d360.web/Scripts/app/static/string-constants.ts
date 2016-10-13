@@ -6,6 +6,8 @@
     static ObjectAttribute = "Attribute";
     static ObjectGovernance = "Governance";
     static ObjectRoot = "Root";
+    static ObjectTaxonomy = "Taxonomy";
+    static ObjectRule = "Rule";
 
 
     //claim types

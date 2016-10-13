@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
@@ -16,14 +15,14 @@ import { BaseComponent } from '../shared/base.component';
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                
+                                    <div class="RowTools" *ngIf="hasEdit">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>                                                                           
                                     </div>
                                 </template>
                         </p-column>                   
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
-                                    <div class="RowTools">                                                    
+                                    <div class="RowTools" *ngIf="hasDelete">                                                    
                                         <a style="cursor:pointer;" (click)="selected=item;deleteItem(item);" title="Remove"><i class="fa fa-trash-o"></i></a>                                    
                                     </div>
                                 </template>
@@ -45,7 +44,7 @@ import { BaseComponent } from '../shared/base.component';
                     </p-dataTable>   
                 </span>
                 <div *ngIf="showTechnical && !shouldShowEditor()">
-                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);" (closeClick)="showTechnical=false"></d3s-relationship-technical-relations>                    
+                    <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>                    
                 </div>
                 <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="'Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
@@ -63,6 +62,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() targetTypeID: number;
     @Input() intersectTypeID: number;
     @Input() addRelationship: boolean;
+    @Input() hasEdit: boolean = true;
+    @Input() hasDelete: boolean = true;
 
     @Output() addRelationshipChange = new EventEmitter();
     @Output() relationshipAdded = new EventEmitter();

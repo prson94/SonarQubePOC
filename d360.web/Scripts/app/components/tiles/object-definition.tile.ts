@@ -31,8 +31,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         super();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log(this.hasSynonyms);
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         this.load();
     }
 
