@@ -8,7 +8,8 @@
     static ObjectRoot = "Root";
     static ObjectTaxonomy = "Taxonomy";
     static ObjectRule = "Rule";
-
+    static ObjectPolicy = "Policy";
+    static ObjectFusion = "Fusion";
 
     //claim types
     static ClaimRead = "Read";

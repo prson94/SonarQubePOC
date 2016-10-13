@@ -8,7 +8,6 @@ import { RuleDetail } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
-
 @Component({
     selector: 'd3s-rule-item',
     providers: [RulesService, PermissionsService],    

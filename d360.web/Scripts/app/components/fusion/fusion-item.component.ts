@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HeaderBreadcrumbService, FusionService, RightSidebarService } from '../../services/index';
+import { HeaderBreadcrumbService, FusionService, RightSidebarService, PermissionsService } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -9,6 +9,7 @@ import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-fusion-item',
@@ -49,12 +50,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
                         </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-relationships [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
+                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
                         </div>                        
                     </div>
                 </div>
                 `,
-    providers: [FusionService],
+    providers: [FusionService, PermissionsService],
 })
 
 export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -76,7 +77,9 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             private router: Router,
             private fusionService: FusionService,
             protected rightSidebarService: RightSidebarService,
-            protected titleService: Title) {
+            protected titleService: Title,
+            protected permissionsService: PermissionsService
+    ) {
         super(rightSidebarService);
         this.rightSidebarService.clearItems();
         this.setCommonRightSideBar(false, true);
@@ -88,11 +91,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setBrowserTitle(this.titleService, 'Fusion');
 
         this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules'));
-
-        //this.subRight = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
-        //    this.showFusionRules = s.active;
-        //});
-
+        
         this.sub = this.route.params.subscribe(params => {
 
             this.fusionId = +params['fusionId'];
@@ -101,6 +100,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             
             
             if (!this.fusion || this.fusion.ID != this.fusionId) {
+                this.loadPermissions(this.permissionsService, StringConstants.ObjectFusion , this.fusionId);
                 this.fusionService.getFusionConfiguration(this.fusionId)
                     .then(result => {
                         this.isLoading = false;
@@ -114,8 +114,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
                         if (this.fusion.Manual)
                             this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload'));           
-                                
-
                     });
             }
             else {

@@ -2,12 +2,13 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, PoliciesService, RightSidebarService } from '../../services/index';
+import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-policy-item',
@@ -18,7 +19,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div *ngIf="!isLoading && isRelationshipsVisible" class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">                
-                            <d3s-object-relationships  [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-object-relationships>
+                            <d3s-object-relationships [objectPermissions]="permissions" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'Policy'"></d3s-object-relationships>
                         </div>
                     </div>
                 </div>
@@ -36,7 +37,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <div *ngIf="formMode == FormMode.Default" class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <header><d3s-tile-actions hasEdit="true" (editClick)="edit()"></d3s-tile-actions></header>
+                                    <header><d3s-tile-actions hasEdit="hasRootUpdatePermissions()" (editClick)="edit()"></d3s-tile-actions></header>
                                     <object-detail [objectType]="'Policy'" [objectID]="selected?.ID"></object-detail>
                                 </div>
                             </div>
@@ -69,7 +70,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     </div>                  
                 </div>
                 `,
-    providers: [PoliciesService]
+    providers: [PoliciesService, PermissionsService]
 })
 
 export class PolicyItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -91,7 +92,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         private policiesService: PoliciesService,
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService
+        rightSidebarService: RightSidebarService,
+        private permissionsService: PermissionsService
     ) {
         super(rightSidebarService);
     }
@@ -202,6 +204,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         else {
             this.selected = (this.policies.length && this.policies.length > 0) ? this.policies[0] : null;
         }
+
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID);
 
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
     }
