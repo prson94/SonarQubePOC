@@ -459,67 +459,67 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                         #region Fusion
 
-                        var fusionAttributeTypes = companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType").ToList();
+                        //var fusionAttributeTypes = companyConnection.Query<FusionAttributeType>("select * from FusionAttributeType").ToList();
 
-                        try
-                        {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'FusionAttributeType'").ToList();
-                        }
-                        catch (Exception)
-                        {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'FusionAttributeType'").ToList();
-                        }
+                        //try
+                        //{
+                        //    fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'FusionAttributeType'").ToList();
+                        //}
+                        //catch (Exception)
+                        //{
+                        //    fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'FusionAttributeType'").ToList();
+                        //}
 
-                        fusionAttributeTypes.ForEach(o =>
-                        {
-                            objectType = "FusionAttribute";
-                            objectTypeKey = "FusionAttributeTypeID";
-                            prefix = "Fusion";
-                            tableName = "FusionAttribute";
+                        //fusionAttributeTypes.ForEach(o =>
+                        //{
+                        //    objectType = "FusionAttribute";
+                        //    objectTypeKey = "FusionAttributeTypeID";
+                        //    prefix = "Fusion";
+                        //    tableName = "FusionAttribute";
 
-                            #region Object Views
+                        //    #region Object Views
 
-                            var joins = "";
-                            var columns = "";
+                        //    var joins = "";
+                        //    var columns = "";
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "FusionAttribute", out joins, out columns);
+                        //    getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "FusionAttribute", out joins, out columns);
 
-                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.TextPath.Replace(".", "").Replace("_", ""))));
-                            viewNames.Add(objectName);
+                        //    objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.TextPath.Replace(".", "").Replace("_", ""))));
+                        //    viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select FT.Name as FusionType, F.Name as Fusion, A.ID, A.Name as [Attribute], A.TextPath, {0} AC.AttributeCount, Rels.[Count] as RelationshipCount from FusionAttribute A inner join Fusion F on F.ID = A.FusionID and A.FusionAttributeTypeID = {1} inner join FusionType FT on FT.ID = F.FusionTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.FusionAttributeTypeID = {1}", columns, o.ID, joins, objectType);
+                        //    selectSql = string.Format(@"select FT.Name as FusionType, F.Name as Fusion, A.ID, A.Name as [Attribute], A.TextPath, {0} AC.AttributeCount, Rels.[Count] as RelationshipCount from FusionAttribute A inner join Fusion F on F.ID = A.FusionID and A.FusionAttributeTypeID = {1} inner join FusionType FT on FT.ID = F.FusionTypeID {2} cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{3}' and ObjectID = A.ID) AC cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{3}' and SourceObjectID = A.ID) Rels where A.FusionAttributeTypeID = {1}", columns, o.ID, joins, objectType);
 
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+                        //    objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+                        //    viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        //    viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+                        //    try
+                        //    {
+                        //        companyConnection.Execute(viewSql.ToString());
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                        //        Console.WriteLine(msg);
+                        //        Console.WriteLine("Attempted SQL: " + viewSql);
+                        //    }
 
-                            #endregion
+                        //    #endregion
 
-                            // Object Views
-                            //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.TextPath.Replace(".", "").Replace("_", ""), objectTypeKey, tableName, objectType, o.ID, false);
-                            //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+                        //    // Object Views
+                        //    //GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        //    GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.TextPath.Replace(".", "").Replace("_", ""), objectTypeKey, tableName, objectType, o.ID, false);
+                        //    //GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
-                            // Object Missing Views
-                            //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                            //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
-                        });
+                        //    // Object Missing Views
+                        //    //GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        //    //GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        //    //GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        //    //GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID, true);
+                        //});
 
-                        fusionAttributeTypes = null;
+                        //fusionAttributeTypes = null;
 
                         #endregion
 
@@ -689,164 +689,164 @@ where	R.ObjectType = '{1}' and R.ObjectTypeID = {2}", name, objectType, typeID);
 
                         #region Event
 
-                        objectType = "Event";
-                        objectTypeKey = "Rule";
-                        prefix = "Event";
-                        tableName = "Domain";
+//                        objectType = "Event";
+//                        objectTypeKey = "Rule";
+//                        prefix = "Event";
+//                        tableName = "Domain";
 
-                        #region General Views
+//                        #region General Views
 
-                        #region RuleAnalytics
+//                        #region RuleAnalytics
 
-                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "RuleAnalytics");
-                        viewNames.Add(objectName);
+//                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "RuleAnalytics");
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select	R.ID,
-		R.Name,
-		R.Description,
-		case R.RuleType
-			when 1 then 'Informational'
-			when 2 then 'Quality Check'
-			when 3 then 'Metric'
-			when 4 then 'Profile'
-			else 'Unknown'
-		end as [Type],
-		EG.*,
-		OE.[Count] as OpenEventCount,
-		AE.[Count] as AssignedEventCount,
-		ACE.[Count] as ActiveEventCount,
-		CE.[Count] as ClosedEventCount
-from	[Rule] R
-		cross apply (
-					select		count(1) as [GroupCount],
-								max(UpdatedOn) as LatestGroupDate
-					from		EventGroup IG
-					where		IG.RuleID = R.ID 
-					) EG
-		cross apply (
-					select		count(1) as [Count]
-					from		EventGroup IG
-								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Open'
-					) OE
-		cross apply (
-					select		count(1) as [Count]
-					from		EventGroup IG
-								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Active'
-					) ACE
-		cross apply (
-					select		count(1) as [Count]
-					from		EventGroup IG
-								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Closed'
-					) CE
-		cross apply (
-					select		count(1) as [Count]
-					from		EventGroup IG
-								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Assigned'
-					) AE";
+//                        selectSql = @"
+//select	R.ID,
+//		R.Name,
+//		R.Description,
+//		case R.RuleType
+//			when 1 then 'Informational'
+//			when 2 then 'Quality Check'
+//			when 3 then 'Metric'
+//			when 4 then 'Profile'
+//			else 'Unknown'
+//		end as [Type],
+//		EG.*,
+//		OE.[Count] as OpenEventCount,
+//		AE.[Count] as AssignedEventCount,
+//		ACE.[Count] as ActiveEventCount,
+//		CE.[Count] as ClosedEventCount
+//from	[Rule] R
+//		cross apply (
+//					select		count(1) as [GroupCount],
+//								max(UpdatedOn) as LatestGroupDate
+//					from		EventGroup IG
+//					where		IG.RuleID = R.ID 
+//					) EG
+//		cross apply (
+//					select		count(1) as [Count]
+//					from		EventGroup IG
+//								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Open'
+//					) OE
+//		cross apply (
+//					select		count(1) as [Count]
+//					from		EventGroup IG
+//								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Active'
+//					) ACE
+//		cross apply (
+//					select		count(1) as [Count]
+//					from		EventGroup IG
+//								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Closed'
+//					) CE
+//		cross apply (
+//					select		count(1) as [Count]
+//					from		EventGroup IG
+//								inner join [Event] IE on IG.RuleID = R.ID and IE.EventGroupID = IG.ID and IE.Status = 'Assigned'
+//					) AE";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+//                        try
+//                        {
+//                            companyConnection.Execute(viewSql.ToString());
+//                        }
+//                        catch (Exception ex)
+//                        {
+//                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                            Console.WriteLine(msg);
+//                            Console.WriteLine("Attempted SQL: " + viewSql);
+//                        }
 
-                        #endregion
+//                        #endregion
 
-                        #region EventSummaries
+//                        #region EventSummaries
 
-                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "Summaries");
-                        viewNames.Add(objectName);
+//                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "Summaries");
+//                        viewNames.Add(objectName);
 
-                        selectSql = @"
-select	R.Name as [Rule],
-		R.ID as RuleID,
-		G.[Name] as [Group],
-		G.PublicID as GroupPublicID, 
-		E.ID as EventID,
-		E.SourceID as EventSourceID,
-		E.Status,
-		E.Date
-from	[Rule] R
-		inner join EventGroup G on G.RuleID = R.ID
-		inner join [Event] E on E.EventGroupID = G.ID";
+//                        selectSql = @"
+//select	R.Name as [Rule],
+//		R.ID as RuleID,
+//		G.[Name] as [Group],
+//		G.PublicID as GroupPublicID, 
+//		E.ID as EventID,
+//		E.SourceID as EventSourceID,
+//		E.Status,
+//		E.Date
+//from	[Rule] R
+//		inner join EventGroup G on G.RuleID = R.ID
+//		inner join [Event] E on E.EventGroupID = G.ID";
 
-                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                        try
-                        {
-                            companyConnection.Execute(viewSql.ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                            Console.WriteLine(msg);
-                            Console.WriteLine("Attempted SQL: " + viewSql);
-                        }
+//                        try
+//                        {
+//                            companyConnection.Execute(viewSql.ToString());
+//                        }
+//                        catch (Exception ex)
+//                        {
+//                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                            Console.WriteLine(msg);
+//                            Console.WriteLine("Attempted SQL: " + viewSql);
+//                        }
 
-                        #endregion
+//                        #endregion
 
-                        #endregion
+//                        #endregion
 
-                        var rules = companyConnection.Query<Rule>("select * from [Rule]").ToList();
+//                        var rules = companyConnection.Query<Rule>("select * from [Rule]").ToList();
 
-                        try
-                        {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'Rule'").ToList();
-                        }
-                        catch (Exception)
-                        {
-                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'Rule'").ToList();
-                        }
+//                        try
+//                        {
+//                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [Object] = 'Rule'").ToList();
+//                        }
+//                        catch (Exception)
+//                        {
+//                            fieldTypes = companyConnection.Query<FieldTypeWithRelation>("select * from FieldTypeWithRelation where [ObjectType] = 'Rule'").ToList();
+//                        }
 
-                        rules.ForEach(o =>
-                        {
-                            #region Object Views
+//                        rules.ForEach(o =>
+//                        {
+//                            #region Object Views
 
-                            var joins = "";
-                            var columns = "";
+//                            var joins = "";
+//                            var columns = "";
 
-                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Event", out joins, out columns);
+//                            getDynamicFieldJoinStatements(fieldTypes.Where(f => f.ObjectID == o.ID).ToList(), "Event", out joins, out columns);
 
-                            objectName = string.Format("{0}.[{1}_Rule{2}]", SCHEMA, prefix, o.ID);
-                            viewNames.Add(objectName);
+//                            objectName = string.Format("{0}.[{1}_Rule{2}]", SCHEMA, prefix, o.ID);
+//                            viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select R.ID as RuleID, G.[Name] as [Group], G.PublicID as GroupPublicID, A.ID as EventID, A.SourceID as EventSourceID, A.Date, {0} A.Status 
-from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner join [Event] A on A.EventGroupID = G.ID {2}", columns, o.ID, joins, objectType);
+//                            selectSql = string.Format(@"select R.ID as RuleID, G.[Name] as [Group], G.PublicID as GroupPublicID, A.ID as EventID, A.SourceID as EventSourceID, A.Date, {0} A.Status 
+//from [Rule] R inner join EventGroup G on R.ID = {1} and G.RuleID = R.ID inner join [Event] A on A.EventGroupID = G.ID {2}", columns, o.ID, joins, objectType);
 
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+//                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+//                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+//                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+//                            try
+//                            {
+//                                companyConnection.Execute(viewSql.ToString());
+//                            }
+//                            catch (Exception ex)
+//                            {
+//                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+//                                Console.WriteLine(msg);
+//                                Console.WriteLine("Attempted SQL: " + viewSql);
+//                            }
 
-                            #endregion
-                        });
+//                            #endregion
+//                        });
 
-                        rules = null;
+//                        rules = null;
 
                         #endregion
 
@@ -943,6 +943,80 @@ select    A.ID,
 from      Artifact A
                               inner join ArtifactType T on T.ID = A.ArtifactTypeID
                               inner join TaxonomyType TX on tx.ID = A.TaxonomyTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region All Fusion Attributes
+
+                        objectName = $"{SCHEMA}.[Fusion_All]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select	A.ID as FusionAttributeID,
+        A.TextPath as FusionAttributePath,
+        A.Name as FusionAttribute,
+        F.ID as ConfigurationID,
+        F.Name as [Configuration],
+        FAT.TextPath as FusionAttributeTypePath,
+        A.FusionAttributeTypeID,
+        FAT.Name as FusionAttributeType,
+        FAT.FusionTypeID,
+        FT.Name as FusionType
+from	FusionAttribute A
+        inner join Fusion F on F.ID = A.FusionID
+        inner join FusionAttributeType FAT on FAT.ID = A.FusionAttributeTypeID
+        inner join FusionType FT on FT.ID = FAT.FusionTypeID";
+
+                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+
+                        try
+                        {
+                            companyConnection.Execute(viewSql.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                            Console.WriteLine(msg);
+                            Console.WriteLine("Attempted SQL: " + viewSql);
+                        }
+
+                        #endregion
+
+                        #region FusionAttribute_Fields
+
+                        objectName = $"{SCHEMA}.[Fusion_Fields]";
+                        viewNames.Add(objectName);
+
+                        selectSql = @"
+select  O.ID, 
+		O.FusionAttributeTypeID, 
+		O.Name, 
+		O.TextPath, 
+		F.FieldTypeID, 
+        F.Name as FieldName, 
+        F.FriendlyName as FieldFriendlyName, 
+		F.FormattedValue as FieldValue 
+from	FusionAttribute O 
+		inner join FieldWithRelation F on F.ObjectType = 'FusionAttribute' and F.ObjectID = O.ID";
 
                         objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
