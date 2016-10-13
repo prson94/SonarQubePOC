@@ -60,14 +60,14 @@ import { StringConstants } from '../../static/string-constants';
                                         </div>
                                     </template>
                             </p-column>
-                            <p-column [style]="{width:'40px'}" *ngIf="showEditButton && hasRootUpdatePermissions()">
+                            <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                             </p-column>                            
-                            <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton && hasRootDeletePermissions()">
+                            <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
