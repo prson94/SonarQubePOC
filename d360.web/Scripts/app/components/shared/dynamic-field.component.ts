@@ -30,6 +30,11 @@ import { SelectItem } from 'primeng/primeng';
                             <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" [type]="'string'">
                             <div>(Link Url)</div>
                         </div>
+                        <div *ngSwitchCase="'FusionLookup'">
+                            <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
+                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                            </select>                            
+                        </div>
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div>                   
                 </div>
