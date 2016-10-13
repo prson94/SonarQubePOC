@@ -1,7 +1,6 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService, SurveysService } from '../../services/index';
+import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService, SurveysService, PermissionsService } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';
@@ -10,6 +9,7 @@ import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-item',
@@ -51,13 +51,13 @@ import { SurveyType } from '../../models/survey.model';
                     <div class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">                               
-                                <d3s-object-definition-tile [objectID]="artifact?.ID" [objectType]="'Artifact'"></d3s-object-definition-tile>
+                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [hasSynonyms]="artifact?.AllowSynonyms"></d3s-object-definition-tile>
                             </div>
                         </div>
                     </div>                    
                 </div>                
                 `,
-    providers: [ArtifactService, SurveysService]
+    providers: [ArtifactService, SurveysService, PermissionsService]
 })
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
@@ -76,7 +76,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private surveysService: SurveysService) {
+        private surveysService: SurveysService,
+        protected permissionsService: PermissionsService            
+    ) {
         super(headerBreadcrumbService, pageHeader, rightSidebarService, webAnalyticsService);
 
     }
@@ -90,8 +92,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
+
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
+
             this.artifactService.getArtifact(artifactId)
-                .then(artifact => {
+                .then(artifact => {                    
                     this.artifact = artifact;
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     let index = 0;

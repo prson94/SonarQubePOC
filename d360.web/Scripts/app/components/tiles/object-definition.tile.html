@@ -5,19 +5,19 @@
 
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <header>&nbsp;<d3s-tile-actions [hasEdit]="true" (editClick)="formMode = FormMode.Editing"></d3s-tile-actions></header>
+            <header>&nbsp;<d3s-tile-actions [hasEdit]="hasRootUpdatePermissions()" (editClick)="formMode = FormMode.Editing"></d3s-tile-actions></header>
             <simple-accordion header="Definition" [active]="true">
                 <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
             </simple-accordion>
-            <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false">
-                <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-synonyms-tile>
+            <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false" *ngIf="hasSynonyms">
+                <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasRelationshipCreatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-synonyms-tile>
             </simple-accordion>
-            <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false">
-                <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-attributes-tile>
+            <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false" *ngIf="hasAttributes">
+                <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasAttributeCreatePermissions()" [hasEdit]="hasAttributeUpdatePermissions()" [hasDelete]="hasAttributeDeletePermissions"></d3s-attributes-tile>
             </simple-accordion>
-            <simple-accordion header="Structure" [active]="false">
+         <!--   <simple-accordion header="Structure" [active]="false">
                 <d3s-structure-tile [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-structure-tile>
-            </simple-accordion>
+            </simple-accordion>-->
         </div>
         <div *ngSwitchCase="FormMode.Editing">
             <d3s-dynamic-editor 

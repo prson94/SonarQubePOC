@@ -1,4 +1,5 @@
-﻿import { Title } from '@angular/platform-browser';
+﻿import { Input } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { RightSidebarService, WebAnalyticsService, PermissionsService  } from '../../services/index';
 import { Subscription }   from 'rxjs/Subscription';
@@ -23,6 +24,8 @@ export class BaseComponent {
     showSimpleFilter: boolean = true;
 
     //permissions
+    // Ideally this should be an input so we dont have to copy / past it...
+    // child classes that support permissions input....
     permissions: Permission[] = [];
 
     constructor(protected rightSidebarService?: RightSidebarService, protected webAnalyticsService?: WebAnalyticsService) { }
@@ -41,6 +44,8 @@ export class BaseComponent {
         }
     }
 
+    /*permissions functionality */
+
     loadPermissions(permissionsService: PermissionsService, objectType: string, objectID: number) {
         permissionsService.getPermissions(objectID, objectType)
             .then(result => {
@@ -48,42 +53,30 @@ export class BaseComponent {
             });
     }
 
-    hasPermission(object: string, claim: string) {
-        return Permission.hasPermission(this.permissions, object, claim);
-    }
+    hasPermission(object: string, claim: string) {return Permission.hasPermission(this.permissions, object, claim);}
 
-    hasCreatePermissions(object: string) {
-        return this.hasPermission(object, StringConstants.ClaimCreate);
-    }
+    hasCreatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimCreate);}
+    hasDeletePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimDelete);}
+    hasUpdatePermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimUpdate);}
+    hasReadPermissions(object: string) {return this.hasPermission(object, StringConstants.ClaimRead);}
 
-    hasDeletePermissions(object: string) {
-        return this.hasPermission(object, StringConstants.ClaimDelete);
-    }
+    hasRootCreatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimCreate);}
+    hasRootDeletePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimDelete);}
+    hasRootUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimUpdate);}
+    hasRootReadPermissions() { return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimRead); }
 
-    hasUpdatePermissions(object: string) {
-        return this.hasPermission(object, StringConstants.ClaimUpdate);
-    }
+    hasRelationshipCreatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimCreate);}
+    hasRelationshipDeletePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimDelete);}
+    hasRelationshipUpdatePermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimUpdate);}
+    hasRelationshipReadPermissions() {return this.hasPermission(StringConstants.ObjectRelationship, StringConstants.ClaimRead);}
 
-    hasReadPermissions(object: string) {
-        return this.hasPermission(object, StringConstants.ClaimRead);
-    }
+    hasAttributeCreatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimCreate); }
+    hasAttributeDeletePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimDelete); }
+    hasAttributeUpdatePermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimUpdate); }
+    hasAttributeReadPermissions() { return this.hasPermission(StringConstants.ObjectAttribute, StringConstants.ClaimRead); }
 
-    hasRootCreatePermissions() {
-        return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimCreate);
-    }
 
-    hasRootDeletePermissions() {
-        return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimDelete);
-    }
-
-    hasRootUpdatePermissions() {
-        return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimUpdate);
-    }
-
-    hasRootReadPermissions() {
-        return this.hasPermission(StringConstants.ObjectRoot, StringConstants.ClaimRead);
-    }
-
+    /*end permissions functionality*/
 
     setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean) {
         if (this.rightSidebarService) {

@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnInit } from '@angular/core';
+﻿import { Input, Output, Component, OnInit } from '@angular/core';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
@@ -123,6 +122,10 @@ export class AttributesTile implements OnInit {
     @Input() readonly: boolean = true;
     @Output() itemCount: number = 0;
 
+    @Input() hasAdd: boolean = true;
+    @Input() hasEdit: boolean = true;
+    @Input() hasDelete: boolean = true;
+
     private isLoading = false;
     private formMode = FormMode.Default;
     private FormMode = FormMode;
@@ -221,6 +224,7 @@ export class AttributesTile implements OnInit {
     }
 
     setMenuItems(items: any[]) {
+        console.log(items);
         this.actions = new Array<ActionBarItem>();
 
         let disable = (this.selectedRow == null);
@@ -248,12 +252,13 @@ export class AttributesTile implements OnInit {
                     action.menu.push(sub);
                 });
             }
-            this.actions.push(action);
+            // only add permissible actions
+            if ((i.Action != 'edit' && i.Action != 'delete' && i.Action != 'add') || (i.Action == 'edit' && this.hasEdit) || (i.Action == 'delete' && this.hasDelete) || (i.Action == 'add' && this.hasAdd))
+                this.actions.push(action);
         });
     }
 
-    action(item: ActionBarItem) {
-        console.log(item);
+    action(item: ActionBarItem) {        
         switch ((item.key || '').toLowerCase().trim()) {
             case 'edit':
                 this.attributeID = item.data.attributeID;

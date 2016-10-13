@@ -15,9 +15,9 @@ declare var CompanySettings: any;
 <div *ngIf="!isLoading">
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <header><d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="true"></d3s-tile-actions></header>
+            <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
             <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">
-                <p-column *ngIf="!readonly" [style]="{ 'width': '32px' }">
+                <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '32px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
@@ -73,6 +73,9 @@ export class SynonymsTile implements OnChanges, OnInit {
     @Input() objectID: number;
     @Input() readonly: boolean = true;
     @Output() itemCount: number = 0; 
+    
+    @Input() hasAdd: boolean = true;    
+    @Input() hasDelete: boolean = true;
 
     private isLoading = false;
     private formMode = FormMode.Default;
