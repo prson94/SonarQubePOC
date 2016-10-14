@@ -44,12 +44,19 @@ import { Permission } from '../../models/permission.model'
                     <d3s-tile-actions [hasAdd]="hasRelationships && hasRelationshipCreatePermissions()" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <div *ngIf="!isLoading && hasRelationships" class="row" style="padding-left:10px;padding-bottom:5px;">
+                    <label pTooltip="If you would like to see relationship types that have no relationships established click here.  In order to setup relations between types with no relations you need to enable this option also.">
+                        <input type="checkbox" [(ngModel)]="showEmptyRelationshipTypes">Show relationship types with no relations established.
+                    </label>
+                </div>
                 <div *ngIf="!isLoading && hasRelationships" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
-                        <div class="row relationship" *ngFor="let rel of relationshipItems; let i = index" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
-                            <div class="col s10 name" [title]="rel.Object | technicalNameToDisplayValue">{{rel.Name}}</div>
-                            <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
-                        </div>                        
+                        <template ngFor let-rel [ngForOf]="relationshipItems">                        
+                            <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
+                                <div class="col s10 name" [title]="rel.Object | technicalNameToDisplayValue">{{rel.Name}}</div>
+                                <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
+                            </div>                        
+                        </template>
                     </div>
                     <div class="col l9 s12">                        
                         <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasRelationshipUpdatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-dynamic-relationship-grid>                        
@@ -74,6 +81,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     hasRelationships: boolean;
     showAddRelationship: boolean = false;
+    showEmptyRelationshipTypes: boolean = false;
     
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
     
@@ -131,5 +139,12 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     isSelected(item: ObjectRelationshipCount): boolean {        
         return (this.selected && this.selected == item);
+    }
+
+    relationshipsToShow() {        
+        if (this.showEmptyRelationshipTypes)
+            return this.relationshipItems;
+
+        return this.relationshipItems.filter(x => x.Count > 0);
     }
 }
