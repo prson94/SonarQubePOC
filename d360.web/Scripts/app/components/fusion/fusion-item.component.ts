@@ -59,8 +59,7 @@ import { StringConstants } from '../../static/string-constants';
 })
 
 export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
-    //private subRight: any;
+    private sub: any;    
     private fusionId: number;
     private fusion: FusionConfigurationDetails;
     private selectedFusionAttributeTypeId: number;
@@ -142,16 +141,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         var items = this.fusionTreeComponent.fusionAttributeTypes.filter(x => x.ID == id);
 
         if (items.length > 0) {
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));
-
-      //      if (items[0].ParentID)
-        //        this.addFusionAttributeTypeBreadcrumb(items[0].ParentID);
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));            
         }
-
-        
     }
-
-
+    
     private changeFusionAttributeTypeId(event) {
         this.selectedFusionAttribute = null;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);

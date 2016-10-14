@@ -4,6 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { Fusion } from '../../models/fusion.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-configuration',
@@ -18,19 +19,19 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                         <p-dataTable [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion();" >
-                                            <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
-                                            <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
-                                            <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                            <p-column field="FusionType" header="Type"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Name" header="Name"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Description" header="Description" [sortable]="false" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <span [innerHtml]="item.Description"></span>
                                                 </template>
-                                            </p-column>
-                                            <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}" [filter]="!showSimpleFilter">
+                            </p-column>
+                            <p-column field="Enabled" header="Enabled" [sortable]="true" [style]="{width:'11%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
                                                     <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
                                                 </template>
-                                            </p-column>
+                            </p-column>
                             <p-column [style]="{width:'30px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
@@ -89,5 +90,11 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
     private doExport() {
         this.fusionService.exportFusionConfigurations();
     }
-    
+
+
+    private caseInsensitiveSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending        
+        this.fusions = _.orderBy(this.fusions, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 };

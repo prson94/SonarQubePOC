@@ -17,18 +17,18 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                        <p-dataTable [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
-                            <p-column field="Issue" header="Issue" [sortable]="true" [filter]="!showSimpleFilter">
-                                <template let-col let-item="rowData" pTemplate type="body">
-                                    <span [innerHtml]="item.Issue"></span>
-                                </template>
-                            </p-column>
+                        <p-dataTable [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
                                 </template>
                             </p-column>
                             <p-column field="Object" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            <p-column field="Issue" header="Issue Description" [sortable]="false" [filter]="!showSimpleFilter">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span [innerHtml]="item.Issue"></span>
+                                </template>
+                            </p-column>
                             <p-column field="RaisedBy" header="Created By" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="'Resource'" [objectId]="item.RaisedByResourceID" [tooltipType]="'Preview'">{{item.RaisedBy}}</d3s-tooltip>

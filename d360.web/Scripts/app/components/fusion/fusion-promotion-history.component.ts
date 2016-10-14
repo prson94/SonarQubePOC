@@ -1,8 +1,8 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionPromotionExecutionStats } from '../../models/fusion.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-promotion-history',
@@ -13,12 +13,12 @@ import { FusionPromotionExecutionStats } from '../../models/fusion.model';
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                         <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >                        
-                            <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
+                            <p-column field="DateStarted" header="Started" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateStarted | date: 'short'}}</span>
                                 </template>
                             </p-column>
-                            <p-column field="DateCompleted" header="Completed" [sortable]="true" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
+                            <p-column field="DateCompleted" header="Completed" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">
                                     <span>{{data.DateCompleted | date: 'short'}}</span>
                                 </template>
@@ -61,4 +61,11 @@ export class FusionPromotionHistoryComponent extends BaseComponent implements On
                 this.isLoading = false;
             });
     }
+
+    private nullDateSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                
+        this.executions = _.sortBy(this.executions, event.field);
+        if (event.order == -1) this.executions.reverse();
+    }    
 };

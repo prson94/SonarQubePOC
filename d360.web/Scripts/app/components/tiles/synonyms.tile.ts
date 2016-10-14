@@ -17,7 +17,8 @@ declare var CompanySettings: any;
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
-            <p-dataTable [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">                
+            <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+            <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">                
                 <p-column field="ObjectTypeName" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
                 <p-column header="Parent" field="ParentName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
                     <template pTemplate type="body" let-item="rowData">                        
@@ -165,8 +166,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     caseInsensitiveSort(event) {
         //event.field = Field to sort
-    //event.order = Sort order        
-        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
-        
+        //event.order = Sort order, 1 ascending , -1 descending        
+        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);        
     }
 }
