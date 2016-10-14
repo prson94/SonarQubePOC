@@ -23,9 +23,15 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
-
+                <div class="row" *ngIf="!isLoading && isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-follower-grid [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
+                        </div>
+                    </div>
+                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible" class="row">                    
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible" class="row">                    
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
@@ -139,7 +145,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.setBrowserTitle(this.titleService, this.policyType.Name);
 
                         this.clearSidebar();
-                        this.setCommonRightSideBar(true, false, false, true, true, true);
+                        this.setCommonRightSideBar(true, false, false, true, true, true, true);
 
                         this.isLoading = false;
                     });

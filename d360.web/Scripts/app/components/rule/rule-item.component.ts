@@ -25,12 +25,19 @@ import { StringConstants } from '../../static/string-constants';
                 <div class="row" *ngIf="!isLoading && isRelationshipsVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="selected?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
+                            <d3s-object-relationships [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="!isLoading && isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-follower-grid [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-follower-grid> 
                         </div>
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible">                      
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">                      
                         <div class="col s12">
                             <div class="row">
                                 <div class="col s12">
@@ -65,7 +72,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     ) {
         super(rightSidebarService);
 
-        this.setCommonRightSideBar(true, true,false,true,true,true);
+        this.setCommonRightSideBar(true, true,false,true,true,true, true);
     }
 
     ngOnInit() {

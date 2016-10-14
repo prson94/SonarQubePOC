@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../models/object-detail.model';
 
 @Component({
@@ -19,16 +18,13 @@ import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../mode
     `
 })
 
-export class ObjectDetailField implements OnInit {
+export class ObjectDetailField {
     @Input() field: DetailField;
     DetailFieldType = DetailFieldType;
 
     constructor() {
         
     }
-
-    ngOnInit() {
-        //console.log(this.field);
-    }
+    
 }
 

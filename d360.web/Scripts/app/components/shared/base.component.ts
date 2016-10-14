@@ -19,6 +19,7 @@ export class BaseComponent {
     isLineageVisible: boolean = false;
     isImpactVisible: boolean = false;
     isRelationshipsVisible: boolean = false;
+    isFollowersVisible: boolean = false;
 
     //filter mode
     showSimpleFilter: boolean = true;
@@ -78,7 +79,7 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean) {
+    setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean) {
         if (this.rightSidebarService) {
             if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit'));
             if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership'));
@@ -86,6 +87,7 @@ export class BaseComponent {
             if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage'));
             if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact'));
             if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship'));
+            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers'));
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
@@ -101,6 +103,8 @@ export class BaseComponent {
                         this.isImpactVisible = !this.isImpactVisible;
                     else if (item.tag == 'relationship')
                         this.isRelationshipsVisible = !this.isRelationshipsVisible;
+                    else if (item.tag == 'followers')
+                        this.isFollowersVisible = !this.isFollowersVisible;                            
                     else
                         this.showHideBreadcrumbItem(item);
                 });

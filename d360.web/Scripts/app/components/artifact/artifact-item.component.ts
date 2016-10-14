@@ -27,7 +27,14 @@ import { StringConstants } from '../../static/string-constants';
                             <d3s-object-relationships [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectPermissions]="permissions"></d3s-object-relationships>
                         </div>
                     </div>
-                </div>            
+                </div>      
+                <div class="row" *ngIf="!isLoading && isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-follower-grid [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-follower-grid> 
+                        </div>
+                    </div>
+                </div>
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
@@ -112,7 +119,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true,true);
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true,true,true);
 
                     this.loadItemSurvey(artifactId);
                     
@@ -141,7 +148,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     protected isTabVisible() {
-        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible;
+        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible;
     }
 
     private completeSurvey() {

@@ -32,8 +32,15 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
+                <div class="row" *ngIf="!isLoading && isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-follower-grid [objectType]="'Taxonomy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
+                        </div>
+                    </div>
+                </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible" class="row">                    
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible" class="row">                    
                     <div class="col s12">
                         <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                         <div class="row" *ngIf="showSurvey && surveyType">
@@ -119,7 +126,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         this.setBrowserTitle(this.titleService, this.model.Name);
 
                         this.clearSidebar();
-                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true);
+                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
                     });
             }
             else {
