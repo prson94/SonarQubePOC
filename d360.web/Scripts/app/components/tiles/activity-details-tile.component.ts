@@ -5,6 +5,7 @@ import { ArtifactService } from '../../services/index';
 import { Count} from '../../models/counts.model';
 import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-activity-details-tile',
@@ -18,7 +19,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <span *ngIf="!isLoading">
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                         <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
-                            <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
+                            <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)"  [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <a [routerLink]="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
                                 </template>
@@ -91,7 +92,12 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
         }
         return '#ebebeb';
     }
-    
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 }
 
 

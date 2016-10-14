@@ -3,7 +3,7 @@ import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',    
@@ -40,7 +40,7 @@ import { BaseComponent } from '../shared/base.component';
                             </template> 
                         </p-column>                                                                                                                                                                              
                         <p-column header="Classification" field="ClassificationText" [sortable]="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>    
-                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
+                        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                     </p-dataTable>   
                 </span>
                 <div *ngIf="showTechnical && !shouldShowEditor()">
@@ -165,7 +165,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             this.relationshipRemoved.emit();
         });
     }
-    
+
+    private columnSort(event) {        
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.relations = _.orderBy(this.relations, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 }
 
 

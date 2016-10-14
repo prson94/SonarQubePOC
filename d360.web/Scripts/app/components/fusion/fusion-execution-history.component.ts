@@ -93,7 +93,7 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
         if (event.order == -1) this.executions.reverse();
     }
 
-    private caseInsensitiveSort(event) {
+    private caseInsensitiveSort(event) {        
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending        
         this.executions = _.orderBy(this.executions, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);

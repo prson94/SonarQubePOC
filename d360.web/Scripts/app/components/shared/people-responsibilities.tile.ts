@@ -1,9 +1,9 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { ResponsibilityItem, IResponsibilityService } from '../../models/responsibility.model';
 import { FormMessage } from '../../models/form.model';
 import { ResponsibilityService } from '../../services/responsibility.service';
 import { BaseComponent } from '../shared/base.component';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -56,13 +56,11 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
             });
     }
 
-    edit(id: number): void {
-        //this.selectedRow = this.responsibilities.find(r => r.ID == id);
+    edit(id: number): void {        
         this.isEditing = true;
     }
 
-    delete(id: number): void {
-        //this.selectedRow = this.responsibilities.find(r => r.ID == id);
+    delete(id: number): void {        
         this.isDeleting = true;
     }
 
@@ -76,6 +74,12 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     confirmDeleteRow(id: number): void {
         this.isDeleting = false;
         this.load();
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 }
 

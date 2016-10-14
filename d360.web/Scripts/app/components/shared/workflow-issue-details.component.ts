@@ -1,7 +1,7 @@
-﻿
-import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-issue-details',
@@ -12,18 +12,18 @@ import { WorkflowService } from '../../services/index';
                 <div class="col s12"> 
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                   
                     <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
-                        <p-column field="Issue" header="Issue" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="Issue" header="Issue" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
                             </template>
                         </p-column>
-                        <p-column field="ResourceName" header="Reported By" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="DateStarted" header="Created" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="ResourceName" header="Reported By" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="DateStarted" header="Created" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'medium'}}</span>
                             </template>
                         </p-column>
-                        <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                
@@ -88,5 +88,11 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     private handleRowDblClick() {
         if (this.selected.Activity > 0) this.showEditor = true;
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.issues = _.orderBy(this.issues, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 }
