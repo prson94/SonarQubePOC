@@ -24,7 +24,7 @@ import * as _ from 'lodash';
                         <input required placeholder="Filter value..." [name]="'value'+i" type="text" pInputText *ngSwitchDefault [(ngModel)]="filter.value" style="width: 100%;" />                        
                     </div>
                     <div class="col s1" *ngIf="last">
-                        <button pButton type="button" (click)="addFilter()" label="+" [disabled]="!filterForm.form.valid"></button>
+                        <button pButton type="button" (click)="addFilter()" label="+" ></button>
                     </div>
                     <div class="col s1" *ngIf="!last">
                         <button pButton type="button" (click)="removeFilter(i)" label="-" ></button>
@@ -33,7 +33,7 @@ import * as _ from 'lodash';
                         <button pButton type="button" (click)="removeAllFilters()" label="Clear All" style="width: 100px;"></button>
                     </div>
                     <div class="col s1" *ngIf="last">
-                        <button pButton type="submit" label="Filter" style="width: 100px;" [disabled]="!filterForm.form.valid"></button>
+                        <button pButton type="submit" label="Filter" style="width: 100px;" ></button>
                     </div>
                 </div>
                 </form>
@@ -87,10 +87,11 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
 
     private removeAllFilters() {
         this.filters.splice(0, this.filters.length);
-        this.internalFilters.splice(0, this.filters.length);
+        this.internalFilters.splice(0, this.internalFilters.length);
         this.filtersChange.emit(this.filters);
 
         this.filters.push(new FusionAttributeFilter());            
+        this.internalFilters.push(new FusionAttributeFilter());            
     }
 
     private fieldOptions(dataField: string): string[] {
