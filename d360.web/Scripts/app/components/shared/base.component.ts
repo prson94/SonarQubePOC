@@ -111,6 +111,18 @@ export class BaseComponent {
         }
     }
 
+    hideSidebarItems() {
+        this.isAuditVisible = false;
+        this.isOwnershipVisible = false;
+        this.isDashboardVisible = false;
+        this.isFollowersVisible = false;
+        this.isImpactVisible = false;
+        this.isLineageVisible = false;
+        this.isRelationshipsVisible = false;
+    }
+
+
+    //This is generally overloaded to show hide in your own class.
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         //console.log('show/hide :');
         //console.log(activatedItem);

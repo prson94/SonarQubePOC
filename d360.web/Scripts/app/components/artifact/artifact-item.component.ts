@@ -100,6 +100,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.isLoading = true;
             this.messages = [];
 
+            this.hideSidebarItems(); // this is needed if we changed artifacts.
+
             this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
 
             this.artifactService.getArtifact(artifactId)
