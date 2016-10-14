@@ -8,10 +8,24 @@ import {MenuItem} from 'primeng/primeng';
      :host{
             text-transform:none;
         }
+    
   `],
     template: `
-                <div class="TileTools">                                    
-                    <p-menubar [model]="items"></p-menubar>
+                <div class="TileTools"> 
+                    <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
+                    <div *ngIf="!hasDate">
+                        <ul>                                                      
+                            <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" pTooltip="Export to Excel"><i class="fa fa-download fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" pTooltip="Edit"><i class="fa fa-pencil fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" pTooltip="Filter Mode"><i class="fa fa-filter fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasRefresh"><a class="Action" (click)="refreshClick.emit()" pTooltip="Refresh"><i class="fa fa-refresh fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasAuthenticate"><a class="Action" (click)="authenticateClick.emit()" pTooltip="Authenticate"><i class="fa fa-sign-in fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" pTooltip="API Key"><i class="fa fa-key fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" pTooltip="Password"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
+                        </ul>
+                    </div>
                 </div>          
                 `
 })
@@ -40,9 +54,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasAuthenticate: boolean = false;
     @Input() hasApi: boolean = false;
     @Input() hasPassword: boolean = false;
-
-    private items: MenuItem[] = [];
-
+        
+    private dateMenuItems: MenuItem[] = [];
     
 
     ngOnInit() {        
@@ -55,33 +68,9 @@ export class TileActionsComponent implements OnInit, OnChanges {
     }
 
     private buildMenu() {        
-        this.items = [];
-        if (this.hasAdd) {
-            this.items.push({
-                icon: 'fa-plus', command: () => this.addClick.emit(null)
-            });
-        }
-
-        if (this.hasExport) {
-            this.items.push({
-                icon: 'fa-download', command: () => this.exportClick.emit(null)
-            });
-        }
-
-        if (this.hasEdit) {
-            this.items.push({
-                icon: 'fa-pencil', command: () => this.editClick.emit(null)
-            });
-        }
-
-        if (this.hasClose) {
-            this.items.push({
-                icon: 'fa-remove', command: () => this.closeClick.emit(null)
-            });
-        }
-
+       
         if (this.hasDate) {
-            this.items.push({
+            this.dateMenuItems.push({
                 icon: 'fa-clock-o',
                 items: [
                     { label: 'Past Week', command: () => this.dateClick.emit({ days: 7 }) },
@@ -91,37 +80,12 @@ export class TileActionsComponent implements OnInit, OnChanges {
                 ]
             });
         }
+        
+    }
 
-        if (this.hasFilterMode) {
-            this.items.push({
-                icon: 'fa-filter', command: () => { this.filterMode = !this.filterMode; this.filterModeChange.emit(this.filterMode); }
-            });
-        }
-
-        if (this.hasRefresh) {
-            this.items.push({
-                icon: 'fa-refresh', command: () => this.refreshClick.emit(null)
-            });
-        }
-
-        if (this.hasAuthenticate) {
-            this.items.push({
-                icon: 'fa-sign-in', command: () => this.authenticateClick.emit(null)
-            });
-        }
-
-        if (this.hasApi) {
-            this.items.push({
-                icon: 'fa-key', command: () => this.apiClick.emit(null)
-            });
-        }
-
-        if (this.hasPassword) {
-            this.items.push({
-                icon: 'fa-asterisk', command: () => this.passwordClick.emit(null)
-            });
-        }
-
+    private filterClick() {
+        this.filterMode = !this.filterMode;
+        this.filterModeChange.emit(this.filterMode);
     }
 
 }

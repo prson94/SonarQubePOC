@@ -23474,3 +23474,13 @@ div.item-description p {
 .InActiveRowTools a i {
   color: #b0b2b6;
 }
+a.Action {
+  color: black;
+  padding: .4em .3em;
+  line-height: 16px;
+  font-weight: 400;
+  cursor: pointer;
+}
+a.Action :hover {
+  color: #275075;
+}
