@@ -50,6 +50,8 @@ export class ObjectDetailComponent implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
+                    console.log('detail tile: ');
+                    console.log(data);
                     this.rows = data.rows;
                     this.categories = [];
                     
@@ -66,6 +68,21 @@ export class ObjectDetailComponent implements OnChanges {
                                 f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
 
+                            if (f.Type == DetailFieldType.Lookup) {
+                                console.log('get lookup grid');
+                                this.objectDetailService.getLookupGrid(f.LookupGridUrl)
+                                    .then(i => {
+                                        console.log(i);
+                                        f.Data = i;
+                                    })
+                                    .then(() => {
+                                        if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
+                                            f.Type = DetailFieldType.None;
+                                            r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
+                                        }
+                                    });
+                            }
+
                         });
                         r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
 
@@ -77,11 +94,28 @@ export class ObjectDetailComponent implements OnChanges {
                             if (s.FieldName == this.TaxonomyTypeNodeName) {
                                 s.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
+                            if (s.Type == DetailFieldType.Lookup) {
+                                this.objectDetailService.getLookupGrid(s.LookupGridUrl)
+                                    .then(i => {
+                                        s.Data = i;
+                                    })
+                                    .then(() => {
+                                        if (!s.Data || !s.Data.Values || s.Data.Values.length == 0) {
+                                            s.Type = DetailFieldType.None;
+                                            r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
+                                        }
+                                    });
+                            }
                         });
+
                         r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                     });
 
+                    
+
                     let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+
+                    
 
                     for (let i = 0; i < this.categories.length; i++) {
                         let items = this.rows.filter(r => r.Category == this.categories[i].name);
@@ -148,7 +182,6 @@ export class ObjectDetailComponent implements OnChanges {
                 });
             });
         });
-
 
     }
 }
