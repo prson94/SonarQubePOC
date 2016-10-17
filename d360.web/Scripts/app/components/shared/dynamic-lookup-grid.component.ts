@@ -6,8 +6,23 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
-    template: `                
-               <p-dataTable [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3">  
+    template: `    
+
+               <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
+                    <p-column *ngFor="let column of data.Columns">
+                        <template let-item="rowData" pTemplate type="body">
+                                    <span [ngSwitch]="columnDataType(column)">
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                        <span *ngSwitchCase="'bool'">
+                                            <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
+                                            <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
+                                        </span>
+                                        <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
+                                    </span>
+                         </template>
+                    </p-column>                                                                                         
+                </p-dataTable>             
+               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
                     <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable" [sortable]="column.sortable">
                         <template let-item="rowData" pTemplate type="body">
                                     <span [ngSwitch]="columnDataType(column)">
@@ -26,6 +41,8 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
 
 export class DynamicLookupGridComponent {
     @Input() data: LookupGrid;
+    @Input() hideFooter = false;
+    @Input() hideHeader = true;
 
     constructor() {
     }

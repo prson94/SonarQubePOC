@@ -144,10 +144,7 @@ export class ObjectDetailComponent implements OnChanges {
         if (field.TooltipContext != null)
             field.Type = DetailFieldType.Tooltip;
         if (field.LookupGridUrl != null) {
-            if (field.HideFooter)
-                field.Type = DetailFieldType.None;
-            else
-                field.Type = DetailFieldType.Lookup;
+            field.Type = DetailFieldType.Lookup;
         }
     }
 

@@ -13,7 +13,7 @@ import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../mode
 
             </div>
             <div *ngIf="field.Type == DetailFieldType.Lookup">
-                <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data"></d3s-dynamic-lookup-grid>
+                <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data" [hideHeader]="field.HideHeader" [hideFooter]="field.HideFooter"></d3s-dynamic-lookup-grid>
             </div>
     `
 })
