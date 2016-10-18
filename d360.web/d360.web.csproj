@@ -1353,6 +1353,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\dynamic\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item-structure.component.ts" />
@@ -1365,6 +1366,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-issue.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\disable-link.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />

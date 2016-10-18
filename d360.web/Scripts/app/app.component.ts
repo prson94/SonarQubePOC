@@ -1,8 +1,11 @@
-import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
+import { DynamicTypeBuilder, IHaveDynamicData } from './components/dynamic/dynamic-type-builder';
 declare var $: JQueryStatic;
 import 'rxjs/Rx';
+
 
 @Component({
     selector: 'd3s-app',    
@@ -10,25 +13,28 @@ import 'rxjs/Rx';
                     <d3s-header></d3s-header>
                     <d3s-navbar></d3s-navbar>
                 </header>
-                <main>                                        
+                <main>                                                                          
                     <div class="row">                         
                         <div class="col s12">            
-                            <div class="maincontent">                                                                                                            
+                            <div class="maincontent">                                                                                                                                                                            
                                 <router-outlet></router-outlet>                                                
                             </div>  
                         </div>                                                
                     </div>                    
                     <d3s-right-sidebar [titleHeight]="0"></d3s-right-sidebar>                        
                 </main>
-                <d3s-messages></d3s-messages>
-              `,
+                <d3s-messages></d3s-messages>                
+                <div #target></div>                
+              `,    
     providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService, WebAnalyticsService, StateService]
 })
 
 export class AppComponent implements AfterViewInit, OnInit {    
-    @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;
-    
-    constructor(private pageHeader: PageHeader) {
+    @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;    
+    @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
+    protected componentRef: ComponentRef<IHaveDynamicData>;
+
+    constructor(protected typeBuilder: DynamicTypeBuilder, private pageHeader: PageHeader, public componentFactoryResolver: ComponentFactoryResolver) {
         
     }
     
@@ -39,8 +45,9 @@ export class AppComponent implements AfterViewInit, OnInit {
     ngAfterViewInit() {
         this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                           
     }
-
+    
     private initializeQtipTooltips() {
+        var me = this;
         $('body').on('mouseenter', '*[data-type]', function (event) {
             $(this).qtip({
                 content: {
@@ -54,8 +61,30 @@ export class AppComponent implements AfterViewInit, OnInit {
                             if (!data || !data.length) {
                                 this.destroy();
                             }
-                            else {
-                                this.set('content.text', data);
+                            else {                                
+                                if (me.componentRef) {
+                                    me.componentRef.destroy();
+                                }
+
+                                // add router links
+                                data = data.replace('href', 'routerLink');
+                                // wrap with a div with id we know
+                                data = `<div id='qTipContentCnt' style='display:none'>${data}</div>`;
+                                
+                                // here we get Factory (just compiled or from cache)
+                                me.typeBuilder
+                                    .createComponentFactory(data)
+                                    .then((factory: ComponentFactory<IHaveDynamicData>) => {
+                                        
+                                        // Target will instantiate and inject component (we'll keep reference to it)                                        
+                                        me.componentRef = me
+                                            .dynamicComponentTarget
+                                            .createComponent(factory);
+                                    });
+                                var qtipScope = this;
+                                setTimeout(() => {                                  
+                                    qtipScope.set('content.text', $('#qTipContentCnt'));
+                                }, 100);                           
                             }
                         }
                     }
@@ -64,7 +93,7 @@ export class AppComponent implements AfterViewInit, OnInit {
                     at: 'bottom center', // Position the tooltip above the link
                     my: 'top center',
                     viewport: $(window), // Keep the tooltip on-screen at all times
-                    effect: false // Disable positioning animation
+                    effect: false, // Disable positioning animation                  
                 },
                 overwrite: false,
                 show: {
@@ -77,11 +106,10 @@ export class AppComponent implements AfterViewInit, OnInit {
                     delay: 250,
                 },                
                 style: {
-                    classes: 'qtip-youtube qtip-rounded'
-                }                
+                    classes: 'qtip-light qtip-shadow'
+                }             
             });
         });
     }
     
 }
-

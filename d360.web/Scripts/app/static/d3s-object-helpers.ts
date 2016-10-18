@@ -12,8 +12,7 @@
                 return "Model";
             case "DOMAIN":
                 return "Reference";
-            default:
-                console.log("[INFO] - UNHANDLED OBJECT TYPE", objectType);
+            default:                
                 return objectType;
         }
     }

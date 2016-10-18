@@ -4,6 +4,7 @@ import { AppComponent }   from './app.component';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
 import { HttpModule }     from '@angular/http';
+import { COMPILER_PROVIDERS } from '@angular/compiler';
 
 import { ChartModule } from 'angular2-highcharts';
 
@@ -26,6 +27,9 @@ import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are 
 
 import { AdminUserGuard } from './guards/admin-user.guard';
 import { AuthenticationService } from './services/authentication.service';
+
+
+import { DynamicTypeBuilder }     from './components/dynamic/dynamic-type-builder';
 
 import {
     GrowlModule,
@@ -50,7 +54,7 @@ import {
     PaginatorModule,
     DataListModule,
     TreeModule,
-    OverlayPanelModule,
+    OverlayPanelModule,    
 } from 'primeng/primeng';
 
 import {
@@ -228,7 +232,7 @@ import {
         ArtifactTypeWorkflowStatusComponent,
         AttributesTile,     
         ClaimsMatrixPart,
-        ClaimsTile,                
+        ClaimsTile,           
         FusionAttributesTile,        
         FusionConfigurationTile,                
         HeaderActionsComponent,
@@ -246,10 +250,7 @@ import {
         ModelLevelTile,
         ModelListComponent,
         ModelItemStructureComponent,        
-        ObjectDefinitionTile,                                      
-        //PolicyComponent,
-        //PolicyItemComponent,    
-        //PolicyItemStructureComponent,
+        ObjectDefinitionTile,                                              
         PredicatesTile,
         RelationshipsTile,                
         ResourceApiComponent,
@@ -323,9 +324,16 @@ import {
         MonitorModule,
         ReferenceModule,
         PolicyModule,
+        
     ],
     bootstrap: [AppComponent],
-    providers: [Title, AdminUserGuard, AuthenticationService],    
+    providers: [
+        AdminUserGuard,
+        AuthenticationService,
+        COMPILER_PROVIDERS,
+        DynamicTypeBuilder,
+        Title,
+    ],    
 })
 export class AppModule { }
 
