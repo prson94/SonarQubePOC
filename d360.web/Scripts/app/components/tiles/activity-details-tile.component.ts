@@ -21,7 +21,7 @@ import * as _ from 'lodash';
                         <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
                             <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)"  [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <a [routerLink]="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
+                                    <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
                                 </template>
                             </p-column>                                                                                                   
                             <p-column field="Status" header="Status" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}"></p-column>
@@ -71,7 +71,7 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
     }
 
     private artifactLink(artifactTypeId, artifactId) {
-        return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${artifactTypeId}/${artifactId}`;        
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${artifactTypeId}/${artifactId}`);           
     }
 
     private load() {
