@@ -1566,6 +1566,7 @@
     <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\filter-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\follower.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion-attribute.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />

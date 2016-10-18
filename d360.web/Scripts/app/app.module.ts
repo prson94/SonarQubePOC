@@ -93,7 +93,7 @@ import {
 
 import {
     ArtifactBaseComponent,
-    ArtifactColumnFilterComponent,
+    ArtifactColumnFilterComponent,    
     ArtifactComponent,
     ArtifactDefnintionComponent,
     ArtifactGridComponent,
@@ -217,7 +217,7 @@ import {
         AdminTemplatesComponent,
         AdminWorkflowComponent,
         AppComponent,
-        ArtifactColumnFilterComponent,
+        ArtifactColumnFilterComponent,        
         ArtifactComponent,
         ArtifactDefnintionComponent,
         ArtifactGridComponent,
