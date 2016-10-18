@@ -34,7 +34,7 @@ import * as _ from 'lodash';
                                     </div>
                                 </template>
                         </p-column>   
-                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'200px'}" [filter]="!simpleFilter" >
+                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
                             <template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.Name}}</d3s-tooltip>
                             </template> 
