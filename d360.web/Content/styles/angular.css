@@ -381,3 +381,9 @@ a.Action {
 a.Action :hover {
   color: #275075;
 }
+/* error message for required fields etc on dynamic field editor*/
+.errorMessage {
+  color: #BC1B01;
+  font-weight: bold;
+}
+/*end - error message for required fields etc on dynamic field editor*/

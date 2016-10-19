@@ -1,19 +1,18 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService, UriBasedService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
+import { BaseComponent } from './base.component';
 
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-editor',
-    template: ` 
-                <header>{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
-                <div class="row">                    
-                    <form (ngSubmit)="onSubmit()" [formGroup]="form">
-                        
+    template: ` <header>{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <div class="row" *ngIf="!isLoading">                                        
+                    <form (ngSubmit)="onSubmit()" [formGroup]="form">                        
                         <div class="row" *ngFor="let row of rows">
                             <div  *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field" [form]="form"></d3s-dynamic-field>
@@ -30,7 +29,7 @@ import * as _ from 'lodash';
     providers: [EditorDefinitionService, UriBasedService],
 })
 
-export class DynamicEditorComponent {
+export class DynamicEditorComponent extends BaseComponent {
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
@@ -57,7 +56,9 @@ export class DynamicEditorComponent {
 
     editedItem: any;
 
-    constructor(private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) { }
+    constructor(private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
+        super();
+    }
 
     ngOnInit() {
         if (this.selection != undefined)
@@ -73,10 +74,12 @@ export class DynamicEditorComponent {
         });
     }
 
-    getDefinition() {        
+    getDefinition() {      
+        this.isLoading = true;  
         let id = (this.selection ? this.selection[this.rowID] : null);
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
+                this.isLoading = false;
                 this.fields = result;
 
                 this.fields.forEach(f => {
