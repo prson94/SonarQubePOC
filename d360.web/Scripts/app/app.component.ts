@@ -2,7 +2,7 @@ import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContaine
 import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
-import { DynamicTypeBuilder, IHaveDynamicData } from './components/dynamic/dynamic-type-builder';
+import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 declare var $: JQueryStatic;
 import 'rxjs/Rx';
 

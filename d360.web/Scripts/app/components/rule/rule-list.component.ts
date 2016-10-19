@@ -6,7 +6,7 @@ import { HeaderBreadcrumbService, RulesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -22,9 +22,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
                                     </header>      
                                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
-                                    <p-dataTable [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule();" >
-                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}"></p-column>                                                                                                                        
-                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'45%'}"></p-column>                                                                                                                        
+                                    <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
+                                        <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'45%'}">
+                                            <template let-item="rowData" pTemplate type="body">
+                                                <a (click)="showRule(item)">{{item.Name}}</a>
+                                            </template>
+                                        </p-column>
+                                        <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}"></p-column>                                                                                                                                                                                                                                                
                                         <p-column field="RuleType" header="Type" [sortable]="true" [style]="{width:'15%'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{getRuleTypeText(data.RuleType)}}</span>
@@ -34,7 +38,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.Dimension?.Name}}</span>
                                             </template>                          
-                                        </p-column>
+                                        </p-column>                                        
                                         <p-column [style]="{width:'40px'}">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
@@ -97,7 +101,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.rulesService.getRules()
             .then(result => {
                 this.isLoading = false;
-                this.rules = result;                
+                this.rules = result;                                   
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });
     }
@@ -122,8 +126,8 @@ export class RuleListComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private showRule() {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', this.selected.ID));
+    private showRule(rule) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID));
     }
 
     findRuleIndex(id: number) {
@@ -144,5 +148,11 @@ export class RuleListComponent extends BaseComponent implements OnInit {
 
     private getRuleTypeText(ruleType: RuleClassification): string {
         return RuleClassification[ruleType];
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.rules = _.orderBy(this.rules, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 };

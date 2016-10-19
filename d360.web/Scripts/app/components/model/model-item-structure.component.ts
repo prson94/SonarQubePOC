@@ -29,7 +29,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
                             <template let-item="rowData" pTemplate type="body">
-                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
+                                <a (click)="showHierarchy(item.data.id)" [ngStyle]="setTreeNodeStyles(item)" class="link">{{item.data.name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </template>
 
                         </p-column>                        

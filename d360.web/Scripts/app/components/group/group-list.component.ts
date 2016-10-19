@@ -21,9 +21,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                         <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>      
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
-                                    <p-dataTable [globalFilter]="gb" [value]="groups" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showGroup();" >
-                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                        
-                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'60%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                
+                                    <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="groups" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showGroup(selected);" >
+                                        <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'60%'}" [filter]="!showSimpleFilter">
+                                            <template let-item="rowData" pTemplate type="body">
+                                                <a (click)="showGroup(item)">{{item.Name}}</a>
+                                            </template>
+                                        </p-column>
+                                        <p-column field="ID" header="ID" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                
                                         <p-column field="NumberOfMembers" header="Member Count" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
                                         <p-column [style]="{ 'width': '30px' }">
                                             <template let-col let-item="rowData" pTemplate type="body">
@@ -76,13 +80,13 @@ export class GroupListComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private showGroup() {
-        if (!this.selected) {
+    private showGroup(group) {
+        if (!group) {
             console.log("ERROR : NO GROUP SELECTED TO NAVIGATE TO.");
 
             return;
         }
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Group', this.selected.ID));
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Group', group.ID));
     }
     
 };

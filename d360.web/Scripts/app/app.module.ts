@@ -29,7 +29,7 @@ import { AdminUserGuard } from './guards/admin-user.guard';
 import { AuthenticationService } from './services/authentication.service';
 
 
-import { DynamicTypeBuilder }     from './components/dynamic/dynamic-type-builder';
+import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import {
     GrowlModule,

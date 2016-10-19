@@ -18,9 +18,13 @@ import * as _ from 'lodash';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                        <p-dataTable [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion();" >
-                            <p-column field="FusionType" header="Type"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
-                            <p-column field="Name" header="Name"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion(selected);" >
+                            <p-column field="Name" header="Name"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <a (click)="showFusion(item)">{{item.Name}}</a>
+                                </template>
+                            </p-column>
+                            <p-column field="FusionType" header="Type"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>                            
                             <p-column field="Description" header="Description" [sortable]="false" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <span [innerHtml]="item.Description"></span>
@@ -74,17 +78,18 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
             .then(res => {
                 this.isLoading = false;
                 this.fusions = res;
+                //this.fusions = _.sortBy(this.fusions, 'Name');
                 this.selected = this.fusions.length > 0 ? this.fusions[0] : null;
             });
     }
 
-    private showFusion() {
-        if (!this.selected) {
+    private showFusion(fusion) {
+        if (!fusion) {
             console.log("ERROR NO SELECTED FUSION ITEM TO NAVIGATE TO.");
 
             return;
         }
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', this.selected.ID));        
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.ID));        
     }
 
     private doExport() {
