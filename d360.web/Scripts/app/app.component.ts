@@ -56,7 +56,7 @@ export class AppComponent implements AfterViewInit, OnInit {
                     text: '<i class="fa fa-spinner fa-spin fa-4x"></i>',
                     ajax: {
                         url: "/resources/" + $(this).data("type") + "/" + $(this).data("id") + "/templates/tooltip/" + $(this).data("context") + "?isNg=true",
-                        once: ($(this).attr('data-cache') ? $(this).data('cache') : true),  // do we want to fetch the tooltip just once or recall each time?                            
+                        once: false,// ($(this).attr('data-cache') ? $(this).data('cache') : true),  // do we want to fetch the tooltip just once or recall each time?                            
                         success: function (data) {
                             if (!data || !data.length) {
                                 this.destroy();

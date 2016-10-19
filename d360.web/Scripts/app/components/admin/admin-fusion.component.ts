@@ -48,6 +48,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     
     add() {
         this.newFusionType = new FusionType();
+        this.newFusionStyle = new ObjectStyle();
         this.formMode = FormMode.Adding;
     }
 
