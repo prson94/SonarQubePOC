@@ -10,8 +10,14 @@ import * as _ from 'lodash';
             <div class="row" *ngIf="!isLoading && issues.length > 0 && !showEditor">
                 <header>Open Issues<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
-                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                   
+                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                       
                     <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                            <template let-col let-data="rowData" pTemplate type="body">
+                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
+                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                            </template>
+                        </p-column>
                         <p-column field="Issue" header="Issue" [sortable]="false" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-issue="rowData" pTemplate type="body">
                                 <span [innerHtml]="issue?.Issue"></span>
@@ -22,8 +28,7 @@ import * as _ from 'lodash';
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DateStarted | date: 'medium'}}</span>
                             </template>
-                        </p-column>
-                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        </p-column>                        
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-issue="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="issue.Activity > 0">                                

@@ -1,7 +1,7 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { EditorDefinitionService, UriBasedService } from '../../services/index';
+import { EditorDefinitionService, UriBasedService, MessagesService } from '../../services/index';
 import { EditorField, EditorRow } from '../../models/editor-field.model';
 import { BaseComponent } from './base.component';
 
@@ -56,7 +56,7 @@ export class DynamicEditorComponent extends BaseComponent {
 
     editedItem: any;
 
-    constructor(private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
+    constructor(private messagesService: MessagesService, private editorDefinitionService: EditorDefinitionService, private uriBasedService: UriBasedService) {
         super();
     }
 
@@ -146,10 +146,15 @@ export class DynamicEditorComponent extends BaseComponent {
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .then(result => {
+                    if (result.type == 'error') {
+                        this.messagesService.showError(result.title, result.message);
+                    }
+                    else {
+                        this.messagesService.showInfoMessage(result.title, result.message);
+                    }
                     this.saveClick.emit({ item: result, action: action, values: values});    
                 });
-        } else {
-            //console.log(JSON.stringify(this.form.value));
+        } else {            
             this.saveClick.emit({ item: this.form.value, action: action });     
         }
     }

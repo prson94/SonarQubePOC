@@ -129,7 +129,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     theDeleteCallback: Function;
     
-    constructor(private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+    constructor(private messagesService: MessagesService, private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -161,9 +161,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     deleteItem(id: number) {
         this.uriBasedService.deleteItem("form/dynamicedit/delete/artifact/", id);
         this.showDelete = false;
-        if (this.items.length > 0) {            
-            this.items.splice(this.findItemIndex(id), 1);
-        }
+        /*if (this.items.length > 0) {
+            this.items = this.items.filter(x => x.ID == id);
+        }*/
+        this.getData();
     }
 
     getFieldsDefinition() {
@@ -195,14 +196,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         return '#ebebeb';
     }
 
-    private findItemIndex(id: number) {
-        var index: number = -1;
-        for (var item of this.items) {
-            index++;
-            if (item.ID == id) return index;
-        }
-    }
-
     closeEditor() {
         this.showEditor = false;
     }
@@ -220,6 +213,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;        
         this.uriBasedService.saveItem("form/dynamicedit/create/artifact", "form/dynamicedit/edit/artifact", event.item)
             .then(result => {
+                if (result.type == 'error') {
+                    this.messagesService.showError(result.title, result.message);
+                }
+                else {
+                    this.messagesService.showInfoMessage(result.title, result.message);
+                }
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.getData();
                 this.showEditor = false;

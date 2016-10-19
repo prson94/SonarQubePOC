@@ -8,10 +8,10 @@ import { UriBasedService } from '../../services/index';
 @Component({
     selector: 'd3s-dynamic-field',
     template: ` <div [formGroup]="form">    
-                   <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" [type]="'hidden'" />              
+                   <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />              
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
                         <div class="FieldName">{{field.Name}}</div>
-                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
+                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
                         <div *ngIf="similarItems.length > 0">
                             <div style="color: #FFB230">The following items with similar names already exist:</div>
                             <span *ngFor="let s of similarItems; let i = index;">
@@ -21,22 +21,22 @@ import { UriBasedService } from '../../services/index';
                         </div>                  
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl></p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
-                            <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;">
+                            <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;" [(ngModel)]="field.Value">
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>
                             <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
-                        <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'number'">   
-                        <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'">   
+                        <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number">   
+                        <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
                         <div *ngSwitchCase="'Date'">
                             <p-calendar [formControlName]="field.FieldName"></p-calendar>
                         </div>
                         <div *ngSwitchCase="'Link'">
-                            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" [type]="'string'" >
+                            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >
                             <div>(Link Name)</div>
-                            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" [type]="'string'">
+                            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="string">
                             <div>(Link Url)</div>
                         </div>
                         <div *ngSwitchCase="'FusionLookup'">
