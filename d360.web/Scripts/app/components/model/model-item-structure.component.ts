@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
@@ -24,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
-                    <div *ngIf="model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
+                    <div *ngIf="!showDelete && !showEditor && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="name" header="Name">
@@ -55,7 +55,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-column  [style]="{width:'40px'}">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
-                                            <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
+                                            <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                         </div>
                                     </template>
                         </p-column>       
@@ -94,6 +94,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         rightSidebarService: RightSidebarService,
         protected modelsService: ModelsService,
         protected titleService: Title,
+        protected messagesService: MessagesService,
         protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
 
@@ -178,9 +179,18 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     deleteModelHierarchy(id: number) {
+        this.isLoading = true;
         this.modelsService.deleteModelHierarchy(id).then(res => {
-            if (res.type && res.type != "error")
+            if (res.isError) {
+                this.messagesService.showError(res.title, res.message);
+            }
+            else {
                 this.deleteSelectedTreeNode(id);
+
+                this.messagesService.showInfoMessage('Success', 'Successfully deleted the selected item');
+            }
+
+            this.isLoading = false;
         });
         this.showDelete = false;
     }
@@ -213,7 +223,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {                    
                     if (node.children[i].data.id && node.children[i].data.id == id) {
-                        node.children.splice(i, 1);
+                        node.children.splice(i, 1);                        
                         return
                     }
                     nodes.push(node.children[i]);
