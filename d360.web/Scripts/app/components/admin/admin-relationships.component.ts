@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Relationship } from '../../models/relationship.model';
@@ -11,14 +10,14 @@ import { Title } from '@angular/platform-browser';
                 <div *ngIf="!isAuditVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
-                            <d3s-relationships-tile (onSelectedChanged)="selectedChanged($event)"></d3s-relationships-tile>
+                            <d3s-admin-relationships-list (onSelectedChanged)="selectedChanged($event)"></d3s-admin-relationships-list>
                         </div>
                     </div>                    
                     <div class="col l6 s12">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-predicates-tile></d3s-predicates-tile>
+                                    <d3s-predicates-list></d3s-predicates-list>
                                 </div>
                             </div>
                         </div>

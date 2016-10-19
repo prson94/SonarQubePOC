@@ -52,7 +52,7 @@
             <d3s-claims-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [readonly]="false"></d3s-claims-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-relationships-tile [showFilter]="false" [filterToName]="selectedRow?.data?.Name"></d3s-relationships-tile>
+            <d3s-admin-relationships-list [filterToName]="selectedRow?.data?.Name"></d3s-admin-relationships-list>
         </div>
     </div>
 </div>

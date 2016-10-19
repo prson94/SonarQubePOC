@@ -93,6 +93,7 @@ import {
     AdminReportLayoutComponent,
     AdminSurveyQuestionsComponent,
     AdminRuleDimensionsComponent,
+    AdminRelationshipsListComponent,
 } from './components/admin/index';
 
 import {
@@ -168,9 +169,7 @@ import {
     LoadItemTile,
     MenuBarItem,
     ModelLevelTile,
-    ObjectDefinitionTile,    
-    PredicatesTile,
-    RelationshipsTile,            
+    ObjectDefinitionTile,                  
     StructureTile,    
     SynonymsTile,
     ActivityTile,
@@ -209,6 +208,7 @@ import {
         AdminReportLayoutComponent,
         AdminSurveyQuestionsComponent,
         AdminRuleDimensionsComponent,
+        AdminRelationshipsListComponent,
         AdminStatisticEditor,
         AdminStatisticsComponent,
         AdminSurveyQuestionEditorEditor,
@@ -250,9 +250,7 @@ import {
         ModelLevelTile,
         ModelListComponent,
         ModelItemStructureComponent,        
-        ObjectDefinitionTile,                                              
-        PredicatesTile,
-        RelationshipsTile,                
+        ObjectDefinitionTile,                                                                           
         ResourceApiComponent,
         ResourceComponent,
         ResourceFollowingGridTile,

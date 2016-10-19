@@ -66,6 +66,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
+import { PredicatesListComponent } from './predicates-list.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
@@ -110,6 +111,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
+        PredicatesListComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
@@ -153,6 +155,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
+        PredicatesListComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        

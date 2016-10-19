@@ -1366,7 +1366,6 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-responsibility.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-issue.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\directives\disable-link.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
@@ -1538,8 +1537,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\predicates.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\relationships.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\predicates-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-layout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rule-dimensions.component.ts" />
@@ -1627,7 +1626,6 @@
     <TypeScriptCompile Include="Scripts\app\pipes\dropdown-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\pipes\relationship-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\polyfills.ts" />

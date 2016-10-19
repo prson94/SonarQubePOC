@@ -1,12 +1,11 @@
-﻿
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { Predicate } from '../../models/predicate.model';
 import { MessagesService, PredicatesService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-
+import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-predicates-tile',
+    selector: 'd3s-predicates-list',
     providers: [PredicatesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Predicates
@@ -16,9 +15,9 @@ import { BaseComponent } from '../shared/base.component';
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                     <p-dataTable [globalFilter]="gb" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
-                        <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
-                        <p-column field="Inverse" header="Inverse" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Type" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                
+                        <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                            
+                        <p-column field="Inverse" header="Inverse" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="Type" header="Type" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                
                         <p-column [style]="{width:'40px'}">
                             <template let-predicate="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="!predicate.IsSystem">
@@ -46,7 +45,7 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class PredicatesTile extends BaseComponent {
+export class PredicatesListComponent extends BaseComponent {
     error: any;
     predicates: Predicate[] = [];
 
@@ -119,6 +118,12 @@ export class PredicatesTile extends BaseComponent {
     private showPredicateEditor() {
         if (this.selected.IsSystem) return; //dont allow edit of system predicates
         this.showEditor = true;
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.predicates = _.orderBy(this.predicates, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 }
 

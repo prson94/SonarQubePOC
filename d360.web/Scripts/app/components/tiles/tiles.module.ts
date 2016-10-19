@@ -15,8 +15,6 @@ import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { LoadItemTile } from './load-item.tile';
 import { ModelLevelTile } from './model-level.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
-import { PredicatesTile } from './predicates.tile';
-import { RelationshipsTile } from './relationships.tile';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { ActivityTile } from './activity-tile.component';
@@ -51,9 +49,7 @@ import {
         FusionConfigurationTile,                
         LoadItemTile,
         ModelLevelTile,
-        ObjectDefinitionTile,               
-        PredicatesTile,
-        RelationshipsTile,        
+        ObjectDefinitionTile,                             
         ResourceFollowingGridTile,
         ResourceFollowingTile,       
         ResourceResponsibilityTile,        
@@ -71,9 +67,7 @@ import {
         FusionConfigurationTile,                
         LoadItemTile,        
         ModelLevelTile,
-        ObjectDefinitionTile,        
-        PredicatesTile,
-        RelationshipsTile,        
+        ObjectDefinitionTile,                        
         ResourceFollowingGridTile,
         ResourceFollowingTile,        
         ResourceResponsibilityTile,        

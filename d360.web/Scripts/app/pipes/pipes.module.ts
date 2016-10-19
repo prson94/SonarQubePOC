@@ -4,7 +4,6 @@ import { ClassificationTypePipe } from './classification-display.pipe';
 import { DropdownItemToSelectItemPipe } from './dropdown-to-selectitem.pipe';
 import { FilterPipeName } from './filter-name.pipe';
 import { ModelTypePipe } from './model-type.pipe';
-import { RelationshipSearchPipe } from './relationship-search.pipe';
 import { TechnicalNameToDisplayValuePipe } from './technical-to-display.pipe';
 import { ScoreDisplayPipe } from './score-display.pipe';
 import { TreeSearchPipe } from './tree-search.pipe';
@@ -16,8 +15,7 @@ import { TreeSearchPipe } from './tree-search.pipe';
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,
-        ModelTypePipe,
-        RelationshipSearchPipe,
+        ModelTypePipe,        
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,        
     ],
@@ -26,8 +24,7 @@ import { TreeSearchPipe } from './tree-search.pipe';
         ClassificationTypePipe,
         DropdownItemToSelectItemPipe,
         FilterPipeName,
-        ModelTypePipe,
-        RelationshipSearchPipe,
+        ModelTypePipe,        
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,        
     ]

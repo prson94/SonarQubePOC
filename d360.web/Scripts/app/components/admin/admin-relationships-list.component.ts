@@ -1,34 +1,30 @@
-﻿
-import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { RelationshipsService  } from '../../services/index';
 import { Relationship } from '../../models/relationship.model';
+import { BaseComponent } from '../shared/base.component';
+import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-relationships-tile',
+    selector: 'd3s-admin-relationships-list',
     providers: [RelationshipsService],    
     template: `
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
-                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>    
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">
-                    <div *ngIf="showFilter" class="col l10 m9 s12">                                                                         
-                        <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">
-                    </div>
-                    <div *ngIf="showFilter" class="col l2 m3 s12">                                                                         
-                        <button [disabled]="!searchValue" pButton type="button" (click)="searchValue='';" label="Clear" style="width: 100%;"></button>
-                    </div>
+                <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
-                        <p-dataTable [value]="relationships | relationshipSearch: searchValue" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowSelect)="onSelectedChanged.emit($event.data)"  (onRowDblclick)="selected=$event.data;onSelectedChanged.emit($event.data);showEditor=true;" >                            
-                            <p-column field="SubjectName" header="Subject" [sortable]="true">
+                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                    
+                        <p-dataTable [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowSelect)="onSelectedChanged.emit($event.data)"  (onRowDblclick)="selected=$event.data;onSelectedChanged.emit($event.data);showEditor=true;" >                            
+                            <p-column field="SubjectName" header="Subject" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <div>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></div>
+                                    <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
                                 </template>
                             </p-column>
-                            <p-column field="PredicateName" header="Predicate" [sortable]="true"></p-column>                                
-                            <p-column field="ObjectName" header="Side 2 Name" [sortable]="true">
+                            <p-column field="PredicateName" header="Predicate" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                
+                            <p-column field="ObjectName" header="Side 2 Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <div>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></div>
+                                    <span>{{item?.ObjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Object)}})</span></span>
                                 </template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
@@ -59,9 +55,8 @@ import { Relationship } from '../../models/relationship.model';
             `    
 })
 
-export class RelationshipsTile implements OnChanges {
+export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: Relationship[] = [];
-
     selected: Relationship;
 
     @Input() filterToName: string;
@@ -70,32 +65,38 @@ export class RelationshipsTile implements OnChanges {
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    @Input() showFilter: boolean = true;
     
-    searchValue: string = "";
-    isLoading: boolean = false;
-
-    constructor(private relationshipsService: RelationshipsService) {        
+    constructor(private relationshipsService: RelationshipsService) {   
+        super();     
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 
     ngOnInit() {
+        console.log(this.filterToName);
         this.getRelationships();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {            
-            if (p == 'filterToName') {
-                this.searchValue = changes['filterToName'].currentValue;                
-            }
-        }        
+        console.log(changes['filterToName']);
+        if (changes['filterToName'].currentValue != changes['filterToName'].previousValue) {
+            this.getRelationships();
+        }
+    }
+
+    private filterResults() {
+        if (this.filterToName && this.filterToName.length > 0) {
+            var search = this.filterToName.toLowerCase();
+            console.log(search);
+            this.relationships = this.relationships.filter(item => item.Object && item.Object.toLowerCase().includes(search) || item.Subject && item.Subject.toLowerCase().includes(search) || item.ObjectName && item.ObjectName.toLowerCase().includes(search) || item.SubjectName && item.SubjectName.toLowerCase().includes(search));
+        }
     }
 
     getRelationships() {
         this.isLoading = true;
         this.relationshipsService.getRelations()
-            .then(result => {
+            .then(result => {                                
                 this.relationships = result;
+                this.filterResults();
                 this.isLoading = false;
                 if (this.relationships.length > 0) {
                     this.selected = this.relationships[0];    
@@ -142,5 +143,11 @@ export class RelationshipsTile implements OnChanges {
     displayTypeName(type: string) {
         if (!type) return "";
         return type.replace("Type", "");
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.relationships = _.orderBy(this.relationships, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 }

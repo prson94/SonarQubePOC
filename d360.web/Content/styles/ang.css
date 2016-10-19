@@ -23490,3 +23490,7 @@ a.Action :hover {
   font-weight: bold;
 }
 /*end - error message for required fields etc on dynamic field editor*/
+select:disabled {
+  background: #cbcaca;
+  color: #818385;
+}
