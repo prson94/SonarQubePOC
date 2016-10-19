@@ -13,8 +13,12 @@ import { Count} from '../../models/counts.model';
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()" [rows]="10" [paginator]="true" [pageLinks]="3">                    
-                        <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                                           
+                    <p-dataTable *ngIf="!isLoading && counts.length > 0" sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)" [rows]="10" [paginator]="true" [pageLinks]="3">                    
+                        <p-column field="Name" header="Name" [sortable]="true">
+                            <template let-item="rowData" pTemplate type="body">
+                                    <a (click)="doSelect(item)">{{item.Name}}</a>
+                            </template>
+                        </p-column>                                                                           
                         <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
                     </p-dataTable>                      
                     <div *ngIf="counts.length == 0 && !isLoading">
@@ -52,10 +56,10 @@ export class ActivityTile extends BaseComponent implements OnInit {
             });
     }
 
-    private doSelect() {
+    private doSelect(item) {
         this.showItemDetail.emit({
-            Id: this.selected.Id,
-            name: this.selected.Name
+            Id: item.Id,
+            name: item.Name
         });
     }
 

@@ -72,7 +72,7 @@
             case 'TAXONOMYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
             case 'TAXONOMYTYPECLASS':
-                break;
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/classification/${objectName}`;                
             case 'RULE':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${objectId}`;
             default:

@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService, ResourcesService } from '../../services/index';
 import { Count } from '../../models/counts.model';
@@ -18,8 +17,12 @@ import { WorkflowType } from '../../models/workflow.model';
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect()" >                    
-                        <p-column field="Name" header="Name" [sortable]="true"></p-column>           
+                    <p-dataTable *ngIf="!isLoading && counts.length > 0" sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)" >                    
+                        <p-column field="Name" header="Name" [sortable]="true">
+                            <template let-item="rowData" pTemplate type="body">
+                                    <a (click)="doSelect(item)">{{item.Name}}</a>
+                            </template>
+                        </p-column>           
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
                     </p-dataTable>                      
                     <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No assignments currently</div>
@@ -65,16 +68,16 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
             });
     }
 
-    private doSelect() {
+    private doSelect(item) {
         this.showItemDetail.emit({
-            workflowType: this.getSelectedWorkflowType()
+            workflowType: this.getWorkflowType(item)
         });
     }
 
-    private getSelectedWorkflowType(): WorkflowType{
-        if (!this.selected) return null;
+    private getWorkflowType(item): WorkflowType{
+        if (!item) return null;
 
-        switch (this.selected.Name.toUpperCase()) {
+        switch (item.Name.toUpperCase()) {
             case "CERTIFY ARTIFACT":
                 return WorkflowType.CertifyArtifact;
             case "CHALLENGE":

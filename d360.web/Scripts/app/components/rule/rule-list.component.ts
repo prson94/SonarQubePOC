@@ -19,22 +19,22 @@ import * as _ from 'lodash';
                             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()"></d3s-tile-actions>                                                     
+                                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>      
-                                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
+                                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
                                     <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
-                                        <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'45%'}">
+                                        <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'45%'}" [filter]="!showSimpleFilter">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showRule(item)">{{item.Name}}</a>
                                             </template>
                                         </p-column>
-                                        <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}"></p-column>                                                                                                                                                                                                                                                
-                                        <p-column field="RuleType" header="Type" [sortable]="true" [style]="{width:'15%'}">
+                                        <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
+                                        <p-column field="RuleType" header="Type" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'15%'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
-                                                <span>{{getRuleTypeText(data.RuleType)}}</span>
+                                                <span>{{ruleTypeName(data)}}</span>
                                             </template>                          
                                         </p-column>
-                                        <p-column field="Dimension" header="Dimension" [sortable]="true" [style]="{width:'15%'}">
+                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}">
                                             <template let-col let-data="rowData" pTemplate type="body">
                                                 <span>{{data.Dimension?.Name}}</span>
                                             </template>                          
@@ -146,13 +146,21 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.rules.splice(this.findRuleIndex(id), 1);
     }
 
-    private getRuleTypeText(ruleType: RuleClassification): string {
-        return RuleClassification[ruleType];
+    private ruleTypeName(rule: Rule): string {
+        return RuleClassification[rule.RuleType];        
+    }
+
+
+    private columnDimSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.rules = _.sortBy(this.rules, 'Dimension.Name');
+        if (event.order == -1) this.rules.reverse();
     }
 
     private columnSort(event) {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.rules = _.orderBy(this.rules, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+        this.rules = _.orderBy(this.rules, [item => item[event.field] ? (item[event.field].toLowerCase ? item[event.field].toLowerCase() : item[event.field] ) : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 };

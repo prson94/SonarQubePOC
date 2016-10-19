@@ -14,8 +14,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                    </header>                   
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">                     
-                        <p-dataTable [value]="groups" selectionMode="single" (onRowDblclick)="doSelect($event.data)" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3">                    
-                            <p-column field="Name" header="Name" [sortable]="true"></p-column>                                   
+                        <p-dataTable sortField="Name" [sortOrder]="1"  [value]="groups" selectionMode="single" (onRowDblclick)="doSelect($event.data)" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3">                    
+                            <p-column field="Name" header="Name" [sortable]="true">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <a (click)="doSelect(item)">{{item.Name}}</a>
+                                </template>
+                            </p-column>                                   
                             <p-column [style]="{ 'width': '30px' }">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
