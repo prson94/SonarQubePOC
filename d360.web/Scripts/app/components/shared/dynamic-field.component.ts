@@ -1,7 +1,9 @@
-﻿import { Component, Input } from '@angular/core';
+﻿import { Component, Input} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { UriBasedService } from '../../services/index';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -9,7 +11,14 @@ import { SelectItem } from 'primeng/primeng';
                    <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" [type]="'hidden'" />              
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
                         <div class="FieldName">{{field.Name}}</div>
-                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'" >                    
+                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" [type]="'string'" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
+                        <div *ngIf="similarItems.length > 0">
+                            <div style="color: #FFB230">The following items with similar names already exist:</div>
+                            <span *ngFor="let s of similarItems; let i = index;">
+                                <d3s-tooltip objectType="Artifact" [objectId]="s.objectid" tooltipType="preview"><a [routerLink]="s.Url">{{s.Name}}</a></d3s-tooltip>
+                                <span *ngIf="i < (similarItems.length - 1)">,</span>&nbsp; 
+                            </span>
+                        </div>                  
                         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl></p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
                             <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;">
@@ -38,12 +47,31 @@ import { SelectItem } from 'primeng/primeng';
                     <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
                   </div>                   
                 </div>
-                `,    
+                `,
+    providers: [UriBasedService] 
 })
 export class DynamicFieldComponent {
     @Input() field: EditorField;
     @Input() form: FormGroup;
-    
+
+    private similarItems = [];
+
+    constructor(private uriBasedService: UriBasedService) { }
+
     get isValid() { return (this.field.Required && this.field.Value && this.field.Value.length > 0) || !this.field.Required || this.field.FieldType == 'Boolean'; }
+
+    getSimilarItems() {
+        if (this.field.SimilarItemsUri == null || this.field.SimilarItemsUri == '' || this.field.Value.length < 2)
+            return;
+
+        this.similarItems = [];
+        this.uriBasedService.getItems(this.field.SimilarItemsUri + this.field.Value)
+            .then(r => {
+                r.forEach(i => {
+                    i.Url = '/' + SiteUrlHelpers.getObjectUrl('Artifact', i.objectid, i.objecttypeid);
+                });
+                this.similarItems = r;
+            });
+    }
     
 }

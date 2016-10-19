@@ -36,11 +36,13 @@ export class LoadService extends BaseService {
 
     getActionOptions(): SelectItem[] {
         return [
-            { label: 'Please Choose...', value: '' },
             { label: 'Promotion', value: 'P' },
+            { label: 'Promotion (via Propose Workflow)', value: 'W' },
             { label: 'Relation', value: 'R' },
+            { label: 'Responsibilities', value: 'O' },
             { label: 'Unrelation', value: 'U' },
-            { label: 'Lineage', value: 'L' },
+            { label: 'Lineage : Business', value: 'N' },
+            { label: 'Lineage : Technical', value: 'T' },
             { label: 'Synonyms', value: 'S' }
         ];
     }

@@ -64,6 +64,10 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
         this.loadService.getTypeOptions(this.selectedAction)
             .then(data => {
                 this.types = data;
+                if (this.types && this.types.length > 0) {
+                    this.selectedType = this.types[0].value;
+                    this.loadColumns();
+                }
                 this.isLoadingTypes = false;
             });;
     }
@@ -136,7 +140,7 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
         FormHelper.getDataUrl(this.file).then(s => {
             model.File = s;
             model.LoadAction = this.selectedAction;
-            model.Type = this.selectedType.split('|')[0];
+            model.Type = this.selectedType; //.split('|')[0];
             model.Notes = this.notes;
         })
             .then(() => this.loadService.postLoad(model))

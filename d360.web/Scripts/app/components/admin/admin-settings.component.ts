@@ -36,6 +36,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     availableItems: SiteNav[] = new Array<SiteNav>();
     formIsLoading = false;
 
+    oldFolderItems: SiteNav[] = [];
+    oldFolderName;
+
     constructor(pageHeader: PageHeader,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
@@ -131,6 +134,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     action(a: string, args: any) {
 
         let i;
+        let x;
         switch (a) {
             case 'moveUp':
                 this.formIsLoading = true;
@@ -154,7 +158,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             case 'edit':
                 this.formMode = FormMode.Editing;
                 this.folderName = this.selection.Name;
-                this.loadFolderItems();
+                //console.log('selection');
+                //console.log(this.selection);
+                this.loadFolderItems().then(() => {
+                    //console.log('after loadfolderitems');
+                    //console.log(this.folderItems);
+                    this.oldFolderItems = _.cloneDeep(this.folderItems);
+                    this.oldFolderName = this.folderName;
+                });
                 break;
             case 'add':
                 this.newFolder = new SiteNav();
@@ -202,12 +213,18 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 break;
 
             case 'addNewFolderItem':
-                i = _.cloneDeep(this.availableItems.splice(args, 1)[0]);
+                //console.log(args);
+                x = this.availableItems.findIndex(i => i.ObjectID == args.ObjectID && i.Object == args.Object);
+                i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+                //console.log(i);
                 this.newFolderItems.push(i);
                 break;
 
             case 'deleteNewFolderItem':
-                i = _.cloneDeep(this.newFolderItems.splice(args, 1)[0]);
+                //console.log(args);
+                x = this.availableItems.findIndex(i => i.ObjectID == args.ObjectID && i.Object == args.Object);
+                i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+                //console.log(i);
                 this.availableItems.push(i);
                 break;
 
@@ -226,24 +243,67 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                     .then(() => this.load())
                     .then(() => this.headerActionsService.emitSiteNavChange());
                 break;
+            case 'saveEdit':
+                this.formIsLoading = true;
+                this.siteMenuService.renameFolder(this.selection.ID, this.selection.Name)
+                    .then(() => this.headerActionsService.emitSiteNavChange())
+                    .then(() => { this.selection.DisplayName = this.selection.Name; this.formIsLoading = false; });
+                this.formMode = FormMode.Default;
+                break;
+            case 'cancelEdit':
+                let promises = [];
+                this.formIsLoading = true;
+
+                this.folderItems.forEach(o => {
+                    let s = this.oldFolderItems.find(i => i.ID == o.ID);
+
+                    if (s == null) {
+                        promises.push(this.siteMenuService.removeFolderItem(o.ID));
+                    }
+                });
+
+                this.oldFolderItems.forEach(o => {
+
+                    let s = this.folderItems.find(i => i.ID == o.ID);
+
+                    if (s == null) {
+                        promises.push(this.siteMenuService.addFolderItem(o));
+                    }
+                });
+
+                if (this.oldFolderName != this.selection.Name) {
+                    promises.push(this.siteMenuService.renameFolder(this.selection.ID, this.oldFolderName));
+                }
+
+                Promise.all(promises)
+                    .then(() => this.loadFolderItems())
+                    .then(() => {
+                        this.formIsLoading = false;
+                        this.formMode = FormMode.Default;
+                    });
+                break;
         }
     }
-    loadFolderItems() {
+
+    loadFolderItems(): Promise<any> {
         this.formIsLoading = true;
 
-        this.siteMenuService.getAvailableItems()
-            .then(r => {
-                this.availableItems = r;
-            }).then(() => {
-                if (this.selection && this.selection.ID) {
-                    this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
-                        .then(s => {
-                            this.folderItems = s;
-                            this.formIsLoading = false;
-                        });
-                } else {
+        if (this.selection == null || this.selection.ID == null) {
+            return this.siteMenuService.getAvailableItems()
+                .then(() => {
                     this.formIsLoading = false;
-                }
-            });
+                });
+        } else {
+
+            return this.siteMenuService.getAvailableItems()
+                .then(r => {
+                    this.availableItems = r;
+                })
+                .then(() => this.siteMenuService.getSiteNavFolderItems(this.selection.ID))
+                .then(s => {
+                    this.folderItems = s;
+                    this.formIsLoading = false;
+                });
+        }
     }
 }

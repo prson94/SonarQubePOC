@@ -131,7 +131,7 @@
                 </table>
             </div>
         </div>
-        <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup'">
+        <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup' || model.FieldType.Type == 'ComplexRelationLookup'">
             <div class="col s12" style="margin: 10px 0 10px 0">
                 <table cellpadding="5" class="relation-table">
                     <thead>
@@ -220,10 +220,12 @@
                                     </tbody>
                                 </table>
                             </td>
-                            <td>
+                            <td *ngIf="x == 0">
                                 <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> Hide Footer?</div>
                                 <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> Hide Header?</div>
+                                <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFilter" /> Hide Filter?</div>
                             </td>
+                            <td *ngIf="x != 0"></td>
                             <td>
                                 <div class="RowTools">
                                     <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>

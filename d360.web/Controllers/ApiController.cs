@@ -2486,6 +2486,7 @@ from	cte a
                                 FieldName = ft.Name,
                                 HideHeader = def.HideHeader,
                                 HideFooter = def.HideFooter,
+                                HideFilter = true,
                                 LookupGridUrl = $"/api/FilteredLookupField/{type}/{id}/{def.ID}/values"
                             }
                         },
@@ -2703,6 +2704,7 @@ from    [Lookup] I
                                     FieldName = k.Name,
                                     HideHeader = def.HideHeader,
                                     HideFooter = def.HideFooter,
+                                    HideFilter = true,
                                     LookupGridUrl = $"/api/FusionLookupField/{fusionAttributeID}/{def.ID}/values"
                                 }
                             },
@@ -3034,6 +3036,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                         FieldName = ft.Name,
                                         HideHeader = def.HideHeader,
                                         HideFooter = def.HideFooter,
+                                        HideFilter = true,
                                         LookupGridUrl = $"/api/RelationLookupField/{type}/{id}/{def.ID}/values"
                                     }
                                 },
@@ -3338,6 +3341,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                         FieldName = ft.Name,
                                         HideHeader = lookup.HideHeader,
                                         HideFooter = lookup.HideFooter,
+                                        HideFilter = lookup.HideFilter,
                                         LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values"
                                     }
                                 },

@@ -18,7 +18,7 @@ declare var CompanySettings: any;
         <div *ngSwitchDefault>
             <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
             <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-            <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem">                
+            <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem" sortField="ObjectTypeName" [sortOrder]="-1">                
                 <p-column field="ObjectTypeName" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
                 <p-column header="Parent" field="ParentName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
                     <template pTemplate type="body" let-item="rowData">                        
@@ -31,13 +31,6 @@ declare var CompanySettings: any;
                     </template>
                 </p-column>
                 <p-column field="SubjectArea" [header]="subjectAreaName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
-                <p-column [style]="{ 'width': '28px' }">
-                    <template let-col let-item="rowData" pTemplate type="body">
-                        <div class="RowTools">
-                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>
-                        </div>
-                    </template> 
-                </p-column>
                 <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '28px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
@@ -64,7 +57,7 @@ declare var CompanySettings: any;
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            <delete-form [uri]="'/form/DeleteSynonymByID?id=' + selectedItem.ObjectID + '&type=' + selectedItem.Object + '&intersectMapID=' + selectedItem.IntersectMapID"
+            <delete-form [uri]="'/form/DeleteSynonymByID?id=' + selectedItem.IntersectID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedItem.Name + '?'"
                          (onDeleteSuccess)="load();formMode = FormMode.Default;"
@@ -86,6 +79,11 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     @Input() hasAdd: boolean = true;    
     @Input() hasDelete: boolean = true;
 
+    private defaultSort = [
+        { field: 'ObjectTypeName', order: -1 },
+        { field: 'ParentName', order: -1 },
+        { field: 'Name', order: -1 }
+    ];
     
     private formMode = FormMode.Default;
     private FormMode = FormMode;
@@ -121,6 +119,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
         this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType)
             .then(d => {
                 this.items = d;
+                console.log(d);
                 this.itemCount = this.items.length;
                 this.isLoading = false;
             });            

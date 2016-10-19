@@ -4940,6 +4940,38 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                         }
                     }
                 }
+
+                var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == id).FirstOrDefault();
+                if (lookup != null)
+                {
+                    relationItems = new List<dynamic>();
+                    var relations = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);
+                    foreach(var r in relations.Relations)
+                    {
+                        relationItems.Add(new
+                        {
+                            ID = r.ID,
+                            IntersectType = r.IntersectTypeID,
+                            ReferenceType = r.RelationType,
+                            ChildIntersectType = 0,
+                            DisplayFields = new List<dynamic>(),
+                            HideHeader = lookup.HideHeader,
+                            HideFooter = lookup.HideFooter,
+                            HideFilter = lookup.HideFilter,
+                            Object = r.Object,
+                            ObjectID = r.ObjectID
+                        });
+                    }
+                    foreach(var f in relations.Fields)
+                    {
+                        var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
+
+                        if (r != null)
+                        {
+                            r.DisplayFields.Add(f);
+                        }
+                    }
+                }
             }
 
             return new JsonNetResult
@@ -5185,6 +5217,71 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                             model.FieldType.FieldTypeRelationLookupDefinitions = new List<FieldTypeRelationLookupDefinition>() { def };
                             //Company.Add<FieldTypeRelationLookupDefinition>(def);
                         }
+                        break;
+                    #endregion
+                    case "ComplexRelationLookup":
+                        #region
+                        var relations = new List<FieldLookupRelationItem>();
+                        var fields = new List<FieldLookupFieldItem>();
+                        foreach (var r in model.RelationItems)
+                        {
+                            relations.Add(new FieldLookupRelationItem
+                            {
+                                IntersectTypeID = r.IntersectType,
+                                Object = r.Object,
+                                ObjectID = r.ObjectID,
+                                RelationType = r.ReferenceType
+
+                            });
+                            if (r.DisplayFields == null)
+                                r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
+                            foreach (var f in r.DisplayFields.Where(i => i.Show))
+                            {
+                                fields.Add(new FieldLookupFieldItem
+                                {
+                                    DisplayOrder = f.DisplayOrder,
+                                    Object = r.Object,
+                                    ObjectID = r.ObjectID,
+                                    FieldTypeID = f.FieldTypeID,
+                                    FieldTypeName = f.FieldTypeName,
+                                    SortOrder = f.SortOrder ?? 0,
+                                    OverrideDisplayName = f.OverrideDisplayName,
+                                    Filter = f.FilterValue
+                                });
+                            }
+                        }
+
+                        var lookup = new
+                        {
+                            Relations = relations,
+                            Fields = fields
+                        };
+                        var lookupRow = new FieldTypeLookup
+                        {
+                            FieldTypeID = model.FieldType.ID,
+                            HideFooter = model.RelationItems[0].HideFooter,
+                            HideHeader = model.RelationItems[0].HideHeader,
+                            HideFilter = model.RelationItems[0].HideFilter,
+                            LookupType = model.RelationItems[0].RelationType,
+                            Definition = Newtonsoft.Json.JsonConvert.SerializeObject(lookup)
+                        };
+                        try
+                        {
+                            var existing = Company.FieldTypeLookups.Where(i => i.FieldTypeID == model.FieldType.ID).FirstOrDefault();
+
+                            if (existing != null)
+                            {
+                                Company.FieldTypeLookups.Remove(existing);
+                            }
+
+                            Company.FieldTypeLookups.Add(lookupRow);
+                            Company.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+
                         break;
                         #endregion
                 }
@@ -5746,7 +5843,72 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                         if (defs.Count != 0)
                             Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         break;
+                    #endregion
+                    case "ComplexRelationLookup":
+                        #region
+                        var relations = new List<FieldLookupRelationItem>();
+                        var fields = new List<FieldLookupFieldItem>();
+                        foreach(var r in model.RelationItems)
+                        {
+                            relations.Add(new FieldLookupRelationItem
+                            {
+                                IntersectTypeID = r.IntersectType,
+                                Object = r.Object,
+                                ObjectID = r.ObjectID,
+                                RelationType = r.ReferenceType
+
+                            });
+                            if (r.DisplayFields == null)
+                                r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
+                            foreach(var f in r.DisplayFields.Where(i => i.Show))
+                            {
+                                fields.Add(new FieldLookupFieldItem
+                                {
+                                    DisplayOrder = f.DisplayOrder,
+                                    Object = r.Object,
+                                    ObjectID = r.ObjectID,
+                                    FieldTypeID = f.FieldTypeID,
+                                    FieldTypeName = f.FieldTypeName,
+                                    SortOrder = f.SortOrder ?? 0,
+                                    OverrideDisplayName = f.OverrideDisplayName,
+                                    Filter = f.FilterValue
+                                });
+                            }
+                        }
+
+                        var lookup = new
+                        {
+                            Relations = relations,
+                            Fields = fields
+                        };
+                        var lookupRow = new FieldTypeLookup
+                        {
+                            FieldTypeID = model.FieldType.ID,
+                            HideFooter = model.RelationItems[0].HideFooter,
+                            HideHeader = model.RelationItems[0].HideHeader,
+                            HideFilter = model.RelationItems[0].HideFilter,
+                            LookupType = model.RelationItems[0].RelationType,
+                            Definition  = Newtonsoft.Json.JsonConvert.SerializeObject(lookup)
+                        };
+                        try
+                        {
+                            var existing = Company.FieldTypeLookups.Where(i => i.FieldTypeID == model.FieldType.ID).FirstOrDefault();
+
+                            if (existing != null)
+                            {
+                                Company.FieldTypeLookups.Remove(existing);
+                            }
+
+                            Company.FieldTypeLookups.Add(lookupRow);
+                            Company.SaveChanges();
+                        } catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+
+                        break;
                         #endregion
+
                 }
 
                 Company.Update<FieldType>(ft);
@@ -18892,6 +19054,13 @@ from    [IntersectType] RT
             }
         }
 
+        [HttpDelete]
+        public JsonResult DeleteSynonymByID(int id)
+        {
+            var form = new FormCollection();
+            form.Add("IntersectID", id.ToString());
+            return DeleteSynonym(form);
+        }
         #endregion
 
         #endregion

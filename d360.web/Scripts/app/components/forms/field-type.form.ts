@@ -89,6 +89,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     console.log('data: ');
                     console.log(data);
                     this.model = data;
+                    if (this.model.FieldType.Type == 'ComplexRelationLookup')
+                        this.model.FieldType.Type = 'RelationLookup';
                     this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
@@ -99,7 +101,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
                     this.lookups.IntersectTypes.forEach(i => {
                         i.id = i.value.split('|')[0];
-                        
+
                     });
 
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
@@ -113,14 +115,107 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
                         this.model.RelationItems.forEach(r => {
                             let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
-                            r.Object = intersectType.value.split('|')[1];
-                            r.ObjectID = parseInt(intersectType.value.split('|')[2]);
+                            if (r.Object == null || r.Object == '')
+                                r.Object = intersectType.value.split('|')[1];
+                            if (r.ObjectID == null || r.ObjectID < 0)
+                                r.ObjectID = parseInt(intersectType.value.split('|')[2]);
 
                             r.DisplayFields.forEach(d => {
-                                d.FieldTypeID = parseInt(d.value.split('|')[0]);
-                                d.FieldTypeName = d.value.split('|')[1];
+                                if (d.FieldTypeID == null && d.value)
+                                    d.FieldTypeID = parseInt(d.value.split('|')[0]);
+                                if (d.FieldTypeName == null && d.value)
+                                    d.FieldTypeName = d.value.split('|')[1];
+
+                                if (!d.value)
+                                    d.value = d.FieldTypeID + '|' + d.FieldTypeName;
                             });
                         });
+
+
+                        let clone = _.cloneDeep(this.model.RelationItems);
+
+                        for (let i = 0; i < this.model.RelationItems.length; i++) {
+                            let item = this.model.RelationItems[i];
+                            let lastItem = i > 0 ? this.model.RelationItems[i - 1] : null;
+
+                            if (i == this.model.RelationItems.length - 1) {
+                                //last item is for final right-side selection only, remove after load
+                                lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                                //console.log('last item on load');
+                                //console.log(lastItem);
+                                this.changeRefType(lastItem, lastItem.selectedRelationItemID).
+                                    then(() => this.changeRel(lastItem))
+                                    .then(() => {
+                                        lastItem.DisplayFields.forEach(d => {
+                                            let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
+
+                                            if (item) {
+                                                d.Show = true;
+                                                d.DisplayOrder = item.DisplayOrder;
+                                                d.FilterValue = item.Filter;
+                                                d.OverrideDisplayName = item.OverrideDisplayName;
+                                                d.SortOrder = item.SortOrder;
+                                            }
+                                        })
+                                    })
+                                    .then(() => this.deleteRelation(this.model.RelationItems[i]));
+                                    //.then(() => this.model.RelationItems.pop());
+                                break;
+                            }
+
+                            if (lastItem == null)
+                                this.changeRefType(item);
+                            else
+                                this.changeRefType(item)
+                                    .then(() => {
+                                        lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                                    })
+                                    .then(() => this.changeRel(lastItem))
+                                    .then(() => {
+                                       // console.log('load display fields');
+                                        
+                                        //console.log(lastDisplayFields);
+                                        //console.log(lastItem.DisplayFields);
+                                        lastItem.DisplayFields.forEach(d => {
+                                            let item = clone[i-1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
+
+                                            if (item) {
+                                                d.Show = true;
+                                                d.DisplayOrder = item.DisplayOrder;
+                                                d.FilterValue = item.Filter;
+                                                d.OverrideDisplayName = item.OverrideDisplayName;
+                                                d.SortOrder = item.SortOrder;
+                                            }
+
+                                        });
+
+                                        let r = lastItem.relationItems.find(f => f.value == lastItem.selectedRelationItemID);
+                                        if (r)
+                                            item.displayValue = r.label;
+                                    });
+
+
+                        }
+
+                        //this.model.RelationItems.forEach(r => {
+                        //    r.selectedRelationItemID = r.IntersectType + '|' + r.Object + '|' + r.ObjectID;
+                        //    this.changeRefType(r, r.selectedRelationItemID)
+                        //        ;//.then(() => this.changeRel(r));
+                             
+                        //    //this.changeRefType(r)
+                        //    //    .then(() => this.changeRel(r))
+                        //    //    .then(() => {
+                        //    //        let i = r.relationItems.find(i => i.value == r.selectedRelationItemID);
+                        //    //        //console.log('relation item');
+                        //    //        //console.log(r);
+                        //    //        //console.log(i);
+                        //    //        if (i)
+                        //    //            r.displayValue = i.label;
+                        //    //        //r.displayValue = r.relationItems.find(i => i.value == r.selectedRelationItemID).label;
+                                   
+                        //    //    });
+                        //});
+
                         this.model.FusionItems = f.FusionItems; 
 
 
@@ -135,7 +230,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                                 
                             });
                             this.relationItemCount = this.model.RelationItems.length;
-                            console.log(this.relationItemCount);
+                            //console.log(this.relationItemCount);
                         }
 
                     }
@@ -267,7 +362,45 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
         
     private onSubmit(): void {
-        
+        if (this.model.FieldType.Type == 'RelationLookup') {
+            this.model.FieldType.Type = 'ComplexRelationLookup';
+        }
+
+        if (this.model.FieldType.Type == 'ComplexRelationLookup') {
+            let r = new FieldTypeRelationItemEditorModel();
+            let last = _.last(this.model.RelationItems);
+            let i = last.relationItems.find(f => f.value == last.selectedRelationItemID);
+
+            //console.log('save items');
+            //console.log(r);
+            //console.log(last);
+            //console.log(i);
+
+                
+            if (i) {
+                r.IntersectType = i.IntersectTypeID;
+                r.IntersectTypeID = i.IntersectTypeID;
+                r.Object = i.TargetType;
+                r.ObjectID = i.TargetTypeID;
+                r.ReferenceType = 0;
+                r.DisplayFields = [];
+                this.model.RelationItems.push(r);
+            }
+        }
+        //    this.model.RelationItems.forEach(r => {
+        //        if (r.selectedRelationItemID) {
+        //            let f = r.relationItems.find(i => i.value == r.selectedRelationItemID);
+        //            if (f != null) {
+        //                //r.IntersectType = f.IntersectTypeID;
+        //                r.IntersectTypeID = f.IntersectTypeID;
+        //                r.Object = f.TargetType;
+        //                r.ObjectID = f.TargetTypeID;
+        //            }
+        //        }
+        //    });
+        //}
+
+
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
             this.model.FusionItems.forEach(i => {
@@ -289,6 +422,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
             });
         }
         this.isLoading = true;
+        //console.log('save model:');
+        //console.log(this.model);
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
@@ -316,44 +451,67 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
     }
 
-    changeRefType(item: FieldTypeRelationItemEditorModel) {
+    changeRefType(item: FieldTypeRelationItemEditorModel, selected: string = null): Promise<any> {
         item.relationsLoading = true;
         item.DisplayFields = [];
-        item.selectedRelationItemID = null;
+        item.selectedRelationItemID = selected;
+        console.log('changeRefType()');
         console.log(item);
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                item.relationsLoading = false;
-                break;
+                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                    .then(z => {
+                        item.relationItems = z;
+                        item.relationItems.forEach(i => {
+                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
+                            i.label = i.TargetName;
+                            item.relationsLoading = false;
+                        });
+                    });
             case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
-                this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(z => {
+                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(z => {
                     item.relationItems = z;
                     item.relationsLoading = false;
                 });
-                break;
             case ComplexLookupRelationType.ParentItem.toString():
-                item.relationsLoading = false;
-                break;
-            case ComplexLookupRelationType.StandardRelationhip.toString():
-                this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
                     .then(z => {
-                        console.log(z);
+                        item.relationItems = z;
+                        item.relationItems.forEach(i => {
+                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
+                            i.label = i.TargetName;
+                            item.relationsLoading = false;
+                        });
+                    });
+            case ComplexLookupRelationType.StandardRelationhip.toString():
+                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                    .then(z => {
+                        //console.log('relationItems');
+                        //console.log(z);
                         item.relationItems = z;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
                         });
-                        item.relationsLoading = false;
-                    });
-                break;
+                        
+                    }).then(() => item.relationsLoading = false);
         }
     }
 
-    changeRel(item: FieldTypeRelationItemEditorModel) {
-        console.log(item.selectedRelationItemID);
+    changeRel(item: FieldTypeRelationItemEditorModel): Promise<any> {
+        //console.log(item.selectedRelationItemID);
 
-        item.DisplayFields = [];
-        let params = item.selectedRelationItemID.split('|');
+        let params = [];
+        //item.DisplayFields = [];
+        if (item.selectedRelationItemID) {
+            params = item.selectedRelationItemID.split('|');
+        } else {
+            params.push(item.IntersectType);
+            params.push(item.Object);
+            params.push(item.ObjectID);
+            item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+        }
+        
 
         try {
             if (params.length < 3)
@@ -361,10 +519,10 @@ export class FieldTypeForm implements OnInit, OnChanges {
             let id = parseInt(params[2]);
             let type = params[1];
             let intersectType = parseInt(params[0]);
-            this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
+            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
                 .then(r => {
-                    console.log(r);
-                    item.DisplayFields = [];
+                    //console.log('changeRel()');
+                    //console.log(r);
                     r.forEach(i => {
                         let params = i.value.split('|');
                         let d = new FieldTypeItemDisplayFieldEditorModel();
@@ -374,7 +532,13 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         d.FilterValue = "";
                         d.SortOrder = null;
                         d.value = i.value;
-                        item.DisplayFields.push(d);
+                        let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
+                        if (e != null) {
+                            //console.log('found matching display field');
+                            e.Show = true;
+                            e.value = i.value;
+                        } else 
+                            item.DisplayFields.push(d);
                     });
 
                     let s = [];
@@ -387,7 +551,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
 
         } catch (e) {
-            return;
+            return Promise.resolve();
         }
     }
 
@@ -417,6 +581,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel) {
-        console.log(item);
+       // console.log(item);
     }
 }

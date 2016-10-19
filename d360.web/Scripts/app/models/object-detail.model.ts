@@ -32,6 +32,7 @@ export class DetailField {
     Group: any;
     HideFooter: boolean;
     HideHeader: boolean;
+    HideFilter: boolean;
     LookupGridUrl: string;
     MultipleValues: any;
     Name: string;

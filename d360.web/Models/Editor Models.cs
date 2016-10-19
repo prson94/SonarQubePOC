@@ -415,6 +415,30 @@ namespace d360.web.Models
         public int? SortOrder { get; set; }
         public string FilterValue { get; set; }
         public bool Filter { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public string OverrideDisplayName { get; set; }
+        public int DisplayOrder { get; set; }
+    }
+
+    public class FieldLookupRelationItem
+    {
+        public int IntersectTypeID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public int RelationType { get; set; }
+    }
+
+    public class FieldLookupFieldItem
+    {
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public int FieldTypeID { get; set; }
+        public string FieldTypeName { get; set; }
+        public string Filter { get; set; }
+        public string OverrideDisplayName { get; set; }
+        public int DisplayOrder { get; set; }
+        public int SortOrder { get; set; }
     }
 
     public class FieldValidity
@@ -535,6 +559,11 @@ namespace d360.web.Models
         public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
         public bool HideHeader { get; set; }
         public bool HideFooter { get; set; }
+        public bool HideFilter { get; set; } = false;
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public int RelationType { get; set; }
+
 
 
         public FieldValidity Validation()
@@ -596,6 +625,8 @@ namespace d360.web.Models
         public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
         public FieldTypeRelationItemEditorModel RelationItem { get; set; }
+
+        public List<FieldTypeRelationItemEditorModel> RelationItems { get; set; }
 
         public FieldValidity Validation()
         {

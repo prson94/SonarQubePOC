@@ -137,7 +137,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.policyType = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy', SiteUrlHelpers.SITE_URL_POLICY_ROOT));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
 
                         this.loadPolicyItems(this.policyTypeId, hierarchyId);

@@ -92,10 +92,10 @@ export class ResponsibilityItemForm implements OnInit {
         this.item.ContextItems = null;
         this.item.ResponsibilityContextItems = contextItems;
         
-
         this.respsonsibilityService.postResponsibility(this.item)
             .then(data => {
                 this.isSaving = false;
+                this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             });
     }
 

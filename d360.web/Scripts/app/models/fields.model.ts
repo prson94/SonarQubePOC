@@ -112,6 +112,7 @@ export class FieldTypeRelationItemEditorModel {
     DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
     HideHeader: boolean;
     HideFooter: boolean;
+    HideFilter: boolean;
 
     SortOrderList: any[] = [];
     selectedRelationItemID: string;

@@ -9,6 +9,7 @@
     Items: string[];
     Row: number;
     Column: number;
+    SimilarItemsUri: string;
 }
 
 export class EditorRow {

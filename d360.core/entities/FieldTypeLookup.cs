@@ -10,6 +10,7 @@ namespace d360.core.entities
     public class FieldTypeLookup : BaseObject
     {
         [DataMember, Key]//, ForeignKey("FieldTypeID")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int FieldTypeID { get; set; }
 
         [DataMember]
@@ -17,6 +18,9 @@ namespace d360.core.entities
 
         [DataMember]
         public bool HideFooter { get; set; }
+
+        [DataMember]
+        public bool HideFilter { get; set; }
 
         [DataMember]
         public int LookupType { get; set; }

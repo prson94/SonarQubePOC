@@ -125,14 +125,13 @@
                         <div *ngSwitchCase="FormMode.Editing">
                             <header>
                                 Edit {{selection.Name}}
-                                <d3s-tile-actions hasClose="true" (closeClick)="formMode = FormMode.Default"></d3s-tile-actions>
+                                <d3s-tile-actions (closeClick)="formMode = FormMode.Default"></d3s-tile-actions>
                             </header>
                             <div *ngIf="!formIsLoading">
                                 <div class="row" style="margin-bottom:15px;">
                                     <div class="col s12">
                                         <div class="FieldName" style="display:block;">Folder Name</div>
                                         <input type="text" [(ngModel)]="selection.Name" />
-                                        <button pButton type="button" label="Rename" (click)="action('rename', selection)"></button>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -159,6 +158,12 @@
                                                 </template>
                                             </p-column>
                                         </p-dataTable>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12">
+                                        <button pButton type="button" label="Save" (click)="action('saveEdit')"></button>
+                                        <button pButton type="button" label="Cancel" (click)="action('cancelEdit')"></button>
                                     </div>
                                 </div>
                             </div>
@@ -188,9 +193,9 @@
                                         <p-dataTable [value]="availableItems" [rows]="10" [paginator]="true" selectionMode="single">
                                             <p-column field="DisplayName" header="Available Folder Items"></p-column>
                                             <p-column>
-                                                <template let-item="rowData"  let-i="index" pTemplate type="body">
+                                                <template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools" style="height: initial;">
-                                                        <a (click)="action('addNewFolderItem', i)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                                        <a (click)="action('addNewFolderItem', item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
                                                     </div>
                                                 </template>
                                             </p-column>
@@ -200,7 +205,7 @@
                                         <p-dataTable [value]="newFolderItems" [rows]="10" [paginator]="true" selectionMode="single">
                                             <p-column field="Name" header="Folder Items"></p-column>
                                             <p-column>
-                                                <template let-item="rowData" let-i="index" pTemplate type="body">
+                                                <template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools" style="height: initial;">
                                                         <a (click)="action('deleteNewFolderItem', item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                                                     </div>

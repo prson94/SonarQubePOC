@@ -597,6 +597,9 @@ namespace d360.web.Models
         public bool HideFooter { get; set; }
 
         [DataMember]
+        public bool HideFilter { get; set; }
+
+        [DataMember]
         public int? Row { get; set; }
 
         [DataMember]
