@@ -18,9 +18,15 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <span *ngIf="!isLoading">
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                         <p-dataTable [globalFilter]="gb" [value]="issues" selectionMode="single" [(selection)]="selected" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                
+                            <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                                <template let-col let-data="rowData" pTemplate type="body">
+                                    <span *ngIf="!data.AllowAction">{{data.ActivityName}}</span>
+                                    <a *ngIf="data.AllowAction" (click)="handleIssue(data)">{{data.ActivityName}}</a>
+                                </template>
+                            </p-column>
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
-                                    <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
+                                    <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
                                 </template>
                             </p-column>
                             <p-column field="Object" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
@@ -43,8 +49,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item.DateCompleted | date : 'short'}}</span>
                                 </template>
-                            </p-column>
-                            <p-column field="ActivityName" header="Status" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
+                            </p-column>                            
                             <p-column field="Notes" header="Closing Notes" [sortable]="true" [filter]="!showSimpleFilter"></p-column>    
                             <p-column [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
