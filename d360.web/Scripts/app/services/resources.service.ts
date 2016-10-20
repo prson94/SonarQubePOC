@@ -69,7 +69,7 @@ export class ResourcesService extends BaseService {
     }
 
     getUserGroups(resourceID: number): Promise<any[]> {
-        return this.http.get(`resources/_GroupsByResourceID/${resourceID}`)
+        return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));

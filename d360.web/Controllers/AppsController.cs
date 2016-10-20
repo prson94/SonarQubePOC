@@ -9,7 +9,7 @@ using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
-    [Authorize]
+    [Authorize, RoutePrefix("apps")]
     public class AppsController : BaseController
     {
         #region DI
@@ -24,6 +24,7 @@ namespace d360.web.Controllers
 
         #endregion
                 
+        [Route("search")]
         public ActionResult Search(string phrase)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -32,6 +33,7 @@ namespace d360.web.Controllers
             return View();
         }
 
+        [Route("searchredirect")]
         public ActionResult SearchRedirect(string phrase)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);

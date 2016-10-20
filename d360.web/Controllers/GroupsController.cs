@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using d360.core.entities;
+﻿using System.Web.Mvc;
 using d360.model;
 
 namespace d360.web.Controllers

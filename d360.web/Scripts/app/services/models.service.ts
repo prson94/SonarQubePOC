@@ -25,7 +25,7 @@ export class ModelsService extends BaseService {
     }
 
     getModelHierarchy(id: number, details?: boolean): Promise<ModelHierarchy[]> {
-        return this.http.get(`taxonomy/ModelHierarchy${details ? 'Detailed': ''}/${id}`)
+        return this.http.get(`internal/taxonomy/ModelHierarchy${details ? 'Detailed': ''}?id=${id}`)
             .toPromise()
             .then(response => <ModelHierarchy[]>response.json())
             .catch(err => this.handleError(err));

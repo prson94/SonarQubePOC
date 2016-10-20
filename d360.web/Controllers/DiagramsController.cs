@@ -22,6 +22,7 @@ namespace d360.web.Controllers
 
         #region Model Diagram
 
+        [Route("InformationCatalogDiagramData")]
         public JsonNetResult InformationCatalogDiagramData(int id)
         {
             return new JsonNetResult {
@@ -52,6 +53,7 @@ namespace d360.web.Controllers
 
         #region Impact Analysis Diagram
 
+        [Route("ImpactAnalysis")]
         public JsonNetResult ImpactAnalysis(SystemObjects type, int id)
         {
             var sql = @"

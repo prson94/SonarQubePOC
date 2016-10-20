@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("fusion"), Authorize]
+    [RoutePrefix("internal/fusion"), Authorize]
     public class FusionController : BaseController
     {
         #region DI
@@ -58,11 +58,13 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("FusionExecution")]
         public ActionResult FusionExecution(int id)
         {
             return PartialView(new ObjectModel { ObjectType = "FusionExecution", ObjectID = id });
         }
 
+        [Route("FusionExecutionRawLog")]
         public ActionResult FusionExecutionRawLog(int id)
         {
             //var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id = id }).SingleOrDefault();
@@ -77,6 +79,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("_FusionExecutionRawLog")]
         public ContentResult _FusionExecutionRawLog(int id)
         {
             var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id = id }).SingleOrDefault();
@@ -85,6 +88,7 @@ namespace d360.web.Controllers
             return Content(Encoding.UTF8.GetString(bytes), "application/json");
         }
 
+        [Route("RelationshipAggregatesOverlay")]
         public ActionResult RelationshipAggregatesOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int parentAttributeID = 0)
         {
             var dtl = Company.GetObjectDetail(type, id);
@@ -380,11 +384,13 @@ namespace d360.web.Controllers
 
         #region Overlays
 
+        [Route("FusionErrorsProcessOverlay")]
         public ActionResult FusionErrorsProcessOverlay()
         {            
             return PartialView();
         }
 
+        [Route("FusionErrorsAgentOverlay")]
         public ActionResult FusionErrorsAgentOverlay()
         {
             return PartialView();
@@ -394,6 +400,7 @@ namespace d360.web.Controllers
 
         #region Json
 
+        [Route("RelationshipAggregates")]
         public JsonResult RelationshipAggregates(SystemObjects type, int id, int parentAttributeID = 0)
         {
             var sql = "";
@@ -504,6 +511,7 @@ FROM	    (
                 JsonRequestBehavior.AllowGet);
         }
 
+        [Route("TreeNodes")]
         public JsonNetResult TreeNodes(int typeID, int fusionID)
         {
             var types = Company.Query<dynamic>(@"
@@ -545,6 +553,7 @@ from	h", new { id = fusionID });
             return new JsonNetResult { Data = new { Types = types, Attributes = attributes }, Formatting = Formatting.None };
         }
 
+        [Route("ItemsByParent")]
         public JsonNetResult ItemsByParent(int fusionTypeID, int fusionID, SystemObjects parentType, int? parentID, int? parentFusionAttributeTypeID, int? parentFusionAttributeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             string sql = "";
@@ -673,7 +682,7 @@ from	    FusionAttributeType T
             public int JoinOrder { get; set; }
         }
 
-        [FileDownload]
+        [Route("ExportItemsByAttributeType"), FileDownload]
         public FileResult ExportItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionAttributeType";
@@ -866,6 +875,7 @@ where   A.FusionID = @f
             return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
         }
 
+        [Route("ItemsByAttributeType")]
         public JsonNetResult ItemsByAttributeType(int fusionID, int fusionAttributeTypeID, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             var joins = "";

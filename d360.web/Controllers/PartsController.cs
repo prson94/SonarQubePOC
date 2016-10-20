@@ -23,6 +23,7 @@ namespace d360.web.Controllers
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = SystemObjects.Group.ToString() });
         }
 
+        [Route("DisplayClaimsMatrix")]
         public ActionResult DisplayClaimsMatrix(SystemObjects type, int id, int responsibilityTypeID)
         {
             var sType = type.ToString();
@@ -36,7 +37,7 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
-        [HttpGet]
+        [HttpGet, Route("ClaimsMatrix")]
         public JsonNetResult ClaimsMatrix(SystemObjects type, int id, int responsibilityTypeID)
         {
             var sType = type.ToString();
@@ -108,6 +109,7 @@ namespace d360.web.Controllers
             return PartialView("Ownership", new ObjectModel { ObjectID = resourceID, ObjectType = SystemObjects.Resource.ToString() });
         }
 
+        [Route("ResponsibilityTypeObjectClaimGrid")]
         public ActionResult ResponsibilityTypeObjectClaimGrid(SystemObjects type, int id)
         {
             ViewData.Add("ObjectType", type.ToString());
@@ -115,6 +117,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("ResponsibilityTypeUsageGrid")]
         public ActionResult ResponsibilityTypeUsageGrid(int id)
         {
             ViewData.Add("ID", id);

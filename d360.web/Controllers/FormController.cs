@@ -629,6 +629,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
+        [Route("Artifact_AddFields")]
         public JsonResult Artifact_AddFields(int at, int p)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, at, Claim.Create, ClaimObject.Root))
@@ -689,6 +690,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
+        [Route("Artifact_DeleteFields")]
         public JsonResult Artifact_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Delete, ClaimObject.Root))
@@ -702,6 +704,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
+        [Route("Artifact_EditFields")]
         public JsonResult Artifact_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Artifact, id, Claim.Update, ClaimObject.Root))
@@ -739,6 +742,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
+        [Route("Artifact_RequestCertification")]
         public JsonResult Artifact_RequestCertification(int id)
         {
             var list = new List<EditableField>();
@@ -754,6 +758,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
+        [Route("Artifact_Challenge")]
         public JsonResult Artifact_Challenge(int id)
         {
             var list = new List<EditableField>();
@@ -765,6 +770,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ID</param>
+        [Route("Artifact_RaiseIssue")]
         public JsonResult Artifact_RaiseIssue(int id)
         {
             var list = new List<EditableField>();
@@ -777,6 +783,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
+        [Route("Artifact_SuggestFields")]
         public JsonResult Artifact_SuggestFields(int at, int p)
         {
             var list = new List<EditableField>();
@@ -808,7 +815,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet]
+        [HttpGet, Route("Aritfact_SimilarItems")]
         public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
         {
             return new JsonNetResult
@@ -838,8 +845,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [Route("AddArtifact"), ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
             try
@@ -906,7 +912,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [Route("DeleteArtifact"), HttpDelete]
         public JsonResult DeleteArtifact(FormCollection form)
         {
             try
@@ -956,7 +962,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [Route("EditArtifact"), HttpPut, ValidateInput(false)]
         public JsonResult EditArtifact(FormCollection form)
         {
             try
@@ -1077,7 +1083,7 @@ namespace d360.web.Controllers
             }
         }
 
-
+        [Route("Challenge")]
         public ActionResult Challenge(int id)
         {
             var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
@@ -1095,6 +1101,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
+        [Route("RaiseIssue")]
         public ActionResult RaiseIssue(int id)
         {
             var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
@@ -1113,8 +1120,7 @@ namespace d360.web.Controllers
         }
 
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("Challenge")]
         public JsonResult Challenge(FormCollection form)
         {
             try
@@ -1178,8 +1184,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("RaiseIssue")]
         public JsonResult RaiseIssue(FormCollection form)
         {
             try
@@ -1232,6 +1237,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("RequestCertification")]
         public ActionResult RequestCertification(int id)
         {
             var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
@@ -1249,8 +1255,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("RequestCertification")]
         public JsonResult RequestCertification(FormCollection form)
         {
             try
@@ -1305,6 +1310,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("SuggestNewArtifact")]
         public ActionResult SuggestNewArtifact(int typeID, int parentID)
         {
             var type = Company.GetById<ArtifactType>(typeID);
@@ -1322,8 +1328,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("SuggestNewArtifact")]
         public JsonResult SuggestNewArtifact(FormCollection form)
         {
             try
@@ -1393,6 +1398,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">ArtifactID</param>
+        [Route("ArtifactType_DeleteFields")]
         public JsonResult ArtifactType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
@@ -1408,6 +1414,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddArtifactType")]
         public ActionResult AddArtifactType(int parentID)
         {
             var model = new ArtifactTypeEditorModel
@@ -1424,8 +1431,7 @@ namespace d360.web.Controllers
             return PartialView("ArtifactTypeEditForm", model);
         }
 
-        [HttpGet]
-        [ActionName("ArtifactType")]
+        [HttpGet, ActionName("ArtifactType"), Route("ArtifactType")]
         public JsonNetResult GetArtifactType(int? id, int? parentID)
         {
             var model = new ArtifactTypeEditorModel();
@@ -1469,9 +1475,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        [ActionName("ArtifactType")]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), ActionName("ArtifactType"), Route("ArtifactType")]
         public JsonResult PostArtifactType(ArtifactTypeEditorModel model)
         {
             try
@@ -1518,9 +1522,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPut]
-        [ActionName("ArtifactType")]
+        [ValidateHttpAntiForgeryToken, HttpPut, ActionName("ArtifactType"), Route("ArtifactType")]
         public JsonResult PutArtifactType(ArtifactTypeEditorModel model)
         {
             try
@@ -1562,9 +1564,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpDelete]
-        [ActionName("ArtifactType")]
+        [ValidateHttpAntiForgeryToken, HttpDelete, ActionName("ArtifactType"), Route("ArtifactType")]
         public JsonResult DeleteArtifactType2(int id)
         {
             try
@@ -1604,8 +1604,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddArtifactType")]
         public JsonResult AddArtifactType(FormCollection form)
         {
             try
@@ -1655,6 +1654,7 @@ namespace d360.web.Controllers
         }
 
 
+        [Route("DeleteArtifactType")]
         public ActionResult DeleteArtifactType(int id)
         {
             var a = Company.GetById<ArtifactType>(id);
@@ -1671,7 +1671,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteArtifactType")]
         public JsonResult DeleteArtifactType(FormCollection form)
         {
             try
@@ -1712,6 +1712,7 @@ namespace d360.web.Controllers
         }
 
 
+        [Route("EditArtifactType")]
         public ActionResult EditArtifactType(int id)
         {
             var at = Company.GetById<ArtifactType>(id);
@@ -1732,7 +1733,7 @@ namespace d360.web.Controllers
             return PartialView("ArtifactTypeEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditArtifactType")]
         public JsonResult EditArtifactType(FormCollection form)
         {
             try
@@ -1789,6 +1790,7 @@ namespace d360.web.Controllers
         /// <param name="ot">ObjectType</param>
         /// <param name="oid">ObjectID</param>
         /// <param name="p">ParentID</param>
+        [Route("Attribute_AddFields")]
         public JsonResult Attribute_AddFields(int at, string ot, int oid, int p)
         {
             var list = new List<EditableField>();
@@ -1804,6 +1806,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeID</param>
+        [Route("Attribute_DeleteFields")]
         public JsonResult Attribute_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -1812,6 +1815,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeID</param>
+        [Route("Attribute_EditFields")]
         public JsonResult Attribute_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -1830,6 +1834,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddAttribute")]
         public ActionResult AddAttribute(int typeID, string objectType, int objectID, int? parentID)
         {
             var type = Company.GetById<AttributeType>(typeID);
@@ -1846,8 +1851,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeEditForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttribute")]
         public JsonResult AddAttribute(FormCollection form)
         {
             try
@@ -1901,6 +1905,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteAttribute")]
         public ActionResult DeleteAttribute(int id)
         {
             var a = Company.GetById<d360.core.entities.Attribute>(id, i => i.AttributeType);
@@ -1918,7 +1923,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteAttributeById")]
         public JsonResult DeleteAttributeById(int id)
         {
             var form = new FormCollection();
@@ -1926,7 +1931,7 @@ namespace d360.web.Controllers
             return DeleteAttribute(form);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteAttribute")]
         public JsonResult DeleteAttribute(FormCollection form)
         {
             try
@@ -1949,6 +1954,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditAttribute")]
         public ActionResult EditAttribute(int id)
         {
             var a = Company.GetById<d360.core.entities.Attribute>(id, i => i.AttributeType);
@@ -1966,7 +1972,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditAttribute")]
         public JsonResult EditAttribute(FormCollection form)
         {
             try
@@ -2015,6 +2021,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">AttributeTypeID</param>
+        [Route("AttributeType_DeleteFields")]
         public JsonResult AttributeType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.AttributeType, id, Claim.Delete))
@@ -2032,6 +2039,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddAttributeType")]
         public ActionResult AddAttributeType(int? parentID)
         {
             //if (!Company.HasPermission(SystemObjects.AttributeType, 0, Claim.Create))
@@ -2054,8 +2062,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeTypeEditForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeType")]
         public JsonResult AddAttributeType(FormCollection form)
         {
             try
@@ -2103,6 +2110,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteAttributeType")]
         public ActionResult DeleteAttributeType(int id)
         {
             var a = Company.GetById<AttributeType>(id);
@@ -2119,7 +2127,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteAttributeType")]
         public JsonResult DeleteAttributeType(FormCollection form)
         {
             try
@@ -2148,6 +2156,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditAttributeType")]
         public ActionResult EditAttributeType(int id)
         {
             //if (!Company.HasPermission(SystemObjects.AttributeType, id, ObjectPermission.Update))
@@ -2179,7 +2188,7 @@ namespace d360.web.Controllers
             return PartialView("AttributeTypeEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditAttributeType")]
         public JsonResult EditAttributeType(FormCollection form)
         {
             try
@@ -2231,6 +2240,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="p">ParentID</param>
+        [Route("AttributeTypeCategory_AddFields")]
         public JsonResult AttributeTypeCategory_AddFields()
         {
             var o = new AttributeTypeCategory();
@@ -2246,6 +2256,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeTypeCategoryID</param>
+        [Route("AttributeTypeCategory_DeleteFields")]
         public JsonResult AttributeTypeCategory_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Delete))
@@ -2258,6 +2269,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">AttributeTypeCategoryID</param>
+        [Route("AttributeTypeCategory_EditFields")]
         public JsonResult AttributeTypeCategory_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ArtifactType, id, Claim.Update))
@@ -2277,6 +2289,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddAttributeTypeCategory")]
         public ActionResult AddAttributeTypeCategory()
         {
             var model = new EditableForm
@@ -2292,8 +2305,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeCategory")]
         public JsonResult AddAttributeTypeCategory(FormCollection form)
         {
             try
@@ -2331,6 +2343,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteAttributeTypeCategory")]
         public ActionResult DeleteAttributeTypeCategory(int id)
         {
             var a = Company.GetById<AttributeTypeCategory>(id);
@@ -2347,7 +2360,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteAttributeTypeCategory")]
         public JsonResult DeleteAttributeTypeCategory(FormCollection form)
         {
             try
@@ -2383,6 +2396,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditAttributeTypeCategory")]
         public ActionResult EditAttributeTypeCategory(int id)
         {
             if (!Company.Exists<ArtifactType>(id)) return HttpNotFound();
@@ -2399,7 +2413,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditAttributeTypeCategory")]
         public JsonResult EditAttributeTypeCategory(FormCollection form)
         {
             try
@@ -2447,6 +2461,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="at">AttributeTypeID</param>
+        [Route("AttributeTypeRelation_AddFields")]
         public JsonResult AttributeTypeRelation_AddFields(int at)
         {
             var list = new List<EditableField>();
@@ -2479,6 +2494,7 @@ namespace d360.web.Controllers
         /// <param name="at">AttributeTypeID</param>
         /// <param name="ot">ObjectType</param>
         /// <param name="oid">ObjectID</param>
+        [Route("AttributeTypeRelation_DeleteFields")]
         public JsonResult AttributeTypeRelation_DeleteFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
@@ -2493,6 +2509,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="at">AttributeTypeID</param>
+        [Route("AttributeTypeRelation_EditFields")]
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
@@ -2512,6 +2529,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddAttributeTypeRelation")]
         public ActionResult AddAttributeTypeRelation(int id)
         {
             var type = Company.GetById<AttributeType>(id);
@@ -2528,8 +2546,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddAttributeTypeRelation")]
         public JsonResult AddAttributeTypeRelation(FormCollection form)
         {
             try
@@ -2571,6 +2588,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteAttributeTypeRelation")]
         public ActionResult DeleteAttributeTypeRelation(int id, string objectType, int objectTypeID)
         {
             var sType = objectType.ToString();
@@ -2588,7 +2606,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteAttributeTypeRelation")]
         public JsonResult DeleteAttributeTypeRelation(FormCollection form)
         {
             try
@@ -2612,6 +2630,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditAttributeTypeRelation")]
         public ActionResult EditAttributeTypeRelation(int id, string objectType, int objectTypeID)
         {
             var sType = objectType.ToString();
@@ -2629,7 +2648,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut]
+        [HttpPut, Route("EditAttributeTypeRelation")]
         public JsonResult EditAttributeTypeRelation(FormCollection form)
         {
             try
@@ -2666,6 +2685,7 @@ namespace d360.web.Controllers
 
         #region Company Settings
 
+        [Route("CompanySettings")]
         public JsonNetResult CompanySettings()
         {
             var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
@@ -2694,7 +2714,7 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("UpdateCompanySettings")]
         public JsonResult UpdateCompanySettings(CompanySettingsEditorModel formModel)
         {
             try
@@ -2966,7 +2986,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetSiteNavFolderItems")]
         public JsonNetResult GetSiteNavFolderItems(int id)
         {
             return new JsonNetResult
@@ -2976,7 +2996,7 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetSiteNavFolderAvailableItems")]
         public JsonNetResult GetSiteNavFolderAvailableItems()
         {
             return null;
@@ -2991,6 +3011,7 @@ namespace d360.web.Controllers
         #region Old Add/Edit
 
         /// <param name="t">DomainTypeID</param>
+        [Route("Domain_AddFields")]
         public JsonResult Domain_AddFields(int t, int g)
         {
             if (!Company.HasPermission(SystemObjects.DomainType, t, Claim.Create, ClaimObject.Root))
@@ -3017,6 +3038,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainID</param>
+        [Route("Domain_EditFields")]
         public JsonResult Domain_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Update))
@@ -3052,6 +3074,7 @@ namespace d360.web.Controllers
         #endregion
 
         /// <param name="id">DomainID</param>
+        [Route("Domain_DeleteFields")]
         public JsonResult Domain_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Domain, id, Claim.Delete))
@@ -3065,6 +3088,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Domain_SimilarItems")]
         public JsonNetResult Domain_SimilarItems(int typeID, string query)
         {
             return new JsonNetResult
@@ -3078,6 +3102,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddDomain")]
         public ActionResult AddDomain(int typeID, int groupID)
         {
             var type = Company.GetById<DomainType>(typeID);
@@ -3094,8 +3119,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddDomain")]
         public JsonResult AddDomain(FormCollection form)
         {
             try
@@ -3168,6 +3192,7 @@ namespace d360.web.Controllers
 
         }
 
+        [Route("DeleteDomain")]
         public ActionResult DeleteDomain(int id)
         {
             var a = Company.GetById<Domain>(id);
@@ -3184,7 +3209,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomain")]
         public JsonResult DeleteDomain(FormCollection form)
         {
             try
@@ -3215,13 +3240,15 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomainByID")]
         public JsonResult DeleteDomainByID(int id)
         {
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteDomain(form);
         }
+
+        [Route("EditDomain")]
         public ActionResult EditDomain(int id)
         {
             var a = Company.GetById<Domain>(id);
@@ -3238,7 +3265,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditDomain")]
         public JsonResult EditDomain(FormCollection form)
         {
             try
@@ -3302,6 +3329,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
         #endregion
 
         #endregion
@@ -3311,6 +3339,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="t">DomainTypeID</param>
+        [Route("DomainGroup_AddFields")]
         public JsonResult DomainGroup_AddFields(int t)
         {
             if (!Company.HasPermission(SystemObjects.DomainType, t, Claim.Update))
@@ -3327,6 +3356,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainGroupID</param>
+        [Route("DomainGroup_DeleteFields")]
         public JsonResult DomainGroup_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -3340,6 +3370,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainGroupID</param>
+        [Route("DomainGroup_EditFields")]
         public JsonResult DomainGroup_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -3360,6 +3391,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddDomainGroup")]
         public ActionResult AddDomainGroup(int typeID)
         {
             var type = Company.GetById<DomainType>(typeID);
@@ -3376,8 +3408,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddDomainGroup")]
         public JsonResult AddDomainGroup(FormCollection form)
         {
             try
@@ -3413,6 +3444,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteDomainGroup")]
         public ActionResult DeleteDomainGroup(int id)
         {
             var a = Company.GetById<DomainGroup>(id);
@@ -3429,7 +3461,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomainGroup")]
         public JsonResult DeleteDomainGroup(FormCollection form)
         {
             try
@@ -3457,6 +3489,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditDomainGroup")]
         public ActionResult EditDomainGroup(int id)
         {
             var a = Company.GetById<DomainGroup>(id);
@@ -3473,7 +3506,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditDomainGroup")]
         public JsonResult EditDomainGroup(FormCollection form)
         {
             try
@@ -3517,6 +3550,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="t">DomainID</param>
+        [Route("DomainItem_AddFields")]
         public JsonResult DomainItem_AddFields(int t)
         {
             if (!Company.HasPermission(SystemObjects.Domain, t, Claim.Create))
@@ -3533,6 +3567,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainItemID</param>
+        [Route("DomainItem_DeleteFields")]
         public JsonResult DomainItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -3547,6 +3582,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainItemID</param>
+        [Route("DomainItem_EditFields")]
         public JsonResult DomainItem_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -3567,6 +3603,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("AddDomainItem")]
         public ActionResult AddDomainItem(int typeID, int listID)
         {
             var list = Company.GetById<Domain>(listID);
@@ -3583,8 +3620,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddDomainItem")]
         public JsonResult AddDomainItem(FormCollection form)
         {
             try
@@ -3622,6 +3658,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("DeleteDomainItem")]
         public ActionResult DeleteDomainItem(int id)
         {
             var a = Company.GetById<DomainItem>(id);
@@ -3638,7 +3675,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomainItem")]
         public JsonResult DeleteDomainItem(FormCollection form)
         {
             try
@@ -3666,6 +3703,7 @@ namespace d360.web.Controllers
             }
         }
 
+        [Route("EditDomainItem")]
         public ActionResult EditDomainItem(int id)
         {
             var a = Company.GetById<DomainItem>(id);
@@ -3682,7 +3720,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditDomainItem")]
         public JsonResult EditDomainItem(FormCollection form)
         {
             try
@@ -3721,37 +3759,7 @@ namespace d360.web.Controllers
 
         #region DomainXrefItem
 
-        //public JsonResult DomainXrefItem_AddFields(int t)
-        //{
-        //    if (!Company.HasPermission(SystemObjects.Domain, t, Claim.Create))
-        //        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-        //    var domainItem = Company.GetById<DomainItem>(t);
-
-        //    var list = new List<EditableField>();
-
-        //    list.Add(new EditableField { FieldName = "DomainItemID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-
-        //    list.Add(new EditableField { Row = 1, Column = 1,  FieldName = "HouseCode", Name = "House Code", Value = domainItem.Code, ReadOnly = true });
-
-        //    var sources = Company.Query<dynamic>(@"select objectid as id, objecttypename + ' :: ' + name as name from cache.objectdetails d
-        //                                            join domainsourcetype t on t.artifacttypeid = d.objecttypeid and d.objecttype = 'ArtifactType'
-        //                                            ").ToList();
-        //    var sourceItems = sources.Select(i => new SelectListItem { Text = i.name, Value = i.id.ToString() }).ToList();
-
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Source", Name = "Source", FieldType = DataType.Lookup.ToString(), Items = sourceItems });
-
-        //    var lists = Company.Domains.ToList();
-        //    var listItems = lists.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-
-        //    list.Add(new EditableField { Row = 1, Column = 3, Required = true, FieldName = "Domain", Name = "Domain", FieldType = DataType.Lookup.ToString(), Items = listItems });
-
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Code", Name = "Code", FieldType = DataType.Lookup.ToString(), Items = null });
-        //    //list.Add(new EditableFieldLookupList { FieldName})
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
+        [Route("AddDomainXrefItem")]
         public ActionResult AddDomainXrefItem(int domainItemID)
         {
             var item = Company.GetById<DomainItem>(domainItemID);
@@ -3767,6 +3775,7 @@ namespace d360.web.Controllers
             return PartialView("DomainXrefItemForm", model);
         }
 
+        [Route("EditDomainXrefItem")]
         public ActionResult EditDomainXrefItem(int id)
         {
             var xref = Company.GetById<DomainItemXref>(id);
@@ -3829,6 +3838,7 @@ namespace d360.web.Controllers
             };
         }
 
+        [Route("DeleteDomainItemXref")]
         public ActionResult DeleteDomainItemXref(int id)
         {
             var a = Company.GetById<DomainItemXref>(id);
@@ -3846,6 +3856,7 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete]
+        [Route("DeleteDomainItemXref")]
         public JsonResult DeleteDomainItemXref(FormCollection form)
         {
             try
@@ -3875,6 +3886,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainItemXrefID</param>
+        [Route("DomainItemXref_DeleteFields")]
         public JsonResult DomainItemXref_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -3894,6 +3906,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
+        [Route("DomainType_AddFields")]
         public JsonResult DomainType_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.DomainType, 0, Claim.Create))
@@ -3909,6 +3922,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainTypeID</param>
+        [Route("DomainType_DeleteFields")]
         public JsonResult DomainType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.DomainType, id, Claim.Delete))
@@ -3923,6 +3937,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">DomainTypeID</param>
+        [Route("DomainType_EditFields")]
         public JsonResult DomainType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.DomainType, id, Claim.Update))
@@ -3959,8 +3974,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddDomainType")]
         public JsonResult AddDomainType(FormCollection form)
         {
             try
@@ -4011,7 +4025,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomainType")]
         public JsonResult DeleteDomainType(FormCollection form)
         {
             try
@@ -4042,7 +4056,7 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteDomainTypeByID")]
         public JsonResult DeleteDomainTypeByID(int id)
         {
             var form = new FormCollection();
@@ -4067,7 +4081,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditDomainType")]
         public JsonResult EditDomainType(FormCollection form)
         {
             try
@@ -4109,6 +4123,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
+        [Route("EmailTemplate_AddFields")]
         public JsonResult EmailTemplate_AddFields()
         {
             var list = new List<EditableField>();
@@ -4127,6 +4142,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">EmailTemplateID</param>
+        [Route("EmailTemplate_DeleteFields")]
         public JsonResult EmailTemplate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -4138,6 +4154,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">EmailTemplateID</param>
+        [Route("EmailTemplate_EditFields")]
         public JsonResult EmailTemplate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -4176,8 +4193,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddEmailTemplate")]
         public JsonResult AddEmailTemplate(FormCollection form)
         {
             try
@@ -4226,7 +4242,7 @@ namespace d360.web.Controllers
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteEmailTemplate")]
         public JsonResult DeleteEmailTemplate(FormCollection form)
         {
             try
@@ -4267,7 +4283,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditEmailTemplate")]
         public JsonResult EditEmailTemplate(FormCollection form)
         {
             try
@@ -4308,6 +4324,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">EventID</param>
+        [Route("Event_EditFields")]
         public JsonResult Event_EditFields(int id)
         {
             var a = Company.GetById<Event>(id, i => i.EventGroup);
@@ -4332,6 +4349,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("EditEvent")]
         public ActionResult EditEvent(int id)
         {
             var a = Company.GetById<Event>(id);
@@ -4348,7 +4366,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditEvent")]
         public JsonResult EditEvent(FormCollection form)
         {
             try
@@ -4389,6 +4407,7 @@ namespace d360.web.Controllers
         #region Field Generation
 
         /// <param name="id">EventGroupID</param>
+        [Route("EventGroup_EditFields")]
         public JsonResult EventGroup_EditFields(int id)
         {
             var a = Company.GetById<EventGroup>(id);
@@ -4413,6 +4432,7 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
+        [Route("EditEventGroup")]
         public ActionResult EditEventGroup(int id)
         {
             var a = Company.GetById<Event>(id);
@@ -4430,7 +4450,7 @@ namespace d360.web.Controllers
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditEventGroup")]
         public JsonResult EditEventGroup(FormCollection form)
         {
             try
@@ -4482,6 +4502,7 @@ namespace d360.web.Controllers
         /// <param name="listType">The type of list to pull fields for.</param>
         /// <param name="listID">The type Id of the list to pull fields for.</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("FieldType_FilteredLookup_DisplayFields")]
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
@@ -4507,6 +4528,7 @@ namespace d360.web.Controllers
         /// </summary>
         /// <param name="id">The Source FusionAttributeType ID</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("FieldType_FusionLookup_DisplayFields")]
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id)
@@ -4529,6 +4551,7 @@ namespace d360.web.Controllers
         /// <param name="s">The Source FusionAttributeType ID</param>
         /// <param name="r">The Reference Type we are checking</param>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("FieldType_FusionLookup_TargetAttributeTypes")]
         public JsonNetResult FieldType_FusionLookup_TargetAttributeTypes(int s, int r)
         {
             IQueryable<FusionAttributeType> qry = null;
@@ -4568,103 +4591,104 @@ namespace d360.web.Controllers
             }
         }
 
-//        public JsonNetResult FieldType_RelationLookup_IntersectTypes(SystemObjects type, int id)
-//        {
-//            #region
-//            var sql = @"
-//declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
+        //        public JsonNetResult FieldType_RelationLookup_IntersectTypes(SystemObjects type, int id)
+        //        {
+        //            #region
+        //            var sql = @"
+        //declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
 
-//insert into @tbl
-//	select	T.ID,
-//			NULL,
-//			case 
-//				when (T.Subject = @type and T.SubjectID = @id) then T.Object
-//				else T.Subject 
-//			end,
-//			case 
-//				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-//				else T.SubjectID
-//			end,
-//			D.TextPath,
-//			0
-//	from	IntersectType T
-//			inner join cache.ObjectDetails D on 
-//												D.Object = case 
-//																when (T.Subject = @type and T.SubjectID = @id) then T.Object
-//																else T.Subject 
-//															end 
-//											and D.ObjectID = case 
-//																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-//																else T.SubjectID
-//															end
-//	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
+        //insert into @tbl
+        //	select	T.ID,
+        //			NULL,
+        //			case 
+        //				when (T.Subject = @type and T.SubjectID = @id) then T.Object
+        //				else T.Subject 
+        //			end,
+        //			case 
+        //				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+        //				else T.SubjectID
+        //			end,
+        //			D.TextPath,
+        //			0
+        //	from	IntersectType T
+        //			inner join cache.ObjectDetails D on 
+        //												D.Object = case 
+        //																when (T.Subject = @type and T.SubjectID = @id) then T.Object
+        //																else T.Subject 
+        //															end 
+        //											and D.ObjectID = case 
+        //																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
+        //																else T.SubjectID
+        //															end
+        //	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
 
-//-- Get inferred relationship types
-//insert into @tbl
-//	select	T.ID,
-//			P.ID,
-//			case 
-//				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-//				else T.Subject 
-//			end,
-//			case 
-//				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-//				else T.SubjectID
-//			end,
-//			'Inferred :: ' + D.TextPath,
-//			1
-//	from	@tbl P
-//			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
-//			inner join cache.ObjectDetails D on 
-//												D.Object = case 
-//																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-//																else T.Subject 
-//															end 
-//											and D.ObjectID = case 
-//																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-//																else T.SubjectID
-//															end
+        //-- Get inferred relationship types
+        //insert into @tbl
+        //	select	T.ID,
+        //			P.ID,
+        //			case 
+        //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+        //				else T.Subject 
+        //			end,
+        //			case 
+        //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+        //				else T.SubjectID
+        //			end,
+        //			'Inferred :: ' + D.TextPath,
+        //			1
+        //	from	@tbl P
+        //			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
+        //			inner join cache.ObjectDetails D on 
+        //												D.Object = case 
+        //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
+        //																else T.Subject 
+        //															end 
+        //											and D.ObjectID = case 
+        //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
+        //																else T.SubjectID
+        //															end
 
-//-- Get child relationship types
-//insert into @tbl
-//	select	T.ID,
-//			P.ID,
-//			case 
-//				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-//				else T.Subject 
-//			end,
-//			case 
-//				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-//				else T.SubjectID
-//			end,
-//			'Child :: ' + D.TextPath,
-//			0
-//	from	@tbl P
-//			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
-//			inner join cache.ObjectDetails D on 
-//												D.Object = case 
-//																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-//																else T.Subject 
-//															end 
-//											and D.ObjectID = case 
-//																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-//																else T.SubjectID
-//															end
+        //-- Get child relationship types
+        //insert into @tbl
+        //	select	T.ID,
+        //			P.ID,
+        //			case 
+        //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+        //				else T.Subject 
+        //			end,
+        //			case 
+        //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+        //				else T.SubjectID
+        //			end,
+        //			'Child :: ' + D.TextPath,
+        //			0
+        //	from	@tbl P
+        //			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
+        //			inner join cache.ObjectDetails D on 
+        //												D.Object = case 
+        //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
+        //																else T.Subject 
+        //															end 
+        //											and D.ObjectID = case 
+        //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
+        //																else T.SubjectID
+        //															end
 
 
 
-//select * from @tbl";
-//            #endregion
+        //select * from @tbl";
+        //            #endregion
 
-//            var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
+        //            var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
 
-//            return new JsonNetResult
-//            {
-//                Data = intersectTypes,
-//                Formatting = Newtonsoft.Json.Formatting.None
-//            };
-//        }
+        //            return new JsonNetResult
+        //            {
+        //                Data = intersectTypes,
+        //                Formatting = Newtonsoft.Json.Formatting.None
+        //            };
+        //        }
 
+        [Route("FieldType_RelationLookup_ChildIntersectTypes")]
         public JsonNetResult FieldType_RelationLookup_ChildIntersectTypes(int id)
         {
             var intersectTypes = Company.Query<dynamic>(@"
@@ -4687,6 +4711,7 @@ order by  D.TextPath", new { id });
             };
         }
 
+        [Route("FieldType_RelationLookup_DisplayFields")]
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(type, id)
@@ -4714,6 +4739,7 @@ order by  D.TextPath", new { id });
             };
         }
 
+        [Route("FieldType_Lookup_Tokens")]
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
             Dictionary<string, string> list;
@@ -4781,6 +4807,7 @@ order by  D.TextPath", new { id });
             };
         }
 
+        [Route("FieldType_Lookups")]
         public JsonNetResult FieldType_Lookups(string type, int id, bool isNg = false)
         {
             #region Load static lists
@@ -4870,6 +4897,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        [Route("FieldType_FormData")]
         public JsonNetResult FieldType_FormData(int id)
         {
             FieldType ft = null;
@@ -4992,6 +5020,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
+        [Route("FieldType_DeleteFields")]
         public JsonResult FieldType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.FieldType, id, Claim.Delete))
@@ -5019,6 +5048,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             if (nameUpper == "STATUS" || nameUpper == "NAME" || nameUpper == "DESCRIPTION" || nameUpper == "PARENTID" || nameUpper == "DATELASTCERTIFIED" || nameUpper == "TAXONOMYTYPEID") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
+        [Route("AddFieldType")]
         public ActionResult AddFieldType(SystemObjects type, int id)
         {
             var model = new FieldTypeEditorModel
@@ -5028,8 +5058,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FieldTypeEditForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFieldType")]
         public JsonResult AddFieldType(FieldTypeEditorModel model)
         {
             try
@@ -5301,6 +5330,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteFieldType")]
         public ActionResult DeleteFieldType(int id)
         {
             var a = Company.GetById<FieldType>(id);
@@ -5317,7 +5347,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFieldType")]
         public JsonResult DeleteFieldType(FormCollection form)
         {
             try
@@ -5342,7 +5372,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFieldTypeByID")]
         public JsonResult DeleteFieldTypeByID(int id)
         {
             var form = new FormCollection();
@@ -5350,7 +5380,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFieldType(form);
         }
 
-        [HttpGet, ActionName("FieldType")]
+        [HttpGet, ActionName("FieldType"), Route("FieldType")]
         public JsonNetResult GetFieldType(int id)
         {
             var a = Company.GetById<FieldType>(id);
@@ -5375,6 +5405,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         }
 
+        [Route("EditFieldType")]
         public ActionResult EditFieldType(int id)
         {
             var a = Company.GetById<FieldType>(id);
@@ -5396,7 +5427,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFieldType")]
         public JsonResult EditFieldType(FieldTypeEditorModel model)
         {
             try
@@ -5936,6 +5967,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         /// <param name="fat">FusionTypeID</param>
         /// <param name="p">ParentID</param>
+        [Route("Fusion_AddFields")]
         public JsonResult Fusion_AddFields(int ft)
         {
             var list = new List<EditableField>();
@@ -5968,6 +6000,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
+        [Route("Fusion_DeleteFields")]
         public JsonResult Fusion_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -5979,6 +6012,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
+        [Route("Fusion_EditFields")]
         public JsonResult Fusion_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -6019,7 +6053,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
-        //[Route("fusion/{typeID:int}/configurations/add")]
+        [Route("AddFusion")]
         public ActionResult AddFusion(int typeID)
         {
             var type = Company.GetById<FusionType>(typeID);
@@ -6037,8 +6071,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusion")]
         public JsonResult AddFusion(FormCollection form)
         {
             try
@@ -6089,6 +6122,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("AddFusionSpreadsheetImport")]
         public ActionResult AddFusionSpreadsheetImport(int typeID, int id)//, int attributeTypeID)
         {
             var fusion = Company.GetById<Fusion>(id, i => i.FusionType.FusionAttributeTypes);
@@ -6101,6 +6135,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("DeleteFusion")]
         public ActionResult DeleteFusion(int id)
         {
             var a = Company.GetById<Fusion>(id);
@@ -6117,7 +6152,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusion")]
         public JsonResult DeleteFusion(FormCollection form)//(int typeID, int id)
         {
             try
@@ -6141,7 +6176,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionByID")]
         public JsonResult DeleteFusionByID(int id)
         {
             var form = new FormCollection();
@@ -6149,6 +6184,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusion(form);
         }
 
+        [Route("EditFusion")]
         public ActionResult EditFusion(int id)
         {
             var a = Company.GetById<Fusion>(id);
@@ -6166,7 +6202,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusion")]
         public JsonResult EditFusion(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
             try
@@ -6235,7 +6271,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-        
+
         #endregion
 
         #endregion
@@ -6244,6 +6280,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("FusionFilter_AddFields")]
         public JsonResult FusionFilter_AddFields(int f)
         {
             if (!Company.HasPermission(SystemObjects.Fusion, f, Claim.Create))
@@ -6261,6 +6298,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("GetFusionAttributeTypes")]
         public JsonNetResult GetFusionAttributeTypes(int fusionID)
         {
             var fusion = Company.GetById<Fusion>(fusionID);
@@ -6272,6 +6310,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        [Route("FusionFilter_DeleteFields")]
         public JsonResult FusionFilter_DeleteFields(int f, int a)
         {
             var list = new List<EditableField>();
@@ -6285,6 +6324,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("FusionFilter_EditFields")]
         public JsonResult FusionFilter_EditFields(int f, int a)
         {
             var list = new List<EditableField>();
@@ -6304,6 +6344,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddFusionFilter")]
         public ActionResult AddFusionFilter(int f)
         {
             if (!Company.Exists<Fusion>(f)) return HttpNotFound();
@@ -6319,8 +6360,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayEditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionFilter")]
         public JsonResult AddFusionFilter(FormCollection form)
         {
             try
@@ -6354,7 +6394,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ActionName("FusionFilter"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [ActionName("FusionFilter"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionFilter")]
         public JsonResult PostFusionFilter(FusionFilter f)
         {
             try
@@ -6388,6 +6428,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteFusionFilter")]
         public ActionResult DeleteFusionFilter(int f, int a)
         {
             var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
@@ -6404,7 +6445,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionFilter")]
         public JsonResult DeleteFusionFilter(FormCollection form)//(int typeID, int id)
         {
             try
@@ -6432,7 +6473,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionFilterByID")]
         public JsonResult DeleteFusionFilterByID(int fusionID, int fusionAttributeTypeID)
         {
             var form = new FormCollection();
@@ -6442,6 +6483,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusionFilter(form);
         }
 
+        [Route("EditFusionFilter")]
         public ActionResult EditFusionFilter(int f, int a)
         {
             var o = Company.Filter<FusionFilter>(i => i.FusionID == f && i.FusionAttributeTypeID == a).SingleOrDefault();
@@ -6458,7 +6500,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayEditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusionFilter")]
         public JsonResult EditFusionFilter(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
             try
@@ -6491,7 +6533,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ActionName("FusionFilter"), HttpPut, ValidateInput(false)]
+        [ActionName("FusionFilter"), HttpPut, ValidateInput(false), Route("FusionFilter")]
         public JsonResult PutFusionFilter(FusionFilter f)
         {
             try
@@ -6531,6 +6573,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region FusionRule
 
         #region Form Get/Post
+
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/rule/add")]
         public ActionResult AddFusionRule(int typeID, int fusionID)
         {
@@ -6548,7 +6591,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetAddFusionRule")]
         public JsonNetResult GetAddFusionRule(int typeID)
         {
             return new JsonNetResult
@@ -6558,7 +6601,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRule")]
         public JsonResult PostAddFusionRule(FusionRule r)
         {
             try
@@ -6589,8 +6632,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRule")]
         public JsonResult AddFusionRule(FormCollection form)
         {
             try
@@ -6621,6 +6663,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteFusionRule")]
         public ActionResult DeleteFusionRule(int id)
         {
             var a = Company.GetById<FusionRule>(id);
@@ -6638,7 +6681,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRule")]
         public JsonResult DeleteFusionRule(FormCollection form)
         {
             try
@@ -6659,7 +6702,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleById")]
         public JsonResult DeleteFusionRuleById(int id)
         {
             var form = new FormCollection();
@@ -6667,7 +6710,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusionRule(form);
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetEditFusionRule")]
         public JsonNetResult GetEditFusionRule(int id)
         {
             var a = Company.GetById<FusionRule>(id);
@@ -6691,7 +6734,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
-        [HttpPost]
+        [HttpPost, Route("PostEditFusionRule")]
         public JsonResult PostEditFusionRule(FusionRule r)
         {
             try
@@ -6725,6 +6768,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("EditFusionRule")]
         public ActionResult EditFusionRule(int id)
         {
             var a = Company.GetById<FusionRule>(id);
@@ -6743,7 +6787,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusionRule")]
         public JsonResult EditFusionRule(FormCollection form)
         {
             try
@@ -6782,6 +6826,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region Field Generation
 
         /// <param name="id">RuleID</param>
+        [Route("FusionRule_DeleteFields")]
         public ActionResult FusionRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6801,6 +6846,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("FusionRuleItem_DeleteFields")]
         public JsonResult FusionRuleItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -6814,6 +6860,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddFusionRuleItem")]
         public ActionResult AddFusionRuleItem(int id)
         {
             var rule = Company.GetById<FusionRule>(id);
@@ -6836,7 +6883,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleItemEditForm", editorModel);
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetAddFusionRuleItem")]
         public JsonNetResult GetAddFusionRuleItem(int id)
         {
             var rule = Company.GetById<FusionRule>(id);
@@ -6865,7 +6912,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
-        [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleItem")]
         public JsonResult PostAddFusionRuleItem(FusionRuleItem item)
         {
             try
@@ -6915,8 +6962,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleItem")]
         public JsonResult AddFusionRuleItem(FormCollection form)
         {
             try
@@ -6966,6 +7012,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("DeleteFusionRuleItem")]
         public ActionResult DeleteFusionRuleItem(int id)
         {
             var a = Company.GetById<FusionRuleItem>(id);
@@ -6983,7 +7030,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleItem")]
         public JsonResult DeleteFusionRuleItem(FormCollection form)
         {
             try
@@ -7015,13 +7062,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleItemByID")]
         public JsonResult DeleteFusionRuleItemByID(int id)
         {
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteFusionRuleItem(form);
         }
+
         #endregion
 
         #endregion
@@ -7029,6 +7077,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region FusionRuleStep
 
         #region Form Get/Post
+
         [Route("fusion/rule/{ruleID:int}/step/add")]
         public ActionResult AddFusionRuleStep(int ruleID)
         {
@@ -7050,7 +7099,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 });
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetAddFusionRuleStep")]
         public JsonNetResult GetAddFusionRuleStep(int ruleID)
         {
             if (ruleID <= 0) return null;
@@ -7075,7 +7124,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleStep")]
         public JsonResult PostAddFusionRuleStep(FusionRuleStep s)
         {
             try
@@ -7122,8 +7171,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleStep")]
         public ActionResult AddFusionRuleStep(FormCollection form)
         {
             try
@@ -7794,7 +7842,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 });
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetEditFusionRuleStep")]
         public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
         {
             var rule = Company.GetById<FusionRule>(ruleID);
@@ -7851,7 +7899,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PutEditFusionRuleStep")]
         public JsonResult PutEditFusionRuleStep(FusionRuleStep s)
         {
             try
@@ -7903,8 +7951,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPut, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditFusionRuleStep")]
         public ActionResult EditFusionRuleStep(FormCollection form)
         {
             try
@@ -7972,7 +8019,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             });
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleStep")]
         public ActionResult DeleteFusionRuleStep(FormCollection form)
         {
             try
@@ -8023,7 +8070,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleStepByID")]
         public ActionResult DeleteFusionRuleStepByID(int ruleID, int ruleStepID)
         {
             var form = new FormCollection();
@@ -8054,8 +8101,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             });
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("MoveFusionRuleStep")]
         public ActionResult MoveFusionRuleStep(FormCollection form)
         {
             var ruleID = parseIntField(form, "ID");
@@ -8108,6 +8154,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region Field Generation
 
         /// <param name="id">RuleID</param>
+        [Route("FusionRuleStep_AddFields")]
         public ActionResult FusionRuleStep_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -8122,6 +8169,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("FusionRuleStep_EditFields")]
         public ActionResult FusionRuleStep_EditFields(int id, int ruleStepID)
         {
             var list = new List<EditableField>();
@@ -8141,6 +8189,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("FusionRuleStep_DeleteFields")]
         public ActionResult FusionRuleStep_DeleteFields(int id, int ruleStepID)
         {
             var list = new List<EditableField>();
@@ -8156,6 +8205,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("FusionRuleStep_MoveFields")]
         public ActionResult FusionRuleStep_MoveFields(int id, int ruleStepID, string direction)
         {
             var list = new List<EditableField>();
@@ -8181,6 +8231,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("FusionRuleStepMapping_DeleteFields")]
         public JsonResult FusionRuleStepMapping_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -8346,6 +8397,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return targetFields;
         }
 
+        [Route("AddFusionRuleStepMapping")]
         public ActionResult AddFusionRuleStepMapping(int id)
         {
             var ruleStep = Company.GetById<FusionRuleStep>(id);
@@ -8368,7 +8420,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleStepMappingEditForm", editorModel);
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetAddFusionRuleStepMapping")]
         public JsonNetResult GetAddFusionRuleStepMapping(int id)
         {
             var ruleStep = Company.GetById<FusionRuleStep>(id);
@@ -8396,7 +8448,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleStepMapping")]
         public JsonResult PostAddFusionRuleStepMapping(FusionRuleStepMapping map)
         {
             try
@@ -8463,8 +8515,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionRuleStepMapping")]
         public JsonResult AddFusionRuleStepMapping(FormCollection form)
         {
             try
@@ -8533,6 +8584,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("DeleteFusionRuleStepMapping")]
         public ActionResult DeleteFusionRuleStepMapping(int id)
         {
             var a = Company.GetById<FusionRuleStepMapping>(id);
@@ -8550,7 +8602,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleStepMapping")]
         public JsonResult DeleteFusionRuleStepMapping(FormCollection form)
         {
             try
@@ -8571,7 +8623,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionRuleStepMappingByID")]
         public JsonResult DeleteFusionRuleStepMappingByID(int id)
         {
             var form = new FormCollection();
@@ -8579,6 +8631,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusionRuleStepMapping(form);
         }
 
+        [Route("EditFusionRuleStepMapping")]
         public ActionResult EditFusionRuleStepMapping(int id)
         {
             var a = Company.GetById<FusionRuleStepMapping>(id);
@@ -8597,6 +8650,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("FusionRuleStepMappingEditForm", editorModel);
         }
 
+        [Route("GetEditFusionRuleStepMapping")]
         public JsonNetResult GetEditFusionRuleStepMapping(int id)
         {
             var a = Company.GetById<FusionRuleStepMapping>(id);
@@ -8619,7 +8673,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("PutEditFusionRuleStepMapping")]
         public JsonResult PutEditFusionRuleStepMapping(FusionRuleStepMapping map)
         {
             try
@@ -8678,7 +8732,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusionRuleStepMapping")]
         public JsonResult EditFusionRuleStepMapping(FormCollection form)
         {
             try
@@ -8746,6 +8800,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("FusionType_AddFields")]
         public JsonResult FusionType_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.FusionType, 0, Claim.Create))
@@ -8761,6 +8816,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionTypeID</param>
+        [Route("FusionType_DeleteFields")]
         public JsonResult FusionType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -8775,6 +8831,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionTypeID</param>
+        [Route("FusionType_EditFields")]
         public JsonResult FusionType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -8797,6 +8854,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddFusionType")]
         public ActionResult AddFusionType()
         {
             var model = new EditableForm
@@ -8812,8 +8870,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionType")]
         public JsonResult AddFusionType(FormCollection form)
         {
             try
@@ -8847,7 +8904,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
-        [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [ActionName("FusionType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionType")]
         public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
         {
             try
@@ -8881,6 +8938,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteFusionType")]
         public ActionResult DeleteFusionType(int id)
         {
             var a = Company.GetById<FusionType>(id);
@@ -8897,7 +8955,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionType")]
         public JsonResult DeleteFusionType(FormCollection form)//(int typeID, int id)
         {
             try
@@ -8930,6 +8988,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         [HttpDelete]
+        [Route("DeleteFusionTypeByID")]
         public JsonResult DeleteFusionTypeByID(int id)
         {
             var form = new FormCollection();
@@ -8937,6 +8996,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusionType(form);
         }
 
+        [Route("EditFusionType")]
         public ActionResult EditFusionType(int id)
         {
             var a = Company.GetById<FusionType>(id);
@@ -8954,7 +9014,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusionType")]
         public JsonResult EditFusionType(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
             try
@@ -8987,7 +9047,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ActionName("FusionType"), HttpPut, ValidateInput(false)]
+        [ActionName("FusionType"), HttpPut, ValidateInput(false), Route("FusionType")]
         public JsonResult PutFusionType(FusionType fusion, ObjectStyle style = null)
         {
             try
@@ -9019,6 +9079,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+
         #endregion
 
         #endregion
@@ -9029,6 +9090,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         /// <param name="fat">FusionTypeID</param>
         /// <param name="p">ParentID</param>
+        [Route("FusionAttributeType_AddFields")]
         public JsonResult FusionAttributeType_AddFields(int ft, int p)
         {
             if (!Company.HasPermission(SystemObjects.FusionType, ft, Claim.Create))
@@ -9048,6 +9110,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
+        [Route("FusionAttributeType_DeleteFields")]
         public JsonResult FusionAttributeType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -9062,6 +9125,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">FusionAttributeTypeID</param>
+        [Route("FusionAttributeType_EditFields")]
         public JsonResult FusionAttributeType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -9080,6 +9144,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddFusionAttributeType")]
         public ActionResult AddFusionAttributeType(int typeID, int parentID = 0)
         {
             var type = Company.GetById<FusionType>(typeID);
@@ -9102,8 +9167,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddFusionAttributeType")]
         public JsonResult AddFusionAttributeType(FormCollection form)
         {
             try
@@ -9143,7 +9207,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ActionName("FusionAttributeType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken]
+        [ActionName("FusionAttributeType"), HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, Route("FusionAttributeType")]
         public JsonResult PostFusionAttributeType(FusionAttributeType fusion)
         {
             try
@@ -9178,6 +9242,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteFusionAttributeType")]
         public ActionResult DeleteFusionAttributeType(int id)
         {
             var a = Company.GetById<FusionAttributeType>(id);
@@ -9194,7 +9259,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionAttributeType")]
         public JsonResult DeleteFusionAttributeType(FormCollection form)//(int typeID, int id)
         {
             try
@@ -9224,7 +9289,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteFusionAttributeTypeByID")]
         public JsonResult DeleteFusionAttributeTypeByID(int id)
         {
             var form = new FormCollection();
@@ -9232,6 +9297,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return DeleteFusionAttributeType(form);
         }
 
+        [Route("EditFusionAttributeType")]
         public ActionResult EditFusionAttributeType(int id)
         {
             var a = Company.GetById<FusionAttributeType>(id);
@@ -9248,7 +9314,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditFusionAttributeType")]
         public JsonResult EditFusionAttributeType(FormCollection form)//(int typeID, int id, FusionAttributeType model)
         {
             try
@@ -9278,7 +9344,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [ActionName("FusionAttributeType"), HttpPut, ValidateInput(false)]
+        [ActionName("FusionAttributeType"), HttpPut, ValidateInput(false), Route("FusionAttributeType")]
         public JsonResult PutFusionAttributeType(FusionAttributeType fusion)
         {
             try
@@ -9305,14 +9371,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
+        
         #endregion
 
         #endregion
 
         #region Intersect/Other Relationships
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("RelatedArtifact/{s:int}/{t:int}")]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("RelatedArtifact/{s:int}/{t:int}")]
         public JsonResult AddRelatedArtifact(int s, int t)
         {
             try
@@ -9362,7 +9428,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteIntersect")]
         public JsonResult DeleteIntersect(int id)
         {
             try
@@ -9393,6 +9459,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("IntersectRole_AddFields")]
         public JsonResult IntersectRole_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.IntersectRole, 0, Claim.Update))
@@ -9407,6 +9474,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">IntersectRoleID</param>
+        [Route("IntersectRole_DeleteFields")]
         public JsonResult IntersectRole_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -9420,6 +9488,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">IntersectRoleID</param>
+        [Route("IntersectRole_EditFields")]
         public JsonResult IntersectRole_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -9439,6 +9508,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddIntersectRole")]
         public ActionResult AddIntersectRole()
         {
             var model = new EditableForm
@@ -9453,8 +9523,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayEditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectRole")]
         public JsonResult AddIntersectRole(FormCollection form)
         {
             try
@@ -9485,6 +9554,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("DeleteIntersectRole")]
         public ActionResult DeleteIntersectRole(int id)
         {
             var a = Company.GetById<IntersectRole>(id);
@@ -9501,7 +9571,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteIntersectRole")]
         public JsonResult DeleteIntersectRole(FormCollection form)
         {
             try
@@ -9529,6 +9599,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
+        [Route("EditIntersectRole")]
         public ActionResult EditIntersectRole(int id)
         {
             var a = Company.GetById<IntersectRole>(id);
@@ -9545,7 +9616,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("OverlayEditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditIntersectRole")]
         public JsonResult EditIntersectRole(FormCollection form)
         {
             try
@@ -9586,6 +9657,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         #region Field Generation
 
         /// <param name="id">IntersectTypeID</param>
+        [Route("IntersectType_DeleteFields")]
         public JsonResult IntersectType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.IntersectType, id, Claim.Delete))
@@ -9606,6 +9678,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Json Feeds To Support Editing
 
+        [Route("IntersectType_FormData")]
         public JsonNetResult IntersectType_FormData(int id)
         {
             var type = Company.GetById<IntersectType>(id, i => i.IntersectTypePredicates);
@@ -9627,6 +9700,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("IntersectType_PredicateOptions")]
         public JsonNetResult IntersectType_PredicateOptions()
         {
             //var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
@@ -9641,6 +9715,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("IntersectType_Side1Options")]
         public JsonNetResult IntersectType_Side1Options()
         {
             var models = Company.GetIntersectTypeOptions()
@@ -9649,6 +9724,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("IntersectType_Side2Options")]
         public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null)
         {
             var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID)
@@ -9662,14 +9738,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Form Get/Post
 
+        [Route("AddIntersectType")]
         public ActionResult AddIntersectType()
         {
             ViewBag.ID = 0;
             return PartialView("IntersectTypeEditForm");
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddIntersectType")]
         public JsonResult AddIntersectType(FormCollection form)
         {
             try
@@ -9731,6 +9807,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("DeleteIntersectType")]
         public ActionResult DeleteIntersectType(int id)
         {
             var type = Company.GetById<IntersectType>(id);
@@ -9747,7 +9824,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteIntersectType")]
         public JsonResult DeleteIntersectType(FormCollection form)
         {
             try
@@ -9780,13 +9857,14 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("EditIntersectType")]
         public ActionResult EditIntersectType(int id)
         {
             ViewBag.ID = id;
             return PartialView("IntersectTypeEditForm");
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditIntersectType")]
         public JsonResult EditIntersectType(FormCollection form)
         {
             try
@@ -9863,6 +9941,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Field Generation
 
+        [Route("Group_AddFields")]
         public JsonResult Group_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.Group, 0, Claim.Create))
@@ -9888,6 +9967,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Group_AddGroupUserFields")]
         public JsonResult Group_AddGroupUserFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
@@ -9910,6 +9990,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">GroupID</param>
+        [Route("Group_DeleteFields")]
         public JsonResult Group_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Delete))
@@ -9923,6 +10004,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Group_DeleteGroupUserFields")]
         public JsonResult Group_DeleteGroupUserFields(int groupID, int resourceID)
         {
             if (!Company.HasPermission(SystemObjects.Group, groupID, Claim.Update)) return jsonException("You do not have permissions to remove users.", HttpStatusCode.Forbidden);
@@ -9941,6 +10023,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         /// <param name="id">GroupID</param>
+        [Route("Group_EditFields")]
         public JsonResult Group_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update))
@@ -9976,6 +10059,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Group : Add
 
+        [Route("AddGroup")]
         public ActionResult AddGroup()
         {
             var model = new EditableForm
@@ -9991,8 +10075,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroup")]
         public JsonResult AddGroup(FormCollection form)
         {
             try
@@ -10042,6 +10125,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Group : Add User
 
+        [Route("AddGroupUser")]
         public ActionResult AddGroupUser(int id)
         {
             var g = Company.GetById<Group>(id);
@@ -10058,8 +10142,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddGroupUser")]
         public JsonResult AddGroupUser(FormCollection form)
         {
             try
@@ -10085,7 +10168,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup")]
+        [HttpPost, ValidateHttpAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
         public JsonResult PostResourceGroup(ResourceGroup model)
         {
             try
@@ -10104,7 +10187,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpGet]
+        [HttpGet, Route("GetGroupUserList")]
         public JsonResult GetGroupUserList(int id)
         {
             if (!Company.HasPermission(SystemObjects.Group, id, Claim.Update)) return jsonException("You do not have permissions to add users.", HttpStatusCode.Forbidden);
@@ -10123,6 +10206,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Group : Delete User
 
+        [Route("DeleteGroupUser")]
         public ActionResult DeleteGroupUser(int groupID, int resourceID)
         {
             //var g = Company.GetById<Group>(groupID);            
@@ -10143,7 +10227,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpPut]
+        [HttpPut, Route("DeleteGroupUser")]
         public JsonResult DeleteGroupUser(FormCollection form)
         {
             try
@@ -10171,7 +10255,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup")]
+        [HttpDelete, ValidateHttpAntiForgeryToken, ActionName("ResourceGroup"), Route("ResourceGroup")]
         public JsonResult DeleteResourceGroup(int groupID, int resourceID)
         {
             try
@@ -10198,6 +10282,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
         #region Group : Delete
 
+        [Route("DeleteGroup")]
         public ActionResult DeleteGroup(int id)
         {
             var a = Company.GetById<Group>(id);
@@ -10215,7 +10300,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteGroup")]
         public JsonResult DeleteGroup(FormCollection form)
         {
             try
@@ -10241,17 +10326,19 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteGroupByID")]
         public JsonResult DeleteGroupByID(int id)
         {
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteGroup(form);
         }
+
         #endregion
 
         #region Group : Edit
 
+        [Route("EditGroup")]
         public ActionResult EditGroup(int id)
         {
             var a = Company.GetById<Group>(id);
@@ -10269,7 +10356,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditGroup")]
         public JsonResult EditGroup(FormCollection form)
         {
             try
@@ -10318,7 +10405,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group")]
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group"), Route("Group")]
         public JsonResult PostGroup(Group model)
         {
             try
@@ -10351,7 +10438,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group")]
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("Group"), Route("Group")]
         public JsonResult PutGroup(Group model)
         {
             try
@@ -10399,7 +10486,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             }
         }
 
-        [HttpGet, ActionName("Group")]
+        [HttpGet, ActionName("Group"), Route("Group")]
         public JsonNetResult GetGroup(int id)
         {
             var group = new Group();
@@ -10457,6 +10544,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
         /// </summary>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("Lineage_IntersectRoles")]
         public JsonNetResult Lineage_IntersectRoles()
         {
             return new JsonNetResult
@@ -10474,6 +10562,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         /// Gets a list of intersect types that support lineage.
         /// </summary>
         /// <returns>A list of relevant fusion attribute types.</returns>
+        [Route("Lineage_IntersectTypes")]
         public JsonNetResult Lineage_IntersectTypes()
         {
             var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
@@ -10491,6 +10580,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        [Route("Lineage_IntersectTypeSources")]
         public JsonNetResult Lineage_IntersectTypeSources()
         {
             var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
@@ -10512,6 +10602,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        [Route("Lineage_IntersectTypeTargets")]
         public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
         {
             var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
@@ -10533,6 +10624,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             };
         }
 
+        [Route("Lineage_IntersectSharedObjects")]
         public JsonNetResult Lineage_IntersectSharedObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
         {
             var sql = @"select
@@ -10579,6 +10671,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
 
+        [Route("Lineage_IntersectSubjects")]
         public JsonNetResult Lineage_IntersectSubjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
         {
             var sql = @"select i.ID as SourceIntersectID,
@@ -10630,6 +10723,7 @@ and i.id not in (
             };
         }
 
+        [Route("Lineage_IntersectObjects")]
         public JsonNetResult Lineage_IntersectObjects(string sourceType, int sourceTypeID, string targetType, int targetTypeID, string source, string target, int sourceID, int targetID)
         {
             var sql = @"select i.ID as SourceIntersectID,
@@ -10680,11 +10774,13 @@ and i.id not in (
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
         /// <summary>
         /// Gets a list of subjects based on the given intersect type.
         /// </summary>
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
+        [Route("Lineage_MapSubjects")]
         public JsonNetResult Lineage_MapSubjects(int id)//, SystemObjects o, int oid)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
@@ -10707,6 +10803,7 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
         /// </summary>
         /// <param name="id">The Intersect Type's ID</param>
         /// <returns>A list of name/value pairs.</returns>
+        [Route("Lineage_MapObjects")]
         public JsonNetResult Lineage_MapObjects(int id)//, SystemObjects o, int oid)
         {
             var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == id).FirstOrDefault();
@@ -10731,6 +10828,7 @@ order by TextPath", new { type = new Dapper.DbString { IsAnsi = true, Value = in
         /// <param name="intersectID">The intersectID we are searching under.</param>
         /// <param name="phrase">Part of the text path to search for.</param>
         /// <returns>A list of name/value pairs.</returns>
+        [Route("")]
         public JsonNetResult MapRule_FindFusion(int intersectID, string phrase)
         {
             var intersect = Company.Filter<IntersectDetail>(i => i.ID == intersectID).FirstOrDefault();
@@ -10759,7 +10857,7 @@ order by A.TextPath", new { phrase, SubjectID = intersect.SubjectID });
         /// </summary>
         /// <param name="model">The intersectID we are searching under.</param>
         /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost]
+        [HttpPost, Route("MapRulesByMap")]
         public JsonNetResult MapRulesByMap(SourceTargetIntersectModel model)
         {
             var list = Company.Query<string>(@"
@@ -10803,7 +10901,7 @@ for json path", new { s = model.SourceIntersectID, sd = model.SourceDiagramKey, 
         /// </summary>
         /// <param name="models">A collection of source/target intersect IDs.</param>
         /// <returns>A deep hierarchy of map rules.</returns>
-        [HttpPost]
+        [HttpPost, Route("MapRulesByObject")]
         public JsonNetResult MapRulesByObject(SourceTargetIntersectModels models)
         {
             if (models == null)
@@ -10857,7 +10955,7 @@ for json path");
             };
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("MapRules_Save")]
         public JsonNetResult MapRules_Save(MapRulesModel model)
         {
             if (model.Rules == null)
@@ -10995,7 +11093,7 @@ for json path");
         /// </summary>
         /// <param name="model">An array of items to add relationships for.</param>
         /// <returns>A list of name/value pairs.</returns>
-        [HttpPost]
+        [HttpPost, Route("Lineage_AddItemsToDiagram")]
         public JsonNetResult Lineage_AddItemsToDiagram(AddItemsToDiagramModel model)
         {
             model.Items.ForEach(i =>
@@ -11027,7 +11125,7 @@ for json path");
         /// </summary>
         /// <param name="models">An array of items to add relationships for.</param>
         /// <returns>A list of name/value pairs.</returns>
-        [HttpPost]
+        [HttpPost, Route("Lineage_Update")]
         public JsonNetResult Lineage_Update(SourcePostModel models)
         {
             var message = "";
@@ -11357,6 +11455,7 @@ for json path");
             return fieldTypeNames;
         }
 
+        [Route("Load_TypeOptions")]
         public JsonNetResult Load_TypeOptions(string act)
         {
             IEnumerable<OptionModel> models = null;
@@ -11429,12 +11528,13 @@ from ArtifactType A
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("Load_ExpectedColumns")]
         public JsonNetResult Load_ExpectedColumns(string type, int id)
         {
             return new JsonNetResult { Data = getFieldNamesByType(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [FileDownload]
+        [FileDownload, Route("Load_ExpectedColumns_ToExcel")]
         public FileResult Load_ExpectedColumns_ToExcel(string type, int id)
         {
 
@@ -11770,13 +11870,13 @@ from ArtifactType A
             dataValidation.AllowList($"={range}", true, true);
         }
 
+        [Route("AddLoad")]
         public ActionResult AddLoad()
         {
             return PartialView();
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddLoad")]
         public JsonResult AddLoad(LoadFilePostModel model)
         {
             try
@@ -11969,6 +12069,7 @@ from ArtifactType A
         #region Field Generation
 
         /// <param name="id">LookupTypeID</param>
+        [Route("Lookup_AddFields")]
         public JsonResult Lookup_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Create))
@@ -11984,6 +12085,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupID</param>
+        [Route("Lookup_DeleteFields")]
         public JsonResult Lookup_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -11998,6 +12100,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupID</param>
+        [Route("Lookup_EditFields")]
         public JsonResult Lookup_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -12016,7 +12119,7 @@ from ArtifactType A
 
         #region Form Get/Post
         
-
+        [Route("AddLookup")]
         public ActionResult AddLookup(int id)
         {
             var a = Company.GetById<LookupType>(id);
@@ -12033,8 +12136,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookup")]
         public JsonResult AddLookup(FormCollection form)
         {
             try
@@ -12070,7 +12172,7 @@ from ArtifactType A
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteLookupByIdRaw")]
         public ActionResult DeleteLookupByIdRaw(int id)
         {
             var form = new FormCollection();
@@ -12078,6 +12180,7 @@ from ArtifactType A
             return DeleteLookup(form);
         }
 
+        [Route("DeleteLookup")]
         public ActionResult DeleteLookup(int id)
         {
             var a = Company.GetById<Lookup>(id);
@@ -12094,7 +12197,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteLookup")]
         public JsonResult DeleteLookup(FormCollection form)
         {
             try
@@ -12123,8 +12226,9 @@ from ArtifactType A
             }
         }
 
-   
 
+
+        [Route("EditLookup")]
         public ActionResult EditLookup(int id)
         {
             var a = Company.GetById<Lookup>(id);
@@ -12141,7 +12245,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditLookup")]
         public JsonResult EditLookup(FormCollection form)
         {
             try
@@ -12180,6 +12284,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("LookupType_AddFields")]
         public JsonResult LookupType_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.LookupType, 0, Claim.Create))
@@ -12193,6 +12298,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupTypeID</param>
+        [Route("LookupType_DeleteFields")]
         public JsonResult LookupType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Delete))
@@ -12206,6 +12312,7 @@ from ArtifactType A
         }
 
         /// <param name="id">LookupTypeID</param>
+        [Route("LookupType_EditFields")]
         public JsonResult LookupType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.LookupType, id, Claim.Update))
@@ -12230,7 +12337,7 @@ from ArtifactType A
             public string Name { get; set; }
         }
 
-        [HttpPost, ValidateInput(false)]
+        [HttpPost, ValidateInput(false), Route("AddLookupTypeRaw")]
         public JsonResult AddLookupTypeRaw(LookupTypeModel lookup)
         {
             var form = new FormCollection();
@@ -12239,6 +12346,7 @@ from ArtifactType A
             return AddLookupType(form);
         }
 
+        [Route("AddLookupType")]
         public ActionResult AddLookupType()
         {
             var model = new EditableForm
@@ -12254,8 +12362,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddLookupType")]
         public JsonResult AddLookupType(FormCollection form)
         {
             try
@@ -12302,8 +12409,7 @@ from ArtifactType A
             }
         }
 
-        [HttpDelete]
-        [Route("lookuptype/{lookupTypeId:int}")]
+        [HttpDelete, Route("lookuptype/{lookupTypeId:int}")]
         public ActionResult DeleteLookupTypeById(int lookupTypeId)
         {
             var form = new FormCollection();
@@ -12311,7 +12417,7 @@ from ArtifactType A
             return DeleteLookupType(form);
         }
 
-        [HttpGet]
+        [HttpGet, Route("DeleteLookupType")]
         public ActionResult DeleteLookupType(int id)
         {
             var a = Company.GetById<LookupType>(id);
@@ -12329,7 +12435,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteLookupType")]
         public JsonResult DeleteLookupType(FormCollection form)
         {
             try
@@ -12356,7 +12462,7 @@ from ArtifactType A
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditLookupTypeRaw")]
         public JsonResult EditLookupTypeRaw(LookupTypeModel lookup)
         {
             var form = new FormCollection();
@@ -12366,6 +12472,7 @@ from ArtifactType A
             return EditLookupType(form);
         }
 
+        [Route("EditLookupType")]
         public ActionResult EditLookupType(int id)
         {
             var a = Company.GetById<LookupType>(id);
@@ -12383,7 +12490,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditLookupType")]
         public JsonResult EditLookupType(FormCollection form)
         {
             try
@@ -12422,6 +12529,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("MapRule_DeleteFields")]
         public JsonResult MapRule_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -12434,6 +12542,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("MapRule_EditFields")]
         public JsonResult MapRule_EditFields(int id)
         {
             var a = Company.GetById<MapRule>(id);
@@ -12447,6 +12556,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("MapRule_AddFields")]
         public JsonResult MapRule_AddFields()
         {
             var list = new List<EditableField>();
@@ -12462,6 +12572,7 @@ from ArtifactType A
         /// 
         /// </summary>
         /// <returns></returns>
+        [Route("AddMapRule")]
         public ActionResult AddMapRule()
         {
             var model = new EditableForm
@@ -12476,8 +12587,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMapRule")]
         public JsonResult AddMapRule(FormCollection form)
         {
             try
@@ -12506,6 +12616,7 @@ from ArtifactType A
             }
         }
 
+        [Route("DeleteMapRule")]
         public ActionResult DeleteMapRule(int id)
         {
             var a = Company.GetById<MapRule>(id);
@@ -12522,7 +12633,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteMapRule")]
         public JsonResult DeleteMapRule(FormCollection form)
         {
             try
@@ -12554,6 +12665,7 @@ from ArtifactType A
             }
         }
 
+        [Route("EditMapRule")]
         public ActionResult EditMapRule(int id)
         {
             var a = Company.GetById<MapRule>(id);
@@ -12571,8 +12683,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPut, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMapRule")]
         public JsonResult EditMapRule(FormCollection form)
         {
             try
@@ -12606,6 +12717,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("MapRuleItem_DeleteFields")]
         public JsonResult MapRuleItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -12618,6 +12730,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("MapRuleItem_EditFields")]
         public JsonResult MapRuleItem_EditFields(int id)
         {
             var a = Company.GetById<MapRuleItem>(id);
@@ -12642,6 +12755,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("MapRuleItem_AddFields")]
         public JsonResult MapRuleItem_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -12668,6 +12782,7 @@ from ArtifactType A
         /// </summary>
         /// <param name="id">The ID of the Map Rule we are adding this item to.</param>
         /// <returns></returns>
+        [Route("AddMapRuleItem")]
         public ActionResult AddMapRuleItem(int id)
         {            
             var model = new EditableForm
@@ -12682,8 +12797,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
         
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddMapRuleItem")]
         public JsonResult AddMapRuleItem(FormCollection form)
         {
             try
@@ -12735,6 +12849,7 @@ from ArtifactType A
             }
         }
 
+        [Route("DeleteMapRuleItem")]
         public ActionResult DeleteMapRuleItem(int id)
         {
             var a = Company.GetById<MapRuleItem>(id);
@@ -12751,7 +12866,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteMapRuleItem")]
         public JsonResult DeleteMapRuleItem(FormCollection form)
         {
             try
@@ -12782,6 +12897,7 @@ from ArtifactType A
             }
         }
 
+        [Route("EditMapRuleItem")]
         public ActionResult EditMapRuleItem(int id)
         {
             var a = Company.GetById<MapRuleItem>(id);
@@ -12799,8 +12915,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPut, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditMapRuleItem")]
         public JsonResult EditMapRuleItem(FormCollection form)
         {
             try
@@ -12875,6 +12990,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("Policy_AddFields")]
         public JsonResult Policy_AddFields(int typeID, int? parentID)
         {
             var model = new Policy();
@@ -12893,6 +13009,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyID</param>
+        [Route("Policy_DeleteFields")]
         public JsonResult Policy_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Delete))
@@ -12905,6 +13022,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyID</param>
+        [Route("Policy_EditFields")]
         public JsonResult Policy_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
@@ -12922,7 +13040,7 @@ from ArtifactType A
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-
+        [Route("Policy_SimilarItems")]
         public JsonNetResult Policy_SimilarItems(int typeID, string query)
         {
             return new JsonNetResult
@@ -12931,10 +13049,12 @@ from ArtifactType A
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+
         #endregion
 
         #region Form Get/Post
 
+        [Route("AddPolicy")]
         public ActionResult AddPolicy(int typeID, int? parentID)
         {
             var type = Company.GetById<PolicyType>(typeID);
@@ -12952,8 +13072,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicy")]
         public JsonResult AddPolicy(FormCollection form)
         {
             try
@@ -13001,6 +13120,7 @@ from ArtifactType A
         }
 
 
+        [Route("DeletePolicy")]
         public ActionResult DeletePolicy(int id)
         {
             var a = Company.GetById<Policy>(id);
@@ -13017,7 +13137,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeletePolicy")]
         public JsonResult DeletePolicy(FormCollection form)
         {
             try
@@ -13053,7 +13173,7 @@ from ArtifactType A
             }
         }
         
-        [HttpDelete]
+        [HttpDelete, Route("DeletePolicyByID")]
         public JsonResult DeletePolicyByID(int id)
         {
             var form = new FormCollection();
@@ -13061,6 +13181,7 @@ from ArtifactType A
             return DeletePolicy(form);
         }
 
+        [Route("EditPolicy")]
         public ActionResult EditPolicy(int id)
         {
             if (!Company.Exists<Policy>(id)) return HttpNotFound();
@@ -13077,7 +13198,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditPolicy")]
         public JsonResult EditPolicy(FormCollection form)
         {
             try
@@ -13127,6 +13248,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("PolicyType_AddFields")]
         public JsonResult PolicyType_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, 0, Claim.Create))
@@ -13146,6 +13268,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
+        [Route("PolicyType_DeleteFields")]
         public JsonResult PolicyType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
@@ -13160,6 +13283,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
+        [Route("PolicyType_EditFields")]
         public JsonResult PolicyType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
@@ -13184,6 +13308,7 @@ from ArtifactType A
 
         #region Form Get/Post
 
+        [Route("AddPolicyType")]
         public ActionResult AddPolicyType()
         {
             var model = new EditableForm
@@ -13199,8 +13324,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyType")]
         public JsonResult AddPolicyType(FormCollection form)
         {
             try
@@ -13242,6 +13366,7 @@ from ArtifactType A
         }
 
 
+        [Route("DeletePolicyType")]
         public ActionResult DeletePolicyType(int id)
         {
             var a = Company.GetById<PolicyType>(id);
@@ -13260,7 +13385,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeletePolicyType")]
         public JsonResult DeletePolicyType(FormCollection form)
         {
             try
@@ -13291,6 +13416,7 @@ from ArtifactType A
         }
 
 
+        [Route("EditPolicyType")]
         public ActionResult EditPolicyType(int id)
         {
             var a = Company.GetById<PolicyType>(id);
@@ -13308,7 +13434,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditPolicyType")]
         public JsonResult EditPolicyType(FormCollection form)
         {
             try
@@ -13371,6 +13497,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("PolicyTypeClass_AddFields")]
         public JsonResult PolicyTypeClass_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.PolicyTypeClass, 0, Claim.Create))
@@ -13384,6 +13511,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeClassID</param>
+        [Route("PolicyTypeClass_DeleteFields")]
         public JsonResult PolicyTypeClass_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Delete))
@@ -13398,6 +13526,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeClassID</param>
+        [Route("PolicyTypeClass_EditFields")]
         public JsonResult PolicyTypeClass_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyTypeClass, id, Claim.Update))
@@ -13416,6 +13545,7 @@ from ArtifactType A
 
         #region Form Get/Post
 
+        [Route("AddPolicyTypeClass")]
         public ActionResult AddPolicyTypeClass()
         {
             var model = new EditableForm
@@ -13431,8 +13561,7 @@ from ArtifactType A
             return PartialView("OverlayEditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyTypeClass")]
         public JsonResult AddPolicyTypeClass(FormCollection form)
         {
             try
@@ -13463,6 +13592,7 @@ from ArtifactType A
         }
 
 
+        [Route("DeletePolicyTypeClass")]
         public ActionResult DeletePolicyTypeClass(int id)
         {
             var a = Company.GetById<PolicyTypeClass>(id);
@@ -13481,7 +13611,7 @@ from ArtifactType A
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeletePolicyTypeClass")]
         public JsonResult DeletePolicyTypeClass(FormCollection form)
         {
             try
@@ -13511,6 +13641,7 @@ from ArtifactType A
         }
 
 
+        [Route("EditPolicyTypeClass")]
         public ActionResult EditPolicyTypeClass(int id)
         {
             var a = Company.GetById<PolicyTypeClass>(id);
@@ -13528,7 +13659,7 @@ from ArtifactType A
             return PartialView("OverlayEditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditPolicyTypeClass")]
         public JsonResult EditPolicyTypeClass(FormCollection form)
         {
             try
@@ -13567,6 +13698,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("PolicyTypeLevel_AddFields")]
         public JsonResult PolicyTypeLevel_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Create))
@@ -13607,6 +13739,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
+        [Route("PolicyTypeLevel_DeleteFields")]
         public JsonResult PolicyTypeLevel_DeleteFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Delete))
@@ -13621,6 +13754,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PolicyTypeID</param>
+        [Route("PolicyTypeLevel_EditFields")]
         public JsonResult PolicyTypeLevel_EditFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
@@ -13641,6 +13775,7 @@ from ArtifactType A
 
         #region Form Get/Post
 
+        [Route("AddPolicyTypeLevel")]
         public ActionResult AddPolicyTypeLevel(int id)
         {
             var type = Company.GetById<PolicyType>(id);
@@ -13658,8 +13793,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPolicyTypeLevel")]
         public JsonResult AddPolicyTypeLevel(FormCollection form)
         {
             try
@@ -13695,6 +13829,7 @@ from ArtifactType A
             }
         }
 
+        [Route("DeletePolicyTypeLevel")]
         public ActionResult DeletePolicyTypeLevel(int id, int level)
         {
             var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
@@ -13712,7 +13847,7 @@ from ArtifactType A
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeletePolicyTypeLevel")]
         public JsonResult DeletePolicyTypeLevel(FormCollection form)
         {
             try
@@ -13739,6 +13874,7 @@ from ArtifactType A
             }
         }
 
+        [Route("EditPolicyTypeLevel")]
         public ActionResult EditPolicyTypeLevel(int id, int level)
         {
             var a = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
@@ -13755,7 +13891,7 @@ from ArtifactType A
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditPolicyTypeLevel")]
         public JsonResult EditPolicyTypeLevel(FormCollection form)
         {
             try
@@ -13796,6 +13932,7 @@ from ArtifactType A
 
         #region Field Generation
 
+        [Route("Predicate_AddFields")]
         public JsonResult Predicate_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.Predicate, 0, Claim.Update))
@@ -13811,6 +13948,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PredicateID</param>
+        [Route("Predicate_DeleteFields")]
         public JsonResult Predicate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -13824,6 +13962,7 @@ from ArtifactType A
         }
 
         /// <param name="id">PredicateID</param>
+        [Route("Predicate_EditFields")]
         public JsonResult Predicate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -13846,6 +13985,7 @@ from ArtifactType A
 
         #region Form Get/Post
 
+        [Route("AddPredicate")]
         public ActionResult AddPredicate()
         {
             var model = new EditableForm
@@ -13860,8 +14000,7 @@ from ArtifactType A
             return PartialView("OverlayEditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPredicate")]
         public JsonResult AddPredicate(FormCollection form)
         {
             try
@@ -13905,6 +14044,7 @@ from ArtifactType A
             }
         }
 
+        [Route("DeletePredicate")]
         public ActionResult DeletePredicate(int id)
         {
             var a = Company.GetById<Predicate>(id);
@@ -13921,7 +14061,7 @@ from ArtifactType A
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeletePredicate")]
         public JsonResult DeletePredicate(FormCollection form)
         {
             try
@@ -13949,6 +14089,7 @@ from ArtifactType A
             }
         }
 
+        [Route("EditPredicate")]
         public ActionResult EditPredicate(int id)
         {
             var a = Company.GetById<Predicate>(id);
@@ -13965,7 +14106,7 @@ from ArtifactType A
             return PartialView("OverlayEditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditPredicate")]
         public JsonResult EditPredicate(FormCollection form)
         {
             try
@@ -14008,6 +14149,7 @@ from ArtifactType A
         /// <param name="it">IntersectTypeID</param>
         /// <param name="type">Object</param>
         /// <param name="id">ObjectID</param>
+        [Route("Relationship_AddFields")]
         public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
         {
             if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
@@ -14210,6 +14352,7 @@ order by D.TextPath";
         }
 
         /// <param name="id">RelationshipID</param>
+        [Route("Relationship_DeleteFields")]
         public JsonResult Relationship_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Delete, ClaimObject.Root))
@@ -14223,6 +14366,7 @@ order by D.TextPath";
         }
 
         /// <param name="id">RelationshipID</param>
+        [Route("Relationship_EditFields")]
         public JsonResult Relationship_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Intersect, id, Claim.Create, ClaimObject.Relationship))
@@ -14244,7 +14388,7 @@ order by D.TextPath";
 
         #region Form Get/Post
 
-        //[Route("relationships/{intersectTypeID:int}/{type}/{id:int}/add")]
+        [Route("AddRelationship")]
         public ActionResult AddRelationship(int intersectTypeID, string type, int id)
         {
             var intersectType = Company.GetById<IntersectType>(intersectTypeID);
@@ -14261,8 +14405,7 @@ order by D.TextPath";
             return PartialView("AddRelationship", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRelationship")]
         public JsonResult AddRelationship(FormCollection form)
         {
             try
@@ -14373,6 +14516,7 @@ order by D.TextPath";
 
 
         //[Route("relationships/{id:int}/edit")]
+        [Route("EditRelationship")]
         public ActionResult EditRelationship(int id)
         {
             var a = Company.GetById<Intersect>(id, i => i.IntersectType);
@@ -14391,7 +14535,7 @@ order by D.TextPath";
             return PartialView("EditRelationship", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditRelationship")]
         public JsonResult EditRelationship(FormCollection form)
         {
             try
@@ -14441,6 +14585,7 @@ order by D.TextPath";
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
+        [Route("Report_DeleteFields")]
         public JsonResult Report_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Report, id, Claim.Delete))
@@ -14454,6 +14599,7 @@ order by D.TextPath";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("PowerBICredentials_AddFields")]
         public JsonResult PowerBICredentials_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.Report, 0, Claim.Create))
@@ -14526,6 +14672,7 @@ order by    Name
 ").ToList();
         }
 
+        [Route("AddReport")]
         public ActionResult AddReport()
         {
 
@@ -14542,8 +14689,7 @@ order by    Name
             return PartialView("ReportEditForm", o);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReport")]
         public async Task<JsonResult> AddReport(FormCollection form)
         {
             try
@@ -14607,7 +14753,8 @@ order by    Name
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-                
+
+        [Route("DeleteReport")]
         public ActionResult DeleteReport(int id)
         {
             var a = Company.GetById<Report>(id);
@@ -14624,7 +14771,7 @@ order by    Name
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteReport")]
         public JsonResult DeleteReport(FormCollection form)
         {
             try
@@ -14668,6 +14815,7 @@ order by    Name
             }
         }
 
+        [Route("AddPowerBICredentials")]
         public ActionResult AddPowerBICredentials()
         {
             var model = new EditableForm
@@ -14684,8 +14832,7 @@ order by    Name
 
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddPowerBICredentials")]
         public async Task<JsonResult> AddPowerBICredentials(FormCollection form)
         {
             try
@@ -14733,6 +14880,7 @@ order by    Name
         }
 
 
+        [Route("EditReport")]
         public ActionResult EditReport(int id)
         {
             var o = Company.GetById<Report>(id);
@@ -14759,7 +14907,7 @@ order by    Name
             return PartialView("ReportEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditReport")]
         public async Task<JsonResult> EditReport(FormCollection form)
         {
             try
@@ -14898,6 +15046,7 @@ order by    Name
         #region Field Generation
 
         /// <param name="id">ID of the object</param>
+        [Route("ReportTile_DeleteFields")]
         public JsonResult ReportTile_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -14947,6 +15096,7 @@ order by    Name
             return list;
         }
 
+        [Route("AddReportTile")]
         public ActionResult AddReportTile(int reportID)
         {
             var report = Company.GetById<Report>(reportID, i => i.ReportLayout, i => i.ReportTiles);
@@ -14976,8 +15126,7 @@ order by    Name
             return PartialView("ReportTileEditForm", o);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReportTile")]
         public JsonResult AddReportTile(FormCollection form)
         {
             try
@@ -15033,6 +15182,7 @@ order by    Name
             }
         }
 
+        [Route("DeleteReportTile")]
         public ActionResult DeleteReportTile(int id)
         {
             var a = Company.GetById<ReportTile>(id);
@@ -15049,7 +15199,7 @@ order by    Name
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteReportTile")]
         public JsonResult DeleteReportTile(FormCollection form)
         {
             try
@@ -15074,6 +15224,7 @@ order by    Name
             }
         }
 
+        [Route("EditReportTile")]
         public ActionResult EditReportTile(int id)
         {
             var o = Company.GetById<ReportTile>(id, i => i.Report, i => i.Report.ReportLayout, i => i.Report.ReportTiles);
@@ -15106,7 +15257,7 @@ order by    Name
             return PartialView("ReportTileEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditReportTile")]
         public JsonResult EditReportTile(FormCollection form)
         {
             try
@@ -15173,6 +15324,7 @@ order by    Name
         #region Field Generation
 
         /// <param name="id">ResponsibilityID</param>
+        [Route("Responsibility_DeleteFields")]
         public JsonResult Responsibility_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -15316,6 +15468,7 @@ order by	D.Name, I.Name";
             return list;
         }
 
+        [Route("AddResponsibility")]
         public ActionResult AddResponsibility(SystemObjects type, int id)
         {
             var model = new PeopleResponsibilityEditorModel
@@ -15333,8 +15486,7 @@ order by	D.Name, I.Name";
             return PartialView("ResponsibilityEditForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibility")]
         public JsonResult AddResponsibility(FormCollection form)
         {
             try
@@ -15396,6 +15548,7 @@ order by	D.Name, I.Name";
         }
 
 
+        [Route("DeleteResponsibility")]
         public ActionResult DeleteResponsibility(int id)
         {
             var responsibility = Company.GetById<Responsibility>(id, i => i.ResponsibilityType);
@@ -15412,7 +15565,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResponsibility")]
         public JsonResult DeleteResponsibility(FormCollection form)
         {
             try
@@ -15437,7 +15590,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResponsibilityByID")]
         public JsonResult DeleteResponsibilityByID(int id)
         {
             var form = new FormCollection();
@@ -15445,6 +15598,7 @@ order by	D.Name, I.Name";
             return DeleteResponsibility(form);
         }
 
+        [Route("EditResponsibility")]
         public ActionResult EditResponsibility(int id)
         {
             var r = Company.GetById<Responsibility>(id, i => i.ResponsibilityType, i => i.ResponsibilityContextItems);
@@ -15465,7 +15619,7 @@ order by	D.Name, I.Name";
             return PartialView("ResponsibilityEditForm", model);
         }
 
-        [HttpGet]
+        [HttpGet, Route("Responsibility")]
         public JsonNetResult Responsibility(int? id, SystemObjects? type, int? responsibilityID)
         {
             List<SelectListItem> contexts;
@@ -15500,7 +15654,7 @@ order by	D.Name, I.Name";
             };
         }
 
-        [HttpPut]
+        [HttpPut, Route("EditResponsibility")]
         public JsonResult EditResponsibility(FormCollection form)
         {
             try
@@ -15556,7 +15710,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpPost]
+        [HttpPost, Route("Responsibility")]
         public JsonResult Responsibility(Responsibility r)
         {
             Responsibility model; // = new Responsibility();
@@ -15684,6 +15838,7 @@ order by	D.Name, I.Name";
 
         #region Field Generation
 
+        [Route("ResponsibilityType_AddFields")]
         public JsonResult ResponsibilityType_AddFields(ResponsibilityTypeGroup Group)
         {
             var list = new List<EditableField>();
@@ -15698,6 +15853,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResponsibilityTypeID</param>
+        [Route("ResponsibilityType_DeleteFields")]
         public JsonResult ResponsibilityType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -15709,6 +15865,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResponsibilityTypeID</param>
+        [Route("ResponsibilityType_EditFields")]
         public JsonResult ResponsibilityType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -15734,6 +15891,7 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
+        [Route("AddResponsibilityType")]
         public ActionResult AddResponsibilityType(ResponsibilityTypeGroup Group)
         {
             var pModel = new EditableForm
@@ -15749,8 +15907,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", pModel);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResponsibilityType")]
         public JsonResult AddResponsibilityType(FormCollection form)
         {
             try
@@ -15799,6 +15956,7 @@ order by	D.Name, I.Name";
             }
         }
 
+        [Route("")]
         public ActionResult DeleteResponsibilityType(int id)
         {
             var a = Company.GetById<ResponsibilityType>(id);
@@ -15815,7 +15973,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResponsibilityType")]
         public JsonResult DeleteResponsibilityType(FormCollection form)
         {
             try
@@ -15842,7 +16000,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpDelete, ValidateHttpAntiForgeryToken]
+        [HttpDelete, ValidateHttpAntiForgeryToken, Route("DeleteResponsibilityTypeByID")]
         public JsonResult DeleteResponsibilityTypeByID(int id)
         {
             var form = new FormCollection();
@@ -15850,6 +16008,7 @@ order by	D.Name, I.Name";
             return DeleteResponsibilityType(form);
         }
 
+        [Route("EditResponsibilityType")]
         public ActionResult EditResponsibilityType(int id)
         {
             var model = Company.GetById<ResponsibilityType>(id);
@@ -15868,7 +16027,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", pModel);
         }
 
-        [HttpGet, ActionName("ResponsibilityType")]
+        [HttpGet, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
         public JsonNetResult GetResponsibilityType(int id, ResponsibilityTypeGroup group = ResponsibilityTypeGroup.People)
         {
 
@@ -15916,7 +16075,7 @@ order by	D.Name, I.Name";
             };
         }
 
-        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType")]
+        [HttpPut, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
         public JsonResult PutResponsibilityType(ResponsibilityType model)
         {
             try
@@ -15979,7 +16138,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType")]
+        [HttpPost, ValidateInput(false), ValidateHttpAntiForgeryToken, ActionName("ResponsibilityType"), Route("ResponsibilityType")]
         public JsonResult PostResponsibilityType(ResponsibilityType model)
         {
             try
@@ -16032,7 +16191,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditResponsibilityType")]
         public JsonResult EditResponsibilityType(FormCollection form)
         {
             try
@@ -16087,237 +16246,7 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region ResponsibilityTypeClaim
-
-        #region Field Generation
-
-        ///// <param name="id">ResponsibilityTypeID</param>
-        //public JsonResult ResponsibilityTypeClaim_AddFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var claims = Company.GetClaims().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    var claimObjects = Company.GetClaimObjects().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    list.Add(new EditableField { FieldName = "ResponsibilityTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Claim", Name = "Claim", FieldType = DataType.Lookup.ToString(), Items = claims });
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ClaimObject", Name = "Dependent Object", FieldType = DataType.Lookup.ToString(), Items = claimObjects });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">ResponsibilityTypeClaimID</param>
-        //public JsonResult ResponsibilityTypeClaim_DeleteFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = GovernanceService.GetResponsibilityTypeClaim(id);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">ResponsibilityTypeClaimID</param>
-        //public JsonResult ResponsibilityTypeClaim_EditFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = GovernanceService.GetResponsibilityTypeClaim(id);
-        //    var claims = Company.GetClaims().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    var claimObjects = Company.GetClaimObjects().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    list.Add(new EditableField { FieldName = "ResponsibilityTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Claim", Name = "Claim", FieldType = DataType.Lookup.ToString(), Items = claims, Value = a.Claim.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ClaimObject", Name = "Dependent Object", FieldType = DataType.Lookup.ToString(), Items = claimObjects, Value = a.ClaimObject.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        #endregion
-
-        #region Form Get/Post
-
-        //public ActionResult AddResponsibilityTypeClaim(int id)
-        //{
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.ResponsibilityTypeClaim,
-        //        FieldUri = "/form/ResponsibilityTypeClaim_AddFields?id=" + id,
-        //        FormTitle = "Add Claim",
-        //        FormUri = "/form/AddResponsibilityTypeClaim",
-        //        FormMethod = "POST"
-        //    };
-
-        //    return PartialView("EditableForm", model);
-        //}
-
-        //[HttpPost]
-        //public JsonResult AddResponsibilityTypeClaim(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility type claim");
-
-        //        var a = new ResponsibilityTypeClaim
-        //        {
-        //            Claim = (Claim)Enum.Parse(typeof(Claim), form["Claim"]),
-        //            ResponsibilityTypeID = parseIntField(form, "ResponsibilityTypeID")
-        //        };
-
-        //        if (!string.IsNullOrEmpty(form["ClaimObject"])) a.ClaimObject = (ClaimObject)Enum.Parse(typeof(ClaimObject), form["ClaimObject"]);
-
-        //        GovernanceService.AddResponsibilityTypeClaim(a);
-
-        //        return jsonSuccess("Item successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //public ActionResult DeleteResponsibilityTypeClaim(int id)
-        //{
-        //    var a = GovernanceService.GetResponsibilityTypeClaim(id);
-        //    if (a == null) return HttpNotFound();
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.ResponsibilityTypeClaim,
-        //        FieldUri = string.Format("/form/ResponsibilityTypeClaim_DeleteFields?id={0}", id),
-        //        FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, "this claim"),
-        //        FormUri = "/form/DeleteResponsibilityTypeClaim",
-        //        FormMethod = "DELETE"
-        //    };
-
-        //    return PartialView("DeleteForm", model);
-        //}
-
-        //[HttpDelete]
-        //public JsonResult DeleteResponsibilityTypeClaim(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility type claim");
-
-        //        var id = parseIntField(form, "ID");
-        //        var model = GovernanceService.GetResponsibilityTypeClaim(id);
-        //        if (model == null) throw new NotFoundException("responsibility type claim");
-
-        //        GovernanceService.DeleteResponsibilityTypeClaim(model);
-        //        return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        //public ActionResult EditResponsibilityTypeClaim(int id)
-        //{
-        //    var a = GovernanceService.GetResponsibilityTypeClaim(id);
-        //    if (a == null) return HttpNotFound();
-        //    var model = new EditableForm
-        //    {
-        //        Context = ContextList.ResponsibilityTypeClaim,
-        //        FieldUri = string.Format("/form/ResponsibilityTypeClaim_EditFields?id={0}", id),
-        //        FormTitle = "Edit Type",
-        //        FormUri = "/form/EditResponsibilityTypeClaim",
-        //        FormMethod = "PUT"
-        //    };
-
-        //    return PartialView("EditableForm", model);
-        //}
-
-        //[HttpPut]
-        //public JsonResult EditResponsibilityTypeClaim(FormCollection form)
-        //{
-        //    try
-        //    {
-        //        if (!form.HasKeys()) throw new NoFormDataException("responsibility type claim");
-
-        //        var id = parseIntField(form, "ID");
-        //        var model = GovernanceService.GetResponsibilityTypeClaim(id);
-        //        if (model == null) throw new NotFoundException("responsibility type claim");
-
-        //        model.Claim = (Claim)Enum.Parse(typeof(Claim), form["Claim"]);
-        //        model.ClaimObject = (ClaimObject)Enum.Parse(typeof(ClaimObject), form["ClaimObject"]);
-
-        //        GovernanceService.EditResponsibilityTypeClaim(model);
-
-        //        return jsonSuccess("Item successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-        //    }
-        //    catch (BaseException ex)
-        //    {
-        //        return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return jsonException(ex, HttpStatusCode.InternalServerError);
-        //    }
-        //}
-
-        #endregion
-
-        #endregion
-
         #region ResponsibilityTypeObjectClaim
-
-        #region Field Generation
-
-        ///// <param name="r">ResponsibilityTypeID</param>
-        ///// <param name="type">Object Type</param>
-        ///// <param name="id">Object ID</param>
-        //public JsonResult ResponsibilityTypeObjectClaim_AddFields(SystemObjects type, int id)
-        //{
-        //    var list = new List<EditableField>();
-
-        //    var claims = Company.GetClaims().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    var claimobjects = Company.GetClaimObjects().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    var types = Company.Filter<ResponsibilityType>(i => i.ResponsibilityTypeGroup == ResponsibilityTypeGroup.People).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-
-        //    list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = type.ToString() });
-        //    list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ResponsibilityTypeID", Name = "Role", FieldType = DataType.Lookup.ToString(), Items = types });
-        //    list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Claim", Name = "Claim", FieldType = DataType.Lookup.ToString(), Items = claims });
-        //    list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ClaimObject", Name = "Claim Object", FieldType = DataType.Lookup.ToString(), Items = claimobjects });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">ResponsibilityTypeObjectClaimID</param>
-        //public JsonResult ResponsibilityTypeObjectClaim_DeleteFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = GovernanceService.GetResponsibilityTypeObjectClaim(id);
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        ///// <param name="id">ResponsibilityTypeObjectClaimID</param>
-        //public JsonResult ResponsibilityTypeObjectClaim_EditFields(int id)
-        //{
-        //    var list = new List<EditableField>();
-        //    var a = GovernanceService.GetResponsibilityTypeObjectClaim(id);
-
-        //    var claims = Company.GetClaims().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-        //    var claimobjects = Company.GetClaimObjects().Select(i => new SelectListItem { Text = i.Value, Value = i.Key.ToString() }).ToList();
-
-        //    list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Claim", Name = "Claim", FieldType = DataType.Lookup.ToString(), Items = claims, Value = a.Claim.ToString() });
-        //    list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ClaimObject", Name = "Claim Object", FieldType = DataType.Lookup.ToString(), Items = claimobjects, Value = a.ClaimObject.ToString() });
-
-        //    return Json(list, JsonRequestBehavior.AllowGet);
-        //}
-
-        #endregion
 
         #region Form Get/Post
 
@@ -16338,6 +16267,7 @@ order by	D.Name, I.Name";
                 });
         }
 
+        [Route("AddResponsibilityTypeClaims")]
         public ActionResult AddResponsibilityTypeClaims(SystemObjects type, int id)
         {
             var model = new ClaimsMatrixEditorModel
@@ -16349,8 +16279,7 @@ order by	D.Name, I.Name";
             return PartialView(model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddResponsibilityTypeClaims")]
         public JsonResult AddResponsibilityTypeClaims(FormCollection form)
         {
             try
@@ -16394,6 +16323,7 @@ order by	D.Name, I.Name";
             }
         }
 
+        [Route("EditResponsibilityTypeClaims")]
         public ActionResult EditResponsibilityTypeClaims(SystemObjects type, int id, int responsibilityTypeID)
         {
             var sType = type.ToString();
@@ -16409,7 +16339,7 @@ order by	D.Name, I.Name";
             return PartialView(model);
         }
 
-        [HttpPut]
+        [HttpPut, Route("EditResponsibilityTypeClaims")]
         public JsonResult EditResponsibilityTypeClaims(FormCollection form)
         {
             try
@@ -16475,7 +16405,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpPut]
+        [HttpPut, Route("EditClaimsMatrix")]
         public JsonResult EditClaimsMatrix(List<ResponsibilityTypeObjectClaim> claims, int objectID, string objectType, int responsibilityTypeID)
         {
             try
@@ -16531,6 +16461,7 @@ order by	D.Name, I.Name";
 
         /// <param name="t">ObjectType</param>
         /// <param name="id">ObjectID</param>
+        [Route("Resolution_AddFields")]
         public JsonResult Resolution_AddFields(SystemObjects t, int id)
         {
             var list = new List<EditableField>();
@@ -16575,6 +16506,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResolutionID</param>
+        [Route("Resolution_DeleteFields")]
         public JsonResult Resolution_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -16586,6 +16518,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResolutionID</param>
+        [Route("Resolution_EditFields")]
         public JsonResult Resolution_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -16602,8 +16535,7 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResolution")]
         public JsonResult AddResolution(FormCollection form)
         {
             try
@@ -16656,7 +16588,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResolution")]
         public JsonResult DeleteResolution(FormCollection form)
         {
             try
@@ -16682,7 +16614,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditResolution")]
         public JsonResult EditResolution(FormCollection form)
         {
             try
@@ -16725,6 +16657,7 @@ order by	D.Name, I.Name";
         #region Field Generation
 
         /// <param name="id">ResourceTypeID</param>
+        [Route("Resource_AddFields")]
         public JsonResult Resource_AddFields(int id)
         {
             var list = new List<EditableField>();
@@ -16744,6 +16677,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResourceID</param>
+        [Route("Resource_DeleteFields")]
         public JsonResult Resource_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -16755,6 +16689,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">ResourceID</param>
+        [Route("Resource_EditFields")]
         public JsonResult Resource_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -16772,6 +16707,7 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Resource_EditMyInfoFields")]
         public JsonResult Resource_EditMyInfoFields()
         {
             var list = new List<EditableField>();
@@ -16786,6 +16722,7 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Resource_ChangeMyPasswordFields")]
         public JsonResult Resource_ChangeMyPasswordFields()
         {
             var list = new List<EditableField>();
@@ -16799,6 +16736,7 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Resource_ChangeUserPasswordFields")]
         public JsonResult Resource_ChangeUserPasswordFields(int id)
         {
             var list = new List<EditableField>();
@@ -16833,8 +16771,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResource")]
         public JsonResult AddResource(FormCollection form)
         {
             try
@@ -16930,7 +16867,6 @@ order by	D.Name, I.Name";
             }
         }
 
-
         [Route("resources/{typeID:int}/{id:int}/delete")]
         public ActionResult DeleteResource(int typeID, int id)
         {
@@ -16949,7 +16885,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResource")]
         public JsonResult DeleteResource(FormCollection form)
         {
             try
@@ -16975,7 +16911,7 @@ order by	D.Name, I.Name";
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteResourceByID")]
         public JsonResult DeleteResourceByID(int id)
         {
             var form = new FormCollection();
@@ -17001,7 +16937,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditResource")]
         public JsonResult EditResource(FormCollection form)
         {
             try
@@ -17080,7 +17016,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditMyInfo")]
         public JsonResult EditMyInfo(FormCollection form)
         {
             try
@@ -17133,7 +17069,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("ChangeMyPassword")]
         public JsonResult ChangeMyPassword(FormCollection form)
         {
             try
@@ -17188,7 +17124,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("ChangeUserPassword")]
         public JsonResult ChangeUserPassword(FormCollection form)
         {
             try
@@ -17229,186 +17165,11 @@ order by	D.Name, I.Name";
 
         #endregion
 
-        #region ResourceType
-
-        #region Field Generation
-
-        public JsonResult ResourceType_AddFields()
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResourceTypeID</param>
-        public JsonResult ResourceType_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Community.GetById<ResourceType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResourceTypeID</param>
-        public JsonResult ResourceType_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Community.GetById<ResourceType>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [Route("resources/add")]
-        public ActionResult AddResourceType()
-        {
-            var model = new EditableForm
-            {
-                Context = "resourcetypeform",
-                FieldUri = "/form/ResourceType_AddFields",
-                FormTitle = "Add Type",
-                FormUri = "/form/AddResourceType",
-                FormMethod = "POST"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
-        public JsonResult AddResourceType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resource type");
-
-                var a = new ResourceType
-                {
-                    Name = parseTextField(form, "Name", null, true)
-                };
-
-                Community.Add<ResourceType>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("resources/{typeID:int}/delete")]
-        public ActionResult DeleteResourceType(int typeID)
-        {
-            var a = Community.GetById<ResourceType>(typeID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourcetypeform",
-                FieldUri = string.Format("/form/ResourceType_DeleteFields?id={0}", typeID),
-                FormTitle = string.Format(Resources.FormInfo.Delete_Generic_Title, a.Name),
-                FormUri = "/form/DeleteResourceType",
-                FormMethod = "DELETE"
-            };
-
-            return PartialView("DeleteForm", model);
-        }
-
-        [HttpDelete]
-        public JsonResult DeleteResourceType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resource type");
-
-                var id = parseIntField(form, "ID");
-                var model = Community.GetById<ResourceType>(id);
-                if (model == null) throw new NotFoundException("resource type");
-
-                Community.Delete<ResourceType>(model);
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [Route("resources/{typeID:int}/edit")]
-        public ActionResult EditResourceType(int typeID)
-        {
-            var a = Community.GetById<ResourceType>(typeID);
-            if (a == null) return HttpNotFound();
-            var model = new EditableForm
-            {
-                Context = "resourcetypeform",
-                FieldUri = string.Format("/form/ResourceType_EditFields?id={0}", typeID),
-                FormTitle = "Edit " + a.Name,
-                FormUri = "/form/EditResourceType",
-                FormMethod = "PUT"
-            };
-
-            return PartialView("EditableForm", model);
-        }
-
-        [HttpPut, ValidateInput(false)]
-        public JsonResult EditResourceType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resource type");
-
-                var id = parseIntField(form, "ID");
-                var model = Community.GetById<ResourceType>(id);
-                if (model == null) throw new NotFoundException("resource type");
-
-                model.Name = parseTextField(form, "Name", null, true);
-
-                Community.Update<ResourceType>(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region QuestionType
 
         #region JSON Feeds
 
+        [Route("QuestionType_FormData")]
         public JsonNetResult QuestionType_FormData(int surveyTypeID, int id = 0)
         {
             QuestionType qt = null;
@@ -17464,6 +17225,7 @@ order by	D.Name, I.Name";
         #region Field Generation
 
         /// <param name="id">ResponseTypeID</param>
+        [Route("QuestionType_DeleteFields")]
         public JsonResult QuestionType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -17475,6 +17237,7 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
+        [Route("AddQuestionType")]
         public ActionResult AddQuestionType(int surveyTypeID)
         {
             ViewBag.ID = 0;
@@ -17482,7 +17245,7 @@ order by	D.Name, I.Name";
             return PartialView("QuestionTypeEditForm");
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddQuestionType")]
         public JsonResult AddQuestionType(QuestionTypeEditorModel model)
         {
             try
@@ -17528,7 +17291,7 @@ order by	D.Name, I.Name";
         }
 
 
-        [HttpGet]
+        [HttpGet, Route("DeleteQuestionType")]
         public ActionResult DeleteQuestionType(int id)
         {
             var a = Company.GetById<QuestionType>(id);
@@ -17545,7 +17308,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteQuestionType")]
         public JsonResult DeleteQuestionType(FormCollection form)
         {
             try
@@ -17569,7 +17332,7 @@ order by	D.Name, I.Name";
         }
 
 
-        [HttpGet]
+        [HttpGet, Route("EditQuestionType")]
         public ActionResult EditQuestionType(int id)
         {
             var a = Company.GetById<QuestionType>(id);
@@ -17579,7 +17342,7 @@ order by	D.Name, I.Name";
             return PartialView("QuestionTypeEditForm");
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPut, ValidateInput(false), Route("EditQuestionType")]
         public JsonResult EditQuestionType(QuestionTypeEditorModel model)
         {
             try
@@ -17660,6 +17423,7 @@ order by	D.Name, I.Name";
 
         #region Field Generation
 
+        [Route("Rule_AddFields")]
         public JsonResult Rule_AddFields()
         {
             var model = new Rule();
@@ -17679,6 +17443,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">RuleID</param>
+        [Route("Rule_DeleteFields")]
         public JsonResult Rule_DeleteFields(int id)
         {
             var model = Company.GetById<Rule>(id);
@@ -17693,6 +17458,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">RuleID</param>
+        [Route("Rule_EditFields")]
         public JsonResult Rule_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -17716,6 +17482,7 @@ order by	D.Name, I.Name";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Rule_SimilarItems")]
         public JsonNetResult Rule_SimilarItems(string query)
         {
             return new JsonNetResult
@@ -17725,11 +17492,12 @@ order by	D.Name, I.Name";
             };
 
         }
-    
+
         #endregion
 
         #region Form Get/Post
 
+        [Route("AddRule")]
         public ActionResult AddRule()
         {
             var model = new EditableForm
@@ -17745,8 +17513,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRule")]
         public JsonResult AddRule(FormCollection form)
         {
             try
@@ -17789,6 +17556,7 @@ order by	D.Name, I.Name";
         }
 
 
+        [Route("DeleteRule")]
         public ActionResult DeleteRule(int id)
         {
             var a = Company.GetById<Rule>(id);
@@ -17805,7 +17573,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteRule")]
         public JsonResult DeleteRule(FormCollection form)
         {
             try
@@ -17841,6 +17609,7 @@ order by	D.Name, I.Name";
             }
         }
 
+        [Route("EditRule")]
         public ActionResult EditRule(int id)
         {
             if (!Company.Exists<Rule>(id)) return HttpNotFound();
@@ -17857,7 +17626,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditRule")]
         public JsonResult EditRule(FormCollection form)
         {
             try
@@ -17906,6 +17675,7 @@ order by	D.Name, I.Name";
 
         #region Field Generation
 
+        [Route("RuleDimension_AddFields")]
         public JsonResult RuleDimension_AddFields()
         {
             var model = new Rule();
@@ -17922,6 +17692,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">RuleID</param>
+        [Route("RuleDimension_DeleteFields")]
         public JsonResult RuleDimension_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Delete))
@@ -17934,6 +17705,7 @@ order by	D.Name, I.Name";
         }
 
         /// <param name="id">RuleID</param>
+        [Route("RuleDimension_EditFields")]
         public JsonResult RuleDimension_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
@@ -17951,6 +17723,7 @@ order by	D.Name, I.Name";
 
         #endregion
 
+        [Route("AddRuleDimension")]
         public ActionResult AddRuleDimension()
         {
             var model = new EditableForm
@@ -17966,8 +17739,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddRuleDimension")]
         public JsonResult AddRuleDimension(FormCollection form)
         {
             try
@@ -18008,6 +17780,7 @@ order by	D.Name, I.Name";
         }
 
 
+        [Route("DeleteRuleDimension")]
         public ActionResult DeleteRuleDimension(int id)
         {
             var a = Company.GetById<RuleDimension>(id);
@@ -18025,7 +17798,7 @@ order by	D.Name, I.Name";
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteRuleDimension")]
         public JsonResult DeleteRuleDimension(FormCollection form)
         {
             try
@@ -18066,6 +17839,7 @@ order by	D.Name, I.Name";
             }
         }
 
+        [Route("EditRuleDimension")]
         public ActionResult EditRuleDimension(int id)
         {
             if (!Company.Exists<RuleDimension>(id)) return HttpNotFound();
@@ -18082,7 +17856,7 @@ order by	D.Name, I.Name";
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditRuleDimension")]
         public JsonResult EditRuleDimension(FormCollection form)
         {
             try
@@ -18257,6 +18031,7 @@ order by	D.Name, I.Name";
         #region Field Generation
 
         /// <param name="id">StatisticTypeID</param>
+        [Route("StatisticType_DeleteFields")]
         public JsonResult StatisticType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Delete))
@@ -18274,6 +18049,7 @@ order by	D.Name, I.Name";
 
         #region Form Get/Post
 
+        [Route("StatisticType_FormData")]
         public JsonNetResult StatisticType_FormData(int id)
         {
             var type = Company.GetById<StatisticType>(id);
@@ -18339,18 +18115,21 @@ order by	D.Name, I.Name";
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("StatisticType_CheckTypeOptions")]
         public JsonNetResult StatisticType_CheckTypeOptions()
         {
             var models = StatisticCheckType.Count.GetEnumList().Select(i => new KnockoutListItem(i.Name, ((int)i.ID).ToString()));
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("StatisticType_ObjectOptions")]
         public JsonNetResult StatisticType_ObjectOptions()
         {
             var models = Company.GetTypes().Select(i => new KnockoutListItem(i.Name, $"{i.ObjectType}|{i.ObjectTypeID}"));
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("StatisticType_CheckObjectOptions")]
         public JsonNetResult StatisticType_CheckObjectOptions(SystemObjects type, int id, StatisticCheckType check)
         {
             var models = new List<KnockoutListItem>();
@@ -18458,6 +18237,7 @@ from    [IntersectType] RT
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("AddStatisticType")]
         public ActionResult AddStatisticType()
         {
             var model = new EditableForm
@@ -18525,8 +18305,7 @@ from    [IntersectType] RT
             return fields.ToString();
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddStatisticType")]
         public JsonResult AddStatisticType(FormCollection form)
         {
             try
@@ -18568,6 +18347,7 @@ from    [IntersectType] RT
             }
         }
 
+        [Route("DeleteStatisticType")]
         public ActionResult DeleteStatisticType(int id)
         {
             var a = Company.GetById<StatisticType>(id);
@@ -18584,7 +18364,7 @@ from    [IntersectType] RT
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteStatisticType")]
         public JsonResult DeleteStatisticType(FormCollection form)
         {
             try
@@ -18613,6 +18393,7 @@ from    [IntersectType] RT
             }
         }
 
+        [Route("EditStatisticType")]
         public ActionResult EditStatisticType(int id)
         {
             var a = Company.GetById<StatisticType>(id);
@@ -18630,7 +18411,7 @@ from    [IntersectType] RT
             return PartialView("StatisticTypeEditForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditStatisticType")]
         public JsonResult EditStatisticType(FormCollection form)
         {
             try
@@ -18675,6 +18456,7 @@ from    [IntersectType] RT
 
         #region Field Generation
 
+        [Route("SurveyType_AddFields")]
         public JsonResult SurveyType_AddFields()
         {
             var list = new List<EditableField>();
@@ -18704,6 +18486,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">SurveyTypeID</param>
+        [Route("SurveyType_DeleteFields")]
         public JsonResult SurveyType_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -18712,6 +18495,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">SurveyTypeID</param>
+        [Route("SurveyType_EditFields")]
         public JsonResult SurveyType_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -18728,7 +18512,7 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
-        //[Route("surveys/add")]
+        [Route("AddSurveyType")]
         public ActionResult AddSurveyType()
         {
             var model = new EditableForm
@@ -18743,8 +18527,7 @@ from    [IntersectType] RT
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddSurveyType")]
         public JsonResult AddSurveyType(FormCollection form)
         {
             try
@@ -18778,7 +18561,7 @@ from    [IntersectType] RT
         }
 
 
-        //[Route("surveys/{id:int}/delete")]
+        [Route("DeleteSurveyType")]
         public ActionResult DeleteSurveyType(int id)
         {
             var a = Company.GetById<SurveyType>(id);
@@ -18795,7 +18578,7 @@ from    [IntersectType] RT
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteSurveyType")]
         public JsonResult DeleteSurveyType(FormCollection form)
         {
             try
@@ -18825,7 +18608,7 @@ from    [IntersectType] RT
         }
 
 
-        //[Route("surveys/{id:int}/edit")]
+        [Route("EditSurveyType")]
         public ActionResult EditSurveyType(int id)
         {
             var a = Company.GetById<SurveyType>(id);
@@ -18842,7 +18625,7 @@ from    [IntersectType] RT
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditSurveyType")]
         public JsonResult EditSurveyType(FormCollection form)
         {
             try
@@ -18879,7 +18662,7 @@ from    [IntersectType] RT
 
         #region Json
 
-        [HttpGet]
+        [HttpGet, Route("SynonymsOptions")]
         public JsonResult SynonymsOptions(string type, int id)
         {
             var list = new List<EditableField>();
@@ -18903,6 +18686,7 @@ from    [IntersectType] RT
 
         #region Field Generation
 
+        [Route("Synonym_AddFields")]
         public JsonResult Synonym_AddFields(string type, int id)
         {
             //if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
@@ -18924,6 +18708,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">Object's ID</param>
+        [Route("Synonym_DeleteFields")]
         public JsonResult Synonym_DeleteFields(int id)
         {
             var detail = Company.GetById<Intersect>(id);
@@ -18942,6 +18727,7 @@ from    [IntersectType] RT
 
         #region Form Get/Post
 
+        [Route("AddSynonym")]
         public ActionResult AddSynonym(SystemObjects type, int id)
         {
             var model = new EditableForm
@@ -18957,7 +18743,7 @@ from    [IntersectType] RT
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken, HttpPost]
+        [ValidateHttpAntiForgeryToken, HttpPost, Route("AddSynonym")]
         public JsonResult AddSynonym(SynonymEditModel model)
         {
             try
@@ -19009,6 +18795,7 @@ from    [IntersectType] RT
             }
         }
 
+        [Route("DeleteSynonym")]
         public ActionResult DeleteSynonym(int id)
         {
             var model = new EditableForm
@@ -19023,7 +18810,7 @@ from    [IntersectType] RT
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteSynonym")]
         public JsonResult DeleteSynonym(FormCollection form)
         {
             try
@@ -19077,6 +18864,7 @@ from    [IntersectType] RT
 
         /// <param name="t">TaxonomyTypeID</param>
         /// <param name="p">ParentID</param>
+        [Route("Taxonomy_AddFields")]
         public JsonResult Taxonomy_AddFields(int t, int p)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, t, Claim.Create))
@@ -19095,6 +18883,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">TaxonomyID</param>
+        [Route("Taxonomy_DeleteFields")]
         public JsonResult Taxonomy_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Delete))
@@ -19108,6 +18897,7 @@ from    [IntersectType] RT
         }
 
         /// <param name="id">TaxonomyID</param>
+        [Route("Taxonomy_EditFields")]
         public JsonResult Taxonomy_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.Taxonomy, id, Claim.Update))
@@ -19153,6 +18943,7 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("Taxonomy_SimilarItems")]
         public JsonNetResult Taxonomy_SimilarItems(int typeID, int id, string query)
         {
 
@@ -19181,6 +18972,7 @@ order by TextPath
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+        
         #endregion
 
         #region Form Get/Post
@@ -19217,8 +19009,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomy")]
         public JsonResult AddTaxonomy(FormCollection form)
         {
             try
@@ -19286,7 +19077,7 @@ order by TextPath
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteTaxonomy")]
         public JsonResult DeleteTaxonomy(FormCollection form)
         {
             try
@@ -19340,7 +19131,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
         public JsonResult EditTaxonomy(FormCollection form)
         {
             try
@@ -19404,6 +19195,7 @@ order by TextPath
 
         #region Field Generation
 
+        [Route("TaxonomyType_AddFields")]
         public JsonResult TaxonomyType_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, 0, Claim.Create))
@@ -19423,6 +19215,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
+        [Route("TaxonomyType_DeleteFields")]
         public JsonResult TaxonomyType_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
@@ -19437,6 +19230,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
+        [Route("TaxonomyType_EditFields")]
         public JsonResult TaxonomyType_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
@@ -19465,7 +19259,7 @@ order by TextPath
         #region Form Get/Post
 
 
-        [HttpPost, ValidateInput(false)]
+        [HttpPost, ValidateInput(false), Route("AddTaxonomyTypeRaw")]
         public JsonResult AddTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
         {
             var form = new FormCollection();
@@ -19495,8 +19289,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyType")]
         public JsonResult AddTaxonomyType(FormCollection form)
         {
             try
@@ -19564,7 +19357,7 @@ order by TextPath
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteTaxonomyType")]
         public JsonResult DeleteTaxonomyType(FormCollection form)
         {
             try
@@ -19595,7 +19388,7 @@ order by TextPath
         }
 
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeRaw")]
         public JsonResult EditTaxonomyTypeRaw(TaxonomyTypeModel taxonomyType)
         {
             var form = new FormCollection();
@@ -19628,7 +19421,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomyType")]
         public JsonResult EditTaxonomyType(FormCollection form)
         {
             try
@@ -19690,6 +19483,7 @@ order by TextPath
 
         #region Field Generation
 
+        [Route("TaxonomyTypeClass_AddFields")]
         public JsonResult TaxonomyTypeClass_AddFields()
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, 0, Claim.Create))
@@ -19703,6 +19497,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeClassID</param>
+        [Route("TaxonomyTypeClass_DeleteFields")]
         public JsonResult TaxonomyTypeClass_DeleteFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Delete))
@@ -19717,6 +19512,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeClassID</param>
+        [Route("TaxonomyTypeClass_EditFields")]
         public JsonResult TaxonomyTypeClass_EditFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
@@ -19735,6 +19531,7 @@ order by TextPath
 
         #region Form Get/Post
 
+        [Route("AddTaxonomyTypeClass")]
         public ActionResult AddTaxonomyTypeClass()
         {
             var model = new EditableForm
@@ -19750,8 +19547,7 @@ order by TextPath
             return PartialView("OverlayEditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyTypeClass")]
         public JsonResult AddTaxonomyTypeClass(FormCollection form)
         {
             try
@@ -19782,6 +19578,7 @@ order by TextPath
         }
 
 
+        [Route("DeleteTaxonomyTypeClass")]
         public ActionResult DeleteTaxonomyTypeClass(int id)
         {
             var a = Company.GetById<TaxonomyTypeClass>(id);
@@ -19800,7 +19597,7 @@ order by TextPath
             return PartialView("OverlayDeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteTaxonomyTypeClass")]
         public JsonResult DeleteTaxonomyTypeClass(FormCollection form)
         {
             try
@@ -19830,6 +19627,7 @@ order by TextPath
         }
 
 
+        [Route("EditTaxonomyTypeClass")]
         public ActionResult EditTaxonomyTypeClass(int id)
         {
             var a = Company.GetById<TaxonomyTypeClass>(id);
@@ -19847,7 +19645,7 @@ order by TextPath
             return PartialView("OverlayEditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeClass")]
         public JsonResult EditTaxonomyTypeClass(FormCollection form)
         {
             try
@@ -19886,6 +19684,7 @@ order by TextPath
 
         #region Field Generation
 
+        [Route("TaxonomyTypeLevel_AddFields")]
         public JsonResult TaxonomyTypeLevel_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Create))
@@ -19926,6 +19725,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
+        [Route("TaxonomyTypeLevel_DeleteFields")]
         public JsonResult TaxonomyTypeLevel_DeleteFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Delete))
@@ -19940,6 +19740,7 @@ order by TextPath
         }
 
         /// <param name="id">TaxonomyTypeID</param>
+        [Route("TaxonomyTypeLevel_EditFields")]
         public JsonResult TaxonomyTypeLevel_EditFields(int id, int level)
         {
             if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
@@ -19968,7 +19769,7 @@ order by TextPath
             public string TaxonomyTypeID { get; set; }
         }
 
-        [HttpPost, ValidateInput(false)]
+        [HttpPost, ValidateInput(false), Route("AddTaxonomyTypeLevelRaw")]
         public JsonResult AddTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
         {
             var form = new FormCollection();
@@ -19980,6 +19781,7 @@ order by TextPath
             return AddTaxonomyTypeLevel(form);
         }
 
+        [Route("AddTaxonomyTypeLevel")]
         public ActionResult AddTaxonomyTypeLevel(int id)
         {
             var type = Company.GetById<TaxonomyType>(id);
@@ -19997,8 +19799,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
         public JsonResult AddTaxonomyTypeLevel(FormCollection form)
         {
             try
@@ -20044,6 +19845,7 @@ order by TextPath
             return DeleteTaxonomyTypeLevel(form);
         }
 
+        [Route("DeleteTaxonomyTypeLevel")]
         public ActionResult DeleteTaxonomyTypeLevel(int id, int level)
         {
             var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
@@ -20061,7 +19863,7 @@ order by TextPath
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteTaxonomyTypeLevel")]
         public JsonResult DeleteTaxonomyTypeLevel(FormCollection form)
         {
             try
@@ -20088,7 +19890,7 @@ order by TextPath
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeLevelRaw")]
         public JsonResult EditTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
         {
             var form = new FormCollection();
@@ -20100,6 +19902,7 @@ order by TextPath
             return EditTaxonomyTypeLevel(form);
         }
 
+        [Route("EditTaxonomyTypeLevel")]
         public ActionResult EditTaxonomyTypeLevel(int id, int level)
         {
             var a = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
@@ -20116,7 +19919,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeLevel")]
         public JsonResult EditTaxonomyTypeLevel(FormCollection form)
         {
             try
@@ -20157,6 +19960,7 @@ order by TextPath
 
         #region Field Generation
 
+        [Route("TooltipTemplate_AddFields")]
         public JsonResult TooltipTemplate_AddFields()
         {
             var list = new List<EditableField>();
@@ -20177,6 +19981,7 @@ order by TextPath
         }
 
         /// <param name="id">TooltipTemplateID</param>
+        [Route("TooltipTemplate_DeleteFields")]
         public JsonResult TooltipTemplate_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -20188,6 +19993,7 @@ order by TextPath
         }
 
         /// <param name="id">TooltipTemplateID</param>
+        [Route("TooltipTemplate_EditFields")]
         public JsonResult TooltipTemplate_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -20215,7 +20021,7 @@ order by TextPath
         #region Form Get/Post
 
 
-        [HttpPost, ValidateInput(false)]
+        [HttpPost, ValidateInput(false), Route("AddTooltipTemplateRaw")]
         public JsonResult AddTooltipTemplateRaw(TemplateModel template)
         {
             var form = new FormCollection();            
@@ -20242,8 +20048,7 @@ order by TextPath
             return PartialView("EditableForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddTooltipTemplate")]
         public JsonResult AddTooltipTemplate(FormCollection form)
         {
             try
@@ -20300,7 +20105,7 @@ order by TextPath
         }
 
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteTooltipTemplate")]
         public JsonResult DeleteTooltipTemplate(FormCollection form)
         {
             try
@@ -20350,7 +20155,7 @@ order by TextPath
             public string TemplateBody { get; set; }
         }
 
-        [HttpPut, ValidateInput(false)]        
+        [HttpPut, ValidateInput(false), Route("EditTooltipTemplateRaw")]
         public JsonResult EditTooltipTemplateRaw(TemplateModel template)        
         {            
                         
@@ -20365,7 +20170,7 @@ order by TextPath
         }
 
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditTooltipTemplate")]
         public JsonResult EditTooltipTemplate(FormCollection form)
         {
             try
@@ -20404,6 +20209,7 @@ order by TextPath
 
         #region Field Generation
 
+        [Route("WorkflowAllocation_DeleteFields")]
         public JsonResult WorkflowAllocation_DeleteFields(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -20466,6 +20272,7 @@ order by TextPath
             return xml;
         }
 
+        [Route("AddWorkflowAllocation")]
         public ActionResult AddWorkflowAllocation(WorkflowType workflowType)
         {
             var desc = Resources.FormInfo.Allocate_Workflow_Description;
@@ -20486,8 +20293,7 @@ order by TextPath
             return PartialView("WorkflowTypeRelationEditForm", model);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddWorkflowAllocation")]
         public JsonResult AddWorkflowAllocation(FormCollection form)
         {
             try
@@ -20549,6 +20355,7 @@ order by TextPath
             }
         }
 
+        [Route("DeleteWorkflowAllocation")]
         public ActionResult DeleteWorkflowAllocation(int id)
         {
             var model = new EditableForm
@@ -20563,7 +20370,7 @@ order by TextPath
             return PartialView("DeleteForm", model);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteWorkflowAllocation")]
         public JsonResult DeleteWorkflowAllocation(FormCollection form)
         {
             try
@@ -20593,7 +20400,7 @@ order by TextPath
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteWorkflowAllocationByID")]
         public JsonResult DeleteWorkflowAllocationByID(int id)
         {
             var form = new FormCollection();
@@ -20601,6 +20408,7 @@ order by TextPath
             return DeleteWorkflowAllocation(form);
         }
 
+        [Route("EditWorkflowAllocation")]
         public ActionResult EditWorkflowAllocation(int id)
         {
             var relation = Company.GetById<WorkflowTypeRelation>(id);
@@ -20643,7 +20451,7 @@ order by TextPath
             return PartialView("WorkflowTypeRelationEditForm", model);
         }
 
-        [HttpGet]
+        [HttpGet, Route("WorkflowAllocation")]
         public JsonNetResult WorkflowAllocation(int? id, WorkflowType? workflowType)
         {
             var model = new WorkflowTypeRelationEditorModel();
@@ -20714,7 +20522,7 @@ order by TextPath
             };
         }
 
-        [HttpPost]
+        [HttpPost, Route("WorkflowAllocation")]
         public JsonResult WorkflowAllocation(WorkflowTypeRelation r)
         {
             try
@@ -20784,7 +20592,7 @@ order by TextPath
             }
         }
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditWorkflowAllocation")]
         public JsonResult EditWorkflowAllocation(FormCollection form)
         {
             try
@@ -20858,7 +20666,7 @@ order by TextPath
         #region Reference Item Types
 
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditReferenceItemType")]
         public JsonResult EditReferenceItemType(FormCollection form)
         {
             try
@@ -20901,7 +20709,7 @@ order by TextPath
         }
 
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteReferenceItemType")]
         public JsonResult DeleteReferenceItemType(FormCollection form)
         {
             try
@@ -20937,8 +20745,7 @@ order by TextPath
             }
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItemType")]
         public JsonResult AddReferenceItemType(FormCollection form)
         {
             try
@@ -21000,6 +20807,7 @@ order by TextPath
 
 
         /// <param name="id">LookupTypeID</param>
+        [Route("ReferenceItem_AddFields")]
         public JsonResult ReferenceItem_AddFields(int id)
         {
             if (!Company.HasPermission(SystemObjects.ReferenceItemType, id, Claim.Create))
@@ -21014,6 +20822,7 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("ReferenceItem_DeleteFields")]
         public JsonResult ReferenceItem_DeleteFields(int id)
         {
             var list = new List<EditableField>();
@@ -21028,6 +20837,7 @@ order by TextPath
         }
 
         /// <param name="id">LookupID</param>
+        [Route("ReferenceItem_EditFields")]
         public JsonResult ReferenceItem_EditFields(int id)
         {
             var list = new List<EditableField>();
@@ -21042,7 +20852,7 @@ order by TextPath
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteReferenceItem")]
         public JsonResult DeleteReferenceItem(FormCollection form)
         {
             try
@@ -21072,8 +20882,7 @@ order by TextPath
         }
 
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, ValidateInput(false)]
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReferenceItem")]
         public JsonResult AddReferenceItem(FormCollection form)
         {
             try
@@ -21115,7 +20924,7 @@ order by TextPath
         }
 
 
-        [HttpPut, ValidateInput(false)]
+        [HttpPut, ValidateInput(false), Route("EditReferenceItem")]
         public JsonResult EditReferenceItem(FormCollection form)
         {
             try
@@ -21145,8 +20954,6 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-
 
         #endregion
     }

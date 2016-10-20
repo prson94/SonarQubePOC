@@ -45,6 +45,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("AttributesForIntersect")]
         public JsonResult AttributesForIntersect(int id, int? parentID = null)
         {
             var sType = SystemObjects.Intersect.ToString();
@@ -63,6 +64,7 @@ namespace d360.web.Controllers
         /// </summary>        
         /// <param name="intersectTypeID">The object ID to get list of attributes for.</param>        
         /// <returns></returns>
+        [Route("RelationshipAttributesFieldList")]
         public JsonNetResult RelationshipAttributesFieldList(int intersectTypeID)
         {         
             var permissions = Company.GetPermissions(SystemObjects.IntersectType, intersectTypeID).ToList();
@@ -94,6 +96,7 @@ namespace d360.web.Controllers
         /// <param name="ownerID">The ID of the object that owns this attribute.</param>
         /// <param name="attributeID">The current or new parent attribute ID.</param>
         /// <returns>A list of available actions as JSON.</returns>
+        [Route("AttributeActions")]
         public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
         {
             Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
@@ -161,6 +164,7 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("AttributeActionsNg")]
         public JsonResult AttributeActionsNg(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
         {
             Company.Database.Log = message => System.Diagnostics.Trace.Write(message);

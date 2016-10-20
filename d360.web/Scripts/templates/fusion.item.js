@@ -62,7 +62,7 @@
                     selectedFusionAttributeTypeID = rowData.ID;
                 }
 
-                var exportUrl = '/fusion/ExportItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + selectedFusionAttributeTypeID;
+                var exportUrl = '/internal/fusion/ExportItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + selectedFusionAttributeTypeID;
 
                 var filterscount = 0;
                 $.each(filterVM.filterData('normal'), function (ix, item) {
@@ -153,7 +153,7 @@
                                 definition.Fields.push({ name: 'Type', type: 'string' });
 
                                 FusionAttributeSource.datafields = definition.Fields;
-                                FusionAttributeSource.url = '/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
+                                FusionAttributeSource.url = '/internal/fusion/ItemsByAttributeType?fusionID=' + id + '&fusionAttributeTypeID=' + row.ID;
 
                                 $('#ItemsTile').one('bindingcomplete', function (event) {
                                     try {
@@ -173,24 +173,6 @@
                                 $("#ItemsTile").on("bindingcomplete", itemsBindingComplete);
 
                                 $('#ItemsTile').jqxGrid({
-                                    //altrows: true,
-                                    //width: grid_width,
-                                    //autoheight: true,
-                                    //sortable: true,
-                                    //filterable: false,
-                                    //showfilterrow: false,
-                                    //showfiltermenuitems: false,
-                                    //showsortmenuitems: false,
-                                    //pagesizeoptions: ['10', '20', '50'],
-                                    //pagesize: 20,
-                                    //pageable: true,
-                                    //virtualmode: true,
-                                    //rendergridrows: function () {
-                                    //    return FusionAttributeAdapter.records;
-                                    //},
-                                    //columnsresize: true,
-                                    //source: FusionAttributeAdapter,
-                                    //theme: theme,
                                     columns: definition.Columns
                                 });
 
@@ -213,7 +195,6 @@
                 } catch (e) {
                     console.log(e);
                 }
-                //$('#FusionAttributeTypes').jqxTreeGrid({ disabled: false });
             }
 
             function itemsRowSelected(event) {
@@ -455,7 +436,7 @@
                     }
 
                     if (executionID) {
-                        amplify.publish("ToolAction", { uri: '/fusion/FusionExecution?id=' + executionID, context: null });
+                        amplify.publish("ToolAction", { uri: '/internal/fusion/FusionExecution?id=' + executionID, context: null });
                     }
                 });
         });

@@ -10,6 +10,9 @@ namespace d360.core.entities
         public List<Dictionary<string, string>> Models { get; set; }
 
         [DataMember]
+        public List<IDictionary<string, string>> QueryItems { get; set; }
+
+        [DataMember]
         public FusionRelationshipModels Relationships { get; set; }
 
         [DataMember]

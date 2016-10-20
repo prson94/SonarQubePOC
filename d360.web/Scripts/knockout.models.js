@@ -3242,16 +3242,16 @@ var FusionCommandTileModel = function (typeID, id) {
     self.PromotionRuleCount = ko.observable(0);
 
     self.ownershipOverlayUri = ko.computed(function () {
-        return "/fusion/" + self.FusionTypeID + "/configurations/" + self.FusionID + "/ownership";
+        return "/internal/fusion/" + self.FusionTypeID + "/configurations/" + self.FusionID + "/ownership";
     }, self);
 
     self.promotionOverlayUri = ko.computed(function () {
-        return "/fusion/" + self.FusionTypeID + "/configurations/" + self.FusionID + "/promotion";
+        return "/internal/fusion/" + self.FusionTypeID + "/configurations/" + self.FusionID + "/promotion";
     }, self);
 
     self.GetStatistics = function () {
         $.getJSON(
-            '/fusion/GetFusionRuleStatistics?id=' + self.FusionID,
+            '/internal/fusion/GetFusionRuleStatistics?id=' + self.FusionID,
             function (data) {
                 self.OwnershipRuleCount(data.OwnershipRuleCount);
                 self.PromotionRuleCount(data.PromotionRuleCount);

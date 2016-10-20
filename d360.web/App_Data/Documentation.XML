@@ -2483,12 +2483,6 @@
         <member name="M:d360.web.Controllers.FormController.Resource_EditFields(System.Int32)">
             <param name="id">ResourceID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.ResourceType_DeleteFields(System.Int32)">
-            <param name="id">ResourceTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.ResourceType_EditFields(System.Int32)">
-            <param name="id">ResourceTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.QuestionType_DeleteFields(System.Int32)">
             <param name="id">ResponseTypeID</param>
         </member>
@@ -2561,6 +2555,18 @@
             Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
             </summary>
             <returns>A list of available fusion configurations.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.HomeController.LegacyIndex">
+            <summary>
+            Sammy SPA - Legacy
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.HomeController.App">
+            <summary>
+            Angular SPA
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:d360.web.Controllers.RelationsController.HierarchyViewModel">
             <summary>

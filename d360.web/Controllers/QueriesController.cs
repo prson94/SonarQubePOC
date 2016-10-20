@@ -308,6 +308,7 @@ from	Comment C
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("RelatedArtifacts")]
         public JsonNetResult RelatedArtifacts(int artifactID)
         {
             var query = Company.Query<dynamic>(@"select TA.*, 
@@ -319,6 +320,7 @@ from	RelatedArtifact SR
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("RelatedArtifactOptions")]
         public JsonNetResult RelatedArtifactOptions(int typeID, int artifactID)
         {
             var query = Company.Query<dynamic>(@"if not exists(select GroupID from RelatedArtifact where ArtifactID = @a)

@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using System.Diagnostics;
 using d360.model;
 using d360.extensions;
-using d360.core;
 using d360.web.Models;
 
 namespace d360.web.Controllers
 {
-    [Authorize]
+    [Authorize, RoutePrefix("search")]
     public class SearchController : BaseController
     {
         #region DI
@@ -31,7 +28,7 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [HttpPost]
+        [HttpPost, Route("Results")]
         public JsonResult Results(string search, int? size, int? from, string group, string type, string adv)
         {
             var o = new SearchResultsViewModel();
@@ -44,7 +41,7 @@ namespace d360.web.Controllers
             return Json(o);
         }
 
-        [HttpGet]
+        [HttpGet, Route("AutoComplete")]
         public JsonResult AutoComplete(string search)
         {
             var sw = new Stopwatch();
@@ -60,9 +57,7 @@ namespace d360.web.Controllers
             return Json(results, JsonRequestBehavior.AllowGet);
         }
 
-
-
-        [HttpGet]
+        [HttpGet, Route("Typeahead")]
         public JsonResult Typeahead(string q, string t, int? num)
         {
             if (!string.IsNullOrEmpty(q))
@@ -74,6 +69,7 @@ namespace d360.web.Controllers
 
             return Json(null, JsonRequestBehavior.AllowGet);
         }
+        
         #endregion
     }
 }

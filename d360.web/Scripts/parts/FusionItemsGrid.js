@@ -370,7 +370,7 @@ function NewFusionItemsGrid(controlID, fusionID, fusionAttributeTypeID) {
         var source = {
             datatype: 'json',
             type: 'get',
-            url: '/fusion/ItemsByAttributeType?fusionID=' + fusionID + '&fusionAttributeTypeID=' + fusionAttributeTypeID,
+            url: '/internal/fusion/ItemsByAttributeType?fusionID=' + fusionID + '&fusionAttributeTypeID=' + fusionAttributeTypeID,
             datafields: definition.Fields,
             beforeprocessing: function (data) {
                 source.totalrecords = data.total;

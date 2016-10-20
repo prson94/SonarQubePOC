@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using d360.model;
-using d360.web.Controllers;
 using d360.core.entities;
-using d360.web.Models;
-using d360.core;
-using d360.core.exceptions;
-using System.Net;
-using System.Xml.Linq;
-using System.Globalization;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("monitor"), Authorize]
+    [RoutePrefix("internal/monitor"), Authorize]
     public class MonitorController : BaseController
     {
         #region DI
@@ -29,6 +20,7 @@ namespace d360.web.Controllers
 
         #region Json
 
+        [Route("eventheaders")]
         public JsonNetResult EventHeaders(int ruleID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20)
         {
             var querySql = @"select	A.ID,
@@ -64,6 +56,7 @@ inner join [Rule] T on T.ID = A.RuleID and A.RuleID = @id";
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("eventsbyheader")]
         public JsonNetResult EventsByHeader(int groupID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20)
         {
             var joins = "";
@@ -117,6 +110,7 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
             }
         }
 
+        [Route("policystatusfordate")]
         public JsonNetResult PolicyStatusForDate(int id, DateTime date)
         {
             var sql = @"

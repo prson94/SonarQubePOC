@@ -4,7 +4,7 @@
     $(controlID).hide();
 
     $.ajax({
-        url: '/fusion/details/' + type + '/' + id,
+        url: '/internal/fusion/details/' + type + '/' + id,
         method: 'GET'
     })
     .done(function (data, status, xhr) {

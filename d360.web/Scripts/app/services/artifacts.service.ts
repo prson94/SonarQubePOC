@@ -16,7 +16,7 @@ export class ArtifactService extends BaseService {
     
     getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?:string ): Promise<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
+        let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
         if (filters != undefined) {            
             //regular fields
@@ -71,7 +71,7 @@ export class ArtifactService extends BaseService {
     }   
 
     getArtifactsXls(artifactType: ArtifactType) {                
-        window.location.assign(`artifacts/download/excel/${artifactType.ID}.xls`);        
+        window.location.assign(`internal/artifacts/download/excel/${artifactType.ID}.xls`);        
     }
 
     getArtifact(id: number): Promise<Artifact> {

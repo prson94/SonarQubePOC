@@ -2,9 +2,6 @@
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
@@ -112,7 +109,6 @@ namespace d360.web.Controllers
                 return null;
             }
         }
-
     }
     
 }

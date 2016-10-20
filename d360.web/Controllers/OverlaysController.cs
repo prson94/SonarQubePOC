@@ -32,6 +32,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("MyApiCredentialsNg")]
         public JsonNetResult MyApiCredentialsNg()
         {
             var resource = Community.GetById<Resource>(Community.CurrentResourceID);
@@ -49,6 +50,7 @@ namespace d360.web.Controllers
             };
         }
 
+        [Route("ArtifactListMetricsDashboard")]
         public ActionResult ArtifactListMetricsDashboard(int id)
         {
             var model = Company.GetById<ArtifactType>(id);
@@ -59,11 +61,13 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("AttributeTypeCategories")]
         public ActionResult AttributeTypeCategories()
         {
             return PartialView();
         }
 
+        [Route("FusionConfigurationFilters")]
         public ActionResult FusionConfigurationFilters(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -71,6 +75,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("FusionConfigurationHistory")]
         public ActionResult FusionConfigurationHistory(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -78,6 +83,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("FusionConfigurationOwnershipRules")]
         public ActionResult FusionConfigurationOwnershipRules(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -85,6 +91,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("FusionRules")]
         public ActionResult FusionRules(int fusionTypeID, int fusionID)
         {
             ViewBag.FusionTypeID = fusionTypeID;
@@ -92,6 +99,7 @@ namespace d360.web.Controllers
             return PartialView();
         }
 
+        [Route("FusionTechMapping")]
         public ActionResult FusionTechMapping()
         {            
             return PartialView();
@@ -283,7 +291,7 @@ where A.AuditID = {0}", auditID);
             return PartialView();
         }
 
-        //[Route("TaxonomyType/{id:int}/diagrams/catalog")]
+        [Route("TaxonomyTypeDiagram_CatalogIFrame")]
         public ActionResult TaxonomyTypeDiagram_CatalogIFrame(int id)
         {
             ViewData.Add("ID", id);
@@ -321,6 +329,7 @@ where A.AuditID = {0}", auditID);
             ViewData.Add("ShowHeader", true);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
+
         [Route("{type}/{id:int}/events/noheader")]
         public ActionResult EventsNoHeader(SystemObjects type, int id)
         {
@@ -334,6 +343,7 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        [Route("IntersectRoles")]
         public ActionResult IntersectRoles()
         {
             return PartialView();
@@ -345,6 +355,7 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        [Route("LookupTypeUsage")]
         public ActionResult LookupTypeUsage(int id)
         {
             var detail = Company.GetById<LookupType>(id);
@@ -361,11 +372,13 @@ where A.AuditID = {0}", auditID);
             }
         }
 
+        [Route("PolicyTypeClasses")]
         public ActionResult PolicyTypeClasses()
         {
             return PartialView();
         }
 
+        [Route("Predicates")]
         public ActionResult Predicates()
         {
             return PartialView();
@@ -377,6 +390,7 @@ where A.AuditID = {0}", auditID);
             return PartialView(new ObjectModel { ObjectID = id, ObjectType = type.ToString() });
         }
 
+        [Route("TaxonomyTypeClasses")]
         public ActionResult TaxonomyTypeClasses()
         {
             return PartialView();

@@ -224,7 +224,7 @@ export class AttributesTile implements OnInit {
     }
 
     setMenuItems(items: any[]) {
-        console.log(items);
+        //console.log(items);
         this.actions = new Array<ActionBarItem>();
 
         let disable = (this.selectedRow == null);

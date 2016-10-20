@@ -21,6 +21,7 @@ namespace d360.web.Controllers
 
         #endregion
 
+        [Route("Hierarchy")]
         public JsonNetResult Hierarchy(int id)
         {
             var dt = Company.GetById<DomainType>(id, i => i.Domains, i => i.Groups);
@@ -59,7 +60,6 @@ namespace d360.web.Controllers
         }
 
         #region Exports
-
 
         [Route("{id:int}.xlsx"), FileDownload, HttpGet]
         public FileResult ToExcel(int id)

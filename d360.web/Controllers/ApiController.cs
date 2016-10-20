@@ -1943,6 +1943,7 @@ where   h.ID <> @t order by h.[Level] desc;
             };
 
         }
+        
         #endregion
 
         #region Fusion
@@ -2382,37 +2383,11 @@ from	cte a
 
         #region Lookup Methods
 
-//        [Route("allitems")]
-//        public IEnumerable<dynamic> GetAllItems()
-//        {
-//            return Company.Query<dynamic>(@"select		[Object], 
-//			ObjectID, 
-//			ObjectTypeName + ': ' + TextPath as Name
-//from		cache.ObjectDetails 
-//where		[Object] in ('Artifact', 'Rule', 'Policy', 'Domain') 
-//			and ObjectID <> 0
-//order by	Name");
-//        }
-
         [Route("AttributeTypeCategories")]
         public IQueryable<AttributeTypeCategory> GetAttributeTypeCategories()
         {
             return Company.Table<AttributeTypeCategory>();
         }
-
-        //        [Route("ResponsibilityTypeHierarchies")]
-        //        public HttpResponseMessage GetResponsibilityTypeHierarchies()
-        //        {
-        //            var models = Company.Query<ResponsibilityTypeHierarchy>(
-        //@"select	H.ID as StartID,
-        //		    S.Name as StartName,
-        //		    H.ParentID as EndID,
-        //		    T.Name as EndName
-        //from	    ResponsibilityTypeHierarchy H
-        //		    inner join ResponsibilityType S on S.ID = H.ID
-        //		    left join ResponsibilityType T on T.ID = H.ParentID");
-        //            return Request.CreateResponse(HttpStatusCode.OK, models);
-        //        }
 
         [Route("lookups/{id:int}/allocations")]
         public IEnumerable<dynamic> GetAllocationsByLookupType(int id)
@@ -3804,7 +3779,6 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             }
         }
 
-
         [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroupByType(int groupID, string type, int id)
         {
@@ -4010,7 +3984,6 @@ order by    title
             return items;
         }
 
-
         #endregion
 
         #region Resources
@@ -4100,7 +4073,6 @@ from    (
                         });
             }
         }
-
 
         #endregion
 
@@ -6737,7 +6709,6 @@ SELECT (
             return null;
         }
 
-
         [Route("surveys/{parentType}/{parentId}/{type}/{id}/survey")]
         public ObjectSurveyModel GetSurvey(SystemObjects parentType, int parentId, SystemObjects type, int id)
         {            
@@ -6804,7 +6775,6 @@ SELECT (
             return new CreateResponse { Message = "Created" };
         }
         
-
         [Route("surveys/question/{questionId}/values")]
         public IEnumerable<ObjectSurveyQuestionValuesModel> GetSurveyQuestionValues(int questionId)
         {
@@ -6864,7 +6834,6 @@ SELECT (
         {
             return Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id).OrderBy(i => i.Level);
         }
-
 
         [Route("TaxonomyClassifications")]
         public IQueryable<TaxonomyTypeClass> GetTaxonomyClassifications()
@@ -7030,7 +6999,6 @@ SELECT (
             return Company.Query<dynamic>(QueryConstants.InvalidTextPaths);
         }
 
-
         #endregion
 
         #region Angular Breadcrumb calls
@@ -7050,15 +7018,15 @@ SELECT (
                 case SystemObjects.Artifact:
                     return (from artifact in Company.Artifacts
                             where artifact.Name.StartsWith(q) && artifact.ArtifactTypeID == objectId
-                            select artifact).Take(num).AsEnumerable().Select( x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
+                            select artifact).Take(num).AsEnumerable().Select( x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("artifact/{0}/{1}", x.ArtifactTypeID, x.ID) });
                 case SystemObjects.TaxonomyType:
                     return (from taxonomyType in Company.TaxonomyTypes
                             where taxonomyType.Name.StartsWith(q)
-                            select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/model/{0}", x.ID) });
+                            select taxonomyType).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("model/{0}", x.ID) });
                 case SystemObjects.Rule:
                     return (from rule in Company.Rules
                             where rule.Name.StartsWith(q)
-                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("a/rule/{0}", x.ID) });
+                            select rule).Take(num).AsEnumerable().Select(x => new BreadcrumbTypeAheadModel { Name = x.Name, Url = string.Format("rule/{0}", x.ID) });
                 default:
                     break;
             }
@@ -7069,8 +7037,7 @@ SELECT (
 
         #region Raise Issue - Angular supports all object types not just artifact
 
-        [HttpPost]
-        [Route("issue/raise/{type}/{objectId:int}")]
+        [HttpPost, Route("issue/raise/{type}/{objectId:int}")]
         public CreateResponse PostIssue(SystemObjects type, int objectId, [FromBody]string issue)
         {
             var relations = new List<CommentRelation>();
@@ -7112,7 +7079,6 @@ SELECT (
         {
             return Company.Table<ReferenceItemType>();
         }
-
 
         [Route("referenceItems/{referenceItemTypeID:int}")]
         public IQueryable<ReferenceItem> GetReferenceItem(int referenceItemTypeID)

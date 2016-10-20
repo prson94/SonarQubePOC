@@ -16,7 +16,7 @@ export class FusionAttributeService extends BaseService {
         if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
         if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
 
-        var url = `fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+        var url = `internal/fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;
@@ -36,11 +36,11 @@ export class FusionAttributeService extends BaseService {
 
 
     getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number) {
-        window.location.assign(`fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&filterscount=0`);
+        window.location.assign(`internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&filterscount=0`);
     }
 
     getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
-        return this.http.get(`fusion/details/FusionAttribute/${fusionAttributeId}`)
+        return this.http.get(`internal/fusion/details/FusionAttribute/${fusionAttributeId}`)
             .toPromise()
             .then(response => <FusionAttributeValueDetails>response.json())
             .catch(err => this.handleError(err));

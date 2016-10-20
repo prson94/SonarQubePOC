@@ -77,6 +77,10 @@ namespace d360.web
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine());
 
+            RouteTable.Routes.IgnoreRoute("Content/{*url}");
+            RouteTable.Routes.IgnoreRoute("fonts/{*url}");
+            RouteTable.Routes.IgnoreRoute("images/{*url}");
+            RouteTable.Routes.IgnoreRoute("scripts/{*url}");
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             RouteTable.Routes.IgnoreRoute("{resource}.ico");
 
@@ -85,14 +89,14 @@ namespace d360.web
             //AreaRegistration.RegisterAllAreas();
 
             RouteTable.Routes.MapRoute(
-                name: "SPA-Fallback",
-                url: "a/{*url}",
-                defaults: new { controller = "Home", action = "App"}
+                name: "Default",
+                url: "{controller}/{action}/{id}"//,
+                //defaults: new { controller = "Home", action = "LegacyIndex", id = UrlParameter.Optional }
             );
             RouteTable.Routes.MapRoute(
-                name: "Default",
-                url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                name: "SPA-Fallback",
+                url: "{*url}", // a/{*url}
+                defaults: new { controller = "Home", action = "App" }
             );
 
             #endregion

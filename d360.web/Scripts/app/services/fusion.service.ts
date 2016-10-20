@@ -283,7 +283,7 @@ export class FusionService extends BaseService {
     }
 
     downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
-        window.location.assign(`fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`);
+        window.location.assign(`internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`);
     }
 
     getEditFusionRule(id: number): Promise<FusionRuleEditorModel> {

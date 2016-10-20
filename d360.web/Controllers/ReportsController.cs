@@ -29,7 +29,8 @@ namespace d360.web.Controllers
 
         #endregion
 
-  
+
+        [Route("Overlay")]
         public ActionResult Overlay(int reportID, string type, int id)
         {
             var report = Company.GetById<Report>(reportID, i => i.ReportLayout);
@@ -84,6 +85,7 @@ namespace d360.web.Controllers
             return PartialView(model);
         }
 
+        [Route("PreviewOverlay")]
         public ActionResult PreviewOverlay(int id)
         {
             var report = Company.GetById<Report>(id, i => i.ReportLayout);
@@ -136,6 +138,7 @@ namespace d360.web.Controllers
             return client;
         }
 
+        [Route("PowerBIOverlay")]
         public async Task<ActionResult> PowerBIOverlay(string reportId)
         {
             var companySettings = Community.GetCompanySettings();
@@ -349,21 +352,6 @@ namespace d360.web.Controllers
             var models = Company.Filter<ReportTile>(i => i.ReportID == reportID);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        //[Route("{reportID:int}/{type}/{id:int}/tiles/{tileID:int}/data")]
-        //public JsonNetResult GetReportTileData(int reportID, SystemObjects type, int id, int tileID)
-        //{
-        //    try
-        //    {
-        //        var models = Company.GetReportQueryResults(tileID, type, id);
-        //        return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        return new JsonNetResult { Data = new { error = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
-        //        //throw;
-        //    }
-        //}
 
         [Route("data"), HttpPost]
         public JsonNetResult GetReportTilePreviewData(string sql)

@@ -17,26 +17,31 @@ namespace d360.web.Controllers
 
         #endregion
 
+        [Route("HomeSocial")]
         public JsonNetResult HomeSocial()
         {
             return new JsonNetResult { Data = Company.GetSocialDataForCurrentResource(), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("GroupSocial")]
         public JsonNetResult GroupSocial(int id)
         {
             return new JsonNetResult { Data = Company.GetSocialDataForGroup(id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("ProfileSocial")]
         public JsonNetResult ProfileSocial(int id)
         {
             return new JsonNetResult { Data = Company.GetSocialDataForResource(id), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("RelationshipAggregates")]
         public JsonNetResult RelationshipAggregates(SystemObjects type, int id)
         {
             return new JsonNetResult { Data = Company.GetAggregateRelationshipBreakdownsByObject(type, id), Formatting = Newtonsoft.Json.Formatting.None };
         }
-        
+
+        [Route("FollowingBreakdownByResource")]
         public async Task<JsonNetResult> FollowingBreakdownByResource(int id)
         {
             var query = await Company.QueryAsync<dynamic>(@"select  		                
@@ -64,6 +69,7 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("ResponsibilityBreakdownByResource")]
         public async Task<JsonNetResult> ResponsibilityBreakdownByResource(int id)
         {            
             var query = await Company.QueryAsync<dynamic>(
@@ -94,6 +100,7 @@ namespace d360.web.Controllers
                     return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("ResponsibilityBreakdownByGroup")]
         public async Task<JsonNetResult> ResponsibilityBreakdownByGroup(int id)
         {
             var query = await Company.QueryAsync<dynamic>(

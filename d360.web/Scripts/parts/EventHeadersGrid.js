@@ -8,7 +8,7 @@
 
     var EventHeadersGridSource = {
         datatype: 'json',
-        url: '/Monitor/EventHeaders?ruleID=' + id,
+        url: '/internal/monitor/EventHeaders?ruleID=' + id,
         datafields: [
             { name: 'ID', type: 'number' },
             { name: 'PublicID', type: 'string' },

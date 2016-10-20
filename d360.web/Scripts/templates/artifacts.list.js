@@ -92,7 +92,7 @@
                 switch (data.context) {
                     case contextList.ActionExport:
                         var data = [];                        
-                        $.fileDownload('/artifacts/' + typeID + '.xls', {
+                        $.fileDownload('/internal/artifacts/' + typeID + '.xls', {
                             httpMethod: "POST",
                             data: {}//{ Name: data.Name, Description: data.Description, Statuses: data.Statuses, InformationModels: data.InformationModels, OwnerDomains: data.OwnerDomains }
                         });
@@ -148,7 +148,7 @@
                         ArtifactListSource = {
                             datatype: 'json',
                             type: 'post',
-                            url: '/artifacts/ByType?id=' + typeID,
+                            url: '/internal/artifacts/ByType?id=' + typeID,
                             datafields: gridinfo.Fields,
                             beforeprocessing: function (data) {
                                 ArtifactListSource.totalrecords = data.total;
@@ -259,7 +259,7 @@
                             filterable: false,
                             width: '150px',
                             cellsrenderer: function (index, datafield, value, defaultvalue, column, data) {
-                                var detailUri = '/artifacts/' + typeID + '/{0}';
+                                var detailUri = '/internal/artifacts/' + typeID + '/{0}';
                                 var tools = [];
 
                                 var foreColor = '#fff';

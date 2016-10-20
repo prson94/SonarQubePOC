@@ -6,7 +6,7 @@
     chartControlID = '#' + chartControlID;
 
     $.ajax({
-        url: '/fusion/RelationshipAggregates?type=' + type + '&id=' + id + '&parentAttributeID=' + (parentAttributeID ? parentAttributeID : 0),
+        url: '/internal/fusion/RelationshipAggregates?type=' + type + '&id=' + id + '&parentAttributeID=' + (parentAttributeID ? parentAttributeID : 0),
         method: 'GET'
     })
     .done(function (data, status, xhr) {
@@ -58,7 +58,7 @@
                     ],
                     click: function (e) {
                         var data = adapter.records[e.elementIndex];
-                        var url = '/fusion/RelationshipAggregatesOverlay?type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID + '&parentAttributeID=' + (parentAttributeID ? parentAttributeID : 0);
+                        var url = '/internal/fusion/RelationshipAggregatesOverlay?type=' + type + '&id=' + id + '&targetType=' + data.Type + '&targetID=' + data.TypeID + '&parentAttributeID=' + (parentAttributeID ? parentAttributeID : 0);
                         openTileOverlay(url);
                     }
                 }]

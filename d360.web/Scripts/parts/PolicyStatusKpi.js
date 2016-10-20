@@ -15,7 +15,7 @@
     }
 
     var loadStatus = function () {
-        $.getJSON('/monitor/PolicyStatusForDate', { id: id, date: date }, function (data) {
+        $.getJSON('/internal/monitor/PolicyStatusForDate', { id: id, date: date }, function (data) {
             var html = '';
 
             if (data.status) {

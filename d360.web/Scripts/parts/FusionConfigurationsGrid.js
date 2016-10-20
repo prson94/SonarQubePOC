@@ -18,7 +18,7 @@
         var source = {
             datatype: 'json',
             type: 'get',
-            url: '/fusion/' + id + '/configurations',
+            url: '/internal/fusion/' + id + '/configurations',
             datafields: definition.Fields
         };
 

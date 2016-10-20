@@ -13,7 +13,7 @@ using System;
 
 namespace d360.web.Controllers
 {
-    [Authorize]
+    [Authorize, RoutePrefix("navigation")]
     public class NavigationController : BaseController
     {
         #region DI
@@ -24,7 +24,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        [Authorize]
+        [Authorize, Route("top")]
         public ActionResult Top()
         {
             var resource = Community.GetById<Resource>(Company.CurrentResourceID);
@@ -55,6 +55,7 @@ namespace d360.web.Controllers
             return PartialView(navigation);
         }
         
+        [Route("sitemenu")]
         public JsonNetResult SiteMenu()
         {
             return new JsonNetResult
@@ -68,6 +69,7 @@ namespace d360.web.Controllers
             };
         }
 
+        [Route("GetSiteNavigation")]
         public List<TopNavigationItem> GetSiteNavigation(bool bNewSite = false)
         {
             List<TopNavigationItem> nodes = null;
@@ -399,6 +401,7 @@ SELECT	'#Admin' as MenuID,
             return nodes;
         }
 
+        [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
         {
             var nav = Company.Query<dynamic>(@"
@@ -432,7 +435,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpGet]
+        [Authorize, HttpGet, Route("GetSiteNavItems")]
         public JsonNetResult GetSiteNavItems()
         {
             return new JsonNetResult
@@ -442,7 +445,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPost]
+        [Authorize, HttpPost, Route("AddFolderItem")]
         public JsonNetResult AddFolderItem(SiteNav item)
         {
             var success = true;
@@ -481,7 +484,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPost]
+        [Authorize, HttpPost, Route("RemoveFolderItem")]
         public JsonNetResult RemoveFolderItem(int id)
         {
             var success = true;
@@ -508,7 +511,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPost]
+        [Authorize, HttpPost, Route("RemoveFolder")]
         public JsonNetResult RemoveFolder(int id)
         {
             var success = true;
@@ -539,7 +542,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPost]
+        [Authorize, HttpPost, Route("AddFolder")]
         public JsonNetResult AddFolder(AddSiteNavModel model)
         {
             var success = true;
@@ -571,7 +574,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPut]
+        [Authorize, HttpPut, Route("MoveUp")]
         public JsonNetResult MoveUp(int id)
         {
             var success = true;
@@ -605,7 +608,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPut]
+        [Authorize, HttpPut, Route("MoveDown")]
         public JsonNetResult MoveDown(int id)
         {
             var success = true;
@@ -637,7 +640,7 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPut]
+        [Authorize, HttpPut, Route("RenameFolder")]
         public JsonNetResult RenameFolder(int id, string name)
         {
             var success = true;
@@ -666,7 +669,8 @@ SELECT	'#Admin' as MenuID,
         }
 
         #region Favorites
-        [Authorize, HttpPut]
+
+        [Authorize, HttpPut, Route("ToggleFavorite")]
         public JsonNetResult ToggleFavorite(Favorite favorite, bool admin = false)
         {
             var success = true;
@@ -716,7 +720,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpPut]
+        [Authorize, HttpPut, Route("MoveFavorite")]
         public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
         {
             var success = true;
@@ -765,7 +769,7 @@ SELECT	'#Admin' as MenuID,
 
         }
 
-        [Authorize, HttpGet]
+        [Authorize, HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
             var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && !f.IsOverride).OrderBy(f => f.SortOrder).ToList();
@@ -785,9 +789,8 @@ SELECT	'#Admin' as MenuID,
             };
 
         }
+        
         #endregion  
-
-
 
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
         {

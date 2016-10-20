@@ -37,7 +37,7 @@ export class ArtifactTypeService extends BaseService {
     }
 
     getArtifactTypeTree(): Promise<TreeNode[]> {
-        return this.http.get('artifacts/types')
+        return this.http.get('internal/artifacts/types')
             .toPromise()
             .then(response => <TreeNode[]>response.json())
             .then(r => this.formTree(r))
@@ -82,7 +82,7 @@ export class ArtifactTypeService extends BaseService {
 
 
     public getTopLevelSummary(): Promise<ArtifactTypeSummary[]> {
-        return this.http.get('/artifacts/typeswithstatistics')
+        return this.http.get('internal/artifacts/typeswithstatistics')
             .toPromise()
             .then(response => <ArtifactTypeSummary[]>response.json())
             .catch(err => this.handleError(err));

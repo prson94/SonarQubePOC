@@ -97,7 +97,7 @@
                 var ArtifactTreeGridSource =
                 {
                     dataType: 'json',
-                    url: '/artifacts/types',
+                    url: '/internal/artifacts/types',
                     dataFields: [
                         { name: 'ID', type: 'number' },
                         { name: 'ParentID', type: 'number' },

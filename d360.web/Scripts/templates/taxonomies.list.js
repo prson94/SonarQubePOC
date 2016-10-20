@@ -230,7 +230,7 @@
                     var TreeGridSource =
                     {
                         dataType: 'json',
-                        url: '/taxonomy/ModelHierarchy?id=' + typeID,
+                        url: 'internal/taxonomy/ModelHierarchy?id=' + typeID,
                         dataFields: [
                             { name: 'HasChildren', type: 'bool' },
                             { name: 'ID', type: 'number' },

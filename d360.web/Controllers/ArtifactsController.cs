@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {
-    [RoutePrefix("artifacts"), Authorize]
+    [RoutePrefix("internal/artifacts"), Authorize]
     public class ArtifactsController : BaseController
     {
         #region DI
@@ -25,7 +25,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Exports
-
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
         public FileResult ToExcel(int id)
@@ -96,7 +95,7 @@ from	Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.Artif
 
         #region Json
 
-        [HttpPost]
+        [HttpPost, Route("byparent")]
         public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByParent : {0}, {1}", parentID, childArtifactTypeID);
@@ -143,15 +142,13 @@ from	Artifact A
             return new JsonNetResult { Data = new { total, results = query }, Formatting = Newtonsoft.Json.Formatting.None };        
         }
 
-
-        [HttpGet]
+        [HttpGet, Route("artifactsbytype")]
         public JsonNetResult ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             return ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
         }
 
-
-        [HttpPost]
+        [HttpPost, Route("bytype")]
         public JsonNetResult ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByType : {0}", id);
