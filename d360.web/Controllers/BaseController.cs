@@ -715,7 +715,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
             {
                 if (sb.Length != 0) sb.Append(" or ");
 
-                sb.Append($"({column} like '%{filterExp}%')");
+                sb.Append($"({column} like @simpleFilter)");
             }
             
             foreach (var field in fields)
@@ -724,12 +724,12 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
                 var name = $"Field{field.ID}_T.FormattedValue";
                 
-                sb.Append($"({name} like '%{filterExp}%')");
+                sb.Append($"({name} like @simpleFilter)");
             }
             
 
             // add value to db args
-            dbArgs.Add("simpleFilter", filterExp);
+            dbArgs.Add("simpleFilter", $"%{filterExp}%");
 
             return $"({sb.ToString()})";
         }
