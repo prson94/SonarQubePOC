@@ -18803,6 +18803,12 @@ from    [IntersectType] RT
                 if (!form.HasKeys()) throw new NoFormDataException("survey type");
 
                 var id = parseIntField(form, "ID");
+                // delete this surveys questions..
+                
+                Company.Delete<Question>(i => i.Survey.SurveyTypeID == id);
+                Company.Delete<Survey>(i => i.SurveyTypeID == id);
+
+                Company.Delete<QuestionType>(i => i.SurveyTypeID == id);
                 Company.Delete<SurveyType>(i => i.ID == id);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);

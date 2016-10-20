@@ -25,8 +25,8 @@ export class StatisticService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteStatistic(id: number) {
-        return this.deleteDynamic(this.http, 'statistictype', id);
+    deleteStatistic(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'statistictype', id);
     }
 
     saveStatistic(statisticType: StatisticType): Promise<JsonResult> {

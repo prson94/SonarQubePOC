@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -19,8 +18,8 @@ export class ReportsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteReport(id: number) {
-        return this.deleteDynamic(this.http, 'report', id);
+    deleteReport(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'report', id);
     }
 
     saveReport(report: Report, file?: File): Promise<JsonResult> {
@@ -37,8 +36,8 @@ export class ReportsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteReportTile(id: number) {
-        return this.deleteDynamic(this.http, 'reporttile', id);
+    deleteReportTile(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'reporttile', id);
     }
 
     saveReportTile(reportTile: ReportTile, powerBIFile?: File): Promise<JsonResult> {

@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { StatisticType } from '../../models/statistic.model';
@@ -18,7 +17,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                                <p-dataTable [value]="statistics" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Score" header="Score" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
@@ -104,15 +103,21 @@ export class AdminStatisticsComponent extends AdminBaseComponent implements OnIn
     }
 
     deleteStatisticType(id: number) {
-        this.statisticService.deleteStatistic(id);
-        this.showDelete = false;
-        this.selected = this.statistics.length > 0 ? this.statistics[0] : null;
-        this.statistics.splice(this.findStatisticTypeIndex(id), 1);
+        this.statisticService.deleteStatistic(id).
+            then(result => {
+                this.showDelete = false;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.selected = this.statistics.length > 0 ? this.statistics[0] : null;
+                    this.statistics.splice(this.findStatisticTypeIndex(id), 1);
+                }
+            });
     }
 
     saveStatisticType(event) {
         this.statisticService.saveStatistic(event.statistic)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 if (event.statistic.ID == undefined) {
                     event.statistic.ID = Number(result.id);
                     this.statistics[this.statistics.length] = event.statistic;
@@ -120,7 +125,7 @@ export class AdminStatisticsComponent extends AdminBaseComponent implements OnIn
                 else {
                     this.statistics[this.findStatisticTypeIndex(event.statistic.ID)] = event.statistic;
                 }
-                this.selected = event.item;
+                this.selected = event.statistic;
                 this.showEditor = false;
             });
     }

@@ -141,16 +141,22 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     }
 
     deleteReport(id: number) {
-        this.reportsService.deleteReport(id);
-        this.showDelete = false;
-        this.selected = this.reports.length > 0 ? this.reports[0] : null;
-        this.reports.splice(this.findReportIndex(id), 1);
+        this.reportsService.deleteReport(id)
+            .then(result => {
+                this.showDelete = false;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.selected = this.reports.length > 0 ? this.reports[0] : null;
+                    this.reports.splice(this.findReportIndex(id), 1);
+                }
+            });
     }
 
     saveReport(event) {
         this.isLoading = true;   
         this.reportsService.saveReport(event.report, event.file)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 let parts = event.report.ObjectType.split('|');
                 if (parts.length > 0) {
                     event.report.ObjectType = parts[0];
