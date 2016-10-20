@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -58,7 +57,7 @@ export class TaxonomiesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteTaxonomyLevel(taxonomyTypeId : number, taxonomyLevelId: number) {
+    deleteTaxonomyLevel(taxonomyTypeId: number, taxonomyLevelId: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
                 
@@ -67,6 +66,7 @@ export class TaxonomiesService extends BaseService {
         return this.http
             .delete(url, headers)
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
 

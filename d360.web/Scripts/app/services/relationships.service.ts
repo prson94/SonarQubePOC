@@ -47,8 +47,8 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteRelationship(id: number){
-        return this.deleteDynamic(this.http, 'intersecttype', id);
+    deleteRelationship(id: number): Promise<JsonResult>{
+        return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
     }
 
     saveRelationship(relationship: RelationshipDetail): Promise<JsonResult> {

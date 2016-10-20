@@ -131,6 +131,7 @@ export class AdminTemplatesComponent extends AdminBaseComponent {
     updateTemplate(event) {        
         this.templateService.putTemplate(event.template);
         var index = this.findTemplateIndex(event.template.ID);
+        this.isEditing = false;
 
         if (index >= 0)
             this.templates[index] = event.template;

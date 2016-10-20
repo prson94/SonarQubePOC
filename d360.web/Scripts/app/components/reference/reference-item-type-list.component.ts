@@ -81,11 +81,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this.referenceService.deleteReferenceItemType(id).then(
             result => {
-                if (result.type == 'error') {
-                    this.messagesService.showError(result.title, result.message);
-                }
-                else {
-                    this.messagesService.showInfoMessage('Success', 'Successfully deleted the selected reference list.');
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {                    
                     let index = this.referenceTypes.findIndex(x => x.ID == id);
                     if (index >= 0 && index < this.referenceTypes.length) {
                         this.referenceTypes.splice(index, 1);
@@ -101,20 +98,16 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this.referenceService.saveReferenceItemType(event.referenceItemType)
             .then(result => {
-                if (result.type == 'error') {
-                    this.messagesService.showError(result.title, result.message);
-                }
-                else {
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {                
                     if (event.referenceItemType.ID == undefined) {
                         event.referenceItemType.ID = Number(result.id);
-                        this.referenceTypes[this.referenceTypes.length] = event.referenceItemType;
-                        this.messagesService.showInfoMessage('Succes', 'Reference List Type Created');
+                        this.referenceTypes[this.referenceTypes.length] = event.referenceItemType;                        
                     }
                     else {
                         let index = this.referenceTypes.findIndex(x => x.ID == event.referenceItemType.ID);
                         if (index >= 0 && index < this.referenceTypes.length) {
-                            this.referenceTypes[index] = event.referenceItemType;
-                            this.messagesService.showInfoMessage('Succes', 'Reference List Type Updated');
+                            this.referenceTypes[index] = event.referenceItemType;                            
                         }
                     }
                     this.selected = event.referenceItemType;

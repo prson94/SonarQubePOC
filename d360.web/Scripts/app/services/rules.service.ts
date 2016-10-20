@@ -50,8 +50,8 @@ export class RulesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteDimension(id: number) {
-        return this.deleteDynamic(this.http, 'ruledimension', id);
+    deleteDimension(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'ruledimension', id);
     }
         
 

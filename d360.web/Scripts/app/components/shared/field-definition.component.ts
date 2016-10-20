@@ -99,12 +99,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     deleteFieldType(id: number) {
         this.fieldsService.deleteFieldType(id).then(res => {
-            if (res.isError) {
-                this.messagesService.showError(res.title, res.message);
-            }
-            else {
-                this.isDeleting = false;
-                this.messagesService.showInfoMessage("Success", "Field Definition Deleted");
+            this.showMessageForResult(this.messagesService, res);
+            if (!res.isError) {            
+                this.isDeleting = false;                
                 let index = this.fieldDefinitions.findIndex(f => f.ID == id);
                 if (index >= 0 && index < this.fieldDefinitions.length)
                     this.fieldDefinitions.splice(index, 1);

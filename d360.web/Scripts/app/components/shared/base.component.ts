@@ -1,10 +1,11 @@
 ﻿import { Input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarService, WebAnalyticsService, PermissionsService  } from '../../services/index';
+import { RightSidebarService, WebAnalyticsService, PermissionsService, MessagesService  } from '../../services/index';
 import { Subscription }   from 'rxjs/Subscription';
 import { Permission } from '../../models/permission.model'
 import { StringConstants } from '../../static/string-constants';
+import { JsonResult } from '../../models/jsonresult.model';
 
 export class BaseComponent {    
     protected isLoading = false;
@@ -136,6 +137,11 @@ export class BaseComponent {
                 this.sidebarSubscription.unsubscribe();
             }
         }
+    }
+
+    showMessageForResult(messagesService: MessagesService, result: JsonResult) {
+        if (result.type == 'error') messagesService.showError(result.title, result.message);
+        else messagesService.showInfoMessage(result.title, result.message);
     }
     
 }

@@ -32,8 +32,8 @@ export class PoliciesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deletePolicy(id: number) {
-        return this.deleteDynamic(this.http, 'policytype', id);
+    deletePolicy(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'policytype', id);
     }
     
     saveDimension(policyType: PolicyType): Promise<JsonResult> {

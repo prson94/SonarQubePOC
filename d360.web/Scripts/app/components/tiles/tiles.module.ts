@@ -13,7 +13,6 @@ import { ClaimsTile } from './claims.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { LoadItemTile } from './load-item.tile';
-import { ModelLevelTile } from './model-level.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
@@ -47,8 +46,7 @@ import {
         ClaimsTile,         
         FusionAttributesTile,
         FusionConfigurationTile,                
-        LoadItemTile,
-        ModelLevelTile,
+        LoadItemTile,        
         ObjectDefinitionTile,                             
         ResourceFollowingGridTile,
         ResourceFollowingTile,       
@@ -65,8 +63,7 @@ import {
         ClaimsTile,        
         FusionAttributesTile,
         FusionConfigurationTile,                
-        LoadItemTile,        
-        ModelLevelTile,
+        LoadItemTile,                
         ObjectDefinitionTile,                        
         ResourceFollowingGridTile,
         ResourceFollowingTile,        

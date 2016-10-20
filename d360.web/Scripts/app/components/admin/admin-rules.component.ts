@@ -16,7 +16,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>     
                             <span *ngIf="!isLoading && !showEditor">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                                <p-dataTable [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
+                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
                                 </p-dataTable>                                
                             </span>

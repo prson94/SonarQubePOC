@@ -213,12 +213,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;        
         this.uriBasedService.saveItem("form/dynamicedit/create/artifact", "form/dynamicedit/edit/artifact", event.item)
             .then(result => {
-                if (result.type == 'error') {
-                    this.messagesService.showError(result.title, result.message);
-                }
-                else {
-                    this.messagesService.showInfoMessage(result.title, result.message);
-                }
+                this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.getData();
                 this.showEditor = false;

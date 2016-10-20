@@ -62,9 +62,7 @@ export class ArtifactStatusComponent extends BaseComponent implements OnChanges 
     private requestCertification() {
         this.artifactService.requestCertification(this.objectID)
             .then(result => {
-                if (result.type == 'error') {
-                    this.messagesService.showError(result.title, result.message);
-                }
+                this.showMessageForResult(this.messagesService, result);                
                 this.showRequestCertification = false;
             });        
     }

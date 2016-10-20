@@ -191,11 +191,9 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.reportsService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
             .then(result => {
                 this.isLoading = false;
-                if (result.type == 'error') {
-                    this.messagesService.showError("Error", "Cannot update power bi credentials, check that you have entered the correct user / password.");
-                }
-                else {
-                    this.showCredentials = false;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.showCredentials = false;                    
                 }
             });        
     }

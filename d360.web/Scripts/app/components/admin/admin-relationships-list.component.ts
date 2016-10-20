@@ -1,5 +1,5 @@
 ﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { RelationshipsService  } from '../../services/index';
+import { RelationshipsService, MessagesService  } from '../../services/index';
 import { Relationship } from '../../models/relationship.model';
 import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';
@@ -66,13 +66,12 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     showDelete: boolean = false;
     theDeleteCallback: Function;
     
-    constructor(private relationshipsService: RelationshipsService) {   
+    constructor(private messagesService: MessagesService, private relationshipsService: RelationshipsService) {   
         super();     
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 
-    ngOnInit() {
-        console.log(this.filterToName);
+    ngOnInit() {        
         this.getRelationships();
     }
 
@@ -85,8 +84,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     private filterResults() {
         if (this.filterToName && this.filterToName.length > 0) {
-            var search = this.filterToName.toLowerCase();
-            console.log(search);
+            var search = this.filterToName.toLowerCase();            
             this.relationships = this.relationships.filter(item => item.Object && item.Object.toLowerCase().includes(search) || item.Subject && item.Subject.toLowerCase().includes(search) || item.ObjectName && item.ObjectName.toLowerCase().includes(search) || item.SubjectName && item.SubjectName.toLowerCase().includes(search));
         }
     }
@@ -114,15 +112,19 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     deleteRelationship(id: number) {
-        this.relationshipsService.deleteRelationship(id);
-        this.showDelete = false;
-        this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
-        this.relationships.splice(this.findRelationshipIndex(id), 1);
+        this.relationshipsService.deleteRelationship(id)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
+                this.relationships.splice(this.findRelationshipIndex(id), 1);
+            });
     }
 
     saveRelationship(event) {
         this.relationshipsService.saveRelationship(event.relationship)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 this.getRelationships(); // reload relationship detail and relationship models are incompatible               
                 this.showEditor = false;
             });

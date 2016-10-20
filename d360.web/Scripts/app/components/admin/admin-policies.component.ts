@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { PolicyType } from '../../models/policy.model';
@@ -18,7 +17,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                                <p-dataTable [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
                                         <template let-policy="rowData"  pTemplate type="body">
@@ -123,15 +122,19 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     }
 
     deletePolicyType(id: number) {
-        this.policiesService.deletePolicy(id);
-        this.showDelete = false;
-        this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
-        this.policyTypes.splice(this.findPolicyTypeIndex(id), 1);
+        this.policiesService.deletePolicy(id)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
+                this.policyTypes.splice(this.findPolicyTypeIndex(id), 1);
+            });
     }
 
     savePolicyType(event) {
         this.policiesService.saveDimension(event.item)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
                     event.item.ID = Number(result.id);
                     this.policyTypes[this.policyTypes.length] = event.item;

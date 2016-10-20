@@ -146,12 +146,7 @@ export class DynamicEditorComponent extends BaseComponent {
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .then(result => {
-                    if (result.type == 'error') {
-                        this.messagesService.showError(result.title, result.message);
-                    }
-                    else {
-                        this.messagesService.showInfoMessage(result.title, result.message);
-                    }
+                    this.showMessageForResult(this.messagesService, result);                    
                     this.saveClick.emit({ item: result, action: action, values: values});    
                 });
         } else {            

@@ -31,13 +31,13 @@ export class SurveysService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteSurveyTypeById(id: number) {
-        return this.deleteDynamic(this.http, 'surveytype', id);
+    deleteSurveyTypeById(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'surveytype', id);
     }
 
 
-    deleteSurveyQuestionType(id: number) {
-        return this.deleteDynamic(this.http, 'surveyquestiontype', id);
+    deleteSurveyQuestionType(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'surveyquestiontype', id);
     }
 
 

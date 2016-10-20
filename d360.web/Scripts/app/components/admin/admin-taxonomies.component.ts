@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Taxonomy} from '../../models/taxonomy.model';
 import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent} from './admin-base.component';
@@ -31,7 +30,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                                <p-dataTable [globalFilter]="gb" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selectedTaxonomy"  (onRowDblclick)="selectedTaxonomy=$event.data;showEditor=true;" >                                                        
+                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="taxonomies" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selectedTaxonomy"  (onRowDblclick)="selectedTaxonomy=$event.data;showEditor=true;" >                                                        
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column field="TaxonomyTypeClass" header="Classification" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
                                     <p-column field="MaximumDepth" header="Max Depth" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                            
@@ -116,8 +115,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
              .saveTaxonomy(event.taxonomy)
             .then(response => {
                 this.showEditor = false;
-                if (response.type == 'error') {
-                    this.messagesService.showError("Error", "Cannot create new taxonomy");
+                if (response.type == 'error') {                    
                     this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
                 }
                 else {                    
@@ -132,10 +130,10 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                         actionName = "Edited";
                         if (index >= 0)
                             this.taxonomies[index] = event.taxonomy;
-                    }
-                    this.messagesService.showInfoMessage("Success", `${actionName} model [${event.taxonomy.Name}] Successfully`);
+                    }                    
                     this.selectedTaxonomy = event.taxonomy;
                 }
+                this.showMessageForResult(this.messagesService, response);
             })
              .catch(error => this.error = error);        
     }

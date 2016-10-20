@@ -1,8 +1,6 @@
-﻿
-import { Component, Input} from '@angular/core';
+﻿import { Component, Input} from '@angular/core';
 import { Taxonomy } from '../../models/taxonomy.model';
 import { MessagesService } from '../../services/index';
-
 
 @Component({
     selector: 'd3s-admin-model-detail-component',
@@ -11,7 +9,7 @@ import { MessagesService } from '../../services/index';
                         <d3s-field-definition-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>
                     </div>
                     <div class="tile tile-detail">
-                        <d3s-model-level-tile [(taxonomy)]="taxonomy"></d3s-model-level-tile>
+                        <d3s-admin-model-level [(taxonomy)]="taxonomy"></d3s-admin-model-level>
                     </div>                    
                     <div class="tile tile-detail">
                         <d3s-people-responsibilities-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" [showHidden]="true"></d3s-people-responsibilities-tile>                        

@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../models/survey.model';
 import { MessagesService, SurveysService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
@@ -14,7 +13,7 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                    
-                    <p-dataTable [globalFilter]="gb" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                    <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="questions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                         <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                         <p-column field="DisplayStyle" header="Display Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                         <p-column [style]="{width:'40px'}">
@@ -54,7 +53,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService) {
+    constructor(private surveysService: SurveysService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteQuestion.bind(this);
     }
@@ -75,9 +74,12 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     }
 
     deleteQuestion(id: number) {
-        this.surveysService.deleteSurveyQuestionType(id);
-        this.showDelete = false;
-        this.questions.splice(this.findQuestionById(id), 1);
+        this.surveysService.deleteSurveyQuestionType(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.questions.splice(this.findQuestionById(id), 1);
+            });
     }
 
     add() {
@@ -102,6 +104,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     saveQuestion(event) {
         this.surveysService.saveSurveyTypeQuestion(event.question)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 this.getQuestions(); // incompatible types reload
                 this.showEditor = false;
             });

@@ -13,7 +13,7 @@ import * as _ from 'lodash';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                    <input  [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                     <p-dataTable [globalFilter]="gb" [value]="predicates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showPredicateEditor();" [(selection)]="selected" >                                                                        
                         <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>                                                            
                         <p-column field="Inverse" header="Inverse" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter"></p-column>
@@ -55,7 +55,7 @@ export class PredicatesListComponent extends BaseComponent {
     selected: Predicate = null;
     theDeleteCallback: Function;
 
-    constructor(private predicatesService: PredicatesService) {
+    constructor(private predicatesService: PredicatesService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deletePredicate.bind(this);
     }
@@ -76,9 +76,12 @@ export class PredicatesListComponent extends BaseComponent {
     }
 
     deletePredicate(id: number) {
-        this.predicatesService.deletePredicate(id);
-        this.showDelete = false;
-        this.predicates.splice(this.findPredicateIndex(id), 1);
+        this.predicatesService.deletePredicate(id)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.predicates.splice(this.findPredicateIndex(id), 1);
+            });
     }
 
     add() {
@@ -103,6 +106,7 @@ export class PredicatesListComponent extends BaseComponent {
     savePredicate(event) {
         this.predicatesService.savePredicate(event.item)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
                     event.item.ID = Number(result.id);
                     this.predicates[this.predicates.length] = event.item;

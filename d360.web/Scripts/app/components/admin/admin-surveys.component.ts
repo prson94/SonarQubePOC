@@ -17,7 +17,7 @@ import { SurveyType } from '../../models/survey.model';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                                <p-dataTable [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
                                 <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'60px'}">
@@ -97,11 +97,16 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     }
 
     deleteSurveyType(id: number) {
-        this.surveysService.deleteSurveyTypeById(id);
-        //remove the template with this id from the grid
-        this.surveys.splice(this.findSurveyTypeIndex(id), 1);
-        this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
-        this.showDelete = false;
+        this.surveysService.deleteSurveyTypeById(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                //remove the template with this id from the grid
+                if (result.type != 'error') {
+                    this.surveys.splice(this.findSurveyTypeIndex(id), 1);
+                    this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
+                }
+                this.showDelete = false;
+            });
     }
 
     findSurveyTypeIndex(id: number) {
@@ -126,6 +131,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     saveSurvey(event) {
         this.surveysService.saveSurveyType(event.item)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
                     event.item.ID = Number(result.id);
                     this.surveys[this.surveys.length] = event.item;

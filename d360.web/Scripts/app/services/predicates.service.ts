@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -18,8 +17,8 @@ export class PredicatesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deletePredicate(id: number) {
-        this.deleteDynamic(this.http, 'predicate', id);
+    deletePredicate(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'predicate', id);
     }
 
     savePredicate(predicate: Predicate): Promise<JsonResult> {

@@ -1,11 +1,10 @@
-﻿
-import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
-import { MessagesService, TaxonomiesService  } from '../../services/index';
+import { TaxonomiesService, MessagesService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-model-level-tile',
+    selector: 'd3s-admin-model-level',
     providers: [TaxonomiesService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Levels
@@ -14,7 +13,7 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                   <p-dataTable [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
+                   <p-dataTable sortField="Level" [sortOrder]="1" [globalFilter]="gb" [value]="levels" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="showEditor=true" [(selection)]="selectedLevel" >                                                        
                     <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
@@ -23,16 +22,16 @@ import { BaseComponent } from '../shared/base.component';
                         </template>                                                        
                     </p-column>    
                         <p-column [style]="{width:'40px'}">
-                            <template let-template="rowData" pTemplate type="body">
+                            <template let-level="rowData" pTemplate type="body">
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                    <a style="cursor:pointer;" (click)="selectedLevel=level;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                         </p-column>                            
                         <p-column  [style]="{width:'40px'}">
-                            <template let-template="rowData" pTemplate type="body">
+                            <template let-level="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                    <a style="cursor:pointer;" (click)="selectedLevel=level;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>
                         </p-column>                            
@@ -49,7 +48,7 @@ import { BaseComponent } from '../shared/base.component';
                 `
 })
 
-export class ModelLevelTile extends BaseComponent implements OnChanges {
+export class AdminModelLevelComponent extends BaseComponent implements OnChanges {
     @Input() taxonomy: Taxonomy = null;
     error: any;    
     levels: TaxonomyLevel[] = [];
@@ -58,7 +57,7 @@ export class ModelLevelTile extends BaseComponent implements OnChanges {
     selectedLevel: TaxonomyLevel = null;
     theDeleteCallback: Function;
 
-    constructor(private taxonomiesService: TaxonomiesService) {
+    constructor(private taxonomiesService: TaxonomiesService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteLevel.bind(this);  
     }
@@ -79,9 +78,12 @@ export class ModelLevelTile extends BaseComponent implements OnChanges {
     }
 
     deleteLevel(id: number) {
-        this.taxonomiesService.deleteTaxonomyLevel(this.taxonomy.ID, id);
-        this.showDelete = false;
-        this.levels.splice(this.findTaxonomyLevel(id), 1);
+        this.taxonomiesService.deleteTaxonomyLevel(this.taxonomy.ID, id)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.levels.splice(this.findTaxonomyLevel(id), 1);
+            });        
     }
 
     add() {
@@ -107,6 +109,7 @@ export class ModelLevelTile extends BaseComponent implements OnChanges {
         if (event.action == "new") {
             this.taxonomiesService.saveTaxonomyLevel(event.level)
                 .then(result => {
+                    this.showMessageForResult(this.messagesService, result);
                     this.showEditor = false;                    
                     this.levels[this.levels.length] = event.level;
                     this.selectedLevel = event.level;
@@ -115,6 +118,7 @@ export class ModelLevelTile extends BaseComponent implements OnChanges {
         else {
             this.taxonomiesService.editTaxonomyLevel(event.level)
                 .then(result => {
+                    this.showMessageForResult(this.messagesService, result);
                     this.showEditor = false;
                     this.levels[this.findTaxonomyLevel(event.level.Level)] = event.level;
                     this.selectedLevel = event.level;

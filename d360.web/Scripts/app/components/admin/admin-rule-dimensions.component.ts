@@ -1,5 +1,4 @@
-﻿
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { RuleDimension } from '../../models/rule.model';
 import { MessagesService, RulesService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
@@ -15,7 +14,7 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span  *ngIf="!isLoading && !showDelete && !showEditor">
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                   <p-dataTable [globalFilter]="gb" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                   <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="dimensions" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
                         <template let-col let-dimension="rowData" pTemplate type="body">
@@ -59,7 +58,7 @@ export class AdminRuleDimensionsComponent extends BaseComponent {
     selected: RuleDimension = null;
     theDeleteCallback: Function;
 
-    constructor(private rulesService: RulesService) {
+    constructor(private rulesService: RulesService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteDimension.bind(this);
     }
@@ -80,9 +79,12 @@ export class AdminRuleDimensionsComponent extends BaseComponent {
     }
 
     deleteDimension(id: number) {
-        this.rulesService.deleteDimension(id);
-        this.showDelete = false;
-        this.dimensions.splice(this.findDimensionIndex(id), 1);
+        this.rulesService.deleteDimension(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+                this.dimensions.splice(this.findDimensionIndex(id), 1);
+            });
     }
 
     add() {
@@ -107,6 +109,7 @@ export class AdminRuleDimensionsComponent extends BaseComponent {
     saveDimension(event) {
         this.rulesService.saveDimension(event.item)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
                     event.item.ID = Number(result.id);
                     this.dimensions[this.dimensions.length] = event.item;

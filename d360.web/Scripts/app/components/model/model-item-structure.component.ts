@@ -180,15 +180,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
-        this.modelsService.deleteModelHierarchy(id).then(res => {
-            if (res.isError) {
-                this.messagesService.showError(res.title, res.message);
-            }
-            else {
+        this.modelsService.deleteModelHierarchy(id).then(res => {            
+            if (!res.isError) {            
                 this.deleteSelectedTreeNode(id);
-
-                this.messagesService.showInfoMessage('Success', 'Successfully deleted the selected item');
             }
+
+            this.showMessageForResult(this.messagesService, res);
 
             this.isLoading = false;
         });
