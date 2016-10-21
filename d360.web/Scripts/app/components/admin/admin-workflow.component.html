@@ -25,7 +25,7 @@
         </div>
     </div>
     <div class="col l7 m7">
-        <div id="DetailTile" class="tile tile-detail" *ngIf="!isEditing && !isDeleting && !isAdding">
+        <div id="DetailTile" class="tile tile-detail" *ngIf="!isEditing && !isDeleting && !isAdding && selectedRow">
             <object-detail [objectType]="'WorkflowTypeRelation'" [objectID]="selectedRow?.ID"></object-detail>
         </div>
     </div>

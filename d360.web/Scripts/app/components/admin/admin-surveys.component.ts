@@ -18,8 +18,8 @@ import { SurveyType } from '../../models/survey.model';
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
                                 <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
-                                <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
+                                    <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
+                                    <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'60px'}">
                                         <template let-survey="rowData" pTemplate type="body">
                                             <div class="RowTools">
@@ -40,7 +40,7 @@ import { SurveyType } from '../../models/survey.model';
                             ></delete-form>   
                     </div>
                 </div>  
-                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
+                <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              

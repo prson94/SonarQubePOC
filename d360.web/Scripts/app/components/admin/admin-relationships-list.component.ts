@@ -15,7 +15,7 @@ import * as _ from 'lodash';
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                    
-                        <p-dataTable [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowSelect)="onSelectedChanged.emit($event.data)"  (onRowDblclick)="selected=$event.data;onSelectedChanged.emit($event.data);showEditor=true;" >                            
+                        <p-dataTable [globalFilter]="gb" [value]="relationships" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" (onRowDblclick)="selected=$event.data;selectedChange.emit(selected);showEditor=true;" >                            
                             <p-column field="SubjectName" header="Subject" sortable="custom" (sortFunction)="columnSort($event)" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span>{{item?.SubjectName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.Subject)}})</span></span>
@@ -57,10 +57,11 @@ import * as _ from 'lodash';
 
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: Relationship[] = [];
-    selected: Relationship;
-
+    
     @Input() filterToName: string;
-    @Output() onSelectedChanged = new EventEmitter();
+
+    @Input() selected: Relationship;
+    @Output() selectedChange = new EventEmitter();
 
     showEditor: boolean = false;
     showDelete: boolean = false;
@@ -75,9 +76,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.getRelationships();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        console.log(changes['filterToName']);
-        if (changes['filterToName'].currentValue != changes['filterToName'].previousValue) {
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+        if (changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) {
             this.getRelationships();
         }
     }
@@ -98,7 +98,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 this.isLoading = false;
                 if (this.relationships.length > 0) {
                     this.selected = this.relationships[0];    
-                    this.onSelectedChanged.emit(this.selected)                
+                    this.selectedChange.emit(this.selected)                
                 }
             });
     }

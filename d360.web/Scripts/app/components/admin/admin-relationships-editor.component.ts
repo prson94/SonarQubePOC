@@ -100,8 +100,7 @@ export class AdminRelationshipsEditor {
         });
     }
 
-    private side1Changed(event) {
-        console.log(event);
+    private side1Changed(event) {        
         if (!event.value) return;
         let info = event.value.split('|');
         if (info.length < 2) return;

@@ -19,17 +19,17 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div class="row" *ngIf="!isDimensionsVisible">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor">Rule Types</header>  
+                            <header>Rule Types</header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>     
-                            <span *ngIf="!isLoading && !showEditor">
+                            <span *ngIf="!isLoading">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >                                                                                        
+                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected">                                                                                        
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
                                 </p-dataTable>                                
                             </span>
                         </div>
                     </div>                    
-                    <div class="col l8 s12">                        
+                    <div class="col l8 s12" *ngIf="selected">                        
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
@@ -51,8 +51,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 export class AdminRulesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     ruleTypes: RuleType[] = [];
-    selected: RuleType;
-    showEditor: boolean = false;
+    selected: RuleType;    
     private isDimensionsVisible: boolean = false;
     
     constructor(protected rightSidebarService: RightSidebarService,

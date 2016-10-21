@@ -18,10 +18,10 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div *ngIf="!isAuditVisible && !isPredicatesVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
-                            <d3s-admin-relationships-list (onSelectedChanged)="selectedChanged($event)"></d3s-admin-relationships-list>
+                            <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
                         </div>
                     </div>                    
-                    <div class="col l6 s12">                        
+                    <div class="col l6 s12" *ngIf="selected">                        
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
@@ -48,10 +48,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates'));
     }
 
-    selectedChanged(selection) {        
-        this.selected = selection;        
-    }
-
+    
     ngOnInit() {
 
     }

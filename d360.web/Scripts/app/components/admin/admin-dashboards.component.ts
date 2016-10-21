@@ -69,7 +69,7 @@ import { Title } from '@angular/platform-browser';
                             </span>
                         </div>
                     </div>                                        
-                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete">
+                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
