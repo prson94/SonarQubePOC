@@ -1,4 +1,11 @@
-﻿export class EditorField {
+﻿export class FieldValidation {
+    action: string;
+    message: string;
+    regex: string;
+    rule: string;
+}
+
+export class EditorField {
     FieldName: string;
     FieldType: string;
     FieldDescription: string;
@@ -10,6 +17,7 @@
     Row: number;
     Column: number;
     SimilarItemsUri: string;
+    Validations: FieldValidation[];
 }
 
 export class EditorRow {

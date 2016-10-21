@@ -1323,6 +1323,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />

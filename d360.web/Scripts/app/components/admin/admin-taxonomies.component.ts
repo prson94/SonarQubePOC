@@ -4,12 +4,14 @@ import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsServ
 import { AdminBaseComponent} from './admin-base.component';
 import { FieldDefinition } from '../../models/fields.model';
 import { Title } from '@angular/platform-browser';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-models-component',    
     providers: [TaxonomiesService, FieldsService],
     template:   `<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedTaxonomy?.ID" [objectName]="selectedTaxonomy?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
-                <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading" class="row">
+                <d3s-admin-model-classifications *ngIf="isClassificationsVisible" ></d3s-admin-model-classifications>
+                <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading && !isClassificationsVisible" class="row">
                     <div class="tile tile-detail">                            
                             <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
                             <delete-form *ngIf="showDelete"
@@ -21,7 +23,7 @@ import { Title } from '@angular/platform-browser';
                             ></delete-form>
                     </div>
                 </div>
-                <div *ngIf="!showEditor && !showDelete && !isAuditVisible" class="row">
+                <div *ngIf="!showEditor && !showDelete && !isAuditVisible && !isClassificationsVisible" class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
                             <header *ngIf="!showEditor">Models
@@ -66,7 +68,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    
+    isClassificationsVisible: boolean = false;
 
     constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
@@ -74,6 +76,8 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.areaName = "Models";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
+
+        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications'));
     }
 
     ngOnInit() {
@@ -155,5 +159,10 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
             index++;
             if (taxonomy.ID == id) return index;
         }
+    }
+
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+        if (activatedItem.tag == 'classifications') this.isClassificationsVisible = !this.isClassificationsVisible;
     }
 }

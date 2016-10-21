@@ -35,6 +35,7 @@ import { AdminSurveyQuestionsComponent } from './admin-survey-questions.componen
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 import { AdminModelLevelComponent } from './admin-model-level.component';
+import { AdminModelClassificationComponent } from './admin-model-classification.component';
 
 export * from './admin-governance.component';
 export * from './admin-settings.component';
@@ -74,3 +75,4 @@ export * from './admin-survey-questions.component';
 export * from './admin-rule-dimensions.component';
 export * from './admin-relationships-list.component';
 export * from './admin-model-level.component';
+export * from './admin-model-classification.component';

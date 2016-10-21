@@ -17,3 +17,8 @@ export class ModelHierarchy {
     ParentID: number;
     Description: string;
 }
+
+export class ModelClassification {
+    ID: number;
+    Name: string;
+}

@@ -2,7 +2,7 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService, UriBasedService, MessagesService } from '../../services/index';
-import { EditorField, EditorRow } from '../../models/editor-field.model';
+import { EditorField, EditorRow, FieldValidation } from '../../models/editor-field.model';
 import { BaseComponent } from './base.component';
 
 import * as _ from 'lodash';
@@ -119,12 +119,30 @@ export class DynamicEditorComponent extends BaseComponent {
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
                     : new FormControl(url || '');
             }
-            else {
-                group[field.FieldName] = field.Required ? new FormControl(field.Value || '', Validators.required)
-                    : new FormControl(field.Value || '');
+            else {                
+                group[field.FieldName] = new FormControl(field.Value || '', this.getFieldValidators(field));                  
             }
         });        
         return new FormGroup(group);
+    }
+
+    private getFieldValidators(field: EditorField) {
+        var validators = [];
+
+        if (field.Validations) {
+            for (let validation of field.Validations) {
+                if (validation.rule.startsWith('length=')) {
+                    var vals = validation.rule.split(',');
+                    if (vals.length == 2)
+                        validators.push(Validators.maxLength(Number(vals[1])));
+                }
+            }
+        }
+
+        if (field.Required)
+            validators.push(Validators.required);
+
+        return validators;
     }
     
     onSubmit() {

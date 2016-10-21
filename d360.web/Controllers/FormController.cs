@@ -375,6 +375,8 @@ namespace d360.web.Controllers
                     return Resource_ChangeMyPasswordFields();
                 case "TAXONOMY":
                     return Taxonomy_EditFields(ID);
+                case "TAXONOMYTYPECLASS":
+                    return TaxonomyTypeClass_EditFields(ID);
                 case "REFERENCEITEMTYPE":
                     return ReferenceItem_EditFields(ID);
 
@@ -417,6 +419,8 @@ namespace d360.web.Controllers
                     return Rule_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
+                case "TAXONOMYTYPECLASS":
+                    return TaxonomyTypeClass_AddFields();
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(),parentID.GetValueOrDefault());
                 case "REFERENCEITEMTYPE":
@@ -503,6 +507,8 @@ namespace d360.web.Controllers
                     return EditMapRule(form);
                 case "MAPRULEITEM":
                     return EditMapRuleItem(form);
+                case "TAXONOMYTYPECLASS":
+                    return EditTaxonomyTypeClass(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -552,6 +558,8 @@ namespace d360.web.Controllers
                     return DeleteMapRule(form);
                 case "MAPRULEITEM":
                     return DeleteMapRuleItem(form);
+                case "TAXONOMYTYPECLASS":
+                    return DeleteTaxonomyTypeClass(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -616,6 +624,8 @@ namespace d360.web.Controllers
                     return AddMapRule(form);
                 case "MAPRULEITEM":
                     return AddMapRuleItem(form);
+                case "TAXONOMYTYPECLASS":
+                    return AddTaxonomyTypeClass(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
