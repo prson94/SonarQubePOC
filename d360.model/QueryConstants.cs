@@ -237,7 +237,8 @@ select		W.ID as WorkflowID,
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
 			W.DateStarted,
-		    WR.Activity
+		    WR.Activity,
+            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')
@@ -257,7 +258,8 @@ select		W.ID as WorkflowID,
 			R.FirstName + ' ' + R.LastName as ResourceName,
 			dbo.GenerateObjectUrl('Resource', 0, R.ResourceID) as ResourceUrl,
 			W.DateStarted,
-		    WR.Activity            
+		    WR.Activity,
+            W.Data.value('(fields/IssueType)[1]', 'int') as IssueType
 from	    Workflow W
 		    inner join Comment C on C.ID = W.Data.value('(fields/CommentID)[1]', 'int')
 			inner join reporting.Global_Resource R on R.ResourceID = W.Data.value('(fields/ResourceID)[1]', 'int')

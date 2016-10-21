@@ -171,12 +171,12 @@ export class WorkflowService extends BaseService implements IWorkflowService {
     }
 
 
-    raiseIssue(objectId: number, objectType: string, issue: string): Promise<any> {
+    raiseIssue(objectId: number, objectType: string, issue: string, type: string): Promise<any> {
         let headers = new Headers({
             'Content-Type': 'application/json'
         });
         return this.http
-            .post(`/api/issue/raise/${objectType}/${objectId}`, JSON.stringify(issue), { headers: headers })
+            .post(`/api/issue/raise/${objectType}/${objectId}/${type}`, JSON.stringify(issue), { headers: headers })
             .toPromise()
             .then(res => <any>res)
             .catch(this.handleError);

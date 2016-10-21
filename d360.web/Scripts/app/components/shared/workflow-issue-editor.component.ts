@@ -18,11 +18,13 @@ import * as _ from 'lodash';
                 <div class="row">                    
                     <div class="col s12 l6">
                         <div class="FieldName">Issue</div>
-                        <div id="IssueValue" [innerHtml]="issue?.Issue"></div>
+                        <div [innerHtml]="issue?.Issue"></div>
+                        <div class="FieldName">Issue Type</div>
+                        <div>{{issue?.IssueTypeName}}</div>                        
                         <div class="FieldName">Requestor</div>
-                        <div id="RequestorValue">{{issue?.ResourceName}}</div>
+                        <div>{{issue?.ResourceName}}</div>
                         <div class="FieldName">Date</div>
-                        <div id="DateValue">{{issue?.DateStarted | date: 'medium'}}</div>
+                        <div>{{issue?.DateStarted | date: 'medium'}}</div>
                     </div>
                     <div class="col s12 l6">      
                         <div id="PoolMessage">
@@ -31,12 +33,10 @@ import * as _ from 'lodash';
                         </div>
                         <div class="row">                                          
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity == 3">
-                                <input type="radio" id="assign" name="Action" [(ngModel)]="action" value="assign" checked="checked" />
-                                <label for="assign">Accept Assignment</label>
+                                <input required id="accept" type="radio" name="Action" [(ngModel)]="action" value="assign" checked="checked" /><label for="accept">Accept Assignment</label>
                             </div>
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity != 3">
-                                <input type="radio" id="reassign" [(ngModel)]="action" name="Action" value="reassign" />
-                                <label for="reassign">Re-assign</label>
+                                <input required type="radio" id="reassign" [(ngModel)]="action" name="Action" value="reassign" /><label for="reassign">Re-assign</label>
                                 <div class="FieldName">Re-assign To:</div>
                                 <select name="reassignTo" style="width:100%;" [(ngModel)]="assignToId" [disabled]="action != 'reassign'">
                                       <option></option>
@@ -44,8 +44,7 @@ import * as _ from 'lodash';
                                 </select>
                             </div>
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity != 3">
-                                <input type="radio" id="close" [(ngModel)]="action" name="Action" value="close" />
-                                <label for="close">Close</label>
+                                <input required type="radio" id="close" [(ngModel)]="action" name="Action" value="close" checked="checked"/><label for="close">Close</label>
                             </div>     
                         </div>
                         <div id="CommentArea">
@@ -75,7 +74,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     private resources: Resource[] = [];
     private comments: string = "";
     private assignToId: string;
-    private action: string = "assign";
+    private action: string;
 
     constructor(private resourcesService: ResourcesService, private workflowService: WorkflowService) { super(); }
 
@@ -83,6 +82,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
         if (this.resources.length <= 0) {
             this.loadResources();
         }
+        
     }
 
     loadResources() {

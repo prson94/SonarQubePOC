@@ -7037,8 +7037,9 @@ SELECT (
 
         #region Raise Issue - Angular supports all object types not just artifact
 
-        [HttpPost, Route("issue/raise/{type}/{objectId:int}")]
-        public CreateResponse PostIssue(SystemObjects type, int objectId, [FromBody]string issue)
+        [HttpPost]
+        [Route("issue/raise/{type}/{objectId:int}/{issueType}")]
+        public CreateResponse PostIssue(SystemObjects type, int objectId, IssueType issueType, [FromBody]string issue)
         {
             var relations = new List<CommentRelation>();
             var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
@@ -7062,14 +7063,13 @@ SELECT (
                 var dictionary = new Dictionary<string, object>();
                 dictionary.Add("CompanyID", Company.CurrentCompanyID);
                 dictionary.Add("CommentID", dtl.ID);
+                dictionary.Add("IssueType", (int)issueType);
 
                 processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
             }
 
             return new CreateResponse { Message = "Created" };
-
         }
-
         #endregion
 
         #region Reference - new replaces domain

@@ -26,15 +26,15 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <header>Raise A New Issue</header>
+                        <header>Report a problem</header>
                         <form (ngSubmit)="onSubmit()" #issueForm="ngForm">                        
                             <div class="row">
                                 <div class="col s12">
-                                    <div class="FieldName">What would you like to raise an issue for?</div>
-                                    <div *ngIf="objectDetail"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
+                                    <div class="FieldName">What item would you like to report a problem with?</div>
+                                    <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
                                     <div>
-                                        <label><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="showObjectSearch=true">Other item</label>
-                                        <div *ngIf="showObjectSearch && selectedOption=='other'" style="padding-left:20px"><p-autoComplete size="100"                                                
+                                        <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="showObjectSearch=true">Other item</label>
+                                        <div *ngIf="showObjectSearch && selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
                                                 scrollHeight="400px"
                                                 name="other"
                                                 [(ngModel)]="term" 
@@ -48,9 +48,20 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                             </template>                  
                                         </p-autoComplete></div>                                        
                                     </div>
-                                </div>                            
+                                </div>       
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div class="FieldName">Issue Description</div>
+                                    <div>&nbsp;</div>
+                                    <div class="FieldName">What type of problem are you reporting?</div>                                    
+                                </div>                 
+                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Issue" checked="checked" />Issue with System Data</label></div>
+                                </div>
+                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Challenge"/>Issue with Metadata in Data3Sixty</label></div>                                    
+                                </div>
+                                <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
+                                    <div>&nbsp;</div>
+                                    <div class="FieldName">What are the details of this problem?</div>
                                     <div><p-editor name="Issue" [style]="{'height':'400px'}" [(ngModel)]="issue" #issueText="ngModel"></p-editor></div>                                                        
                                     <div [hidden]="issueText.valid || issueText.pristine">Issue details are required</div>
                                 </div>       
@@ -79,6 +90,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private terms: Tag[] = [];
     private term: Tag;
     private selectedOption: string;
+    private issueType: string;
 
     constructor(
         private tagService: TagService,
@@ -93,7 +105,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Raise Issue');
+        this.setBrowserTitle(this.titleService, 'Take Action');
 
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.id)
             this.objectId = this.headerBreadcrumbService.currentObject.id;
@@ -105,7 +117,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Raise Issue'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();        
     }
 
@@ -124,8 +136,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private onSubmit() {
-        this.isLoading = true;            
-        this.workflowService.raiseIssue(this.selectedObjectId, this.selectedObjectType, this.issue)
+        this.isLoading = true;
+        this.workflowService.raiseIssue(this.selectedObjectId, this.selectedObjectType, this.issue, this.issueType)
             .then(res => {
                 this.isLoading = false;
                 this.location.back();

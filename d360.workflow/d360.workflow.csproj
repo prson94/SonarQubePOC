@@ -239,7 +239,12 @@
       <SubType>Designer</SubType>
     </XamlAppDef>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <XamlAppDef Include="workflows\WorkIssue\WorkIssue_v1003.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </XamlAppDef>
+  </ItemGroup>
   <ItemGroup>
     <XamlAppDef Include="workflows\SuggestNewArtifactMultiStep\SuggestNewArtifactMultiStep_v1000.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -44,8 +44,15 @@ export enum WorkflowType {
     SuggestNewArtifactMulti = 5,
 }
 
+export enum IssueType {
+    Issue = 0,
+    Challenge = 1
+}
+
 export class Issue {
     Issue: string;
+    IssueType: IssueType;
+    IssueTypeName: string;
     ResourceName: string;
     ResourceID: number;
     ActivityName: string;

@@ -262,7 +262,9 @@ namespace d360.web.Controllers.Services
                                   RaisedByResourceID = workflows.CreatingResourceID,
                                   Url = workflows.Url,
                                   ActivityName = workflows.IsCompleted ? "Closed" : (resources != null ? "Pending" : "Waiting on user(s)"),
-                                  Notes = workflows.Comments
+                                  Notes = workflows.Comments,
+                                  IssueType = workflows.IssueType,
+                                  IssueTypeName = workflows.IssueType.ToString()
                             };
 
                   return res.Distinct();                  
@@ -392,6 +394,7 @@ namespace d360.web.Controllers.Services
                         i.ActivityName = i.Activity.GetActivityTypeDisplayName();
                         i.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
                         i.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                        i.IssueTypeName = i.IssueType.ToString();
                     });
                     return Request.CreateResponse(HttpStatusCode.OK, list3);
                 case WorkflowType.ChallengeArtifact:
@@ -429,6 +432,7 @@ namespace d360.web.Controllers.Services
                         }
                         item.WorkflowDescription = workflowType.GetWorkflowTypeDescription();
                         item.WorkflowName = workflowType.GetWorkflowTypeDisplayName();
+                        item.IssueTypeName = item.IssueType.ToString();
                     }
                     return Request.CreateResponse(HttpStatusCode.OK, list);             
             }

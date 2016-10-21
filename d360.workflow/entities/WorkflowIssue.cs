@@ -8,6 +8,7 @@ using System.Xml.Serialization;
 using d360.core.entities;
 using d360.core;
 using System.ComponentModel.DataAnnotations;
+using d360.core.enums;
 
 namespace d360.workflow.entities
 {
@@ -49,5 +50,8 @@ namespace d360.workflow.entities
 
         [DataMember]
         public string Comments { get; set; }
+
+        [DataMember]
+        public IssueType IssueType { get; set; }
     }
 }

@@ -10,6 +10,7 @@ namespace d360.workflow
         public InArgument<int> CommentID { get; set; }
         public InArgument<int> CommentCreatorResourceID { get; set; }
         public InArgument<DateTime> CommentDateCreated { get; set; }
+        public InArgument<int> IssueType { get; set; }
 
         public OutArgument<XElement> Xml { get; set; }
 
@@ -18,11 +19,13 @@ namespace d360.workflow
             int companyID = context.GetValue(this.CompanyID);
             var commentID = context.GetValue(this.CommentID);
             var resourceID = context.GetValue(this.CommentCreatorResourceID);
+            var issueType = context.GetValue(this.IssueType);
 
             var xml = new XElement("fields", 
                 new XElement("CompanyID", companyID),
                 new XElement("CommentID", commentID),
-                new XElement("ResourceID", resourceID)
+                new XElement("ResourceID", resourceID),
+                new XElement("IssueType", issueType)
             );
             context.SetValue<XElement>(this.Xml, xml);
         }

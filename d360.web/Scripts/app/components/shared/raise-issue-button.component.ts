@@ -6,7 +6,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-raise-issue-button',
     template: `           
-        <button type="button"  class="issue-button" (click)="raiseIssue()">Raise Issue</button>
+        <button type="button"  class="issue-button" (click)="raiseIssue()">Take Action</button>
         `,    
     styles: [`
         :host{

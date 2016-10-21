@@ -24,6 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     <a *ngIf="data.AllowAction" (click)="handleIssue(data)">{{data.ActivityName}}</a>
                                 </template>
                             </p-column>
+                            <p-column field="IssueTypeName" header="Type" [sortable]="true" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>

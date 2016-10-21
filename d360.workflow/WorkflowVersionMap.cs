@@ -17,6 +17,7 @@ namespace d360.workflow
 
         public static WorkflowIdentity WorkIssue_v1000;
         public static WorkflowIdentity WorkIssue_v1001;
+        public static WorkflowIdentity WorkIssue_v1002;
         public static WorkflowIdentity WorkIssue_vCurrent;
 
         public static WorkflowIdentity ChallengeArtifact_v1000;
@@ -43,8 +44,11 @@ namespace d360.workflow
             WorkIssue_v1001 = new WorkflowIdentity { Name = "WorkIssue v1.0.0.1", Version = new Version(1, 0, 0, 1) };
             map.Add(WorkIssue_v1001, new WorkIssue_v1001());
 
-            WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.2", Version = new Version(1, 0, 0, 2) };
-            map.Add(WorkIssue_vCurrent, new WorkIssue_v1002());
+            WorkIssue_v1002 = new WorkflowIdentity { Name = "WorkIssue v1.0.0.2", Version = new Version(1, 0, 0, 2) };
+            map.Add(WorkIssue_v1002, new WorkIssue_v1002());
+
+            WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.3", Version = new Version(1, 0, 0, 3) };
+            map.Add(WorkIssue_vCurrent, new WorkIssue_v1003());
 
             ChallengeArtifact_v1000 = new WorkflowIdentity { Name = "ChallengeArtifact v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(ChallengeArtifact_v1000, new ChallengeArtifact_v1000());
