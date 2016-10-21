@@ -50,7 +50,14 @@ import * as _ from 'lodash';
                             </span>
                         </div>
                         <div class="col s3">
-                            <span (click)="addFilter()"><i *ngIf="last" class="fa fa-plus fa-2x" aria-hidden="true"></i></span> <span *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)"><i class="fa fa-minus fa-2x" aria-hidden="true"></i></span>
+                            <a (click)="addFilter()" class="fa-stack fa-lg overlayed-primary" pTooltip="Add Filter">                                
+                                <i class="fa fa-filter fa-stack-1x"></i>
+                                <i class="fa fa-plus fa-stack-1x overlayed-add"></i>                                
+                            </a> 
+                            <a *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)" class="fa-stack fa-lg overlayed-primary" pTooltip="Remove Filter" >
+                                <i class="fa fa-filter fa-stack-1x"></i>
+                                <i class="fa fa-minus fa-stack-1x overlayed-remove"></i>                                
+                            </a>
                         </div>                                                
                     </div>
                     <div class="row">

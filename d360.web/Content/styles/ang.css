@@ -23161,7 +23161,7 @@ nav.top,
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
 d3s-navbar-item > div.router-link-active > span > a {
-  background-color: #efefef !important;
+  background-color: #efefef;
   color: #383127 !important;
 }
 d3s-navbar-item > div .nav-item {
@@ -23174,8 +23174,8 @@ d3s-navbar-item > div .nav-item {
   cursor: pointer;
 }
 d3s-navbar-item > div :hover {
-  background-color: #82705C;
-  transition: all 200ms ease-in-out;
+  background-color: #ddd;
+  color: black !important;
 }
 d3s-navbar-item.top > div > span.nav-item {
   height: 35px;
@@ -23187,8 +23187,8 @@ d3s-navbar-item.top > div > span.nav-item {
   cursor: pointer;
 }
 d3s-navbar-item.top > div > span.nav-item:hover {
-  background-color: #82705C;
-  transition: all 100ms ease-in-out;
+  background-color: #ddd;
+  color: black;
 }
 .side-nav.fixed a {
   color: white;
@@ -23493,4 +23493,22 @@ a.Action :hover {
 select:disabled {
   background: #cbcaca;
   color: #818385;
+}
+.overlayed-remove,
+.overlayed-add {
+  position: relative;
+  top: -7px;
+  left: 10px;
+}
+.overlayed-primary {
+  color: black;
+}
+.overlayed-primary :hover {
+  color: #275075;
+}
+.overlayed-add {
+  color: #02981B;
+}
+.overlayed-remove {
+  color: #BC1B01;
 }
