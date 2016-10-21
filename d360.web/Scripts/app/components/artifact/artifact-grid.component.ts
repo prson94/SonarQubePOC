@@ -1,5 +1,5 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, OnInit, ViewChild} from '@angular/core';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService} from '../../services/index';
@@ -29,11 +29,11 @@ import { StringConstants } from '../../static/string-constants';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
                     <div class="col s12" *ngIf="stateService.artifactTypeFilters.showSimpleFilter">                                                
-                        <input type="text" style="width: 100%;" (keyup)="checkSimpleSearchEnter($event);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        <input type="text" style="width: 100%;" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                     </div>                                        
                     <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
-                       <p-dataTable [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
+                       <p-dataTable #dt [lazy]="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column field="Name" header="Name" [sortable]="true"  [style]="{'width':'250px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="selectArtifact(item)">{{item.Name}}</a>
@@ -243,20 +243,21 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getData();
     }
 
-    private checkSimpleSearchEnter(event) {
-        if (event.keyCode == 13) this.doSimpleSearch();
+    private checkSimpleSearchEnter(event, dt: DataTable) {
+        if (event.keyCode == 13) this.doSimpleSearch(dt);
         else {
             if (this.simpleSearchID > 0) {
                 window.clearTimeout(this.simpleSearchID);
                 this.simpleSearchID = 0;
             }
 
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(), this.searchDelayMilliSeconds);
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
             
         }
     }
 
-    private doSimpleSearch() {        
+    private doSimpleSearch(dt: DataTable) {
+        if (dt) dt.reset();
         this.getData();
     }
 
