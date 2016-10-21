@@ -409,3 +409,6 @@ select:disabled {
 .overlayed-remove {
   color: #BC1B01;
 }
+.inactive-tool-icon {
+  color: #5c5e60;
+}

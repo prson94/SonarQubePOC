@@ -53,7 +53,7 @@ import { Permission } from '../../models/permission.model'
                     <div class="col l3 s12 relationship-container"><!--left nav-->
                         <template ngFor let-rel [ngForOf]="relationshipItems">                        
                             <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;">
-                                <div class="col s10 name" [title]="rel.Object | technicalNameToDisplayValue">{{rel.Name}}</div>
+                                <div class="col s10 name"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':rel.Object=='FusionAttributeType','fa-pie-chart':rel.Object=='RuleType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
                                 <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
                             </div>                        
                         </template>
