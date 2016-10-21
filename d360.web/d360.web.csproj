@@ -1275,7 +1275,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\app\components\dynamic\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
   <ItemGroup>
