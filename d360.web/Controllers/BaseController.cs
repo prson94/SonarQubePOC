@@ -442,7 +442,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
             fields.ForEach(f =>
             {
-                if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.RelationLookup.ToString())
+                if (f.Type != DataType.Attribute.ToString() && f.Type != DataType.FilteredLookup.ToString() && f.Type != DataType.RelationLookup.ToString() && f.Type != DataType.ComplexRelationLookup.ToString())
                 {
                     var patternMessage = "";
 

@@ -16,6 +16,7 @@ export class HeaderActionsService {
     private onFavoritesChangeSource = new Subject<Favorite[]>();
     public onFavoritesChanges$ = this.onFavoritesChangeSource.asObservable();
 
+
     private onSiteNavChangeSource = new Subject();
     public onSiteNavChanges$ = this.onSiteNavChangeSource.asObservable();
 
@@ -26,5 +27,4 @@ export class HeaderActionsService {
     emitSiteNavChange() {
         this.onSiteNavChangeSource.next();
     }
-
 }

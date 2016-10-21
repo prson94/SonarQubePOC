@@ -58,7 +58,7 @@ nav.top,
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
 d3s-navbar-item > div.router-link-active > span > a {
-  background-color: #efefef;
+  background-color: #efefef !important;
   color: #383127 !important;
 }
 d3s-navbar-item > div .nav-item {
@@ -71,8 +71,8 @@ d3s-navbar-item > div .nav-item {
   cursor: pointer;
 }
 d3s-navbar-item > div :hover {
-  background-color: #ddd;
-  color: black !important;
+  background-color: #82705C;
+  transition: all 200ms ease-in-out;
 }
 d3s-navbar-item.top > div > span.nav-item {
   height: 35px;
@@ -84,8 +84,8 @@ d3s-navbar-item.top > div > span.nav-item {
   cursor: pointer;
 }
 d3s-navbar-item.top > div > span.nav-item:hover {
-  background-color: #ddd;
-  color: black;
+  background-color: #82705C;
+  transition: all 200ms ease-in-out;
 }
 .side-nav.fixed a {
   color: white;

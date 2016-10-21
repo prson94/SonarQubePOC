@@ -112,24 +112,24 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         console.log("form data: ");
                         console.log(f);
                         this.model.RelationItems = f.RelationItems;
+                        if (this.model.RelationItems)
+                            this.model.RelationItems.forEach(r => {
+                                let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
+                                if (r.Object == null || r.Object == '')
+                                    r.Object = intersectType.value.split('|')[1];
+                                if (r.ObjectID == null || r.ObjectID < 0)
+                                    r.ObjectID = parseInt(intersectType.value.split('|')[2]);
 
-                        this.model.RelationItems.forEach(r => {
-                            let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
-                            if (r.Object == null || r.Object == '')
-                                r.Object = intersectType.value.split('|')[1];
-                            if (r.ObjectID == null || r.ObjectID < 0)
-                                r.ObjectID = parseInt(intersectType.value.split('|')[2]);
+                                r.DisplayFields.forEach(d => {
+                                    if (d.FieldTypeID == null && d.value)
+                                        d.FieldTypeID = parseInt(d.value.split('|')[0]);
+                                    if (d.FieldTypeName == null && d.value)
+                                        d.FieldTypeName = d.value.split('|')[1];
 
-                            r.DisplayFields.forEach(d => {
-                                if (d.FieldTypeID == null && d.value)
-                                    d.FieldTypeID = parseInt(d.value.split('|')[0]);
-                                if (d.FieldTypeName == null && d.value)
-                                    d.FieldTypeName = d.value.split('|')[1];
-
-                                if (!d.value)
-                                    d.value = d.FieldTypeID + '|' + d.FieldTypeName;
+                                    if (!d.value)
+                                        d.value = d.FieldTypeID + '|' + d.FieldTypeName;
+                                });
                             });
-                        });
 
 
                         let clone = _.cloneDeep(this.model.RelationItems);
@@ -267,6 +267,17 @@ export class FieldTypeForm implements OnInit, OnChanges {
                             .then(() => this.loadFusionDisplayFields(i)) 
                             );
                     });
+                break;
+            case 'relationlookup':
+                if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
+                    let r = new FieldTypeRelationItemEditorModel();
+                    r.DisplayFields = [];
+                    r.ReferenceType = 1;
+                    r.Object = this.objectType;
+                    r.ObjectID = this.objectID;
+                    this.model.RelationItems.push(r);
+                    console.log(this.lookups);
+                }
                 break;
             default:
                 break;
@@ -457,11 +468,21 @@ export class FieldTypeForm implements OnInit, OnChanges {
         item.selectedRelationItemID = selected;
         console.log('changeRefType()');
         console.log(item);
+
+        if (item.IntersectType == null)
+            item.IntersectType = parseInt(item.selectedRelationItemID.split('|')[0]);
+        if (item.Object == null)
+            item.Object = item.selectedRelationItemID.split('|')[1];
+        if (item.ObjectID == null)
+            item.ObjectID = parseInt(item.selectedRelationItemID.split('|')[2]);
+
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
                 return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
                     .then(z => {
                         item.relationItems = z;
+                        console.log('z', z);
+                        
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;

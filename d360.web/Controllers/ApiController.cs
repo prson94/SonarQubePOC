@@ -149,7 +149,7 @@ namespace d360.web.Controllers
                             //look at attribute field and figure out what to show
                             list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
                         }
-                        if (ft.Type == DataType.ComplexLookup.ToString())
+                        if (ft.Type == DataType.ComplexRelationLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));

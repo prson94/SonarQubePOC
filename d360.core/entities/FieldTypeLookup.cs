@@ -9,7 +9,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class FieldTypeLookup : BaseObject
     {
-        [DataMember, Key]//, ForeignKey("FieldTypeID")]
+        [DataMember, Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int FieldTypeID { get; set; }
 

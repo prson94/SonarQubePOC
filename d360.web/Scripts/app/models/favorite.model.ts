@@ -5,4 +5,5 @@
     Name: string;
     SortOrder: number;
     isOverride: boolean = false;
+    Category: string;
 }

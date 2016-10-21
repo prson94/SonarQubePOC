@@ -25,7 +25,7 @@ import * as _ from 'lodash';
     ],
     template:
     `
-        <span *ngIf="!isAdminUri()" (click)="handleClick()" [class.active]="active" class="favorite">
+        <span (click)="handleClick()" [class.active]="active" class="favorite">
             <i *ngIf="!isLoading" class="fa fa-star"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
@@ -53,7 +53,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.sub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
-                this.uri = _.trimStart(e.url, '/');
+                //this.uri = _.trimStart(e.url, '/');
                 if (this.favItems == null) {
                     this.favoritesService.getFavorites()
                         .then(fav => {
@@ -122,7 +122,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
 
     isAdminUri() {        
         //TODO: need a better way to do this
-        return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT);
+        return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
     }
 }
 

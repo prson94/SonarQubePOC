@@ -124,4 +124,36 @@
         }
     }
 
+    // returns the font awesome icon for the associated url
+    static getObjectIcon(objectType: string) {
+        switch (objectType.toUpperCase()) {
+            case 'ARTIFACTTYPE':
+            case 'ARTIFACT':
+                return 'book';
+            case 'FUSIONTYPE':
+            case 'GROUP':
+            case 'COMMUNITY':
+                return 'users';
+            case 'RESOURCE':
+                return 'user';
+            case 'TAXONOMY':
+            case 'TAXONOMYTYPE':
+            case 'TAXONOMYTYPECLASS':
+            case 'MODEL':
+                return 'sitemap';
+            case 'POLICY':
+                return 'university';
+            case 'RULE':
+                return 'pie-chart';
+            case 'MONITOR':
+                return 'tachometer';
+            case 'REFERENCE':
+                return 'cubes';
+            case 'FUSION':
+                return 'database';
+            default:
+                return 'question';
+        }
+    }
+
 }

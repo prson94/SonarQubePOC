@@ -90,6 +90,9 @@ import * as _ from 'lodash';
                 background-color: #F8F3EF;
                 color: black;
             }
+
+            .top {
+            }
         `
     ],
     providers: [SiteMenuService, FavoritesService],
@@ -140,6 +143,9 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 if (item) this.expandRoute(item); 
 
                 this.activateRoute(this.currentRoute, this.favItems);
+                this.activateRoute(this.currentRoute, this.adminItems);
+                this.expandAll(this.adminItems);
+                
             }
         });
 
@@ -420,13 +426,22 @@ export class NavBarComponent implements OnInit, OnDestroy {
             this.expandRoute(i.parent);
     }
 
+    expandAll(root: NavBarItem[]) {
+        root.forEach(r => {
+            r.expanded = true;
+            if (r.subItems && r.subItems.length > 0)
+                this.expandAll(r.subItems);
+        });
+    }
+
     activateRoute(route: string, itms: NavBarItem[] = null): NavBarItem {        
         let r = null;
+        let isRoot = !itms;
         if (!itms)
             itms = this.items;        
         for(let item of itms){            
             item.expanded = false;
-            item.active = false;            
+            item.active = false;       
             if (item.route == route) r = item;
             if (item.subItems && item.subItems.length > 0) {
                 let s = this.activateRoute(route, item.subItems);

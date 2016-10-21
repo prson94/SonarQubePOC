@@ -310,6 +310,7 @@ th.ui-state-default { background-color: #999; }
 .ui-accordion .ui-accordion-header .fa {
     position: absolute;
     right: .5em;
+    left: auto; /* required for IE11 */
     left: initial;
     top: 50%;
     margin-top: -8px;

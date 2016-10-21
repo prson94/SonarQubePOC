@@ -43,8 +43,8 @@ namespace d360.core
         Attribute,
         [Description("Filtered Lookup")]//, ReadOnly(true)]
         FilteredLookup,
-        [Description("Complex Lookup"), ReadOnly(true)]
-        ComplexLookup
+        [Description("Complex Relation Lookup"), ReadOnly(true)]
+        ComplexRelationLookup
     }
 
     public class DataTypeInfo

@@ -4,8 +4,8 @@
         <span style="text-align:center;color:white;padding:7px; font-size:1.5em;"><i class="fa fa-spinner fa-spin"></i></span>
     </template>
     <template [ngIf]="mode == NavBarMode.Default && !isLoading">
-        <li *ngFor="let item of items">
-            <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top"></d3s-navbar-item>
+        <li *ngFor="let item of items" style="border-bottom:1px solid #312b22">
+            <d3s-navbar-item [item]="item" (onExpanded)="collapseOtherTopLevelMenus($event)" class="top" style="background-color: #1E1A15;display: list-item;"></d3s-navbar-item>
         </li>
     </template>
     <template [ngIf]="mode == NavBarMode.Favorites && favItems.length > 0 && !isLoading">
@@ -78,7 +78,7 @@
     </template>
     <template [ngIf]="mode == NavBarMode.Admin && !isLoading">
         <li *ngFor="let item of adminItems">
-            <d3s-navbar-item [item]="item" class="top"></d3s-navbar-item>
+            <d3s-navbar-item [item]="item" class="top" style="background-color: #1E1A15;display: list-item;"></d3s-navbar-item>
         </li>
     </template>
     <li style="margin-top: auto;">

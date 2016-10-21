@@ -25,9 +25,9 @@ import { NavBarMode } from '../../models/nav-bar.model';
             padding: 10px;
             background-color: #1E1A15;
             color:white;
-            transition: all 200ms ease-in-out;
+            transition: all 100ms ease-in-out;
             cursor: pointer;
-            width: 50px;
+            width: 25%;
             text-align: center;
             margin-left: -4px;
         }

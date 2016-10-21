@@ -5303,6 +5303,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                                 Company.FieldTypeLookups.Remove(existing);
                             }
 
+
+                            Company.Add<FieldType>(model.FieldType);
+                            lookupRow.FieldTypeID = model.FieldType.ID;
                             Company.FieldTypeLookups.Add(lookupRow);
                             Company.SaveChanges();
                         }

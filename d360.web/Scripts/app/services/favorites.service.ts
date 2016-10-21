@@ -29,6 +29,19 @@ export class FavoritesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    //toggleFavorite2(name: string, objectType: string, objectId: number, parentId: number = 0, admin: boolean = false) {
+    //    let f = new Favorite();
+    //    f.Name = name;
+    //    f.ObjectID = objectId;
+    //    if (parentId != null && parentId != 0)
+    //        f.ParentID = parentId;
+    //    f.ObjectType = objectType;
+    //    return this.http.put(`navigation/togglefavorite?admin=${admin}`, f)
+    //        .toPromise()
+    //        .then(response => response.json())
+    //        .catch(err => this.handleError(err));
+    //}
+
     moveUp(route: string, admin: boolean = false) {
         let m = {
             route: route,
