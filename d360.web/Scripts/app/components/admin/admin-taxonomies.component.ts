@@ -52,7 +52,7 @@ import { Title } from '@angular/platform-browser';
                             </span>                            
                         </div>
                     </div>
-                    <div class="col l8 s12">                                            
+                    <div class="col l8 s12" *ngIf="selectedTaxonomy">                                            
                         <d3s-admin-model-detail-component [(taxonomy)]="selectedTaxonomy"></d3s-admin-model-detail-component>
                     </div>
                 </div>  
