@@ -11,13 +11,13 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-relationships-editor',
     template: ` 
-                <header>{{action}} Relationship</header>                
+                <header>{{action}} Relationship Type</header>                
                 <d3s-loading [isLoading]="isLoading || isLoadingItem"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isLoadingItem">
-                    <div class="form-instructions">When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>            
+                    <div class="form-instructions">When creating a relationship type, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>            
                     <form (ngSubmit)="onSubmit()" #relationshipEditorForm="ngForm">                        
                         <div class="col l12 s12">
-                            <div class="FieldName">Relationship Side 1</div>
+                            <div class="FieldName">Side 1</div>
                             <div>                                 
                                 <select (change)="side1Changed($event.target);" [disabled]="editedRelationship.LimitedChangesOnly"  required [(ngModel)]="editedRelationship.Side1" name="Side1" #side1="ngModel" style="width:100%;">
                                   <option></option>
@@ -28,7 +28,7 @@ import * as _ from 'lodash';
                         </div>                                                
                         <d3s-loading [isLoading]="isLoadingSide2"></d3s-loading>
                         <div class="col l12 s12" *ngIf="!isLoadingSide2">
-                            <div class="FieldName">Relationship Side 2</div>
+                            <div class="FieldName">Side 2</div>
                             <div>                                
                                 <select required [disabled]="editedRelationship.LimitedChangesOnly"  [(ngModel)]="editedRelationship.Side2" name="Side2" #side2="ngModel" style="width:100%;">
                                   <option></option>

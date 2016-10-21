@@ -327,7 +327,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.addSubItem(metaModel, 'Lookups', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`);
         this.addSubItem(metaModel, 'Models', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`);
         this.addSubItem(metaModel, 'Policies', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`);
-        this.addSubItem(metaModel, 'Relationships', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`);
+        this.addSubItem(metaModel, 'Relationship Types', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`);
         this.addSubItem(metaModel, 'Rules', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`);
         this.addSubItem(metaModel, 'Surveys', null, `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`);
         metaModel.expanded = true;
