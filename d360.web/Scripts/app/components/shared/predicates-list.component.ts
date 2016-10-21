@@ -108,7 +108,8 @@ export class PredicatesListComponent extends BaseComponent {
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
+                    console.log(event);
+                    event.item.ID = Number(result.id.split('|')[1]);                    
                     this.predicates[this.predicates.length] = event.item;
                 }
                 else {
