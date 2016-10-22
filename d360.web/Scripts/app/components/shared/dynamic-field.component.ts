@@ -60,7 +60,8 @@ export class DynamicFieldComponent {
     constructor(private uriBasedService: UriBasedService) { }
         
 
-    get isValid() {
+    get isValid() {        
+        if (this.form.controls[this.field.FieldName] == undefined) return true;
         //look at url... fieldname is different.
         if (this.field.FieldType == "Link")
             return this.form.controls[this.field.FieldName + '_Name'].valid && this.form.controls[this.field.FieldName + '_Url'].valid
@@ -75,11 +76,16 @@ export class DynamicFieldComponent {
             return this.fieldMessage(this.field.FieldName, this.field.Name);
     }
 
-    private fieldMessage(field: string, fieldName:string) {
+    private fieldMessage(field: string, fieldName: string) {        
+        if (this.form.controls[field] == undefined) return '';
         var errors = this.form.controls[field].errors;
         var message = ""
         if (errors["maxlength"]) {
-            message += `${this.field.Name} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is ${errors["maxlength"].actualLength}`;
+            message += `${this.field.Name} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
+        }
+
+        if (errors["minlength"]) {
+            message += `${this.field.Name} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}]`;
         }
 
         if (errors["required"]) {

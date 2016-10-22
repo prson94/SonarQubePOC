@@ -126,23 +126,32 @@ export class DynamicEditorComponent extends BaseComponent {
         return new FormGroup(group);
     }
 
-    private getFieldValidators(field: EditorField) {
+    private getFieldValidators(field: EditorField) {        
         var validators = [];
-
+        
         if (field.Validations) {
             for (let validation of field.Validations) {
-                if (validation.rule.startsWith('length=')) {
+                if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
-                    if (vals.length == 2)
-                        validators.push(Validators.maxLength(Number(vals[1])));                    
+                    if (vals.length == 2) {
+                        validators.push(Validators.maxLength(Number(vals[1])));
+
+                        var minParts = vals[0].split('=');
+                        if (minParts.length == 2) {
+                            let minLen = Number(minParts[1]);
+                            if (minLen > 1) {  // only min lenght > 1
+                                validators.push(Validators.minLength(minLen));
+                            }
+                        }
+                    }
                 }
             }
         }
-
+                       
         if (field.Required)
             validators.push(Validators.required);
 
-        return validators;
+        return validators.length > 0 ? validators : null;
     }
     
     onSubmit() {
