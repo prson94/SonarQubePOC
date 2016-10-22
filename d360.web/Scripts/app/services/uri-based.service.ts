@@ -28,6 +28,17 @@ export class UriBasedService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    deleteItemWithResult(uri: string, id: number): Promise<JsonResult> {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        return this.http
+            .delete(`${uri}${id}`, headers)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
+
     saveItem(createUri: string, editUri: string, item: any): Promise<JsonResult> {
         if (item.ID == undefined || !item.ID) {
             return this.post(createUri, item);

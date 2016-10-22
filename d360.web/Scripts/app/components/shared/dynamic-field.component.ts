@@ -44,7 +44,8 @@ import { UriBasedService } from '../../services/index';
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>                            
                         </div>
-                    <div class="errorMessage" *ngIf="!isValid">*{{field.Name}} is required</div>
+                    <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
+                    
                   </div>                   
                 </div>
                 `,
@@ -57,8 +58,36 @@ export class DynamicFieldComponent {
     private similarItems = [];
 
     constructor(private uriBasedService: UriBasedService) { }
+        
 
-    get isValid() { return (this.field.Required && this.field.Value && this.field.Value.length > 0) || !this.field.Required || this.field.FieldType == 'Boolean'; }
+    get isValid() {
+        //look at url... fieldname is different.
+        if (this.field.FieldType == "Link")
+            return this.form.controls[this.field.FieldName + '_Name'].valid && this.form.controls[this.field.FieldName + '_Url'].valid
+        else
+            return this.form.controls[this.field.FieldName].valid;        
+    }
+
+    get errorMessage() {
+        if (this.field.FieldType == "Link")
+            return this.fieldMessage(this.field.FieldName + '_Name', this.field.Name + ' Name') + ' ' + this.fieldMessage(this.field.FieldName + '_Url', this.field.Name + ' Url');
+        else
+            return this.fieldMessage(this.field.FieldName, this.field.Name);
+    }
+
+    private fieldMessage(field: string, fieldName:string) {
+        var errors = this.form.controls[field].errors;
+        var message = ""
+        if (errors["maxlength"]) {
+            message += `${this.field.Name} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is ${errors["maxlength"].actualLength}`;
+        }
+
+        if (errors["required"]) {
+            message += `${this.field.Name} is required.  `;
+        }
+
+        return message;
+    }
 
     getSimilarItems() {
         if (this.field.SimilarItemsUri == null || this.field.SimilarItemsUri == '' || this.field.Value.length < 2)

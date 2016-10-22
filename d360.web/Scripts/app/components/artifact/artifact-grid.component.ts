@@ -159,12 +159,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     deleteItem(id: number) {
-        this.uriBasedService.deleteItem("form/dynamicedit/delete/artifact/", id);
-        this.showDelete = false;
-        /*if (this.items.length > 0) {
-            this.items = this.items.filter(x => x.ID == id);
-        }*/
-        this.getData();
+        this.artifactService.deleteArtifact(id).
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;                
+                this.getData();
+            });
     }
 
     getFieldsDefinition() {

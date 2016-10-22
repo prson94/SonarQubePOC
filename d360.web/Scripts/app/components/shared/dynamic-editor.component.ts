@@ -134,7 +134,7 @@ export class DynamicEditorComponent extends BaseComponent {
                 if (validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
                     if (vals.length == 2)
-                        validators.push(Validators.maxLength(Number(vals[1])));
+                        validators.push(Validators.maxLength(Number(vals[1])));                    
                 }
             }
         }

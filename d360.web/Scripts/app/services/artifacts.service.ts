@@ -81,6 +81,10 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));        
     }
 
+    deleteArtifact(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'artifact', id);
+    }
+
     getActivityCount(daysToLookBack: number): Promise<Count[]> {
         return this.http.get(`api/count/activity/${daysToLookBack}`)
             .toPromise()
