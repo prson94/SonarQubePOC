@@ -87,7 +87,7 @@ import { StringConstants } from '../../static/string-constants';
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
                             [method]="'callback'"
-                            [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                            [prompt]="'Are you sure you want to delete ['+ selected?.Name + ']?'"                                         
                             (onCancel)="showDelete=false;"
                 ></delete-form>  
                 `

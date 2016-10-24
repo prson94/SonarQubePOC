@@ -1,4 +1,4 @@
-﻿import { Component, Input} from '@angular/core';
+﻿import { Component, Input, OnInit} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField } from '../../models/editor-field.model';
 import { SelectItem } from 'primeng/primeng';
@@ -51,14 +51,24 @@ import { UriBasedService } from '../../services/index';
                 `,
     providers: [UriBasedService] 
 })
-export class DynamicFieldComponent {
+export class DynamicFieldComponent implements OnInit {
     @Input() field: EditorField;
     @Input() form: FormGroup;
 
     private similarItems = [];
+    private regexErrorMessage: string = "The field doesnt meet the required pattern.";
 
     constructor(private uriBasedService: UriBasedService) { }
-        
+
+    ngOnInit() {
+        if (this.field && this.field.Validations) {
+            for (let validation of this.field.Validations) {
+                if (validation.regex) {
+                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
+                }
+            }
+        }
+    }
 
     get isValid() {        
         if (this.form.controls[this.field.FieldName] == undefined) return true;
@@ -90,6 +100,10 @@ export class DynamicFieldComponent {
 
         if (errors["required"]) {
             message += `${this.field.Name} is required.  `;
+        }
+
+        if (errors["pattern"]) {
+            message += this.regexErrorMessage;
         }
 
         return message;

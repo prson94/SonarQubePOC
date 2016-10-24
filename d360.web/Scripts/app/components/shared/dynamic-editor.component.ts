@@ -139,11 +139,14 @@ export class DynamicEditorComponent extends BaseComponent {
                         var minParts = vals[0].split('=');
                         if (minParts.length == 2) {
                             let minLen = Number(minParts[1]);
-                            if (minLen > 1) {  // only min lenght > 1
+                            if (minLen > 1) {  // only min lenght > 1                                
                                 validators.push(Validators.minLength(minLen));
                             }
                         }
                     }
+                }
+                else if (validation.regex) {
+                    validators.push(Validators.pattern(validation.regex));
                 }
             }
         }
