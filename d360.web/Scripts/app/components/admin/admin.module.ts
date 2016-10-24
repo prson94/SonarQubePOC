@@ -1,10 +1,6 @@
-﻿
-
-import {  NgModule } from '@angular/core';
-//import * as admin from './index'; 
+﻿import {  NgModule } from '@angular/core';
 import { routing } from './admin.routes';
-//import * as primeng from 'primeng/primeng';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { PartsModule } from '../parts/parts.module';
@@ -18,10 +14,11 @@ import {
     InputMaskModule,
     ButtonModule,
     EditorModule,
+    SharedModule,
     DropdownModule,
     MultiSelectModule,
     SpinnerModule,
-    CheckboxModule,
+    CheckboxModule,    
 } from 'primeng/primeng';
 
 import {
@@ -72,6 +69,8 @@ import {
     ]
     , imports: [
         routing,
+
+        //prime
         TreeTableModule,
         DataTableModule,
         InputTextModule,
@@ -81,8 +80,11 @@ import {
         DropdownModule,
         MultiSelectModule,
         SpinnerModule,
-        CheckboxModule,
         SharedModule,
+        CheckboxModule,
+
+        //d3s
+        D3SSharedModule,
         D3SFormsModule,
         TilesModule,
         PartsModule,

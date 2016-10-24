@@ -4,7 +4,7 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
 
 import { HomeSearchComponent} from './home-search.component'
@@ -30,11 +30,11 @@ import {
     SelectButtonModule,
     AutoCompleteModule,
     MultiSelectModule,
-    SpinnerModule,
-    EditorModule,
+    SpinnerModule,    
     TooltipModule,
     DragDropModule,
     PaginatorModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -59,9 +59,10 @@ import {
         SpinnerModule,        
         TooltipModule,        
         PaginatorModule,
+        SharedModule,
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         CoreModule,
 
     ],

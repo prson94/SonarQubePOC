@@ -914,3 +914,7 @@ p-togglebutton.ng-dirty.ng-invalid .ui-button {
 .ui-treenode {
     clear:both; /*materialize css is messing with floats and causing problems this is the workaround.*/
 }
+
+.ui-editor-toolbar{
+    background-color: transparent;
+}

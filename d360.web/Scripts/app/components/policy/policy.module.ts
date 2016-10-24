@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { ChartModule } from 'angular2-highcharts';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { PolicyComponent } from './policy.component';
@@ -30,13 +30,13 @@ import {
     SelectButtonModule,
     AutoCompleteModule,
     MultiSelectModule,
-    SpinnerModule,
-    EditorModule,
+    SpinnerModule,    
     TooltipModule,
     DragDropModule,
     PaginatorModule,
     TreeModule,
     FileUploadModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -61,20 +61,20 @@ import {
         SelectButtonModule,
         AutoCompleteModule,
         MultiSelectModule,
-        SpinnerModule,
-        EditorModule,
+        SpinnerModule,        
         TooltipModule,
         TreeModule,
         DragDropModule,
         PaginatorModule,
         FileUploadModule,
+        SharedModule,
 
         //highcharts
         ChartModule,
 
         //d3s
         CoreModule,
-        SharedModule,
+        D3SSharedModule,
         PipesModule,
     ],
     declarations: [

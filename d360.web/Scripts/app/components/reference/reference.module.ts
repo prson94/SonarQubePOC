@@ -5,7 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { ReferenceComponent } from './reference.component';
@@ -19,6 +19,7 @@ import {
     GrowlModule,
     DataTableModule,
     EditorModule,
+    SharedModule,
 
 } from 'primeng/primeng';
 
@@ -33,10 +34,11 @@ import {
         GrowlModule,
         DataTableModule,
         EditorModule,
+        SharedModule,
 
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         CoreModule,
         PipesModule,
     ],

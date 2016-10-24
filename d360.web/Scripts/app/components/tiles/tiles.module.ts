@@ -5,7 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { AttributesTile } from './attributes.tile';
@@ -90,7 +90,7 @@ import {
         TooltipModule,
      
         //d3s
-        SharedModule,        
+        D3SSharedModule,        
         D3SFormsModule,        
     ]
 

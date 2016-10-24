@@ -32,11 +32,12 @@ import {
     SelectButtonModule,
     AutoCompleteModule,
     MultiSelectModule,
-    SpinnerModule,
-    EditorModule,
+    SpinnerModule,    
     TooltipModule,
     DragDropModule,
-    PaginatorModule,    
+    PaginatorModule,
+    EditorModule,
+    SharedModule,  
 } from 'primeng/primeng';
 
 @NgModule({
@@ -61,11 +62,12 @@ import {
         SelectButtonModule,
         AutoCompleteModule,
         MultiSelectModule,
-        SpinnerModule,
-        EditorModule,
+        SpinnerModule,        
         TooltipModule,        
         DragDropModule,
         PaginatorModule,
+        EditorModule,
+        SharedModule,
 
         //d3s          
         PipesModule,

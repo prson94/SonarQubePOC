@@ -26,6 +26,7 @@ import {
     TooltipModule,
     DragDropModule,
     PaginatorModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 import { ChartModule } from 'angular2-highcharts';
@@ -193,7 +194,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         EditorModule,
         TooltipModule,
         DragDropModule,
-        PaginatorModule,       
+        PaginatorModule, 
+        SharedModule,      
 
         //highcharts
         ChartModule,
@@ -207,4 +209,4 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
 
 })
 
-export class SharedModule { }
+export class D3SSharedModule { }

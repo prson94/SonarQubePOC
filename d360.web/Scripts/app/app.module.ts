@@ -13,7 +13,7 @@ import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
 import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
-import { SharedModule } from './components/shared/shared.module';
+import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
 import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
@@ -54,7 +54,8 @@ import {
     PaginatorModule,
     DataListModule,
     TreeModule,
-    OverlayPanelModule,    
+    OverlayPanelModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 import {
@@ -140,12 +141,6 @@ import {
     MenuPart,
     SimpleDropdown,    
 } from './components/parts/index';
-
-//import {
-//    PolicyComponent,
-//    PolicyItemComponent, 
-//    PolicyItemStructureComponent, 
-//} from './components/policy/index';
 
 import {
     ResourceComponent,
@@ -307,7 +302,10 @@ import {
         TreeModule,
         OverlayPanelModule,
         DataListModule,
+        SharedModule,
 
+
+        //highcharts
         ChartModule,
 
 
@@ -315,7 +313,7 @@ import {
         PipesModule,
         SearchModule,
         WorkflowModule,
-        SharedModule,  
+        D3SSharedModule,  
         SocialModule,   
         NavbarModule,   
         FusionModule,

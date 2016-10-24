@@ -31,6 +31,7 @@ import {
     EditorModule,    
     DragDropModule,
     PaginatorModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -59,6 +60,7 @@ import {
         EditorModule,        
         DragDropModule,
         PaginatorModule,
+        SharedModule,
 
         //d3s
         CoreModule,

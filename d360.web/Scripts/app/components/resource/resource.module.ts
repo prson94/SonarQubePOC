@@ -6,7 +6,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 import { TilesModule } from '../tiles/tiles.module';
 
@@ -20,8 +20,7 @@ import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
   
 import { 
-    ButtonModule,
-    EditorModule,
+    ButtonModule,    
     InputTextModule, 
     DropdownModule,
     InputMaskModule,
@@ -29,6 +28,7 @@ import {
     DataTableModule,
     TreeTableModule,
     TooltipModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -60,8 +60,7 @@ import {
         RouterModule,
 
         //prime
-        ButtonModule,
-        EditorModule,
+        ButtonModule,        
         InputTextModule,
         DropdownModule,
         InputMaskModule,
@@ -69,9 +68,10 @@ import {
         DataTableModule,
         TreeTableModule,
         TooltipModule,
+        SharedModule,
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         D3SFormsModule,
         TilesModule,
     ]

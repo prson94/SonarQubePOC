@@ -5,7 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { MonitorComponent } from './monitor.component';
@@ -14,6 +14,7 @@ import { MonitorListComponent } from './monitor-list.component';
 import {
     GrowlModule,
     DataTableModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -25,10 +26,10 @@ import {
         //primeng
         GrowlModule,
         DataTableModule,
-
+        SharedModule,
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         CoreModule,
         PipesModule,
     ],

@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionAgentError } from '../../models/fusion.model';

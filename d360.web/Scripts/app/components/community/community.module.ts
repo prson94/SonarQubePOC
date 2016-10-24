@@ -5,7 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { CommunityComponent } from './community.component';
@@ -27,7 +27,7 @@ import {
         
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         CoreModule,
         PipesModule,
     ],

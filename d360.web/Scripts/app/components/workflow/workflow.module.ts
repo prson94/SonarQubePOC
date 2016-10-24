@@ -5,7 +5,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { SharedModule } from '../shared/shared.module';
+import { D3SSharedModule } from '../shared/shared.module';
 
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
@@ -36,6 +36,7 @@ import {
     TooltipModule,
     DragDropModule,
     PaginatorModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -62,9 +63,10 @@ import {
         PaginatorModule,
         EditorModule,
         AutoCompleteModule,
+        SharedModule,
 
         //d3s
-        SharedModule,
+        D3SSharedModule,
         CoreModule,
 
     ],
