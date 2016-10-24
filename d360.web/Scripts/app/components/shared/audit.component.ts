@@ -1,21 +1,20 @@
-﻿
-import {Component, Input} from '@angular/core';
+﻿import { Component, Input} from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService, AuditService  } from '../../services/index';
 import { Audit } from '../../models/audit.model';
 import { LazyLoadEvent } from 'primeng/primeng';
 import { SortOrder } from '../../models/enums.model';
 import { GridFilterExpression } from '../../models/grid-definition.model';
+import { BaseComponent } from './base.component';
 
 @Component({
     selector: 'd3s-audit',
     providers: [AuditService],
-    template: `
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    template: `                
                 <div class="row">
                     <div class="col s12">
-                        <div class="tile tile-detail" *ngIf="!isLoading">   
-                            <header *ngIf="!isLoading">Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                   
+                        <div class="tile tile-detail">   
+                            <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
                             <p-dataTable scrollable="true" scrollWidth="100%"  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
                                 <p-column field="ResourceName" header="User" [sortable]="true" [style]="{'width':'150px'}" [filter]="true"></p-column>                                                                                    
                                 <p-column field="Date" header="Date" [sortable]="true" [style]="{'width':'200px'}" [filter]="true">
@@ -40,24 +39,23 @@ import { GridFilterExpression } from '../../models/grid-definition.model';
                                 <p-column field="ActionObjectName" header="Item" [sortable]="true" [style]="{'width':'100px'}" [filter]="true"></p-column>
                                 <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [style]="{'width':'250px'}" [filter]="true"></p-column>                                                                                        
                                 <p-column field="Version" header="Revision" [sortable]="true"  [style]="{'width':'100px'}" [filter]="true"></p-column>
-                            </p-dataTable> 
+                            </p-dataTable>       
+                            <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
                         </div>
                     </div>
                 </div>
         `    
 })
 
-export class AuditComponent {
+export class AuditComponent extends BaseComponent {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
 
-
-    
     totalRecords: number;
     rowsPerPage: number = 10;
     audits: Audit[] = [];
-    isLoading: boolean = false;
+    
     selected: Audit;
     currentPageNumber: number = 0;
     sortField: string = undefined;
@@ -65,12 +63,16 @@ export class AuditComponent {
     filters: GridFilterExpression[] = [];
 
 
-    constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) { }
+    constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+        super();
+    }
     
 
-    private getData() {           
+    private getData() {
+        this.isLoading = true;       
         this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
             .then(result => {         
+                this.isLoading = false;
                 this.audits = result.results;
                 this.totalRecords = result.total;
             });
