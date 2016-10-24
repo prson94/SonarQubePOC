@@ -33,8 +33,8 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                     <div class="FieldName">What item would you like to report a problem with?</div>
                                     <div *ngIf="objectDetail" style="padding-left:20px"><label><input name="selObject" type="radio"  [(ngModel)]="selectedOption" (click)="selectedObjectId=objectId;selectedObjectType=objectType;" value="current">{{objectDetail.Name}}</label></div>
                                     <div>
-                                        <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption" (click)="showObjectSearch=true">Other item</label>
-                                        <div *ngIf="showObjectSearch && selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
+                                        <label style="padding-left:20px"><input name="selObject" type="radio" value="other" [(ngModel)]="selectedOption">Other item</label>
+                                        <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
                                                 scrollHeight="400px"
                                                 name="other"
                                                 [(ngModel)]="term" 
@@ -84,12 +84,11 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private objectType: string;
     private objectId: number;
     private selectedObjectType: string;
-    private selectedObjectId: number;
-    private showObjectSearch: boolean = false;
+    private selectedObjectId: number;    
     private objectDetail: ObjectDetail;
     private terms: Tag[] = [];
     private term: Tag;
-    private selectedOption: string;
+    private selectedOption: string = 'other';
     private issueType: string;
 
     constructor(
@@ -118,7 +117,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
-        this.clearSidebar();        
+        this.clearSidebar();     
     }
 
     ngOnDestroy() {
@@ -131,6 +130,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.objectDetailService.getObject(objectId, objectType).then(
             res => {
                 this.objectDetail = res;
+                this.selectedOption = 'current';
+                this.selectedObjectId = this.objectId;
+                this.selectedObjectType = this.objectType;
                 this.isLoading = false;
             });
     }
