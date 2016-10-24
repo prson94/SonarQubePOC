@@ -20,6 +20,7 @@ export class MessagesBarComponent extends BaseComponent {
     @Input() messages: MessageBarItem[];
 
     @Output() messageClick = new EventEmitter();
+    @Output() messageClose = new EventEmitter();
 
     constructor() {
         super();
@@ -30,6 +31,10 @@ export class MessagesBarComponent extends BaseComponent {
     }
 
     private remove(index) {
+        this.messageClose.emit({
+            message: this.messages[index]
+        });
+
         this.messages.splice(index, 1);
     }
 }

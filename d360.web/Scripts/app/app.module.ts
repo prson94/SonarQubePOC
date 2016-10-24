@@ -26,9 +26,9 @@ import { PolicyModule } from './components/policy/policy.module';
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
 import { AdminUserGuard } from './guards/admin-user.guard';
+
 import { AuthenticationService } from './services/authentication.service';
-
-
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import {
@@ -333,6 +333,13 @@ import {
         COMPILER_PROVIDERS,
         DynamicTypeBuilder,
         Title,
+        HeaderActionsService,
+        HeaderBreadcrumbService,
+        MessagesService,
+        PageHeader,
+        RightSidebarService,
+        WebAnalyticsService,
+        StateService
     ],    
 })
 export class AppModule { }

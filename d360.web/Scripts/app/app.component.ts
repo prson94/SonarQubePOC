@@ -25,8 +25,7 @@ import 'rxjs/Rx';
                 </main>
                 <d3s-messages></d3s-messages>                
                 <div #target></div>                
-              `,    
-    providers: [HeaderActionsService, HeaderBreadcrumbService, MessagesService, PageHeader, RightSidebarService, WebAnalyticsService, StateService]
+              `
 })
 
 export class AppComponent implements AfterViewInit, OnInit {    
