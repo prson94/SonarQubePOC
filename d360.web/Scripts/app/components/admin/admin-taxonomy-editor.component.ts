@@ -13,8 +13,16 @@ import * as _ from 'lodash';
                 <div class="row">
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>
-                        <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomy.Name" style="width: 100%;" #name="ngModel" /></div>
-                        <div [hidden]="name.valid || name.pristine">Model name is required</div>
+                        <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomy.Name" style="width: 100%;" #name="ngModel" maxlength="250" /></div>
+                        <div *ngIf="name.errors && (name.dirty || name.touched)"
+                             class="alert alert-danger">
+                            <div [hidden]="!name.errors.required">
+                              A Model name is required
+                            </div>                            
+                            <div [hidden]="!name.errors.maxlength">
+                              A Model name cannot be more than 250 characters long.
+                            </div>
+                        </div>      
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Classification</div>

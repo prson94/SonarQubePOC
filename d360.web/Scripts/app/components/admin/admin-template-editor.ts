@@ -1,5 +1,6 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 import { Input, Component, EventEmitter, Output } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { TemplatesService } from '../../services/templates.service';
 import { Template } from '../../models/template.model';
 import { SelectItem } from 'primeng/primeng';
@@ -10,27 +11,31 @@ import * as _ from 'lodash';
     template: ` 
                 <header>{{action}} Template</header>
                 <div class="row">
+                    <form (ngSubmit)="update()" #templateForm="ngForm">                        
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>
-                        <div><input type="text" pInputText [(ngModel)]="editedTemplate.Name" style="width: 100%;" /></div>
+                        <div><input name="name" required type="text" pInputText [(ngModel)]="editedTemplate.Name" style="width: 100%;" #name="ngModel"/></div>
+                        <div [hidden]="name.valid || name.pristine">Template name is required</div>
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Action</div>
-                        <div><p-dropdown [options]="actions" [(ngModel)]="editedTemplate.Action" [style]="{width:'100%'}"></p-dropdown></div>
+                        <div><p-dropdown name="actions" [options]="actions" [(ngModel)]="editedTemplate.Action" [style]="{width:'100%'}"></p-dropdown></div>
                     </div>
                     <div class="col s12">
                         <div class="FieldName">Description</div>
-                        <p-editor [style]="{'height':'150px'}" [(ngModel)]="editedTemplate.Description"></p-editor>
+                        <p-editor name="description" [style]="{'height':'150px'}" [(ngModel)]="editedTemplate.Description"></p-editor>
                     </div>
                     <div class="col s12">
                         <div class="FieldName">Body</div>
-                        <p-editor [style]="{'height':'150px'}" [(ngModel)]="editedTemplate.TemplateBody"></p-editor>               
+                        <p-editor required #body="ngModel" name="body" [style]="{'height':'150px'}" [(ngModel)]="editedTemplate.TemplateBody"></p-editor>               
+                        <div [hidden]="body.valid || body.pristine">Template body is required</div>
                     </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
-                        <button pButton type="button" (click)="update()" label="Save" style="width: '150px';"></button>
+                        <button pButton type="submit" [disabled]="!templateForm.form.valid" label="Save" style="width: '150px';"></button>
                         <button pButton type="button" (click)="close()" label="Close" style="width: '150px';"></button>
                     </div>                    
+                    </form>
                 </div>
                 `,
     providers: [TemplatesService],

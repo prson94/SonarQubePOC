@@ -15,7 +15,7 @@ import * as _ from 'lodash';
                     <div class="row" *ngIf="!isLoading && levels.length > 0">
                         <div class="col l6 s12">
                             <div class="FieldName">Name</div>
-                            <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomyLevel.Name" style="width: 100%;" #name="ngModel" /></div>
+                            <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomyLevel.Name" style="width: 100%;" #name="ngModel" maxlength="250" /></div>
                             <div [hidden]="name.valid || name.pristine">Level name is required</div>
                         </div>
                         <div class="col l6 s12" *ngIf="taxonomyLevel==null">

@@ -27,7 +27,7 @@ import * as _ from 'lodash';
                         </div>                        
                         <div class="col s12">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedReport.Name" #name="ngModel"></div>     
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedReport.Name" #name="ngModel" maxlength="250"></div>     
                             <div [hidden]="name.valid || name.pristine">A name is required</div>                                                   
                         </div>     
                         <div class="col s12">

@@ -40,7 +40,7 @@ import * as _ from 'lodash';
                         <div class="col l12 s12">                                                        
                             <div class="FieldName">Predicates</div>
                             <div>
-                                <select name="predicates" [(ngModel)]="editedRelationship.Predicate" #predicate="ngModel" style="width:100%;">
+                                <select name="predicates" required [(ngModel)]="editedRelationship.Predicate" #predicate="ngModel" style="width:100%;">
                                     <option *ngFor="let p of predicates" [value]="p.value" [innerHtml]="p.title"></option>
                                 </select>
                             </div>

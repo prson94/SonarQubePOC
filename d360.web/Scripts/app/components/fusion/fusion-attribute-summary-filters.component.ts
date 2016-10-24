@@ -21,7 +21,7 @@ import * as _ from 'lodash';
                         <select required [name]="'value'+i" [(ngModel)]="filter.value" style="width:100%;" *ngSwitchCase="'dropdownlist'">
                             <option *ngFor="let p of fieldOptions(filter.dataField)" [value]="p">{{p}}</option>
                         </select>
-                        <input required placeholder="Filter value..." [name]="'value'+i" type="text" pInputText *ngSwitchDefault [(ngModel)]="filter.value" style="width: 100%;" />                        
+                        <input required maxlength="250" placeholder="Filter value..." [name]="'value'+i" type="text" pInputText *ngSwitchDefault [(ngModel)]="filter.value" style="width: 100%;" />                        
                     </div>
                     <div class="col s1" *ngIf="last">
                         <button pButton type="button" (click)="addFilter()" label="+" ></button>

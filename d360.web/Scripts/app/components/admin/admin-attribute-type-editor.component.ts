@@ -17,7 +17,7 @@ import * as _ from 'lodash';
                     <form (ngSubmit)="onSubmit()" #attributeForm="ngForm">                                                
                         <div class="col l8 s12">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedAttribute.Name" #name="ngModel"></div>     
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedAttribute.Name" #name="ngModel" maxlength="250"></div>     
                             <div [hidden]="name.valid || name.pristine">A name is required</div>                                                   
                         </div>   
                         <div class="col l4 s12">
@@ -35,7 +35,7 @@ import * as _ from 'lodash';
                         </div>                           
                         <div *ngIf="attribute" class="col l6 s12">
                             <div class="FieldName">Text Format</div>
-                            <div><input style="width: 100%;" name="textFormat" [type]="'string'" [(ngModel)]="editedAttribute.TextFormatString"></div>                                        
+                            <div><input style="width: 100%;" name="textFormat" type="string" [(ngModel)]="editedAttribute.TextFormatString"></div>                                        
                         </div>                                                
                         <div *ngIf="attribute" class="col l6 s12">
                             <div class="FieldName">Field Tokens</div>

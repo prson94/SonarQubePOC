@@ -104,9 +104,9 @@ export class TaxonomiesService extends BaseService {
         let headers = new Headers({
             'Content-Type': 'application/json'
         });
-        let url = `form/EditTaxonomyTypeRaw/${taxonomy.ID}`;
+        
         return this.http
-            .put(url, JSON.stringify(taxonomy), { headers: headers })
+            .put('form/EditTaxonomyTypeRaw', JSON.stringify(taxonomy), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);

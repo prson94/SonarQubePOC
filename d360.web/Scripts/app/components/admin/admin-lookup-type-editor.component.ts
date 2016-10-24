@@ -1,5 +1,6 @@
 ﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
 import { Input, Component, EventEmitter, Output } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { LookupService } from '../../services/index';
 import { Lookup } from '../../models/lookup.model';
 import * as _ from 'lodash';
@@ -9,15 +10,26 @@ import * as _ from 'lodash';
     template: ` 
                 <header>{{action}} Lookup</header>
                 <div class="row">
+                    <form (ngSubmit)="update()" #lookupForm="ngForm">                                                
                     <div class="col l6 s12">
                         <div class="FieldName">Name</div>
-                        <div><input type="text" pInputText [(ngModel)]="editedLookup.Name" style="width: 100%;" /></div>
+                        <div><input required name="name" type="text" pInputText [(ngModel)]="editedLookup.Name" style="width: 100%;" maxlength="250" #name="ngModel" /></div>
+                        <div *ngIf="name.errors && (name.dirty || name.touched)"
+                             class="alert alert-danger">
+                            <div [hidden]="!name.errors.required">
+                              Name is required
+                            </div>                            
+                            <div [hidden]="!name.errors.maxlength">
+                              Name cannot be more than 250 characters long.
+                            </div>
+                        </div>                        
                     </div>                    
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
-                        <button pButton type="button" (click)="update()" label="Save" style="width: '150px';"></button>
+                        <button pButton type="submit" [disabled]="!lookupForm.form.valid" label="Save" style="width: '150px';"></button>
                         <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
                     </div>                    
+                    </form>
                 </div>
                 `,
     providers: [LookupService],

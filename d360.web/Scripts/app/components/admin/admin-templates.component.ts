@@ -107,33 +107,46 @@ export class AdminTemplatesComponent extends AdminBaseComponent {
             .catch(error => this.error = error); // TODO: Display error message
     }
 
-    deleteTemplate(id: number) {     
-        this.templateService.deleteTemplateById(id);
-        //remove the template with this id from the grid
-        this.templates.splice(this.findTemplateIndex(id), 1);
-        this.isDeleting = false;                
+    deleteTemplate(id: number) {
+        this.isLoading = true;
+        this.templateService.deleteTemplateById(id)
+            .then(res => {
+                this.isLoading = false;
+                this.showMessageForResult(this.messagesService, res);
+                //remove the template with this id from the grid
+                if (res.type != 'error') {
+                    this.templates = this.templates.filter(x => x.ID != id);
+                }
+                this.isDeleting = false;
+            });
     }
-
-    findTemplateIndex(id: number) {
-        var index: number = -1;
-        for (var template of this.templates) {            
-            index++;
-            if (template.ID == id) return index;
-        }
-    }
+    
 
     addTemplate(event) {
-        this.templateService.postTemplate(event.template);
-        this.isAdding = false;
-        this.templates[this.templates.length] = event.template;
+        this.isLoading = true;
+        this.templateService.postTemplate(event.template).
+            then(res => {
+                this.isLoading = false;
+                this.showMessageForResult(this.messagesService, res);
+                this.isAdding = false;
+                if (res.type != 'error') {
+                    event.template.ID = res.id;
+                    this.templates[this.templates.length] = event.template;
+                }
+            });
     }
 
-    updateTemplate(event) {        
-        this.templateService.putTemplate(event.template);
-        var index = this.findTemplateIndex(event.template.ID);
-        this.isEditing = false;
+    updateTemplate(event) {
+        this.isLoading = true;
+        this.templateService.putTemplate(event.template).
+            then(res => {
+                this.isLoading = false;
+                this.showMessageForResult(this.messagesService, res);
+                var index = this.templates.findIndex(x => x.ID == event.template.ID);
+                this.isEditing = false;
 
-        if (index >= 0)
-            this.templates[index] = event.template;
+                if (index >= 0)
+                    this.templates[index] = event.template;
+            });
     }    
 };

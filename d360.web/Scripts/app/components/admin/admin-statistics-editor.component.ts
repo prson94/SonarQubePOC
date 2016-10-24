@@ -15,7 +15,7 @@ import * as _ from 'lodash';
                     <form (ngSubmit)="onSubmit()" #statisticEditorForm="ngForm">                        
                         <div class="col s12">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedStatistic.Name" #name="ngModel"></div>                            
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedStatistic.Name" #name="ngModel" maxlength="250"></div>                            
                             <div [hidden]="name.valid || name.pristine">Name is required</div>
                         </div>                        
                         <div class="col s12">
@@ -29,7 +29,7 @@ import * as _ from 'lodash';
                         </div>                                        
                         <div class="col l6 s12" *ngIf="editedStatistic?.PartOfScore">
                             <div class="FieldName">Score</div>
-                            <div><input style="width: 100%;" name="score" [type]="'number'" [(ngModel)]="editedStatistic.Score" #score="ngModel"></div>                            
+                            <div><input style="width: 100%;" name="score" type="number" [(ngModel)]="editedStatistic.Score" #score="ngModel"></div>                            
                             <div [hidden]="score.valid || score.pristine">Score is required</div>
                         </div>                                        
                         <div class="col s12">

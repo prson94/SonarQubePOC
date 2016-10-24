@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, PageHeader, LookupService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Lookup } from '../../models/lookup.model';
@@ -103,10 +102,18 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
     }
 
     deleteLookup(id: number) {
-        this.lookupService.deleteLookup(id);
-        this.showDelete = false;
-        this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
-        this.lookups.splice(this.findLookupIndex(id), 1);
+        this.isLoading = true;
+        this.lookupService.deleteLookup(id).
+            then(result => {
+                this.isLoading = false;
+                this.showMessageForResult(this.messagesService, result);
+                this.showDelete = false;
+
+                if (result.type != 'error') {
+                    this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+                    this.lookups = this.lookups.filter(x => x.ID != id);
+                }
+            });
     }
 
     lookupUri() {
@@ -128,26 +135,26 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
     }
 
     saveLookup(event) {
+        this.isLoading = true;
         this.lookupService.saveLookup(event.lookup)
             .then(result => {
+                this.isLoading = false;
+                this.showMessageForResult(this.messagesService, result);
                 if (event.lookup.ID == undefined) {
                     event.lookup.ID = Number(result.id);
                     this.lookups[this.lookups.length] = event.lookup;
                 }
                 else {
-                    this.lookups[this.findLookupIndex(event.lookup.ID)] = event.lookup;
+                    let index = this.lookups.findIndex(x => x.ID == event.lookup.ID);
+
+                    if (index >= 0 && index < this.lookups.length) {
+                        this.lookups[index] = event.lookup;
+                    }
                 }
                 this.selectedLookup = event.lookup;
                 this.showEditor = false;
             });
         
     }
-
-    findLookupIndex(id: number) {
-        var index: number = -1;
-        for (var lookup of this.lookups) {
-            index++;
-            if (lookup.ID == id) return index;
-        }
-    }
+    
 }

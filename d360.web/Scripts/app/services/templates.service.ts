@@ -1,9 +1,9 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { Template } from '../models/template.model';
 import {BaseService} from './base.service';
 import { MessagesService } from './messages.service';
+import { JsonResult } from '../models/jsonresult.model';
 
 
 import 'rxjs/add/operator/toPromise';
@@ -26,7 +26,7 @@ export class TemplatesService extends BaseService {
             .then(templates => templates.filter(template => template.ID === id)[0]);
     }
 
-    deleteTemplateById(id: Number) {
+    deleteTemplateById(id: Number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
         
@@ -35,10 +35,11 @@ export class TemplatesService extends BaseService {
         return this.http
             .delete(url, headers)
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err) );
     }
 
-    putTemplate(template: Template) {
+    putTemplate(template: Template): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
@@ -47,11 +48,12 @@ export class TemplatesService extends BaseService {
         return this.http
             .put(url, JSON.stringify(template), { headers: headers })
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err) );
     }
 
 
-    postTemplate(template: Template)  {
+    postTemplate(template: Template): Promise<JsonResult>  {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
@@ -60,6 +62,7 @@ export class TemplatesService extends BaseService {
         return this.http
             .post(url, JSON.stringify(template), { headers: headers })
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err) );
     }    
 }

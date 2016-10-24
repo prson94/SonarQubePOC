@@ -16,7 +16,7 @@ import * as _ from 'lodash';
                     <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">                        
                         <div class="col s6">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="editedQuestion.Name" #name="ngModel"></div>                            
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedQuestion.Name" #name="ngModel" maxlength="250"></div>                            
                             <div [hidden]="name.valid || name.pristine">Name is required</div>
                         </div>                        
                         <div class="col s6">
@@ -37,10 +37,10 @@ import * as _ from 'lodash';
                             <div>
                                 <div class="row" *ngFor="let option of editedQuestion?.Items; let i = index">
                                     <div class="col s6">
-                                        <input style="width: 100%;" [name]="'item_' + i" [type]="'string'" [(ngModel)]="option.Name">
+                                        <input style="width: 100%;" required [name]="'item_' + i" type="string" [(ngModel)]="option.Name" maxlength="250">
                                     </div>
                                     <div class="col s6">
-                                        <input style="width: 100%;" [name]="'value_' + i" [type]="'number'" [(ngModel)]="option.Value">
+                                        <input style="width: 100%;" required [name]="'value_' + i" type="number" [(ngModel)]="option.Value">
                                     </div>
                                 </div>
                             </div>                                                        

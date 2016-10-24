@@ -17,15 +17,16 @@ export class LookupService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteLookup(lookupId: number) {
+    deleteLookup(lookupId: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
         let url = `form/LookupType/${lookupId}`;
 
         return this.http
-            .delete(url, headers)
+            .delete(url, headers)            
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
 
@@ -51,9 +52,9 @@ export class LookupService extends BaseService {
         let headers = new Headers({
             'Content-Type': 'application/json'
         });
-        let url = `form/EditLookupTypeRaw/${lookup.ID}`;
+        
         return this.http
-            .put(url, JSON.stringify(lookup), { headers: headers })
+            .put('form/EditLookupTypeRaw', JSON.stringify(lookup), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);

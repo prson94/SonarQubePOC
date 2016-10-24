@@ -25,7 +25,7 @@ import { StatisticService } from '../../services/index';
                             </div>
                             <div  class="col l6 s12">
                                 <div class="FieldName">Object Property Value</div>
-                                <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="statistic.PropertyValue"></div>
+                                <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="statistic.PropertyValue"></div>
                             </div>
                         </span>
                         <div *ngSwitchCase="statisticCheckTypes.PropertyPopulated" class="col s12">                            
@@ -49,15 +49,15 @@ import { StatisticService } from '../../services/index';
                         <div *ngSwitchCase="statisticCheckTypes.EventMetric">
                             <div  class="col l6 s12">
                                 <div class="FieldName">Valid Field Count Name</div>
-                                <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="statistic.ValidField"></div>
+                                <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="statistic.ValidField"></div>
                             </div>
                             <div  class="col l6 s12">
                                 <div class="FieldName">Invalid Field Count Name</div>
-                                <div><input required style="width: 100%;" name="name" [type]="'string'" [(ngModel)]="statistic.InvalidField"></div>
+                                <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="statistic.InvalidField"></div>
                             </div>
                             <div  class="col l6 s12">
                                 <div class="FieldName">Threshold (0.00)</div>
-                                <div><input required style="width: 100%;" name="name" [type]="'number'" [(ngModel)]="statistic.Threshold"></div>
+                                <div><input required style="width: 100%;" name="name" type="number" [(ngModel)]="statistic.Threshold"></div>
                             </div>
                         </div>
                         <div *ngSwitchCase="statisticCheckTypes.PredicateMetric" class="col s12">                            
