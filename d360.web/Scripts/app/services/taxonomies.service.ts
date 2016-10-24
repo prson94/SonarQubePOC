@@ -112,7 +112,7 @@ export class TaxonomiesService extends BaseService {
             .catch(this.handleError);
     }
 
-    deleteTaxonomy(taxonomyId: number) {
+    deleteTaxonomy(taxonomyId: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
@@ -121,6 +121,7 @@ export class TaxonomiesService extends BaseService {
         return this.http
             .delete(url, headers)
             .toPromise()
+            .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
 }

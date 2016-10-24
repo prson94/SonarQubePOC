@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Taxonomy} from '../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService, StateService } from '../../services/index';
 import { AdminBaseComponent} from './admin-base.component';
 import { FieldDefinition } from '../../models/fields.model';
 import { Title } from '@angular/platform-browser';
@@ -70,7 +70,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     theDeleteCallback: Function;
     isClassificationsVisible: boolean = false;
 
-    constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type.";
         this.areaName = "Models";
@@ -130,7 +130,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                         this.taxonomies[this.taxonomies.length] = event.taxonomy;
                     }
                     else {
-                        var index = this.findTaxonomyIndex(event.taxonomy.ID);
+                        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);
                         actionName = "Edited";
                         if (index >= 0)
                             this.taxonomies[index] = event.taxonomy;
@@ -138,30 +138,25 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
                     this.selectedTaxonomy = event.taxonomy;
                 }
                 this.showMessageForResult(this.messagesService, response);
+                this.stateService.reloadLeftNavMenu();
             })
              .catch(error => this.error = error);        
     }
 
     deleteTaxonomy(id : number) {
-        this.taxonomiesService.deleteTaxonomy(id);
-        let index = this.findTaxonomyIndex(id);
-        let name = this.taxonomies[index].Name;
+        this.taxonomiesService.deleteTaxonomy(id)
+            .then(res => {                
+                this.showMessageForResult(this.messagesService, res);
 
-        this.taxonomies.splice(index, 1);    
-        this.messagesService.showInfoMessage("Success", `Deleted model [${name}]`);   
-        this.showDelete = false;
-        this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
+                if (res.type != 'error') {                    
+                    this.taxonomies = this.taxonomies.filter(x => x.ID != id);                    
+                    this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
+                    this.stateService.reloadLeftNavMenu();
+                }
+                this.showDelete = false;
+            });
     }
-
-    findTaxonomyIndex(id: number) {
-        var index: number = -1;
-        for (var taxonomy of this.taxonomies) {
-            index++;
-            if (taxonomy.ID == id) return index;
-        }
-    }
-
-
+        
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'classifications') this.isClassificationsVisible = !this.isClassificationsVisible;
     }

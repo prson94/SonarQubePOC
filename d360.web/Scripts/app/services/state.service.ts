@@ -1,5 +1,5 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs/Subject';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../models/grid-definition.model';
 
@@ -22,6 +22,10 @@ export class StateService {
         this.artifactTypeFilters = new ArtifactTypeFilters();        
     }
     public artifactTypeFilters: ArtifactTypeFilters;
+    private siteMenuRequiresReloadSource = new Subject<boolean>();
+
+    siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
+
     
     public resetArtifactTypeFilterIfRequired(artifactTypeId: number) {
         if (this.artifactTypeFilters.artifactTypeId != artifactTypeId) {
@@ -30,4 +34,9 @@ export class StateService {
             this.artifactTypeFilters.artifactTypeId = artifactTypeId;
         }
     }
+
+    reloadLeftNavMenu() {
+        this.siteMenuRequiresReloadSource.next(true);
+    }
+
 }

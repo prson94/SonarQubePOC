@@ -3,7 +3,7 @@ import { transition, style, animate, trigger, state } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 import { SiteMenu, SiteMenuItem } from '../../models/site-menu.model';
-import { SiteMenuService, AuthenticationService } from '../../services/index';
+import { SiteMenuService, AuthenticationService, StateService } from '../../services/index';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { FavoritesService } from '../../services/favorites.service';
@@ -104,6 +104,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     private subFavorites: any;
     private subBread: any;
     private subSiteNav: any;
+    private subReload: any;
     private currentRoute = "";
     private currentPage = "";
     private navItems: NavBarItem[];
@@ -124,7 +125,12 @@ export class NavBarComponent implements OnInit, OnDestroy {
     @Input() items: NavBarItem[] = new Array<NavBarItem>();
     adminItems: NavBarItem[] = new Array<NavBarItem>();
 
-    constructor(private authenticationService: AuthenticationService, private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+    constructor(stateService: StateService, private authenticationService: AuthenticationService, private router: Router, private siteMenuService: SiteMenuService, private headerActionsService: HeaderActionsService, private favoritesService: FavoritesService, private headerBreadcrumbService: HeaderBreadcrumbService) {
+        this.subReload = stateService.siteMenuRequiresReload$.subscribe(
+            reload => {
+                if (reload)
+                    this.loadMenu();
+            })
     }
 
     ngOnInit() {
@@ -373,6 +379,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
         this.subFavorites.unsubscribe();
         this.subBread.unsubscribe();
         this.subSiteNav.unsubscribe();
+        this.subReload.unsubscribe();
     }
 
     addNavItem(name: string, icon: string, route: string, menu: NavBarItem[] = null, sortOrder: number = 0): NavBarItem {

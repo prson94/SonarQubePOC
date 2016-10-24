@@ -2,7 +2,7 @@
 import { PageHeader } from '../../services/page-header.service';
 import { TreeNode } from 'primeng/primeng';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService } from '../../services/index';
+import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 
@@ -26,7 +26,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     
 
-    constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
         this.areaName = "Artifacts";
@@ -84,6 +84,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isEditing = false;
         this.isDeleting = false;
         this.load();
+        this.stateService.reloadLeftNavMenu();
     }
 }
 

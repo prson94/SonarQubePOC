@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService, StateService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { PolicyType } from '../../models/policy.model';
 import { Title } from '@angular/platform-browser';
@@ -86,7 +86,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Organize various sets of policies across your organization.";
         this.areaName = "Policy Types";
@@ -112,22 +112,17 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
                 if (this.policyTypes.length > 0) this.selected = this.policyTypes[0];
             });
     }
-
-    findPolicyTypeIndex(id: number) {
-        var index: number = -1;
-        for (var policyType of this.policyTypes) {
-            index++;
-            if (policyType.ID == id) return index;
-        }
-    }
-
+        
     deletePolicyType(id: number) {
         this.policiesService.deletePolicy(id)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
-                this.policyTypes.splice(this.findPolicyTypeIndex(id), 1);
+                if (result.type != 'error') {
+                    this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
+                    this.policyTypes = this.policyTypes.filter(x => x.ID != id);
+                }
+                this.stateService.reloadLeftNavMenu();
             });
     }
 
@@ -140,10 +135,13 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
                     this.policyTypes[this.policyTypes.length] = event.item;
                 }
                 else {
-                    this.policyTypes[this.findPolicyTypeIndex(event.item.ID)] = event.item;
+                    let index = this.policyTypes.findIndex(x => x.ID == event.item.ID);
+                    if (index >= 0 && index < this.policyTypes.length)
+                        this.policyTypes[index] = event.item;
                 }
                 this.selected = event.item;
                 this.showEditor = false;
+                this.stateService.reloadLeftNavMenu();
             });
     }
 
