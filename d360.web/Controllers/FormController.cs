@@ -7403,7 +7403,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var objectType = settings["Object"];
                 var objectID = settings["ObjectID"];
                 var parentObjectType = settings["ParentObjectTypeID"] ?? "";
-                var parentObjectSearch = settings["ParentObjectSearch"];
+                var parentObjectSearch = settings.ContainsKey("ParentObjectSearch") ? settings["ParentObjectSearch"] ?? "" : "";
 
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectID });
@@ -7414,7 +7414,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectTypeID", Value = parentObjectType });
 
-                var parentObjectID = settings["ParentObjectID"];
+                var parentObjectID = settings.ContainsKey("ParentObjectID") ? settings["ParentObjectID"] ?? "" : "";
 
                 if ((parentObjectSearch ?? "").ToUpper().Trim() == "DIRECT")
                 {

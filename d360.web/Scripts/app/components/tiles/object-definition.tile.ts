@@ -5,11 +5,13 @@ import { FormMode } from '../../models/form.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
 import { Permission } from '../../models/permission.model'
+import { HeaderBreadcrumbService } from '../../services/index';
+import { Breadcrumb } from '../../models/breadcrumb.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
     templateUrl: './object-definition.tile.html',
-    providers: [ObjectDetailService],
+    providers: [ObjectDetailService, HeaderBreadcrumbService],
 })
 
 export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
@@ -27,7 +29,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     //ideally base permissions would be an input but angular doesnt support this yet
     @Input() objectPermissions: Permission[] = [];
 
-    constructor(private objectDetailService: ObjectDetailService) {
+    constructor(private objectDetailService: ObjectDetailService, private headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
 

@@ -50,6 +50,7 @@ export class ResponsibilityItemForm implements OnInit {
 
         this.respsonsibilityService.getResponsibilityItemEditor(this.item.ObjectID, this.item.ObjectType, this.item.ID)
             .then(data => {
+                console.log(data);
                 this.model = data;
                 if (!this.item.ID) {
                     this.item.ObjectID = data.responsibility.ObjectID;
@@ -68,6 +69,7 @@ export class ResponsibilityItemForm implements OnInit {
             this.item.ResponsibleObjectType = this.model.selectedResource.split('|')[0];
             this.item.ResponsibleObjectID = parseInt(this.model.selectedResource.split('|')[1]);
             this.item.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
+
         } catch (exception) {
             this.isSaving = false;
             this.message.Error("An error occurred while parsing the select item values.");
@@ -84,12 +86,16 @@ export class ResponsibilityItemForm implements OnInit {
             });
         });
 
+        //console.log(this.item);
+        //console.log(contextItems);
+
         this.item.ResponsibilityContextItems = contextItems;
         this.item.ContextItems = this.model.contexts.filter(c => this.model.selectedContexts.findIndex(x => x == c.value) > -1).map(c => c.label).join('; ');
         this.item.Role = this.model.responsibilityTypes.find(r => r.value == this.model.selectedResponsibilityType).label;
         this.item.ResponsibleObjectName = this.model.resources.find(r => r.value == this.model.selectedResource).label;
 
         this.item.ContextItems = null;
+        this.item.Visible = true;
         this.item.ResponsibilityContextItems = contextItems;
         
         this.respsonsibilityService.postResponsibility(this.item)

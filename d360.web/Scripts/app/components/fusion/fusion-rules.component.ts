@@ -1,7 +1,7 @@
 ﻿
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/index';
+import { FusionService, MessagesService } from '../../services/index';
 import { FusionRule, FusionRuleStep, FusionRuleItem, FusionRuleMapping, FusionRuleEditorModel, FusionAttributeType, FusionRuleItemEditorModel, FusionRuleMappingEditorModel, FusionRuleStepEditorModel } from '../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
 
@@ -13,10 +13,7 @@ import { TreeNode, Column } from 'primeng/primeng';
         <div *ngSwitchDefault >
             <div class="row">  
                 <div class="col s8 tile tile-detail">
-                    <header>Rules</header>
-                    <div style="text-align: right">
-                        <d3s-tile-actions hasAdd="true" (addClick)="addRule();" style="float:right;"></d3s-tile-actions>
-                    </div>
+                    <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="addRule();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRules" selectionMode="single" [(selection)]="selectedFusionRule" (onRowSelect)="loadSteps();">
                         <p-column header="Enabled" field="Enabled"></p-column>
                         <p-column header="Name" field="Name"></p-column>
@@ -34,10 +31,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="col s4">
                     <div style="margin-left: 25px;">
                         <div class="tile tile-detail">
-                            <header>Items for selected rule</header>
-                            <div style="text-align: right">
-                                <d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions>
-                            </div>
+                            <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions></header>
                             <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem">
                                 <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
                                 <p-column header="">
@@ -54,10 +48,7 @@ import { TreeNode, Column } from 'primeng/primeng';
             </div>
             <div class="row">
                 <div class="col s12 tile tile-detail">
-                    <header>Steps for selected rule</header>
-                    <div style="text-align: right">
-                        <d3s-tile-actions hasAdd="true" (addClick)="addStep();" style="float:right;"></d3s-tile-actions>
-                    </div>
+                    <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="addStep();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRuleSteps" selectionMode="single" [(selection)]="selectedFusionRuleStep" (onRowSelect)="loadMappings();">
                         <p-column header="Action" field="Action"></p-column>
                         <p-column header="Step" field="Step"></p-column>
@@ -75,10 +66,7 @@ import { TreeNode, Column } from 'primeng/primeng';
             </div>
             <div class="row">
                 <div class="col s12 tile tile-detail">
-                    <header>Mappings for selected step</header>
-                    <div style="text-align: right">
-                        <d3s-tile-actions hasAdd="true" (addClick)="addMapping();" style="float:right;"></d3s-tile-actions>
-                    </div>
+                    <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="addMapping();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRuleMappings" selectionMode="single" [(selection)]="selectedFusionRuleMapping">
                         <p-column header="Source" field="SourceFieldName"></p-column>
                         <p-column header="Target" field="TargetFieldName"></p-column>
@@ -135,7 +123,7 @@ import { TreeNode, Column } from 'primeng/primeng';
             <div class="row">
                 <div class="col s12">
                     <div class="FieldName" style="display:block;">Description</div>
-                    <input type="text" pInput  [(value)]="addFusionRule.Description" style="width:80%" />
+                    <input type="text" pInput  [(ngModel)]="addFusionRule.Description" style="width:80%" />
                 </div>
             </div>
             <div class="row">
@@ -292,11 +280,15 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     fusionRuleStepEditorModel: FusionRuleStepEditorModel;
 
 
-    constructor(private fusionService: FusionService) {
+    constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
     }
 
     ngOnInit() {
+        this.loadRules();
+    }
+
+    loadRules() {
         this.fusionService.getFusionRules(this.fusionID)
             .then(r => {
                 this.fusionRules = r;
@@ -343,6 +335,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     addRule() {
         this.addFusionRule = new FusionRule();
         this.addFusionRule.FusionID = this.fusionID;
+        this.addFusionRule.Description = "";
         this.fusionService.getAddFusionRule(this.fusionTypeID)
             .then(r => {
                 this.addFusionAttributeTypes = r;
@@ -354,7 +347,8 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.postAddFusionRule(this.addFusionRule)
             .then(r => {
                 this.formMode = FormMode.Default;
-                this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
+                this.loadRules();
             });
     }
 
@@ -363,7 +357,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.getEditFusionRule(this.selectedFusionRule.ID)
             .then(r => {
                 this.fusionRuleEditorModel = r;
-                console.log(this.fusionRuleEditorModel);
+                //console.log(this.fusionRuleEditorModel);
                 this.formMode = FormMode.EditRule;
             });
     }
@@ -377,7 +371,8 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.deleteFusionRuleById(this.selectedFusionRule.ID)
             .then(r => {
                 this.formMode = FormMode.Default;
-                this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
+                this.loadRules();
             });
     }
 
@@ -385,7 +380,8 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.postEditFusionRule(this.fusionRuleEditorModel.Rule)
             .then(r => {
                 this.formMode = FormMode.Default;
-                this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
+                this.loadRules();
             });
     }
 
@@ -403,6 +399,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.deleteFusionRuleStep(this.selectedFusionRuleStep.RuleID, this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
     }
@@ -441,6 +438,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.deleteFusionRuleItem(this.selectedFusionRuleItem.ID)
             .then(r => {
                 this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
     }
@@ -467,6 +465,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.putEditFusionRuleStepMapping(m)
             .then(r => {
                 this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
 
@@ -490,6 +489,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
         this.fusionService.postAddFusionRuleStepMapping(m)
             .then(r => {
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
     }
@@ -503,6 +503,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.deleteFusionRuleStepMapping(this.selectedFusionRuleMapping.ID)
             .then(r => {
                 this.loadSteps();
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
     }

@@ -27,7 +27,7 @@
             </p-dataTable>
         </div>
         <div *ngIf="isEditing">
-            <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
+            <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
             <delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ID"

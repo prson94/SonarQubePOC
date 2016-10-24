@@ -539,7 +539,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString() && ft.Type != DataType.Attribute.ToString())
+                if (ft.Type != DataType.FilteredLookup.ToString() && ft.Type != DataType.RelationLookup.ToString() && ft.Type != DataType.Attribute.ToString() && ft.Type != DataType.ComplexRelationLookup.ToString())
                 {
                     var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
 

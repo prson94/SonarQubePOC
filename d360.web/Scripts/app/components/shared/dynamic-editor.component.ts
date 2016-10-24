@@ -81,7 +81,7 @@ export class DynamicEditorComponent extends BaseComponent {
             .then(result => {
                 this.isLoading = false;
                 this.fields = result;
-
+                console.log(result);
                 this.fields.forEach(f => {
                     if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                         if (f.Value)

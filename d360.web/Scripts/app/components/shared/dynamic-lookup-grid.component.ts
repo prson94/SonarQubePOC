@@ -9,7 +9,7 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
     template: `    
 
                <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
-                    <p-column *ngFor="let column of data.Columns">
+                    <p-column *ngFor="let column of data.Columns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <span [ngSwitch]="columnDataType(column)">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
@@ -23,7 +23,7 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
                     </p-column>                                                                                         
                 </p-dataTable>             
                <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
-                    <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable">
+                    <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <span [ngSwitch]="columnDataType(column)">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>

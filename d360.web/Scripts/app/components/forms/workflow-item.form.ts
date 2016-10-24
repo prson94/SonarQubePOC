@@ -74,6 +74,7 @@ export class WorkflowItemForm implements OnInit {
         this.ParentType = this.item.Parent + '|' + this.item.ParentID;
 
         this.workflowService.getWorkflow(this.item.ID, this.item.WorkflowType).then(data => {
+            console.log(data);
             this.ObjectTypes = data.ObjectTypes;
             this.ObjectTypes.map(o => { o.label = o.Text; o.value = o.Value });
             this.ParentTypes = data.ParentTypes;

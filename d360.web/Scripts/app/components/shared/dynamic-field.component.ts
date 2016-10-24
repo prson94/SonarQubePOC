@@ -62,6 +62,7 @@ export class DynamicFieldComponent implements OnInit {
     constructor(private uriBasedService: UriBasedService) { }
 
     ngOnInit() {
+        console.log(this.field);
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {

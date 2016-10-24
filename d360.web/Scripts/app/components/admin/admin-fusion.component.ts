@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, PageHeader, FusionService, RightSidebarService  } from '../../services/index';
+import { HeaderBreadcrumbService, PageHeader, FusionService, RightSidebarService, MessagesService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
 import { FusionType } from '../../models/fusion.model';
@@ -23,7 +23,12 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     newFusionType: FusionType;
     newFusionStyle: ObjectStyle;
 
-    constructor(rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private fusionService: FusionService, titleService: Title) {
+    constructor(rightSidebarService: RightSidebarService,
+        pageHeader: PageHeader,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private fusionService: FusionService,
+        titleService: Title,
+        private messagesService: MessagesService) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
         this.areaDescription = "Here you will find all Fusion sources and synchronization settings.";
         this.areaName = "Fusion Types";
@@ -82,12 +87,16 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         if (this.formMode == FormMode.Editing) {
             this.fusionService.putFusionType(this.newFusionType, this.newFusionStyle)
                 .then(data => {
+                    console.log(data);
+                    this.showMessageForResult(this.messagesService, data);
                     this.load();
                     this.formMode = FormMode.Default;
                 })
         } else if (this.formMode == FormMode.Adding) {
             this.fusionService.postFusionType(this.newFusionType, this.newFusionStyle)
                 .then(data => {
+                    console.log(data);
+                    this.showMessageForResult(this.messagesService, data);
                     this.load();
                     this.formMode = FormMode.Default;
                 });

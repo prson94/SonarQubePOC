@@ -48,8 +48,9 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
             return;
 
         this.isLoading = true;
-        this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType)
+        this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType, this.showHidden)
             .then(data => {
+                console.log(data);
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
