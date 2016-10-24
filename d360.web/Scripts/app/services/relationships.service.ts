@@ -2,7 +2,7 @@
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship } from '../models/relationship.model';
+import { Relationship, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, RelationshipRole } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
@@ -143,5 +143,23 @@ export class RelationshipsService extends BaseService {
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getRelationshipRoles(): Promise<RelationshipRole[]> {
+        return this.http.get('relations/IntersectRoles')
+            .toPromise()
+            .then(response => <RelationshipRole[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteRelationshipRole(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'relationshiprole', id);
+    }
+
+    saveRelationshipRole(relationshipRole: RelationshipRole): Promise<JsonResult> {
+        if (relationshipRole.ID == undefined || !relationshipRole.ID) {
+            return this.postDynamic(this.http, 'relationshiprole', relationshipRole);
+        }
+        return this.putDynamic(this.http, 'relationshiprole', relationshipRole);
     }
 }

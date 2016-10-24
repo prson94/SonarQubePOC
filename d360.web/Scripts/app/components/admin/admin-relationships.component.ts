@@ -15,7 +15,14 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isAuditVisible && !isPredicatesVisible" class="row">
+                <div *ngIf="isRolesVisible" class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-admin-relationship-roles></d3s-admin-relationship-roles>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!isAuditVisible && !isPredicatesVisible && !isRolesVisible" class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
                             <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
@@ -36,7 +43,8 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy, OnInit {
     private isPredicatesVisible: boolean = false;
-    selected: Relationship;
+    private isRolesVisible: boolean = false;
+    private selected: Relationship;
     
     constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
         super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
@@ -46,6 +54,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.setCommonRightSideBar(true);    
 
         this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles'));
     }
 
     
@@ -59,5 +68,6 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'predicates') this.isPredicatesVisible = !this.isPredicatesVisible;        
+        else if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
     }
 }

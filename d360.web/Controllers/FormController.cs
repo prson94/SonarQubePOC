@@ -386,8 +386,8 @@ namespace d360.web.Controllers
                     return MapRule_EditFields(ID);
                 case "MAPRULEITEM":
                     return MapRuleItem_EditFields(ID);
-                
-
+                case "RELATIONSHIPROLE":
+                    return IntersectRole_EditFields(ID);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -431,6 +431,8 @@ namespace d360.web.Controllers
                     return MapRule_AddFields();
                 case "MAPRULEITEM":
                     return MapRuleItem_AddFields(objectID.GetValueOrDefault());
+                case "RELATIONSHIPROLE":
+                    return IntersectRole_AddFields();
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -509,6 +511,8 @@ namespace d360.web.Controllers
                     return EditMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return EditTaxonomyTypeClass(form);
+                case "RELATIONSHIPROLE":
+                    return EditIntersectRole(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -560,6 +564,8 @@ namespace d360.web.Controllers
                     return DeleteMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return DeleteTaxonomyTypeClass(form);
+                case "RELATIONSHIPROLE":
+                    return DeleteIntersectRole(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -626,6 +632,8 @@ namespace d360.web.Controllers
                     return AddMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return AddTaxonomyTypeClass(form);
+                case "RELATIONSHIPROLE":
+                    return AddIntersectRole(form);
             }
 
             throw new Exception("Invalid / unsupported create type");

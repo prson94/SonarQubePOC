@@ -96,6 +96,7 @@ import {
     AdminRuleDimensionsComponent,   
     AdminSurveyQuestionsComponent,    
     AdminModelClassificationComponent, 
+    AdminRelationshipRolesComponent,
 } from './components/admin/index';
 
 import {
@@ -210,6 +211,7 @@ import {
         AdminReportLayoutComponent,
         AdminSurveyQuestionsComponent,
         AdminModelClassificationComponent,
+        AdminRelationshipRolesComponent,
         AdminRuleDimensionsComponent,
         AdminRelationshipsListComponent,
         AdminStatisticEditor,
