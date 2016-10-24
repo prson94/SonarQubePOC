@@ -83,8 +83,12 @@ export class DynamicEditorComponent extends BaseComponent {
                 this.fields = result;
 
                 this.fields.forEach(f => {
-                    if (f.FieldType && f.Value && f.FieldType.toUpperCase() == 'BOOLEAN')
-                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false); //checkbox doesnt work binding to a string
+                    if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
+                        if (f.Value)
+                            f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false); //checkbox doesnt work binding to a string
+                        else
+                            f.Value = false;
+                    }
 
                     let r = this.rows.find(r => r.Row == (f.Row||0));
                     if (r)
@@ -119,8 +123,9 @@ export class DynamicEditorComponent extends BaseComponent {
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
                     : new FormControl(url || '');
             }
-            else {                
-                group[field.FieldName] = new FormControl(field.Value || '', this.getFieldValidators(field));                  
+            else {         
+                console.log(field.Value);       
+                group[field.FieldName] = new FormControl(field.Value === null ? '' : field.Value, this.getFieldValidators(field));                  
             }
         });        
         return new FormGroup(group);

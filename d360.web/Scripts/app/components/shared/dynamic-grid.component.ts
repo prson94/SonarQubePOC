@@ -85,7 +85,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     theDeleteCallback: Function;
     
 
-    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService) {
+    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -100,9 +100,13 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     }
 
     deleteItem(id: number) {
-        this.uriBasedService.deleteItem(this.deleteUri, id);   
-        this.showDelete = false;
-        if (this.items.length > 0) this.items.splice(this.findItemIndex(id), 1);
+        this.uriBasedService.deleteItemWithResult(this.deleteUri, id).
+            then(res => {
+                this.showMessageForResult(this.messagesService, res);
+                this.showDelete = false;
+                if (res.type != 'error')
+                    this.items = this.items.filter(x => x.ID != id);                
+            });        
     }
 
     getFieldsDefinition() {        
@@ -122,14 +126,6 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
                 if (this.items.length > 0) this.selected = this.items[0];                
             });
     }  
-
-    private findItemIndex(id: number) {
-        var index: number = -1;
-        for (var item of this.items) {
-            index++;
-            if (item.ID == id) return index;
-        }
-    }
 
     closeEditor() {
         this.showEditor = false;
