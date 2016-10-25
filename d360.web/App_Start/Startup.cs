@@ -88,11 +88,11 @@ namespace d360.web
 
             //AreaRegistration.RegisterAllAreas();
 
-            RouteTable.Routes.MapRoute(
-                name: "Default",
-                url: "{controller}/{action}/{id}"//,
-                //defaults: new { controller = "Home", action = "LegacyIndex", id = UrlParameter.Optional }
-            );
+            //RouteTable.Routes.MapRoute(
+            //    name: "Default",
+            //    url: "{controller}/{action}/{id}"//,
+            //    //defaults: new { controller = "Home", action = "LegacyIndex", id = UrlParameter.Optional }
+            //);
             RouteTable.Routes.MapRoute(
                 name: "SPA-Fallback",
                 url: "{*url}", // a/{*url}

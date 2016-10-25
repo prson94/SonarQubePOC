@@ -7,6 +7,7 @@ import { Favorite } from '../models/favorite.model';
 export class HeaderActionsService {    
     showFavorite: boolean = true;
     showNotifications: boolean = false;
+    showLegacy: boolean = true;
     showHelp: boolean = false;
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  

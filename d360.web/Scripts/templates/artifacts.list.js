@@ -286,8 +286,8 @@
 
                                 tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Certificate', iconBackColor: 'transparent', iconForeColor: foreColor, iconText: 'certificate', title: title });
                                 tools.push({ isitemlink: true, urlprefix: '#' + detailUri, type: 'Artifact', context: 'Preview' });
-                                tools.push({ icon: 'pencil', urlprefix: 'form' + detailUri + '/edit' });
-                                tools.push({ icon: 'trash-o', urlprefix: 'form' + detailUri + '/delete' });
+                                tools.push({ icon: 'pencil', urlprefix: '/form/artifacts/' + typeID + '/' + data.ID + '/edit' });
+                                tools.push({ icon: 'trash-o', urlprefix: '/form/artifacts/' + typeID + '/' + data.ID + '/delete' });
 
                                 return renderToolsHtml(value, tools, contextList.Artifact, data);
                             }

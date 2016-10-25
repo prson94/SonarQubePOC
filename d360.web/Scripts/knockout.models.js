@@ -565,7 +565,7 @@ function MultiMapRulesModel(data, permissions) {
 
         $.ajax({
             method: 'post',
-            url: 'form/MapRulesByObject',
+            url: '/form/MapRulesByObject',
             data: { Items: data.Maps}
         }).done(function (maprules) {
             self.MapRules(
@@ -909,7 +909,7 @@ function MapRulesModel(data, permissions) {
         self.IsLoading(true);
         $.ajax({
             method: 'post',
-            url: 'form/MapRulesByMap',
+            url: '/form/MapRulesByMap',
             data: {
                 SourceIntersectID: self.SourceIntersectID(),
                 SourceDiagramKey: self.SourceDiagramKey(),
