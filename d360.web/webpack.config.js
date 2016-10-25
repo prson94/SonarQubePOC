@@ -12,7 +12,7 @@ var webpackConfig = {
   },
 
   output: {
-    path: './scripts/app/',
+      path: './scripts/app/',      
   },
 
   plugins: [
@@ -33,9 +33,9 @@ var webpackConfig = {
   module: {
     loaders: [
       // .ts files for TypeScript
-      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'] },
+      { test: /\.ts$/, loaders: ['awesome-typescript-loader?tsconfig=./scripts/app/tsconfig.json', 'angular2-template-loader']},
       { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-      { test: /\.html$/, loader: 'raw-loader' }
+      { test: /\.html$/, loader: 'raw-loader' }        
     ]
   }
 
@@ -44,18 +44,16 @@ var webpackConfig = {
 
 // Our Webpack Defaults
 var defaultConfig = {
-  devtool: 'cheap-module-source-map',
-  cache: true,
-  debug: true,
+   devtool: 'cheap-module-source-map',
+  cache: true,  
   output: {
     filename: '[name].bundle.js',
     sourceMapFilename: '[name].map',
     chunkFilename: '[id].chunk.js'
   },
 
-  resolve: {
-    root: [ path.join(__dirname,'/scripts/app/') ],
-    extensions: ['', '.ts', '.js']
+  resolve: {    
+    extensions: ['.ts', '.js']
   },
 
   devServer: {
@@ -64,12 +62,12 @@ var defaultConfig = {
   },
 
   node: {
-    global: 1,
+    global: true,
     crypto: 'empty',
-    module: 0,
-    Buffer: 0,
-    clearImmediate: 0,
-    setImmediate: 0
+    module: false,
+    Buffer: false,
+    clearImmediate: false,
+    setImmediate: false
   }
 };
 

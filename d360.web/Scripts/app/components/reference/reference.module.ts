@@ -47,13 +47,6 @@ import {
         ReferenceItemTypeEditorComponent,
         ReferenceItemTypeGridComponent,
         ReferenceListComponent,
-    ],
-    exports: [
-        ReferenceComponent,
-        ReferenceItemTypeEditorComponent,
-        ReferenceItemTypeGridComponent,
-        ReferenceListComponent,
-    ]
-    
+    ]    
 })
 export class ReferenceModule { }

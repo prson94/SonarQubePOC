@@ -8,7 +8,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
-import { MonitorComponent } from './monitor.component';
+
 import { MonitorListComponent } from './monitor-list.component';
 
 import {
@@ -33,13 +33,8 @@ import {
         CoreModule,
         PipesModule,
     ],
-    declarations: [
-        MonitorComponent,
+    declarations: [        
         MonitorListComponent,        
-    ],
-    exports: [
-        MonitorComponent,
-        MonitorListComponent,        
-    ]
+    ]    
 })
 export class MonitorModule { }

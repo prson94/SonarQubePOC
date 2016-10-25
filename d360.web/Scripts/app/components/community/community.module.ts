@@ -34,10 +34,6 @@ import {
     declarations: [
         CommunityComponent,
         CommunitySummaryComponent,        
-    ],
-    exports: [
-        CommunityComponent,
-        CommunitySummaryComponent,        
     ]
 })
 export class CommunityModule { }

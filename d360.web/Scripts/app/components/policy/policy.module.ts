@@ -81,11 +81,6 @@ import {
         PolicyComponent,
         PolicyItemComponent,
         PolicyItemStructureComponent,
-    ],
-    exports: [
-        PolicyComponent,
-        PolicyItemComponent,
-        PolicyItemStructureComponent,
     ]
 })
 export class PolicyModule { }

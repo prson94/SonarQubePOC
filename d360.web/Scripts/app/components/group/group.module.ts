@@ -41,12 +41,6 @@ import {
         GroupItemComponent,
         GroupListComponent,
         GroupResponsibilityComponent,
-    ],
-    exports: [
-        GroupComponent,
-        GroupItemComponent,
-        GroupListComponent,
-        GroupResponsibilityComponent,
     ]
 })
 export class GroupModule { }

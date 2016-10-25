@@ -53,7 +53,7 @@ var webpackConfig = {
 var defaultConfig = {
     devtool: 'cheap-module-source-map',
     cache: true,
-    debug: true,
+    //debug: true,
     output: {
         filename: '[name].bundle.js',
         sourceMapFilename: '[name].map',
@@ -61,8 +61,8 @@ var defaultConfig = {
     },
 
     resolve: {
-        root: [path.join(__dirname, '/scripts/app/')],
-        extensions: ['', '.ts', '.js']
+    //    root: [path.join(__dirname, '/scripts/app/')],
+        extensions: ['.ts', '.js']
     },
 
     devServer: {
@@ -71,12 +71,12 @@ var defaultConfig = {
     },
 
     node: {
-        global: 1,
+        global: true,
         crypto: 'empty',
-        module: 0,
-        Buffer: 0,
-        clearImmediate: 0,
-        setImmediate: 0
+        module: false,
+        Buffer: false,
+        clearImmediate: false,
+        setImmediate: false
     }
 };
 
