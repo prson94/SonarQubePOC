@@ -10,7 +10,10 @@ import { UriBasedService } from '../../services/index';
     template: ` <div [formGroup]="form">    
                    <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />              
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
-                        <div class="FieldName">{{field.Name}}</div>
+                        <div class="FieldName">
+                            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{field.Name}}</span>
+                            <span *ngIf="!fieldTooltip">{{field.Name}}</span>
+                        </div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
                         <div *ngIf="similarItems.length > 0">
                             <div style="color: #FFB230">The following items with similar names already exist:</div>
@@ -58,17 +61,21 @@ export class DynamicFieldComponent implements OnInit {
 
     private similarItems = [];
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
+    private fieldTooltip: string;
 
     constructor(private uriBasedService: UriBasedService) { }
 
-    ngOnInit() {
-        console.log(this.field);
+    ngOnInit() {        
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
                 }
             }
+        }
+
+        if (this.field && this.field.FieldDescription) {
+            this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
         }
     }
 
