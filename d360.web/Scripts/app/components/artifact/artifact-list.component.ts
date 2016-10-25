@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
+import { ArtifactTypeService, HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -33,14 +33,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
     constructor(private route: ActivatedRoute,
         private router: Router,
-        private artifactTypeService: ArtifactTypeService,        
-        pageHeader: PageHeader,
+        private artifactTypeService: ArtifactTypeService,                
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         private objectActionsService: ObjectActionsService,
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
-        super(headerBreadcrumbService, pageHeader, rightSidebarService, webAnalyticsService );      
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService );      
 
         
     }

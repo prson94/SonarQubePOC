@@ -1,6 +1,4 @@
-
 import { Component, NgZone } from '@angular/core';
-import { PageHeader } from '../../services/page-header.service'
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
@@ -39,15 +37,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     oldFolderItems: SiteNav[] = [];
     oldFolderName;
 
-    constructor(pageHeader: PageHeader,
+    constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
         titleService: Title,
         private siteMenuService: SiteMenuService,
         private headerActionsService: HeaderActionsService) {
 
-        super(headerBreadcrumbService, pageHeader, titleService);
-        this.areaDescription = "Manage system-wide settings for your environment.";
+        super(headerBreadcrumbService, titleService);        
         this.areaName = "Settings";
         this.setCommonItems();
 

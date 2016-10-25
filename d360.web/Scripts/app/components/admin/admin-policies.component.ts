@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, PoliciesService, RightSidebarService, StateService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, PoliciesService, RightSidebarService, StateService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { PolicyType } from '../../models/policy.model';
 import { Title } from '@angular/platform-browser';
@@ -86,9 +86,8 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Organize various sets of policies across your organization.";
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, private policiesService: PoliciesService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Policy Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deletePolicyType.bind(this);

@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, PageHeader, FusionService, RightSidebarService, MessagesService  } from '../../services/index';
+import { HeaderBreadcrumbService, FusionService, RightSidebarService, MessagesService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
 import { FusionType } from '../../models/fusion.model';
@@ -23,14 +23,12 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     newFusionType: FusionType;
     newFusionStyle: ObjectStyle;
 
-    constructor(rightSidebarService: RightSidebarService,
-        pageHeader: PageHeader,
+    constructor(rightSidebarService: RightSidebarService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         private fusionService: FusionService,
         titleService: Title,
         private messagesService: MessagesService) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Here you will find all Fusion sources and synchronization settings.";
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Fusion Types";
         this.setCommonItems();
         this.setCommonRightSideBar();

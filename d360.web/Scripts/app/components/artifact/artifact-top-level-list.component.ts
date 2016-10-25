@@ -1,6 +1,6 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactTypeService, HeaderBreadcrumbService, PageHeader } from '../../services/index';
+import { ArtifactTypeService, HeaderBreadcrumbService } from '../../services/index';
 import { ArtifactTypeSummary } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -52,11 +52,10 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
 
     constructor(private route: ActivatedRoute,
         private router: Router,
-        private artifactTypeService: ArtifactTypeService,
-        pageHeader: PageHeader,
+        private artifactTypeService: ArtifactTypeService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title) {
-        super(headerBreadcrumbService, pageHeader);
+        super(headerBreadcrumbService);
 
 
     }

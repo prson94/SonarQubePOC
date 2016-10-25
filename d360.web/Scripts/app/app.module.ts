@@ -28,7 +28,7 @@ import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are 
 import { AdminUserGuard } from './guards/admin-user.guard';
 
 import { AuthenticationService } from './services/authentication.service';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import {
@@ -335,8 +335,7 @@ import {
         Title,
         HeaderActionsService,
         HeaderBreadcrumbService,
-        MessagesService,
-        PageHeader,
+        MessagesService,        
         RightSidebarService,
         WebAnalyticsService,
         StateService

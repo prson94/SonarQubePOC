@@ -1,8 +1,7 @@
-﻿
-import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { DomainType, IDomainService } from '../../models/domain.model';
-import { DomainService, HeaderBreadcrumbService, PageHeader, RightSidebarService } from '../../services/index';
+import { DomainService, HeaderBreadcrumbService, RightSidebarService } from '../../services/index';
 import { AdminBaseComponent} from './admin-base.component';
 import { FormMode } from '../../models/form.model';
 import { Title } from '@angular/platform-browser';
@@ -21,9 +20,8 @@ export class AdminDomainComponent extends AdminBaseComponent implements OnDestro
     FormMode = FormMode;
     newRow: DomainType = new DomainType();
 
-    constructor(rightSidebarService : RightSidebarService,private domainService: DomainService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService );
-        this.areaDescription = "All type of reference data lists for the organization are defined here. To add a new type of list, go under Actions and select Add type.";
+    constructor(rightSidebarService : RightSidebarService,private domainService: DomainService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService );        
         this.areaName = "Reference Types";
         this.setCommonItems();
         this.setCommonRightSideBar();

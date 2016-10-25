@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, LookupService, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, LookupService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Lookup } from '../../models/lookup.model';
 import { Title } from '@angular/platform-browser';
@@ -74,9 +74,8 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);        
-        this.areaDescription = "Here you will find all general lookups used.";
+    constructor(rightSidebarService: RightSidebarService, private lookupService: LookupService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);                
         this.areaName = "Lookup Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);

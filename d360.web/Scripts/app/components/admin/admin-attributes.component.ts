@@ -1,5 +1,5 @@
 ﻿import { Component} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, AttributeTypeService, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, AttributeTypeService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { AttributeType } from '../../models/attribute-type.model';
 import { TreeNode } from 'primeng/primeng';
@@ -65,9 +65,8 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     parentID: number = 0;
     
 
-    constructor(rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Here you will find all metadata that can be assigned to various objects and relationships.";
+    constructor(rightSidebarService: RightSidebarService, private attributeTypeService: AttributeTypeService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Attribute Groups";        
         //this.areaLink = window.location.pathname;
         this.setCommonItems();

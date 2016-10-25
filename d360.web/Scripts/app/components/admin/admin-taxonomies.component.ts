@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
 import { Taxonomy} from '../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, PageHeader, RightSidebarService, StateService } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, RightSidebarService, StateService } from '../../services/index';
 import { AdminBaseComponent} from './admin-base.component';
 import { FieldDefinition } from '../../models/fields.model';
 import { Title } from '@angular/platform-browser';
@@ -70,9 +70,8 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     theDeleteCallback: Function;
     isClassificationsVisible: boolean = false;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, pageHeader: PageHeader, private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "All top-level information models for the organization are defined here. To add a new top-level model, go under Actions and select Add Type.";
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService,  private taxonomiesService: TaxonomiesService, private fieldsService: FieldsService, private messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Models";
         this.setCommonItems();
         this.setCommonRightSideBar(true);

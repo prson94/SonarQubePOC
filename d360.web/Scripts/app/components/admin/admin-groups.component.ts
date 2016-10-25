@@ -1,5 +1,4 @@
 ﻿import { Component, NgZone, OnInit } from '@angular/core';
-import { PageHeader } from '../../services/page-header.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from './admin-base.component';
@@ -22,9 +21,8 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
-    constructor(private groupService: GroupService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
-        this.areaDescription = "Here you will find groups and membership.";
+    constructor(private groupService: GroupService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService);        
         this.areaName = "Groups";
         this.setCommonItems();
     }

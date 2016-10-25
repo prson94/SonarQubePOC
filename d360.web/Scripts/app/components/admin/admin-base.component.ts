@@ -1,5 +1,5 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 
@@ -7,22 +7,17 @@ import { Title } from '@angular/platform-browser';
 
 export class AdminBaseComponent extends BaseComponent {
     public areaName: string;
-    public areaLink: string = undefined;
-    public areaDescription: string = "base";
+    public areaLink: string = undefined;    
     public area: string = "Administration";
 
-    
-    
-
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected pageHeader: PageHeader, protected titleService: Title, rightSidebarService?: RightSidebarService) {
+    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, rightSidebarService?: RightSidebarService) {
         super(rightSidebarService);        
     }
 
     setCommonItems() {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
-        this.pageHeader.description = this.areaDescription;
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));     
         this.setBrowserTitle(this.titleService, this.areaName);
     }       
 }

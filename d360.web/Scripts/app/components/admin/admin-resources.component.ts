@@ -1,6 +1,4 @@
-﻿
-import { Component, NgZone, OnInit } from '@angular/core';
-import { PageHeader } from '../../services/page-header.service';
+﻿import { Component, NgZone, OnInit } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from './admin-base.component';
@@ -18,9 +16,8 @@ export class AdminResourcesComponent extends AdminBaseComponent {
     private objectType = 'ResourceType';
     private objectID = 1;
 
-    constructor(pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
-        this.areaDescription = "Here you will find all current resources.";
+    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService);        
         this.areaName = "Resources";
         this.setCommonItems();
     }

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, RulesService, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, RulesService, RightSidebarService  } from '../../services/index';
 import {AdminBaseComponent } from './admin-base.component';
 import { RuleType } from '../../models/rule.model';
 import { Title } from '@angular/platform-browser';
@@ -57,12 +57,10 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     constructor(protected rightSidebarService: RightSidebarService,
         private rulesService: RulesService,
         protected messagesService: MessagesService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        pageHeader: PageHeader,
+        headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Here you can configure the properties available to rules, including what dimensions are defined.";
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Rule Types";
         this.setCommonItems();
         this.setCommonRightSideBar(false, false, false);

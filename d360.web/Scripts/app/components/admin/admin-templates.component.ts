@@ -1,7 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { Template } from '../../models/template.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TemplatesService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 
@@ -84,9 +84,8 @@ export class AdminTemplatesComponent extends AdminBaseComponent {
     
     public theDeleteCallback: Function;
 
-    constructor(pageHeader: PageHeader, private templateService: TemplatesService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);
-        this.areaDescription = "All email and tooltip templates for notifications.";
+    constructor(private templateService: TemplatesService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
+        super(headerBreadcrumbService, titleService);        
         this.areaName = "Templates";
         this.setCommonItems();
     }

@@ -1,5 +1,4 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
-import { PageHeader } from '../../services/page-header.service';
 import { TreeNode } from 'primeng/primeng';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService } from '../../services/index';
@@ -26,9 +25,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Here you will find all artifact types and custom fields associated with them.";
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Artifacts";
         this.setCommonItems();        
         this.load();

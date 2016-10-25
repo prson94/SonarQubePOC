@@ -1,6 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, TemplatesService, PageHeader, SurveysService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, TemplatesService,  SurveysService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../models/survey.model';
@@ -73,8 +73,8 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     public theDeleteCallback: Function;
 
-    constructor(pageHeader: PageHeader, private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService);        
+    constructor(private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
+        super(headerBreadcrumbService,  titleService);        
         this.areaName = "Surveys";
         this.setCommonItems();
     }

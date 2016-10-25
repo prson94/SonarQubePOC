@@ -1,6 +1,5 @@
-﻿
-import { Component, NgZone, OnDestroy } from '@angular/core';
-import { PageHeader, HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../services/index';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
+import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../services/index';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { MenuItem } from 'primeng/primeng';
 import { ActionBarItem } from '../../models/action-bar.model';
@@ -27,9 +26,9 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
 
     actions = new Array<ActionBarItem>();
 
-    constructor(rightSidebarService : RightSidebarService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = 'Manage all workflow settings for types within your environment.';
+    constructor(rightSidebarService : RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);
+        
         this.areaName = "Workflow";
         this.setCommonItems();
         

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, StatisticService, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, StatisticService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { StatisticType } from '../../models/statistic.model';
 import { Title } from '@angular/platform-browser';
@@ -67,9 +67,8 @@ export class AdminStatisticsComponent extends AdminBaseComponent implements OnIn
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Create various types of measurements on items throughout the system, including analytics that factor into scores.";
+    constructor(rightSidebarService: RightSidebarService, private statisticService: StatisticService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Analytic Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteStatisticType.bind(this);

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PageHeader, RightSidebarService  } from '../../services/index';
+import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Relationship } from '../../models/relationship.model';
 import { Title } from '@angular/platform-browser';
@@ -46,9 +46,8 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     private isRolesVisible: boolean = false;
     private selected: Relationship;
     
-    constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, pageHeader: PageHeader, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = "Create the possibility of establishing relationships between different objects within the system.";
+    constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Relationship Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);    

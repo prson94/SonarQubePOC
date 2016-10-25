@@ -1,7 +1,6 @@
-﻿
-import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, PageHeader } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService } from '../../services/index';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../models/responsibility-type.model';
 import { FormMode } from '../../models/form.model';
 import { AdminBaseComponent } from './admin-base.component';
@@ -20,9 +19,8 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, pageHeader: PageHeader, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, pageHeader, titleService, rightSidebarService);
-        this.areaDescription = 'Assign which objects can be owned, and whether groups, users or both may own them. You may also define application and licensing source types.';
+    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Responsibility Types";
         this.setCommonItems();
         this.setCommonRightSideBar();

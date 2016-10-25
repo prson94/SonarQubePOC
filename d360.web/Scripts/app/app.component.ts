@@ -1,6 +1,6 @@
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, PageHeader, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
+import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 declare var $: JQueryStatic;
@@ -33,7 +33,7 @@ export class AppComponent implements AfterViewInit, OnInit {
     @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
     protected componentRef: ComponentRef<IHaveDynamicData>;
 
-    constructor(protected typeBuilder: DynamicTypeBuilder, private pageHeader: PageHeader, public componentFactoryResolver: ComponentFactoryResolver) {
+    constructor(protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver) {
         
     }
     

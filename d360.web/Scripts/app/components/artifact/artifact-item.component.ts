@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { ArtifactService, HeaderBreadcrumbService, PageHeader, RightSidebarService, WebAnalyticsService, SurveysService, PermissionsService } from '../../services/index';
+import { ArtifactService, HeaderBreadcrumbService, RightSidebarService, WebAnalyticsService, SurveysService, PermissionsService } from '../../services/index';
 import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';
@@ -78,15 +78,14 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
-        private artifactService: ArtifactService,
-        pageHeader: PageHeader,
+        private artifactService: ArtifactService,        
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private surveysService: SurveysService,
         protected permissionsService: PermissionsService            
     ) {
-        super(headerBreadcrumbService, pageHeader, rightSidebarService, webAnalyticsService);
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);
 
     }
 

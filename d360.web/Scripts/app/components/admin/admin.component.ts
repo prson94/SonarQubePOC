@@ -1,5 +1,4 @@
-﻿
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 
 import 'rxjs/Rx';
 
@@ -9,5 +8,5 @@ import 'rxjs/Rx';
 })
 
 export class AdminComponent {    
-   // constructor(private pageHeader: PageHeader) {    }
+   
 }
