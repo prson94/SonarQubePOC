@@ -20,7 +20,7 @@
             </div>
             <div class="col s4">
                 <div id='NameTip' class="FieldNameRequired">API Name<span class="FieldNameError" data-bind="visible: ApiNameInvalid">*</span></div>
-                <input required name="name" pInputText type="text" [(ngModel)]="model.FieldType.Name" style="width: 98%; display: block;" (keyup)="syncApiNameWithName=false;" #apiName="ngModel"  />
+                <input required name="name" pInputText type="text" [(ngModel)]="model.FieldType.Name" style="width: 98%; display: block;" (keyup)="syncApiNameWithName=false;" #apiName="ngModel" />
                 <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
             </div>
             <div class="col s4">
@@ -91,6 +91,7 @@
                 <p-editor name="validationDesc" [(ngModel)]="model.FieldType.ValidationDescription" [style]="{'height':'150px'}" ngDefaultControl></p-editor>
             </div>
         </div>
+        <!-- fusion lookup -->
         <div class="row" *ngIf="model.FieldType.Type == 'FusionLookup'">
             <div class="col s12" style="margin: 10px 0 10px 0">
                 <h5>Fusion Lookups</h5>
@@ -131,7 +132,8 @@
                 </table>
             </div>
         </div>
-        <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup' || model.FieldType.Type == 'ComplexRelationLookup'">
+        <!-- complex relation lookup -->
+        <div class="row" *ngIf="model.FieldType.Type == 'ComplexRelationLookup'">
             <div class="col s12" style="margin: 10px 0 10px 0">
                 <table cellpadding="5" class="relation-table">
                     <thead>
@@ -139,8 +141,6 @@
                             <th>Relation</th>
                             <th>Reference Type</th>
                             <th>Relation Item</th>
-                            <!--<th>Reference Columns</th>
-                            <th>Table Settings</th>-->
                             <th>Table Settings</th>
                         </tr>
                     </thead>
@@ -175,7 +175,7 @@
                             <td></td>
                             <td></td>
                         </tr>
-                        <tr  [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
+                        <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
                             <td colspan="4" class="display-table-title">Reference Columns</td>
                             <td></td>
                         </tr>
@@ -212,7 +212,7 @@
                                                 <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" />
                                             </td>
                                             <td style="width: 10%">
-                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d)">
+                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
                                                     <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
                                                 </select>
                                             </td>
@@ -234,38 +234,46 @@
                             </td>
                         </tr>
                     </tbody>
-
-                    <!--<tbody data-bind="foreach: RelationItems">
+                </table>
+            </div>
+        </div>
+        <!--legacy relation lookup -->
+        <div class="row" *ngIf="model.FieldType.Type == 'RelationLookup'">
+            <div class="col s12" style="margin: 10px 0 10px 0">
+                <table cellpadding="5">
+                    <thead>
+                        <tr>
+                            <th>Relation</th>
+                            <th>Reference Type</th>
+                            <th>Child Relation</th>
+                            <th>Table Settings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <tr>
                             <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: IntersectTypeIndex,
-                                 source: IntersectTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedRelationItemID" style="width:95%" (ngModelChange)="changeLegacyRef()">
+                                    <option *ngFor="let j of lookups.IntersectTypes" [value]="j.value">{{j.label}}</option>
+                                </select>
                             </td>
                             <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationReferenceTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: ReferenceTypeIndex,
-                                 source: ReferenceTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.ReferenceType" style="width:95%" (ngModelChange)="changeLegacyRef()">
+                                    <option *ngFor="let j of lookups.ReferenceTypes" [value]="j.value">{{j.label}}</option>
+                                </select>
                             </td>
                             <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationChildIntersectTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: ChildIntersectTypeIndex,
-                                 disabled: ChildIntersectTypeDisabled,
-                                 source: ChildIntersectTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
+                                <span *ngIf="childIntersectsLoading"><i class="fa fa-spinner fa-spin"></i></span>
+                                <select *ngIf="!childIntersectsLoading" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.selectedChildIntersectType" style="width:95%" [disabled]="childIntersectDisabled" (ngModelChange)="changeLegacyChild()">
+                                    <option *ngFor="let j of childIntersectTypes" [value]="j.value">{{j.label}}</option>
+                                </select>
                             </td>
-                            <td style="vertical-align: top">
+                            <td style="vertical-align: middle; width: 125px">
+                                <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideHeader" />Hide Header?</div>
+                                <div><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="model.RelationItem.HideFooter" />Hide Footer?</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
                                 <table class="striped highlight">
                                     <thead>
                                         <tr>
@@ -275,115 +283,28 @@
                                             <th>Filter</th>
                                         </tr>
                                     </thead>
-                                    <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
+                                    <tbody *ngFor="let d of model.RelationItem.DisplayFields" style="max-height:250px; height: 250px; overflow-y: scroll">
                                         <tr>
-                                            <td style="width: 30%" data-bind="text: title"></td>
-                                            <td style="width: 20%">
-                                                <input type="checkbox" data-bind="checked: Show" />
-                                            </td>
+                                            <td style="width: 30%">{{d.FieldTypeName}}</td>
+                                            <td style="width: 20%"><input type="checkbox" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.Show" /></td>
                                             <td style="width: 15%">
-                                                <div data-bind="sortOrderDropdown, jqxDropDownList: {
-                                                 width: 75, dropDownWidth: 50, theme: theme,
-                                                 filterable: false,
-                                                 source: SortOrderOptions,
-                                                 selectedIndex: SortOrderIndex,
-                                                 displayMember: 'title',
-                                                 valueMember: 'value' }"></div>
+                                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                    <option *ngFor="let j of model.RelationItem.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                </select>
                                             </td>
                                             <td>
-                                                <input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" />
+                                                <input type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="d.FilterValue" />
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </td>
-                            <td style="vertical-align: top; width: 125px">
-                                <input type="checkbox" data-bind="checked: HideHeader" />Hide Header?<br />
-                                <input type="checkbox" data-bind="checked: HideFooter" />Hide Footer?
-                            </td>
-                        </tr>
-                    </tbody>-->
-                </table>
-            </div>
-        </div>
-        <!--<div class="row" [hidden]="true" data-bind="visible: RelationLookupDataTypeSelected">
-            <div class="col s12" style="margin: 10px 0 10px 0">
-                <table cellpadding="5">
-                    <thead>
-                        <tr>
-                            <th>Relation</th>
-                            <th>Reference Type</th>
-                            <th>Child Relation</th>
-                            <th>Reference Columns</th>
-                            <th>Table Settings</th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="foreach: RelationItems">
-                        <tr>
-                            <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationIntersectTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: IntersectTypeIndex,
-                                 source: IntersectTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
-                            </td>
-                            <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationReferenceTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: ReferenceTypeIndex,
-                                 source: ReferenceTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
-                            </td>
-                            <td style="vertical-align: top; width: 260px">
-                                <div data-bind="relationChildIntersectTypeFilteredDropdown, jqxDropDownList: {
-                                 width: 250, dropDownWidth: 350, theme: theme,
-                                 filterable: false,
-                                 selectedIndex: ChildIntersectTypeIndex,
-                                 disabled: ChildIntersectTypeDisabled,
-                                 source: ChildIntersectTypeOptions,
-                                 displayMember: 'title',
-                                 valueMember: 'value' }"></div>
-                            </td>
-                            <td style="vertical-align: top">
-                                <table class="striped highlight">
-                                    <thead>
-                                    <th>Name</th>
-                                    <th>Show?</th>
-                                    <th>Sort</th>
-                                    <th>Filter</th>
-                                    </thead>
-                                    <tbody data-bind="foreach: DisplayFieldOptions" style="max-height:250px; height: 250px; overflow-y: scroll">
-                                        <tr>
-                                            <td style="width: 30%" data-bind="text: title"></td>
-                                            <td style="width: 20%"><div data-bind="jqxCheckBox: { theme: theme, checked: Show }"></div></td>
-                                            <td style="width: 15%">
-                                                <div data-bind="sortOrderDropdown, jqxDropDownList: {
-                                                 width: 75, dropDownWidth: 50, theme: theme,
-                                                 filterable: false,
-                                                 source: SortOrderOptions,
-                                                 selectedIndex: SortOrderIndex,
-                                                 displayMember: 'title',
-                                                 valueMember: 'value' }"></div>
-
-                                            </td>
-                                            <td><input data-bind="jqxInput: { theme: theme, width: field_width98, height: field_height, value: FilterValue }" /></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                            <td style="vertical-align: top; width: 125px">
-                                <div data-bind="jqxCheckBox: { theme: theme, checked: HideHeader }">Hide Header?</div>
-                                <div data-bind="jqxCheckBox: { theme: theme, checked: HideFooter }">Hide Footer?</div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>-->
+        </div>
+
         <div class="row">
             <div class="col s6">
                 <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>

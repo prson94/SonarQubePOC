@@ -54,6 +54,10 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     private relationItemCount = 0;
 
+    private childIntersectTypes: any[] = [];
+    private childIntersectsLoading = false;
+    private childIntersectDisabled = true;
+
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType(); 
@@ -89,8 +93,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     console.log('data: ');
                     console.log(data);
                     this.model = data;
-                    if (this.model.FieldType.Type == 'ComplexRelationLookup')
-                        this.model.FieldType.Type = 'RelationLookup';
                     this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
@@ -112,7 +114,14 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         console.log("form data: ");
                         console.log(f);
                         this.model.RelationItems = f.RelationItems;
-                        if (this.model.RelationItems)
+
+                        if (this.model.FieldType.Type == 'RelationLookup') {
+                            this.model.RelationItem = f.RelationItems[0];
+                            this.model.RelationItems = [];
+                        }
+
+                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
+
                             this.model.RelationItems.forEach(r => {
                                 let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
                                 if (r.Object == null || r.Object == '')
@@ -131,108 +140,121 @@ export class FieldTypeForm implements OnInit, OnChanges {
                                 });
                             });
 
+                            let clone = _.cloneDeep(this.model.RelationItems);
+                            if (this.model.RelationItems != null && this.model.RelationItems.length) {
+                                for (let i = 0; i < this.model.RelationItems.length; i++) {
+                                    let item = this.model.RelationItems[i];
+                                    let lastItem = i > 0 ? this.model.RelationItems[i - 1] : null;
 
-                        let clone = _.cloneDeep(this.model.RelationItems);
-                        if (this.model.RelationItems != null && this.model.RelationItems.length) {
-                            for (let i = 0; i < this.model.RelationItems.length; i++) {
-                                let item = this.model.RelationItems[i];
-                                let lastItem = i > 0 ? this.model.RelationItems[i - 1] : null;
+                                    if (i == this.model.RelationItems.length - 1) {
+                                        //last item is for final right-side selection only, remove after load
+                                        lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                                        //console.log('last item on load');
+                                        //console.log(lastItem);
+                                        this.changeRefType(lastItem, lastItem.selectedRelationItemID).
+                                            then(() => this.changeRel(lastItem))
+                                            .then(() => {
+                                                lastItem.DisplayFields.forEach(d => {
+                                                    let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
-                                if (i == this.model.RelationItems.length - 1) {
-                                    //last item is for final right-side selection only, remove after load
-                                    lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
-                                    //console.log('last item on load');
-                                    //console.log(lastItem);
-                                    this.changeRefType(lastItem, lastItem.selectedRelationItemID).
-                                        then(() => this.changeRel(lastItem))
-                                        .then(() => {
-                                            lastItem.DisplayFields.forEach(d => {
-                                                let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
-
-                                                if (item) {
-                                                    d.Show = true;
-                                                    d.DisplayOrder = item.DisplayOrder;
-                                                    d.FilterValue = item.Filter;
-                                                    d.OverrideDisplayName = item.OverrideDisplayName;
-                                                    d.SortOrder = item.SortOrder;
-                                                }
+                                                    if (item) {
+                                                        d.Show = true;
+                                                        d.DisplayOrder = item.DisplayOrder;
+                                                        d.FilterValue = item.Filter;
+                                                        d.OverrideDisplayName = item.OverrideDisplayName;
+                                                        d.SortOrder = item.SortOrder;
+                                                    }
+                                                })
                                             })
-                                        })
-                                        .then(() => this.deleteRelation(this.model.RelationItems[i]));
-                                    //.then(() => this.model.RelationItems.pop());
-                                    break;
-                                }
+                                            .then(() => this.deleteRelation(this.model.RelationItems[i]));
+                                        //.then(() => this.model.RelationItems.pop());
+                                        break;
+                                    }
 
-                                if (lastItem == null)
-                                    this.changeRefType(item);
-                                else
-                                    this.changeRefType(item)
-                                        .then(() => {
-                                            lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
-                                        })
-                                        .then(() => this.changeRel(lastItem))
-                                        .then(() => {
-                                            // console.log('load display fields');
+                                    if (lastItem == null)
+                                        this.changeRefType(item);
+                                    else
+                                        this.changeRefType(item)
+                                            .then(() => {
+                                                lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                                            })
+                                            .then(() => this.changeRel(lastItem))
+                                            .then(() => {
+                                                // console.log('load display fields');
 
-                                            //console.log(lastDisplayFields);
-                                            //console.log(lastItem.DisplayFields);
-                                            lastItem.DisplayFields.forEach(d => {
-                                                let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
+                                                //console.log(lastDisplayFields);
+                                                //console.log(lastItem.DisplayFields);
+                                                lastItem.DisplayFields.forEach(d => {
+                                                    let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
-                                                if (item) {
-                                                    d.Show = true;
-                                                    d.DisplayOrder = item.DisplayOrder;
-                                                    d.FilterValue = item.Filter;
-                                                    d.OverrideDisplayName = item.OverrideDisplayName;
-                                                    d.SortOrder = item.SortOrder;
-                                                }
+                                                    if (item) {
+                                                        d.Show = true;
+                                                        d.DisplayOrder = item.DisplayOrder;
+                                                        d.FilterValue = item.Filter;
+                                                        d.OverrideDisplayName = item.OverrideDisplayName;
+                                                        d.SortOrder = item.SortOrder;
+                                                    }
 
+                                                });
+
+                                                let r = lastItem.relationItems.find(f => f.value == lastItem.selectedRelationItemID);
+                                                if (r)
+                                                    item.displayValue = r.label;
                                             });
-
-                                            let r = lastItem.relationItems.find(f => f.value == lastItem.selectedRelationItemID);
-                                            if (r)
-                                                item.displayValue = r.label;
-                                        });
+                                }
                             }
                         }
 
-
-                        //this.model.RelationItems.forEach(r => {
-                        //    r.selectedRelationItemID = r.IntersectType + '|' + r.Object + '|' + r.ObjectID;
-                        //    this.changeRefType(r, r.selectedRelationItemID)
-                        //        ;//.then(() => this.changeRel(r));
-                             
-                        //    //this.changeRefType(r)
-                        //    //    .then(() => this.changeRel(r))
-                        //    //    .then(() => {
-                        //    //        let i = r.relationItems.find(i => i.value == r.selectedRelationItemID);
-                        //    //        //console.log('relation item');
-                        //    //        //console.log(r);
-                        //    //        //console.log(i);
-                        //    //        if (i)
-                        //    //            r.displayValue = i.label;
-                        //    //        //r.displayValue = r.relationItems.find(i => i.value == r.selectedRelationItemID).label;
-                                   
-                        //    //    });
-                        //});
-
-                        this.model.FusionItems = f.FusionItems; 
+                        this.model.FusionItems = f.FusionItems;
 
 
-                        if (this.model.FieldType.Type == 'RelationLookup') {
+                        if (this.model.FieldType.Type == 'ComplexRelationLookup') {
                             this.model.RelationItems.forEach(r => {
                                 let s = [];
                                 for (let i = 1; i <= r.DisplayFields.length; i++) {
-                                    r.DisplayFields[i-1].DisplayOrder = i;
-                                    s.push({ id: i , text: i  });
+                                    r.DisplayFields[i - 1].DisplayOrder = i;
+                                    s.push({ id: i, text: i });
                                 }
                                 r.SortOrderList = s;
-                                
+
                             });
                             this.relationItemCount = this.model.RelationItems.length;
-                            //console.log(this.relationItemCount);
                         }
 
+                        if (this.model.FieldType.Type == 'RelationLookup') {
+
+                            let intersect = this.lookups.IntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.IntersectType.toString());
+                            let displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
+
+                            this.model.RelationItem.selectedRelationItemID = intersect.value;
+
+                            let s = [];
+                            for (let i = 1; i <= this.model.RelationItem.DisplayFields.length; i++) {
+                                this.model.RelationItem.DisplayFields[i - 1].DisplayOrder = i;
+                                s.push({ id: i, text: i });
+                            }
+                            this.model.RelationItem.SortOrderList = s;
+
+                            this.changeLegacyRef()
+                                .then(() => {
+                                    let child = this.childIntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.ChildIntersectType.toString());
+                                    if (child)
+                                        this.model.RelationItem.selectedChildIntersectType = child.value;
+                                })
+                                .then(() => this.changeLegacyChild())
+                                .then(() => {
+
+                                    this.model.RelationItem.DisplayFields.forEach(d => {
+                                        let f = displayFields.find(i => i.value == d.value);
+
+                                        if (f) {
+                                            d.Show = f.Show;
+                                            d.FilterValue = f.FilterValue;
+                                            d.SortOrder = f.SortOrder;
+                                        }
+                                    });
+                                });
+                        }
                     }
                 })
                 .then(() => {
@@ -249,6 +271,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 .then(d => {
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
+                    this.model.FieldType.Type = 'Date';
                 })
                 .then(() => this.isLoading = false);;
         }
@@ -260,6 +283,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
             case 'lookup':
                 promises.push(this.loadTokens(this.model.FieldType.LookupObjectType,this.model.FieldType.LookupObjectID));                
             case 'fusionlookup':
+                this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
                     this.model.FusionItems.forEach(i => {
                         promises.push(
@@ -268,7 +292,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                             );
                     });
                 break;
-            case 'relationlookup':
+            case 'complexrelationlookup':
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
                     r.DisplayFields = [];
@@ -277,7 +301,20 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     r.ObjectID = this.objectID;
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
-                    console.log(this.lookups);
+                    //console.log(this.lookups);
+                }
+                break;
+            case 'relationlookup':
+                this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
+                if (this.model.RelationItem == null) {
+                    let r = new FieldTypeRelationItemEditorModel();
+                    r.DisplayFields = [];
+                    r.ReferenceType = 1;
+                    r.Object = this.objectType;
+                    r.ObjectID = this.objectID;
+                    this.model.RelationItem = r;
+                    this.relationItemCount = 1;
+                    //console.log(this.lookups);
                 }
                 break;
             default:
@@ -374,20 +411,11 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
         
     private onSubmit(): void {
-        if (this.model.FieldType.Type == 'RelationLookup') {
-            this.model.FieldType.Type = 'ComplexRelationLookup';
-        }
 
         if (this.model.FieldType.Type == 'ComplexRelationLookup') {
             let r = new FieldTypeRelationItemEditorModel();
             let last = _.last(this.model.RelationItems);
             let i = last.relationItems.find(f => f.value == last.selectedRelationItemID);
-
-            //console.log('save items');
-            //console.log(r);
-            //console.log(last);
-            //console.log(i);
-
                 
             if (i) {
                 r.IntersectType = i.IntersectTypeID;
@@ -399,19 +427,20 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 this.model.RelationItems.push(r);
             }
         }
-        //    this.model.RelationItems.forEach(r => {
-        //        if (r.selectedRelationItemID) {
-        //            let f = r.relationItems.find(i => i.value == r.selectedRelationItemID);
-        //            if (f != null) {
-        //                //r.IntersectType = f.IntersectTypeID;
-        //                r.IntersectTypeID = f.IntersectTypeID;
-        //                r.Object = f.TargetType;
-        //                r.ObjectID = f.TargetTypeID;
-        //            }
-        //        }
-        //    });
-        //}
 
+
+        if (this.model.FieldType.Type == 'RelationLookup') {
+            if (this.model.RelationItem.ReferenceType.toString() != '1' && this.model.RelationItem.selectedChildIntersectType != null)
+                this.model.RelationItem.ChildIntersectType = parseInt(this.model.RelationItem.selectedChildIntersectType.split('|')[0]);
+            if (this.model.RelationItem.selectedRelationItemID != null) {
+                let params = this.model.RelationItem.selectedRelationItemID.split('|');
+                this.model.RelationItem.ObjectID = parseInt(params[2]);
+                this.model.RelationItem.Object = params[1];
+                if (this.model.RelationItem.IntersectType == null)
+                    this.model.RelationItem.IntersectType = parseInt(params[0]);
+
+            }
+        }
 
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
@@ -434,8 +463,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
             });
         }
         this.isLoading = true;
-        //console.log('save model:');
-        //console.log(this.model);
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
@@ -467,8 +494,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
-        console.log('changeRefType()');
-        console.log(item);
+        //console.log('changeRefType()');
+        //console.log(item);
 
         if (item.IntersectType == null)
             item.IntersectType = parseInt(item.selectedRelationItemID.split('|')[0]);
@@ -541,6 +568,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
             let id = parseInt(params[2]);
             let type = params[1];
             let intersectType = parseInt(params[0]);
+            item.DisplayFields = [];
             return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
                 .then(r => {
                     //console.log('changeRel()');
@@ -596,13 +624,87 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     deleteRelation(item: FieldTypeRelationItemEditorModel) {
-
         //only last item can be deleted
         this.model.RelationItems.pop();
         this.relationItemCount = this.model.RelationItems.length;
     }
 
-    changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel) {
-       // console.log(item);
+    changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel, parent: FieldTypeRelationItemEditorModel) {
+        let other = parent.DisplayFields.find(f => f.DisplayOrder == item.DisplayOrder && f.value != item.value);
+        if (other)
+            other.DisplayOrder = null;
+    }
+
+    changeLegacyRef(): Promise<any> {
+
+        this.childIntersectDisabled = (this.model.RelationItem.ReferenceType.toString() || '1') == '1';
+        this.model.RelationItem.DisplayFields = [];
+        if (this.model.RelationItem.selectedRelationItemID != null) {
+            let params = this.model.RelationItem.selectedRelationItemID .split('|');
+
+            this.model.RelationItem.IntersectType = parseInt(params[0]);
+            this.model.RelationItem.Object = params[1];
+            this.model.RelationItem.ObjectID = parseInt(params[2]);
+        }
+
+        if (this.model.RelationItem.IntersectType != null && !this.childIntersectDisabled) {
+            this.childIntersectsLoading = true;
+            return this.fieldsService.getRelationLookupChildIntersectTypes(this.model.RelationItem.IntersectType)
+                .then(r => {
+                    this.childIntersectTypes = r;
+                    this.childIntersectsLoading = false;
+                });
+        } else if (this.childIntersectDisabled) {
+            return this.changeLegacyChild();
+        } else return Promise.resolve();
+    }
+
+    changeLegacyChild(): Promise<any> {
+        console.log(this.model.RelationItem);
+
+
+        let intersectType = this.model.RelationItem.IntersectType;
+        let type = this.model.RelationItem.Object;
+        let id = this.model.RelationItem.ObjectID;
+
+        if (this.model.RelationItem.ReferenceType.toString() != '1') { //not self ref 
+            let params = this.model.RelationItem.selectedChildIntersectType.split('|');
+            intersectType = parseInt(params[0]);
+            type = params[1];
+            id = parseInt(params[2]);
+        }
+
+        if (intersectType && id && type) {
+            let item = this.model.RelationItem;
+            item.DisplayFields = [];
+            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
+                .then(r => {
+                    r.forEach(i => {
+                        let params = i.value.split('|');
+                        let d = new FieldTypeItemDisplayFieldEditorModel();
+                        d.FieldTypeID = parseInt(params[0]);
+                        d.FieldTypeName = params[1];
+                        d.Show = false;
+                        d.FilterValue = "";
+                        d.SortOrder = null;
+                        d.value = i.value;
+                        let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
+                        if (e != null) {
+                            //console.log('found matching display field');
+                            e.Show = true;
+                            e.value = i.value;
+                        } else
+                            item.DisplayFields.push(d);
+                    });
+
+                    let s = [];
+                    for (let i = 1; i <= item.DisplayFields.length; i++) {
+                        item.DisplayFields[i - 1].DisplayOrder = i;
+                        s.push({ id: i, text: i });
+                    }
+                    item.SortOrderList = s;
+                });
+        } else return Promise.resolve();
     }
 }
+

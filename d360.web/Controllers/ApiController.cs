@@ -3388,6 +3388,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 return "";
             };
 
+            var pos = position;
             fields.ForEach(i => {
                 ComplexColumnModel c = null;
                 var columnName = "";
@@ -3403,29 +3404,29 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
                         if (ft == null)
                         {
-                            displayColumn = $"F{position}.FormattedValue";
+                            displayColumn = $"F{pos}.FormattedValue";
                         }
                         else
                         {
-                            displayColumn = $"case when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end";
+                            displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
                         }
 
                         c = new ComplexColumnModel
                         {
                             DisplayColumn = displayColumn,
-                            SortColumn = $"F{position}.FormattedValue",
+                            SortColumn = $"F{pos}.FormattedValue",
                             datafield = columnName,
                             text = (ft != null) ? ft.FriendlyName : columnName
                         };
                         setColumnTypeInfo(ft, i, c);
-                        join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = 'Intersect' and F{position}.ObjectID = {intersectIDColumn}"; 
+                        join.JoinStatement += $" left join FieldWithRelation F{pos} on F{pos}.FieldTypeID = {i.FieldTypeID} and F{pos}.ObjectType = 'Intersect' and F{pos}.ObjectID = {intersectIDColumn}"; 
                     }
                     else
                     {
                         c = new ComplexColumnModel
                         {
-                            DisplayColumn = $"A{position}.{i.FieldTypeName}",
-                            SortColumn = $"A{position}.{i.FieldTypeName}",
+                            DisplayColumn = $"A{pos}.{i.FieldTypeName}",
+                            SortColumn = $"A{pos}.{i.FieldTypeName}",
                             datafield = i.FieldTypeName,
                             text = i.OverrideDisplayName ?? i.FieldTypeName
                         };
@@ -3441,42 +3442,42 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
                         if (ft == null)
                         {
-                            displayColumn = $"F{position}.FormattedValue";
+                            displayColumn = $"F{pos}.FormattedValue";
                         }
                         else
                         {
-                            displayColumn = $"case when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' when F{position}.[Type] = 'Lookup' and F{position}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{position}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{position}.LookupObjectType + '\" data-id=\"' + cast(F{position}.Value as varchar) + '\">' + F{position}.FormattedValue + '</a>' else F{position}.FormattedValue end";
+                            displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
                         }
 
                         c = new ComplexColumnModel
                         {
                             DisplayColumn = displayColumn,
-                            SortColumn = $"F{position}.FormattedValue",
+                            SortColumn = $"F{pos}.FormattedValue",
                             datafield = columnName,
                             text = (ft != null) ? ft.FriendlyName : columnName
                         };
                         setColumnTypeInfo(ft, i, c);
-                        join.JoinStatement += $" left join FieldWithRelation F{position} on F{position}.FieldTypeID = {i.FieldTypeID} and F{position}.Object = {objColumn} and F{position}.ObjectID = {objIDColumn}";
+                        join.JoinStatement += $" left join FieldWithRelation F{pos} on F{pos}.FieldTypeID = {i.FieldTypeID} and F{pos}.ObjectType = {objColumn} and F{pos}.ObjectID = {objIDColumn}";
                     }
                     else
                     {
                         switch (i.Object)
                         {
                             case "ArtifactType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{pos}.ID as varchar) + '\">' + A{pos}.{i.FieldTypeName} + '</a>'";
                                 break;
                             case "FusionAttributeType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{pos}.ID as varchar) + '\">' + A{pos}.{i.FieldTypeName} + '</a>'";
                                 break;
                             default:
-                                displayColumn = $"A{position}.{i.FieldTypeName}";
+                                displayColumn = $"A{pos}.{i.FieldTypeName}";
                                 break;
                         }
 
                         c = new ComplexColumnModel
                         {
                             DisplayColumn = displayColumn,
-                            SortColumn = $"A{position}.{i.FieldTypeName}",
+                            SortColumn = $"A{pos}.{i.FieldTypeName}",
                             datafield = i.FieldTypeName,
                             text = i.OverrideDisplayName ?? i.FieldTypeName
                         };
@@ -3490,6 +3491,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     if (count > 0) c.datafield += count;
                     columnModels.Add(c);
                 }
+                pos++;
             });
         }
 
@@ -3585,7 +3587,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                             if (i == 0)
                                 join.WhereStatement = $"I{i}.ID = {id}";
                             break;
-                            #endregion
+                        #endregion
+                        default:
+                            continue;
                     }
 
                     loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, i);

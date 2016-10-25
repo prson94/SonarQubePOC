@@ -452,6 +452,9 @@ SELECT	'#Admin' as MenuID,
             var message = "";
             try
             {
+                if (string.IsNullOrWhiteSpace(item.Name))
+                    throw new Exception("Folder name cannot be empty");
+
                 var deleteExisting = Company.Query<SiteNav>(@"with s as
                 (
 	                select * from sitenavflat where objectid = @ObjectID and object = @Object
@@ -549,6 +552,8 @@ SELECT	'#Admin' as MenuID,
             var message = "";
             try
             {
+                if (string.IsNullOrWhiteSpace(model.Folder.Name))
+                    throw new Exception("Folder name cannot be empty.");
                 model.Folder.SortOrder = 9999;
                 var folder = Company.SiteNav.Add(model.Folder);
                 Company.SaveChanges();
@@ -647,6 +652,8 @@ SELECT	'#Admin' as MenuID,
             var message = "";
             try
             {
+                if (string.IsNullOrWhiteSpace(name))
+                    throw new Exception("name cannote be empty.");
                 var siteNav = Company.GetById<SiteNav>(id);
                 if (siteNav == null)
                     throw new Exception($"Folder Id ${id} not found.");

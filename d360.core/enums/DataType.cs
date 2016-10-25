@@ -43,7 +43,7 @@ namespace d360.core
         Attribute,
         [Description("Filtered Lookup")]//, ReadOnly(true)]
         FilteredLookup,
-        [Description("Complex Relation Lookup"), ReadOnly(true)]
+        [Description("Complex Relation Lookup")]//, ReadOnly(true)]
         ComplexRelationLookup
     }
 

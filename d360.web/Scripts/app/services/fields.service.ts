@@ -102,12 +102,19 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
-    getReferenceTypes(): SelectItem[] {
+    getFusionReferenceTypes(): SelectItem[] {
         return [
             { label: 'Self Reference', value: '1' },
             { label: 'Parent Reference', value: '2' },
             { label: 'Child Reference', value: '3' },
             { label: 'Relationship Reference', value: '4' },
+        ];
+    }
+
+    getReferenceTypes(): SelectItem[] {
+        return [
+            { label: 'Self Reference', value: '1' },
+            { label: 'Child Reference', value: '2' },
         ];
     }
 

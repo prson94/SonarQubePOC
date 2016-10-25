@@ -35,7 +35,7 @@ export class FieldTypeEditorModel {
     FieldType: FieldType;
     FusionItems: FieldTypeFusionItemEditorModel[] = new Array<FieldTypeFusionItemEditorModel>();
     RelationItems: FieldTypeRelationItemEditorModel[] = [];
-
+    RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
     LookupTokens: SelectItem[] = new Array<SelectItem>();
 
@@ -116,6 +116,7 @@ export class FieldTypeRelationItemEditorModel {
 
     SortOrderList: any[] = [];
     selectedRelationItemID: string;
+    selectedChildIntersectType: string;
     relationItems: any[];
     relationsLoading = false;
     displayValue: string;

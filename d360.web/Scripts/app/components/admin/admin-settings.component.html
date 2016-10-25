@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col s12">
-                                        <button pButton type="button" label="Save" (click)="action('saveEdit')"></button>
+                                        <button pButton type="button" label="Save" (click)="action('saveEdit')" [disabled]="selection == null || selection.Name == null || selection.Name == '' || folderItems == null || folderItems.length < 1"></button>
                                         <button pButton type="button" label="Cancel" (click)="action('cancelEdit')"></button>
                                     </div>
                                 </div>
@@ -216,7 +216,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col s12">
-                                        <button pButton type="button" label="Save" (click)="action('save')"></button>
+                                        <button pButton type="button" label="Save" (click)="action('save')" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
                                         <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
                                     </div>
                                 </div>

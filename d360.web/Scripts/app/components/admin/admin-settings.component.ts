@@ -287,13 +287,15 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
         if (this.selection == null || this.selection.ID == null) {
             return this.siteMenuService.getAvailableItems()
-                .then(() => {
+                .then(r => {
+                    this.availableItems = r;
                     this.formIsLoading = false;
                 });
         } else {
 
             return this.siteMenuService.getAvailableItems()
                 .then(r => {
+                    console.log(r);
                     this.availableItems = r;
                 })
                 .then(() => this.siteMenuService.getSiteNavFolderItems(this.selection.ID))
