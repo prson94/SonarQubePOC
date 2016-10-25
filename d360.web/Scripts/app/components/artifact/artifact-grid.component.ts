@@ -39,16 +39,9 @@ import { StringConstants } from '../../static/string-constants';
                                     <a (click)="selectArtifact(item)">{{item.Name}}</a>
                                 </template>
                             </p-column>
-                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">                                
+                            <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">                                                                
                                 <template let-item="rowData" pTemplate type="body">
-                                    <span [ngSwitch]="columnDataType(column)">
-                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
-                                        <span *ngSwitchCase="'bool'">
-                                            <i *ngIf="item[column.datafield]" class="fa fa-check enabled" title="True"></i>
-                                            <i *ngIf="!item[column.datafield]" class="fa fa-times disabled" title="False"></i>
-                                        </span>
-                                        <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>                                        
-                                    </span>
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
                                 </template>
                             </p-column>
                             <p-column [style]="{width:'40px'}">
@@ -82,7 +75,7 @@ import { StringConstants } from '../../static/string-constants';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" [objectType]="'Artifact'" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
@@ -261,13 +254,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getData();
     }
 
-    private columnDataType(column: GridColumn): string {
+    /*private columnDataType(column: GridColumn): string {
         var fields = this.fields.filter(x => x.name == column.datafield);
 
         if (fields.length > 0)
             return fields[0].type;
         return 'string';
-    }
+    }*/
 }
 
 

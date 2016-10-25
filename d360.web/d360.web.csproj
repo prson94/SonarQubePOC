@@ -1359,6 +1359,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />

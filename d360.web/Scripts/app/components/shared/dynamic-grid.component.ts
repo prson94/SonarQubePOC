@@ -18,14 +18,7 @@ import { BaseComponent } from '../shared/base.component';
                     <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;editItemClick.emit(selected)" [(selection)]="selected" >                                                                       
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable" [filter]="!showSimpleFilter">
                             <template let-item="rowData" pTemplate type="body">
-                                <span [ngSwitch]="columnDataType(column)">
-                                    <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
-                                    <span *ngSwitchCase="'bool'">
-                                        <i *ngIf="item[column.datafield]" class="fa fa-check enabled" title="True"></i>
-                                        <i *ngIf="!item[column.datafield]" class="fa fa-times disabled" title="False"></i>
-                                    </span>
-                                    <span *ngSwitchDefault>{{item[column.datafield]}}</span>
-                                </span>
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
@@ -144,15 +137,5 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
                 this.showEditor = false;                
                 this.getData();                
             });
-    }
-
-    columnDataType(column: GridColumn) : string {
-        var fields = this.fields.filter(x => x.name == column.datafield);
-
-        if (fields.length > 0)
-            return fields[0].type;
-        return 'string';
-    }
+    }    
 }
-
-

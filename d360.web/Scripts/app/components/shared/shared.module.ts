@@ -43,6 +43,7 @@ import { DeleteForm } from './delete.form';
 import { DynamicFieldComponent } from './dynamic-field.component';
 import { DynamicGridComponent } from './dynamic-grid.component';
 import { DynamicEditorComponent } from './dynamic-editor.component';
+import { DynamicFieldValueComponent } from './dynamic-field-value.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { FieldDefinitionComponent } from './field-definition.component';
@@ -86,6 +87,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DeleteForm,
         DynamicEditorComponent,
         DynamicFieldComponent,
+        DynamicFieldValueComponent,
         DynamicGridComponent,
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
@@ -130,6 +132,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DeleteForm,
         DynamicEditorComponent,
         DynamicFieldComponent,
+        DynamicFieldValueComponent,
         DynamicGridComponent,
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
