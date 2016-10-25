@@ -50,8 +50,9 @@ export class UriBasedService extends BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
+                
         return this.http
-            .post(uri, 'json=' + JSON.stringify(item), { headers: headers })
+            .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
@@ -63,7 +64,7 @@ export class UriBasedService extends BaseService {
         });
         
         return this.http
-            .put(uri, 'json=' + JSON.stringify(item), { headers: headers })
+            .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);

@@ -46,7 +46,7 @@ export class BaseService {
         if (file != undefined) {
             let form = new FormData();
 
-            form.append('json', JSON.stringify(item));
+            form.append('json', encodeURIComponent(JSON.stringify(item)));
             form.append('file', file);
 
             return http
@@ -61,7 +61,7 @@ export class BaseService {
         });
 
         return http
-            .post(`form/dynamicedit/create/${type}`, 'json=' + JSON.stringify(item), { headers: headers })
+            .post(`form/dynamicedit/create/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
@@ -72,7 +72,7 @@ export class BaseService {
         if (file != undefined) {
             let form = new FormData();
 
-            form.append('json', JSON.stringify(item));
+            form.append('json', encodeURIComponent(JSON.stringify(item)));
             form.append('file', file);
 
             return http
@@ -87,7 +87,7 @@ export class BaseService {
         });
 
         return http
-            .put(`form/dynamicedit/edit/${type}`, 'json=' + JSON.stringify(item), { headers: headers })
+            .put(`form/dynamicedit/edit/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);

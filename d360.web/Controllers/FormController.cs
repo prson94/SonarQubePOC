@@ -886,7 +886,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = taxonomyTypeID;
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.Status = (workflowEnabled) ? "Draft" : form["Status"];
 
@@ -1362,7 +1362,7 @@ namespace d360.web.Controllers
                 // Static fields
                 model.ArtifactTypeID = typeID;
                 model.TaxonomyTypeID = parseIntField(form, "TaxonomyTypeID");
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
@@ -2335,7 +2335,7 @@ namespace d360.web.Controllers
 
                 var a = new AttributeTypeCategory
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description")
                 };
 
@@ -2445,7 +2445,7 @@ namespace d360.web.Controllers
                 if (!Company.HasPermission(SystemObjects.AttributeTypeCategory, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<AttributeTypeCategory>(model);
@@ -3154,7 +3154,7 @@ namespace d360.web.Controllers
                 var a = new Domain
                 {
                     DomainTypeID = typeID,
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     EnforceParentItemSelection = false,
                     DomainGroupID = parseIntField(form, "DomainGroupID"),
@@ -4222,7 +4222,7 @@ namespace d360.web.Controllers
                 {
                     Action = parseTextField(form, "Action"),
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     TemplateBody = parseTextField(form, "TemplateBody"),
                     TemplateSubject = parseTextField(form, "TemplateSubject")
                 };
@@ -4314,7 +4314,7 @@ namespace d360.web.Controllers
 
                 model.Action = parseTextField(form, "Action");
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.TemplateBody = parseTextField(form, "TemplateBody");
                 model.TemplateSubject = parseTextField(form, "TemplateSubject");
 
@@ -6121,7 +6121,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     IntervalType = (JobIntervalType)Enum.Parse(typeof(JobIntervalType), form["IntervalType"]),
                     Interval = parseIntField(form, "Interval"),
                     Manual = parseBooleanField(form, "Manual"),
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     FusionOwners = ownerArtifacts
                 };
 
@@ -6245,7 +6245,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 model.Enabled = parseBooleanField(form, "Enabled");
                 model.LockPromotedItems = parseBooleanField(form, "LockPromotedItems");
                 model.Manual = parseBooleanField(form, "Manual");
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.IntervalType = (JobIntervalType)Enum.Parse(typeof(JobIntervalType), form["IntervalType"]);
                 model.Interval = parseIntField(form, "Interval");
                 model.ForceRefresh = parseBooleanField(form, "ForceRefresh");
@@ -8904,7 +8904,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var model = new FusionType
                 {
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name", null, true)
+                    Name = parseTextField(form, "Name")
                 };
 
                 Company.Add<FusionType>(model);
@@ -9049,7 +9049,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
 
                 Company.Update<FusionType>(model);
 
@@ -9211,7 +9211,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     FusionTypeID = typeID,
                     ParentID = parentID,
-                    Name = parseTextField(form, "Name", null, true)
+                    Name = parseTextField(form, "Name")
                 };
 
                 Company.Add<FusionAttributeType>(model);
@@ -9348,7 +9348,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 if (!Company.HasPermission(SystemObjects.FusionType, model.FusionTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
 
                 Company.Update<FusionAttributeType>(model);
 
@@ -9556,7 +9556,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 var a = new IntersectRole
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description", null, false)
                 };
 
@@ -9651,7 +9651,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 if (!Company.HasPermission(SystemObjects.IntersectRole, model.ID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description", null, false);
 
                 Company.Update<IntersectRole>(model);
@@ -10108,7 +10108,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 var a = new Group
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     PrimaryOwnerResourceID = primaryOwnerResourceID,
                     SecondaryOwnerResourceID = secondaryOwnerResourceID
@@ -10391,7 +10391,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var primaryOwnerResourceID = parseIntField(form, "PrimaryOwnerResourceID");
                 var secondaryOwnerResourceID = parseNullableIntField(form, "SecondaryOwnerResourceID");
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.PrimaryOwnerResourceID = primaryOwnerResourceID;
                 model.SecondaryOwnerResourceID = secondaryOwnerResourceID;
@@ -13105,7 +13105,7 @@ from ArtifactType A
 
                 var model = new Policy
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     PolicyTypeID = parseIntField(form, "PolicyTypeID")
                 };
@@ -13233,7 +13233,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.Policy, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<Policy>(model);
@@ -13594,7 +13594,7 @@ from ArtifactType A
 
                 var a = new PolicyTypeClass
                 {
-                    Name = parseTextField(form, "Name", null, true)
+                    Name = parseTextField(form, "Name")
                 };
 
                 Company.Add<PolicyTypeClass>(a);
@@ -13831,7 +13831,7 @@ from ArtifactType A
                 {
                     PolicyTypeID = id,
                     Level = level,
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
@@ -13927,7 +13927,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.PolicyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<PolicyTypeLevel>(model);
@@ -14033,7 +14033,7 @@ from ArtifactType A
 
                 var a = new Predicate
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Inverse = parseTextField(form, "Inverse", null, true),
                     Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
                     IsSystem = false
@@ -14141,7 +14141,7 @@ from ArtifactType A
                 if (!Company.HasPermission(SystemObjects.Predicate, model.ID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Inverse = parseTextField(form, "Inverse", null, true);
 
                 Company.Update<Predicate>(model);
@@ -14723,7 +14723,7 @@ order by    Name
                 {
                     var fileCount = HttpContext.Request.Files.Count;
                     var reportType = parseTextField(form, "ReportType");
-                    var name = parseTextField(form, "Name", null, true);
+                    var name = parseTextField(form, "Name");
                     string powerBIID = string.Empty;
                     string datasetID = string.Empty;
 
@@ -14745,7 +14745,7 @@ order by    Name
 
                     var model = new Report
                     {
-                        Name = parseTextField(form, "Name", null, true),
+                        Name = parseTextField(form, "Name"),
                         Description = parseTextField(form, "Description"),
                         ObjectType = objectType[0],
                         ObjectID = int.Parse(objectType[1]),
@@ -14942,7 +14942,7 @@ order by    Name
 
                 var fileCount = HttpContext.Request.Files.Count;
                 var reportType = parseTextField(form, "ReportType");
-                var name = parseTextField(form, "Name", null, true);
+                var name = parseTextField(form, "Name");
                 string powerBIID = string.Empty;
                 string datasetID = string.Empty;
 
@@ -15156,7 +15156,7 @@ order by    Name
 
                 var model = new ReportTile
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     CommandText = parseTextField(form, "SqlStatement"),
                     ReportID = parseIntField(form, "ReportID"),
                     ContentAreaNumber = parseIntField(form, "ContentAreaNumber"),
@@ -15291,7 +15291,7 @@ order by    Name
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.CommandText = parseTextField(form, "SqlStatement");
                 model.ContentAreaNumber = parseIntField(form, "ContentAreaNumber");
                 model.ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"]);
@@ -15942,7 +15942,7 @@ order by	D.Name, I.Name";
 
                 var a = new ResponsibilityType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
                     Description = parseTextField(form, "Description")
                 };
@@ -16228,7 +16228,7 @@ order by	D.Name, I.Name";
                     throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
                 }
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<ResponsibilityType>(model);
@@ -16586,7 +16586,7 @@ order by	D.Name, I.Name";
                     a = new Resolution();
 
                     // Static fields
-                    a.Name = parseTextField(form, "Name", null, true);
+                    a.Name = parseTextField(form, "Name");
                     a.Body = parseTextField(form, "Body");
                     a.RuleID = 0;
 
@@ -16648,7 +16648,7 @@ order by	D.Name, I.Name";
                 if (model == null) throw new NotFoundException("resolution");
 
                 // Static fields
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Body = parseTextField(form, "Body");
 
                 Company.Update<Resolution>(model);
@@ -17548,7 +17548,7 @@ order by	D.Name, I.Name";
 
                 var model = new Rule
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     RuleType = ruleType,
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID")
@@ -17661,7 +17661,7 @@ order by	D.Name, I.Name";
                 if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
                 model.RuleDimensionID = parseNullableIntField(form, "RuleDimensionID");
@@ -17772,7 +17772,7 @@ order by	D.Name, I.Name";
 
                 var model = new RuleDimension
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow
@@ -17891,7 +17891,7 @@ order by	D.Name, I.Name";
                 if (!Company.HasPermission(SystemObjects.RuleType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 model.UpdatedBy = Company.CurrentResourceID;
@@ -18338,7 +18338,7 @@ from    [IntersectType] RT
 
                 var a = new StatisticType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                     CheckType = (StatisticCheckType)Enum.Parse(typeof(StatisticCheckType), form["CheckType"]),
                     PartOfScore = parseBooleanField(form, "PartOfScore"),
@@ -18446,7 +18446,7 @@ from    [IntersectType] RT
                 if (!Company.HasPermission(SystemObjects.StatisticType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.PartOfScore = parseBooleanField(form, "PartOfScore");
                 model.Score = parseIntField(form, "Score");
@@ -18561,7 +18561,7 @@ from    [IntersectType] RT
 
                 var model = new SurveyType
                 {
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Object = ot.ToString(),
                     ObjectID = oid,
                     ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1)
@@ -18657,7 +18657,7 @@ from    [IntersectType] RT
                 var model = Company.GetById<SurveyType>(id);
                 if (model == null) throw new NotFoundException("survey type");
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
 
                 Company.Update<SurveyType>(model);
@@ -19048,7 +19048,7 @@ order by TextPath
 
                 // Static fields
                 a.TaxonomyTypeID = typeID;
-                a.Name = parseTextField(form, "Name", null, true);
+                a.Name = parseTextField(form, "Name");
                 a.Description = parseTextField(form, "Description");
 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
@@ -19168,7 +19168,7 @@ order by TextPath
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 // Static fields
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 model.ParentID = parseIntField(form, "ParentID");
                 if (model.ParentID == 0) model.ParentID = null;
@@ -19580,7 +19580,7 @@ order by TextPath
 
                 var a = new TaxonomyTypeClass
                 {
-                    Name = parseTextField(form, "Name", null, true)
+                    Name = parseTextField(form, "Name")
                 };
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(a);
@@ -19680,7 +19680,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyTypeClass, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
 
                 Company.SaveOrUpdate<TaxonomyTypeClass>(model);
 
@@ -19837,7 +19837,7 @@ order by TextPath
                 {
                     TaxonomyTypeID = id,
                     Level = level,
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
@@ -19955,7 +19955,7 @@ order by TextPath
                 if (!Company.HasPermission(SystemObjects.TaxonomyType, id, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
                 Company.Update<TaxonomyTypeLevel>(model);
@@ -20080,7 +20080,7 @@ order by TextPath
                 {
                     Action = parseTextField(form, "Action"),
                     Description = parseTextField(form, "Description"),
-                    Name = parseTextField(form, "Name", null, true),
+                    Name = parseTextField(form, "Name"),
                     TemplateBody = parseTextField(form, "TemplateBody")
                 };
 
@@ -20204,7 +20204,7 @@ order by TextPath
 
                 model.Action = parseTextField(form, "Action");
                 model.Description = parseTextField(form, "Description");
-                model.Name = parseTextField(form, "Name", null, true);
+                model.Name = parseTextField(form, "Name");
                 model.TemplateBody = parseTextField(form, "TemplateBody");
 
                 Company.Update<TooltipTemplate>(model);
