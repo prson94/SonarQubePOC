@@ -12,7 +12,7 @@ import * as _ from 'lodash';
                 <header>{{action}} Level</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <form (ngSubmit)="onSubmit()" #levelForm="ngForm">
-                    <div class="row" *ngIf="!isLoading && levels.length > 0">
+                    <div class="row" *ngIf="!isLoading && (taxonomyLevel || levels.length > 0)">
                         <div class="col l6 s12">
                             <div class="FieldName">Name</div>
                             <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomyLevel.Name" style="width: 100%;" #name="ngModel" maxlength="250" /></div>
@@ -38,7 +38,7 @@ import * as _ from 'lodash';
                             <button pButton type="button" (click)="close()" label="Close"></button>
                         </div>                    
                     </div>
-                    <div class="row" *ngIf="!isLoading && levels.length == 0">
+                    <div class="row" *ngIf="!isLoading && !taxonomyLevel && levels.length == 0">
                         <div class="center">The maximum number of levels available for this model have already been allocated.  In order to define new levels you can either increase the maximum available levels for this model or delete an existing level for this model.</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">                        
