@@ -13,12 +13,14 @@ import * as _ from 'lodash';
                     <div class="col s1 center-align">Field:</div>
                     <div class="col s3">                        
                         <select [name]="'field'+i" required [(ngModel)]="filter.dataField" style="width:100%;" #field="ngModel">
+                            <option></option>
                             <option *ngFor="let p of filterColumns" [value]="p.datafield">{{p.text}}</option>
                         </select>
                         <div [hidden]="field.valid || field.pristine">A field is required</div>                                                                        
                     </div>
                     <div class="col s3" [ngSwitch]="typeOfField(filter.dataField)">
                         <select required [name]="'value'+i" [(ngModel)]="filter.value" style="width:100%;" *ngSwitchCase="'dropdownlist'">
+                            <option></option>
                             <option *ngFor="let p of fieldOptions(filter.dataField)" [value]="p">{{p}}</option>
                         </select>
                         <input required maxlength="250" placeholder="Filter value..." [name]="'value'+i" type="text" pInputText *ngSwitchDefault [(ngModel)]="filter.value" style="width: 100%;" />                        
