@@ -38,13 +38,13 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                 </div>   
                 <div class="row" *ngIf="!isLoading && !isOwnershipVisible && !isHistoryVisible && !isManualLoadVisible && !showFusionRules">
-                    <div class="col l2 m12 s12">
+                    <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
                             <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
                         </div>
                     </div>
-                    <div class="col l10 m12 s12">
+                    <div class="col l9 m12 s12">
                         <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">                            
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
