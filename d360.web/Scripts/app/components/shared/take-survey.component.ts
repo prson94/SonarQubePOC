@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { MessagesService, SurveysService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
@@ -7,13 +6,7 @@ import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuesti
 
 @Component({
     selector: 'd3s-take-survey',
-    providers: [SurveysService],
-    styles: [`
-            [type="radio"]:not(:checked), [type="radio"]:checked {
-                position: initial;                 
-                visibility: initial;
-            }
-        `],
+    providers: [SurveysService],    
     template: `
                 <header>Survey - {{surveyType.Name}}</header>
                <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">

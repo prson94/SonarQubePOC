@@ -14,13 +14,7 @@ import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 
 @Component({
-    selector: 'd3s-workflow-raise-issue',
-    styles: [`
-            [type="radio"]:not(:checked), [type="radio"]:checked {
-                position: initial;                 
-                visibility: initial;
-            }
-        `],
+    selector: 'd3s-workflow-raise-issue',    
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">

@@ -23515,3 +23515,11 @@ select:disabled {
 .inactive-tool-icon {
   color: #5c5e60;
 }
+/* materialize css shuts off radio buttons turn them back on*/
+[type="radio"]:not(:checked),
+[type="radio"]:checked {
+  position: relative;
+  visibility: visible;
+  left: auto;
+}
+/* end materialize css shuts off radio buttons turn them back on*/
