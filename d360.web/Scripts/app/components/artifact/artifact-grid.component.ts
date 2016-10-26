@@ -104,7 +104,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         
     searchValue: string = "";
     
-    searchDelayMilliSeconds: number = 1000;
+    searchDelayMilliSeconds: number = 300;
 
     error: any;
     items: any[];

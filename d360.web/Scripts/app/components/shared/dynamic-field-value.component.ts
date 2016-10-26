@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from './base.component';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 
@@ -13,7 +13,8 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 </span>
                 <span *ngSwitchDefault [innerHtml]="fieldValue"></span>                                        
             </span>
-        `
+        `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class DynamicFieldValueComponent extends BaseComponent implements OnInit {       
@@ -36,7 +37,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
 
-    private columnDataType(column: GridColumn): string {        
+    private columnDataType(column: GridColumn): string {      
         var fields = this.fields.filter(x => x.name == column.datafield);
 
         if (fields.length > 0)
