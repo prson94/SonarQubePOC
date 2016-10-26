@@ -123,9 +123,8 @@ export class DynamicEditorComponent extends BaseComponent {
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
                     : new FormControl(url || '');
             }
-            else {         
-                console.log(field.Value);       
-                group[field.FieldName] = new FormControl(field.Value === null ? '' : field.Value, this.getFieldValidators(field));                  
+            else {                                         
+                group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
             }
         });        
         return new FormGroup(group);

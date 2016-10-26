@@ -45,8 +45,7 @@ import * as _ from 'lodash';
                 `
 })
 
-export class PredicatesListComponent extends BaseComponent {
-    error: any;
+export class PredicatesListComponent extends BaseComponent {    
     predicates: Predicate[] = [];
 
     showEditor: boolean = false;
@@ -65,13 +64,11 @@ export class PredicatesListComponent extends BaseComponent {
 
     getPredicates() {
         this.isLoading = true;
-        this.predicatesService
-            .getPredicates()
+        this.predicatesService.getPredicates()
             .then(predicates => {
                 this.predicates = predicates
                 this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            })            
     }
 
     deletePredicate(id: number) {
@@ -79,7 +76,9 @@ export class PredicatesListComponent extends BaseComponent {
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.predicates.splice(this.findPredicateIndex(id), 1);
+                if (result.type != 'error') {
+                    this.predicates = this.predicates.filter(x => x.ID != id);                    
+                }
             });
     }
 
@@ -93,28 +92,12 @@ export class PredicatesListComponent extends BaseComponent {
         if (this.selected == null && this.predicates.length > 0)
             this.selected = this.predicates[0];
     }
-
-    findPredicateIndex(id: number) {
-        var index: number = -1;
-        for (var predicate of this.predicates) {
-            index++;
-            if (predicate.ID == id) return index;
-        }
-    }
-
+    
     savePredicate(event) {
         this.predicatesService.savePredicate(event.item)
             .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID == undefined) {
-                    console.log(event);
-                    event.item.ID = Number(result.id.split('|')[1]);                    
-                    this.predicates[this.predicates.length] = event.item;
-                }
-                else {
-                    this.predicates[this.findPredicateIndex(event.item.ID)] = event.item;
-                }
-                this.selected = event.item;
+                this.showMessageForResult(this.messagesService, result);                                
+                this.getPredicates();                
                 this.showEditor = false;
             });
     }

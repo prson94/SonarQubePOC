@@ -81,6 +81,8 @@ export class DynamicFieldComponent implements OnInit {
 
     get isValid() {        
         if (this.form.controls[this.field.FieldName] == undefined) return true;
+        if (this.form.controls[this.field.FieldName].disabled) return true;;
+
         //look at url... fieldname is different.
         if (this.field.FieldType == "Link")
             return this.form.controls[this.field.FieldName + '_Name'].valid && this.form.controls[this.field.FieldName + '_Url'].valid
@@ -98,6 +100,8 @@ export class DynamicFieldComponent implements OnInit {
     private fieldMessage(field: string, fieldName: string) {        
         if (this.form.controls[field] == undefined) return '';
         var errors = this.form.controls[field].errors;
+
+        if (!errors) return '';
         var message = ""
         if (errors["maxlength"]) {
             message += `${this.field.Name} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
