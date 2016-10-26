@@ -40,7 +40,7 @@ import { BaseComponent } from '../shared/base.component';
     template: `
                 <header>
                     Items {{group?.Name}} Owns
-                    <d3s-tile-actions [hasExport]="false" ></d3s-tile-actions> 
+                    <d3s-tile-actions hasExport="false" hasFilterMode="true" [filterMode]="showFilter" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions> 
                 </header>
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container"><!--left nav-->
@@ -50,7 +50,7 @@ import { BaseComponent } from '../shared/base.component';
                         </div>                        
                     </div>
                     <div class="col l9 s12">       
-                        <d3s-resource-responsibility-grid-component *ngIf="selected != null" [Id]="group?.ID" [type]="'groups'" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-component>
+                        <d3s-resource-responsibility-grid-component [simpleFilter]="showFilter" *ngIf="selected != null" [Id]="group?.ID" [type]="'groups'" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-responsibility-grid-component>
                     </div>                    
                 </div>
 `
@@ -62,7 +62,7 @@ export class GroupResponsibilityComponent extends BaseComponent implements OnCha
     @Input() group: Group = null;
     private items: CountObject[] = new Array<CountObject>();
     private selected: CountObject;
-    
+    private showFilter: boolean = true;
     
     constructor(private groupService: GroupService) { super();}
         
