@@ -6326,7 +6326,11 @@ left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListab
         public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool criticalOnly)
         {
             var sType = type.ToString();
-            var tType = targetType.ToString();
+                        
+            if(targetType == SystemObjects.ResourceType)
+            {
+                targetType = SystemObjects.Resource;
+            }
 
             var joins = "";
             var columns = "";
