@@ -236,9 +236,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private saveTaxonomy(event) {
+        this.isLoading = true;
         this.modelsService.saveModelHierarchy(event.item)
             .then(result => {
+                this.showMessageForResult(this.messagesService, result);
                 this.loadModelHierarchy(this.modelId);
+                this.isLoading = false;
                 this.showEditor = false;
             });
     }
@@ -248,9 +251,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private showAdd() {
-        this.showEditor = true;
-
-        this.selectedParentID = this.selected ? this.selected.data.id : undefined;
+        this.showEditor = true;        
+        this.selectedParentID = this.selected ? this.selected.data.id : undefined;        
         this.selected = null;
     }
     
