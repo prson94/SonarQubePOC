@@ -10,6 +10,7 @@ declare var CurrentResourceID;
     selector: 'd3s-header-actions',
     template: `
                 <ul class="right hide-on-med-and-down">
+                    <li *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
                     <li *ngIf="headerActionsService.showFavorite" style="cursor: pointer"><d3s-header-favorites></d3s-header-favorites></li>
                     <li *ngIf="headerActionsService.showFollow" style="cursor: pointer"><d3s-header-follow></d3s-header-follow></li>
                     <li *ngIf="headerActionsService.showLegacy"><a href="/legacy" title="Go to legacy UI"><i class="fa fa-moon-o"></i></a></li>
@@ -26,6 +27,7 @@ export class HeaderActionsComponent {
     private sub;
     private isAdminUrl = true;
     private uri = "";
+    private hasRaiseIssueButton: boolean = true;
 
     constructor(private headerActionsService: HeaderActionsService, private router: Router) { }
 
@@ -35,6 +37,8 @@ export class HeaderActionsComponent {
                 this.uri = _.trimStart(e.url,'/');
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
             }
+            //dont show raise issue button on raise issue screen or any admin screens            
+            this.hasRaiseIssueButton = (!e.url.toLowerCase().endsWith('workflow/raiseissue') && (e.url.toLowerCase().indexOf('/admin/') == -1));            
         });
     }
 

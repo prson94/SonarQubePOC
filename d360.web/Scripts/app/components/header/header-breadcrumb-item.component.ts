@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit } from '@angular/core';
+﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, Renderer, AfterViewInit } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TypeaheadSearchService, HeaderBreadcrumbService, ModelsService } from '../../services/index';

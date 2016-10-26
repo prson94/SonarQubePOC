@@ -6,11 +6,11 @@ import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
-    template: ` <span class="breadcrumbs">
+    template: ` <div class="breadcrumbs">
                  <span *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{active:last}">
                     <d3s-header-breadcrumb-item [breadcrumb]="breadcrumb" [lastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
                  </span>                
-                </span>
+                </div>
               `
 })
 
