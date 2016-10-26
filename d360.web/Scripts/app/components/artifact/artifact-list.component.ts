@@ -49,6 +49,9 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
             this.isLoading = true;
+            this.isMetricsVisible = false;
+            this.isWorkflowStatusVisible = false;
+            this.hideSidebarItems();
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
             this.artifactTypeService.getArtifactTypeDetails(artifactTypeId)
