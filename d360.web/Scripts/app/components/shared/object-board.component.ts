@@ -6,13 +6,12 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-object-board',
     template: `
             <div (click)="toggleDetails()" >
-                <header>Board</header>
-                <span class="governance-value">{{commentCount}}</span>
-                <div class="row">
-                    <div class="col s12">
-                        {{lastBoardMessage()}}
-                    </div>
+                <!--header>Board</header-->
+                <div class="governance-value">
+                    {{commentCount}}
+                    <span class="title">Comments</span>
                 </div>
+                <div class="governance-note">{{lastBoardMessage()}}</div>
             </div>            
         `
 })

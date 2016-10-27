@@ -6,11 +6,14 @@ import { ArtifactService, MessagesService } from '../../services/index';
     selector: 'd3s-artifact-status',
     template: `
             <div>
-                <header>Status</header>
+                <!--header>Status</header-->
                 <span *ngIf="!showRequestCertification">
                     <div class="status-value" [ngClass]="{'status-value-certified':isCertified(), 'status-value-review': isUnderReview()}">{{status}}</div>            
-                    <div class="row">
-                        <div class="col s12">&nbsp;<a *ngIf="isDraft() && isWorkflowEnabled" (click)="showRequestCertification=true" style="cursor:pointer">Request Certification</a></div>
+                    <div *ngIf="isDraft() && isWorkflowEnabled">
+                        <a (click)="showRequestCertification=true" style="cursor:pointer">Request Certification</a>
+                    </div>
+                    <div *ngIf="!isDraft() || !isWorkflowEnabled" class="status-note">
+                        Status
                     </div>
                 </span>
                 <span *ngIf="showRequestCertification">

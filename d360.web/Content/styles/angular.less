@@ -278,12 +278,30 @@ div.breadcrumbs{
 
 /* object governance styles*/
 
-.governance-value{
+.status-note,
+.governance-note {
+    font-size: 80%;
+    color: @d3s-gray-7;
+}
+
+.status-value,
+.governance-value {
     font-weight:bold;
-    font-size: 3.5em;
-    padding: 0 5px;
-    cursor: pointer;
+    font-size: 2em;
     color: @d3s-primary-gray;
+    .title {
+        /*font-family: @headings-font-family !important;*/
+        font-size: 75%;
+        text-transform: uppercase;
+        font-weight: 500;
+        color: @d3s-gray-8 !important;
+        background-color: transparent !important;
+        margin-left: 7px;
+    }
+}
+
+.governance-value { 
+    cursor: pointer;
 }
 
 .governance-value-warning{
@@ -301,13 +319,6 @@ div.breadcrumbs{
 
 
 /* artifact status styles*/
-
-.status-value{
-    font-weight:bold;
-    font-size: 3.0em;
-    padding: 0 5px;   
-    color: @d3s-primary-gray;    
-}
 
 .status-value-certified{
     color:@d3s-primary-green;

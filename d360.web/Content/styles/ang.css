@@ -23161,7 +23161,7 @@ nav.top,
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
 d3s-navbar-item > div.router-link-active > span > a {
-  background-color: #efefef;
+  background-color: #efefef !important;
   color: #383127 !important;
 }
 d3s-navbar-item > div .nav-item {
@@ -23348,12 +23348,29 @@ div.breadcrumbs .sep {
 }
 /* end admin page header*/
 /* object governance styles*/
+.status-note,
+.governance-note {
+  font-size: 80%;
+  color: #bababa;
+}
+.status-value,
 .governance-value {
   font-weight: bold;
-  font-size: 3.5em;
-  padding: 0 5px;
-  cursor: pointer;
+  font-size: 2em;
   color: #646464;
+}
+.status-value .title,
+.governance-value .title {
+  /*font-family: @headings-font-family !important;*/
+  font-size: 75%;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #adacac !important;
+  background-color: transparent !important;
+  margin-left: 7px;
+}
+.governance-value {
+  cursor: pointer;
 }
 .governance-value-warning {
   color: #FFB230;
@@ -23366,12 +23383,6 @@ div.breadcrumbs .sep {
 }
 /* end object governance styles*/
 /* artifact status styles*/
-.status-value {
-  font-weight: bold;
-  font-size: 3.0em;
-  padding: 0 5px;
-  color: #646464;
-}
 .status-value-certified {
   color: #02981B;
 }

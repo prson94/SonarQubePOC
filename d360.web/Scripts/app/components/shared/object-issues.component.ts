@@ -6,13 +6,12 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-object-issues',
     template: `
             <div (click)="toggleDetails()" >
-                <header>Issues</header>
-                <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}">{{issueCount}}</div>            
-                <div class="row">
-                    <div class="col s12">
-                        {{lastIssueMessage()}}
-                    </div>
+                <!--header>Issues</header-->
+                <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}">
+                    {{issueCount}}
+                    <span class="title">Issues</span>
                 </div>
+                <div class="governance-note">{{lastIssueMessage()}}</div>
             </div>
         `
 })

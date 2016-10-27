@@ -8,23 +8,20 @@ import { Highcharts } from 'angular2-highcharts';
 @Component({
     selector: 'd3s-object-health',
     template: `
-            <header>Health</header>
-            <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">
-                <div class="row">
-                    <div class="col s12">
-                        <table>
-                            <tr>
-                                <td nowrap>{{scoreValue()}} <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i><i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i></td>                                
-                                <td><chart [options]="smallChart"></chart></td>
-                            </tr>
-                        </table>
-                    </div>                                
-                </div>                
-            </div>
-            <div class="row" *ngIf="!isLoading">
-                <div class="col s12">
-                 {{lastCalculatedMessage()}}
-                </div>
+            <!--header>Health</header-->
+            <table class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">
+                <tr>
+                    <td>
+                        {{scoreValue()}}
+                        <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i>
+                        <i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i>
+                    </td>
+                    <td><chart [options]="smallChart"></chart></td>
+                    <td class="title">&nbsp;</td>
+                </tr>
+            </table>
+            <div *ngIf="!isLoading" class="governance-note">
+                {{lastCalculatedMessage()}}
             </div>
         `,
     providers: [ScoreService],    
@@ -85,32 +82,32 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit, OnCh
 
     private lastCalculatedMessage() {
         if (!this.lastCalculatedDate) {
-            return "Score not yet calculated";
+            return "Governance Score not yet calculated";
         }
         
         var diff = new Date(Date.now() - this.lastCalculatedDate);
 
         var years = diff.getUTCFullYear() - 1970;
 
-        if (years > 0) return "Last calculated " + years + " years ago.";
+        if (years > 0) return "Governance Score last calculated " + years + " years ago.";
         
         var months = diff.getUTCMonth();
 
-        if (months > 0) return "Last calculated " + months + " months ago.";
+        if (months > 0) return "Governance Score last calculated " + months + " months ago.";
         
         var days = diff.getUTCDate() - 1;
                 
-        if (days > 0) return "Last calculated " + days + " days ago.";
+        if (days > 0) return "Governance Score last calculated " + days + " days ago.";
                 
         var hours = diff.getUTCHours();
 
-        if (hours > 0) return "Last calculated " + hours + " hours ago.";
+        if (hours > 0) return "Governance Score last calculated " + hours + " hours ago.";
 
         var minutes = diff.getUTCMinutes();
 
-        if (minutes > 0) return "Last calculated " + minutes + " minutes ago.";
+        if (minutes > 0) return "Governance Score last calculated " + minutes + " minutes ago.";
 
-        return "Last calculated a few seconds ago.";
+        return "Governance Score last calculated a few seconds ago.";
     }
 
     private isTrend(direction: string): boolean{
@@ -147,8 +144,8 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit, OnCh
                         borderWidth: 0,
                         type: 'area',
                         margin: [2, 0, 2, 0],
-                        width: 120,
-                        height: 50,
+                        width: 100,
+                        height: 30,
                         style: {
                             overflow: 'visible'
                         },
