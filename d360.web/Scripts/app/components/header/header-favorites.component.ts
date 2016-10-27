@@ -108,6 +108,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
         if (favs == null)
             return;
         this.active = false;
+        //console.log(this.uri);
         for (let f of favs) {
             if (f.Route == this.uri)
                 this.active = true;

@@ -1,39 +1,39 @@
-﻿<div class="left form-header-info">
-    <h4>{{title}}</h4>
-</div>
+﻿<header>{{title}}</header>
 <div class="clear"></div>
 <div *ngIf="isLoading" style="text-align:center;">
     <i class="fa fa-spinner fa-spin fa-2x"></i>
 </div>
 <div *ngIf="!isLoading">
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName" style="display:block;">Name</div>
-            <input pInputText [(ngModel)]="model.group.Name" type="text" style="width:98%"/>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s6">
-            <div class="FieldName" style="display:block;">Primary Owner</div>
-            <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.PrimaryOwnerResourceID" [style]="{'width':'98%'}"></p-dropdown>
-        </div>
-        <div class="col s6">
-            <div class="FieldName" style="display:block;">Secondary Owner</div>
-            <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.SecondaryOwnerResourceID" [style]="{'width':'98%'}"></p-dropdown>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldName" style="display:block;">Description</div>
-            <p-editor [(ngModel)]="model.group.Description"></p-editor>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <div style="padding-top:10px">
-                <button pButton type="button" label="Save" (click)="save()"></button><button pButton type="button" label="Cancel" (click)="cancel()"></button>
+    <form #groupForm="ngForm" (ngSubmit)="save()">
+        <div class="row">
+            <div class="col s12">
+                <label class="FieldName" style="display:block;" for="name">Name</label>
+                <input pInputText [(ngModel)]="model.group.Name" type="text" style="width:98%" name="name" required />
             </div>
         </div>
-    </div>
+        <div class="row">
+            <div class="col s6">
+                <label class="FieldName" style="display:block;" for="primary">Primary Owner</label>
+                <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.PrimaryOwnerResourceID" [style]="{'width':'98%'}" name="primary" required></p-dropdown>
+            </div>
+            <div class="col s6">
+                <label class="FieldName" style="display:block;" for="secondary">Secondary Owner</label>
+                <p-dropdown [options]="model.resourceList" [(ngModel)]="model.group.SecondaryOwnerResourceID" [style]="{'width':'98%'}" name="secondary"></p-dropdown>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <label class="FieldName" style="display:block;" for="description">Description</label>
+                <p-editor [(ngModel)]="model.group.Description" name="description"></p-editor>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div style="padding-top:10px">
+                    <button pButton type="submit" label="Save" [disabled]="!groupForm.form.valid"></button><button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 

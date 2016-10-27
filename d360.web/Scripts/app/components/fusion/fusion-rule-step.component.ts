@@ -582,6 +582,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
     saveSettings() {
         let action = this.model.RuleStep.Action;
         let s = this.model.RuleStep.Settings;
+        console.log(s);
         switch (action) {
             case 'promote':
                 let promotionItem = this.promotionItems.find(i => i.id == this.selectedPromotionItem);

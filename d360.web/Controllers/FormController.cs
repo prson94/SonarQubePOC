@@ -6934,40 +6934,47 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
 
         [HttpPost, ValidateInput(false),ValidateHttpAntiForgeryToken, Route("PostAddFusionRuleItem")]
-        public JsonResult PostAddFusionRuleItem(FusionRuleItem item)
+        public JsonResult PostAddFusionRuleItem(FusionAddItemModel form)
         {
             try
             {
-                var ruleID = item.RuleID;
+                int ruleID = form.RuleID;
                 var rule = Company.GetById<FusionRule>(ruleID);
+                bool allSelected = form.AllSelected;
+                List<string> fusionAttributes = new List<string>();
+
+                if (!string.IsNullOrEmpty(form.FusionAttributeID))
+                    fusionAttributes = form.FusionAttributeID.Split(',').ToList();
+
+                if(fusionAttributes.Count == 0 && allSelected)
+                {
+                    {
+                        Company.Set<FusionRuleItem>().Add(
+                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
+                            );
+                    }
+                }
+                else
+                {
+                    fusionAttributes.ForEach(fa =>
+                    {
+                        int? fusionAttributeID = null;
+                        if (!string.IsNullOrEmpty(fa))
+                        {
+                            fusionAttributeID = int.Parse(fa);
+                        }
+                        Company.Set<FusionRuleItem>().Add(
+                            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
+                            );
+                    });
+                }
+
                 if (rule != null)
                 {
                     rule.UpdatedBy = Company.CurrentResourceID;
                     rule.UpdatedOn = DateTime.UtcNow;
                 }
 
-                //TODO: handle fusion attribute list
-                //var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-                //if (fusionAttributeIDs.Count == 0)
-                //{
-                //    Company.Set<FusionRuleItem>().Add(
-                //        new FusionRuleItem { RuleID = ruleID, FusionAttributeID = null }
-                //        );
-                //}
-                //else
-                //{
-                //    fusionAttributeIDs.ForEach(fa =>
-                //    {
-                //        int? fusionAttributeID = null;
-                //        if (!string.IsNullOrEmpty(fa))
-                //        {
-                //            fusionAttributeID = int.Parse(fa);
-                //        }
-                //        Company.Set<FusionRuleItem>().Add(
-                //            new FusionRuleItem { RuleID = ruleID, FusionAttributeID = fusionAttributeID }
-                //            );
-                //    });
-                //}
                 Company.SaveChanges();
 
                 return jsonSuccess("Target item(s) successfully created.", "0", ContextList.FusionPromotionRuleItem, "add", HttpStatusCode.Created);

@@ -350,4 +350,12 @@ namespace d360.core.entities
         public int PromotionJobsExecuted { get; set; }
     }
 
+    public class FusionAddItemModel
+    {
+        public int RuleID { get; set; }
+        public bool AllSelected { get; set; }
+        public string FusionAttributeID { get; set; }
+    }
+
+
 }

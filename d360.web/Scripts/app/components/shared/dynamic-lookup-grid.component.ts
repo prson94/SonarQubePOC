@@ -2,7 +2,9 @@
 import { Component, Input, Output, OnInit } from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
-import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.model';
+import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../models/grid-definition.model';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
@@ -11,50 +13,75 @@ import { LookupGrid, GridColumn, GridField } from '../../models/grid-definition.
                <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
                     <p-column *ngFor="let column of data.Columns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
-                                    <span [ngSwitch]="columnDataType(column)">
+                                    <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
+                                        <span *ngSwitchCase="'tooltip'">
+                                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
+                                                <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
+                                            </d3s-tooltip>
+                                        </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
-                                    </span>
+                                    </div>
                          </template>
                     </p-column>                                                                                         
-                </p-dataTable>             
+                </p-dataTable>               
                <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
                     <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
-                                    <span [ngSwitch]="columnDataType(column)">
+                                    <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
+                                        <span *ngSwitchCase="'tooltip'">
+                                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
+                                                <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
+                                            </d3s-tooltip>
+                                        </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
-                                    </span>
+                                    </div>
                          </template>
                     </p-column>                                                                                         
                 </p-dataTable>                                    
                 `
 })
 
-export class DynamicLookupGridComponent {
+export class DynamicLookupGridComponent implements OnInit {
     @Input() data: LookupGrid;
     @Input() hideFooter = false;
     @Input() hideHeader = false;
     @Input() hideFilter = true;
 
-    constructor() {
+    constructor(private router: Router) {
     }
     
+    ngOnInit() {
+        //do this on init to avoid binding to function call
+        this.data.Columns.forEach(c => {
+            c.type = this.columnDataType(c);
+            //console.log(c.type);
+        });
+        
+    }
 
-    private columnDataType(column: GridColumn): string {
+    private columnDataType(column: GridFilterColumn): string {
         var fields = this.data.Fields.filter(x => x.name == column.datafield);
 
+        if (column.datafield == 'Name' || column.datafield == 'TextPath')
+            return 'tooltip';
         if (fields.length > 0)
             return fields[0].type;
         return 'string';
+    }
+
+    navigate(url: string) {
+        //TODO: should attempt to generate dynamically by object/objectid eventually
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 }
 

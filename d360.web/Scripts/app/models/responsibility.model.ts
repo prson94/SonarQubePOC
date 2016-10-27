@@ -29,6 +29,7 @@ export class ResponsibilityItem {
     ContextItems: string;
     ObjectID: number;
     ObjectName: string;
+    ObjectUrl: string;
     ObjectType: string;
     ObjectTypeID: number;
     ObjectTypeName: string;

@@ -440,6 +440,16 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     this.model.RelationItem.IntersectType = parseInt(params[0]);
 
             }
+
+            var displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
+            this.model.RelationItem.DisplayFields = [];
+
+            displayFields.forEach(d => {
+                //only send back fields with values
+                if ((d.FilterValue == null || d.FilterValue == '') && d.Show == false)
+                    return;
+                this.model.RelationItem.DisplayFields.push(d);
+            });
         }
 
         //convert DisplayFields to objects

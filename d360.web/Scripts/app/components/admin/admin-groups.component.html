@@ -36,16 +36,17 @@
             <d3s-group-members [groupId]="selectedRow?.ID" [groupName]="selectedRow?.Name"></d3s-group-members>
         </div>
         <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
-            <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel();" (onSuccess)="formMode = FormMode.Default; load();"></d3s-group-form>
+            <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail">
-            <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel();" (onSuccess)="formMode = FormMode.Default; load();"></d3s-group-form>
+            <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
             <delete-form [uri]="'/form/DeleteGroupByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
-                         (onDeleteSuccess)="confirmDelete()"
+                         (onDeleteSuccess)="confirmDelete($event);"
+                         (onDeleteFail)="errorDelete($event)"
                          (onCancel)="cancel();">
             </delete-form>
         </div>

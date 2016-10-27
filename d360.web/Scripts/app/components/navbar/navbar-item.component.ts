@@ -84,6 +84,7 @@ import { NavBarMode, NavBarItem } from '../../models/nav-bar.model';
 export class NavBarItemComponent implements OnInit {
     @Input() item: NavBarItem;
     @Output() onExpanded = new EventEmitter();
+    @Input() level: number = 0;
 
     constructor(private elementRef: ElementRef) {
     }

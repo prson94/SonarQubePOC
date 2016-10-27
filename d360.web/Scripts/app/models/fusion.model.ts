@@ -292,3 +292,15 @@ export class RelationIntersectType {
     SubjectID: number;
     ObjectID: number;
 }
+
+
+export class AttributeNode {
+    ID: number;
+    ParentID: number;
+    FusionAttributeTypeID: number;
+    Name: string;
+
+    selected: boolean = false;
+    parentType: number = 0;
+    isLoadingChildren: boolean = false;
+}

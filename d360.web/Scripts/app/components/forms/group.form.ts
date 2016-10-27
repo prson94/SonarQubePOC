@@ -4,6 +4,7 @@ import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '
 import { FormEvents, FormHelper } from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
 import { GroupService } from '../../services/group.service';
+import { MessagesService } from '../../services/messages.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -25,7 +26,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     private isLoading = false;
     private initialItem: GroupEditorModel;
 
-    constructor(private groupService: GroupService) {
+    constructor(private groupService: GroupService, private messagesService: MessagesService) {
         this.model = new GroupEditorModel();
         this.model.group = new Group();
     }
@@ -69,7 +70,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
             this.groupService.putGroup(this.model.group)
                 .then(r => {
                     if (r.type == 'confirm') {
-                        this.onSuccess.emit(this.model.group);
+                        this.onSuccess.emit(r);
                     } else if (r.type == 'error') {
                         this.onError.emit(r);
                     }

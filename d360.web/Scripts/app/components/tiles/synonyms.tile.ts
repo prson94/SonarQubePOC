@@ -3,6 +3,8 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 import { Synonym, SynonymItem, SynonymEditModel } from '../../models/object-detail.model';
 import { FormMode, FormHelper } from '../../models/form.model';
 import { BaseComponent } from '../shared/base.component';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 declare var CompanySettings: any;
@@ -22,12 +24,16 @@ declare var CompanySettings: any;
                 <p-column field="ObjectTypeName" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
                 <p-column header="Parent" field="ParentName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
                     <template pTemplate type="body" let-item="rowData">                        
-                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">{{item.ParentName}}</d3s-tooltip>
+                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ParentID" [tooltipType]="'Preview'">
+                            <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
+                        </d3s-tooltip>
                     </template>
                 </p-column>
                 <p-column header="Name" field="Name" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
                     <template pTemplate type="body" let-item="rowData">                        
-                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">{{item.Name}}</d3s-tooltip>
+                        <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" [tooltipType]="'Preview'">
+                            <a (click)="navigate(item.Url)">{{item.Name}}</a>
+                        </d3s-tooltip>
                     </template>
                 </p-column>
                 <p-column field="SubjectArea" [header]="subjectAreaName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
@@ -96,7 +102,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     private subjectAreaName = 'SubjectArea';
     private areSynonymOptionsLoaded: boolean = false;
 
-    constructor(private objectDetailService: ObjectDetailService) {
+    constructor(private objectDetailService: ObjectDetailService, private router: Router) {
         super();
     }
 
@@ -167,5 +173,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending        
         this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);        
+    }
+
+    navigate(url: string) {
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 }

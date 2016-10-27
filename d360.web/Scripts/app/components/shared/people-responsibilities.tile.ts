@@ -3,6 +3,8 @@ import { ResponsibilityItem, IResponsibilityService } from '../../models/respons
 import { FormMessage } from '../../models/form.model';
 import { ResponsibilityService } from '../../services/responsibility.service';
 import { BaseComponent } from '../shared/base.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Router, ActivatedRoute }       from '@angular/router';
 import * as _ from 'lodash';
 
 @Component({
@@ -25,7 +27,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService) {
+    constructor(private responsibilityService: ResponsibilityService, private router: Router) {
         super();
     }
 
@@ -51,6 +53,11 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType, this.showHidden)
             .then(data => {
                 console.log(data);
+                data.forEach(d => {
+                    d.ObjectUrl = SiteUrlHelpers.getObjectUrl(d.ObjectType, d.ObjectID, d.ObjectTypeID);
+                    d.ResponsibleObjectUrl = SiteUrlHelpers.getObjectUrl(d.ResponsibleObjectType, d.ResponsibleObjectID);
+                    d.PrimaryOwnerResourceUrl = SiteUrlHelpers.getObjectUrl('Resource', d.PrimaryOwnerResourceID);
+                });
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
@@ -81,6 +88,10 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
+
+    navigate(url: string) {
+        this.router.navigateByUrl(url);
     }
 }
 

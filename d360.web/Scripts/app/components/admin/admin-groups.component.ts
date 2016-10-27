@@ -6,6 +6,7 @@ import { GroupService } from '../../services/group.service';
 import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../models/group.model';
 import { FormMode } from '../../models/form.model';
 import { Title } from '@angular/platform-browser';
+import { MessagesService } from '../../services/messages.service';
 
 
 @Component({
@@ -21,7 +22,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
-    constructor(private groupService: GroupService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private groupService: GroupService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Groups";
         this.setCommonItems();
@@ -59,7 +60,14 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.formMode = FormMode.Deleting;
     }
 
-    confirmDelete() {
+    confirmDelete(e: any) {
+        this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+        this.formMode = FormMode.Default;
+        this.load();
+    }
+
+    errorDelete(e: any) {
+        this.messagesService.showError('Error', 'An error occurred');
         this.formMode = FormMode.Default;
         this.load();
     }
@@ -70,5 +78,16 @@ export class AdminGroupsComponent extends AdminBaseComponent {
 
     private groupUrl(id:number): string {
         return `/a/group/${id}`;
+    }
+
+    success(e: any) {
+        this.showMessageForResult(this.messagesService, e);
+        this.formMode = FormMode.Default;
+        this.load();
+    }
+
+    error(e: any) {
+        this.showMessageForResult(this.messagesService, e);
+        this.formMode = FormMode.Default;
     }
 }

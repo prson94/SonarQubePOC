@@ -2,7 +2,17 @@
 import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService, MessagesService } from '../../services/index';
-import { FusionRule, FusionRuleStep, FusionRuleItem, FusionRuleMapping, FusionRuleEditorModel, FusionAttributeType, FusionRuleItemEditorModel, FusionRuleMappingEditorModel, FusionRuleStepEditorModel } from '../../models/fusion.model';
+import {
+    AttributeNode,
+    FusionRule,
+    FusionRuleStep,
+    FusionRuleItem,
+    FusionRuleMapping,
+    FusionRuleEditorModel,
+    FusionAttributeType,
+    FusionRuleItemEditorModel,
+    FusionRuleMappingEditorModel,
+    FusionRuleStepEditorModel } from '../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
 
 @Component({
@@ -34,7 +44,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                         <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]">
                             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
                             <p-column header="">
-                                <template pTemplate type="body">
+                                <template pTemplate type="body" let-row="rowData">
                                     <div class="RowTools">
                                         <a (click)="deleteItem(row);"><i class="fa fa-trash-o"></i></a>
                                     </div>
@@ -80,6 +90,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.EditRule" class="tile tile-detail">
             <header>Edit Fusion Rule</header>
             <div class="row">
@@ -108,6 +119,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.AddRule" class="tile tile-detail">
             <header>Add Fusion Rule</header>
             <div class="row">
@@ -136,6 +148,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.DeleteRule" class="tile tile-detail">
             <header>Delete Fusion Rule</header>
             <div class="row">
@@ -150,6 +163,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.DeleteItem" class="tile tile-detail">
             <header>Delete Fusion Rule Item</header>
             <div class="row">
@@ -164,6 +178,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.EditMapping" class="tile tile-detail">
             <header>Edit Fusion Rule Mapping</header>
             <div class="row">
@@ -196,6 +211,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.AddMapping" class="tile tile-detail">
             <header>Add Fusion Rule Mapping</header>
             <div class="row">
@@ -228,6 +244,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.DeleteStep" class="tile tile-detail">
             <header>Delete Fusion Rule Step</header>
             <div class="row">
@@ -242,11 +259,59 @@ import { TreeNode, Column } from 'primeng/primeng';
                 </div>
             </div>
         </div>
+
         <div *ngSwitchCase="FormMode.AddStep">
             <d3s-fusion-rule-step [ruleID]="selectedFusionRule.ID" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; loadSteps();"></d3s-fusion-rule-step>
         </div>
+
         <div *ngSwitchCase="FormMode.EditStep">
             <d3s-fusion-rule-step [ruleID]="selectedFusionRuleStep.RuleID" [ruleStepID]="selectedFusionRuleStep.ID" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; loadSteps();"></d3s-fusion-rule-step>
+        </div>
+
+        <div *ngSwitchCase="FormMode.DeleteMapping">
+            <div class="tile tile-detail">
+                   <delete-form
+                        [uri]="'form/DeleteFusionRuleStepMappingByID?id=' + selectedFusionRuleMapping?.ID"
+                        [method]="'delete'"
+                        [prompt]="'Are you sure you want to delete this fusion rule step mapping?'"                                         
+                        (onCancel)="formMode = FormMode.Default;"
+                        (onDeleteComplete)="confirmDeleteMapping()"
+                    ></delete-form>   
+            </div>
+        </div>
+
+        <div *ngSwitchCase="FormMode.AddItem">
+            <div class="tile tile-detail">
+                <header>Add Promotion Target Item</header>  
+                <div class="row">
+                    <div class="col s4 offset-s4">
+                        <d3s-loading [isLoading]="addItemLoading"></d3s-loading>
+                        <div *ngIf="!addItemLoading">                        
+                            <div style="max-height:500px;overflow-y:scroll;position:relative;">
+                            <div *ngIf="selectAllItems" style="position:absolute;left:0;top:0;width:100%;height:100%;background-color:rgba(1,1,1,.2);z-index:1"></div>
+                                <input type="text" style="width:100%;" [(ngModel)]="addItemSearch" placeholder="Search..." />
+                                <p-treeTable [value]="attributeNodes | treeSearch: addItemSearch:'Name'" (onNodeExpand)="loadSubItems($event)" >
+                                    <p-column header="Name" field="Name"></p-column>
+                                    <p-column [style]="{ 'width' : '30px' }">
+                                        <template pTemplate type="body" let-row="rowData">
+                                            <input type="checkbox" [(ngModel)]="row.data.selected" />
+                                        </template>
+                                    </p-column>
+                                </p-treeTable>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s2">
+                        <input type="checkbox" [(ngModel)]="selectAllItems" /> Select All
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <button type="button" label="Save" (click)="saveAddItem()" pButton ></button>
+                        <button type="button" label="Close" (click)="formMode = FormMode.Default;" pButton ></button>
+                    </div>
+                </div>  
+            </div>
         </div>
     </div>   
 </div>
@@ -277,7 +342,11 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     fusionRuleItemEditorModel: FusionRuleItemEditorModel;
     fusionRuleMappingEditorModel: FusionRuleMappingEditorModel;
     fusionRuleStepEditorModel: FusionRuleStepEditorModel;
-
+    fusionAttributeNodeItems: AttributeNode[] = [];
+    attributeNodes: TreeNode[] = [];
+    addItemLoading = false;
+    selectAllItems = false;
+    addItemSearch = "";
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
@@ -403,33 +472,104 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             });
     }
 
-    saveStep() {
-
-    }
-
     addStep() {
+        if (this.selectedFusionRule == null || this.selectedFusionRule.ID == null)
+            return;
         this.formMode = FormMode.AddStep;
     }
 
-    saveAddStep() {
-
-    }
-
     addItem() {
+        if (this.selectedFusionRule == null || this.selectedFusionRule.ID == null)
+            return;
+        this.formMode = FormMode.AddItem;
+        this.addItemLoading = true;
         this.fusionService.getAddFusionRuleItem(this.selectedFusionRule.ID)
             .then(r => {
                 this.fusionRuleItemEditorModel = r;
-                this.formMode = FormMode.AddItem;
-                console.log(r);
+                //console.log(r);
+            }).then(() => this.fusionService.getPromotionChildAttributeNodes(this.fusionRuleItemEditorModel.FusionID, this.fusionRuleItemEditorModel.TargetFusionAttributeTypeID, this.selectedFusionRule.ID))
+            .then(r => {
+                this.fusionAttributeNodeItems = r;
+                this.attributeNodes = [];
+
+                this.fusionAttributeNodeItems.forEach(i => {
+                    i.parentType = this.fusionRuleItemEditorModel.TargetFusionAttributeTypeID;
+                    i.selected = false;
+                    this.attributeNodes.push({
+                        data: i,
+                        expanded: false,
+                        leaf: false
+                    });
+                });
+                //console.log(r);
+                this.addItemLoading = false;
+            });
+    }
+
+    loadSubItems(e: any) {
+        let data = e.node.data;
+        data.isLoadingChildren = true;
+        this.fusionService.getPromotionChildAttributeNodes(this.fusionID, (data.parentType == 0) ? this.fusionRuleItemEditorModel.TargetFusionAttributeTypeID : data.parentType, this.selectedFusionRule.ID, data.FusionAttributeTypeID, data.ID)
+            .then(r => {
+                if (r.length == 0) {
+                    e.node.leaf = true;
+                }
+                else {
+                    e.node.children = [];
+                    r.forEach(i => {
+                        i.parentType = data.FusionAttributeTypeID;
+                        e.node.children.push({
+                            data: i,
+                            expanded: false,
+                            leaf: false
+                        });
+                    });
+                }
+                data.isLoadingChildren = false;
             });
     }
 
     saveAddItem() {
+        let form: any = {};
 
+        this.attributeNodes.forEach
+
+        form.RuleID = this.selectedFusionRule.ID;
+        form.AllSelected = this.selectAllItems;
+        form.FusionAttributeID = this.getSelectedAttributeNodeIDs().join(',');
+
+        this.fusionService.postAddFusionRuleItem(form)
+            .then(r => {
+                //console.log(r);
+                this.formMode = FormMode.Default;
+                this.selectAllItems = false;
+                this.attributeNodes = [];
+                this.loadRules();
+            });
+        //console.log(form);
+    }
+
+    getSelectedAttributeNodeIDs(nodes: TreeNode[] = null, values: number[]  = []) {
+        if (nodes == null)
+            nodes = this.attributeNodes;
+        nodes.forEach(n => {
+            //console.log(n);
+            if (n.data.selected) {
+                values.push(n.data.ID);
+                //console.log(n.data.ID);
+            }
+            if (n.children) {
+                let v = this.getSelectedAttributeNodeIDs(n.children);
+                v.forEach(i => { values.push(i) });
+            }
+                
+        });
+        return values;
     }
 
     deleteItem(row: FusionRuleItem) {
         this.selectedFusionRuleItem = row;
+        //console.log(row);
         this.formMode = FormMode.DeleteItem;
     }
 
@@ -450,7 +590,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                 this.fusionRuleMappingEditorModel.targetValue = this.fusionRuleMappingEditorModel.Item.TargetFieldName + '|' + this.fusionRuleMappingEditorModel.Item.TargetFieldTypeID.toString();
 
                 this.formMode = FormMode.EditMapping;
-                console.log(r);
+                //console.log(r);
             });
     }
 
@@ -471,11 +611,13 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     addMapping() {
+        if (this.selectedFusionRuleStep == null || this.selectedFusionRuleStep.ID == null)
+            return;
         this.fusionService.getAddFusionRuleStepMapping(this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
                 this.formMode = FormMode.AddMapping;
-                console.log(r);
+                //console.log(r);
             });
     }
 
@@ -490,6 +632,8 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+            }).then(() => {
+                this.loadMappings();
             });
     }
 

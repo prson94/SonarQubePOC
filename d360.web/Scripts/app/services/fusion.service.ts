@@ -6,6 +6,7 @@ import { FormHelper } from '../models/form.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { ObjectStyle } from '../models/object-style.model';
 import {
+    AttributeNode,
     FusionType,
     FusionAttributeType,
     FusionQueryAttributeType,
@@ -407,12 +408,13 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    postAddFusionRuleItem(item: FusionRuleItem) {
-        return this.http.post('form/PostAddFusionRuleItem', item)
+    postAddFusionRuleItem(form: any) {
+        return this.http.post('form/PostAddFusionRuleItem', form)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
 
     deleteFusionRuleItem(id: number) {
         return this.http.delete(`form/DeleteFusionRuleItemByID?id=${id}`)
@@ -516,6 +518,17 @@ export class FusionService extends BaseService {
         return this.http.get('/api/fusion/rule/relate/intersectTypes')
             .toPromise()
             .then(response => <RelationIntersectType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getPromotionChildAttributeNodes(fusionID: number,
+        targetFusionAttributeTypeID: number,
+        ruleID: number,
+        currentFusionAttributeTypeID: number = 0,
+        fusionAttributeID: number = 0): Promise<AttributeNode[]> {
+        return this.http.get(`api/fusion/promotion/ChildAttributeNodes?fusionID=${fusionID}&targetFusionAttributeTypeID=${targetFusionAttributeTypeID}&ruleID=${ruleID}&currentFusionAttributeTypeID=${currentFusionAttributeTypeID}&fusionAttributeID=${fusionAttributeID}`)
+            .toPromise()
+            .then(response => <AttributeNode[]>response.json())
             .catch(err => this.handleError(err));
     }
 

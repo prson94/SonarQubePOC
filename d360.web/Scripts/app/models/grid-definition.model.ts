@@ -9,6 +9,8 @@ export class GridColumn {
     text: string;
     datafield: string;
     width: string;
+
+    type: string;
 }
 
 export class GridRelationshipFilterExpression {
@@ -43,6 +45,8 @@ export class GridFilterColumn {
     relatedfield: boolean;
     hiddenfield: boolean;
     id: string;
+
+    type: string;
 }
 
 export class GridDefinition {
