@@ -33,12 +33,18 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     @Input() fusionId: number;
     @Input() fusionAttributeTypeId: number;
+    @Input() fusionQueryAttributeTypeId: number;
 
     @Input() fusionAttribute: any;
     @Output() fusionAttributeChange = new EventEmitter();
-
     @Input() initialFusionAttributeId: number;
 
+    @Input() fusionQueryAttribute: any;
+    @Output() fusionQueryAttributeChange = new EventEmitter();
+    @Input() initialFusionQueryAttributeId: number;
+
+    private fusionObject: string = 'FusionAttributeType';
+    private fusionObjectID: number = 0;
     private filters: FusionAttributeFilter[] = [];
         
     
@@ -63,18 +69,30 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
+            this.fusionObject = 'FusionAttributeType';
+            this.fusionObjectID = this.fusionAttributeTypeId;
+            this.fusionQueryAttributeTypeId = null;
             if (this.initialFusionAttributeId > 0)
                 this.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS' }];
             else   
                 this.filters = [];
 
             this.getFieldsDefinition();
-        }
+        } 
+        else if (changes['fusionQueryAttributeTypeId'] && this.fusionQueryAttributeTypeId) {
+            this.fusionObject = 'FusionQueryAttributeType';
+            console.log(this.fusionQueryAttributeTypeId);
+            this.fusionObjectID = this.fusionQueryAttributeTypeId;
+            this.fusionAttributeTypeId = null;
+            this.filters = [];
+            this.getFieldsDefinition();
+        } 
     }
     
     getFieldsDefinition() {
         this.isLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.fusionAttributeTypeId, 'FusionAttributeType', this.fusionId, 'FusionID')
+
+        this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, 'FusionID')
             .then(result => {
                 if (result) {
                     this.columns = result.Columns;
@@ -90,8 +108,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         this.getData();
     }
 
-    private getData() {        
-        if (!this.fusionId || !this.fusionAttributeTypeId) {
+    private getData() {
+        if (!this.fusionId || !this.fusionObjectID) {
             console.log("ERROR - NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
         }
@@ -106,15 +124,28 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             }
         }
 
-        this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionAttributeTypeId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
-            .then(res => {
-                this.results = res;
+        if (this.fusionObject == "FusionQueryAttributeType") {
+            this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
+                .then(res => {
+                    this.results = res;
 
-                if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
-                    this.fusionAttribute = this.results.results[0];
-                    this.fusionAttributeChange.emit(this.fusionAttribute);
-                }
-            });
+                    if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
+                        this.fusionAttribute = this.results.results[0];
+                        this.fusionAttributeChange.emit(this.fusionAttribute);
+                    }
+                });
+        }
+        else {
+            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
+                .then(res => {
+                    this.results = res;
+
+                    if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
+                        this.fusionAttribute = this.results.results[0];
+                        this.fusionAttributeChange.emit(this.fusionAttribute);
+                    }
+                });
+        }
     }
 
 
@@ -134,6 +165,11 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private doExport() {
-        this.fusionAttributeService.getFusionAttributeExcel(this.fusionId, this.fusionAttributeTypeId);
+        if (this.fusionObject == "FusionQueryAttributeType") {
+            this.fusionAttributeService.getFusionQueryAttributeExcel(this.fusionId, this.fusionQueryAttributeTypeId);
+        }
+        else {
+            this.fusionAttributeService.getFusionAttributeExcel(this.fusionId, this.fusionAttributeTypeId);
+        }
     }
 };

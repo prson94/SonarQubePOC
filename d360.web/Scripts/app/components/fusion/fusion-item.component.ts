@@ -41,12 +41,12 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="col l3 m12 s12">
                         <div class="tile tile-detail">
                             <header>Structure</header>
-                            <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)"></d3s-fusion-structure-tree>
+                            <d3s-fusion-structure-tree [fusion]="fusion" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
                         </div>
                     </div>
                     <div class="col l9 m12 s12">
-                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;"></d3s-fusion-attribute-summary>
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">                            
+                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
+                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
                             <d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name"></d3s-fusion-attribute-item-details>
                         </div>
                         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
@@ -62,9 +62,16 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     private sub: any;    
     private fusionId: number;
     private fusion: FusionConfigurationDetails;
+
     private selectedFusionAttributeTypeId: number;
     private selectedFusionAttribute: any;
     private initialFusionAttributeId: number;
+
+    private selectedFusionQueryAttributeTypeId: number;
+    private selectedFusionQueryAttribute: any;
+    private initialFusionQueryAttributeId: number;
+
+
     private showFusionRules: boolean = false;
     private isHistoryVisible: boolean = false;
     private isManualLoadVisible: boolean = false;
@@ -96,7 +103,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             this.fusionId = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];
-            
+            this.selectedFusionQueryAttributeTypeId = +params['fusionQueryAttributeTypeId'];
+            this.initialFusionQueryAttributeId = +params['fusionQueryAttributeId'];            
             
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectFusion , this.fusionId);
@@ -135,6 +143,9 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         if (this.selectedFusionAttributeTypeId && this.fusionTreeComponent.fusionAttributeTypes) {
             this.addFusionAttributeTypeBreadcrumb(this.selectedFusionAttributeTypeId);
         }
+        else if (this.selectedFusionQueryAttributeTypeId && this.fusionTreeComponent.fusionQueryAttributeTypes) {
+            this.addFusionQueryAttributeTypeBreadcrumb(this.selectedFusionQueryAttributeTypeId);
+        }
     }
 
     private addFusionAttributeTypeBreadcrumb(id: number) {
@@ -144,11 +155,26 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${items[0].ID}`));            
         }
     }
+
+    private addFusionQueryAttributeTypeBreadcrumb(id: number) {
+        var items = this.fusionTreeComponent.fusionQueryAttributeTypes.filter(x => x.ID == id);
+
+        if (items.length > 0) {
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(items[0].Name, `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${items[0].ID}`));
+        }
+    }
     
     private changeFusionAttributeTypeId(event) {
         this.selectedFusionAttribute = null;
+        this.selectedFusionQueryAttribute = null;
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionAttributeTypeId=${event}`);
     }   
+
+    private changeFusionQueryAttributeTypeId(event) {
+        this.selectedFusionAttribute = null;
+        this.selectedFusionQueryAttribute = null;
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};fusionQueryAttributeTypeId=${event}`);
+    }  
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
         if (activatedItem.tag == 'fusionhistory') this.isHistoryVisible = !this.isHistoryVisible;

@@ -34,11 +34,38 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFusionQueryAttributes(fusionId: number, fusionQueryAttributeTypeId: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
+        let sortOrderText = '';
+
+        if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
+        if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
+
+        var url = `internal/fusion/QueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+
+        if (filters && filters.length > 0) {
+            url += `&filterscount=${filters.length}`;
+
+            let index = 0;
+            for (let filter of filters) {
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                index++;
+            }
+        }
+
+        return this.http.get(url)
+            .toPromise()
+            .then(response => <FusionAttributePagedResults>response.json())
+            .catch(err => this.handleError(err));
+    }
 
     getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number) {
         window.location.assign(`internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&filterscount=0`);
     }
 
+    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number) {
+        window.location.assign(`internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&filterscount=0`);
+    }
+    Query
     getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
         return this.http.get(`internal/fusion/details/FusionAttribute/${fusionAttributeId}`)
             .toPromise()

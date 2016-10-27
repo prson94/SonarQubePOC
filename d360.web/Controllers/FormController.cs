@@ -7406,9 +7406,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 var parentObjectSearch = settings.ContainsKey("ParentObjectSearch") ? settings["ParentObjectSearch"] ?? "" : "";
 
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectID });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Object", Value = objectType });
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = objectType });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectID", Value = objectID });
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ParentObjectSearch", Value = parentObjectSearch });
 
@@ -8354,7 +8354,8 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             //var promotionType = ruleStep.PromotionObjectType;
             var promotionType = ruleStep.GetSettingValueByName("Object");
             var promotionObjectType = ruleStep.GetSettingValueByName("PromotionParentObjectType");
-            var promotionObjectID = int.Parse(ruleStep.GetSettingValueByName("ObjectID"));
+            int promotionObjectID = 0;
+            int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
             switch (promotionType)
             {

@@ -510,6 +510,18 @@ where A.FusionTypeID = @id", columns, joins);
         }
 
         /// <summary>
+        /// Internal endpoint.
+        /// </summary>
+        /// <param name="typeID">The ID of the fusion type.</param>
+        /// <param name="fusionID">The ID of the fusion configuration.</param>
+        /// <returns></returns>
+        [Route("{typeID:int}/configurations/{fusionID:int}/queryattributetypes")]
+        public IQueryable<FusionQueryAttributeType> GetQueryAttributesByFusion(int typeID, int fusionID)
+        {
+            return Company.Filter<FusionQueryAttributeType>(i => i.FusionID == fusionID);
+        }
+
+        /// <summary>
         /// Takes a given set of fusion data for a particular fusion configuration.
         /// </summary>
         /// <param name="typeID">The ID of the fusion type.</param>

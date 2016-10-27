@@ -12,7 +12,7 @@ import { TreeNode, Column } from 'primeng/primeng';
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault >
             <div class="row">  
-                <div class="col s8 tile tile-detail">
+                <div class="col l8 m6 s12 tile tile-detail">
                     <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="addRule();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRules" selectionMode="single" [(selection)]="selectedFusionRule" (onRowSelect)="loadSteps();">
                         <p-column header="Enabled" field="Enabled"></p-column>
@@ -28,21 +28,19 @@ import { TreeNode, Column } from 'primeng/primeng';
                         </p-column>
                     </p-dataTable>
                 </div>
-                <div class="col s4">
-                    <div style="margin-left: 25px;">
-                        <div class="tile tile-detail">
-                            <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions></header>
-                            <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem">
-                                <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
-                                <p-column header="">
-                                    <template pTemplate type="body">
-                                        <div class="RowTools">
-                                            <a (click)="deleteItem(row);"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </template>
-                                </p-column>
-                            </p-dataTable>
-                        </div>
+                <div class="col l4 m6 s12">
+                    <div class="tile tile-detail">
+                        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions></header>
+                        <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]">
+                            <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
+                            <p-column header="">
+                                <template pTemplate type="body">
+                                    <div class="RowTools">
+                                        <a (click)="deleteItem(row);"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
                     </div>
                 </div>
             </div>
@@ -259,6 +257,7 @@ import { TreeNode, Column } from 'primeng/primeng';
 export class FusionRulesComponent extends BaseComponent implements OnInit {
     @Input() fusionID: number;
     @Input() fusionTypeID: number;
+    @Input() rowsPerPage: number = 10;
 
     fusionRules: FusionRule[] = [];
     selectedFusionRule: FusionRule;

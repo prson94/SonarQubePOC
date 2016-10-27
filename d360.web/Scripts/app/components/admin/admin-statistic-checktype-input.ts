@@ -113,7 +113,7 @@ export class AdminStatisticCheckTypeInput implements OnChanges{
     }
         
     load() {
-        console.log(3);
+        //console.log(3);
         this.isLoading = true;
         this.statisticService
             .getStatisticCheckObjects(this.object, this.objectID, this.statistic.CheckType)

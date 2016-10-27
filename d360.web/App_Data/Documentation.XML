@@ -2069,6 +2069,14 @@
             <param name="fusionID">The ID of the fusion configuration.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.Services.FusionController.GetQueryAttributesByFusion(System.Int32,System.Int32)">
+            <summary>
+            Internal endpoint.
+            </summary>
+            <param name="typeID">The ID of the fusion type.</param>
+            <param name="fusionID">The ID of the fusion configuration.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.Services.FusionController.PostBulkAttributesAsync(System.Int32,System.Int32)">
             <summary>
             Takes a given set of fusion data for a particular fusion configuration.

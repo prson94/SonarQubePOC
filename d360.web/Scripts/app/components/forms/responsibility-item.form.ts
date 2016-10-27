@@ -27,7 +27,7 @@ export class ResponsibilityItemForm implements OnInit {
     private initialItem = new ResponsibilityItem();
 
 
-    constructor(private respsonsibilityService: ResponsibilityService) {
+    constructor(private responsibilityService: ResponsibilityService) {
     }
 
     ngOnInit() {
@@ -48,9 +48,9 @@ export class ResponsibilityItemForm implements OnInit {
            
         this.isLoading = true;
 
-        this.respsonsibilityService.getResponsibilityItemEditor(this.item.ObjectID, this.item.ObjectType, this.item.ID)
+        this.responsibilityService.getResponsibilityItemEditor(this.item.ObjectID, this.item.ObjectType, this.item.ID)
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 this.model = data;
                 if (!this.item.ID) {
                     this.item.ObjectID = data.responsibility.ObjectID;
@@ -98,7 +98,7 @@ export class ResponsibilityItemForm implements OnInit {
         this.item.Visible = true;
         this.item.ResponsibilityContextItems = contextItems;
         
-        this.respsonsibilityService.postResponsibility(this.item)
+        this.responsibilityService.postResponsibility(this.item)
             .then(data => {
                 this.isSaving = false;
                 this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });

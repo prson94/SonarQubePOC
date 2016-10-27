@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy} from '@angular/core';
 import { MessagesService, HeaderBreadcrumbService, StatisticService, RightSidebarService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { StatisticType } from '../../models/statistic.model';
@@ -17,7 +17,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                                <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Score" header="Score" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
@@ -61,6 +61,8 @@ import { Title } from '@angular/platform-browser';
 })
 
 export class AdminStatisticsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+    @Input() rowsPerPage: number = 10;
+
     statistics: StatisticType[] = [];
     selected: StatisticType;
     showEditor: boolean = false;

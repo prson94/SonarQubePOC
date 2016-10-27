@@ -138,7 +138,10 @@ namespace d360.fusion
                     //Process Models                
                     await ProcessModels(companyConnection, data.Models);
 
-                    await ProcessQueryItems(companyConnection, data.QueryItems);
+                    if (data.QueryItems != null)
+                    {
+                        await ProcessQueryItems(companyConnection, data.QueryItems);
+                    }
 
                     //Process Relationships
                     await ProcessRelationships(companyConnection, data.Relationships);
@@ -730,232 +733,235 @@ where   Subject = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
             Stopwatch sw = Stopwatch.StartNew();
 
-            using (var trans = companyConnection.BeginTransaction())
+            if (queryItems.Count > 0)
             {
-                try
+                using (var trans = companyConnection.BeginTransaction())
                 {
-                    #region LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute)
-
-                    await companyConnection.ExecuteAsync(@"
-    set nocount on 
-    create table #FusionQueryAttribute (
-        ID int null,
-        FusionQueryAttributeTypeID int not null, 
-        SourceID varchar(250) not null,
-        [Action] varchar(1) not null
-    )
-    set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-
-                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
+                    try
                     {
-                        bulkCopy.BatchSize = queryItems.Count;
-                        bulkCopy.DestinationTableName = "#FusionQueryAttribute";
-                        bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
+                        #region LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute)
 
-                        var table = new DataTable();
+                        await companyConnection.ExecuteAsync(@"
+        set nocount on 
+        create table #FusionQueryAttribute (
+            ID int null,
+            FusionQueryAttributeTypeID int not null, 
+            SourceID varchar(250) not null,
+            [Action] varchar(1) not null
+        )
+        set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                        var columnName = "ID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "FusionQueryAttributeTypeID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "SourceID";
-                        table.Columns.Add(columnName, typeof(string));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "Action";
-                        table.Columns.Add(columnName, typeof(string));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        foreach (var queryItem in queryItems)
+                        using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
                         {
-                            var dr = table.NewRow();
-                            dr["FusionQueryAttributeTypeID"] = queryItem["FusionQueryAttributeTypeID"];
-                            dr["SourceID"] = queryItem["SourceID"];
-                            dr["Action"] = "A";// queryItem["Action"];
-                            table.Rows.Add(dr);
+                            bulkCopy.BatchSize = queryItems.Count;
+                            bulkCopy.DestinationTableName = "#FusionQueryAttribute";
+                            bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
+
+                            var table = new DataTable();
+
+                            var columnName = "ID";
+                            table.Columns.Add(columnName, typeof(int));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "FusionQueryAttributeTypeID";
+                            table.Columns.Add(columnName, typeof(int));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "SourceID";
+                            table.Columns.Add(columnName, typeof(string));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "Action";
+                            table.Columns.Add(columnName, typeof(string));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            foreach (var queryItem in queryItems)
+                            {
+                                var dr = table.NewRow();
+                                dr["FusionQueryAttributeTypeID"] = queryItem["FusionQueryAttributeTypeID"];
+                                dr["SourceID"] = queryItem["SourceID"];
+                                dr["Action"] = "A";// queryItem["Action"];
+                                table.Rows.Add(dr);
+                            }
+
+                            await bulkCopy.WriteToServerAsync(table);
                         }
 
-                        await bulkCopy.WriteToServerAsync(table);
-                    }
+                        Trace.TraceInformation($"LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
-                    Trace.TraceInformation($"LOAD QUERY ATTRIBUTES into TEMP table (#FusionQueryAttribute) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        #endregion
 
-                    #endregion
+                        #region MERGE query attributes.
 
-                    #region MERGE query attributes.
+                        sw.Restart();
 
-                    sw.Restart();
+                        await companyConnection.ExecuteAsync(@"
+        set nocount on 
+        create table #MergeOutputFusionQueryAttribute (
+            ID int null,
+            FusionQueryAttributeTypeID int not null, 
+            SourceID varchar(250) not null,
+            [Action] varchar(1) not null
+        );
+        CREATE NONCLUSTERED INDEX [CIX_Temp_MergeOutputFusionQueryAttribute] ON #MergeOutputFusionQueryAttribute ( FusionQueryAttributeTypeID ASC, SourceID ASC );
+        set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                    await companyConnection.ExecuteAsync(@"
-    set nocount on 
-    create table #MergeOutputFusionQueryAttribute (
-        ID int null,
-        FusionQueryAttributeTypeID int not null, 
-        SourceID varchar(250) not null,
-        [Action] varchar(1) not null
-    );
-    CREATE NONCLUSTERED INDEX [CIX_Temp_MergeOutputFusionQueryAttribute] ON #MergeOutputFusionQueryAttribute ( FusionQueryAttributeTypeID ASC, SourceID ASC );
-    set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        //merge temp table with fusion query attributes table
+                        await companyConnection.ExecuteAsync(@"
+        merge   FusionQueryAttribute as T 
+        using   ( 
+                select  *
+                from    #FusionQueryAttribute 
+                ) as S 
+                on T.FusionQueryAttributeTypeID = S.FusionQueryAttributeTypeID and T.SourceID = S.SourceID 
+        when    matched then 
+                update set  T.Deleted = case 
+                                        when S.[Action] = 'D' then cast(1 as bit) 
+                                        else cast(0 as bit) 
+                                       end,
+                            T.UpdatedOn = getutcdate(),
+                            T.UpdatedBy = 0 
+        when    not matched then 
+                insert (FusionQueryAttributeTypeID, SourceID, Deleted, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
+                values (S.FusionQueryAttributeTypeID, S.SourceID, 0, getutcdate(), 0, getutcdate(), 0)
+        output  inserted.ID, S.FusionQueryAttributeTypeID, S.SourceID, S.[Action] into #MergeOutputFusionQueryAttribute;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                    //merge temp table with fusion query attributes table
-                    await companyConnection.ExecuteAsync(@"
-    merge   FusionQueryAttribute as T 
-    using   ( 
-            select  *
-            from    #FusionQueryAttribute 
-            ) as S 
-            on T.FusionQueryAttributeTypeID = S.FusionQueryAttributeTypeID and T.SourceID = S.SourceID 
-    when    matched then 
-            update set  T.Deleted = case 
-                                    when S.[Action] = 'D' then cast(1 as bit) 
-                                    else cast(0 as bit) 
-                                   end,
-                        T.UpdatedOn = getutcdate(),
-                        T.UpdatedBy = 0 
-    when    not matched then 
-            insert (FusionQueryAttributeTypeID, SourceID, Deleted, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-            values (S.FusionQueryAttributeTypeID, S.SourceID, 0, getutcdate(), 0, getutcdate(), 0)
-    output  inserted.ID, S.FusionQueryAttributeTypeID, S.SourceID, S.[Action] into #MergeOutputFusionQueryAttribute;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        //merge temp table with fusion query attributes table
+                        await companyConnection.ExecuteAsync(@"
+        update  T 
+        set     T.ID = S.ID
+        from    #FusionQueryAttribute T
+                inner join #MergeOutputFusionQueryAttribute S on 
+                    S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
+                    and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                    //merge temp table with fusion query attributes table
-                    await companyConnection.ExecuteAsync(@"
-    update  T 
-    set     T.ID = S.ID
-    from    #FusionQueryAttribute T
-            inner join #MergeOutputFusionQueryAttribute S on 
-                S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
-                and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+                        Trace.TraceInformation($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
-                    Trace.TraceInformation($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+                        #endregion
 
-                    #endregion
+                        #region LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField)
 
-                    #region LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField)
+                        sw.Restart();
 
-                    sw.Restart();
+                        var queryAttributeFieldTypes = companyConnection.Query<FusionQueryTypeFieldTypeModel>(@"
+        select  t.ID as FusionQueryAttributeTypeID,
+                ft.Name as FieldTypeName,
+                ft.ID as FieldTypeID
+        from    FusionQueryAttributeType t 
+                inner join FieldType ft on ft.[Object] = 'FusionQueryAttributeType' and ft.ObjectID = t.ID and t.FusionID = @f;", new { f = FusionID }, transaction: trans).ToList();
 
-                    var queryAttributeFieldTypes = companyConnection.Query<FusionQueryTypeFieldTypeModel>(@"
-    select  t.ID as FusionQueryAttributeTypeID,
-            ft.Name as FieldTypeName,
-            ft.ID as FieldTypeID
-    from    FusionQueryAttributeType t 
-            inner join FieldType ft on ft.[Object] = 'FusionQueryAttributeType' and ft.ObjectID = t.ID and t.FusionID = @f;", new { f = FusionID }, transaction: trans).ToList();
+                        await companyConnection.ExecuteAsync(@"
+        set nocount on 
+        create table #FusionQueryAttributeField (
+            FusionQueryAttributeID int null,
+            FusionQueryAttributeTypeID int not null, 
+            SourceID varchar(250) not null,
+            FieldTypeID int not null,
+            Value nvarchar(max) null
+        )
+        CREATE NONCLUSTERED INDEX [IX_Temp_FusionQueryAttributeField1] ON #FusionQueryAttributeField ( FusionQueryAttributeTypeID ASC, SourceID ASC );
+        CREATE NONCLUSTERED INDEX [IX_Temp_FusionQueryAttributeField2] ON #FusionQueryAttributeField ( FusionQueryAttributeID ASC, FieldTypeID ASC );
+        set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                    await companyConnection.ExecuteAsync(@"
-    set nocount on 
-    create table #FusionQueryAttributeField (
-        FusionQueryAttributeID int null,
-        FusionQueryAttributeTypeID int not null, 
-        SourceID varchar(250) not null,
-        FieldTypeID int not null,
-        Value nvarchar(max) null
-    )
-    CREATE NONCLUSTERED INDEX [IX_Temp_FusionQueryAttributeField1] ON #FusionQueryAttributeField ( FusionQueryAttributeTypeID ASC, SourceID ASC );
-    CREATE NONCLUSTERED INDEX [IX_Temp_FusionQueryAttributeField2] ON #FusionQueryAttributeField ( FusionQueryAttributeID ASC, FieldTypeID ASC );
-    set nocount off", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-
-                    using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
-                    {
-                        bulkCopy.BatchSize = queryItems.Count;
-                        bulkCopy.DestinationTableName = "#FusionQueryAttributeField";
-                        bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
-
-                        var table = new DataTable();
-
-                        var columnName = "FusionQueryAttributeID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "FusionQueryAttributeTypeID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "SourceID";
-                        table.Columns.Add(columnName, typeof(string));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "FieldTypeID";
-                        table.Columns.Add(columnName, typeof(int));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        columnName = "Value";
-                        table.Columns.Add(columnName, typeof(string));
-                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                        foreach (var queryItem in queryItems)
+                        using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, trans))
                         {
-                            var fusionQueryAttributeTypeID = int.Parse(queryItem["FusionQueryAttributeTypeID"]);
-                            var fusionQueryAttributeSourceID = queryItem["SourceID"];
+                            bulkCopy.BatchSize = queryItems.Count;
+                            bulkCopy.DestinationTableName = "#FusionQueryAttributeField";
+                            bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
 
-                            foreach (var key in queryItem.Keys)
+                            var table = new DataTable();
+
+                            var columnName = "FusionQueryAttributeID";
+                            table.Columns.Add(columnName, typeof(int));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "FusionQueryAttributeTypeID";
+                            table.Columns.Add(columnName, typeof(int));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "SourceID";
+                            table.Columns.Add(columnName, typeof(string));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "FieldTypeID";
+                            table.Columns.Add(columnName, typeof(int));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            columnName = "Value";
+                            table.Columns.Add(columnName, typeof(string));
+                            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                            foreach (var queryItem in queryItems)
                             {
-                                if (key != "SourceID" && key != "FusionQueryAttributeTypeID")
+                                var fusionQueryAttributeTypeID = int.Parse(queryItem["FusionQueryAttributeTypeID"]);
+                                var fusionQueryAttributeSourceID = queryItem["SourceID"];
+
+                                foreach (var key in queryItem.Keys)
                                 {
-                                    var queryAttributeFieldType = queryAttributeFieldTypes.SingleOrDefault(i => i.FusionQueryAttributeTypeID == fusionQueryAttributeTypeID && i.FieldTypeName == key);
-                                    if (queryAttributeFieldType != null)
+                                    if (key != "SourceID" && key != "FusionQueryAttributeTypeID")
                                     {
-                                        var dr = table.NewRow();
-                                        dr["FusionQueryAttributeTypeID"] = fusionQueryAttributeTypeID;
-                                        dr["SourceID"] = fusionQueryAttributeSourceID;
-                                        dr["FieldTypeID"] = queryAttributeFieldType.FieldTypeID;
-                                        dr["Value"] = queryItem[key];
-                                        table.Rows.Add(dr);
+                                        var queryAttributeFieldType = queryAttributeFieldTypes.SingleOrDefault(i => i.FusionQueryAttributeTypeID == fusionQueryAttributeTypeID && i.FieldTypeName == key);
+                                        if (queryAttributeFieldType != null)
+                                        {
+                                            var dr = table.NewRow();
+                                            dr["FusionQueryAttributeTypeID"] = fusionQueryAttributeTypeID;
+                                            dr["SourceID"] = fusionQueryAttributeSourceID;
+                                            dr["FieldTypeID"] = queryAttributeFieldType.FieldTypeID;
+                                            dr["Value"] = queryItem[key];
+                                            table.Rows.Add(dr);
+                                        }
                                     }
                                 }
                             }
+
+                            await bulkCopy.WriteToServerAsync(table);
                         }
 
-                        await bulkCopy.WriteToServerAsync(table);
+                        Trace.TraceInformation($"LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+
+                        #endregion
+
+                        #region MERGE query attribute fields.
+
+                        sw.Restart();
+
+                        // Update the query fields table with the query attribute ID loaded into #FusionQueryAttribute temp table above.
+                        await companyConnection.ExecuteAsync(@"
+        update  T 
+        set     T.FusionQueryAttributeID = S.ID
+        from    #FusionQueryAttributeField T
+                inner join #FusionQueryAttribute S on 
+                    S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
+                    and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+
+                        //merge temp table with fusion query attributes table
+                        await companyConnection.ExecuteAsync(@"
+        merge   Field as T 
+        using   (
+                select  *
+                from    #FusionQueryAttributeField
+                where   FusionQueryAttributeID is not null
+                ) as S 
+                on (T.ObjectType = 'FusionQueryAttribute' and T.ObjectID = S.FusionQueryAttributeID and T.FieldTypeID = S.FieldTypeID) 
+        when    matched then 
+                update set T.Value = S.Value 
+        when    not matched then 
+                insert (ObjectType, ObjectID, FieldTypeID, Value) 
+                values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
+
+                        Trace.TraceInformation($"MERGE query attribute fields TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
+
+                        #endregion
+
+                        trans.Commit();
                     }
-
-                    Trace.TraceInformation($"LOAD QUERY ATTRIBUTES FIELDS into TEMP table (#FusionQueryAttributeField) TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
-
-                    #endregion
-
-                    #region MERGE query attribute fields.
-
-                    sw.Restart();
-
-                    // Update the query fields table with the query attribute ID loaded into #FusionQueryAttribute temp table above.
-                    await companyConnection.ExecuteAsync(@"
-    update  T 
-    set     T.FusionQueryAttributeID = S.ID
-    from    #FusionQueryAttributeField T
-            inner join #FusionQueryAttribute S on 
-                S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
-                and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-
-                    //merge temp table with fusion query attributes table
-                    await companyConnection.ExecuteAsync(@"
-    merge   Field as T 
-    using   (
-            select  *
-            from    #FusionQueryAttributeField
-            where   FusionQueryAttributeID is not null
-            ) as S 
-            on (T.ObjectType = 'FusionQueryAttribute' and T.ObjectID = S.FusionQueryAttributeID and T.FieldTypeID = S.FieldTypeID) 
-    when    matched then 
-            update set T.Value = S.Value 
-    when    not matched then 
-            insert (ObjectType, ObjectID, FieldTypeID, Value) 
-            values ('FusionQueryAttribute', S.FusionQueryAttributeID, S.FieldTypeID, S.Value);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-
-                    Trace.TraceInformation($"MERGE query attribute fields TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
-
-                    #endregion
-
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError($"ERROR IN ProcessQueryItems: {ex.GetFullExceptionData()}");
-                    trans.Rollback();
-                }
-            }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError($"ERROR IN ProcessQueryItems: {ex.GetFullExceptionData()}");
+                        trans.Rollback();
+                    }
+                } //using
+            } //if
         }
 
         /// <summary>

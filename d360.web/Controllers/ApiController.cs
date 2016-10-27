@@ -632,7 +632,31 @@ where   h.ID <> @t order by h.[Level] desc;
                     //});
 
                     break;
-                    #endregion
+                #endregion
+                case SystemObjects.FusionQueryAttributeType:
+                    #region
+                    staticFieldCount = 1;
+                    remainingWidth = 90;
+
+                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
+
+                    filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                    fields.Add(new GridField { name = "ID", type = "number" });
+
+                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
+
+                    items.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
+
+                        col.id = i.ID.ToString();
+                        col.relatedfield = false;
+                        col.hiddenfield = false;
+
+                        filterColumns.Add(col);
+                    });
+                    break;
+                #endregion
                 case SystemObjects.FusionType:
                     #region
                     staticFieldCount = 2;

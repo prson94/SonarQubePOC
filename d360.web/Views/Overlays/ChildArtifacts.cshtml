@@ -12,7 +12,7 @@
 <script type="text/javascript">
     var childArtifactTypeID = @(ChildArtifactTypeID);
 
-    var ChildArtifactOverlayBaseUrl = '/Artifacts/ByParent?parentID=@(Model.ObjectID)&childArtifactTypeID=' + childArtifactTypeID;
+    var ChildArtifactOverlayBaseUrl = '/internal/Artifacts/ByParent?parentID=@(Model.ObjectID)&childArtifactTypeID=' + childArtifactTypeID;
     var ChildArtifactOverlayDetailUri = '/artifacts/'+ childArtifactTypeID + '/{0}';
     var ChildArtifactOverlayDetailData = '/api/ArtifactType/' + childArtifactTypeID;
 

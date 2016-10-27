@@ -2,20 +2,18 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { FusionService } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-import { FusionAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
+import { FusionAttributeType, FusionQueryAttributeType, FusionConfigurationDetails  } from '../../models/fusion.model';
 import { TreeNode } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-fusion-structure-tree',
-    template: ` 
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
-                        <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;"> 
-                        <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" [style]="{'line-height':'25px','width':'auto'}" 
-                                (onNodeSelect)="nodeSelect($event)">                 
-                        </p-tree>
-                    </span>                
-                `,
+    template: `<d3s-loading [isLoading]="isLoading"></d3s-loading>
+               <span *ngIf="!isLoading">
+                <input type="text" [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;"/> 
+                <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" [style]="{'line-height':'25px','width':'auto'}" 
+                    (onNodeSelect)="nodeSelect($event)">                 
+                </p-tree>
+               </span>`,
     providers: [FusionService],
 })
 
@@ -24,12 +22,16 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     @Input() fusion: FusionConfigurationDetails;
 
     @Input() fusionAttributeTypeId: number;
+    @Input() fusionQueryAttributeTypeId: number;
+
+    @Output() fusionQueryAttributeTypeIdChange = new EventEmitter();
     @Output() fusionAttributeTypeIdChange = new EventEmitter();
 
     private treeItems: TreeNode[];
     private selected: TreeNode;
 
     public fusionAttributeTypes: FusionAttributeType[] = [];
+    public fusionQueryAttributeTypes: FusionQueryAttributeType[] = [];
 
     constructor(private fusionService: FusionService) {
         super();
@@ -47,7 +49,23 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                 this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
                 this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
             }
-            this.isLoading = false;
+
+            this.fusionService.getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID).then(res => {
+                this.fusionQueryAttributeTypes = res;
+
+                var queriesNode = {
+                    label: 'Queries',
+                    expanded: true,
+                    data: {
+                        type: 'FusionQueryAttributeType',
+                        id: 0
+                    },
+                    children: (this.buildQueryTreeNodeArray(this.fusionQueryAttributeTypes)) //recursively find its children
+                };
+
+                this.treeItems.push(queriesNode);
+                this.isLoading = false;
+            });
         });
     }
 
@@ -71,9 +89,30 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
                 label: root.Name,
                 expanded: true,
                 data: {
+                    type: 'FusionAttributeType',
                     id: root.ID
                 },
                 children: (this.buildTreeNodeArray(attributes, root.ID)) //recursively find its children
+            });
+        }
+
+        return res;
+    }
+
+    private buildQueryTreeNodeArray(attributes: FusionQueryAttributeType[]): TreeNode[] {
+        //find the root items then 
+
+        let res: TreeNode[] = [];
+
+        for (let qry of attributes) {
+            res.push({
+                label: qry.Name,
+                expanded: true,
+                data: {
+                    type: 'FusionQueryAttributeType',
+                    id: qry.ID
+                },
+                children: null
             });
         }
 
@@ -112,12 +151,19 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     }
 
     private nodeSelect(event) {
+        //console.log(event.node.data.type + ' ' + event.node.data.id);
         if (!event.node || !event.node.data || !event.node.data.id) {
             console.log("ERROR UNABLE TO DETERMINE SELECTED NODE'S ID.");
-
             return;
         }
-        this.fusionAttributeTypeId = event.node.data.id
-        this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+
+        if (event.node.data.type == "FusionAttributeType") {
+            this.fusionAttributeTypeId = event.node.data.id;
+            this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
+        }
+        else {
+            this.fusionQueryAttributeTypeId = event.node.data.id;
+            this.fusionQueryAttributeTypeIdChange.emit(this.fusionQueryAttributeTypeId);
+        }
     }
 };

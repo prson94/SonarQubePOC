@@ -8,6 +8,7 @@ import { ObjectStyle } from '../models/object-style.model';
 import {
     FusionType,
     FusionAttributeType,
+    FusionQueryAttributeType,
     FusionConfiguration,
     FusionFilter,    
     Fusion,
@@ -180,6 +181,13 @@ export class FusionService extends BaseService {
         return this.http.put('form/fusionfilter', filter)
             .toPromise()
             .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getFusionQueryAttributeTypes(typeid: number, id: number, query: string = ''): Promise<FusionQueryAttributeType[]> {
+        return this.http.get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
+            .toPromise()
+            .then(response => <FusionQueryAttributeType[]>response.json())
             .catch(err => this.handleError(err));
     }
 
