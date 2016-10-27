@@ -58,7 +58,7 @@ nav.top,
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
 d3s-navbar-item > div.router-link-active > span > a {
-  background-color: #efefef;
+  background-color: #efefef !important;
   color: #383127 !important;
 }
 d3s-navbar-item > div .nav-item {
