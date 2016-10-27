@@ -13,6 +13,7 @@ export class Artifact {
     ArtifactTypeID: number;
     HasDashboards: boolean;
     HasWorkflow: boolean;
+    HasChildArtifacts: boolean;
     Description: string;
     ID: number;
     Name: string;

@@ -241,6 +241,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int Count { get; set; }
+
+        [DataMember]
+        public int TypeID { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
@@ -260,6 +263,9 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? MostRecent { get; set; }
+
+        [DataMember]
+        public int TypeID { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]

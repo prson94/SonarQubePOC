@@ -35,6 +35,13 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
+                <div class="row" *ngIf="!isLoading && isChildrenVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">       
+                            <d3s-artifact-item-children [objectType]="'Artifact'" [objectID]="artifact?.ID" [objectName]="artifact?.Name"></d3s-artifact-item-children> 
+                        </div>
+                    </div>
+                </div>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-lineage>
                 <d3s-impact *ngIf="!isLoading && isImpactVisible" [objectID]="artifact?.ID" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-impact>
                 <d3s-dashboard-tab *ngIf="!isLoading && isDashboardVisible" [objectID]="artifactTypeId" [objectName]="artifact?.Name" [objectType]="'Artifact'"></d3s-dashboard-tab>
@@ -74,6 +81,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
+    private isChildrenVisible: boolean = false;
 
     constructor(private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
@@ -100,6 +108,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.messages = [];
 
             this.hideSidebarItems(); // this is needed if we changed artifacts.
+            this.isChildrenVisible = false;
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
 
@@ -120,7 +129,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.setBrowserTitle(this.titleService, this.artifact.Name);       
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true,true,true);
+                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
+                    if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children'));
 
                     this.loadItemSurvey(artifactId);
                     
@@ -149,7 +159,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     protected isTabVisible() {
-        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible;
+        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible || this.isChildrenVisible;
     }
 
     private completeSurvey() {
@@ -157,5 +167,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         var index = this.messages.findIndex(x => x.data == 'Survey');
         if (index >= 0 && index < this.messages.length)
             this.messages.splice(index, 1);
+    }
+
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+        if (activatedItem.tag == 'children') this.isChildrenVisible = !this.isChildrenVisible;        
     }
 };

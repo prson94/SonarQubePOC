@@ -1,4 +1,4 @@
-﻿import { Input, Component} from '@angular/core';
+﻿import { Input, Component, ChangeDetectionStrategy} from '@angular/core';
 
 @Component({
     selector: 'd3s-loading',
@@ -10,7 +10,8 @@
                     <div style="position:absolute;top:0;left:0;background:rgba(128,128,128,0.25);height:100%;width:100%;">&nbsp;</div>
                     <div style="padding:10px;text-align:center;position:absolute;top:20%;left:0;height:100%;width:100%;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
                 </div>
-                `    
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush    
 })
 
 export class LoadingComponent {

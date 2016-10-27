@@ -95,8 +95,14 @@ from	Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.Artif
 
         #region Json
 
+        [HttpGet, Route("artifactsbyparent")]
+        public JsonNetResult ArtifactsByParent(int parentID, int childArtifactTypeID, string sortDataField, string sortOrder, string filter, int pagenum = 0 , int pagesize = 20)
+        {            
+            return ByParent(parentID, sortDataField, sortOrder, filter, pagenum, pagesize, childArtifactTypeID);
+        }
+
         [HttpPost, Route("byparent")]
-        public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
+        public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
         {
             Trace.TraceInformation("Calling ArtifactsController.ByParent : {0}, {1}", parentID, childArtifactTypeID);
 
@@ -121,11 +127,19 @@ from	Artifact A
         left join Artifact P on P.ID = A.ParentID 
         where A.ArtifactTypeID = @id and A.ParentID = @p", columns, joins);
 
+            var dbArgs = new Dapper.DynamicParameters();
+
+            //if simple filter specified add that citeria to the sql
+            if (!string.IsNullOrEmpty(filter) && childArtifactTypeID > 0)
+            {
+                querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "T.Name", "P.TextPath" }, "Artifact", childArtifactTypeID, filter, dbArgs)}";
+            }
+
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            var dbArgs = new Dapper.DynamicParameters();
+            
 
             dbArgs.Add("id", childArtifactTypeID);
             dbArgs.Add("p", parentID);
@@ -179,10 +193,8 @@ from	Artifact A
 where    A.ArtifactTypeID = @id", columns, joins);
 
             //if simple filter specified add that citeria to the sql
-
             if(!string.IsNullOrEmpty(filter))
-            {
-                
+            {                
                 querySql = $"{querySql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name","A.Status","T.Name", "P.TextPath" }, "Artifact", id, filter, dbArgs)}";
             }
 

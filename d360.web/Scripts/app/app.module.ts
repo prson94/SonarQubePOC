@@ -106,11 +106,13 @@ import {
     ArtifactComponent,
     ArtifactDefnintionComponent,
     ArtifactGridComponent,
-    ArtifactItemComponent,
+    ArtifactItemChildGridComponent,
+    ArtifactItemChildrenComponent,
+    ArtifactItemComponent,    
     ArtifactListComponent,
     ArtifactTopLevelListComponent,   
     ArtifactTypeMetricsComponent,
-    ArtifactTypeWorkflowStatusComponent,    
+    ArtifactTypeWorkflowStatusComponent,     
 } from './components/artifact/index';
 
 import {
@@ -225,6 +227,8 @@ import {
         ArtifactComponent,
         ArtifactDefnintionComponent,
         ArtifactGridComponent,
+        ArtifactItemChildGridComponent,
+        ArtifactItemChildrenComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
         ArtifactTopLevelListComponent,        

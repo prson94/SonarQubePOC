@@ -68,13 +68,13 @@ select ObjectTypeName as TypeName, TypeUrl, Name, Url from h order by [Level]";
         public static string ArtifactNgBreadcrumbItem = @"
 with h as
 	(
-	select	[ObjectID] as ID, [Name], [ParentID], [Url], [ObjectTypeName], [ObjectTypeID],
+	select	[ObjectID] as ID, [Name], [ParentID], [NgUrl] as Url, [ObjectTypeName], [ObjectTypeID],
 			[dbo].GenerateNgObjectUrl(ObjectType, ObjectTypeID, ObjectTypeID) as TypeUrl,
 			0 as [Level]
 	from	[cache].[ObjectDetails]
 	where	[Object] = 'Artifact' and ObjectID = @id
 	union all
-	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[Url], P.[ObjectTypeName], P.[ObjectTypeID],
+	select	P.[ObjectID] as ID, P.[Name], P.[ParentID], P.[NgUrl] as Url, P.[ObjectTypeName], P.[ObjectTypeID],
 			[dbo].GenerateNgObjectUrl(P.ObjectType, P.ObjectTypeID, P.ObjectTypeID) as TypeUrl,
 			C.[Level]-1 as [Level]
 	from	[cache].[ObjectDetails] P

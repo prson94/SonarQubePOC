@@ -70,6 +70,16 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));        
     }   
 
+    getArtifactByParentAndArtifactType(parentId: number, artifactTypeId: number, filter: string, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder): Promise<Artifacts> {
+        let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
+        let uri = `internal/artifacts/artifactsbyparent?parentID=${parentId}&childArtifactTypeID=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}&filter=${filter ? filter : ''}`;
+
+        return this.http.get(uri)
+            .toPromise()
+            .then(response => <Artifacts>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getArtifactsXls(artifactType: ArtifactType) {                
         window.location.assign(`internal/artifacts/download/excel/${artifactType.ID}.xls`);        
     }

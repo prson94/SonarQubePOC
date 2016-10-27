@@ -1737,6 +1737,10 @@ where   h.ID <> @t order by h.[Level] desc;
 
                 var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == a.ArtifactTypeID && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
                 model.Add("HasWorkflow", workflowEnabled);
+
+                //chick if this object has any child objects
+                bool hasChildren = Company.Filter<Artifact>(x => x.ParentID == a.ID).Any();
+                model.Add("HasChildArtifacts", hasChildren);
             }
 
             try

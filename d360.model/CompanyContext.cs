@@ -1187,7 +1187,7 @@ order by	Date desc",
                         model.IssueLast = i.MostRecent;
                         break;
                     default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), Url = i.Url });
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value, Name = pluralize.Pluralize(i.Name ?? ""), Url = i.Url, TypeID = i.TypeID });
                         break;
                 }
             });
