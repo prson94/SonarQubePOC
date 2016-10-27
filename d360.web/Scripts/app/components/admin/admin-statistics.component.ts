@@ -9,13 +9,29 @@ import { Title } from '@angular/platform-browser';
     providers: [StatisticService],
     template: ` <d3s-audit *ngIf="isAuditVisible" [objectID]="selected?.ID" [objectName]="selected?.Name" [objectType]="'StatisticType'"></d3s-audit>
                 <div *ngIf="!isAuditVisible" class="row">
-                    <div class="col l4 s12">                    
+                    <div class="col s12" *ngIf="showEditor">
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Analytic Types
+                            <d3s-admin-statistic-editor [statisticID]="selected?.ID" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>                                 
+                        </div>
+                    </div>
+                    <div class="col s12" *ngIf="showDelete">
+                        <div class="tile tile-detail">
+                            <delete-form
+                                    [callback]="theDeleteCallback"
+                                    [itemId]="selected?.ID"
+                                    [method]="'callback'"
+                                    [prompt]="'Are you sure you want to delete the Analytic type [' + [selected?.Name] + ']?'"                                         
+                                    (onCancel)="showDelete=false;"
+                                ></delete-form>
+                        </div>
+                    </div>
+                    <div class="col l6 s12" *ngIf="!showEditor && !showDelete">                    
+                        <div class="tile tile-detail">
+                            <header>Analytic Types
                                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <span  *ngIf="!isLoading && !showEditor && !showDelete">
+                            <span  *ngIf="!isLoading">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                                 <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
@@ -36,18 +52,10 @@ import { Title } from '@angular/platform-browser';
                                         </template>
                                     </p-column>    
                                 </p-dataTable>      
-                            </span>
-                            <d3s-admin-statistic-editor *ngIf="showEditor" [statisticID]="selected?.ID" (saveClick)="saveStatisticType($event)" (closeClick)="closeEditor()"></d3s-admin-statistic-editor>     
-                            <delete-form *ngIf="showDelete"
-                                [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
-                                [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the Analytic type [' + [selected?.Name] + ']?'"                                         
-                                (onCancel)="showDelete=false;"
-                            ></delete-form>
+                            </span>                            
                         </div>
                     </div>                    
-                    <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">                        
+                    <div class="col l6 s12" *ngIf="!showEditor && !showDelete && selected">                        
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
