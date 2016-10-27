@@ -6,6 +6,14 @@ namespace d360.core.entities
     [DataContract(Name="import")]
     public class BulkFusionImport
     {
+        public BulkFusionImport()
+        {
+            Models = new List<Dictionary<string, string>>();
+            QueryItems = new List<IDictionary<string, string>>();
+            Relationships = new FusionRelationshipModels();
+            Errors = new List<string>();
+        }
+
         [DataMember]
         public List<Dictionary<string, string>> Models { get; set; }
 
