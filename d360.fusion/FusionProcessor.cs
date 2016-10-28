@@ -463,7 +463,7 @@ select @IntersectCount = count(1) from @Intersects
 if @IntersectCount > 0 
 begin
 	EXEC cache.SynchronizeRelationships @Intersects
-end", commandTimeout: ExecuteQueryTimeout);
+end", new { executionID = ExecutionID }, commandTimeout: ExecuteQueryTimeout);
         }
 
         /// <summary>
