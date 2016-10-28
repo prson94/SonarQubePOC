@@ -6,3 +6,12 @@
     AttributeTypeCategoryID: number;
     TextFormatString: string;
 }
+
+export class AttributeTypeAllocation {
+    AllowMultipleEntries: boolean;
+    AttributeTypeID: number;
+    ObjectID: number;
+    ObjectName: string;
+    ObjectType: string;
+    Required: boolean;
+}

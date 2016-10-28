@@ -1,9 +1,8 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { AttributeType } from '../models/attribute-type.model';
+import { AttributeType, AttributeTypeAllocation } from '../models/attribute-type.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 
@@ -28,6 +27,49 @@ export class AttributeTypeService extends BaseService {
             .toPromise()
             .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getAttributeTypeAllocations(attributeTypeId: number): Promise<AttributeTypeAllocation[]> {
+        return this.http.get(`/api/AttributeType/${attributeTypeId}/allocations`)
+            .toPromise()
+            .then(response => <AttributeTypeAllocation[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    deleteAttributeTypeAllocations(attributeTypeId: number, objectTypeId: number, objectType:string): Promise<JsonResult> {                        
+        return this.http
+            .delete(`form/DeleteAttributeTypeRelationWithUri?AttributeTypeID=${attributeTypeId}&ObjectType=${encodeURIComponent(objectType)}&ObjectID=${objectTypeId}`)
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
+
+    addAttributeTypeAllocations(objectTypeInfo: string, allowMultiple: boolean, attributeTypeId: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        });
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .post('form/AddAttributeTypeRelation', `AllowMultipleEntries=${allowMultiple}&ObjectTypeInfo=${objectTypeInfo}&AttributeTypeID=${attributeTypeId}`, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
+    }
+
+    editAttributeTypeAllocations(objectTypeInfo: string, allowMultiple: boolean, attributeTypeId: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        });
+
+        this.addRequestVerificationHeaders(headers);
+
+        return this.http
+            .put('form/EditAttributeTypeRelation', `AllowMultipleEntries=${allowMultiple}&ObjectTypeInfo=${objectTypeInfo}&AttributeTypeID=${attributeTypeId}`, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
 
     getAttributeTypesForObject(objectType: string, objectId: number): Promise<AttributeType[]> {        

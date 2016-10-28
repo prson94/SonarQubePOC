@@ -2202,6 +2202,16 @@
         <member name="M:d360.web.Controllers.FormController.AttributeTypeRelation_EditFields(System.Int32,System.String,System.Int32)">
             <param name="at">AttributeTypeID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.DeleteAttributeTypeRelationWithUri(System.Int32,System.String,System.Int32)">
+            <summary>
+            Wraps deleteattributetyperelations as it is using a delete operation with a form body which is not supported 
+            by delete according to the spec for DELETE and it is not supported in angular http object.
+            </summary>
+            <param name="AttributeTypeID"></param>
+            <param name="ObjectType"></param>
+            <param name="ObjectID"></param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Domain_AddFields(System.Int32,System.Int32)">
             <param name="t">DomainTypeID</param>
         </member>

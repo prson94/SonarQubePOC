@@ -59,6 +59,7 @@ import {
 } from 'primeng/primeng';
 
 import {
+    AdminAttributeAllocationComponent,
     AdminArtifactsComponent,
     AdminComponent,
     AdminAttributesComponent,
@@ -183,6 +184,7 @@ import {
 @NgModule({
     declarations: [
         ActionBar,
+        AdminAttributeAllocationComponent,
         AdminArtifactsComponent,
         AdminAttributeTypeEditor,
         AdminAttributesComponent,

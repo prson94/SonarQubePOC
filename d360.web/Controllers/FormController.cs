@@ -335,6 +335,8 @@ namespace d360.web.Controllers
         {
             switch ((objectType ?? "").ToUpper())
             {
+                case "ATTRIBUTEALLOCATION":
+                    return AttributeTypeRelation_EditFields((int)param[0], param[1].ToString(), (int)param[2]);
                 default: break;
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -387,7 +389,7 @@ namespace d360.web.Controllers
                 case "MAPRULEITEM":
                     return MapRuleItem_EditFields(ID);
                 case "RELATIONSHIPROLE":
-                    return IntersectRole_EditFields(ID);
+                    return IntersectRole_EditFields(ID);             
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -433,6 +435,8 @@ namespace d360.web.Controllers
                     return MapRuleItem_AddFields(objectID.GetValueOrDefault());
                 case "RELATIONSHIPROLE":
                     return IntersectRole_AddFields();
+                case "ATTRIBUTEALLOCATION":
+                    return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -512,7 +516,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return EditTaxonomyTypeClass(form);
                 case "RELATIONSHIPROLE":
-                    return EditIntersectRole(form);
+                    return EditIntersectRole(form);                
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -565,7 +569,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return DeleteTaxonomyTypeClass(form);
                 case "RELATIONSHIPROLE":
-                    return DeleteIntersectRole(form);
+                    return DeleteIntersectRole(form);                
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -633,7 +637,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return AddTaxonomyTypeClass(form);
                 case "RELATIONSHIPROLE":
-                    return AddIntersectRole(form);
+                    return AddIntersectRole(form);                
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -2622,6 +2626,26 @@ namespace d360.web.Controllers
             };
 
             return PartialView("DeleteForm", model);
+        }
+
+        /// <summary>
+        /// Wraps deleteattributetyperelations as it is using a delete operation with a form body which is not supported 
+        /// by delete according to the spec for DELETE and it is not supported in angular http object.
+        /// </summary>
+        /// <param name="AttributeTypeID"></param>
+        /// <param name="ObjectType"></param>
+        /// <param name="ObjectID"></param>
+        /// <returns></returns>
+        [HttpDelete, Route("DeleteAttributeTypeRelationWithUri")]
+        public JsonResult DeleteAttributeTypeRelationWithUri(int AttributeTypeID, string ObjectType, int ObjectID)
+        {
+            var form = new FormCollection();
+            form.Add("AttributeTypeID", AttributeTypeID.ToString());
+            form.Add("ObjectType", ObjectType);
+            form.Add("ObjectID", ObjectID.ToString());
+
+            return DeleteAttributeTypeRelation(form);
+            
         }
 
         [HttpDelete, Route("DeleteAttributeTypeRelation")]

@@ -1,4 +1,5 @@
-﻿import { AdminGovernanceComponent } from './admin-governance.component';
+﻿import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
+import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminDomainComponent } from './admin-domain.component';
 import { AdminGroupsComponent } from './admin-groups.component';
@@ -38,6 +39,7 @@ import { AdminModelLevelComponent } from './admin-model-level.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 
+export * from './admin-attribute-allocation.component';
 export * from './admin-governance.component';
 export * from './admin-settings.component';
 export * from './admin-domain.component';

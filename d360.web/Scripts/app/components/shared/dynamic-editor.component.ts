@@ -80,8 +80,7 @@ export class DynamicEditorComponent extends BaseComponent {
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams)
             .then(result => {
                 this.isLoading = false;
-                this.fields = result;
-                console.log(result);
+                this.fields = result;                
                 this.fields.forEach(f => {
                     if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                         if (f.Value)

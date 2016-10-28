@@ -50,6 +50,13 @@ import { Title } from '@angular/platform-browser';
                                 </div>
                             </div>
                         </div>                        
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
+                                    <d3s-admin-attribute-allocation [attributeID]="selected?.data?.ID"></d3s-admin-attribute-allocation>
+                                </div>
+                            </div>
+                        </div>                        
                     <div>
                 </div>  
                 `
