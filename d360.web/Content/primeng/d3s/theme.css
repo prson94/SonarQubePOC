@@ -286,7 +286,7 @@ th.ui-state-default { background-color: #999; }
  */
 .ui-accordion .ui-accordion-header a { display: block; font-size: 1.3em; padding: .5em .5em .5em .7em; font-weight: bold; text-transform:uppercase; color:#5c5e60; }
 .ui-accordion .ui-accordion-header {
-    border-bottom: 2px solid #646464;
+    border-bottom: 2px solid #999;
     border-top: 0 none;
     border-left: 0 none;
     border-right: 0 none;
@@ -304,7 +304,7 @@ th.ui-state-default { background-color: #999; }
     -webkit-border-radius: 0px;
     -moz-border-radius: 0px;
     border-radius: 0px;
-    border-bottom: 2px solid #646464;
+    border-bottom: 2px solid #999;
 }
 
 .ui-accordion .ui-accordion-header .fa {

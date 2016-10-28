@@ -23331,6 +23331,7 @@ div.breadcrumbs .sep {
   border: 0;
   border-radius: 0;
   padding-bottom: 10px;
+  box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
 }
 /* end grid tiles*/
 /* forms */
