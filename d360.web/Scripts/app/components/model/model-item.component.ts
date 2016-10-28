@@ -100,7 +100,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             });
         
         this.sub = this.route.params.subscribe(params => {
-            
+            this.hideSidebarItems();
             let newModelId = +params['modelId'];
             let hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
             if (hierarchyId != 0)

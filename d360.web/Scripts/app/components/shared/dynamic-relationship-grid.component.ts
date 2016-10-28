@@ -1,9 +1,11 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
+import { Router } from '@angular/router';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
 import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',    
@@ -12,7 +14,7 @@ import * as _ from 'lodash';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
                     <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
+                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" rows="10" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasEdit">                                
@@ -34,12 +36,12 @@ import * as _ from 'lodash';
                                     </div>
                                 </template>
                         </p-column>   
-                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
+                        <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}" [filter]="!simpleFilter" >
                             <template let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">{{item.Name}}</d3s-tooltip>
+                                <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="selectObject(item)">{{item.Name}}</a></d3s-tooltip>
                             </template> 
                         </p-column>                                                                                                                                                                              
-                        <p-column header="Classification" field="ClassificationText" [sortable]="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>    
+                        <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>    
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                         <p-column></p-column>
                     </p-dataTable>   
@@ -84,7 +86,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @ViewChild('dt') datatable;
     
 
-    constructor(private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService) {
+    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService) {
         super();
     }
 
@@ -171,6 +173,10 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.relations = _.orderBy(this.relations, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
+
+    selectObject(item) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
     }
 }
 

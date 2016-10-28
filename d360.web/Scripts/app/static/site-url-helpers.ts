@@ -63,6 +63,8 @@
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'FUSIONTYPE':
                 return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${objectId}`;
+            case 'FUSIONATTRIBUTE':
+                return `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${SiteUrlHelpers.SITE_URL_FUSION_BY_FUSIONATTRIBUTEID}/${parentId}/${objectId}`;
             case 'GROUP':
                 return `${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${objectId}`;
             case 'RESOURCE':
