@@ -4,39 +4,81 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using d360.core.enums;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace d360.core.entities
 {
     public class RuleModel : BaseIntObject
     {
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
-        public string Description { get; set; }
-
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
+        [DataMember, StringLength(250)]
         public string Name { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "RuleType_Name", Description = "RuleType_Description")]
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public string Purpose { get; set; }
+
+        [DataMember]
+        public string Measurement { get; set; }
+
+        [DataMember]
+        public string Resolution { get; set; }
+
+        [DataMember]
+        public RuleStatus Status { get; set; }
+
+        [DataMember]
         public RuleType RuleType { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "SourceID_Name", Description = "SourceID_Description"), StringLength(250)]
-        public string SourceID { get; set; }
+        [DataMember]
+        public decimal? Threshold { get; set; }
 
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "RuleDimensionID_Name", Description = "RuleDimensionID_Description")]
+        [DataMember]
         public int? RuleDimensionID { get; set; }
 
-        [DataMember, ForeignKey("RuleDimensionID")]
-        public RuleDimension Dimension { get; set; }
+        [DataMember]
+        public string SourceID { get; set; }
     }
 
 
     [DataContract(Namespace = NAMESPACE), ObjectType(ObjectTypeInfo.Rule, "Rule")]
-    public class Rule : RuleModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata
+    public class Rule : BaseUpdatedIntObject, ICreatedObject, IUpdatedObject
     {
-        #region Properties
+        [DataMember, StringLength(250)]
+        public string Name { get; set; }
 
-        public DateTime? UpdatedOn { get; set; }
-        public int? UpdatedBy { get; set; }
+        [DataMember]
+        public string Description { get; set; }
 
-        #endregion
+        [DataMember]
+        public string Purpose { get; set; }
+
+        [DataMember]
+        public string Measurement { get; set; }
+
+        [DataMember]
+        public string Resolution { get; set; }
+
+        [DataMember]
+        public RuleStatus Status { get; set; }
+
+        [DataMember]
+        public RuleType RuleType { get; set; }
+
+        [DataMember]
+        public decimal Threshold { get; set; }
+
+        [DataMember]
+        public int? RuleDimensionID { get; set; }
+
+        [DataMember, ForeignKey("RuleDimensionID")]
+        public RuleDimension Dimension { get; set; }
+
+        [ForeignKey("RuleID")]
+        public virtual ICollection<RuleResult> Results { get; set; }
+
+        [ForeignKey("RuleID")]
+        public virtual ICollection<RuleMap> Maps { get; set; }
     }
 }

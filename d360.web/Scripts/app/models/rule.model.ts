@@ -21,10 +21,26 @@ export class Rule {
     Name: string;
     ID: number;
     Description: string;
+    Measurement: string;
+    Purpose: string;
+    Resolution: string;
+    Status: string;
     RuleDimensionID: number;
     RuleType: RuleClassification;
     SourceID: number;
     Dimension: RuleDimension;
+}
+
+
+export class RuleResult {
+    ID: number;
+    RuleID: number;
+    EffectiveDate: Date;
+    RowsPassed: number;
+    RowsFailed: number;
+    PassFraction: number;
+    FailFraction: number;
+    Passed: boolean;
 }
 
 export class RuleDetail {
@@ -41,4 +57,15 @@ export class RuleDetail {
     Type: string;
     TypeID: number;
     Url: string;
+}
+
+export class RuleResultPagedResults {
+    total: number;
+    results: any[];
+}
+
+export class RuleResultFilter {
+    dataField: string;
+    value: string;
+    condition: string = 'CONTAINS';
 }

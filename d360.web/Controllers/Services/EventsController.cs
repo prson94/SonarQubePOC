@@ -144,10 +144,10 @@ namespace d360.web.Controllers.Services
                 }
 
                 Rule rule = null;
+
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
-                    rule = Company.Filter<Rule>(i => i.SourceID == model.SourceID).FirstOrDefault();
-                    if (rule != null)
+                    if (Company.Any<RuleMap>(i => i.SourceID == model.SourceID))
                     {
                         throw new ConflictException("Rule already exists", $"A rule with the source ID of {model.SourceID} already exists.");
                     }
@@ -156,11 +156,21 @@ namespace d360.web.Controllers.Services
                 rule = new Rule
                 {
                     Description = model.Description,
+                    Measurement = model.Measurement,
+                    Purpose = model.Purpose,
+                    Resolution = model.Resolution,
+                    Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
                     Name = model.Name,
                     RuleType = model.RuleType,
-                    SourceID = model.SourceID,
+                    Status = RuleStatus.Draft,
                     RuleDimensionID = model.RuleDimensionID
                 };
+
+                if (!string.IsNullOrEmpty(model.SourceID))
+                {
+                    rule.Maps = new List<RuleMap>();
+                    rule.Maps.Add(new RuleMap { SourceID = model.SourceID });
+                }
 
                 Company.Add<Rule>(rule);
                 return Request.CreateResponse<Rule>(HttpStatusCode.Created, rule);
@@ -185,8 +195,7 @@ namespace d360.web.Controllers.Services
         [Route("sourcerules/{sourceID}/events"), HttpPost]
         public HttpResponseMessage AddSourceRuleEvents(string sourceID, CreateEventsModelRequest model)
         {
-            var rule = Company.Filter<Rule>(i => i.SourceID == sourceID).FirstOrDefault();
-
+            var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
             if (rule != null)
             {
                 return AddRuleEvents(rule.ID, model);
@@ -397,8 +406,7 @@ namespace d360.web.Controllers.Services
         [Route("sourcerules/{sourceID}/relationships"), HttpPost]
         public HttpResponseMessage AddSourceRuleRelationships(string sourceID, List<ObjectModel> models)
         {
-            var rule = Company.Filter<Rule>(i => i.SourceID == sourceID).FirstOrDefault();
-
+            var rule = Company.Filter<RuleMap>(m => m.SourceID == sourceID).Select(m => m.Rule).FirstOrDefault();
             if (rule != null)
             {
                 return addRuleRelationships(rule.ID, models, rule);

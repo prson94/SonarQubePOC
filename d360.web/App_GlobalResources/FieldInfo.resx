@@ -240,6 +240,45 @@
   <data name="Role_Name" xml:space="preserve">
     <value>Role</value>
   </data>
+  <data name="RuleDescription_Description" xml:space="preserve">
+    <value>The description or definition of this rule.</value>
+  </data>
+  <data name="RuleDescription_Name" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="RuleDimension_Description" xml:space="preserve">
+    <value>The dimension this rule is associated with.  This is a high-level classification for this rule, such as whether the rule measures completeness or accuracy.</value>
+  </data>
+  <data name="RuleDimension_Name" xml:space="preserve">
+    <value>Dimension</value>
+  </data>
+  <data name="RuleMeasurement_Description" xml:space="preserve">
+    <value>How do we measure this rule?</value>
+  </data>
+  <data name="RuleMeasurement_Name" xml:space="preserve">
+    <value>Measurement</value>
+  </data>
+  <data name="RuleName_Description" xml:space="preserve">
+    <value>The name of this rule within Data3Sixty.</value>
+  </data>
+  <data name="RulePurpose_Description" xml:space="preserve">
+    <value>What is the purpose of this rule?  Why does this rule exist?</value>
+  </data>
+  <data name="RulePurpose_Name" xml:space="preserve">
+    <value>Purpose</value>
+  </data>
+  <data name="RuleResolution_Description" xml:space="preserve">
+    <value>How do we resolve this rule when it is triggered?</value>
+  </data>
+  <data name="RuleResolution_Name" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="RuleStatus_Description" xml:space="preserve">
+    <value>What is the status of this rule?</value>
+  </data>
+  <data name="RuleStatus_Name" xml:space="preserve">
+    <value>Status</value>
+  </data>
   <data name="TaxonomyType_Description" xml:space="preserve">
     <value>The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required.</value>
   </data>

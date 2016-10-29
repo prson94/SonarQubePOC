@@ -3,6 +3,10 @@ using System.Linq;
 using System.Web.Mvc;
 using d360.model;
 using d360.core.entities;
+using d360.web.Models.Attributes;
+using SpreadsheetLight;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers
 {
@@ -151,6 +155,58 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
             return new JsonNetResult { Data = new { status }, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("rules/{id:int}/results")]
+        public JsonNetResult GetRuleResults(int id)
+        {
+            var results = Company.Filter<RuleResult>(i => i.RuleID == id);
+            return new JsonNetResult { Data = new { total = results.Count() , results = results }, Formatting = Formatting.None };
+        }
+
         #endregion
+
+        [Route("ExportResultsByRule"), FileDownload]
+        public FileResult ExportQueryItemsByAttributeType(int id)
+        {
+            var detail = Company.GetObjectDetail("Rule", id);
+            var results = Company.Filter<RuleResult>(i => i.RuleID == id).OrderByDescending(i => i.EffectiveDate);
+
+            #region Create the list sheet
+
+            var document = new SLDocument();
+            var defaultSheet = detail.PluralizedName;
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
+            document.SelectWorksheet(defaultSheet);
+
+            var row = 1;
+
+            #region Header
+
+            document.SetCellValue(row, 1, "Effective Date");
+            document.SetCellValue(row, 2, "Rows Passed");
+            document.SetCellValue(row, 3, "Rows Failed");
+            document.SetCellValue(row, 4, "Passed");
+            document.SetCellValue(row, 5, "Created On");
+
+            #endregion
+
+            foreach (var item in results)
+            {
+                row++;
+                document.SetCellValue(row, 1, item.EffectiveDate.ToShortDateString());
+                document.SetCellValue(row, 2, item.RowsPassed);
+                document.SetCellValue(row, 3, item.RowsFailed);
+                document.SetCellValue(row, 4, (item.Passed) ? "Y" : "N");
+                document.SetCellValue(row, 5, item.CreatedOn.ToShortDateString());
+            }
+
+            document.AutoFitColumn(1, 5);
+
+            #endregion
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
+        }
+
     }
 }

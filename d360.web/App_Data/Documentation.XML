@@ -602,6 +602,71 @@
               Looks up a localized string similar to Role.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleDescription_Description">
+            <summary>
+              Looks up a localized string similar to The description or definition of this rule..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleDescription_Name">
+            <summary>
+              Looks up a localized string similar to Description.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleDimension_Description">
+            <summary>
+              Looks up a localized string similar to The dimension this rule is associated with.  This is a high-level classification for this rule, such as whether the rule measures completeness or accuracy..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleDimension_Name">
+            <summary>
+              Looks up a localized string similar to Dimension.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleMeasurement_Description">
+            <summary>
+              Looks up a localized string similar to How do we measure this rule?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleMeasurement_Name">
+            <summary>
+              Looks up a localized string similar to Measurement.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleName_Description">
+            <summary>
+              Looks up a localized string similar to The name of this rule within Data3Sixty..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RulePurpose_Description">
+            <summary>
+              Looks up a localized string similar to What is the purpose of this rule?  Why does this rule exist?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RulePurpose_Name">
+            <summary>
+              Looks up a localized string similar to Purpose.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleResolution_Description">
+            <summary>
+              Looks up a localized string similar to How do we resolve this rule when it is triggered?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleResolution_Name">
+            <summary>
+              Looks up a localized string similar to Resolution.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleStatus_Description">
+            <summary>
+              Looks up a localized string similar to What is the status of this rule?.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleStatus_Name">
+            <summary>
+              Looks up a localized string similar to Status.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.TaxonomyType_Description">
             <summary>
               Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..

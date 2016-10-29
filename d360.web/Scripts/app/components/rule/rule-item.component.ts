@@ -37,25 +37,27 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">                      
-                        <div class="col s12">
-                            <div class="row">
-                                <div class="col s12">
-                                     <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                        <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-object-governance>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col s12">
-                                    <div class="tile tile-detail">
-                                        <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false"></d3s-object-definition-tile>
-                                    </div>
-                                </div>
-                            </div>                            
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                    <div class="col s12">
+                            <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
+                            <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-object-governance>
                         </div>
+                    </div>
                 </div>
-                `
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false"></d3s-object-definition-tile>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-rule-results-grid [ruleId]="rule?.ID"></d3s-rule-results-grid> 
+                        </div>
+                    </div>
+                </div>`
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {

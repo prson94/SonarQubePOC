@@ -44,28 +44,28 @@ import { StringConstants } from '../../static/string-constants';
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
                                 </template>
                             </p-column>
-                            <p-column [style]="{width:'40px'}">
+                            <p-column [style]="{width:'25px'}">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
-                            <p-column [style]="{width:'40px'}">
+                            <p-column [style]="{width:'25px'}">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
-                            <p-column [style]="{width:'40px'}" *ngIf="showEditButton">
+                            <p-column [style]="{width:'25px'}" *ngIf="showEditButton">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                             </p-column>                            
-                            <p-column  [style]="{width:'40px'}" *ngIf="showDeleteButton">
+                            <p-column  [style]="{width:'25px'}" *ngIf="showDeleteButton">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    

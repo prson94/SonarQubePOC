@@ -4133,7 +4133,7 @@ from    (
         [Route("rules")]
         public IQueryable<Rule> GetRules()
         {            
-            return Company.Rules.Include("Dimension");            
+            return Company.Rules.Include("Dimension");
         }
 
         [Route("ruledimensions")]
@@ -5169,33 +5169,76 @@ from    (
                     #endregion
                 case SystemObjects.Rule:
                     #region Fields
+
                     var rule = Company.Rules.Include("dimension").Where(x => x.ID == id).FirstOrDefault();
                     if (rule != null)
                     {
-                        if (rule.RuleDimensionID > 0)
-                        {
-                            var dimensionLink =  string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID);
+                        var dimensionLink = (rule.RuleDimensionID.HasValue) ?
+                                string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID) :
+                                "";
 
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = dimensionLink }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleStatus_Name, FieldName = "RuleStatus", FieldDescription = rule.Status.GetRuleTypeDescription(), Value = rule.Status.GetRuleStatusDisplayName() }
+                            }
+                        });
+
+                        if (!string.IsNullOrEmpty(rule.Description))
+                        {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = rule.GetName(i => i.RuleDimensionID), FieldName = "RuleDimensionID", FieldDescription = rule.GetDescription(i => i.RuleDimensionID), Value = dimensionLink }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleDescription_Name, FieldName = "RuleDescription", FieldDescription = Resources.FieldInfo.RuleDescription_Description, Value = rule.Description }
                                 }
                             });
                         }
 
-                        model.rows.Add(new DetailReadOnlyRowModel
+                        if (!string.IsNullOrEmpty(rule.Measurement))
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
+                            model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                new ReadOnlyField { Name = rule.GetName(i => i.Description), FieldName = "RuleDescription", FieldDescription = rule.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(rule.Description) ? "None provided" : rule.Description }
-                            }
-                        });
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleMeasurement_Name, FieldName = "RuleMeasurement", FieldDescription = Resources.FieldInfo.RuleMeasurement_Description, Value = rule.Measurement }
+                                }
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(rule.Purpose))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.RulePurpose_Name, FieldName = "RulePurpose", FieldDescription = Resources.FieldInfo.RulePurpose_Description, Value = rule.Purpose }
+                                }
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(rule.Resolution))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleResolution_Name, FieldName = "RuleResolution", FieldDescription = Resources.FieldInfo.RuleResolution_Description, Value = rule.Resolution }
+                                }
+                            });
+                        }
                     }
-                    policy = null;
+                    rule = null;
                     break;
                     #endregion
                 case SystemObjects.ResponsibilityType:

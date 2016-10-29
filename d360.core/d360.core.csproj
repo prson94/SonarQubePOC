@@ -140,6 +140,8 @@
     <Compile Include="entities\FusionAgentError.cs" />
     <Compile Include="entities\FusionAgentErrorItem.cs" />
     <Compile Include="entities\IntersectTypePredicate.cs" />
+    <Compile Include="entities\RuleMap.cs" />
+    <Compile Include="entities\RuleResult.cs" />
     <Compile Include="entities\RuleDimension.cs" />
     <Compile Include="entities\Predicate.cs" />
     <Compile Include="entities\CommentVote.cs" />
@@ -304,6 +306,7 @@
     <Compile Include="enums\JobIntervalType.cs" />
     <Compile Include="enums\ObjectType.cs" />
     <Compile Include="enums\ResponsibilityTransformationType.cs" />
+    <Compile Include="enums\RuleStatus.cs" />
     <Compile Include="enums\RuleType.cs" />
     <Compile Include="enums\QueueType.cs" />
     <Compile Include="enums\ReportTileType.cs" />

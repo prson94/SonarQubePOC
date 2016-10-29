@@ -160,6 +160,7 @@ import {
     RuleComponent,
     RuleItemComponent,
     RuleListComponent,
+    RuleResultsGridComponent,
 } from './components/rule/index';
 
 import {
@@ -268,7 +269,8 @@ import {
         RightSidebarItemComponent,
         RuleComponent,        
         RuleItemComponent,
-        RuleListComponent,        
+        RuleListComponent,    
+        RuleResultsGridComponent,    
         SimpleDropdown,    
         StructureTile,        
         SynonymsTile,

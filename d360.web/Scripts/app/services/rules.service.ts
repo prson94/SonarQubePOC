@@ -3,8 +3,9 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
-import { RuleType, RuleDimension, Rule, RuleDetail } from '../models/rule.model';
+import { RuleType, RuleDimension, Rule, RuleDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { SortOrder } from '../models/enums.model';
 
 @Injectable()
 export class RulesService extends BaseService {
@@ -48,6 +49,17 @@ export class RulesService extends BaseService {
             .toPromise()
             .then(response => <RuleDimension[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: RuleResultFilter[]): Promise<RuleResultPagedResults> {
+        return this.http.get(`internal/monitor/rules/${id}/results`)
+            .toPromise()
+            .then(response => <RuleResultPagedResults>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getResultsByRuleExcel(id: number) {
+        window.location.assign(`internal/monitor/ExportResultsByRule?id=${id}`);
     }
 
     deleteDimension(id: number): Promise<JsonResult> {

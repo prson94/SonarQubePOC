@@ -54,4 +54,32 @@ namespace d360.core.entities
         ]
         public int ID { get; set; }
     }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseCreatedIntObject : BaseIntObject
+    {
+        public int? CreatedBy { get; set; }
+
+        public DateTime CreatedOn
+        {
+            get
+            {
+                return this.createdon.HasValue
+                   ? this.createdon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.createdon = value; }
+        }
+
+        private DateTime? createdon = null;
+    }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseUpdatedIntObject : BaseCreatedIntObject
+    {
+        public DateTime? UpdatedOn { get; set; }
+
+        public int? UpdatedBy { get; set; }
+    }
 }

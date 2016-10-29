@@ -1362,6 +1362,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-children.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />

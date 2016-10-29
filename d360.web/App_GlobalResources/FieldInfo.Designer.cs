@@ -430,6 +430,123 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The description or definition of this rule..
+        /// </summary>
+        internal static string RuleDescription_Description {
+            get {
+                return ResourceManager.GetString("RuleDescription_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Description.
+        /// </summary>
+        internal static string RuleDescription_Name {
+            get {
+                return ResourceManager.GetString("RuleDescription_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The dimension this rule is associated with.  This is a high-level classification for this rule, such as whether the rule measures completeness or accuracy..
+        /// </summary>
+        internal static string RuleDimension_Description {
+            get {
+                return ResourceManager.GetString("RuleDimension_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dimension.
+        /// </summary>
+        internal static string RuleDimension_Name {
+            get {
+                return ResourceManager.GetString("RuleDimension_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How do we measure this rule?.
+        /// </summary>
+        internal static string RuleMeasurement_Description {
+            get {
+                return ResourceManager.GetString("RuleMeasurement_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Measurement.
+        /// </summary>
+        internal static string RuleMeasurement_Name {
+            get {
+                return ResourceManager.GetString("RuleMeasurement_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name of this rule within Data3Sixty..
+        /// </summary>
+        internal static string RuleName_Description {
+            get {
+                return ResourceManager.GetString("RuleName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What is the purpose of this rule?  Why does this rule exist?.
+        /// </summary>
+        internal static string RulePurpose_Description {
+            get {
+                return ResourceManager.GetString("RulePurpose_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Purpose.
+        /// </summary>
+        internal static string RulePurpose_Name {
+            get {
+                return ResourceManager.GetString("RulePurpose_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to How do we resolve this rule when it is triggered?.
+        /// </summary>
+        internal static string RuleResolution_Description {
+            get {
+                return ResourceManager.GetString("RuleResolution_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolution.
+        /// </summary>
+        internal static string RuleResolution_Name {
+            get {
+                return ResourceManager.GetString("RuleResolution_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What is the status of this rule?.
+        /// </summary>
+        internal static string RuleStatus_Description {
+            get {
+                return ResourceManager.GetString("RuleStatus_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string RuleStatus_Name {
+            get {
+                return ResourceManager.GetString("RuleStatus_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..
         /// </summary>
         internal static string TaxonomyType_Description {
