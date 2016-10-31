@@ -5,7 +5,8 @@ import { BaseComponent } from '../shared/base.component';
 @Component({
     selector: 'd3s-header',
     template: ` <div class="navbar-fixed">
-                <nav class="top">                                   
+                <nav class="top">  
+                    <span class="logo" routerLink="" style="cursor:pointer;"></span>                                 
                     <d3s-header-breadcrumb></d3s-header-breadcrumb>                                          
                     <d3s-header-actions></d3s-header-actions>
                 </nav>

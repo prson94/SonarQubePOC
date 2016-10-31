@@ -28,7 +28,7 @@ nav.top a.help {
   color: #D32F2F;
 }
 nav.top,
-.side-nav {
+.left-side-nav {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
@@ -43,17 +43,124 @@ nav.top,
 /* end type ahead*/
 /* end top menu*/
 /* side menu*/
-.side-nav {
+.left-side-nav {
+  left: 0;
+  top: 0;
+  z-index: 999;
+  height: 100%;
+  position: fixed;
   background-color: #383127;
-  width: 200px;
+  width: 50px;
+  margin-top: 40px;
+  overflow-y: visible;
 }
-.side-nav li {
+.left-side-nav li {
   padding: 0;
 }
-.side-nav ul,
-.side-nav a {
+.left-side-nav a {
+  display: block;
+}
+.left-side-nav ul,
+.left-side-nav a {
   height: auto;
   line-height: normal;
+}
+.left-side-nav .menu-category {
+  padding: 0 15px;
+  color: white;
+  font-size: 1rem;
+  height: 35px;
+  line-height: 35px;
+  position: relative;
+}
+.left-side-nav .menu-category:hover {
+  background-color: #84796A;
+}
+.menu-parent .menu-child {
+  display: none;
+  width: 12.5em;
+  padding: 0.3em;
+  position: absolute;
+  margin: 0;
+  outline: 0;
+  line-height: 1.3;
+  text-decoration: none;
+  font-size: 100%;
+  list-style: none;
+}
+.menu-active > .megamenu-panel {
+  display: block !important;
+  width: auto;
+}
+.menu-group {
+  padding: 2.5px 5px;
+}
+.menu-item {
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  padding: 4px 15px !important;
+}
+.menu-item:hover {
+  background-color: #ddd;
+  color: black !important;
+}
+.megamenu-panel {
+  background-color: #84796A;
+  box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+@media only screen and (max-width: 600px) {
+  .megamenu-panel {
+    min-width: 500px;
+  }
+}
+@media only screen and (min-width: 601px) {
+  .megamenu-panel {
+    min-width: 600px;
+  }
+}
+@media only screen and (min-width: 993px) {
+  .megamenu-panel {
+    min-width: 800px;
+  }
+}
+.menu-level-indicator-0,
+.menu-level-indicator-1,
+.menu-level-indicator-2,
+.menu-level-indicator-3,
+.menu-level-indicator-4,
+.menu-level-indicator-5,
+.menu-level-indicator-n {
+  background-color: #ED6C44;
+  border-radius: 4px;
+  border: 1px solid #ffb353;
+  margin-right: 3px;
+  font-size: .55rem;
+  padding: 2px 2.5px;
+  vertical-align: middle;
+  color: white;
+}
+.menu-level-indicator-0:hover,
+.menu-level-indicator-1:hover,
+.menu-level-indicator-2:hover,
+.menu-level-indicator-3:hover,
+.menu-level-indicator-4:hover,
+.menu-level-indicator-5:hover,
+.menu-level-indicator-n:hover {
+  color: white;
+}
+.menu-level-indicator-1 {
+  background-color: #55A4DA;
+}
+.menu-level-indicator-2 {
+  background-color: #02981B;
+}
+.menu-level-indicator-3 {
+  background-color: #5c5e60;
+}
+.menu-level-indicator-4 {
+  background-color: #818385;
 }
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
@@ -87,16 +194,16 @@ d3s-navbar-item.top > div > span.nav-item:hover {
   background-color: #ddd;
   color: black;
 }
-.side-nav.fixed a {
+.left-side-nav.fixed a {
   color: white;
 }
-.side-nav ul.sub {
+.left-side-nav ul.sub {
   padding-left: 30px;
   height: 20px;
   line-height: 20px;
 }
-.side-nav ul.sub li,
-.side-nav ul.sub a {
+.left-side-nav ul.sub li,
+.left-side-nav ul.sub a {
   font-size: x-small;
   height: 20px;
   line-height: 20px;
@@ -104,45 +211,18 @@ d3s-navbar-item.top > div > span.nav-item:hover {
 /* end side menu*/
 /* main content*/
 .maincontent {
-  margin-left: 0;
-}
-@media only screen and (max-width: 600px) {
-  .maincontent {
-    margin-left: 0;
-    margin-right: 0;
-  }
-}
-@media only screen and (min-width: 601px) {
-  .maincontent {
-    margin-left: 0;
-    margin-right: 75px;
-  }
-}
-@media only screen and (min-width: 993px) {
-  .maincontent {
-    margin-left: 220px;
-    margin-right: 75px;
-  }
+  margin-left: 70px;
+  margin-right: 75px;
 }
 div.breadcrumbs {
-  margin-left: 0;
-  padding-left: 20px;
+  margin-left: 20px;
+  vertical-align: top;
   display: inline-block;
   color: #54a4da;
 }
 div.breadcrumbs .active,
 div.breadcrumbs .sep {
   color: #383127;
-}
-@media only screen and (min-width: 601px) {
-  div.breadcrumbs {
-    margin-left: 0;
-  }
-}
-@media only screen and (min-width: 993px) {
-  div.breadcrumbs {
-    margin-left: 220px;
-  }
 }
 /* end main content*/
 /* grid tiles*/

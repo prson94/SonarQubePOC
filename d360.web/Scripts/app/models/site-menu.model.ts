@@ -2,6 +2,7 @@
     Name: string;
     Url: string;
     Items: SiteMenuItem[];
+    IsLink: boolean;
 }
 
 export class SiteMenu {
@@ -9,6 +10,7 @@ export class SiteMenu {
     NavigationItems: SiteMenuItem[];
     ShouldDisplay: boolean;
     SortOrder: number;
+    isActiveItem: boolean = false;
 }
 
 export class SiteMenuModel {
@@ -27,5 +29,7 @@ export class SiteNav {
 
     DisplayName: string;
     IsCustom: boolean = false;
+        
+    public static zindex: number = 1000;
 }
 

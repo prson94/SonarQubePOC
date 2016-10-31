@@ -52,16 +52,17 @@
         .nav-top .profile a {
             color: @(settings["HeaderProfileLinkColor"]);
         }
-        .side-nav .logo {
+        nav.top .logo {
             background-color: @(settings["HeaderBackgroundColor"]);
             background-image: url(@(companyLogo));
             background-repeat: no-repeat;
             background-position: left top;
             background-size: auto 40px;
             height: 40px;
-            width:100%;
+            width:200px;
+            display:inline-block;
         }
-        side-nav .logo:hover{
+        nav.top .logo:hover{
             background-color: @(settings["HeaderBackgroundColor"]);
         }
         nav.top{

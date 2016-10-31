@@ -11,7 +11,7 @@ import 'rxjs/Rx';
     selector: 'd3s-app',    
     template: ` <header>
                     <d3s-header></d3s-header>
-                    <d3s-navbar></d3s-navbar>
+                    <d3s-site-menu></d3s-site-menu>
                 </header>
                 <main>                                                                          
                     <div class="row">                         

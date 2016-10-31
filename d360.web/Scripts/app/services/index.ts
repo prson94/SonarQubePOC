@@ -50,6 +50,7 @@ import { FusionAttributeService } from './fusion-attribute.service'
 import { GroupService } from './group.service';
 import { AuthenticationService } from './authentication.service';
 import { ReferenceService } from './reference.service';
+import { FavoritesService } from './favorites.service';
 
 export * from './messages.service';
 export * from './artifact-type.service';
@@ -103,3 +104,4 @@ export * from './fusion-attribute.service'
 export * from './group.service';
 export * from './authentication.service';
 export * from './reference.service';
+export * from './favorites.service';

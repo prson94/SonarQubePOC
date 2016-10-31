@@ -73,6 +73,9 @@ import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { SimpleAccordion } from './simple-accordion.part';
+import { SiteMenuComponent } from './menu/site-menu.component';
+import { SiteMenuCategoryComponent } from './menu/site-menu-category.component';
+import { SiteMenuMegaItemComponent } from './menu/site-menu-mega-item.component';
 import { TileActionsComponent } from './tile-actions.component';
 import { TakeSurveyComponent } from './take-survey.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
@@ -119,6 +122,9 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
         SimpleAccordion,
+        SiteMenuCategoryComponent,
+        SiteMenuComponent,    
+        SiteMenuMegaItemComponent,    
         TakeSurveyComponent,
         TileActionsComponent,        
         WorkflowDetailedViewComponent,
@@ -164,6 +170,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RelationshipTechnicalRelationsComponent,
         ResourceResponsibilityGridComponent,        
         SimpleAccordion,
+        SiteMenuCategoryComponent,
+        SiteMenuComponent,
         TakeSurveyComponent,
         TileActionsComponent,   
         WorkflowDetailedViewComponent,     
