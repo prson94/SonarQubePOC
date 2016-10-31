@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
 import { RuleType, RuleDimension, Rule, RuleDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
@@ -51,8 +52,57 @@ export class RulesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: RuleResultFilter[]): Promise<RuleResultPagedResults> {
-        return this.http.get(`internal/monitor/rules/${id}/results`)
+    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string): Promise<RuleResultPagedResults> {
+        let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
+        let uri = `internal/monitor/rules/${id}/results?pagesize=${pageSize}&pagenum=${pageNumber}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
+
+        if (filters != undefined) {
+            //regular fields
+            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
+            let count = 0;
+            uri += '&filterscount=' + normalFilters.length;
+
+            for (let filter of normalFilters) {
+                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //related filter fields
+            let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
+            count = 0;
+
+            uri += '&relfilterscount=' + rellFilters.length;
+
+            for (let filter of rellFilters) {
+                uri += `&relfilterdatafield${count}=${filter.field.replace("Field", "")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //hiden filter fields
+            let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
+            count = 0;
+
+            uri += '&hidfilterscount=' + hidFilters.length;
+
+            for (let filter of hidFilters) {
+                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${filter.value}`;
+                count++;
+            }
+        }
+
+        if (attributes != undefined) {
+            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+        }
+
+        if (relationships != undefined) {
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
+        }
+
+        if (simpleFilter != undefined) {
+            uri += `&filter=${simpleFilter}`;
+        }
+
+        return this.http.get(uri)
             .toPromise()
             .then(response => <RuleResultPagedResults>response.json())
             .catch(err => this.handleError(err));

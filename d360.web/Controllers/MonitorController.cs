@@ -156,10 +156,50 @@ inner join [Rule] T on T.ID = G.RuleID and A.EventGroupID = @id {1}", columns, j
         }
 
         [Route("rules/{id:int}/results")]
-        public JsonNetResult GetRuleResults(int id)
+        public JsonNetResult GetRuleResults(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
-            var results = Company.Filter<RuleResult>(i => i.RuleID == id);
-            return new JsonNetResult { Data = new { total = results.Count() , results = results }, Formatting = Formatting.None };
+            var dbArgs = new Dapper.DynamicParameters();
+
+            dbArgs.Add("id", id);
+
+            var querySql = @"select	A.*,
+        F.TextPath as FusionAttribute
+from	RuleResult A 
+        left join FusionAttribute F on F.ID = A.FusionAttributeID
+where   A.RuleID = @id";
+
+            //if simple filter specified add that citeria to the sql
+            if (!string.IsNullOrEmpty(filter))
+            {
+                querySql = $@"{querySql} and {addDynamicFieldSimpleFilter(new string[] { 
+                    "A.EffectiveDate", 
+                    "A.RowsPassed",
+                    "A.RowsFailed",
+                    "A.PassFraction",
+                    "A.FailFraction",
+                    "A.Passed",
+                    "F.TextPath"
+                }, "RuleResult", id, filter, dbArgs)}";
+            }
+
+
+            querySql = applyRelationFilteringExists(querySql, Request, dbArgs);
+
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
+
+
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs, true);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
+
+
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "EffectiveDate", "desc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
+
+            int total = Company.Query<int>(countSql, dbArgs).First();
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
+            return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
         }
 
         #endregion

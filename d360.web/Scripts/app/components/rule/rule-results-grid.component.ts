@@ -1,20 +1,27 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RulesService } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { RuleColumnFilterComponent } from './rule-column-filter.component'
 
 @Component({
     selector: 'd3s-rule-results-grid',
     template: `                 
                 <div class="tile tile-detail">
-                    <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
+                    <header>
+                        Values
+                        <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasFilterMode]="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>
+                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
+                        <div *ngIf="showSimpleFilter">                                                
+                            <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        </div>
+                        <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
                         <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <p-column field="EffectiveDate" header="Effective Date" [sortable]="true"></p-column>  
                             <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'20%'}"></p-column>
@@ -40,17 +47,26 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     //@Input() rule: any;
     //@Output() ruleChange = new EventEmitter();
 
-    private filters: RuleResultFilter[] = [];
+    simpleTextFilter: string;
+    showSimpleFilter: boolean = true;
     
     private rowsPerPage: number = 10;
     private results: RuleResultPagedResults;
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
+    @ViewChild(RuleColumnFilterComponent) private filtersComponent: RuleColumnFilterComponent;
+
     currentPageNumber: number = 0;
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;
+    filters: GridFilterExpression[] = [];
+    relationships: GridRelationshipFilterExpression;
+    attributes: GridAttributeFilterExpression;
 
+    searchValue: string = "";
+    simpleSearchID: number = 0;
+    searchDelayMilliSeconds: number = 300;
     
     constructor(private ruleService: RulesService) {
         super();
@@ -81,8 +97,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     //    //    });
     //}
 
-    private doFilterResults(event) {        
-        this.filters = event;
+    public filterGridData(filterData) {     
         this.currentPageNumber = 0;        
         this.getData();
     }
@@ -96,15 +111,14 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
-                if (!this.filters[i].dataField || !this.filters[i].value) {
+                if (!this.filters[i].field || !this.filters[i].value) {
                     //console.log("REMOVING FILTER", i);
                     this.filters.splice(i, 1);
                 }
             }
         }
 
-
-        this.ruleService.getResultsByRule(this.ruleId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters)
+        this.ruleService.getResultsByRule(this.ruleId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleTextFilter)
             .then(res => {
                 this.results = res;
 
@@ -131,7 +145,30 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         this.getData();
     }
 
+    private checkSimpleSearchEnter(event, dt: DataTable) {
+        if (event.keyCode == 13) this.doSimpleSearch(dt);
+        else {
+            if (this.simpleSearchID > 0) {
+                window.clearTimeout(this.simpleSearchID);
+                this.simpleSearchID = 0;
+            }
+
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
+
+        }
+    }
+
+    private doSimpleSearch(dt: DataTable) {
+        if (dt) dt.reset();
+        this.getData();
+    }
+
     private doExport() {
         this.ruleService.getResultsByRuleExcel(this.ruleId);
+    }
+
+    resetFilters() {
+        this.simpleTextFilter = '';
+        this.filtersComponent.resetFilters();
     }
 };

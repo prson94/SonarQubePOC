@@ -158,6 +158,7 @@ import { RightSidebarItemComponent } from './components/rightsidebar/right-sideb
 
 import {
     RuleComponent,
+    RuleColumnFilterComponent,
     RuleItemComponent,
     RuleListComponent,
     RuleResultsGridComponent,
@@ -267,6 +268,7 @@ import {
         ResourceGroupsComponent,
         RightSidebarComponent,
         RightSidebarItemComponent,
+        RuleColumnFilterComponent,
         RuleComponent,        
         RuleItemComponent,
         RuleListComponent,    
