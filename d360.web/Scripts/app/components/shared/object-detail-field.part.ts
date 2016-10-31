@@ -17,8 +17,8 @@ import { Router } from '@angular/router';
             <div *ngIf="field.Type == DetailFieldType.Lookup">
                 <d3s-dynamic-lookup-grid *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" [data]="field.Data" [hideHeader]="field.HideHeader" [hideFooter]="field.HideFooter" [hideFilter]="field.HideFilter"></d3s-dynamic-lookup-grid>
             </div>
-    `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    `
+    //,changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ObjectDetailField {
