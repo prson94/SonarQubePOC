@@ -3453,8 +3453,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     {
                         c = new ComplexColumnModel
                         {
-                            DisplayColumn = $"A{pos}.{i.FieldTypeName}",
-                            SortColumn = $"A{pos}.{i.FieldTypeName}",
+                            DisplayColumn = $"A{position}.{i.FieldTypeName}",
+                            SortColumn = $"A{position}.{i.FieldTypeName}",
                             datafield = i.FieldTypeName,
                             text = i.OverrideDisplayName ?? i.FieldTypeName
                         };
@@ -3492,20 +3492,20 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         switch (i.Object)
                         {
                             case "ArtifactType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{pos}.ID as varchar) + '\">' + A{pos}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
                                 break;
                             case "FusionAttributeType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{pos}.ID as varchar) + '\">' + A{pos}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
                                 break;
                             default:
-                                displayColumn = $"A{pos}.{i.FieldTypeName}";
+                                displayColumn = $"A{position}.{i.FieldTypeName}";
                                 break;
                         }
 
                         c = new ComplexColumnModel
                         {
                             DisplayColumn = displayColumn,
-                            SortColumn = $"A{pos}.{i.FieldTypeName}",
+                            SortColumn = $"A{position}.{i.FieldTypeName}",
                             datafield = i.FieldTypeName,
                             text = i.OverrideDisplayName ?? i.FieldTypeName
                         };

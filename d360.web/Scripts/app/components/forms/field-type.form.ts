@@ -3,6 +3,8 @@ import { SelectItem } from 'primeng/primeng';
 import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
+import { ObjectDetailService } from '../../services/index';
+
 import * as _ from 'lodash';
 
 @Component({
@@ -30,7 +32,7 @@ import * as _ from 'lodash';
         }
 `
     ],
-    providers: [FieldsService],
+    providers: [FieldsService, ObjectDetailService],
 })
 
 export class FieldTypeForm implements OnInit, OnChanges {
@@ -58,7 +60,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private childIntersectsLoading = false;
     private childIntersectDisabled = true;
 
-    constructor(private fieldsService: FieldsService, private messagesService: MessagesService) {
+    private errorMessage: string = "";
+
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType(); 
         this.model.FieldType.Object = this.objectType;
@@ -219,6 +223,30 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
                             });
                             this.relationItemCount = this.model.RelationItems.length;
+
+                            if (this.model.RelationItems) {
+                                let r = this.model.RelationItems[0];
+
+                                this.lookups.IntersectTypes.forEach(i => {
+                                    let params = i.value.split('|');
+
+                                    if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
+                                        r.IntersectType = parseInt(i.id);
+                                        r.selectedIntersectName = i.label;
+                                    }
+
+                                });
+
+                                let s = null;
+                                if (r.IntersectType == null) {
+                                    this.objectDetailService.getObject(this.objectID, this.objectType)
+                                        .then(o => {
+                                            r.selectedIntersectName = o.Name
+                                        });
+                                    s = '0|' + this.objectType + '|' + this.objectID;
+                                    this.changeRefType(r, s);
+                                }
+                            }
                         }
 
                         if (this.model.FieldType.Type == 'RelationLookup') {
@@ -279,6 +307,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     private loadDataType(value: string): Promise<void> {
         let promises = [];
+        console.log('load data type');
+        console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.loadTokens(this.model.FieldType.LookupObjectType,this.model.FieldType.LookupObjectID));                
@@ -301,6 +331,27 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     r.ObjectID = this.objectID;
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
+
+                    
+
+                    this.lookups.IntersectTypes.forEach(i => {
+                        let params = i.value.split('|');
+
+                        if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
+                            r.IntersectType = parseInt(i.id);
+                            r.selectedIntersectName = i.label;
+                        }
+
+                    });
+                    let s = null;
+                    if (r.IntersectType == null) {
+                        this.objectDetailService.getObject(this.objectID, this.objectType)
+                            .then(o => {
+                                r.selectedIntersectName = o.Name
+                            });
+                        s = '0|' + this.objectType + '|' + this.objectID;
+                        this.changeRefType(r, s);
+                    }
                     //console.log(this.lookups);
                 }
                 break;
@@ -368,7 +419,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel): Promise<void> {
-        return this.fieldsService.getFusionDisplayFields(item.TargetFusionAttributeType)
+        return this.fieldsService.getFusionDisplayFields(item.TargetFusionAttributeType || item.SourceFusionAttributeType)
             .then(d => {
                 item.FusionDisplayFields = d;
             });
@@ -411,6 +462,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
         
     private onSubmit(): void {
+
+        if (!this.validate())
+            return;
 
         if (this.model.FieldType.Type == 'ComplexRelationLookup') {
             let r = new FieldTypeRelationItemEditorModel();
@@ -499,13 +553,41 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         }
     }
+    
+
+    private validate(): boolean {
+        let valid = true;
+        this.errorMessage = '';
+        console.log(this.model.FieldType.Type);
+
+        switch (this.model.FieldType.Type.toLowerCase()) {
+            case 'relationlookup':
+                break;
+            case 'fusionlookup':
+                if (this.model.FusionItems == null || this.model.FusionItems.length < 1) {
+                    this.errorMessage = "Please add at least one fusion item";
+                    valid = false;
+                }
+                break;
+            case 'text':
+                if (this.model.FieldType.MinimumLength != null && this.model.FieldType.MaximumLength != null) {
+                    if (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength) {
+                        this.errorMessage = "Minimum length cannot be greater than maximum length."
+                        valid = false;
+                    }
+                }
+                        
+                break;
+        }
+        return valid;
+    }
 
     changeRefType(item: FieldTypeRelationItemEditorModel, selected: string = null): Promise<any> {
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
-        //console.log('changeRefType()');
-        //console.log(item);
+        console.log('changeRefType()');
+        console.log(item);
 
         if (item.IntersectType == null)
             item.IntersectType = parseInt(item.selectedRelationItemID.split('|')[0]);
@@ -513,6 +595,11 @@ export class FieldTypeForm implements OnInit, OnChanges {
             item.Object = item.selectedRelationItemID.split('|')[1];
         if (item.ObjectID == null)
             item.ObjectID = parseInt(item.selectedRelationItemID.split('|')[2]);
+
+        //if (item.selectedIntersectName != null) {
+
+
+        //}
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item

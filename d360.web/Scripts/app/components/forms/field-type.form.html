@@ -14,6 +14,7 @@
     <form (ngSubmit)="onSubmit()" #fieldEditor="ngForm">
         <div class="row">
             <div class="col s4">
+                <div *ngIf="errorMessage != ''" style="color:maroon">{{errorMessage}}</div>
                 <div id='FriendlyNameTip' class="FieldNameRequired">Name<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
                 <input required name="friendlyname" pInputText type="text" [(ngModel)]="model.FieldType.FriendlyName" style="width: 98%; display: block;" (keyup)="syncApiNameWithName && updateApiName($event)" #friendlyName="ngModel" />
                 <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
@@ -152,9 +153,10 @@
                         </tr>
                         <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
                             <td style="vertical-align: top; width:30%" *ngIf="x == 0">
-                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.IntersectType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
+                                {{i.selectedIntersectName}}
+                                <!--<select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.IntersectType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
                                     <option *ngFor="let j of lookups.IntersectTypes" [value]="j.id">{{j.label}}</option>
-                                </select>
+                                </select>-->
                             </td>
                             <td style="vertical-align: top; width:30%" *ngIf="x > 0">
                                 {{i.displayValue}}
