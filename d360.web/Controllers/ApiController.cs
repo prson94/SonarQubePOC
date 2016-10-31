@@ -3370,6 +3370,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             public int SortOrder { get; set; }
 
             public string Filter { get; set; }
+
         }
 
         private void loadComplexLookupColumns(List<FieldType> fieldTypes, List<FieldTypeLookupDefinitionField> fields, List<ComplexColumnModel> columnModels, FieldTypeLookupDefinitionRelation join, string intersectIDColumn, string objColumn, string objIDColumn, int position)
@@ -3492,10 +3493,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         switch (i.Object)
                         {
                             case "ArtifactType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
                                 break;
                             case "FusionAttributeType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+                                displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
                                 break;
                             default:
                                 displayColumn = $"A{position}.{i.FieldTypeName}";
@@ -3643,6 +3644,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
                     columns.Add(gc);
                 });
+
 
                 results = Company.Query<dynamic>(sqlQuery);
             }

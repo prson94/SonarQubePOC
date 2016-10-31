@@ -50,8 +50,8 @@ export class ObjectDetailComponent implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
-                    //console.log('detail tile: ');
-                    //console.log(data);
+                    console.log('detail tile: ');
+                    console.log(data);
                     this.rows = data.rows;
                     this.categories = [];
                     
@@ -69,10 +69,10 @@ export class ObjectDetailComponent implements OnChanges {
                             }
 
                             if (f.Type == DetailFieldType.Lookup) {
-                                //console.log('get lookup grid');
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
                                     .then(i => {
-                                        //console.log(i);
+                                        console.log('get lookup grid');
+                                        console.log(i);
                                         f.Data = i;
                                     })
                                     .then(() => {

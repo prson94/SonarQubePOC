@@ -562,11 +562,28 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
         switch (this.model.FieldType.Type.toLowerCase()) {
             case 'relationlookup':
+                if (this.model.RelationItem.DisplayFields) {
+                    let count = 0;
+                    this.model.RelationItem.DisplayFields.forEach(d => {
+                        if (d.Show) count++;
+                    });
+                    if (count < 1) {
+                        this.errorMessage = "There are no display fields selected for this relationship lookup.";
+                        valid = false;
+                    }
+                }
                 break;
             case 'fusionlookup':
                 if (this.model.FusionItems == null || this.model.FusionItems.length < 1) {
                     this.errorMessage = "Please add at least one fusion item";
                     valid = false;
+                } else {
+                    this.model.FusionItems.forEach(i => {
+                        if (i.SourceFusionAttributeType == null || (i.ReferenceType != 1 && i.TargetFusionAttributeType == null)) {
+                            this.errorMessage = "One or more fusion items is missing a source or target type.";
+                            valid = false;
+                        }
+                    });
                 }
                 break;
             case 'text':

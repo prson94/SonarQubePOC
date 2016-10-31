@@ -6,6 +6,8 @@ import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../model
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+import * as _ from 'lodash';
+
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
     template: `    
@@ -57,22 +59,44 @@ export class DynamicLookupGridComponent implements OnInit {
     @Input() hideHeader = false;
     @Input() hideFilter = true;
 
+    isComplex = false;
+
     constructor(private router: Router) {
     }
     
     ngOnInit() {
+        
+        this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
+
         //do this on init to avoid binding to function call
         this.data.Columns.forEach(c => {
             c.type = this.columnDataType(c);
             //console.log(c.type);
         });
+
+        //if (this.isComplex) {
+        //    this.data.Fields.forEach(f => {
+        //        this.data.Columns.forEach(c => {
+        //            let v: string = f[c.datafield];
+
+        //            if (v.startsWith('<a href=')) {
+        //                v = v.substring(v.indexOf('"'));
+        //                let e = v.indexOf('"');
+        //                v = v.substring(0, e);
+        //                f['Url'] = v;
+        //                console.log(v);
+        //            }
+        //        });
+        //    });
+        //}
         
     }
 
     private columnDataType(column: GridFilterColumn): string {
         var fields = this.data.Fields.filter(x => x.name == column.datafield);
 
-        if (column.datafield == 'Name' || column.datafield == 'TextPath')
+        //TODO: need to modify values from server to contain object
+        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
             return 'tooltip';
         if (fields.length > 0)
             return fields[0].type;

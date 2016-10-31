@@ -14,7 +14,6 @@
     <form (ngSubmit)="onSubmit()" #fieldEditor="ngForm">
         <div class="row">
             <div class="col s4">
-                <div *ngIf="errorMessage != ''" style="color:maroon">{{errorMessage}}</div>
                 <div id='FriendlyNameTip' class="FieldNameRequired">Name<span class="FieldNameError" data-bind="visible: FriendlyNameInvalid">*</span></div>
                 <input required name="friendlyname" pInputText type="text" [(ngModel)]="model.FieldType.FriendlyName" style="width: 98%; display: block;" (keyup)="syncApiNameWithName && updateApiName($event)" #friendlyName="ngModel" />
                 <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
@@ -42,6 +41,11 @@
                 <div class="col s3 input-field">
                     <input name="isRequired" #isRequired pCheckbox type="checkbox" [(ngModel)]="model.FieldType.IsRequired" (change)="model.FieldType.MinimumLength = (isRequired.checked) ? 1 : 0" />Is Required?
                 </div>
+            </div>
+        </div>
+        <div class="row" *ngIf="errorMessage != ''">
+            <div class="col s12">
+                <div style="color:red">{{errorMessage}}</div>
             </div>
         </div>
         <div class="row" *ngIf="model.FieldType.Type == 'Lookup'">
