@@ -9,7 +9,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
-                <a (click)="itemClick()" class="menu-item" [ngStyle]="{'margin-left': getMargin()}">
+                <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
                     <span [class]="'menu-level-indicator-' + level" [innerHtml]="getLevelDecorator()"></span> {{item.Name}}</a>                    
                 <d3s-site-menu-mega-item *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
                 `,

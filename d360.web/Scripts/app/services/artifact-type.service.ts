@@ -66,8 +66,7 @@ export class ArtifactTypeService extends BaseService {
 
         tree.forEach(t => {
             this.formTreeR(t, data);
-        });
-        console.log(tree);
+        });        
         return tree;
     }
 

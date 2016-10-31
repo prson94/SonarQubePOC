@@ -57,9 +57,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.isLoading = true;
 
         this.fieldsService.getFields(this.objectID, this.objectType)
-            .then(data => {
-                console.log('fields data: ');
-                console.log(data);
+            .then(data => {                
                 this.fieldDefinitions = data;
                 this.selectedRow = null;
                 this.isLoading = false;

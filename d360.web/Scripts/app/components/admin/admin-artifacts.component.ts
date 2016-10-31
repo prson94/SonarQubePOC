@@ -81,7 +81,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load();
+        this.load();        
         this.stateService.reloadLeftNavMenu();
     }
 }

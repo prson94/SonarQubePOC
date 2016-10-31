@@ -38,7 +38,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subSiteNav: any;
     private subFavorites: any;  
 
-    constructor(private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
+    constructor(private stateService: StateService, private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
         super();
     }
 
@@ -46,7 +46,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.loadMenu();
         this.loadFavorites();
 
-        this.subSiteNav = this.headerActionsService.onSiteNavChanges$.subscribe(() => {
+        this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
         });
 
@@ -77,7 +77,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadMenu() {
         this.siteMenuService.getMenu()
-            .then(result => {                
+            .then(result => {                         
                 this.siteMenu = result.MenuItems;
 
                 this.glossaryMenu = this.siteMenu.filter(x => x.MenuID == '#Glossary')[0];                

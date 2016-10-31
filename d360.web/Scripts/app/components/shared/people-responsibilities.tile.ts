@@ -51,8 +51,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
         this.isLoading = true;
         this.responsibilityService.getResponsibilityDetail(this.objectID, this.objectType, this.showHidden)
-            .then(data => {
-                console.log(data);
+            .then(data => {                
                 data.forEach(d => {
                     d.ObjectUrl = SiteUrlHelpers.getObjectUrl(d.ObjectType, d.ObjectID, d.ObjectTypeID);
                     d.ResponsibleObjectUrl = SiteUrlHelpers.getObjectUrl(d.ResponsibleObjectType, d.ResponsibleObjectID);
