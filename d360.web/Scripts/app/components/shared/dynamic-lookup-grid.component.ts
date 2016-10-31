@@ -105,7 +105,7 @@ export class DynamicLookupGridComponent implements OnInit {
 
     navigate(url: string) {
         //TODO: should attempt to generate dynamically by object/objectid eventually
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url)); 
     }
 }
 
