@@ -11,6 +11,10 @@ export class SiteMenu {
     ShouldDisplay: boolean;
     SortOrder: number;
     isActiveItem: boolean = false;
+
+    ngUrl: string;
+    ngIcon: string;
+    ngTooltip: string;
 }
 
 export class SiteMenuModel {

@@ -4,19 +4,16 @@ import { SiteMenuService, AuthenticationService, StateService, FavoritesService,
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu',    
     template: ` 
                 <ul class="left-side-nav">
-                    <d3s-site-menu-category [url]="modelRootUrl()" rootToolTip="Models" rootIconName="fa-sitemap" [menu]="modelMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category [url]="glossaryRootUrl()" rootToolTip="Glossary" rootIconName="fa-book" [menu]="glossaryMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category [url]="monitorUrl()" rootToolTip="Monitor" rootIconName="fa-dashboard"></d3s-site-menu-category>
-                    <d3s-site-menu-category rootToolTip="Policies" rootIconName="fa-university" [menu]="policiesMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category rootToolTip="Data Quality" rootIconName="fa-pie-chart" [menu]="dataQualityMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category [url]="referenceUrl()" rootToolTip="Reference" rootIconName="fa-cubes"></d3s-site-menu-category>
-                    <d3s-site-menu-category [url]="fusionUrl()" rootToolTip="Fusion" rootIconName="fa-database"></d3s-site-menu-category>
-                    <d3s-site-menu-category [url]="communityUrl()" rootToolTip="Community" rootIconName="fa-group"></d3s-site-menu-category>
+                    <template ngFor let-menu [ngForOf]="siteMenu">
+                        <d3s-site-menu-category [url]="menu.ngUrl" [rootToolTip]="menu.ngTooltip" [rootIconName]="menu.ngIcon" [menu]="menu"></d3s-site-menu-category>
+                    </template>
+                  
                     <d3s-site-menu-category *ngIf="isAdmin" rootToolTip="Administration" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
                     <d3s-site-menu-category *ngIf="favorites" [menu]="favorites" rootToolTip="Favorites" rootIconName="fa-star"></d3s-site-menu-category>
                 </ul>
@@ -29,11 +26,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private isAdmin: boolean = false;
     private siteMenu: SiteMenu[] = [];
     private favorites: SiteMenu;
-
-    private glossaryMenu: SiteMenu;
-    private modelMenu: SiteMenu;
-    private policiesMenu: SiteMenu;
-    private dataQualityMenu: SiteMenu;
+    
     private adminMenu: SiteMenu;  
     private subSiteNav: any;
     private subFavorites: any;  
@@ -62,6 +55,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadFavorites(){        
         this.favoritesService.getFavorites().then(favorites => {            
+            favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
             this.favorites.NavigationItems = [];
             for (let favorite of favorites) {
@@ -77,14 +71,63 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadMenu() {
         this.siteMenuService.getMenu()
-            .then(result => {                         
-                this.siteMenu = result.MenuItems;
+            .then(result => {
+                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin' && x.MenuID != '#Home' ) ); //remove admin menu it will get built later.  Remove home menu we dont need it
 
-                this.glossaryMenu = this.siteMenu.filter(x => x.MenuID == '#Glossary')[0];                
-                this.modelMenu = this.siteMenu.filter(i => i.MenuID == '#Models')[0];
-                this.policiesMenu = this.siteMenu.filter(i => i.MenuID == '#Policy')[0];
-                this.dataQualityMenu = this.siteMenu.filter(i => i.MenuID == '#Data Quality')[0];
-
+                // add properties we need to add to the burned in menus
+                for (let menu of result.MenuItems) {
+                    switch (menu.MenuID) {
+                        case '#Glossary':
+                            menu.ngIcon = 'fa-book';                            
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
+                            break;
+                        case '#Models':
+                            menu.ngIcon = 'fa-sitemap';
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
+                            break;
+                        case '#Policy':
+                            menu.ngIcon = 'fa-university';
+                            menu.ngTooltip = 'Policies';
+                            break;
+                        case '#Data Quality':
+                            menu.ngIcon = 'fa-pie-chart';
+                            menu.ngTooltip = 'Data Quality';
+                            break;
+                        case '#Monitor':
+                            menu.ngIcon = 'fa-dashboard';
+                            menu.ngTooltip = 'Monitor';
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
+                            break;
+                        case '#Reference':
+                            menu.ngIcon = 'fa-cubes';
+                            menu.ngTooltip = 'Reference';
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+                            break;
+                        case '#Fusion':
+                            menu.ngIcon = 'fa-database';
+                            menu.ngTooltip = 'Fusion';
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
+                            break;
+                        case '#Community':
+                            menu.ngIcon = 'fa-group';
+                            menu.ngTooltip = 'Community';
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
+                            break;
+                        default:
+                            //is it a custom menu?
+                            if (menu.MenuID.startsWith('~')) {
+                                menu.ngIcon = 'fa-folder';                                
+                            }
+                            break;
+                    }
+                }
+                
+                this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
+                        
                 if (result.IsAdmin) this.buildAdminMenu();
 
                 // used to enable guard that allows access to administrative routes                
@@ -94,31 +137,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
             });
     }
-
-    private fusionUrl() {
-        return SiteUrlHelpers.SITE_URL_FUSION_ROOT;
-    }
-
-    private communityUrl() {
-        return SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
-    }
-
-    private referenceUrl() {
-        return SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
-    }
-
-    private monitorUrl() {
-        return SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
-    }
-
-    private modelRootUrl() {
-        return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
-    }
-
-    private glossaryRootUrl() {
-        return SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
-    }
-
+    
     private buildAdminMenu() {
         this.adminMenu = new SiteMenu();
         this.adminMenu.NavigationItems = [];
