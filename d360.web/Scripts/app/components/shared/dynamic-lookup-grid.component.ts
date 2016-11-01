@@ -13,7 +13,7 @@ import * as _ from 'lodash';
     template: `    
 
                <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
-                    <p-column *ngFor="let column of data.Columns" [sortable]="column.sortable" [field]="column.datafield">
+                    <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
@@ -25,6 +25,12 @@ import * as _ from 'lodash';
                                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
                                                 <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
                                             </d3s-tooltip>
+                                        </span>
+                                        <span *ngSwitchCase="'preview'">
+                                            <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
+                                                <a (click)="navigate(item[column.datafield + '_Url'])">{{item[column.datafield + '_Name']}}</a>
+                                            </d3s-tooltip>
+                                            <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                     </div>
@@ -32,7 +38,7 @@ import * as _ from 'lodash';
                     </p-column>                                                                                         
                 </p-dataTable>               
                <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
-                    <p-column *ngFor="let column of data.Columns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable" [field]="column.datafield">
+                    <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
@@ -44,6 +50,12 @@ import * as _ from 'lodash';
                                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
                                                 <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
                                             </d3s-tooltip>
+                                        </span>
+                                        <span *ngSwitchCase="'preview'">
+                                            <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
+                                                <a (click)="navigate(item[column.datafield + '_Url'])">{{item[column.datafield + '_Name']}}</a>
+                                            </d3s-tooltip>
+                                            <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                     </div>
@@ -61,6 +73,8 @@ export class DynamicLookupGridComponent implements OnInit {
 
     isComplex = false;
 
+    visibleColumns;
+
     constructor(private router: Router) {
     }
     
@@ -74,28 +88,23 @@ export class DynamicLookupGridComponent implements OnInit {
             //console.log(c.type);
         });
 
-        //if (this.isComplex) {
-        //    this.data.Fields.forEach(f => {
-        //        this.data.Columns.forEach(c => {
-        //            let v: string = f[c.datafield];
+        this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {
+            let i = this.data.Columns.find(i => i.datafield == c.text);
+            if (i) {
+                i.type = 'preview';
+            }
+        });
 
-        //            if (v.startsWith('<a href=')) {
-        //                v = v.substring(v.indexOf('"'));
-        //                let e = v.indexOf('"');
-        //                v = v.substring(0, e);
-        //                f['Url'] = v;
-        //                console.log(v);
-        //            }
-        //        });
-        //    });
-        //}
-        
+        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
+        //console.log(this.visibleColumns);
     }
 
     private columnDataType(column: GridFilterColumn): string {
         var fields = this.data.Fields.filter(x => x.name == column.datafield);
 
         //TODO: need to modify values from server to contain object
+        if (column.type == 'preview')
+            return 'preview';
         if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
             return 'tooltip';
         if (fields.length > 0)

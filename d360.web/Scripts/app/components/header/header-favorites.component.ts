@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { FavoritesService } from '../../services/favorites.service';
 import { Favorite } from '../../models/favorite.model';
@@ -33,7 +33,7 @@ import * as _ from 'lodash';
     providers: [FavoritesService]
 })
 
-export class HeaderFavoritesComponent implements OnInit, OnDestroy {
+export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
     @Input() active: boolean = false;
     @Output() onClick = new EventEmitter();
@@ -82,6 +82,10 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy {
             });
     }
 
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        this.activateFavorites();
+    }
 
     handleClick() {
         if (this.isLoading)

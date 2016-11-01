@@ -2,49 +2,60 @@
     <div style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
 </div>
 <div *ngIf="!isLoading">
-    <div class="row tile">
-        <div class="col s6">
-            <div id='ObjectTypeTip' class="FieldNameRequired">Type</div>
-            <p-dropdown [options]="ObjectTypes" [(ngModel)]="ObjectType" [style]="{'width':'80%', 'display':'block'}" (onChange)="objectTypeChange($event)"></p-dropdown>
+    <form #workflowForm="ngForm" (ngSubmit)="save()">
+        <div class="row tile">
+            <div class="col s6">
+                <div id='ObjectTypeTip' class="FieldNameRequired">Type</div>
+                <select style="width:80%;display:block;" [(ngModel)]="ObjectType" name="objecttype" (ngModelChange)="objectTypeChange()" required>
+                    <option>Please choose...</option>
+                    <option *ngFor="let o of ObjectTypes" [value]="o.value">{{o.label}}</option>
+                </select>
+            </div>
+            <div class="col s6">
+                <div id='ParentTypeTip' class="FieldNameRequired">{{taxonomyName}}</div>
+                <select style="width:80%;display:block;" [(ngModel)]="ParentType" name="parenttype">
+                    <option>Please choose...</option>
+                    <option *ngFor="let p of ParentTypes" [value]="p.value">{{p.label}}</option>
+                </select>
+                <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
+            </div>
         </div>
-        <div class="col s6">
-            <div id='ParentTypeTip' class="FieldNameRequired">{{taxonomyName}}</div>
-            <p-dropdown [options]="ParentTypes" [(ngModel)]="ParentType" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
-            <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
+        <div class="row tile">
+            <div class="col s6">
+                <div id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</div>
+                <select style="width:80%;display:block;" [(ngModel)]="item.ResponsibilityTypeID" name="responsibility" required>
+                    <option>Please choose...</option>
+                    <option *ngFor="let r of ResponsibilityTypes" [value]="r.value">{{r.label}}</option>
+                </select>
+                <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
+            </div>
+            <div class="col s6 input-field">
+                <p-checkbox [(ngModel)]="item.Enabled" name="enabled"></p-checkbox>
+                <label id='EnabledTip' for="Enabled">Enabled?</label>
+            </div>
         </div>
-    </div>
-    <div class="row tile">
-        <div class="col s6">
-            <div id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</div>
-            <p-dropdown [options]="ResponsibilityTypes" [(ngModel)]="item.ResponsibilityTypeID" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
-            <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
+        <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
+            <div class="col s6">
+                <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
+                <div id="DateForScheduleCalculation" name="DateForScheduleCalculation"></div>
+                <p-calendar [(ngModel)]="dateScheduleCalculation" name="scheduleDate" required></p-calendar>
+
+            </div>
+            <div class="col s6">
+                <div id='MonthsUntilCertificationTip' class="FieldName"># Months Until Certification</div>
+                <div id="MonthsUntilCertification" name="MonthsUntilCertification" value=""></div>
+                <input type="number" [(ngModel)]="numMonths" name="months" style="width:80%" required/>
+            </div>
         </div>
-        <div class="col s6 input-field">
-            <p-checkbox [(ngModel)]="item.Enabled"></p-checkbox>
-            <label id='EnabledTip' for="Enabled">Enabled?</label>
+        <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
+            <div class="col s6 offset-s6">
+                <div id='DaysGivenToCompleteCertificationTip' class="FieldName"># Days Given To Complete Certification</div>
+                <div id="DaysGivenToCompleteCertification" name="DaysGivenToCompleteCertification"></div>
+                <input type="number" [(ngModel)]="numDays" name="days" style="width:80%" required/>
+            </div>
         </div>
-    </div>
-    <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
-        <div class="col s6">
-            <div id='DateForScheduleCalculationTip' class="FieldName">Date For Schedule Calculation</div>
-            <div id="DateForScheduleCalculation" name="DateForScheduleCalculation"></div>
-            <p-calendar [(ngModel)]="dateScheduleCalculation"></p-calendar>
-            
+        <div class="row">
+            <button pButton type="submit" label="Save" [disabled]="!workflowForm.form.valid"></button> <button pButton type="button" (click)="cancel()" label="Cancel"></button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span>
         </div>
-        <div class="col s6">
-            <div id='MonthsUntilCertificationTip' class="FieldName"># Months Until Certification</div>
-            <div id="MonthsUntilCertification" name="MonthsUntilCertification" value=""></div>
-            <input type="number" [(ngModel)]="numMonths" />
-        </div>
-    </div>
-    <div class="row tile Workflow-2" *ngIf="item.WorkflowType == workflowType.CertifyArtifact">
-        <div class="col s6 offset-s6">
-            <div id='DaysGivenToCompleteCertificationTip' class="FieldName"># Days Given To Complete Certification</div>
-            <div id="DaysGivenToCompleteCertification" name="DaysGivenToCompleteCertification"></div>
-            <input type="number" [(ngModel)]="numDays" />
-        </div>
-    </div>
-    <div class="row">
-        <button pButton type="button" (click)="save()" label="Save"></button> <button pButton type="button" (click)="cancel()" label="Cancel"></button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span>
-    </div>
+    </form>
 </div>

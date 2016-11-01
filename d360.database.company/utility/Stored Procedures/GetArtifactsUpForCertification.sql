@@ -93,7 +93,7 @@ begin
 			if @DateFieldExists = 1
 			begin
 				update	WorkflowTypeRelation
-				set		Fields.modify('delete (/fields/CertificationStartDate)[1]')
+				set		Fields.modify('delete (/fields/CertificationStartDate)')
 				where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
 			end
 
@@ -108,7 +108,7 @@ begin
 			if @DateFieldExists = 1
 			begin
 				update	WorkflowTypeRelation
-				set		Fields.modify('delete (/fields/CertificationEndDate)[1]')
+				set		Fields.modify('delete (/fields/CertificationEndDate)')
 				where	[Object] = 'ArtifactType' and ObjectID = @id and WorkflowType = @wt
 			end
 
@@ -177,7 +177,7 @@ begin
 				if @DateFieldExists = 1
 				begin
 					update	WorkflowTypeRelation
-					set		Fields.modify('delete (/fields/CertificationStartDate)[1]')
+					set		Fields.modify('delete (/fields/CertificationStartDate)')
 					where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
 				end
 
@@ -192,7 +192,7 @@ begin
 				if @DateFieldExists = 1
 				begin
 					update	WorkflowTypeRelation
-					set		Fields.modify('delete (/fields/CertificationEndDate)[1]')
+					set		Fields.modify('delete (/fields/CertificationEndDate)')
 					where	[Object] = 'TaxonomyType' and ObjectID = @id and WorkflowType = @wt
 				end
 

@@ -74,13 +74,15 @@ export class WorkflowItemForm implements OnInit {
         this.ParentType = this.item.Parent + '|' + this.item.ParentID;
 
         this.workflowService.getWorkflow(this.item.ID, this.item.WorkflowType).then(data => {
-            console.log(data);
+            //console.log(data);
             this.ObjectTypes = data.ObjectTypes;
             this.ObjectTypes.map(o => { o.label = o.Text; o.value = o.Value });
             this.ParentTypes = data.ParentTypes;
             this.ParentTypes.map(o => { o.label = o.Text; o.value = o.Value });
             this.ResponsibilityTypes = data.ResponsibilityTypes
             this.ResponsibilityTypes.map(o => { o.label = o.Text; o.value = o.Value });
+
+            //this.objectTypeChange();
 
             this.numDays = data.WorkflowTypeRelation.Fields["DaysGivenToCompleteCertification"] || this.numDays;
             this.numMonths = data.WorkflowTypeRelation.Fields["MonthsUntilCertification"] || this.numMonths;
@@ -123,13 +125,13 @@ export class WorkflowItemForm implements OnInit {
         this.onCancel.emit({ initialItem: this.initialItem });
     }
 
-    private objectTypeChange(val: any) {
+    private objectTypeChange() {
         this.isLoadingResponsibility = true;
 
-        val = val.value;
+        let val = this.ObjectType;
 
-        var obj;
-        var id;
+        let obj;
+        let id;
 
         try {
             obj = val.split('|')[0];

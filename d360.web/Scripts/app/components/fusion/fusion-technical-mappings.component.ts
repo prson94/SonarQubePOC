@@ -15,7 +15,7 @@ import { FormMode } from '../../models/form.model';
                 <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
             <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="formMode == FormMode.Default">   
-            <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree | treeSearch: searchValue: 'SourceObjectName'" selectionMode="single" [(selection)]="selected">
+            <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree | treeSearch: searchValue: 'SourceFusion'" selectionMode="single" [(selection)]="selected">
             <p-column header="Group">
                 <template let-row="rowData" pTemplate type="body">
                     <div *ngIf="row.data.ID != 0">{{row.data.ID}}</div>

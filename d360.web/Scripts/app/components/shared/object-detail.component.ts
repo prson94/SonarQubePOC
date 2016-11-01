@@ -71,8 +71,8 @@ export class ObjectDetailComponent implements OnChanges {
                             if (f.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
                                     .then(i => {
-                                        console.log('get lookup grid');
-                                        console.log(i);
+                                        //console.log('get lookup grid');
+                                        //console.log(i);
                                         f.Data = i;
                                     })
                                     .then(() => {

@@ -81,6 +81,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     }
 
     save() {
+        console.log('save');
         this.isLoading = true;
         if (this.formMode == FormMode.Editing) {
             this.fusionService.putFusionType(this.newFusionType, this.newFusionStyle)

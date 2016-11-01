@@ -55,63 +55,78 @@
         </div>       
     </div>
     <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
-        <div class="row">
-            <div class="col s9">
-                <div class="tile tile-detail">
-                    <header *ngIf="formMode == FormMode.Adding">Add Fusion Type</header>
-                    <header *ngIf="formMode == FormMode.Editing">Edit {{newFusionType.Name}}</header>
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Name</div>
-                            <input pInputText type="text" style="width:98%" [(ngModel)]="newFusionType.Name" />
+        <form #fusionForm="ngForm" (ngSubmit)="save()">
+            <div class="row">
+                <div class="col s9">
+                    <div class="tile tile-detail">
+                        <header *ngIf="formMode == FormMode.Adding">Add Fusion Type</header>
+                        <header *ngIf="formMode == FormMode.Editing">Edit {{newFusionType.Name}}</header>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="FieldName">Name</div>
+                                <input type="text" style="width:98%" [(ngModel)]="newFusionType.Name" name="name" required/>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">Description</div>
-                            <p-editor [(ngModel)]="newFusionType.Description"></p-editor>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="FieldName">Description</div>
+                                <p-editor [(ngModel)]="newFusionType.Description" name="description"></p-editor>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s6">
-                            <div class="FieldName">Background Color</div>
-                            <table style="width:100%">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="newFusionStyle.IconBackColor" />
-                                        </td>
-                                        <td>
-                                            <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="row">
+                            <div class="col s6">
+                                <div class="FieldName">Background Color</div>
+                                <table style="width:100%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input [(colorPicker)]="newFusionStyle.IconBackColor"
+                                                       cpOutputFormat="hex"
+                                                       cpAlphaChannel="disabled"
+                                                       cpFallbackColor="#000"
+                                                       cpPosition="bottom"
+                                                       spellcheck="false"
+                                                       [value]="newFusionStyle.IconBackColor"
+                                                       style="width: 100%;height: 25px;" name="backcolor" required/>
+                                            </td>
+                                            <td>
+                                                <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col s6">
+                                <div class="FieldName">Foreground Color</div>
+                                <table style="width:100%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input [(colorPicker)]="newFusionStyle.IconForeColor"
+                                                       cpOutputFormat="hex"
+                                                       cpAlphaChannel="disabled"
+                                                       cpPosition="bottom"
+                                                       spellcheck="false"
+                                                       [value]="newFusionStyle.IconForeColor"
+                                                       style="width: 100%;height: 25px;" name="forecolor" required />
+                                            </td>
+                                            <td>
+                                                <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="col s6">
-                            <div class="FieldName">Foreground Color</div>
-                            <table style="width:100%">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <input pInputText style="height:25px;width:100%;display:block;" type="text" name="IconBackColor" [(ngModel)]="newFusionStyle.IconForeColor" />
-                                        </td>
-                                        <td>
-                                            <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12" style="padding-top:10px;">
-                            <button pButton type="button" label="Save" (click)="save();"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                        <div class="row">
+                            <div class="col s12" style="padding-top:10px;">
+                                <button pButton type="submit" label="Save" [disabled]="!fusionForm.form.valid"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
     <div *ngIf="formMode == FormMode.Deleting">
         <div class="row">

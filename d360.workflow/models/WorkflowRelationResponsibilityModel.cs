@@ -61,7 +61,8 @@ namespace d360.workflow.models
                 var d = new Dictionary<string, string>();
                 foreach (var x in XElement.Parse(Fields).Elements())
                 {
-                    d.Add(x.Name.LocalName, x.Value);
+                    if (!d.ContainsKey(x.Name.LocalName))
+                        d.Add(x.Name.LocalName, x.Value);
                 }
                 return d;
             } 

@@ -3420,6 +3420,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             var pos = position;
             fields.ForEach(i => {
                 ComplexColumnModel c = null;
+                List<ComplexColumnModel> lookupColumns = new List<ComplexColumnModel>();
                 var columnName = "";
                 FieldType ft = null;
                 var displayColumn = "";
@@ -3438,6 +3439,56 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         else
                         {
                             displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then 'lookuppreview' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup'  then 'preview' else 'none' end",
+                                SortColumn = null,
+                                datafield = $"Type",
+                                text = $"Type",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.FormattedValue",
+                                SortColumn = null,
+                                datafield = $"Name",
+                                text = $"Name",
+                                datafieldtype = "preview",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.Value",
+                                SortColumn = null,
+                                datafield = $"ObjectID",
+                                text = $"ObjectID",
+                                datafieldtype = "preview",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.LookupObjectType",
+                                SortColumn = null,
+                                datafield = $"Object",
+                                text = $"Object",
+                                datafieldtype = "preview",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.LookupUrl",
+                                SortColumn = null,
+                                datafield = $"Url",
+                                text = $"Url",
+                                datafieldtype = "preview",
+                                DisplayOrder = 1
+                            });
                         }
 
                         c = new ComplexColumnModel
@@ -3476,6 +3527,56 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         else
                         {
                             displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then 'lookuppreview' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup'  then 'preview' else 'none' end",
+                                SortColumn = null,
+                                datafield = $"Type",
+                                text = $"Type",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.FormattedValue",
+                                SortColumn = null,
+                                datafield = $"Name",
+                                text = $"Name",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.Value",
+                                SortColumn = null,
+                                datafield = $"ObjectID",
+                                text = $"ObjectID",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.LookupObjectType",
+                                SortColumn = null,
+                                datafield = $"Object",
+                                text = $"Object",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
+
+                            lookupColumns.Add(new ComplexColumnModel
+                            {
+                                DisplayColumn = $"F{pos}.LookupUrl",
+                                SortColumn = null,
+                                datafield = $"Url",
+                                text = $"Url",
+                                datafieldtype = "hidden",
+                                DisplayOrder = 1
+                            });
                         }
 
                         c = new ComplexColumnModel
@@ -3494,9 +3595,109 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                         {
                             case "ArtifactType":
                                 displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"'preview'",
+                                    SortColumn = null,
+                                    datafield = $"Type",
+                                    text = $"Type",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"A{position}.{i.FieldTypeName}",
+                                    SortColumn = null,
+                                    datafield = $"Name",
+                                    text =  $"Name",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"A{position}.ID",
+                                    SortColumn = null,
+                                    datafield = $"ObjectID",
+                                    text = $"ObjectID",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"'Artifact'",
+                                    SortColumn = null,
+                                    datafield = $"Object",
+                                    text = $"Object",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID)",
+                                    SortColumn = null,
+                                    datafield = $"Url",
+                                    text = $"Url",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
                                 break;
                             case "FusionAttributeType":
                                 displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"'preview'",
+                                    SortColumn = null,
+                                    datafield = $"Type",
+                                    text = $"Type",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"A{position}.{i.FieldTypeName}",
+                                    SortColumn = null,
+                                    datafield = $"Name",
+                                    text = $"Name",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"A{position}.ID",
+                                    SortColumn = null,
+                                    datafield = $"ObjectID",
+                                    text = $"ObjectID",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"'FusionAttribute'",
+                                    SortColumn = null,
+                                    datafield = $"Object",
+                                    text = $"Object",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
+
+                                lookupColumns.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID)",
+                                    SortColumn = null,
+                                    datafield = $"Url",
+                                    text = $"Url",
+                                    datafieldtype = "hidden",
+                                    DisplayOrder = 1
+                                });
                                 break;
                             default:
                                 displayColumn = $"A{position}.{i.FieldTypeName}";
@@ -3519,6 +3720,16 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     var count = columnModels.Count(cc => cc.datafield == c.datafield);
                     if (count > 0) c.datafield += count;
                     columnModels.Add(c);
+
+                    if (lookupColumns.Count > 0)
+                    {
+                        foreach(var col in lookupColumns)
+                        {
+                            col.datafield = c.datafield + '_' + col.datafield;
+                            col.text = c.datafield;
+                            columnModels.Add(col);
+                        }
+                    }
                 }
                 pos++;
             });

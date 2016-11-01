@@ -24,27 +24,52 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
     private selectedRow: WorkflowItem;
     private addingRow = new WorkflowItem();
 
-    actions = new Array<ActionBarItem>();
+    private addMenu: MenuItem[] = [];
 
     constructor(rightSidebarService : RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private workflowService: WorkflowService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         
         this.areaName = "Workflow";
         this.setCommonItems();
-        
-        this.actions.push({
-            icon: 'fa-plus',
-            tooltip: 'Add a workflow allocation',
-            action: null,
-            menuItems: null
+
+        let items: MenuItem[] = [];
+
+        items.push({
+            icon: null,
+            label: 'Propose new artifact'
         });
 
-        this.actions[0].menuItems = new Array<MenuItem>();
-        
-        this.actions[0].menuItems.push({ label: 'Propose new artifact', icon: '' });
-        this.actions[0].menuItems.push({ label: 'Certify artifact', icon: '' });
-        this.actions[0].menuItems.push({ label: 'Work Issue', icon: '' });
-        this.actions[0].menuItems.push({ label: 'Challenge', icon: '' });
+        items.push({
+            icon: null,
+            label: 'Certify artifact'
+        });
+
+        items.push({
+            icon: null,
+            label: 'Work Issue'
+        });
+
+        items.push({
+            icon: null,
+            label: 'Challenge'
+        });
+
+        items.push({
+            icon: null,
+            label: 'Propose new Artifact (Multi-approval)'
+        });
+
+        this.addMenu.push({
+            icon: 'fa fa-filter',
+        });
+
+        this.addMenu.push({
+            icon: 'fa fa-plus',
+            items: items
+        });
+
+
+
 
         this.load();
     }
@@ -59,11 +84,41 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
         });
     }
     
-    add(): void {
+    add(e: any): void {
+
+        if (e.icon == 'fa fa-filter') {
+            this.showSimpleFilter = !this.showSimpleFilter;
+            return;
+        }
+
         this.addingRow = new WorkflowItem();
-        //TODO: replace with menu item list so user can choose workflowtype
-        this.addingRow.WorkflowType = WorkflowType.CertifyArtifact
+
+        
+        switch (e.label) {
+            case 'Propose new artifact':
+                this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifact
+                break;
+            case 'Certify artifact':
+                this.addingRow.WorkflowType = WorkflowType.CertifyArtifact
+                break;
+            case 'Work Issue':
+                this.addingRow.WorkflowType = WorkflowType.WorkIssue
+                break;
+            case 'Challenge':
+                this.addingRow.WorkflowType = WorkflowType.ChallengeArtifact
+                break;
+            case 'Propose new Artifact (Multi-approval)':
+                this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifactMulti
+                break;
+            default:
+                console.warn(`workflow type defaulted to 'SuggestNewArtifact'. Supplied label was '${e.label}'`);
+                this.addingRow.WorkflowType = WorkflowType.SuggestNewArtifact
+                break;
+        }
+
         this.isAdding = true;
+        this.isEditing = false;
+        this.isDeleting = false;
     }
     
 
@@ -74,8 +129,10 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
     }
 
     editRow(workflow: WorkflowItem) {
-     //   this.selectedRow = workflow;
+        this.selectedRow = workflow;
       //  console.log(this.selectedRow);
+        this.isAdding = false;
+        this.isDeleting = false;
         this.isEditing= true;
     }
 

@@ -51,7 +51,8 @@ namespace d360.workflow.entities
                 {
                     foreach (var x in XElement.Parse(FieldsXml).Elements())
                     {
-                        d.Add(x.Name.LocalName, x.Value);
+                        if (!d.ContainsKey(x.Name.LocalName))
+                            d.Add(x.Name.LocalName, x.Value);
                     }
                 }
                 return d;

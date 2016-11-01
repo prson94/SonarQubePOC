@@ -18925,7 +18925,7 @@ from    [IntersectType] RT
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Route("DeleteSynonymByID")]
         public JsonResult DeleteSynonymByID(int id)
         {
             var form = new FormCollection();

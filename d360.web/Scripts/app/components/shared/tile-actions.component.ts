@@ -13,7 +13,8 @@ import {MenuItem} from 'primeng/primeng';
     template: `
                 <div class="TileTools"> 
                     <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
-                    <div *ngIf="!hasDate">
+                    <p-menubar *ngIf="hasMenu && menuItems.length > 0" [model]="menuItems"></p-menubar>
+                    <div *ngIf="!hasDate && !hasMenu">
                         <ul>                                                      
                             <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" pTooltip="Export to Excel"><i class="fa fa-download fa-fw"></i></a></li>
@@ -56,6 +57,10 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasAuthenticate: boolean = false;
     @Input() hasApi: boolean = false;
     @Input() hasPassword: boolean = false;
+
+    @Input() hasMenu: boolean = false;
+    @Input() menuItems: MenuItem[] = [];
+    @Output() menuClick =  new EventEmitter();
         
     private dateMenuItems: MenuItem[] = [];
     
@@ -82,7 +87,19 @@ export class TileActionsComponent implements OnInit, OnChanges {
                 ]
             });
         }
-        
+
+        if (this.hasMenu && this.menuItems.length > 0) {
+            this.setMenuItemCommands(this.menuItems);
+        }
+    }
+
+    private setMenuItemCommands(items: MenuItem[]) {
+        items.forEach(i => {
+            i.command = () => this.menuClick.emit(i);
+            if (i.items && i.items.length > 0) {
+                this.setMenuItemCommands(i.items);
+            }
+        });
     }
 
     private filterClick() {

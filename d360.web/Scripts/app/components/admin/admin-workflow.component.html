@@ -5,7 +5,7 @@
             <div *ngIf="!isLoading">
                 <header>
                     Workflows
-                    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                    <d3s-tile-actions [hasMenu]="true" [menuItems]="addMenu" (menuClick)="add($event)" style="display:inline-block;"></d3s-tile-actions>
                 </header>
                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                 <p-dataTable [globalFilter]="gb" [value]="workflowItems" selectionMode="single" (onRowDblclick)="selectedRow=$event.data;isEditing=true" [(selection)]="selectedRow" (onRowClick)="isAdding=false;" [rows]="20" [paginator]="true">
@@ -16,7 +16,7 @@
                         <template let-workflow="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="editRow(workflow)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                <a (click)="selectedRow=workflow;isDeleting=true;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                <a (click)="selectedRow=workflow;isDeleting=true;isEditing=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </template>
                     </p-column>
@@ -31,16 +31,18 @@
     </div>
     <div class="col l7 m7" *ngIf="isEditing && selectedRow">
         <div class="tile tile-detail">
+            <header>Edit Workflow</header>
             <workflow-item-form [item]="selectedRow" (onCancel)="isEditing = false;" (onSaveComplete)="confirmEdit($event);"></workflow-item-form>
         </div>
     </div>
     <div class="col l7 m7" *ngIf="isAdding">
         <div class="tile tile-detail">
+            <header>Add Workflow</header>
             <workflow-item-form [item]="addingRow" (onCancel)="isAdding = false;" (onSaveComplete)="confirm($event);"></workflow-item-form>
         </div>
     </div>
     <div class="col l7 m7" *ngIf="isDeleting">
-        <div class="title title-detail">
+        <div class="tile tile-detail">
             <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to de-allocate this workflow?'"
