@@ -11,11 +11,10 @@ import * as _ from 'lodash';
     template: ` 
                 <ul class="left-side-nav">
                     <template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category [url]="menu.ngUrl" [rootToolTip]="menu.ngTooltip" [rootIconName]="menu.ngIcon" [menu]="menu"></d3s-site-menu-category>
-                    </template>
-                  
-                    <d3s-site-menu-category *ngIf="isAdmin" rootToolTip="Administration" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category *ngIf="favorites" [menu]="favorites" rootToolTip="Favorites" rootIconName="fa-star"></d3s-site-menu-category>
+                        <d3s-site-menu-category [url]="menu.ngUrl" [title]="menu.ngTitle" [rootIconName]="menu.ngIcon" [menu]="menu"></d3s-site-menu-category>
+                    </template>                  
+                    <d3s-site-menu-category *ngIf="isAdmin" title="Settings" rootToolTip="Administration" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
+                    <d3s-site-menu-category *ngIf="favorites" title="Favorites" [menu]="favorites" rootToolTip="Favorites" rootIconName="fa-star"></d3s-site-menu-category>
                 </ul>
                 `,    
     providers: [SiteMenuService, FavoritesService],
@@ -79,48 +78,51 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     switch (menu.MenuID) {
                         case '#Glossary':
                             menu.ngIcon = 'fa-book';                            
+                            menu.ngTitle = 'Glossary';
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
                             break;
                         case '#Models':
                             menu.ngIcon = 'fa-sitemap';
+                            menu.ngTitle = 'Models';
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
                             break;
                         case '#Policy':
                             menu.ngIcon = 'fa-university';
-                            menu.ngTooltip = 'Policies';
+                            menu.ngTitle = 'Policies';
                             break;
                         case '#Data Quality':
                             menu.ngIcon = 'fa-pie-chart';
-                            menu.ngTooltip = 'Data Quality';
+                            menu.ngTitle = 'Data Quality';
                             break;
                         case '#Monitor':
                             menu.ngIcon = 'fa-dashboard';
-                            menu.ngTooltip = 'Monitor';
+                            menu.ngTitle = 'Monitor';
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
                             break;
                         case '#Reference':
                             menu.ngIcon = 'fa-cubes';
-                            menu.ngTooltip = 'Reference';
+                            menu.ngTitle = 'Reference';
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
                             break;
                         case '#Fusion':
                             menu.ngIcon = 'fa-database';
-                            menu.ngTooltip = 'Fusion';
+                            menu.ngTitle = 'Fusion';
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
                             break;
                         case '#Community':
                             menu.ngIcon = 'fa-group';
-                            menu.ngTooltip = 'Community';
+                            menu.ngTitle = 'Community';
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
                             break;
                         default:
                             //is it a custom menu?
                             if (menu.MenuID.startsWith('~')) {
-                                menu.ngIcon = 'fa-folder';                                
+                                menu.ngIcon = 'fa-folder';
+                                menu.ngTitle = menu.MenuID.replace('~','');                               
                             }
                             break;
                     }

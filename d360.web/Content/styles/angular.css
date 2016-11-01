@@ -66,7 +66,6 @@ nav.top,
   line-height: normal;
 }
 .left-side-nav .menu-category {
-  cursor: pointer;
   padding: 0 15px;
   color: white;
   font-size: 1rem;
@@ -75,7 +74,10 @@ nav.top,
   position: relative;
 }
 .left-side-nav .menu-category:hover {
-  background-color: #84796A;
+  background-color: #426A84;
+}
+.left-side-nav .menu-category i {
+  cursor: pointer;
 }
 .menu-parent .menu-child {
   display: none;
@@ -107,9 +109,14 @@ nav.top,
   color: black !important;
 }
 .megamenu-panel {
-  background-color: #84796A;
+  background-color: #426A84;
   box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
   color: white;
+}
+.megamenu-panel .megamenu-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 @media only screen and (max-width: 600px) {
   .megamenu-panel {

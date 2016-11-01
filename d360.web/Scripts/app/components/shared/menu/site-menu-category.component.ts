@@ -11,9 +11,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                         <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
-                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="rootToolTip"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
+                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel">
                             <div>
+                                <div class="megamenu-title truncate">{{title}}</div>
                                 <div class="row">
                                     <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems">
                                         <ul class="menu-group">                                        
@@ -30,7 +31,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() url: string;
-    @Input() rootToolTip: string;
+    @Input() title: string;
     @Input() rootIconName: string;
     @Input() menu: SiteMenu;
 

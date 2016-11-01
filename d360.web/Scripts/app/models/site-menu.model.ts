@@ -14,7 +14,7 @@ export class SiteMenu {
 
     ngUrl: string;
     ngIcon: string;
-    ngTooltip: string;
+    ngTitle: string;
 }
 
 export class SiteMenuModel {

@@ -74,8 +74,7 @@ nav.top, .left-side-nav {
         height: auto;
         line-height: normal;
     }
-    .menu-category{
-        cursor:pointer;
+    .menu-category{        
         padding:0 15px;
         color:white;
         font-size:1rem;
@@ -85,6 +84,9 @@ nav.top, .left-side-nav {
         &:hover {
             background-color: @nav-active;            
         }     
+        i{
+            cursor:pointer;
+        }
     }
 }
 
@@ -126,6 +128,11 @@ nav.top, .left-side-nav {
     background-color: @nav-active;    
     box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
     color:white;
+    .megamenu-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-transform: uppercase;        
+    }
 }
 
 @media only screen and (max-width : 600px) {
