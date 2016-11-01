@@ -17,7 +17,7 @@ import { Title } from '@angular/platform-browser';
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">                      
+                                <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">                      
                                 <p-treeTable [value]="attributes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selected">
                                     <p-column field="ID" header="ID"></p-column>
                                     <p-column field="Name" header="Name"></p-column>

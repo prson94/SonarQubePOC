@@ -5,7 +5,7 @@
             <header>Artifact Types                
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
-            <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;">                      
+            <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">                      
             <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow">
                 <p-column field="Name" header="Name" [style]="{ 'width': '60%' }"></p-column>
                 <p-column>

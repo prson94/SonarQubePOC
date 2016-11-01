@@ -289,7 +289,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                         <div *ngIf="!addItemLoading">                        
                             <div style="max-height:500px;overflow-y:scroll;position:relative;">
                             <div *ngIf="selectAllItems" style="position:absolute;left:0;top:0;width:100%;height:100%;background-color:rgba(1,1,1,.2);z-index:1"></div>
-                                <input type="text" style="width:100%;" [(ngModel)]="addItemSearch" placeholder="Search..." />
+                                <input type="text" style="width:100%;margin-bottom:10px;" [(ngModel)]="addItemSearch" placeholder="Search..." />
                                 <p-treeTable [value]="attributeNodes | treeSearch: addItemSearch:'Name'" (onNodeExpand)="loadSubItems($event)" >
                                     <p-column header="Name" field="Name"></p-column>
                                     <p-column [style]="{ 'width' : '30px' }">

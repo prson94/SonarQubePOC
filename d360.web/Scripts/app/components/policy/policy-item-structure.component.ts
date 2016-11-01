@@ -25,7 +25,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <header *ngIf="formMode == FormMode.Default">{{policyType.Name}}
                         <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
                     </header>                              
-                    <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="formMode == FormMode.Default">                      
+                    <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="formMode == FormMode.Default">                      
                     <p-treeTable *ngIf="formMode == FormMode.Default" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                         <p-column field="Name" header="Name">
                             <template let-item="rowData" pTemplate type="body">

@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div class="tile tile-detail" *ngIf="!isLoading">                            
                         <header>Glossary</header>                              
-                        <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">  
+                        <input type="text" [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;">  
                         <p-treeTable [value]="treeNodeArray | treeSearch: searchValue : 'Name'" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
                             <p-column field="Name" header="Name">
                                 <template let-item="rowData" pTemplate type="body">

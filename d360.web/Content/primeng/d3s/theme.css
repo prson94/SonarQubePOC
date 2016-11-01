@@ -697,14 +697,15 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 }
 
 
-.ui-treetable th.ui-state-default{
-    background: #fff;
-    border: none;
-    text-transform: uppercase;
+.ui-treetable th.ui-state-default{  
+    background-color: #999;
+    color:white;
+    border-radius:0px;
+    border: none;    
     font-weight: bold;
 }
 .ui-treetable th.ui-state-hover{
-    background: #d3d5d8;    
+    background: #d3d5d8;        
     border-color: #d9d9d9;
 }
 .ui-treetable th.ui-state-active{
