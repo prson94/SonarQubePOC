@@ -23254,6 +23254,7 @@ nav.top,
   padding: 2px 3px;
   vertical-align: middle;
   color: white;
+  opacity: 0.5;
 }
 .menu-level-indicator-0:hover,
 .menu-level-indicator-1:hover,
