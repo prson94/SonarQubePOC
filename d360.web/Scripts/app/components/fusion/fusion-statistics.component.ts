@@ -27,6 +27,11 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                             </div>
                         </div>
                     </div>  
+                    <div class="row">
+                        <div class="col s12">
+                            <h6>&nbsp;* Percentage is based off statistics for the past 7 days.  Click on charts for more information.</h6>
+                        </div>
+                    </div>
                 </div> 
                 <div class="tile tile-detail" *ngIf="showAgentHistory">
                     <div class="row">
