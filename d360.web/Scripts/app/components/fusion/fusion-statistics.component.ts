@@ -1,11 +1,15 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionSummaryStats } from '../../models/fusion.model';
 
 @Component({
     selector: 'd3s-fusion-statistics',
+    styles: [`
+      chart {
+        display: block;
+      }
+    `],
     template: ` 
                 <div class="tile tile-detail" *ngIf="!showAgentHistory && !showFusionHistory">
                     <header>Statistics</header>

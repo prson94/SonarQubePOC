@@ -9,6 +9,11 @@ import { ArtifactGridComponent} from './artifact-grid.component';
 
 @Component({
     selector: 'd3s-artifact-type-metrics',
+    styles: [`
+      chart {
+        display: block;
+      }
+    `],
     template: `     
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>            
                 <div class="row" *ngIf="!isLoading">                    
@@ -59,6 +64,7 @@ export class ArtifactTypeMetricsComponent extends BaseComponent implements OnIni
         this.loadStatusPie();
         this.loadResponsibilityBar();
     }
+    
 
     private loadResponsibilityBar() {
         this.isLoading = true;

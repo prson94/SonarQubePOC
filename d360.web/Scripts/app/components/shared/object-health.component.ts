@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ScoreService } from '../../services/index';
 import { PointBreakdown, AverageScore } from '../../models/score.model';
@@ -7,6 +6,11 @@ import { Highcharts } from 'angular2-highcharts';
 
 @Component({
     selector: 'd3s-object-health',
+    styles: [`
+      chart {
+        display: block;
+      }
+    `],
     template: `
             <!--header>Health</header-->
             <table class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">

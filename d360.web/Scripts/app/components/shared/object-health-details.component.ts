@@ -1,5 +1,4 @@
-﻿
-import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ScoreService } from '../../services/index';
 import { PointBreakdown, AverageScore } from '../../models/score.model';
@@ -7,6 +6,11 @@ import { Highcharts } from 'angular2-highcharts';
 
 @Component({
     selector: 'd3s-object-health-details',
+    styles: [`
+      chart {
+        display: block;
+      }
+    `],
     template: `
             <div class="row">
                 <div class="col l6 m12 s12">
