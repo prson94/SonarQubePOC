@@ -1,6 +1,6 @@
 ﻿import { Input, Component, OnInit, OnDestroy} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SiteMenuService, AuthenticationService, StateService, FavoritesService, HeaderActionsService } from '../../../services/index';
+import { SiteMenuService, AuthenticationService, StateService, FavoritesService, HeaderActionsService, MessagesService } from '../../../services/index';
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -13,8 +13,8 @@ import * as _ from 'lodash';
                     <template ngFor let-menu [ngForOf]="siteMenu">
                         <d3s-site-menu-category [url]="menu.ngUrl" [title]="menu.ngTitle" [rootIconName]="menu.ngIcon" [menu]="menu"></d3s-site-menu-category>
                     </template>                  
-                    <d3s-site-menu-category *ngIf="isAdmin" title="Settings" rootToolTip="Administration" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
-                    <d3s-site-menu-category *ngIf="favorites" title="Favorites" [menu]="favorites" rootToolTip="Favorites" rootIconName="fa-star"></d3s-site-menu-category>
+                    <d3s-site-menu-category *ngIf="isAdmin" [title]="'Settings'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
+                    <d3s-site-menu-category *ngIf="favorites" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
                 </ul>
                 `,    
     providers: [SiteMenuService, FavoritesService],
@@ -30,7 +30,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subSiteNav: any;
     private subFavorites: any;  
 
-    constructor(private stateService: StateService, private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
+    constructor(private messagesService: MessagesService, private stateService: StateService, private headerActionsService: HeaderActionsService, private authenticationService: AuthenticationService, private siteMenuService: SiteMenuService, private favoritesService: FavoritesService) {
         super();
     }
 
@@ -137,6 +137,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.authenticationService.admin$.complete();
 
                 this.isAdmin = result.IsAdmin;
+            });
+    }
+
+    private clearFavorites() {
+        this.favoritesService.deleteCurrentUsersFavorites().
+            then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.loadFavorites(); // reload favorites because the user could still have global favorites.
             });
     }
     

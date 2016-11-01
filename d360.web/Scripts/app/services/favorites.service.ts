@@ -1,10 +1,10 @@
-﻿
-import { Injectable, EventEmitter } from '@angular/core';
+﻿import { Injectable, EventEmitter } from '@angular/core';
 import { Http } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class FavoritesService extends BaseService {
@@ -19,6 +19,13 @@ export class FavoritesService extends BaseService {
 
     }
 
+    deleteCurrentUsersFavorites(): Promise<JsonResult> {
+        return this.http.delete('navigation/deletemyfavorites')
+            .toPromise()
+            .then(response => <JsonResult>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     toggleFavorite(name: string, route: string, admin: boolean = false) {
         let f = new Favorite();
         f.Name = name;
@@ -29,19 +36,7 @@ export class FavoritesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    //toggleFavorite2(name: string, objectType: string, objectId: number, parentId: number = 0, admin: boolean = false) {
-    //    let f = new Favorite();
-    //    f.Name = name;
-    //    f.ObjectID = objectId;
-    //    if (parentId != null && parentId != 0)
-    //        f.ParentID = parentId;
-    //    f.ObjectType = objectType;
-    //    return this.http.put(`navigation/togglefavorite?admin=${admin}`, f)
-    //        .toPromise()
-    //        .then(response => response.json())
-    //        .catch(err => this.handleError(err));
-    //}
-
+    
     moveUp(route: string, admin: boolean = false) {
         let m = {
             route: route,

@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ChangeDetectionStrategy} from '@angular/core';
+﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteMenuService, AuthenticationService, StateService, FavoritesService } from '../../../services/index';
@@ -14,7 +14,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel">
                             <div>
-                                <div class="megamenu-title truncate">{{title}}</div>
+                                <div class="megamenu-title truncate">{{title}}<span class="megamenu-tools" *ngIf="showClearButton"><i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'"></i></span></div>
                                 <div class="row">
                                     <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems">
                                         <ul class="menu-group">                                        
@@ -34,6 +34,10 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() title: string;
     @Input() rootIconName: string;
     @Input() menu: SiteMenu;
+    @Input() showClearButton: boolean = false;
+
+    @Output() clearClick = new EventEmitter();
+    
 
     constructor() {
         super();

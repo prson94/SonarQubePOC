@@ -2651,6 +2651,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.NavigationController.DeleteMyFavorites">
+            <summary>
+            Clears current users favorites list
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:d360.web.Controllers.RelationsController.HierarchyViewModel">
             <summary>
             This is the new model that corresponds to GetHierarchyByPredicateType stored procedure.

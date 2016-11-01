@@ -677,6 +677,34 @@ SELECT	'#Admin' as MenuID,
 
         #region Favorites
 
+        /// <summary>
+        /// Clears current users favorites list
+        /// </summary>
+        /// <returns></returns>
+        [Authorize, HttpDelete, Route("DeleteMyFavorites")]
+        public JsonNetResult DeleteMyFavorites()
+        {
+            var success = true;
+            var message = "";
+
+            try
+            {                
+                Company.Delete<Favorite>(i => i.ResourceID == Company.CurrentResourceID);
+
+                message = "Favorites List Cleared.";
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [Authorize, HttpPut, Route("ToggleFavorite")]
         public JsonNetResult ToggleFavorite(Favorite favorite, bool admin = false)
         {

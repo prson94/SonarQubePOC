@@ -23221,6 +23221,12 @@ nav.top,
   font-weight: bold;
   text-transform: uppercase;
 }
+.megamenu-panel .megamenu-title .megamenu-tools {
+  font-size: 1rem;
+  padding: 5px 10px;
+  font-weight: normal;
+  float: right;
+}
 @media only screen and (max-width: 600px) {
   .megamenu-panel {
     min-width: 500px;
