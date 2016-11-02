@@ -8,6 +8,7 @@ import { COMPILER_PROVIDERS } from '@angular/compiler';
 
 import { ChartModule } from 'angular2-highcharts';
 
+import { ColorPickerModule } from 'angular2-color-picker';
 
 import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
@@ -318,6 +319,7 @@ import {
         //highcharts
         ChartModule,
 
+        ColorPickerModule,
 
         //d3s modules
         PipesModule,
