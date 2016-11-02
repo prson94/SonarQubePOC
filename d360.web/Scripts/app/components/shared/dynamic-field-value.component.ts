@@ -6,7 +6,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     selector: 'd3s-dynamic-field-value',
     template: `   
             <span [ngSwitch]="fieldType">
-                <span *ngSwitchCase="'date'">{{fieldValue | date:'short'}}</span>
+                <span *ngSwitchCase="'date'">{{fieldValue | date:'shortDate'}}</span>
                 <span *ngSwitchCase="'bool'">
                     <i *ngIf="fieldValue" class="fa fa-check enabled" title="True"></i>
                     <i *ngIf="!fieldValue" class="fa fa-times disabled" title="False"></i>
@@ -31,7 +31,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
-
+       
         if (this.item && this.column && this.column.datafield)
             this.fieldValue = this.item[this.column.datafield];
     }

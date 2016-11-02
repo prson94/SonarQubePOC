@@ -121,6 +121,11 @@ export class DynamicEditorComponent extends BaseComponent {
                     : new FormControl(name || '');
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
                     : new FormControl(url || '');
+            }            
+            else if (field.FieldType == "Date") {                
+                field.Value = new Date(field.Value);
+                group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : new Date(field.Value)), disabled: field.ReadOnly }, this.getFieldValidators(field));                
+                                
             }
             else {                                         
                 group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
@@ -165,12 +170,12 @@ export class DynamicEditorComponent extends BaseComponent {
         let values: any = {};
 
         //takes the form and convert any array values to , separated string values
-        for (var p in this.form.value) {
+        for (var p in this.form.value) {            
             if (this.form.value.hasOwnProperty(p)) {
                 if (Array.isArray(this.form.value[p])) {
                     values[p] = this.form.value[p].join();
                 }                
-                else {
+                else {                    
                     values[p] = this.form.value[p];
                 }                
             }

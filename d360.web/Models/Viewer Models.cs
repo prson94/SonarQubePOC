@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Web.Mvc;
 using System.Web;
 using Microsoft.PowerBI.Api;
+using System;
 
 namespace d360.web.Models
 {
@@ -286,6 +287,15 @@ namespace d360.web.Models
                             var rawUncLinkUrl = form[ft.Name + "_Url"];
                             value = string.Format("{0}|{1}", rawUncLinkName, rawUncLinkUrl);
                             break;
+                        case "Date":
+                            var stringDate = form[ft.Name];
+                            DateTime dateVal = DateTime.MinValue;
+                            //throw out any time piece sent in
+                            if(DateTime.TryParse(stringDate, out dateVal))
+                            {
+                                value = dateVal.ToShortDateString();
+                            }
+                            break;                           
                         default:
                             value = Server.HtmlEncode(form[ft.Name]);
                             break;

@@ -34,8 +34,8 @@ import { UriBasedService } from '../../services/index';
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
-                        <div *ngSwitchCase="'Date'">
-                            <p-calendar [formControlName]="field.FieldName"></p-calendar>
+                        <div *ngSwitchCase="'Date'">                            
+                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar>{{field.Value|date:'fullDate'}}
                         </div>
                         <div *ngSwitchCase="'Link'">
                             <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >
