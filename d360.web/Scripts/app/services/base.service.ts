@@ -46,7 +46,7 @@ export class BaseService {
         if (file != undefined) {
             let form = new FormData();
 
-            form.append('json', encodeURIComponent(JSON.stringify(item)));
+            form.append('json', JSON.stringify(item));
             form.append('file', file);
 
             return http
@@ -72,7 +72,7 @@ export class BaseService {
         if (file != undefined) {
             let form = new FormData();
 
-            form.append('json', encodeURIComponent(JSON.stringify(item)));
+            form.append('json', JSON.stringify(item));
             form.append('file', file);
 
             return http
