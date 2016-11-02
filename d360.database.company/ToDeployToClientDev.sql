@@ -9345,3 +9345,23 @@ SELECT	'#Admin' as MenuID,
 END
 GO
 
+
+
+
+
+-- columns also added to create scripts for sitenav table 
+-- but for existing...
+alter table sitenav add [Icon] [varchar](100) NULL
+alter table sitenav add [Title] [nvarchar](250) NULL
+
+update sitenav set Icon = 'fa-pie-chart', Title = 'Data Quality' where name = '#Data Quality'
+update sitenav set Icon = 'fa-dashboard', Title = 'Monitor' where name = '#Monitor'
+update sitenav set Icon = 'fa-university', Title = 'Policies' where name = '#Policy'
+update sitenav set Icon = 'fa-cubes', Title = 'Reference' where name = '#Reference'
+update sitenav set Icon = 'fa-sitemap', Title = 'Models' where name = '#Models'
+update sitenav set Icon = 'fa-book', Title = 'Glossary' where name = '#Glossary'
+update sitenav set Icon = 'fa-database', Title = 'Fusion' where name = '#Fusion'
+update sitenav set Icon = 'fa-group', Title = 'Community' where name = '#Community'
+
+-- delete unused home that has code written to hide it...
+delete from sitenav where name = '#Home'
