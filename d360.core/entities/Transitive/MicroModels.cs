@@ -150,6 +150,8 @@ namespace d360.core.entities
         public string Items { get; set; }
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }
+        public string Icon { get; set; }
+        public string Title { get; set; }
 
     }
 

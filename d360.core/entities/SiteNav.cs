@@ -23,5 +23,11 @@ namespace d360.core.entities
 
         [DataMember]
         public int? ObjectID { get; set; }
+
+        [DataMember]
+        public string Icon{ get; set; }
+
+        [DataMember]
+        public string Title{ get; set; }
     }
 }

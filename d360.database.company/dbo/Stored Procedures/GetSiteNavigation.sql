@@ -6,7 +6,9 @@ BEGIN
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
-		NULL AS Items
+		n.Icon as Icon,
+		n.Title as Title,
+		NULL AS Items	
 FROM SiteNav n
 WHERE n.Name = '#Monitor'
 UNION ALL
@@ -14,7 +16,9 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
-		NULL AS Items
+		n.Icon as Icon,
+		n.Title as Title,
+		NULL AS Items		
 FROM SiteNav n
 WHERE n.Name = '#Home'
 UNION ALL
@@ -22,6 +26,8 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 			SELECT	name,
 					url,
@@ -47,6 +53,8 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 		SELECT	ft.name, 
 				'model/classification/' + ft.name As url,
@@ -75,6 +83,8 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 		SELECT	ft.name, 
 				'policy/classification/' + ft.name As url,
@@ -103,6 +113,8 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 		SELECT	name, 
 				dbo.GenerateNgObjectUrl('DomainType', ID, 0)  As url,
@@ -118,6 +130,8 @@ UNION ALL
 SELECT	n.Name as MenuID,
 		n.SortOrder,
 		2 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 		SELECT		name, 
 					dbo.GenerateNgObjectUrl('FusionType', FT.ID, 0)  As url,
@@ -144,6 +158,8 @@ UNION ALL
 SELECT	n.Name as MenuID, 
 		n.SortOrder,
 		4 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
         SELECT	'People' AS name, --'#People' as MenuID,
                 'community/groups' AS url, 		        
@@ -158,6 +174,8 @@ UNION ALL
 SELECT	'#Admin' as MenuID,
 		999 as SortOrder,
 		0 as Feature,
+		'fa-cogs' as Icon,
+		'Administration' as Title,
 		(
 			select	*
 			from	(
@@ -329,6 +347,8 @@ SELECT	'#Admin' as MenuID,
 	SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
+		n.Icon as Icon,
+		n.Title as Title,
 		(
 		SELECT	'Rules' AS name, 
 		'quality/rule' AS url, 
@@ -345,6 +365,8 @@ SELECT	'#Admin' as MenuID,
 		'~' + Name AS MenuID,
 		s.SortOrder,
 		0 AS Feature,
+		s.Icon as Icon,
+		s.Title as Title,
 		dbo.CustomSiteNavigation(ID) AS Items
 	from SiteNav s
 	where ParentID IS NULL and Name not like '#%'

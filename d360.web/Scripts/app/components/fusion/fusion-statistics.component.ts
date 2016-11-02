@@ -14,7 +14,7 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                 <div class="tile tile-detail" *ngIf="!showAgentHistory && !showFusionHistory">
                     <header>Statistics</header>
                     <div class="row">                        
-                        <div class="col l6 s12">
+                        <div class="col s6">
                             <div class="row" (click)="showAgentHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Agent % Success</div>
                                 <div class="col s12">
@@ -22,7 +22,7 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                                 </div>
                             </div>
                         </div>
-                        <div class="col l6 s12">
+                        <div class="col s6">
                             <div class="row" (click)="showFusionHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Processing % Success</div>
                                 <div class="col s12">

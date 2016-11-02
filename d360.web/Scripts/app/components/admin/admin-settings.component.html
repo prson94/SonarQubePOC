@@ -131,7 +131,11 @@
                                 <div class="row" style="margin-bottom:15px;">
                                     <div class="col s12">
                                         <div class="FieldName" style="display:block;">Folder Name</div>
-                                        <input type="text" maxlength="250" [(ngModel)]="selection.Name" />
+                                        <input type="text" maxlength="250" [(ngModel)]="selection.Name" style="width:100%" />
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="FieldName" style="display:block;">Folder Icon</div>
+                                        <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>                                        
                                     </div>
                                 </div>
                                 <div class="row">
@@ -185,7 +189,11 @@
                                 <div class="row" style="margin-bottom:15px;">
                                     <div class="col s12">
                                         <div class="FieldName" style="display:block;">Folder Name</div>
-                                        <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" />
+                                        <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="FieldName" style="display:block;">Folder Icon</div>                                        
+                                        <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
                                     </div>
                                 </div>
                                 <div class="row">

@@ -3,7 +3,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
 import { SiteNav } from '../../models/site-menu.model';
-import { CompanySettingsService, SiteMenuService, HeaderActionsService, StateService } from '../../services/index';
+import { CompanySettingsService, SiteMenuService, HeaderActionsService, StateService, MessagesService } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../models/form.model';
@@ -43,7 +43,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         titleService: Title,
         private siteMenuService: SiteMenuService,
         private headerActionsService: HeaderActionsService,
-        private stateService: StateService    
+        private stateService: StateService,
+        private messagesService: MessagesService
     ) {
 
         super(headerBreadcrumbService, titleService);        
@@ -168,9 +169,13 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 break;
             case 'rename':
                 this.formIsLoading = true;
-                this.siteMenuService.renameFolder(this.selection.ID, this.selection.Name)                    
-                    .then(() => this.stateService.reloadLeftNavMenu())
-                    .then(() => { this.selection.DisplayName = this.selection.Name; this.formIsLoading = false; });
+                this.siteMenuService.editFolder(this.selection)                                        
+                    .then(result => {
+                        this.showMessageForResult(this.messagesService, result);
+                        this.stateService.reloadLeftNavMenu();
+                        this.selection.DisplayName = this.selection.Name;
+                        this.formIsLoading = false;
+                    });
                 break;
             case 'deleteFolderItem':
                 i = this.folderItems.findIndex(f => f.ID == args.ID);
@@ -199,10 +204,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 break;
             case 'deleteFolder':
                 this.formIsLoading = true;
-                this.siteMenuService.removeFolder(args.ID)                    
-                    .then(() => this.stateService.reloadLeftNavMenu())
-                    .then(() => this.load())
-                    .then(() => { this.formMode = FormMode.Default; this.formIsLoading = false; });                    
+                this.siteMenuService.removeFolder(args.ID)
+                    .then(res => {
+                        this.showMessageForResult(this.messagesService, res);
+                        this.stateService.reloadLeftNavMenu();
+                        this.load();
+                        this.formMode = FormMode.Default;
+                        this.formIsLoading = false;
+                    });                    
                 break;
 
             case 'addNewFolderItem':                
@@ -226,17 +235,23 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
                 this.siteMenuService.addFolder(model)
                     .then(r => {
+                        this.showMessageForResult(this.messagesService, r);
                         this.formMode = FormMode.Default;
                         this.formIsLoading = false;
-                    })
-                    .then(() => this.load())
-                    .then(() => this.stateService.reloadLeftNavMenu());
+                        this.stateService.reloadLeftNavMenu();
+                        this.load();
+                    });
+                    
                 break;
             case 'saveEdit':
                 this.formIsLoading = true;
-                this.siteMenuService.renameFolder(this.selection.ID, this.selection.Name)                    
-                    .then(() => this.stateService.reloadLeftNavMenu())
-                    .then(() => { this.selection.DisplayName = this.selection.Name; this.formIsLoading = false; });
+                this.siteMenuService.editFolder(this.selection)                                        
+                    .then(result => {
+                        this.showMessageForResult(this.messagesService, result);
+                        this.stateService.reloadLeftNavMenu();
+                        this.selection.DisplayName = this.selection.Name;
+                        this.formIsLoading = false;
+                    });
                 this.formMode = FormMode.Default;
                 break;
             case 'cancelEdit':
@@ -261,7 +276,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 });
 
                 if (this.oldFolderName != this.selection.Name) {
-                    promises.push(this.siteMenuService.renameFolder(this.selection.ID, this.oldFolderName));
+                    //promises.push(this.siteMenuService.renameFolder(this.selection.ID, this.oldFolderName));
                 }
 
                 Promise.all(promises)

@@ -52,6 +52,7 @@ import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-det
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
 import { ImpactComponent } from './impact.component';
+import { IconPickerComponent } from './icon-picker.component';
 import { LineageComponent } from './lineage.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
@@ -101,6 +102,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionFiltersComponent,
         GroupMembersComponent,
         ImpactComponent,
+        IconPickerComponent,
         LineageComponent,
         MessagesBarComponent,        
         MessagesComponent,        
@@ -149,6 +151,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionFiltersComponent, 
         GroupMembersComponent,
         ImpactComponent,
+        IconPickerComponent,
         LineageComponent,
         MessagesBarComponent,        
         MessagesComponent,

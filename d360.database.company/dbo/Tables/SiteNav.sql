@@ -5,7 +5,9 @@
 	[Route] [varchar](250) NULL,
 	[SortOrder] [int] NULL,
 	[ObjectID] [int] NULL,
-	[Object] [varchar](50) NULL
+	[Object] [varchar](50) NULL,
+	[Icon] [varchar](100) NULL,
+	[Title] [nvarchar](250) NULL
 )
 
 GO

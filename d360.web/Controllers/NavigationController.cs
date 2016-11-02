@@ -556,6 +556,7 @@ SELECT	'#Admin' as MenuID,
                     throw new Exception("Folder name cannot be empty.");
                 model.Folder.SortOrder = 9999;
                 var folder = Company.SiteNav.Add(model.Folder);
+                folder.Title = model.Folder.Name;
                 Company.SaveChanges();
                 model.Items.ForEach(i =>
                 {
@@ -645,19 +646,21 @@ SELECT	'#Admin' as MenuID,
             };
         }
 
-        [Authorize, HttpPut, Route("RenameFolder")]
-        public JsonNetResult RenameFolder(int id, string name)
+        [Authorize, HttpPut, Route("EditFolder")]
+        public JsonNetResult EditFolder(SiteNav folder)
         {
             var success = true;
             var message = "";
             try
             {
-                if (string.IsNullOrWhiteSpace(name))
-                    throw new Exception("name cannote be empty.");
-                var siteNav = Company.GetById<SiteNav>(id);
+                if(folder == null)
+                    throw new Exception("Invalid folder.");
+                var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)
-                    throw new Exception($"Folder Id ${id} not found.");
-                siteNav.Name = name;
+                    throw new Exception($"Folder Id ${folder.ID} not found.");
+                siteNav.Name = folder.Name;
+                siteNav.Icon = folder.Icon;
+                siteNav.Title = folder.Name;
                 Company.SaveChanges();
                 message = "Folder renamed successfully.";
             }

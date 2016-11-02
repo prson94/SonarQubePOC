@@ -3,6 +3,7 @@ import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav } from '../models/site-menu.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class SiteMenuService extends BaseService {
@@ -30,10 +31,10 @@ export class SiteMenuService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    addFolder(model: any) {
+    addFolder(model: any): Promise<JsonResult> {
         return this.http.post('navigation/AddFolder', model)
             .toPromise()
-            .then(response => response.json())
+            .then(response => <JsonResult>response.json())            
             .catch(err => this.handleError(err));
     }
 
@@ -44,10 +45,10 @@ export class SiteMenuService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    removeFolder(id: number) {
+    removeFolder(id: number): Promise<JsonResult> {
         return this.http.post(`navigation/RemoveFolder?id=${id}`, null)
             .toPromise()
-            .then(response => response.json())
+            .then(response => <JsonResult>response.json())            
             .catch(err => this.handleError(err));
     }
 
@@ -66,10 +67,10 @@ export class SiteMenuService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    renameFolder(id: number, name: string) {
-        return this.http.put(`navigation/RenameFolder?id=${id}&name=${name}`, null)
+    editFolder(folder: SiteNav): Promise<JsonResult> {
+        return this.http.put('navigation/EditFolder',folder)
             .toPromise()
-            .then(response => response.json())
+            .then(response => <JsonResult>response.json())
             .catch(err => this.handleError(err));
     }
 

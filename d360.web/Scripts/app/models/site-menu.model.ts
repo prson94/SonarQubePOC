@@ -13,8 +13,9 @@ export class SiteMenu {
     isActiveItem: boolean = false;
 
     ngUrl: string;
-    ngIcon: string;
-    ngTitle: string;
+    
+    Icon: string;
+    Title: string;
 }
 
 export class SiteMenuModel {
@@ -33,7 +34,10 @@ export class SiteNav {
 
     DisplayName: string;
     IsCustom: boolean = false;
-        
+
+    Icon: string;
+    Title: string;
+
     public static zindex: number = 1000;
 }
 

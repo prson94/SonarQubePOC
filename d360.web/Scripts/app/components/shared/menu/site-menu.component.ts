@@ -11,7 +11,7 @@ import * as _ from 'lodash';
     template: ` 
                 <ul class="left-side-nav">
                     <template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category [url]="menu.ngUrl" [title]="menu.ngTitle" [rootIconName]="menu.ngIcon" [menu]="menu"></d3s-site-menu-category>
+                        <d3s-site-menu-category [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
                     </template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [title]="'Settings'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>
                     <d3s-site-menu-category *ngIf="favorites" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
@@ -71,61 +71,45 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     loadMenu() {
         this.siteMenuService.getMenu()
             .then(result => {
-                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin' && x.MenuID != '#Home' ) ); //remove admin menu it will get built later.  Remove home menu we dont need it
+                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin' ) ); //remove admin menu it will get built later.
 
                 // add properties we need to add to the burned in menus
                 for (let menu of result.MenuItems) {
                     switch (menu.MenuID) {
-                        case '#Glossary':
-                            menu.ngIcon = 'fa-book';                            
-                            menu.ngTitle = 'Glossary';
+                        case '#Glossary':                            
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
                             break;
-                        case '#Models':
-                            menu.ngIcon = 'fa-sitemap';
-                            menu.ngTitle = 'Models';
+                        case '#Models':                            
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
                             break;
-                        case '#Policy':
-                            menu.ngIcon = 'fa-university';
-                            menu.ngTitle = 'Policies';
+                        case '#Policy':                            
                             break;
-                        case '#Data Quality':
-                            menu.ngIcon = 'fa-pie-chart';
-                            menu.ngTitle = 'Data Quality';
+                        case '#Data Quality':                            
                             break;
-                        case '#Monitor':
-                            menu.ngIcon = 'fa-dashboard';
-                            menu.ngTitle = 'Monitor';
+                        case '#Monitor':                            
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
                             break;
-                        case '#Reference':
-                            menu.ngIcon = 'fa-cubes';
-                            menu.ngTitle = 'Reference';
+                        case '#Reference':                            
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
                             break;
-                        case '#Fusion':
-                            menu.ngIcon = 'fa-database';
-                            menu.ngTitle = 'Fusion';
+                        case '#Fusion':                            
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
                             break;
-                        case '#Community':
-                            menu.ngIcon = 'fa-group';
-                            menu.ngTitle = 'Community';
+                        case '#Community':                            
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
                             break;
                         default:
                             //is it a custom menu?
-                            if (menu.MenuID.startsWith('~')) {
-                                menu.ngIcon = 'fa-folder';
-                                menu.ngTitle = menu.MenuID.replace('~','');                               
+                            if (menu.MenuID.startsWith('~')) {                                
+                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');                               
                             }
                             break;
                     }
+                    if (!menu.Icon) menu.Icon = 'fa-folder';
                 }
                 
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
