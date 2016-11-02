@@ -31,6 +31,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                         <div *ngIf="selectedOption=='other'" style="padding-left:40px"><p-autoComplete size="100"                                                
                                                 scrollHeight="400px"
                                                 name="other"
+                                                [inputStyle]="{width:'100%'}"
                                                 [(ngModel)]="term" 
                                                 [suggestions]="terms" 
                                                 (completeMethod)="search($event)"                                                 
