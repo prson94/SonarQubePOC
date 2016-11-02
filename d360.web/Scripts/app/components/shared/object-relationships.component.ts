@@ -109,7 +109,17 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
             .then(result => {
                 this.relationshipItems = result;
-                this.selected = this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+
+                this.selected = null;
+                for (let relation of this.relationshipItems){
+                    if (relation.Count > 0) {
+                        this.selected = relation;
+                        break;
+                    }
+                }
+
+                if (!this.selected) this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+                
                 this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
                 
                 this.isLoading = false;
