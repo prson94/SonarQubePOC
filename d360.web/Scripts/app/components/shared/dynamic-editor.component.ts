@@ -123,8 +123,8 @@ export class DynamicEditorComponent extends BaseComponent {
                     : new FormControl(url || '');
             }            
             else if (field.FieldType == "Date") {                
-                field.Value = new Date(field.Value);
-                group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : new Date(field.Value)), disabled: field.ReadOnly }, this.getFieldValidators(field));                
+                field.Value = field.Value === null ? '' : new Date(field.Value);
+                group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
                                 
             }
             else {                                         

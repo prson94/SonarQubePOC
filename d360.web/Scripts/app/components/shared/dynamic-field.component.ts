@@ -31,11 +31,12 @@ import { UriBasedService } from '../../services/index';
                             <p-multiSelect *ngIf="field?.MultiSelect" [formControlName]="field.FieldName" [(ngModel)]="field.Value" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl></p-multiSelect>
                         </div>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number">   
+                        <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any">   
                         <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
                         <div *ngSwitchCase="'Date'">                            
-                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar>{{field.Value|date:'fullDate'}}
+                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar><span *ngIf="field.Value">{{field.Value|date:'fullDate'}}</span>
                         </div>
                         <div *ngSwitchCase="'Link'">
                             <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >
