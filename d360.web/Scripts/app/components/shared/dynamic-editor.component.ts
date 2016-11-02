@@ -122,7 +122,7 @@ export class DynamicEditorComponent extends BaseComponent {
                 group[field.FieldName + '_Url'] = field.Required ? new FormControl(url || '', Validators.required)
                     : new FormControl(url || '');
             }            
-            else if (field.FieldType == "Date") {                
+            else if (field.FieldType == "Date" || field.FieldType == "DateTime") {                
                 field.Value = field.Value === null ? '' : new Date(field.Value);
                 group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
                                 

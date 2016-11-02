@@ -7,6 +7,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     template: `   
             <span [ngSwitch]="fieldType">
                 <span *ngSwitchCase="'date'">{{fieldValue | date:'shortDate'}}</span>
+                <span *ngSwitchCase="'datetime'">{{fieldValue | date:'medium'}}</span>
                 <span *ngSwitchCase="'bool'">
                     <i *ngIf="fieldValue" class="fa fa-check enabled" title="True"></i>
                     <i *ngIf="!fieldValue" class="fa fa-times disabled" title="False"></i>
@@ -31,7 +32,11 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
-       
+
+        if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
+            this.fieldType = 'datetime';
+        }
+
         if (this.item && this.column && this.column.datafield)
             this.fieldValue = this.item[this.column.datafield];
     }

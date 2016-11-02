@@ -9,7 +9,7 @@ export class GridColumn {
     text: string;
     datafield: string;
     width: string;
-
+    cellsformat: string;
     type: string;
 }
 
