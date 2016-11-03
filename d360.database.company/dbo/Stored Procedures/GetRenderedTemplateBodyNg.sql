@@ -428,6 +428,34 @@ BEGIN
 			------------------------------------------------------------------
 		end;
 
+		if @Type = 'ReferenceItemType'
+		begin
+
+		--	declare @myReferenceListID int
+
+			--select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
+			-- BUILD Domain LIST HTML -----------------------------------------
+			declare @referenceItemTypeHtml nvarchar(max)
+
+			set @referenceItemTypeHtml = '<table class="hoverable bordered striped" style="width:100%">'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<thead><th style="margin-right: 15px">Display Value</th></thead>'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '<tbody>'
+
+
+
+			select		top 10 
+						@referenceItemTypeHtml = @referenceItemTypeHtml + '<tr>' + '<td>' + DisplayValue + '</td>' + '</tr>'             
+			from		ReferenceItem
+			where		ReferenceItemTypeID = @ID
+			order by	DisplayValue desc
+
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</tbody>'
+			set @referenceItemTypeHtml = @referenceItemTypeHtml + '</table>'
+ 
+			insert into @tbl values ('Items', @referenceItemTypeHtml)
+			------------------------------------------------------------------
+		end;
+
 	end
 	
 	if @Action = 'None'
@@ -909,4 +937,3 @@ BEGIN
 			@html as Body;
 END
 
-GO

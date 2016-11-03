@@ -49,9 +49,7 @@ export class ObjectDetailComponent implements OnChanges {
         if (this.objectType && this.objectID) {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
-                .then(data => {
-                    //console.log('detail tile: ');
-                    //console.log(data);
+                .then(data => {                    
                     this.rows = data.rows;
                     this.categories = [];
                     
@@ -70,9 +68,7 @@ export class ObjectDetailComponent implements OnChanges {
 
                             if (f.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
-                                    .then(i => {
-                                        //console.log('get lookup grid');
-                                        //console.log(i);
+                                    .then(i => {                                        
                                         f.Data = i;
                                     })
                                     .then(() => {
@@ -125,13 +121,10 @@ export class ObjectDetailComponent implements OnChanges {
                                 this.categories[i].rows.push(j);
                             }
                         }
-                    }
-                    //console.log(this.rows);
+                    }                    
                     this.rows = displayRows;
                     this.loadCategory();
-                    this.isLoading = false;
-
-                    
+                    this.isLoading = false;                    
                 });
         }
     }

@@ -8,7 +8,6 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
-import { ReferenceComponent } from './reference.component';
 import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceItemTypeEditorComponent } from './reference-item-type-editor.component';
 import { ReferenceItemTypeGridComponent } from './reference-item-type-list.component';
@@ -16,11 +15,11 @@ import { ReferenceItemTypeGridComponent } from './reference-item-type-list.compo
 
 import {
     ButtonModule,
-    GrowlModule,
     DataTableModule,
     EditorModule,
+    GrowlModule,
     SharedModule,
-
+    TooltipModule,
 } from 'primeng/primeng';
 
 @NgModule({
@@ -28,22 +27,22 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+        
 
         //primeng
         ButtonModule,
-        GrowlModule,
         DataTableModule,
         EditorModule,
+        GrowlModule,                
         SharedModule,
-
-
+        TooltipModule,
+        
         //d3s
         D3SSharedModule,
         CoreModule,
         PipesModule,
     ],
-    declarations: [
-        ReferenceComponent,
+    declarations: [        
         ReferenceItemTypeEditorComponent,
         ReferenceItemTypeGridComponent,
         ReferenceListComponent,

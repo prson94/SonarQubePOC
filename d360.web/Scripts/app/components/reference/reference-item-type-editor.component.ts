@@ -16,7 +16,7 @@ import * as _ from 'lodash';
                         <div [hidden]="name.valid || name.pristine">Reference Item Type name is required</div>
                     </div>                    
                     <div class="col s12">
-                        <div class="FieldName">Display Format</div>
+                        <div class="FieldName" pTooltip="Used to format the value used for display in tooltips, and relationships">Display Format</div>
                         <div><input required type="text" name="format" pInputText [(ngModel)]="editedReferenceItemType.DisplayFormat" style="width: 100%;" #name="ngModel" /></div>                        
                     </div>   
                     <div class="col s12">

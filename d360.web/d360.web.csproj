@@ -1447,7 +1447,6 @@
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\reference\reference.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
