@@ -279,6 +279,12 @@
   <data name="RuleStatus_Name" xml:space="preserve">
     <value>Status</value>
   </data>
+  <data name="RuleThreshold_Description" xml:space="preserve">
+    <value>The rule's threshold defines the minimum pass rate to consider of a particular rule result should be considered a pass or fail.</value>
+  </data>
+  <data name="RuleThreshold_Name" xml:space="preserve">
+    <value>Threshold</value>
+  </data>
   <data name="TaxonomyType_Description" xml:space="preserve">
     <value>The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required.</value>
   </data>

@@ -183,6 +183,8 @@ import {
     ResourceFollowingGridTile,    
 } from './components/tiles/index';
 
+//import {ColorPickerModule} from 'angular2-color-picker';
+
 @NgModule({
     declarations: [
         ActionBar,

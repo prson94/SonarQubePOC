@@ -667,6 +667,16 @@
               Looks up a localized string similar to Status.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleThreshold_Description">
+            <summary>
+              Looks up a localized string similar to The rule&apos;s threshold defines the minimum pass rate to consider of a particular rule result should be considered a pass or fail..
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.RuleThreshold_Name">
+            <summary>
+              Looks up a localized string similar to Threshold.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.TaxonomyType_Description">
             <summary>
               Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..

@@ -81,12 +81,12 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     }
 
     save() {
-        console.log('save');
+        //console.log('save');
         this.isLoading = true;
         if (this.formMode == FormMode.Editing) {
             this.fusionService.putFusionType(this.newFusionType, this.newFusionStyle)
                 .then(data => {
-                    console.log(data);
+                    //console.log(data);
                     this.showMessageForResult(this.messagesService, data);
                     this.load();
                     this.formMode = FormMode.Default;
@@ -94,7 +94,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         } else if (this.formMode == FormMode.Adding) {
             this.fusionService.postFusionType(this.newFusionType, this.newFusionStyle)
                 .then(data => {
-                    console.log(data);
+                    //console.log(data);
                     this.showMessageForResult(this.messagesService, data);
                     this.load();
                     this.formMode = FormMode.Default;

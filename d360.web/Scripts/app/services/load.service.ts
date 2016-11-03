@@ -76,6 +76,14 @@ export class LoadService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getLoadErrorsXls(id: number) {
+        window.location.assign(`/form/loads/${id}/Errors.xlsx`);
+    }
+
+    getLoadOriginalXls(id: number) {
+        window.location.assign(`/form/loads/${id}/all.xlsx`);
+    }
+
     postLoad(model: LoadFilePostModel): Promise<JsonResult> {
         return this.http.post('form/AddLoad', model)
             .toPromise()

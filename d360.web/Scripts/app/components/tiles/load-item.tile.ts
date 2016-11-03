@@ -35,6 +35,20 @@ export class LoadItemTile implements OnChanges {
         this.load();
     }
 
+    exportErrors(): void {
+        if (this.id == null)
+            return;
+
+        this.loadService.getLoadErrorsXls(this.id);
+    }
+
+    exportOriginal(): void {
+        if (this.id == null)
+            return;
+
+        this.loadService.getLoadOriginalXls(this.id);
+    }
+
     load(): void {
         if (this.id == null)
             return;

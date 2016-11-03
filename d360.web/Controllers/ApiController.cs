@@ -5399,7 +5399,7 @@ from    (
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleStatus_Name, FieldName = "RuleStatus", FieldDescription = rule.Status.GetRuleTypeDescription(), Value = rule.Status.GetRuleStatusDisplayName() }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
                             }
                         });
 

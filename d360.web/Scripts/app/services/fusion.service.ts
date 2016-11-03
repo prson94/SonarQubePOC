@@ -439,13 +439,13 @@ export class FusionService extends BaseService {
 
     getPromotionRuleSteps(ruleID: number, ruleStepID: number) {
         return this.http.get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
-            .toPromise()
+            .toPromise() 
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
     getPromotionFusionOwnerRules(fusionID: number) {
-        return this.http.get(`api/fusion/rule/fusionOwnerRules/${fusionID}`)
+        return this.http.get(`api/fusion/rule/fusionOwners/${fusionID}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

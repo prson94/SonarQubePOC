@@ -7197,16 +7197,16 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 item.Settings = s.Settings;
 
+                //TODO: rewrite to accept non-form logic
+                //AddPromotionStepSettings(item, form);
+                AddPromotionStepSettings(item);
+
                 rule.FusionRuleSteps.Add(item);
                 if (rule != null)
                 {
                     rule.UpdatedBy = Company.CurrentResourceID;
                     rule.UpdatedOn = DateTime.UtcNow;
                 }
-
-                //TODO: rewrite to accept non-form logic
-                //AddPromotionStepSettings(item, form);
-                AddPromotionStepSettings(item);
 
                 Company.SaveChanges();
 
@@ -7552,13 +7552,18 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 handleSearchParameters("Lineage", "Object", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
+                try
+                {
+                    //The user can skip adding these items, so do not error out of the whole process.  Should have better way to do this.
+                    handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+                    handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
 
-                handleSearchParameters("Lineage", "TechnicalSubject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
-
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
-
-                handleSearchParameters("Lineage", "TechnicalObject", item.FusionRuleStepSettings, "ResultFromStep", item.ID, settings);
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalSubjectSearch", Value = "ResultFromStep" });
+                    item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "TechnicalObjectSearch", Value = "ResultFromStep" });
+                }
+                catch
+                {
+                }
 
                 item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "Role", Value = settings["Role"] });
 
@@ -7814,7 +7819,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     {
                         RuleStepID = id,
                         Name = $"{target}ID",
-                        Value = settings[$"{area}{target}OwnerRule"]
+                        Value = settings[$"{target}ID"]//settings[$"{area}{target}OwnerRule"]
                     });
 
             }

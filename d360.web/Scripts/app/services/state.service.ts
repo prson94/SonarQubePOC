@@ -29,7 +29,7 @@ export class StateService {
     
     public resetArtifactTypeFilterIfRequired(artifactTypeId: number) {
         if (this.artifactTypeFilters.artifactTypeId != artifactTypeId) {
-            console.log("clearing artifact type filters.", this.artifactTypeFilters.artifactTypeId, artifactTypeId);
+            //console.log("clearing artifact type filters.", this.artifactTypeFilters.artifactTypeId, artifactTypeId);
             this.artifactTypeFilters = new ArtifactTypeFilters();
             this.artifactTypeFilters.artifactTypeId = artifactTypeId;
         }

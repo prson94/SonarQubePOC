@@ -17,6 +17,8 @@ import {MenuItem} from 'primeng/primeng';
                         <ul>                                                      
                             <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" pTooltip="Export to Excel"><i class="fa fa-download fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" pTooltip="Export Errors to Excel"><i class="fa fa-download red-text fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" pTooltip="Edit"><i class="fa fa-pencil fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" pTooltip="Filter Mode">
@@ -37,6 +39,8 @@ import {MenuItem} from 'primeng/primeng';
 export class TileActionsComponent implements OnInit, OnChanges {
     @Output() addClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
+    @Output() exportErrorsClick = new EventEmitter();
+    @Output() exportOriginalClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
     @Output() dateClick = new EventEmitter();
     @Output() closeClick = new EventEmitter();
@@ -50,6 +54,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
+    @Input() hasExportErrors: boolean = false;
+    @Input() hasExportOriginal: boolean = false;
     @Input() hasEdit: boolean = false;
     @Input() hasDate: boolean = false;
     @Input() hasClose: boolean = false;

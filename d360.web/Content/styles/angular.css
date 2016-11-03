@@ -103,6 +103,7 @@ nav.top,
   cursor: pointer;
   width: 100%;
   padding: 4px 15px !important;
+  font-size: 80%;
 }
 .menu-item:hover {
   background-color: #ddd;
@@ -114,7 +115,7 @@ nav.top,
   color: white;
 }
 .megamenu-panel .megamenu-title {
-  font-size: 1.2rem;
+  font-size: .8rem;
   font-weight: bold;
   text-transform: uppercase;
 }

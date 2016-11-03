@@ -25,8 +25,13 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="col l8 m6 s12 tile tile-detail">
                     <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="addRule();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRules" selectionMode="single" [(selection)]="selectedFusionRule" (onRowSelect)="loadSteps();">
-                        <p-column header="Enabled" field="Enabled"></p-column>
-                        <p-column header="Name" field="Name"></p-column>
+                        <p-column header="Enabled" field="Enabled" [sortable]="true" [style]="{width:'15%'}">
+                            <template let-item="rowData" pTemplate type="body">
+                                <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                                <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+                            </template>
+                        </p-column>
+                        <p-column header="Name" field="ObjectName"></p-column>
                         <p-column header="Description" field="Description"></p-column>
                         <p-column header="">
                             <template pTemplate type="body" let-row="rowData">
@@ -58,10 +63,10 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="col s12 tile tile-detail">
                     <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="addStep();" style="float:right;"></d3s-tile-actions></header>
                     <p-dataTable [value]="fusionRuleSteps" selectionMode="single" [(selection)]="selectedFusionRuleStep" (onRowSelect)="loadMappings();">
-                        <p-column header="Action" field="Action"></p-column>
-                        <p-column header="Step" field="Step"></p-column>
+                        <p-column header="Step" field="Step" [style]="{width:'10%'}"></p-column>
+                        <p-column header="Action" field="Action" [style]="{width:'15%'}"></p-column>
                         <p-column header="Description" field="Description"></p-column>
-                        <p-column header="">
+                        <p-column header="" [style]="{width:'15%'}">
                             <template pTemplate type="body" let-row="rowData">
                                 <div class="RowTools">
                                     <a (click)="editStep(row);"><i class="fa fa-pencil"></i></a>

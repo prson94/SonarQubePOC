@@ -4,7 +4,6 @@ import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorMode
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
 import { ObjectDetailService } from '../../services/index';
-
 import * as _ from 'lodash';
 
 @Component({
@@ -94,29 +93,26 @@ export class FieldTypeForm implements OnInit, OnChanges {
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.id)
                 .then(data => {
-                    console.log('data: ');
-                    console.log(data);
+                    //console.log('data: ');
+                    //console.log(data);
                     this.model = data;
                     this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
-                    console.log('lookups: ');
-                    console.log(d);
+                    //console.log('lookups: ');
+                    //console.log(d);
                     this.lookups = d;
-
                     this.lookups.IntersectTypes.forEach(i => {
                         i.id = i.value.split('|')[0];
-
                     });
-
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                 })
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
-                        console.log("form data: ");
-                        console.log(f);
+                        //console.log("form data: ");
+                        //console.log(f);
                         this.model.RelationItems = f.RelationItems;
 
                         if (this.model.FieldType.Type == 'RelationLookup') {
@@ -127,6 +123,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
 
                             this.model.RelationItems.forEach(r => {
+                                console.log('existing relation:' + r);
                                 let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
                                 if (r.Object == null || r.Object == '')
                                     r.Object = intersectType.value.split('|')[1];
@@ -307,8 +304,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     private loadDataType(value: string): Promise<void> {
         let promises = [];
-        console.log('load data type');
-        console.log(value);
+        //console.log('load data type');
+        //console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.loadTokens(this.model.FieldType.LookupObjectType,this.model.FieldType.LookupObjectID));                
@@ -439,6 +436,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
         this.model.FusionItems.push(i);
     }
+
     private removeFusion(i: number) {
        this.model.FusionItems.splice(i, 1);
     }
@@ -526,7 +524,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
             });
         }
+
         this.isLoading = true;
+
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
@@ -603,8 +603,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
-        console.log('changeRefType()');
-        console.log(item);
+        //console.log('changeRefType()');
+        //console.log(item);
 
         if (item.IntersectType == null)
             item.IntersectType = parseInt(item.selectedRelationItemID.split('|')[0]);
@@ -613,54 +613,55 @@ export class FieldTypeForm implements OnInit, OnChanges {
         if (item.ObjectID == null)
             item.ObjectID = parseInt(item.selectedRelationItemID.split('|')[2]);
 
-        //if (item.selectedIntersectName != null) {
-
-
-        //}
-
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
                 return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
-                    .then(z => {
-                        item.relationItems = z;
-                        console.log('z', z);
-                        
+                    .then(ci => {
+                        item.relationItems = ci;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
-                            item.relationsLoading = false;
                         });
+                    }).then(() => {
+                        item.relationsLoading = false;
+                        console.log('Relation items: ' + item.relationItems);
                     });
             case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
-                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(z => {
-                    item.relationItems = z;
-                    item.relationsLoading = false;
-                });
+                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType)
+                    .then(cr => {
+                        item.relationItems = cr;
+                    }).then(() => {
+                        item.relationsLoading = false;
+                        console.log('Relation items: ' + item.relationItems);
+                    });
             case ComplexLookupRelationType.ParentItem.toString():
                 return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
-                    .then(z => {
-                        item.relationItems = z;
+                    .then(pi => {
+                        item.relationItems = pi;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
-                            item.relationsLoading = false;
                         });
+                    }).then(() => {
+                        item.relationsLoading = false;
+                        console.log('Relation items: ' + item.relationItems);
                     });
             case ComplexLookupRelationType.StandardRelationhip.toString():
                 return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
-                    .then(z => {
-                        //console.log('relationItems');
-                        //console.log(z);
-                        item.relationItems = z;
+                    .then(r => {
+                        item.relationItems = r;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
                         });
-                        
-                    }).then(() => item.relationsLoading = false);
+                    }).then(() => {
+                        item.relationsLoading = false;
+                        console.log('Relation items: ' + item.relationItems);
+                    });
         }
     }
 
+    // Called when changing relationship type, loads the fields associated with the relationship and target object.
     changeRel(item: FieldTypeRelationItemEditorModel): Promise<any> {
         //console.log(item.selectedRelationItemID);
 
@@ -719,6 +720,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
     }
 
+    // Called when adding another hop in the relationship type path. Adds row to the bottom of the table.
     addRelation(item: FieldTypeRelationItemEditorModel) {
         let i = new FieldTypeRelationItemEditorModel();
         let params = item.selectedRelationItemID.split('|');
@@ -737,6 +739,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         this.relationItemCount = this.model.RelationItems.length;
     }
 
+    // Called when removing a hop from the relationship type path.  Removes row from table.
     deleteRelation(item: FieldTypeRelationItemEditorModel) {
         //only last item can be deleted
         this.model.RelationItems.pop();
@@ -753,6 +756,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
         this.childIntersectDisabled = (this.model.RelationItem.ReferenceType.toString() || '1') == '1';
         this.model.RelationItem.DisplayFields = [];
+
         if (this.model.RelationItem.selectedRelationItemID != null) {
             let params = this.model.RelationItem.selectedRelationItemID .split('|');
 
@@ -770,7 +774,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         } else if (this.childIntersectDisabled) {
             return this.changeLegacyChild();
-        } else return Promise.resolve();
+        } else {
+            return Promise.resolve();
+        }
     }
 
     changeLegacyChild(): Promise<any> {

@@ -842,9 +842,6 @@
     <Content Include="Content\templates\artifacts.admin.html" />
     <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
-    <Content Include="node_modules\core-js\client\shim.min.js" />
-    <Content Include="node_modules\lodash\lodash.min.js" />
-    <Content Include="node_modules\primeng\primeng.js" />
     <Content Include="node_modules\primeng\resources\images\loading.gif" />
     <Content Include="node_modules\primeng\resources\images\password-meter.png" />
     <Content Include="node_modules\primeng\resources\images\rating.png" />
@@ -901,25 +898,6 @@
     <Content Include="Scripts\powerbi.min.js" />
     <Content Include="ui.html" />
     <Content Include="node-test.html" />
-    <Content Include="node_modules\es6-shim\es6-sham.js" />
-    <Content Include="node_modules\es6-shim\es6-sham.min.js" />
-    <Content Include="node_modules\es6-shim\es6-shim.js" />
-    <Content Include="node_modules\es6-shim\es6-shim.min.js" />
-    <Content Include="node_modules\reflect-metadata\Reflect.js" />
-    <Content Include="node_modules\rxjs\bundles\Rx.js" />
-    <Content Include="node_modules\rxjs\bundles\Rx.min.js" />
-    <Content Include="node_modules\zone.js\dist\async-test.js" />
-    <Content Include="node_modules\zone.js\dist\fake-async-test.js" />
-    <Content Include="node_modules\zone.js\dist\jasmine-patch.js" />
-    <Content Include="node_modules\zone.js\dist\jasmine-patch.min.js" />
-    <Content Include="node_modules\zone.js\dist\long-stack-trace-zone.js" />
-    <Content Include="node_modules\zone.js\dist\long-stack-trace-zone.min.js" />
-    <Content Include="node_modules\zone.js\dist\sync-test.js" />
-    <Content Include="node_modules\zone.js\dist\wtf.js" />
-    <Content Include="node_modules\zone.js\dist\wtf.min.js" />
-    <Content Include="node_modules\zone.js\dist\zone-node.js" />
-    <Content Include="node_modules\zone.js\dist\zone.js" />
-    <Content Include="node_modules\zone.js\dist\zone.min.js" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
@@ -1333,7 +1311,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
-    <TypeScriptCompile Include="node_modules\zone.js\dist\zone.js.d.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards.component.ts" />

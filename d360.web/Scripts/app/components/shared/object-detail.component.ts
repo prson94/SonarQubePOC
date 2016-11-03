@@ -50,8 +50,8 @@ export class ObjectDetailComponent implements OnChanges {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
                 .then(data => {
-                    console.log('detail tile: ');
-                    console.log(data);
+                    //console.log('detail tile: ');
+                    //console.log(data);
                     this.rows = data.rows;
                     this.categories = [];
                     

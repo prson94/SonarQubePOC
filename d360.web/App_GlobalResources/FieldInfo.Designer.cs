@@ -547,6 +547,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The rule&apos;s threshold defines the minimum pass rate to consider of a particular rule result should be considered a pass or fail..
+        /// </summary>
+        internal static string RuleThreshold_Description {
+            get {
+                return ResourceManager.GetString("RuleThreshold_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Threshold.
+        /// </summary>
+        internal static string RuleThreshold_Name {
+            get {
+                return ResourceManager.GetString("RuleThreshold_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..
         /// </summary>
         internal static string TaxonomyType_Description {

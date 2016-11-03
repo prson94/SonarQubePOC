@@ -87,7 +87,13 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
 
     load() {
         this.isLoading = true;
-        if (this.objectType.toUpperCase() == 'ARTIFACT') this.showStatus = true;
+        switch (this.objectType.toUpperCase())
+        {
+            case "ARTIFACT":
+            case "RULE":
+                this.showStatus = true;
+                break;
+        }
         this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType)
             .then(result => {
                 this.statistics = result;

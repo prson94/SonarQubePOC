@@ -65,8 +65,8 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="row" *ngIf="showPromotionParent && selectedPromotionSearchType == 'fusionowner'">
                     <div class="col s8 offset-s2">
                         <div class="FieldName" style="display:block">Fusion Owner</div>
-                        <select [(ngModel)]="selectionPromotionFusionItem" style="width:95%" >
-                            <option *ngFor="let i of promotionFusionItems" [value]="i.ID">{{i.text}}</option>
+                        <select [(ngModel)]="selectedPromotionFusionItem" style="width:95%" >
+                            <option *ngFor="let i of promotionFusionItems" [value]="i.ID">{{i.Name}}</option>
                         </select>
                     </div>
                 </div>
@@ -74,17 +74,17 @@ import { TreeNode, Column } from 'primeng/primeng';
             <div *ngSwitchCase="'find'">
                 <div class="row">
                     <div class="col s8 offset-s2">
-                        <div class="FieldName" style="display: block">Source Matching Field</div>
-                        <select [(ngModel)]="selectedFindSourceField" style="width:95%" >
-                            <option *ngFor="let i of findSourceFields" [value]="i.ID">{{i.FriendlyName}}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s8 offset-s2">
                         <div class="FieldName" style="display: block">Search Type</div>
                         <select [(ngModel)]="selectedFindSearchType" style="width:95%" (ngModelChange)="changeFindSearchType()">
                             <option *ngFor="let i of findSearchTypes" [value]="i.value">{{i.text}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row" *ngIf="selectedFindSearchType != 'fusionowner' && selectedFindSearchType != 'resultfromstep'">
+                    <div class="col s8 offset-s2">
+                        <div class="FieldName" style="display: block">Source Matching Field</div>
+                        <select [(ngModel)]="selectedFindSourceField" style="width:95%" >
+                            <option *ngFor="let i of findSourceFields" [value]="i.ID">{{i.FriendlyName}}</option>
                         </select>
                     </div>
                 </div>
@@ -129,8 +129,8 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="row" *ngIf="selectedFindSearchType == 'fusionowner'">
                     <div class="col s8 offset-s2">
                         <div class="FieldName" style="display:block">Fusion Owner</div>
-                        <select [(ngModel)]="selectedFindFusionOwnerItem" style="width:95%" >
-                            <option *ngFor="let i of findFusionOwnerItems" [value]="i.ID">{{i.text}}</option>
+                        <select [(ngModel)]="selectedFindFusionItem" style="width:95%" >
+                            <option *ngFor="let i of findFusionOwnerItems" [value]="i.ID">{{i.Name}}</option>
                         </select>
                     </div>
                 </div>
@@ -230,7 +230,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                     <div class="col s8 offset-s2">
                         <div class="FieldName" style="display:block">Subject Fusion Owner Rule</div>
                         <select [(ngModel)]="selectedRelateSubjectFusionOwnerItem" style="width:95%" >
-                            <option *ngFor="let i of relateFusionOwnerItems" [value]="i.ID">{{i.text}}</option>
+                            <option *ngFor="let i of relateFusionOwnerItems" [value]="i.ID">{{i.Name}}</option>
                         </select>
                     </div>
                 </div>
@@ -254,7 +254,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                     <div class="col s8 offset-s2">
                         <div class="FieldName" style="display:block">Object Fusion Owner Rule</div>
                         <select [(ngModel)]="selectedRelateObjectFusionOwnerItem" style="width:95%" >
-                            <option *ngFor="let i of relateFusionOwnerItems" [value]="i.ID">{{i.text}}</option>
+                            <option *ngFor="let i of relateFusionOwnerItems" [value]="i.ID">{{i.Name}}</option>
                         </select>
                     </div>
                 </div> 
@@ -293,8 +293,7 @@ import { TreeNode, Column } from 'primeng/primeng';
             </div>
         </div>
     </div>
-</div>
-                `,
+</div>`,
     providers: [FusionService] 
 })
 
@@ -478,7 +477,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     return this.changeFindSearchType();
                 } else if (s.Object == 'Owner') {
                     this.selectedFindSearchType = 'fusionowner';
-                    this.selectedFindFusionOwnerItem = s.ObjectID;
+                    this.selectedFindFusionItem = s.ObjectID;
                     return this.changeFindSearchType();
                 }
                 break;
@@ -617,7 +616,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     s.ObjectID = this.selectedFindFusionItem;
                 } else if (this.selectedFindSearchType == 'fusionowner') {
                     s.Object = 'Owner';
-                    s.ObjectID = this.selectedFindFusionOwnerItem;
+                    s.ObjectID = this.selectedFindFusionItem;
                 }
                 break;
             case 'relate':
@@ -709,9 +708,6 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 return this.fusionService.getPromotionFusionOwnerRules(this.model.FusionID)
                     .then(r => {
                         this.promotionFusionItems = r;
-                        this.promotionFusionItems.forEach(i => {
-                            i.text = i.FusionAttributeName + ' Owned By:' + i.OwnerObject;
-                        });
                     });
             default:
                 return Promise.resolve();

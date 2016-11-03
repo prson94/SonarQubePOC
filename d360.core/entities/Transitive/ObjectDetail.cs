@@ -11,6 +11,7 @@ namespace d360.core.entities
         public int? ParentID { get; set; }
         public string ParentType { get; set; }
         public string Url { get; set; }
+        public string Status { get; set; }
         public int TypeID { get; set; }
         public string Type { get; set; }
         public string TypeName { get; set; }

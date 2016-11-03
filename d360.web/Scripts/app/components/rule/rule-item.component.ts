@@ -40,7 +40,7 @@ import { StringConstants } from '../../static/string-constants';
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
                     <div class="col s12">
                             <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                            <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name"></d3s-object-governance>
+                            <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
                         </div>
                     </div>
                 </div>
