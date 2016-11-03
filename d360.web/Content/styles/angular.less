@@ -570,7 +570,7 @@ a.Action{
     font-weight:400;
     cursor:pointer;
     :hover{
-        color:rgb(39,80,117);
+        color:@rgba-primary-2;
     }
 }
     
@@ -598,7 +598,7 @@ select:disabled {
 .overlayed-primary{
     color:black;
     :hover{
-        color:rgb(39,80,117);
+        color:@rgba-primary-2;
     }
 }
 
@@ -628,7 +628,7 @@ div.child-container{
     }
     div.child .name{
         text-transform: uppercase;
-        color: rgba(84,164,218,1);
+        color: @rgba-primary-0;
         font-weight:bold;
     }
     div.child .count, div.child .empty-count{
@@ -641,10 +641,35 @@ div.child-container{
         background:#d3d5d8;
     }
     div.child .count{
-        background-color: rgba(84,164,218,1);
+        background-color: @rgba-primary-0;
     }
     div.child .empty-count{
-        background-color:#646464;
+        background-color:@d3s-primary-gray;
     }
 
  /* end artifact child item control*/
+
+
+ /* right sidebar item styles*/
+ .right-sidebar{
+    position:absolute;
+    width:75px;
+    right:5px; 
+    top:65px;
+ }
+
+ .right-side-item {
+        background-color:@rgba-primary-0;
+        padding: 2px 2px;
+        border-radius:4px;
+        color:white;
+        font-weight:bold;
+        font-size:0.9em;
+        cursor:pointer;
+        margin-bottom:10px;
+}
+.right-side-active {
+        background-color:@d3s-red-1;
+}
+
+ /* end right sidebar styles*/

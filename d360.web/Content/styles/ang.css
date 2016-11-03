@@ -23667,3 +23667,24 @@ div.child .empty-count {
   background-color: #646464;
 }
 /* end artifact child item control*/
+/* right sidebar item styles*/
+.right-sidebar {
+  position: absolute;
+  width: 75px;
+  right: 5px;
+  top: 65px;
+}
+.right-side-item {
+  background-color: #54a4da;
+  padding: 2px 2px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9em;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.right-side-active {
+  background-color: #D32F2F;
+}
+/* end right sidebar styles*/

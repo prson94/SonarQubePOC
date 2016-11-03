@@ -1,94 +1,56 @@
-﻿import { Component, Input, ElementRef, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, Input, ElementRef, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { RightSidebarService  } from '../../services/index';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs/Subscription';
 import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-right-sidebar',  
-    styles: [`
-    .sidebar{
-        position:absolute;
-        width:75px;
-        right:5px; 
-        
-    }
-  `],  
-    template: ` <div *ngIf="items && items.length > 0" class="hide-on-small-only sidebar" [style.top]="calculatedTop()">                
+    selector: 'd3s-right-sidebar',      
+    template: ` <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">                
                     <div *ngFor="let item of items">
-                        <d3s-right-sidebar-item [item]="item" (itemClick)="itemClicked($event.item)"></d3s-right-sidebar-item>
+                        <d3s-right-sidebar-item [active]="item.active" (activeChange)="item.active=$event;itemClicked(item)" [title]="item.title"></d3s-right-sidebar-item>
                     </div>
                 </div>
               `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class RightSidebarComponent implements OnChanges {
-    @Input() visible: boolean = false;
-    @Input() titleHeight: number = 0;
-    
-    @Output() visibleChange = new EventEmitter() // an event emitter
-    
+export class RightSidebarComponent {    
     subscription: Subscription;
-    items: RightSidebarItem[];
-    canHideTimeoutID: number = 0;
-    canHide: boolean = false;
-
-    constructor(private _eref: ElementRef, private rightSidebarService: RightSidebarService) {        
+    subscriptionClear: Subscription;
+    items: RightSidebarItem[];  
+  
+    constructor(private rightSidebarService: RightSidebarService, ref: ChangeDetectorRef) {        
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
-            item => {
+            item => {                                
                 this.items.push(item);
-                if (this.items.length == 1) {
-                    this.visible = true;
-                    this.visibleChange.emit(this.visible);
-                }
-                this.items = _.sortBy(this.items, 'title');
+                this.items = _.sortBy(this.items, 'title');                
+                ref.markForCheck();
             });
-        this.subscription = rightSidebarService.rightSidebarClear$.subscribe(
+        this.subscriptionClear = rightSidebarService.rightSidebarClear$.subscribe(
             item => {
-                this.items.splice(0, this.items.length);
-                this.visible = false;
-                this.visibleChange.emit(this.visible);
+                this.items.splice(0, this.items.length);                                
+                ref.markForCheck();
             })
     }
 
-    ngOnDestroy() {
+    ngOnDestroy() {        
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
+        this.subscriptionClear.unsubscribe();
     }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {    
-        for (let p in changes) {
-            if (p == 'visible') {
-                if (this.canHideTimeoutID <= 0)                
-                    this.canHideTimeoutID = window.setTimeout(() => this.allowHide(), 2000);
-            }
-
-        }
-    }
-    allowHide() {
-        this.canHide = true;
-        this.canHideTimeoutID = 0;
-    }
-
-    itemClicked(item) {
-        //look for any other already active items and fire click for them
-        for (let ritem of this.items) {
-            if (ritem.active && ritem.title != item.title) {
-                this.rightSidebarService.itemClicked(ritem);
-                ritem.active = false;                
+    
+    itemClicked(item) {   
+        if (item.active) {
+            //look for any other already active items and fire click for them
+            for (let ritem of this.items) {
+                if (ritem.active && ritem.title != item.title) {
+                    this.rightSidebarService.itemClicked(ritem);
+                    ritem.active = false;
+                }
             }
         }
         this.rightSidebarService.itemClicked(item);
-    }
-
-    private calculatedTop(): string{
-        
-        if (this.titleHeight) {            
-            return this.titleHeight + 65 + 'px';
-        }
-        return '65px';        
-    }
-    
-    
+    }     
 };

@@ -1,7 +1,6 @@
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
-import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 declare var $: JQueryStatic;
 import 'rxjs/Rx';
@@ -21,15 +20,14 @@ import 'rxjs/Rx';
                             </div>  
                         </div>                                                
                     </div>                    
-                    <d3s-right-sidebar [titleHeight]="0"></d3s-right-sidebar>                        
+                    <d3s-right-sidebar></d3s-right-sidebar>                        
                 </main>
                 <d3s-messages></d3s-messages>                
                 <div #target></div>                
               `
 })
 
-export class AppComponent implements AfterViewInit, OnInit {    
-    @ViewChild(RightSidebarComponent) private rightSidebarComponent: RightSidebarComponent;    
+export class AppComponent implements AfterViewInit, OnInit {        
     @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
     protected componentRef: ComponentRef<IHaveDynamicData>;
 
