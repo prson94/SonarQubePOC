@@ -22,7 +22,48 @@ import { UriBasedService } from '../../services/index';
                                 <span *ngIf="i < (similarItems.length - 1)">,</span>&nbsp; 
                             </span>
                         </div>                  
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl></p-editor>                                                                                                             
+                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl>
+                            <header style="padding-bottom:0px !important">                                 
+                                    <span class="ql-formats">
+                                        <select class="ql-header">
+                                          <option value="1">Heading</option>
+                                          <option value="2">Subheading</option>
+                                          <option selected>Normal</option>
+                                        </select>
+                                        <select class="ql-font">
+                                          <option selected>Sans Serif</option>
+                                          <option value="serif">Serif</option>
+                                          <option value="monospace">Monospace</option>
+                                        </select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-bold"></button>
+                                        <button class="ql-italic"></button>
+                                        <button class="ql-underline"></button>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <select class="ql-color"></select>
+                                        <select class="ql-background"></select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-list" value="ordered"></button>
+                                        <button class="ql-list" value="bullet"></button>
+                                        <select class="ql-align">
+                                            <option selected></option>
+                                            <option value="center"></option>
+                                            <option value="right"></option>
+                                            <option value="justify"></option>
+                                        </select>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-link"></button>                                        
+                                        <button class="ql-code-block"></button>
+                                    </span>
+                                    <span class="ql-formats">
+                                        <button class="ql-clean"></button>
+                                    </span>                                
+                            </header>
+                        </p-editor>                                                                                                             
                         <div *ngSwitchCase="'Lookup'">
                             <select *ngIf="!field?.MultiSelect" [formControlName]="field.FieldName" style="height:auto;width:100%;" [(ngModel)]="field.Value">
                                 <option></option>
@@ -66,6 +107,8 @@ export class DynamicFieldComponent implements OnInit {
     private similarItems = [];
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
+
+    private supportedFormats: string[] = [ 'bold' ];
 
     constructor(private uriBasedService: UriBasedService) { }
 
