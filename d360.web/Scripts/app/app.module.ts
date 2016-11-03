@@ -16,7 +16,6 @@ import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
-import { NavbarModule } from './components/navbar/navbar.module';
 import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
 import { CommunityModule } from './components/community/community.module';
@@ -326,8 +325,7 @@ import {
         SearchModule,
         WorkflowModule,
         D3SSharedModule,  
-        SocialModule,   
-        NavbarModule,   
+        SocialModule,           
         FusionModule,
         D3SFormsModule,
         GroupModule,

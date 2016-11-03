@@ -880,7 +880,6 @@
     <Content Include="Scripts\app\components\forms\group.form.html" />
     <Content Include="Scripts\app\components\forms\load.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
-    <Content Include="Scripts\app\components\navbar\navbar.component.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\impact.component.html" />
     <Content Include="Scripts\app\components\shared\lineage.component.html" />
@@ -1365,6 +1364,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />
@@ -1457,10 +1457,6 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar-menu.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\navbar\navbar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
@@ -1588,7 +1584,6 @@
     <TypeScriptCompile Include="Scripts\app\models\fusion.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\message-bar-item.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\nav-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\permission.model.ts" />

@@ -1,5 +1,4 @@
-﻿import { NavBarItem } from './nav-bar.model';
-import { SiteNav } from './site-menu.model';
+﻿import { SiteNav } from './site-menu.model';
 
 export interface ICompanySettingsService {
     getSettings(): Promise<CompanySettings>;
