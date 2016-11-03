@@ -27,13 +27,15 @@ export class ArtifactTypeService extends BaseService {
     putArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
         return this.http.put('form/ArtifactType', model)
             .toPromise()
+            .then(response => response.json())
             .catch(err=>this.handleError(err));
     }
 
     postArtifactType(model: ArtifactTypeEditorModel): Promise<any> {
         return this.http.post('form/ArtifactType', model)
-            .toPromise().
-            catch(err=>this.handleError(err));
+            .toPromise()
+            .then(response => response.json())
+            .catch(err=>this.handleError(err));
     }
 
     getArtifactTypeTree(): Promise<TreeNode[]> {

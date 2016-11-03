@@ -73,7 +73,7 @@ namespace d360.web.Controllers
             string iconText = "Tx";
 
             var words = objectName.Split(' ');
-            if (words.Length > 1)
+            if (words.Length > 1 && words[1].Length > 0)
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
             }
@@ -840,6 +840,9 @@ namespace d360.web.Controllers
         [HttpGet, Route("Aritfact_SimilarItems")]
         public JsonNetResult Aritfact_SimilarItems(int typeID, string query)
         {
+            //escape wildcards
+            query = query.Replace("_", "[_]");
+            query = query.Replace("%", "[%]");
             return new JsonNetResult
             {
                 Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Artifact", typeID, query }),
@@ -16153,49 +16156,21 @@ order by	D.Name, I.Name";
         {
             try
             {
-                //if (!form.HasKeys()) throw new NoFormDataException("ownership type");
-
-                // var id = parseIntField(form, "ID");
-                //var model = Company.GetById<ResponsibilityType>(id);
                 var existing = Company.GetById<ResponsibilityType>(model.ID);
                 if (existing == null) throw new NotFoundException("ownership type");
 
                 existing.Name = model.Name;
                 existing.Description = model.Description;
                 
-
-                
-
-                //if (string.IsNullOrEmpty(form["AllocationType"]))
-                //{
-                //    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
-                //}
-
-                //model.Name = parseTextField(form, "Name", null, true);
-                //model.Description = parseTextField(form, "Description");
-
                 Company.Update(existing);
 
                 Company.Delete<ResponsibilityTypeRelation>(i => i.ResponsibilityTypeID == model.ID);
-
-                //var items = form["AllocationType"].Split(',')
-                //    .Select(i => i.Split('|'))
-                //    .Select(i => new ObjectModel
-                //    {
-                //        ObjectType = i[0],
-                //        ObjectID = int.Parse(i[1])
-                //    }).ToList();
 
                 foreach(var r in model.ResponsibilityTypeRelations)
                 {
                     Company.Set<ResponsibilityTypeRelation>().Add(r);
                 }
 
-                //foreach (var o in items)
-                //{
-                //    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = id };
-                //    Company.Set<ResponsibilityTypeRelation>().Add(r);
-                //}
                 Company.SaveChanges();
 
                 return jsonSuccess("Item successfully updated.", model.ID.ToString(), null, "edit", HttpStatusCode.OK);
@@ -16216,42 +16191,11 @@ order by	D.Name, I.Name";
         {
             try
             {
-                // if (!form.HasKeys()) throw new NoFormDataException("ownership type");
 
-                //if (string.IsNullOrEmpty(form["AllocationType"]))
-                //{
-                //    throw new GenericException(HttpStatusCode.BadRequest, "Allocations missing", "You have not allocated this responsibility type.");
-                //}
-                var a = model;
-                //var a = new ResponsibilityType
-                //{
-                //    Name = parseTextField(form, "Name", null, true),
-                //    ResponsibilityTypeGroup = (ResponsibilityTypeGroup)Enum.Parse(typeof(ResponsibilityTypeGroup), form["ResponsibilityTypeGroup"]),
-                //    Description = parseTextField(form, "Description")
-                //};
-
-                Company.Add(a);
-
-                //var items = form["AllocationType"].Split(',')
-                //    .Select(i => i.Split('|'))
-                //    .Select(i => new ObjectModel
-                //    {
-                //        ObjectType = i[0],
-                //        ObjectID = int.Parse(i[1])
-                //    }).ToList();
-
-                foreach(var r in model.ResponsibilityTypeRelations)
-                {
-                    Company.Set<ResponsibilityTypeRelation>().Add(r);
-                }
-                //foreach (var o in items)
-                //{
-                //    var r = new ResponsibilityTypeRelation { ObjectID = o.ObjectID, ObjectType = o.ObjectType, ResponsibilityTypeID = a.ID };
-                  //  Company.Set<ResponsibilityTypeRelation>().Add(r);
-                //}
+                Company.Add(model);
                 Company.SaveChanges();
 
-                return jsonSuccess("Item successfully created.", a.ID.ToString(), null, "add", HttpStatusCode.Created);
+                return jsonSuccess("Item successfully created.", model.ID.ToString(), null, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {

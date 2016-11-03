@@ -37,18 +37,21 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
     putResponsibilityType(responsibilityType: ResponsibilityType): Promise<any> {
         return this.http.put(`form/ResponsibilityType`, responsibilityType)
             .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
     postResponsibilityType(responsibilityType: ResponsibilityType): Promise<any> {
         return this.http.post(`form/ResponsibilityType`, responsibilityType)
             .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
     deleteResponsibilityType(id: number): Promise<any> {
         return this.http.delete(`form/DeleteResponsibilityTypeByID?id=${id}`)
             .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 }

@@ -157,16 +157,13 @@
                         </tr>
                         <tr [style.background-color]="x%2 == 1 ? '#ddd' : '#fff'">
                             <td style="vertical-align: top; width:30%" *ngIf="x == 0">
-                                {{i.selectedIntersectName}}
-                                <!--<select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.IntersectType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
-                                    <option *ngFor="let j of lookups.IntersectTypes" [value]="j.id">{{j.label}}</option>
-                                </select>-->
+                                {{objectName}}
                             </td>
                             <td style="vertical-align: top; width:30%" *ngIf="x > 0">
                                 {{i.displayValue}}
                             </td>
                             <td style="vertical-align: top; width:30%">
-                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%" (ngModelChange)="changeRefType(i)" [disabled]="x < relationItemCount-1">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%" (ngModelChange)="changeRefType(x)" [disabled]="x < relationItemCount-1">
                                     <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID">{{j.DisplayName}}</option>
                                 </select>
                             </td>
@@ -174,7 +171,7 @@
                                 <span><i class="fa fa-spinner fa-spin"></i></span>
                             </td>
                             <td *ngIf="!i.relationsLoading" style="vertical-align: top; width:30%">
-                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.selectedRelationItemID" style="width:95%" (ngModelChange)="changeRel(i)" [disabled]="x < relationItemCount-1">
+                                <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.selectedRelationItemID" style="width:95%" (ngModelChange)="changeRel(x)" [disabled]="x < relationItemCount-1">
                                     <option *ngFor="let j of i.relationItems" [value]="j.value">{{j.label}}</option>
                                 </select>
                             </td>
@@ -235,7 +232,7 @@
                             <td>
                                 <div class="RowTools">
                                     <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
-                                    <a *ngIf="x == relationItemCount-1 && x > 0" (click)="deleteRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
+                                    <a *ngIf="x == relationItemCount-1 && x > 0" (click)="removeRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </td>
                         </tr>

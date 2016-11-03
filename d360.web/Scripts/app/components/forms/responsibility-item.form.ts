@@ -26,6 +26,7 @@ export class ResponsibilityItemForm implements OnInit {
     private message: FormMessage = new FormMessage();
     private initialItem = new ResponsibilityItem();
 
+    private showVisible: boolean = false;
 
     constructor(private responsibilityService: ResponsibilityService) {
     }
@@ -56,6 +57,7 @@ export class ResponsibilityItemForm implements OnInit {
                     this.item.ObjectID = data.responsibility.ObjectID;
                     this.item.ObjectType = data.responsibility.ObjectType;
                 }
+                this.showVisible = this.item.ObjectType.toLowerCase().endsWith('type');
                 this.item.Visible = data.responsibility.Visible;
                 this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;

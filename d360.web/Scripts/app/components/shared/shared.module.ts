@@ -36,6 +36,8 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
 
+import { ColorPickerModule } from 'angular2-color-picker';
+
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { AuditComponent } from './audit.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
@@ -213,6 +215,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
 
         //highcharts
         ChartModule,
+
+        ColorPickerModule,
 
         //d3s
         PipesModule,             

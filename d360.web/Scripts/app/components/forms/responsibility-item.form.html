@@ -2,32 +2,36 @@
     <div style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
 </div>
 <div *ngIf="!isLoading">
-    <div class="row">
-        <div class="col l6 m6 s12">
-            <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
-            <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" [style]="{'width':'80%', 'display':'block'}" ></p-dropdown>
+    <form #responsibilityForm="ngForm" (ngSubmit)="save()">
+        <div class="row">
+            <div class="col l6 m6 s12">
+                <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
+                <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" [style]="{'width':'90%', 'display':'block'}" name="responsibilityType" required></p-dropdown>
+            </div>
+            <div class="col l6 m6 s12">
+                <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
+                <p-dropdown [options]="model.resources" [(ngModel)]="model.selectedResource" [style]="{'width':'90%', 'display':'block'}" name="resource" required></p-dropdown>
+            </div>
         </div>
-        <div class="col l6 m6 s12">
-            <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
-            <p-dropdown [options]="model.resources" [(ngModel)]="model.selectedResource" [style]="{'width':'80%', 'display':'block'}"></p-dropdown>
+        <div class="row">
+            <div class="col l6 m6 s12">
+                <div id='ContextTip' class="FieldName">Contexts</div>
+                <p-multiSelect [options]="model.contexts" [(ngModel)]="model.selectedContexts" name="contexts" [style]="{'width':'90%', 'display':'block'}"></p-multiSelect>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <div id='ContextTip' class="FieldName">Contexts</div>
-            <div id="Context" name="Context"></div>
-            <p-multiSelect [options]="model.contexts" [(ngModel)]="model.selectedContexts"></p-multiSelect>
+        <div *ngIf="showVisible" class="row">
+            <div class="col l6 m6 s12" style="padding-top:10px">
+                <input type="checkbox" [(ngModel)]="item.Visible" name="visible" />
+                <label id='IsVisibleTip' for="visible">Visible?</label>
+            </div>
         </div>
-    </div>
-    <div *ngIf="item.ObjectType.endsWith('Type')" class="row">
-        <div class="col s12">
-            <p-checkbox [(ngModel)]="item.Visible" ></p-checkbox>
-            <label id='IsVisibleTip' for="IsVisible">Visible?</label>
+        <div class="row">
+            <div class="col s12">&nbsp;</div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <button pButton [disabled]="isSaving" (click)="save()" label="Save"></button> <button pButton (click)="cancel()" label="Cancel"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+        <div class="row">
+            <div class="col s12">
+                <button pButton [disabled]="isSaving || !responsibilityForm.form.valid" label="Save" type="submit"></button> <button pButton (click)="cancel()" label="Cancel" type="button"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+            </div>
         </div>
-    </div>
+    </form>
 </div>

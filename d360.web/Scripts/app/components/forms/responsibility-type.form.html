@@ -4,39 +4,41 @@
     </div>
 </div>
 <div *ngIf="!isLoading" class="row">
-    <div class="col s12">
-        <div class="row">
-            <div class="col s6">
-                <div class="FieldName">
-                    Name
+    <form #responsibilityForm="ngForm" (ngSubmit)="save()">
+        <div class="col s12">
+            <div class="row">
+                <div class="col s6">
+                    <div class="FieldName">
+                        Name
+                    </div>
+                    <div>
+                        <input type="text" [(ngModel)]="item.Name" style="width: 95%" name="name" required/>
+                    </div>
                 </div>
-                <div>
-                    <input pInputText type="text" [(ngModel)]="item.Name" />
+                <div class="col s6">
+                    <div class="FieldName">
+                        Responsibility Allocated To
+                    </div>
+                    <div>
+                        <p-multiSelect [options]="item.AllocationsList" [(ngModel)]="selectedAllocations" [style]="{'width':'95%'}" name="allocations" required></p-multiSelect>
+                    </div>
                 </div>
             </div>
-            <div class="col s6">
-                <div class="FieldName">
-                    Responsibility Allocated To...
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldName">
+                        Description
+                    </div>
+                    <p-editor [(ngModel)]="item.Description" name="description" [style]="{ 'height':'200px' }"></p-editor>
                 </div>
-                <div>
-                    <p-multiSelect [options]="item.AllocationsList" [(ngModel)]="selectedAllocations"></p-multiSelect>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div style="padding-top:10px;">
+                        <button pButton label="Save" type="submit" [disabled]="!responsibilityForm.form.valid || selectedAllocations.length < 1"></button><button pButton label="Cancel" type="button" (click)="cancel()"></button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col s12">
-                <div class="FieldName">
-                    Description
-                </div>
-                <p-editor [(ngModel)]="item.Description"></p-editor>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col s12">
-                <div style="padding-top:10px;">
-                    <button pButton label="Save" (click)="save()"></button><button pButton label="Cancel" (click)="cancel()"></button>
-                </div>
-            </div>
-        </div>
-    </div>
+    </form>
 </div>

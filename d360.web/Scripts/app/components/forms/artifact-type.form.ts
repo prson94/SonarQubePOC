@@ -64,15 +64,15 @@ export class ArtifactTypeForm implements OnInit, OnChanges {
             this.artifactTypeService.putArtifactType(this.model)
                 .then(data => {
                     this.isSaving = false;
-                    this.onSuccess.emit(null);
-                    this.onComplete.emit(null);
+                    this.onSuccess.emit(data);
+                    this.onComplete.emit(data);
                 });
         else
             this.artifactTypeService.postArtifactType(this.model)
                 .then(data => {
                     this.isSaving = false;
-                    this.onSuccess.emit(null);
-                    this.onComplete.emit(null);
+                    this.onSuccess.emit(data);
+                    this.onComplete.emit(data);
                 });
 
 

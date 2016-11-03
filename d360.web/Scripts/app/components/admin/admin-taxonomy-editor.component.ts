@@ -16,10 +16,10 @@ import * as _ from 'lodash';
                         <div><input required type="text" name="name" pInputText [(ngModel)]="editedTaxonomy.Name" style="width: 100%;" #name="ngModel" maxlength="250" /></div>
                         <div *ngIf="name.errors && (name.dirty || name.touched)"
                              class="alert alert-danger">
-                            <div [hidden]="!name.errors.required">
+                            <div [hidden]="!name.errors.required" style="color: maroon">
                               A Model name is required
                             </div>                            
-                            <div [hidden]="!name.errors.maxlength">
+                            <div [hidden]="!name.errors.maxlength" style="color: maroon">
                               A Model name cannot be more than 250 characters long.
                             </div>
                         </div>      
@@ -27,11 +27,11 @@ import * as _ from 'lodash';
                     <div class="col l6 s12">
                         <div class="FieldName">Classification</div>
                         <div><p-dropdown required name="classification" [options]="classifications" [(ngModel)]="editedTaxonomy.Class" [style]="{width:'100%'}" #classification="ngModel"></p-dropdown></div>
-                        <div [hidden]="classification.valid || classification.pristine">Model classification is required</div>
+                        <div [hidden]="classification.valid || classification.pristine" style="color: maroon">Model classification is required</div>
                     </div>
                     <div class="col l12 s12">
                         <div class="FieldName">Maximum Depth</div>
-                        <div><p-spinner size="30" name="depth" [(ngModel)]="editedTaxonomy.MaximumDepth" [min]="0" [max]="100"></p-spinner></div>
+                        <div><input type="number" name="depth" [(ngModel)]="editedTaxonomy.MaximumDepth"  style="width:25%; height: 25px" /></div>
                     </div>                    
                     <div class="col s12">
                         <div class="FieldName">Description</div>
@@ -39,11 +39,45 @@ import * as _ from 'lodash';
                     </div>                    
                     <div class="col l6 s12">
                         <div class="FieldName">Background Color</div>
-                        <div><input type="text" name="background" pInputText [(ngModel)]="editedTaxonomy.IconBackColor" style="width: 100%;" /></div>
+                         <table style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input [(colorPicker)]="editedTaxonomy.IconBackColor" 
+                                            cpOutputFormat="hex"
+                                            cpAlphaChannel="disabled"
+                                            cpFallbackColor="#000"
+                                            cpPosition="bottom"
+                                            spellcheck="false"
+                                            name="background" [value]="editedTaxonomy.IconBackColor" style="width: 100%;height:25px;" required />
+                                    </td>
+                                    <td>
+                                        <span [style.background-color]="editedTaxonomy.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="col l6 s12">
                         <div class="FieldName">Text Color</div>
-                        <div><input type="text" name="color" pInputText [(ngModel)]="editedTaxonomy.IconForeColor" style="width: 100%;" /></div>
+                         <table style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input [(colorPicker)]="editedTaxonomy.IconForeColor" 
+                                            cpOutputFormat="hex"
+                                            cpAlphaChannel="disabled"
+                                            cpFallbackColor="#000"
+                                            cpPosition="bottom"
+                                            spellcheck="false"
+                                            name="background" [value]="editedTaxonomy.IconForeColor" style="width: 100%;height:25px;" required />
+                                    </td>
+                                    <td>
+                                        <span [style.background-color]="editedTaxonomy.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">

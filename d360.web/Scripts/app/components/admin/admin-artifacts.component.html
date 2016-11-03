@@ -23,12 +23,12 @@
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-artifact-type-form [id]="selectedRow?.data?.ID" [title]="'Edit Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete()"></d3s-artifact-type-form>
+            <d3s-artifact-type-form [id]="selectedRow?.data?.ID" [title]="'Edit Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-artifact-type-form>
         </div>
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-artifact-type-form [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()"  (onComplete)="actionComplete()"></d3s-artifact-type-form>
+            <d3s-artifact-type-form [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()"  (onComplete)="actionComplete($event)"></d3s-artifact-type-form>
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
@@ -36,7 +36,8 @@
             <delete-form [uri]="'/form/ArtifactType?id=' + selectedRow.data.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to delete this artifact type?'"
-                         (onDeleteSuccess)="actionComplete()"
+                         (onDeleteSuccess)="actionComplete($event,'success')"
+                         (onDeleteFail)="actionComplete($event,'error')"
                          (onCancel)="cancel()">
             </delete-form>
         </div>

@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, MessagesService } from '../../services/index';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../models/responsibility-type.model';
 import { FormMode } from '../../models/form.model';
 import { AdminBaseComponent } from './admin-base.component';
@@ -19,7 +19,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Responsibility Types";
         this.setCommonItems();
@@ -58,12 +58,28 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
     }
 
-    save() {
+    save(e: any) {
+        this.showMessageForResult(this.messagesService, e);
         this.formMode = FormMode.Default;
         this.load();
     }
 
-    confirmDelete() {
+    confirmDelete(e: any) {
+        var msg = {
+            type: 'success',
+            title: 'Success',
+            message: 'Item deleted successfully'
+        };
+
+        if (e == 'error') {
+            msg = {
+                type: 'error',
+                title: 'Error',
+                message: 'An error occurred'
+            }
+        }
+
+        this.showMessageForResult(this.messagesService, e);
         this.formMode = FormMode.Default;
         this.load();
     }

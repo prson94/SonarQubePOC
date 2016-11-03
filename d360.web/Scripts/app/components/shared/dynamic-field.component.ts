@@ -73,7 +73,26 @@ import { UriBasedService } from '../../services/index';
                         </div>
                         <input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" style="width: 100%;" type="number">   
                         <input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="any">   
-                        <input *ngSwitchCase="'Color'" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
+                        <div *ngSwitchCase = "'Color'">
+                            <table style="width:100%">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input [(colorPicker)]="field.Value" 
+                                                cpOutputFormat="hex"
+                                                cpAlphaChannel="disabled"
+                                                cpFallbackColor="#000"
+                                                cpPosition="bottom"
+                                                spellcheck="false"
+                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="field.Value" (colorPickerChange)="setColorPickerValue($event)"/>
+                                        </td>
+                                        <td>
+                                            <span [style.background-color]="field.Value" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
                         <div *ngSwitchCase="'Date'">                            
@@ -181,6 +200,10 @@ export class DynamicFieldComponent implements OnInit {
                 });
                 this.similarItems = r;
             });
+    }
+
+    setColorPickerValue(e: any) {
+        this.field.Value = e;
     }
     
 }

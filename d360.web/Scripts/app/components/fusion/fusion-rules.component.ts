@@ -186,68 +186,72 @@ import { TreeNode, Column } from 'primeng/primeng';
 
         <div *ngSwitchCase="FormMode.EditMapping" class="tile tile-detail">
             <header>Edit Fusion Rule Mapping</header>
-            <div class="row">
-                <div class="col s12">
-                    <input type="checkbox" [(ngModel)]="fusionRuleMappingEditorModel.Item.IsConstantValue" /> Store a fixed source value?
+            <form #mappingForm="ngForm" (ngSubmit)="saveEditMapping()">
+                <div class="row">
+                    <div class="col s12">
+                        <input type="checkbox" [(ngModel)]="fusionRuleMappingEditorModel.Item.IsConstantValue" name="isConstant" /> Store a fixed source value?
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s6" *ngIf="fusionRuleMappingEditorModel.Item.IsConstantValue">
-                    <div class="FieldName" style="display:block;">Source</div>
-                    <input type="text" [(ngModel)]="fusionRuleMappingEditorModel.Item.ConstantValue" style="width:95%" />
+                <div class="row">
+                    <div class="col s6" *ngIf="fusionRuleMappingEditorModel.Item.IsConstantValue">
+                        <div class="FieldName" style="display:block;">Source</div>
+                        <input type="text" [(ngModel)]="fusionRuleMappingEditorModel.Item.ConstantValue" style="width:95%" name="constantValue" required/>
+                    </div>
+                    <div class="col s6" *ngIf="!fusionRuleMappingEditorModel.Item.IsConstantValue">
+                        <div class="FieldName" style="display:block;">Source</div>
+                        <select [(ngModel)]="fusionRuleMappingEditorModel.sourceValue" style="width:95%" name="source" required>
+                            <option *ngFor="let i of fusionRuleMappingEditorModel.SourceFields" [value]="i.Value">{{i.Text}}</option>
+                        </select>
+                    </div>
+                    <div class="col s6">
+                        <div class="FieldName" style="display:block;">Target</div>
+                        <select [(ngModel)]="fusionRuleMappingEditorModel.targetValue" style="width:95%" name="target" required>
+                            <option *ngFor="let i of fusionRuleMappingEditorModel.TargetFields" [value]="i.Value">{{i.Text}}</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col s6" *ngIf="!fusionRuleMappingEditorModel.Item.IsConstantValue">
-                    <div class="FieldName" style="display:block;">Source</div>
-                    <select [(ngModel)]="fusionRuleMappingEditorModel.sourceValue" style="width:95%">
-                        <option *ngFor="let i of fusionRuleMappingEditorModel.SourceFields" [value]="i.Value">{{i.Text}}</option>
-                    </select>
+                <div class="row">
+                    <div class="col s12" style="padding-top:10px">
+                        <button pButton type="submit" label="Save" [disabled]="!mappingForm.form.valid"></button>
+                        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                    </div>
                 </div>
-                <div class="col s6">
-                    <div class="FieldName" style="display:block;">Target</div>
-                    <select [(ngModel)]="fusionRuleMappingEditorModel.targetValue" style="width:95%">
-                        <option *ngFor="let i of fusionRuleMappingEditorModel.TargetFields" [value]="i.Value">{{i.Text}}</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <button pButton type="button" label="Save" (click)="saveEditMapping();"></button>
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-                </div>
-            </div>
+            </form>
         </div>
-
+        
         <div *ngSwitchCase="FormMode.AddMapping" class="tile tile-detail">
             <header>Add Fusion Rule Mapping</header>
-            <div class="row">
-                <div class="col s12">
-                    <input type="checkbox" [(ngModel)]="fusionRuleMappingEditorModel.Item.IsConstantValue" /> Store a fixed source value?
+            <form #mappingForm="ngForm" (ngSubmit)="saveAddMapping()">
+                <div class="row">
+                    <div class="col s12">
+                        <input type="checkbox" [(ngModel)]="fusionRuleMappingEditorModel.Item.IsConstantValue" name="isConstant" /> Store a fixed source value?
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s6" *ngIf="fusionRuleMappingEditorModel.Item.IsConstantValue">
-                    <div class="FieldName" style="display:block;">Source</div>
-                    <input type="text" [(ngModel)]="fusionRuleMappingEditorModel.Item.ConstantValue" style="width:95%" />
+                <div class="row">
+                    <div class="col s6" *ngIf="fusionRuleMappingEditorModel.Item.IsConstantValue">
+                        <div class="FieldName" style="display:block;">Source</div>
+                        <input type="text" [(ngModel)]="fusionRuleMappingEditorModel.Item.ConstantValue" style="width:95%" name="constant" required />
+                    </div>
+                    <div class="col s6" *ngIf="!fusionRuleMappingEditorModel.Item.IsConstantValue">
+                        <div class="FieldName" style="display:block;">Source</div>
+                        <select [(ngModel)]="fusionRuleMappingEditorModel.sourceValue" style="width:95%" name="source" required>
+                            <option *ngFor="let i of fusionRuleMappingEditorModel.SourceFields" [value]="i.Value">{{i.Text}}</option>
+                        </select>
+                    </div>
+                    <div class="col s6">
+                        <div class="FieldName" style="display:block;">Target</div>
+                        <select [(ngModel)]="fusionRuleMappingEditorModel.targetValue" style="width:95%" name="target" required>
+                            <option *ngFor="let i of fusionRuleMappingEditorModel.TargetFields" [value]="i.Value">{{i.Text}}</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col s6" *ngIf="!fusionRuleMappingEditorModel.Item.IsConstantValue">
-                    <div class="FieldName" style="display:block;">Source</div>
-                    <select [(ngModel)]="fusionRuleMappingEditorModel.sourceValue" style="width:95%">
-                        <option *ngFor="let i of fusionRuleMappingEditorModel.SourceFields" [value]="i.Value">{{i.Text}}</option>
-                    </select>
+                <div class="row">
+                    <div class="col s12" style="padding-top:10px">
+                        <button pButton type="submit" label="Save" [disabled]="!mappingForm.form.valid"></button>
+                        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                    </div>
                 </div>
-                <div class="col s6">
-                    <div class="FieldName" style="display:block;">Target</div>
-                    <select [(ngModel)]="fusionRuleMappingEditorModel.targetValue" style="width:95%">
-                        <option *ngFor="let i of fusionRuleMappingEditorModel.TargetFields" [value]="i.Value">{{i.Text}}</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <button pButton type="button" label="Save" (click)="saveAddMapping();"></button>
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-                </div>
-            </div>
+            </form>
         </div>
 
         <div *ngSwitchCase="FormMode.DeleteStep" class="tile tile-detail">

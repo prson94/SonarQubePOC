@@ -15,6 +15,8 @@ import { FormMessagePart } from './form-message.part';
 
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { ColorPickerModule } from 'angular2-color-picker';
+
 
 import {
     GrowlModule,
@@ -68,6 +70,8 @@ import {
         PaginatorModule,
         EditorModule,
         SharedModule,
+
+        ColorPickerModule,
 
         //d3s          
         PipesModule,

@@ -4,6 +4,7 @@ import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorMode
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
 import { ObjectDetailService } from '../../services/index';
+
 import * as _ from 'lodash';
 
 @Component({
@@ -39,9 +40,12 @@ export class FieldTypeForm implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() actionName: string = "Add";
-    @Output() onComplete = new EventEmitter();   
+    @Input() objectName: string = '';
+    @Output() onComplete = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
+
+    //TODO: cleanup, probably some unused properties here
 
     private lookups: Lookups = new Lookups();
     private model: FieldTypeEditorModel;
@@ -63,16 +67,16 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         this.model = new FieldTypeEditorModel();
-        this.model.FieldType = new FieldType(); 
+        this.model.FieldType = new FieldType();
         this.model.FieldType.Object = this.objectType;
-        this.model.FieldType.ObjectID = this.objectID;       
+        this.model.FieldType.ObjectID = this.objectID;
     }
 
     ngOnInit() {
         this.initialItem = _.cloneDeep(this.model);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'id') {
                 this.load();
@@ -93,192 +97,34 @@ export class FieldTypeForm implements OnInit, OnChanges {
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.id)
                 .then(data => {
-                    //console.log('data: ');
-                    //console.log(data);
+                    //console.log('data: ', data);
                     this.model = data;
                     this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
-                    //console.log('lookups: ');
-                    //console.log(d);
+                    //console.log('lookups: ', d);
                     this.lookups = d;
+
                     this.lookups.IntersectTypes.forEach(i => {
                         i.id = i.value.split('|')[0];
+
                     });
+
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                 })
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
-                        //console.log("form data: ");
-                        //console.log(f);
+                        //console.log("form data: ", f);
+
                         this.model.RelationItems = f.RelationItems;
-
-                        if (this.model.FieldType.Type == 'RelationLookup') {
-                            this.model.RelationItem = f.RelationItems[0];
-                            this.model.RelationItems = [];
-                        }
-
-                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
-
-                            this.model.RelationItems.forEach(r => {
-                                console.log('existing relation:' + r);
-                                let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
-                                if (r.Object == null || r.Object == '')
-                                    r.Object = intersectType.value.split('|')[1];
-                                if (r.ObjectID == null || r.ObjectID < 0)
-                                    r.ObjectID = parseInt(intersectType.value.split('|')[2]);
-
-                                r.DisplayFields.forEach(d => {
-                                    if (d.FieldTypeID == null && d.value)
-                                        d.FieldTypeID = parseInt(d.value.split('|')[0]);
-                                    if (d.FieldTypeName == null && d.value)
-                                        d.FieldTypeName = d.value.split('|')[1];
-
-                                    if (!d.value)
-                                        d.value = d.FieldTypeID + '|' + d.FieldTypeName;
-                                });
-                            });
-
-                            let clone = _.cloneDeep(this.model.RelationItems);
-                            if (this.model.RelationItems != null && this.model.RelationItems.length) {
-                                for (let i = 0; i < this.model.RelationItems.length; i++) {
-                                    let item = this.model.RelationItems[i];
-                                    let lastItem = i > 0 ? this.model.RelationItems[i - 1] : null;
-
-                                    if (i == this.model.RelationItems.length - 1) {
-                                        //last item is for final right-side selection only, remove after load
-                                        lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
-                                        //console.log('last item on load');
-                                        //console.log(lastItem);
-                                        this.changeRefType(lastItem, lastItem.selectedRelationItemID).
-                                            then(() => this.changeRel(lastItem))
-                                            .then(() => {
-                                                lastItem.DisplayFields.forEach(d => {
-                                                    let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
-
-                                                    if (item) {
-                                                        d.Show = true;
-                                                        d.DisplayOrder = item.DisplayOrder;
-                                                        d.FilterValue = item.Filter;
-                                                        d.OverrideDisplayName = item.OverrideDisplayName;
-                                                        d.SortOrder = item.SortOrder;
-                                                    }
-                                                })
-                                            })
-                                            .then(() => this.deleteRelation(this.model.RelationItems[i]));
-                                        //.then(() => this.model.RelationItems.pop());
-                                        break;
-                                    }
-
-                                    if (lastItem == null)
-                                        this.changeRefType(item);
-                                    else
-                                        this.changeRefType(item)
-                                            .then(() => {
-                                                lastItem.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
-                                            })
-                                            .then(() => this.changeRel(lastItem))
-                                            .then(() => {
-                                                // console.log('load display fields');
-
-                                                //console.log(lastDisplayFields);
-                                                //console.log(lastItem.DisplayFields);
-                                                lastItem.DisplayFields.forEach(d => {
-                                                    let item = clone[i - 1].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
-
-                                                    if (item) {
-                                                        d.Show = true;
-                                                        d.DisplayOrder = item.DisplayOrder;
-                                                        d.FilterValue = item.Filter;
-                                                        d.OverrideDisplayName = item.OverrideDisplayName;
-                                                        d.SortOrder = item.SortOrder;
-                                                    }
-
-                                                });
-
-                                                let r = lastItem.relationItems.find(f => f.value == lastItem.selectedRelationItemID);
-                                                if (r)
-                                                    item.displayValue = r.label;
-                                            });
-                                }
-                            }
-                        }
-
                         this.model.FusionItems = f.FusionItems;
 
-
-                        if (this.model.FieldType.Type == 'ComplexRelationLookup') {
-                            this.model.RelationItems.forEach(r => {
-                                let s = [];
-                                for (let i = 1; i <= r.DisplayFields.length; i++) {
-                                    r.DisplayFields[i - 1].DisplayOrder = i;
-                                    s.push({ id: i, text: i });
-                                }
-                                r.SortOrderList = s;
-
-                            });
-                            this.relationItemCount = this.model.RelationItems.length;
-
-                            if (this.model.RelationItems) {
-                                let r = this.model.RelationItems[0];
-
-                                this.lookups.IntersectTypes.forEach(i => {
-                                    let params = i.value.split('|');
-
-                                    if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
-                                        r.IntersectType = parseInt(i.id);
-                                        r.selectedIntersectName = i.label;
-                                    }
-
-                                });
-
-                                let s = null;
-                                if (r.IntersectType == null) {
-                                    this.objectDetailService.getObject(this.objectID, this.objectType)
-                                        .then(o => {
-                                            r.selectedIntersectName = o.Name
-                                        });
-                                    s = '0|' + this.objectType + '|' + this.objectID;
-                                    this.changeRefType(r, s);
-                                }
-                            }
-                        }
-
-                        if (this.model.FieldType.Type == 'RelationLookup') {
-
-                            let intersect = this.lookups.IntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.IntersectType.toString());
-                            let displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
-
-                            this.model.RelationItem.selectedRelationItemID = intersect.value;
-
-                            let s = [];
-                            for (let i = 1; i <= this.model.RelationItem.DisplayFields.length; i++) {
-                                this.model.RelationItem.DisplayFields[i - 1].DisplayOrder = i;
-                                s.push({ id: i, text: i });
-                            }
-                            this.model.RelationItem.SortOrderList = s;
-
-                            this.changeLegacyRef()
-                                .then(() => {
-                                    let child = this.childIntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.ChildIntersectType.toString());
-                                    if (child)
-                                        this.model.RelationItem.selectedChildIntersectType = child.value;
-                                })
-                                .then(() => this.changeLegacyChild())
-                                .then(() => {
-
-                                    this.model.RelationItem.DisplayFields.forEach(d => {
-                                        let f = displayFields.find(i => i.value == d.value);
-
-                                        if (f) {
-                                            d.Show = f.Show;
-                                            d.FilterValue = f.FilterValue;
-                                            d.SortOrder = f.SortOrder;
-                                        }
-                                    });
-                                });
+                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
+                            this.loadComplexRelationLookup();
+                        } else if (this.model.FieldType.Type == 'RelationLookup') {
+                            this.loadRelationLookup(f);
                         }
                     }
                 })
@@ -302,21 +148,132 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
     }
 
+    private loadComplexRelationLookup() {
+        //load existing values
+        this.model.RelationItems.forEach(r => {
+            let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
+            if (r.Object == null || r.Object == '')
+                r.Object = intersectType.value.split('|')[1];
+            if (r.ObjectID == null || r.ObjectID < 0)
+                r.ObjectID = parseInt(intersectType.value.split('|')[2]);
+
+            r.DisplayFields.forEach(d => {
+                if (d.FieldTypeID == null && d.value)
+                    d.FieldTypeID = parseInt(d.value.split('|')[0]);
+                if (d.FieldTypeName == null && d.value)
+                    d.FieldTypeName = d.value.split('|')[1];
+
+                if (!d.value)
+                    d.value = d.FieldTypeID + '|' + d.FieldTypeName;
+            });
+        });
+
+
+        let clone = _.cloneDeep(this.model.RelationItems);
+        if (this.model.RelationItems != null && this.model.RelationItems.length) {
+            for (let i = 0; i < this.model.RelationItems.length; i++) {
+                let item = this.model.RelationItems[i];
+                let last = (i == 0) ? null : this.model.RelationItems[i - 1];
+
+                if (i == 0) {
+                    this.objectDetailService.getObject(this.objectID, this.objectType)
+                        .then(o => {
+                            this.objectName = o.Name;
+                        });
+                }
+
+                //load cascading dropdowns
+                this.changeRefType(i)
+                    .then(() => {
+                        item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
+                    })
+                    .then(() => this.changeRel(i))
+                    .then(() => {
+                        item.DisplayFields.forEach(d => {
+                            let item = clone[i].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
+
+                            if (item) {
+                                d.Show = true;
+                                d.DisplayOrder = item.DisplayOrder;
+                                d.FilterValue = item.Filter;
+                                d.OverrideDisplayName = item.OverrideDisplayName;
+                                d.SortOrder = item.SortOrder;
+                            }
+
+                        });
+
+                        let r = item.relationItems.find(f => f.value == item.selectedRelationItemID);
+                        if (r) item.displayValue = r.label;
+                        console.log(item);
+                    });
+
+                //load display order/sort order drop down lists
+                this.model.RelationItems.forEach(r => {
+                    let s = [];
+                    for (let i = 1; i <= r.DisplayFields.length; i++) {
+                        r.DisplayFields[i - 1].DisplayOrder = i;
+                        s.push({ id: i, text: i });
+                    }
+                    r.SortOrderList = s;
+
+                });
+                this.relationItemCount = this.model.RelationItems.length;
+            }
+        }
+    }
+
+    private loadRelationLookup(f: FieldTypeEditorModel) {
+        this.model.RelationItem = f.RelationItems[0];
+        this.model.RelationItems = [];
+
+        let intersect = this.lookups.IntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.IntersectType.toString());
+        let displayFields = _.cloneDeep(this.model.RelationItem.DisplayFields);
+
+        this.model.RelationItem.selectedRelationItemID = intersect.value;
+
+        let s = [];
+        for (let i = 1; i <= this.model.RelationItem.DisplayFields.length; i++) {
+            this.model.RelationItem.DisplayFields[i - 1].DisplayOrder = i;
+            s.push({ id: i, text: i });
+        }
+        this.model.RelationItem.SortOrderList = s;
+
+        this.changeLegacyRef()
+            .then(() => {
+                let child = this.childIntersectTypes.find(f => f.value.split('|')[0] == this.model.RelationItem.ChildIntersectType.toString());
+                if (child)
+                    this.model.RelationItem.selectedChildIntersectType = child.value;
+            })
+            .then(() => this.changeLegacyChild())
+            .then(() => {
+
+                this.model.RelationItem.DisplayFields.forEach(d => {
+                    let f = displayFields.find(i => i.value == d.value);
+
+                    if (f) {
+                        d.Show = f.Show;
+                        d.FilterValue = f.FilterValue;
+                        d.SortOrder = f.SortOrder;
+                    }
+                });
+            });
+    }
+    
     private loadDataType(value: string): Promise<void> {
         let promises = [];
         //console.log('load data type');
         //console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
-                promises.push(this.loadTokens(this.model.FieldType.LookupObjectType,this.model.FieldType.LookupObjectID));                
+                promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
             case 'fusionlookup':
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
                 if (this.model.FusionItems && this.model.FusionItems.length)
                     this.model.FusionItems.forEach(i => {
                         promises.push(
                             this.loadTargetFusionAttributes(i)
-                            .then(() => this.loadFusionDisplayFields(i)) 
-                            );
+                                .then(() => this.loadFusionDisplayFields(i))
+                        );
                     });
                 break;
             case 'complexrelationlookup':
@@ -329,27 +286,35 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
-                    
 
-                    this.lookups.IntersectTypes.forEach(i => {
-                        let params = i.value.split('|');
 
-                        if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
-                            r.IntersectType = parseInt(i.id);
-                            r.selectedIntersectName = i.label;
-                        }
+                    //this.lookups.IntersectTypes.forEach(i => {
+                    //    let params = i.value.split('|');
 
-                    });
-                    let s = null;
-                    if (r.IntersectType == null) {
-                        this.objectDetailService.getObject(this.objectID, this.objectType)
-                            .then(o => {
-                                r.selectedIntersectName = o.Name
-                            });
-                        s = '0|' + this.objectType + '|' + this.objectID;
-                        this.changeRefType(r, s);
-                    }
+                    //    if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
+                    //        r.IntersectType = parseInt(i.id);
+                    //        r.selectedIntersectName = i.label;
+                    //    }
+
+                    //});
+                    //let s = null;
+                    ////if (r.IntersectType == null) {
+                    //    this.objectDetailService.getObject(this.objectID, this.objectType)
+                    //        .then(o => {
+                    //            r.selectedIntersectName = o.Name
+                    //        });
+                    //    s = '0|' + this.objectType + '|' + this.objectID;
+                    //    this.changeRefType(r, s);
+                    //}
                     //console.log(this.lookups);
+
+                    if (this.objectName == null || this.objectName == '') {
+                        this.objectDetailService.getObject(this.objectID, this.objectType).then(o => {
+                            this.objectName = o.Name;
+                        });
+
+                    }
+                    this.changeRefType(this.model.RelationItems.length - 1);
                 }
                 break;
             case 'relationlookup':
@@ -373,10 +338,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
     // called when the lookup type field is changed
     private lookupTypeSelected(value: string) {
-                
+
         if (value == undefined) {
             console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
-
             return;
         }
 
@@ -390,7 +354,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
         this.loadTokens(type, id);
     }
 
-
     private loadTokens(objectType: string, objectId: number): Promise<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
@@ -398,8 +361,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
             return;
         }
 
-        if (objectType != "DomainItem" && objectType != "ReferenceItem" && objectType != "ReferenceItemType") objectType += 'Type';
-        
+        if (objectType != "DomainItem") objectType += 'Type';
+
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
                 this.model.LookupTokens = r;
@@ -423,63 +386,16 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     //#endregion
-
-    private selectToken(value: string) {
-        this.model.FieldType.LookupDisplayFormat += value;
-    }
-
-    private addFusion() {
-        let i = new FieldTypeFusionItemEditorModel();
-        i.ReferenceType = this.lookups.ReferenceTypes[0].value;
-        if (this.model.FusionItems == null) {            
-            this.model.FusionItems = [];
-        }
-        this.model.FusionItems.push(i);
-    }
-
-    private removeFusion(i: number) {
-       this.model.FusionItems.splice(i, 1);
-    }
-
-    private validatePattern() {
-        if (this.model.FieldType.Pattern > "" && this.testPattern > "") {
-            var patternRegex = new RegExp(this.model.FieldType.Pattern);
-            this.testPatternValidationText = (patternRegex.test(this.testPattern )) ? 'Success' : 'Fail';
-        }
-        else {
-            this.testPatternValidationText = '';
-        }
-    }
-
-    private updateApiName(event) {
-        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9-_]/g,'');
-    }
-
+    
+    //#region form actions
     private cancel(): void {
         this.onCancel.emit(null);
     }
-        
+
     private onSubmit(): void {
 
         if (!this.validate())
             return;
-
-        if (this.model.FieldType.Type == 'ComplexRelationLookup') {
-            let r = new FieldTypeRelationItemEditorModel();
-            let last = _.last(this.model.RelationItems);
-            let i = last.relationItems.find(f => f.value == last.selectedRelationItemID);
-                
-            if (i) {
-                r.IntersectType = i.IntersectTypeID;
-                r.IntersectTypeID = i.IntersectTypeID;
-                r.Object = i.TargetType;
-                r.ObjectID = i.TargetTypeID;
-                r.ReferenceType = 0;
-                r.DisplayFields = [];
-                this.model.RelationItems.push(r);
-            }
-        }
-
 
         if (this.model.FieldType.Type == 'RelationLookup') {
             if (this.model.RelationItem.ReferenceType.toString() != '1' && this.model.RelationItem.selectedChildIntersectType != null)
@@ -524,9 +440,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
 
             });
         }
-
         this.isLoading = true;
-
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
                 .then(r => {
@@ -541,7 +455,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         } else {
             this.fieldsService.postFieldType(this.model)
-                .then(r => {                    
+                .then(r => {
                     this.isLoading = false;
                     if (r.isError) {
                         this.messagesService.showError(r.title, r.message);
@@ -553,12 +467,11 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         }
     }
-    
 
     private validate(): boolean {
         let valid = true;
         this.errorMessage = '';
-        console.log(this.model.FieldType.Type);
+        //console.log(this.model.FieldType.Type);
 
         switch (this.model.FieldType.Type.toLowerCase()) {
             case 'relationlookup':
@@ -593,80 +506,77 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         valid = false;
                     }
                 }
-                        
+
                 break;
         }
         return valid;
     }
+    //#endregion
 
-    changeRefType(item: FieldTypeRelationItemEditorModel, selected: string = null): Promise<any> {
+    //#region dropdown functions
+    private changeRefType(index: number, selected: string = null): Promise<any> {
+        let item = this.model.RelationItems[index];
+        let last = (index == 0) ? null : this.model.RelationItems[index - 1];
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
-        //console.log('changeRefType()');
-        //console.log(item);
+        //console.log('changeRefType()', item);
 
-        if (item.IntersectType == null)
-            item.IntersectType = parseInt(item.selectedRelationItemID.split('|')[0]);
-        if (item.Object == null)
-            item.Object = item.selectedRelationItemID.split('|')[1];
-        if (item.ObjectID == null)
-            item.ObjectID = parseInt(item.selectedRelationItemID.split('|')[2]);
+        let object = this.objectType;
+        let objectId = this.objectID;
+
+        if (index != 0) {
+            object = last.Object;
+            objectId = last.ObjectID;
+        }
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                return this.fieldsService.getStandardRelations(object, objectId)
                     .then(ci => {
                         item.relationItems = ci;
+
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
+                            item.relationsLoading = false;
                         });
-                    }).then(() => {
-                        item.relationsLoading = false;
-                        console.log('Relation items: ' + item.relationItems);
                     });
             case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
-                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType)
-                    .then(cr => {
-                        item.relationItems = cr;
-                    }).then(() => {
-                        item.relationsLoading = false;
-                        console.log('Relation items: ' + item.relationItems);
-                    });
+                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(ci => {
+                    item.relationItems = ci;
+                    item.relationsLoading = false;
+                });
             case ComplexLookupRelationType.ParentItem.toString():
-                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
+                return this.fieldsService.getStandardRelations(object, objectId)
                     .then(pi => {
                         item.relationItems = pi;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
+                            item.relationsLoading = false;
                         });
-                    }).then(() => {
-                        item.relationsLoading = false;
-                        console.log('Relation items: ' + item.relationItems);
                     });
             case ComplexLookupRelationType.StandardRelationhip.toString():
-                return this.fieldsService.getStandardRelations(item.Object, item.ObjectID)
-                    .then(r => {
-                        item.relationItems = r;
+                return this.fieldsService.getStandardRelations(object, objectId)
+                    .then(sr => {
+                        item.relationItems = sr;
                         item.relationItems.forEach(i => {
                             i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
                             i.label = i.TargetName;
                         });
-                    }).then(() => {
-                        item.relationsLoading = false;
-                        console.log('Relation items: ' + item.relationItems);
-                    });
+
+                    }).then(() => item.relationsLoading = false);
         }
     }
 
-    // Called when changing relationship type, loads the fields associated with the relationship and target object.
-    changeRel(item: FieldTypeRelationItemEditorModel): Promise<any> {
-        //console.log(item.selectedRelationItemID);
+    private changeRel(index: number): Promise<any> {
+        let item = this.model.RelationItems[index];
+        let last = (index == 0) ? null : this.model.RelationItems[index - 1];
+
+        //console.log(item);
 
         let params = [];
-        //item.DisplayFields = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
         } else {
@@ -675,7 +585,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
             params.push(item.ObjectID);
             item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
         }
-        
 
         try {
             if (params.length < 3)
@@ -683,11 +592,14 @@ export class FieldTypeForm implements OnInit, OnChanges {
             let id = parseInt(params[2]);
             let type = params[1];
             let intersectType = parseInt(params[0]);
+
+            item.IntersectType = intersectType;
+            item.Object = type;
+            item.ObjectID = id;
+
             item.DisplayFields = [];
             return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
                 .then(r => {
-                    //console.log('changeRel()');
-                    //console.log(r);
                     r.forEach(i => {
                         let params = i.value.split('|');
                         let d = new FieldTypeItemDisplayFieldEditorModel();
@@ -699,10 +611,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         d.value = i.value;
                         let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
                         if (e != null) {
-                            //console.log('found matching display field');
                             e.Show = true;
                             e.value = i.value;
-                        } else 
+                        } else
                             item.DisplayFields.push(d);
                     });
 
@@ -720,45 +631,18 @@ export class FieldTypeForm implements OnInit, OnChanges {
         }
     }
 
-    // Called when adding another hop in the relationship type path. Adds row to the bottom of the table.
-    addRelation(item: FieldTypeRelationItemEditorModel) {
-        let i = new FieldTypeRelationItemEditorModel();
-        let params = item.selectedRelationItemID.split('|');
-        let id = parseInt(params[2]);
-        let type = params[1];
-        let intersectType = parseInt(params[0]);
-
-
-        i.ObjectID = id;
-        i.Object = type;
-        i.IntersectTypeID = intersectType;
-        i.IntersectType = intersectType;
-        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).label;
-
-        this.model.RelationItems.push(i);
-        this.relationItemCount = this.model.RelationItems.length;
-    }
-
-    // Called when removing a hop from the relationship type path.  Removes row from table.
-    deleteRelation(item: FieldTypeRelationItemEditorModel) {
-        //only last item can be deleted
-        this.model.RelationItems.pop();
-        this.relationItemCount = this.model.RelationItems.length;
-    }
-
-    changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel, parent: FieldTypeRelationItemEditorModel) {
+    private changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel, parent: FieldTypeRelationItemEditorModel) {
         let other = parent.DisplayFields.find(f => f.DisplayOrder == item.DisplayOrder && f.value != item.value);
         if (other)
             other.DisplayOrder = null;
     }
 
-    changeLegacyRef(): Promise<any> {
+    private changeLegacyRef(): Promise<any> {
 
         this.childIntersectDisabled = (this.model.RelationItem.ReferenceType.toString() || '1') == '1';
         this.model.RelationItem.DisplayFields = [];
-
         if (this.model.RelationItem.selectedRelationItemID != null) {
-            let params = this.model.RelationItem.selectedRelationItemID .split('|');
+            let params = this.model.RelationItem.selectedRelationItemID.split('|');
 
             this.model.RelationItem.IntersectType = parseInt(params[0]);
             this.model.RelationItem.Object = params[1];
@@ -774,14 +658,11 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         } else if (this.childIntersectDisabled) {
             return this.changeLegacyChild();
-        } else {
-            return Promise.resolve();
-        }
+        } else return Promise.resolve();
     }
 
-    changeLegacyChild(): Promise<any> {
-        console.log(this.model.RelationItem);
-
+    private changeLegacyChild(): Promise<any> {
+        //console.log(this.model.RelationItem);
 
         let intersectType = this.model.RelationItem.IntersectType;
         let type = this.model.RelationItem.Object;
@@ -826,5 +707,61 @@ export class FieldTypeForm implements OnInit, OnChanges {
                 });
         } else return Promise.resolve();
     }
+    //#endregion
+
+    private selectToken(value: string) {
+        this.model.FieldType.LookupDisplayFormat += value;
+    }
+
+    private validatePattern() {
+        if (this.model.FieldType.Pattern > "" && this.testPattern > "") {
+            var patternRegex = new RegExp(this.model.FieldType.Pattern);
+            this.testPatternValidationText = (patternRegex.test(this.testPattern)) ? 'Success' : 'Fail';
+        }
+        else {
+            this.testPatternValidationText = '';
+        }
+    }
+
+    private updateApiName(event) {
+        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9-_]/g, '');
+    }
+
+    private addFusion() {
+        let i = new FieldTypeFusionItemEditorModel();
+        i.ReferenceType = this.lookups.ReferenceTypes[0].value;
+        if (this.model.FusionItems == null) {
+            this.model.FusionItems = [];
+        }
+        this.model.FusionItems.push(i);
+    }
+
+    private removeFusion(i: number) {
+        this.model.FusionItems.splice(i, 1);
+    }
+
+    private addRelation(item: FieldTypeRelationItemEditorModel) {
+        let i = new FieldTypeRelationItemEditorModel();
+        let params = item.selectedRelationItemID.split('|');
+        let id = parseInt(params[2]);
+        let type = params[1];
+        let intersectType = parseInt(params[0]);
+
+        i.ObjectID = id;
+        i.Object = type;
+        i.IntersectTypeID = intersectType;
+        i.IntersectType = intersectType;
+        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).label;
+
+        this.model.RelationItems.push(i);
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    private removeRelation(item: FieldTypeRelationItemEditorModel) {
+        //only last item can be deleted
+        this.model.RelationItems.pop();
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
 }
 

@@ -44,6 +44,8 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         this.fusionService.getFusionTypes('$orderby=Name')
             .then(data => {
                 this.fusionTypes = data;
+                console.log(this.fusionTypes);
+                console.log(this.fusionTypes.length);
                 this.selectedRow = (this.fusionTypes && this.fusionTypes.length) ? this.fusionTypes[0] : null;
                 this.isLoading = false;
             });

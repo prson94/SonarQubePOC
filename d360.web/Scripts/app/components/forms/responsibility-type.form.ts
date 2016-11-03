@@ -55,16 +55,14 @@ export class ResponsibilityTypeForm implements OnInit {
         if (this.id == 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
                 .then(d => {
-                    //console.log(d);
                     this.isLoading = false;
-                    this.onSaveComplete.emit(null);
+                    this.onSaveComplete.emit(d);
                 });
         } else {
             this.responsibilityTypeService.putResponsibilityType(this.item)
                 .then(d => {
-                    //console.log(d);
                     this.isLoading = false;
-                    this.onSaveComplete.emit(null);
+                    this.onSaveComplete.emit(d);
                 });
         }
 
@@ -88,7 +86,6 @@ export class ResponsibilityTypeForm implements OnInit {
 
     private getSelectedAllocations() {
         this.selectedAllocations = [];
-        //console.log(this.item);
         if (this.item.ResponsibilityTypeRelations)
             this.item.ResponsibilityTypeRelations.forEach(r => {
                 let s = r.ObjectID.toString()

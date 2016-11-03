@@ -1,9 +1,10 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService } from '../../services/index';
+import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService, MessagesService } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
+
 
 
 @Component({
@@ -25,7 +26,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title) {        
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title, protected messagesService: MessagesService) {        
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Artifacts";
         this.setCommonItems();        
@@ -77,11 +78,29 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isDeleting = false;
     }
 
-    actionComplete(): void {
+    actionComplete(e: any, type: string = ''): void {
+        var msg = e;
+        if (type != '') {
+            if (type == 'success') {
+                msg = {
+                    type: type,
+                    title: 'Success',
+                    message: 'Item deleted successfully'
+                }
+            } else {
+                msg = {
+                    type: type,
+                    title: 'Error',
+                    message: 'An error occurred'
+                }
+            }
+        }
+
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load();        
+        this.load();    
+        this.showMessageForResult(this.messagesService, msg);    
         this.stateService.reloadLeftNavMenu();
     }
 }
