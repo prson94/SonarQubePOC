@@ -398,7 +398,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
             return;
         }
 
-        if (objectType != "DomainItem") objectType += 'Type';
+        if (objectType != "DomainItem" && objectType != "ReferenceItem" && objectType != "ReferenceItemType") objectType += 'Type';
         
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {

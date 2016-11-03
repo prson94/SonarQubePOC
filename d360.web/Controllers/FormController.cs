@@ -4877,8 +4877,17 @@ order by  D.TextPath", new { id });
             {
                 lookups.AddRange(Company.Query<KnockoutListItem>(@"
                         select
-                            'Reference List : ' + [Name] as title
+                            'Reference List Item: ' + [Name] as title
                             ,'ReferenceItem|' + cast(ID as varchar) as value
+                        from 
+                            [dbo].[ReferenceItemType]
+                        order by Name  
+                    "));
+
+                lookups.AddRange(Company.Query<KnockoutListItem>(@"
+                        select
+                            'Reference List: ' + [Name] as title
+                            ,'ReferenceItemType|' + cast(ID as varchar) as value
                         from 
                             [dbo].[ReferenceItemType]
                         order by Name  
@@ -20862,6 +20871,19 @@ order by TextPath
                         FriendlyName = "Code",
                         Name = "Code",
                         MaximumLength = 250,
+                        MinimumLength = 1,
+                        SortOrder = 1,
+                        Type = DataType.Text.ToString()
+                    });
+                    Company.Add<FieldType>(new FieldType
+                    {
+                        ObjectID = model.ID,
+                        Object = SystemObjects.ReferenceItemType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        FriendlyName = "Long Description",
+                        Name = "LongDesc",
+                        MaximumLength = 500,
                         MinimumLength = 1,
                         SortOrder = 1,
                         Type = DataType.Text.ToString()
