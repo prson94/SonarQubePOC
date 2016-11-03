@@ -1,5 +1,4 @@
-﻿
-import {Component, Input, OnChanges, SimpleChange, ViewChildren, ElementRef, AfterViewInit, QueryList} from '@angular/core';
+﻿import {Component, Input, OnChanges, SimpleChange, ViewChildren, ElementRef, AfterViewInit, QueryList} from '@angular/core';
 import * as pbi from 'powerbi-client';
 import { BaseComponent } from '../shared/base.component';
 import { DashboardService, WebAnalyticsService } from '../../services/index';
@@ -8,12 +7,17 @@ import { Dashboard, DashboardTokens } from '../../models/dashboard.model'
 @Component({
     selector: 'd3s-powerbi-viewer',  
     template: ` 
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading" #biContainer style="height:75vh" class="powerbi"
-                    powerbi-type="report"
-                    [attr.powerbi-embed-url]="powerBIDetails?.Report?.embedUrl"
-                    [attr.powerbi-access-token]="powerBIDetails?.AccessToken"
-                ></div>
+                <header>{{dashboard?.Name}}<d3s-tile-actions [hasFullScreen]="true" (fullScreenClick)="showFullscreen()"></d3s-tile-actions></header>
+                <div class="row">
+                    <div class="col s12">
+                        <d3s-loading [isLoading]="isLoading"></d3s-loading>                        
+                        <div *ngIf="!isLoading" #biContainer style="height:75vh" class="powerbi"
+                                powerbi-type="report"
+                                [attr.powerbi-embed-url]="powerBIDetails?.Report?.embedUrl"
+                                [attr.powerbi-access-token]="powerBIDetails?.AccessToken"
+                        ></div>
+                    </div>
+                </div>
             `,
     providers: [DashboardService],        
 })
@@ -23,6 +27,8 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
     @ViewChildren("biContainer") biContainer: QueryList<ElementRef>;
     private powerBIDetails: DashboardTokens;
     private shouldRender: boolean = false;
+
+    
 
     constructor(protected el: ElementRef, protected dashboardService: DashboardService, webAnalyticsService: WebAnalyticsService) {
         super(undefined, webAnalyticsService);            
@@ -37,6 +43,14 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
         this.biContainer.changes.subscribe(() => this.initPowerBi());                
     }
 
+    showFullscreen() {
+        if (this.biContainer) {
+            var report = window.powerbi.get(this.biContainer.first.nativeElement);
+
+            report.fullscreen();
+        }
+    }
+
     initPowerBi() {
         if (this.biContainer && this.biContainer.length > 0 && this.shouldRender) {            
             if (!this.biContainer.first)
@@ -46,7 +60,7 @@ export class PowerBIViewerComponent extends BaseComponent implements AfterViewIn
             else {
                 this.shouldRender = false;
                 window.powerbi.embed(this.biContainer.first.nativeElement);
-                //console.log("DEV: RENDERING POWER BI REPORT");
+                console.log("DEV: RENDERING POWER BI REPORT");
                 this.logAction('open', 'Report', this.dashboard.ID);
             }
         }

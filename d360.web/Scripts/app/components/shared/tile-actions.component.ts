@@ -1,5 +1,4 @@
-﻿
-import {Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange} from '@angular/core';
+﻿import {Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
 import {MenuItem} from 'primeng/primeng';
 
 @Component({
@@ -27,10 +26,12 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasAuthenticate"><a class="Action" (click)="authenticateClick.emit()" pTooltip="Authenticate"><i class="fa fa-sign-in fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasApi"><a class="Action" (click)="apiClick.emit()" pTooltip="API Key"><i class="fa fa-key fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasPassword"><a class="Action" (click)="passwordClick.emit()" pTooltip="Password"><i class="fa fa-asterisk fa-fw"></i></a></li>                        
+                            <li class="left" *ngIf="hasFullScreen"><a class="Action" (click)="fullScreenClick.emit()" pTooltip="Fullscreen"><i class="fa fa-arrows-alt fa-fw"></i></a></li>                        
                         </ul>
                     </div>
                 </div>          
-                `
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush    
 })
 
 export class TileActionsComponent implements OnInit, OnChanges {
@@ -57,10 +58,13 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasAuthenticate: boolean = false;
     @Input() hasApi: boolean = false;
     @Input() hasPassword: boolean = false;
+    @Input() hasFullScreen: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
-    @Output() menuClick =  new EventEmitter();
+    @Output() menuClick = new EventEmitter();
+
+    @Output() fullScreenClick = new EventEmitter();
         
     private dateMenuItems: MenuItem[] = [];
     

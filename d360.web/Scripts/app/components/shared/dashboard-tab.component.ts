@@ -22,16 +22,11 @@ import { Dashboard } from '../../models/dashboard.model'
                                 
                                 <button pButton type="button" (click)="selected=dashboard;" label="Render" style="width: '150px';padding:4px;"></button>
                             </div>  
-                            <div class="col s12" [innerHtml]="dashboard?.Description"></div>                          
+                            <div *ngIf="dashboard?.Description" class="col s12" [innerHtml]="dashboard?.Description"></div>                          
                         </div>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="selected">
-                        <header>{{selected?.Name}}</header>
-                        <div class="row">
-                            <div class="col s12">
-                                <d3s-powerbi-viewer [dashboard]="selected"></d3s-powerbi-viewer>
-                            </div>
-                        </div>                    
+                        <d3s-powerbi-viewer [dashboard]="selected"></d3s-powerbi-viewer>                        
                     </div>
                     <div class="tile tile-detail" *ngIf="!selected">
                         <h4 class="center" style="padding:30px;">Please choose a dashboard from the dropdown above and press render to view the specified dashboards content.</h4>
@@ -50,7 +45,6 @@ export class DashboardTabComponent extends BaseComponent implements OnInit {
     dashboards: Dashboard[] = [];
     dashboard: Dashboard;
     selected: Dashboard;
- //   openedDashboards: MenuItem[] = [];
 
     constructor(protected dashboardService: DashboardService) {
         super();
