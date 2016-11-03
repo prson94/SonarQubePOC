@@ -26,7 +26,7 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 29; //10
+            var companyID = 8; //10
             var fusionTypeID = 8;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
@@ -55,15 +55,9 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
 
             fusionIntersectTypes.ForEach(t => {
                 company.Execute(@"
-if not exists(select 1 from IntersectTypeNode S inner join IntersectTypeNode T on S.IntersectTypeID = T.IntersectTypeID and S.ID <> T.ID and S.ObjectType = @type and S.ObjectID = @si and T.ObjectType = @type and T.ObjectID = @ti) 
+if not exists(select 1 from IntersectType and S.Subject = @type and S.SubjectID = @si and T.Object = @type and T.ObjectID = @ti) 
 BEGIN 
-            declare @intersectTypeID int
-
 			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy) values (@type, @si, @type, @ti, getutcdate(), 0)
-			set @intersectTypeID = SCOPE_IDENTITY()
-
-			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order]) values (@intersectTypeID, @type, @si, 1)
-			INSERT INTO IntersectTypeNode (IntersectTypeID, ObjectType, ObjectID, [Order]) values (@intersectTypeID, @type, @ti, 2)
 END", 
                 new { type = "FusionAttributeType", si = t.StartFusionAttributeTypeID, ti = t.EndFusionAttributeTypeID, ro = t.ReadOnly });
             });

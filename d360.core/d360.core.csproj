@@ -139,7 +139,6 @@
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\FusionAgentError.cs" />
     <Compile Include="entities\FusionAgentErrorItem.cs" />
-    <Compile Include="entities\IntersectTypePredicate.cs" />
     <Compile Include="entities\RuleMap.cs" />
     <Compile Include="entities\RuleResult.cs" />
     <Compile Include="entities\RuleDimension.cs" />
@@ -165,7 +164,6 @@
     <Compile Include="entities\TaxonomyTypeClass.cs" />
     <Compile Include="entities\PolicyTypeLevel.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
-    <Compile Include="entities\Transitive\CacheRelationship.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Views\MapRuleItemDetail.cs" />
     <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />

@@ -643,24 +643,7 @@ left join FieldType {name}_TT on {name}_TT.ID = {name}_T.FieldTypeID and {name}_
 
         #region Private Methods
 
-        //internal void getDynamicRelationshipFieldJoinStatements(int typeID, string type, out string joins)
-        //{
-        //    joins = "";
-
-        //    var intersectTypes = Company.Query<int>("select intersecttypeid from utility.relationshiptypes where sourceobjecttype = 'ArtifactType' and sourceobjectid = @objectid", new { objectid = typeID });
-
-        //    var fields = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypes.Contains(i.ObjectID) && i.IsListable).OrderBy(i => i.SortOrder).ToList();
-
-        //    foreach (var f in fields)
-        //    {
-        //        var name = f.Name.Replace("'", "''").Replace("--", "");                
-        //        joins += $" left join FieldWithRelation {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.ID and {name}_T.FieldTypeID = {f.ID} and {name}_T.IsListable = 1";
-        //    }
-
-        //    fields = null;
-        //}
-
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false)
+         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false)
         {
             columns = "";
             joins = "";

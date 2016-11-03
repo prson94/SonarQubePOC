@@ -598,11 +598,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
                     #endregion
 
-                    //                var relations = Company.Query<dynamic>(@"SELECT distinct 'IntersectType' + cast(S.IntersectTypeID as varchar(10)) as Name, TD.Name as FriendlyName
-                    //FROM		IntersectTypeNode S
-                    //			inner join IntersectTypeNode T ON T.IntersectTypeID = S.IntersectTypeID and T.ID <> S.ID and S.ObjectType = 'FusionAttributeType' and S.ObjectID = @id
-                    //			inner join cache.ObjectDetails TD on TD.[Object] = T.ObjectType and TD.ObjectID = T.ObjectID", new { id = id }).ToList();
-
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());// + relations.Count);
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
@@ -2100,10 +2095,6 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("fusion/{fusionID:int}/rules")]
         public HttpResponseMessage GetFusionRules(int fusionID)
         {
-            //left join cache.ObjectDetails FA on FA.[Object] = R.ObjectType and FA.ObjectID = R.ObjectID
-            //      from s in Company.Filter<FusionRule>(i => i.FusionID == fusionID)
-            //    join r in Community.Table<Resource>() on s.ResourceID equals r.ID
-
             var sql = @"select 
                         r.id as ID,
 	                    r.[description] as Description,
@@ -2342,44 +2333,44 @@ from	cte a
 
         #endregion
 
-        #region IntersectType
+        //#region IntersectType
 
-        [HttpGet, Route("IntersectTypePredicates/{id:int}")]
-        public IQueryable<Predicate> GetAllocatedPredicates(int id)
-        {
-            var allocations = Company.Filter<IntersectTypePredicate>(p => p.IntersectTypeID == id);
-            return Company.Filter<Predicate>(p => allocations.Select(a => a.PredicateType).Distinct().ToList().Contains(p.Type));
-        }
+        //[HttpGet, Route("IntersectTypePredicates/{id:int}")]
+        //public IQueryable<Predicate> GetAllocatedPredicates(int id)
+        //{
+        //    var allocations = Company.Filter<IntersectTypePredicate>(p => p.IntersectTypeID == id);
+        //    return Company.Filter<Predicate>(p => allocations.Select(a => a.PredicateType).Distinct().ToList().Contains(p.Type));
+        //}
 
-        [HttpGet, Route("IntersectTypePredicates/{id:int}/available")]
-        public IQueryable<Predicate> GetAvailablePredicates(int id)
-        {
-            var allocated = GetAllocatedPredicates(id).ToList();
+        //[HttpGet, Route("IntersectTypePredicates/{id:int}/available")]
+        //public IQueryable<Predicate> GetAvailablePredicates(int id)
+        //{
+        //    var allocated = GetAllocatedPredicates(id).ToList();
 
-            var availableTypes = new List<int>();
+        //    var availableTypes = new List<int>();
 
-            availableTypes.Add((int)PredicateType.Lineage);
-            availableTypes.Add((int)PredicateType.ParentChildHierarchy);
+        //    availableTypes.Add((int)PredicateType.Lineage);
+        //    availableTypes.Add((int)PredicateType.ParentChildHierarchy);
 
-            var intersectType = Company.GetById<IntersectType>(id);
-            if (intersectType == null)
-            {
-                return null;
-            }
-            if (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID)
-            {
-                availableTypes.Add((int)PredicateType.TypeHierarchy);
-                availableTypes.Add((int)PredicateType.GroupHierarchy);
-            }
+        //    var intersectType = Company.GetById<IntersectType>(id);
+        //    if (intersectType == null)
+        //    {
+        //        return null;
+        //    }
+        //    if (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID)
+        //    {
+        //        availableTypes.Add((int)PredicateType.TypeHierarchy);
+        //        availableTypes.Add((int)PredicateType.GroupHierarchy);
+        //    }
 
-            var predicates = Company.Filter<Predicate>(p => availableTypes.Contains((int)p.Type));
-            var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
+        //    var predicates = Company.Filter<Predicate>(p => availableTypes.Contains((int)p.Type));
+        //    var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
 
-            var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));
+        //    var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));
 
-            return availablePredicates;
-        }
-        #endregion
+        //    return availablePredicates;
+        //}
+        //#endregion
 
         #region Loads
 
@@ -2894,9 +2885,9 @@ select  A.ID,
         'FusionAttribute' as Object,
         [dbo].GenerateObjectUrl('FusionAttribute', A.FusionAttributeTypeID, A.ID) as Url
         {sqlColumnString}
-from    IntersectNode S
-        inner join IntersectNode T on S.IntersectID = T.IntersectID and T.ID <> S.ID and S.ObjectType = 'FusionAttribute' and S.ObjectID = {sourceFusionAttributeID} and T.ObjectType = 'FusionAttribute'
-        inner join [fusionattribute] A on A.ID = T.ObjectID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
+from    [Intersect] I
+        inner join FusionAttribute A on (I.Subject = 'FusionAttribute' and I.Object = 'FusionAttribute') and I.SubjectID = {sourceFusionAttributeID} 
+                                        and A.ID = I.ObjectID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}
         {sqlJoinString}";
 
                     break;
@@ -3887,28 +3878,58 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             switch (type)
             { 
                 case SystemObjects.ArtifactType:
-                    sql = @"select TextPath as Name, ID, 'Artifact' as [Type] from Artifact where ArtifactTypeID = @id and ID in (select ObjectID from IntersectNode where ObjectType = 'Artifact') order by TextPath";
+                    sql = @"select A.TextPath as Name, A.ID, 'Artifact' as [Type] 
+                            from Artifact A 
+                            inner join [Intersect] I on A.ArtifactTypeID = @id and ( (I.Subject = 'Artifact' and A.ID = I.SubjectID) OR (I.Object = 'Artifact' and A.ID = I.ObjectID) ) 
+                            order by A.TextPath";
                     break;
                 case SystemObjects.DomainType:
-                    sql = @"select Name, ID, 'Domain' as [Type] from Domain where DomainTypeID = @id and ID in (select ObjectID from IntersectNode where ObjectType = 'Domain') order by Name";
+                    sql = @"select A.Name, A.ID, 'Domain' as [Type] 
+                            from Domain A 
+                            inner join [Intersect] I on A.DomainTypeID = @id and ( (I.Subject = 'Domain' and A.ID = I.SubjectID) OR (I.Object = 'Domain' and A.ID = I.ObjectID) ) 
+                            order by A.Name";
                     break;
                 case SystemObjects.FusionAttributeType:
-                    sql = @"select TextPath as Name, ID, 'FusionAttribute' as [Type] from FusionAttribute where FusionAttributeTypeID = @id and ID in (select ObjectID from IntersectNode where ObjectType = 'FusionAttribute') order by TextPath";
+                    sql = @"select A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                            from FusionAttribute A 
+                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) OR (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
+                            order by A.TextPath";
                     break;
                 case SystemObjects.IntersectType:
-                    sql = @"select Name, ID, 'Intersect' as [Type] from [Intersect] where IntersectTypeID = @id and ID in (select ObjectID from IntersectNode where ObjectType = 'Intersect') order by Name";
+                    sql = @"select A.Name as Name, A.ID, 'Intersect' as [Type] 
+                            from [Intersect] A 
+                            inner join [Intersect] I on A.IntersectTypeID = @id and ( (I.Subject = 'Intersect' and A.ID = I.SubjectID) OR (I.Object = 'Intersect' and A.ID = I.ObjectID) ) 
+                            order by A.Name";
                     break;
                 case SystemObjects.Policy:
-                    sql = @"select TextPath as Name, ID, 'Policy' as [Type] from [Policy] where ID in (select ObjectID from IntersectNode where ObjectType = 'Policy') order by TextPath";
+                    sql = @"select A.TextPath as Name, A.ID, 'Policy' as [Type] 
+                            from [Policy] A 
+                            inner join [Intersect] I on A.PolicyTypeID = @id and ( (I.Subject = 'Policy' and A.ID = I.SubjectID) OR (I.Object = 'Policy' and A.ID = I.ObjectID) ) 
+                            order by A.TextPath";
+                    break;
+                case SystemObjects.ReferenceItemType:
+                    sql = @"select A.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
+                            from ReferenceItem A 
+                            inner join [Intersect] I on A.ReferenceItemTypeID = @id and ( (I.Subject = 'ReferenceItem' and A.ID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ID = I.ObjectID) ) 
+                            order by A.DisplayValue";
                     break;
                 case SystemObjects.ResourceType:
-                    sql = @"select LastName + ', ' + FirstName as Name, ResourceID as ID, 'Resource' as [Type] from reporting.Global_Resource where ResourceID in (select ObjectID from IntersectNode where ObjectType = 'Resource') order by LastName, FirstName";
+                    sql = @"select A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
+                            from reporting.Global_Resource A 
+                            inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
+                            order by A.LastName, A.FirstName";
                     break;
                 case SystemObjects.Rule:
-                    sql = @"select TextPath as Name, ID, 'Rule' as [Type] from [Rule] where ID in (select ObjectID from IntersectNode where ObjectType = 'Rule') order by TextPath";
+                    sql = @"select A.Name, A.ID, 'Rule' as [Type] 
+                            from [Rule] A 
+                            inner join [Intersect] I on A.RuleType = @id and ( (I.Subject = 'Rule' and A.ID = I.SubjectID) OR (I.Object = 'Rule' and A.ID = I.ObjectID) ) 
+                            order by A.Name";
                     break;
                 case SystemObjects.TaxonomyType:
-                    sql = @"select TextPath as Name, ID, 'Taxonomy' as [Type] from Taxonomy where TaxonomyTypeID = @id and ID in (select ObjectID from IntersectNode where ObjectType = 'Taxonomy') order by TextPath";
+                    sql = @"select A.TextPath as Name, A.ID, 'Taxonomy' as [Type] 
+                            from Taxonomy A 
+                            inner join [Intersect] I on A.TaxonomyTypeID = @id and ( (I.Subject = 'Taxonomy' and A.ID = I.SubjectID) OR (I.Object = 'Taxonomy' and A.ID = I.ObjectID) ) 
+                            order by A.TextPath";
                     break;
                 default:
                     sql = "";

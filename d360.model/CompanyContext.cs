@@ -102,8 +102,6 @@ namespace d360.model
 
         public DbSet<CacheObject> CacheObjects { get; set; }
 
-        public DbSet<CacheRelationship> CacheRelationships { get; set; }
-
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
@@ -201,8 +199,6 @@ namespace d360.model
         public DbSet<IntersectRole> IntersectRoles { get; set; }
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
-
-        public DbSet<IntersectTypePredicate> IntersectTypePredicates { get; set; }
 
         public DbSet<Language> Languages { get; set; }
 
@@ -2267,7 +2263,6 @@ order by Name", new { workflowType, type, id });
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<IntersectTypePredicate>().HasRequired(t => t.IntersectType).WithMany(t => t.IntersectTypePredicates).HasForeignKey(k => k.IntersectTypeID).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<Fusion>().HasMany<Artifact>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
                 i.MapLeftKey("FusionID").MapRightKey("ArtifactID").ToTable("FusionOwner");

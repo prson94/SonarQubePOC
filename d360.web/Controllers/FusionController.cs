@@ -420,11 +420,14 @@ namespace d360.web.Controllers
 		    TD.IconText, 
 		    COALESCE(N.[Count], 0) as [Count]
 FROM	    (
-		    select	Count(1) as [Count], TN.ObjectType as T, TN.ObjectID as I
+		    select	Count(1) as [Count], 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end as T, 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end as I
 		    from	FusionAttribute FA
-				    inner join cache.Relationships R on FA.FusionID = @id and R.SourceObject = 'FusionAttribute' and R.SourceObjectID = FA.ID
-				    inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID 
-		    group by	TN.ObjectType, TN.ObjectID
+				    inner join [Intersect] R on FA.FusionID = @id and ( (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = FA.ID) )
+				    inner join IntersectType TN on TN.ID = R.IntersectTypeID 
+		    group by	case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end, 
+                        case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end
 		    ) N
 		    inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
             order by TD.Name";
@@ -456,10 +459,12 @@ SELECT    'FusionAttribute' as ObjectType,
             TD.IconText, 
             COALESCE(N.[Count], 0) as [Count]
 FROM		(
-			select	Count(1) as [Count], TN.ObjectType as T, TN.ObjectID as I
+			select	Count(1) as [Count], 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) then TN.Subject else TN.Object end as T, 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) then TN.SubjectID else TN.ObjectID end as I
 			from	h
-					inner join  cache.Relationships R on R.SourceObject = 'FusionAttribute' and R.SourceObjectID = h.ID
-                    inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID 
+					inner join [Intersect] R on ( (R.Subject = 'FusionAttribute' and R.SubjectID = h.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = h.ID) )
+                    inner join IntersectType TN on TN.ID = R.IntersectTypeID 
 			group by	TN.ObjectType, TN.ObjectID
 			) N
 			inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
@@ -492,12 +497,15 @@ SELECT		'FusionAttributeType' as ObjectType,
 		    TD.IconText, 
 		    COALESCE(N.[Count], 0) as [Count]
 FROM	    (
-			select	Count(1) as [Count], TN.ObjectType as T, TN.ObjectID as I
+			select	Count(1) as [Count], 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end as T, 
+                    case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end as I
 			from	FusionAttribute FA
 					inner join  h on h.ID = FA.ID
-					inner join cache.Relationships R on R.SourceObject = 'FusionAttribute' and R.SourceObjectID = FA.ID
-					inner join IntersectTypeNode TN on TN.ID = R.TargetIntersectTypeNodeID 
-			group by	TN.ObjectType, TN.ObjectID
+					inner join [Intersect] R on ( (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) OR (R.Object = 'FusionAttribute' and R.ObjectID = FA.ID) )
+					inner join IntersectType TN on TN.ID = R.IntersectTypeID 
+		    group by	case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.Subject else TN.Object end, 
+                        case when (R.Subject = 'FusionAttribute' and R.SubjectID = FA.ID) then TN.SubjectID else TN.ObjectID end
 			) N
 		    inner join cache.ObjectDetails TD on TD.[Object] = N.T and TD.ObjectID = N.I
             order by TD.Name";
@@ -972,41 +980,6 @@ select * from h where ID <> @t order by h.[Level] desc;
 
             #endregion
 
-            #region Intersects
-
-            //var intersectSql = "";
-            //var intersects = new List<int>();
-
-            //intersectSql = string.Format(@"select IntersectTypeID from utility.RelationshipTypes where SourceObjectType = 'FusionAttributeType' and SourceObjectID = {0}", fusionAttributeTypeID);
-            //intersects = Company.Query<int>(intersectSql).Distinct().ToList();
-
-            //var filterIntersectTypeIDText = "";
-            //var intersectFilterColumnText = "";
-            //var intersectFilterPivotText = "";
-
-            //var intersectQueryColumnText = "";
-            //var intersectQueryPivotText = "";
-
-            //intersects.ForEach(i =>
-            //{
-            //    intersectQueryColumnText += ((!string.IsNullOrEmpty(intersectQueryColumnText)) ? ", " : "") + $"P.[IntersectType{i}]";
-            //    intersectQueryPivotText += ((!string.IsNullOrEmpty(intersectQueryPivotText)) ? ", " : "")   + $"[IntersectType{i}]";
-
-            //    if (filterFields.Contains($"IntersectType{i}"))
-            //    {
-            //        intersectFilterColumnText += ((!string.IsNullOrEmpty(intersectFilterColumnText)) ? ", " : "")   + $"P.[IntersectType{i}]";
-            //        intersectFilterPivotText += ((!string.IsNullOrEmpty(intersectFilterPivotText)) ? ", " : "")     + $"[IntersectType{i}]";
-            //        filterIntersectTypeIDText += ((!string.IsNullOrEmpty(filterIntersectTypeIDText)) ? ", " : "")   + $"{i}";
-            //    }
-            //});
-
-            //if (string.IsNullOrEmpty(intersectQueryColumnText)) intersectQueryColumnText = "P.[IntersectType0]";
-            //if (string.IsNullOrEmpty(intersectQueryPivotText)) intersectQueryPivotText = "[IntersectType0]";
-
-            //if (!string.IsNullOrEmpty(filterIntersectTypeIDText)) filterIntersectTypeIDText = $"and IntersectTypeID in ({filterIntersectTypeIDText})";
-
-            #endregion
-
             if (columns.Contains("[type]"))
                 columns = columns.Replace("[type]", "[_type]");
 
@@ -1015,51 +988,6 @@ select * from h where ID <> @t order by h.[Level] desc;
             dbArgs.Add("t", fusionAttributeTypeID);
 
             #region Count SQL
-
-            //            var intersectsColumnReference = "";
-            //            var intersectsOuterApply = "";
-
-            //            if (!string.IsNullOrEmpty(intersectFilterColumnText) && !string.IsNullOrEmpty(intersectFilterPivotText) && !string.IsNullOrEmpty(filterIntersectTypeIDText))
-            //            {
-            //                intersectsColumnReference = " ,RT.*";
-            //                intersectsOuterApply = $@"
-            //outer apply (
-            //	select	{intersectQueryColumnText}
-            //	from	(
-            //			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
-            //					count(R.IntersectTypeID) as [Count]
-            //			from	(
-            //					select	IntersectTypeID 
-            //					from	utility.RelationshipTypes 
-            //					where	SourceObjectType = 'FusionAttributeType'
-            //							and SourceObjectID = A.FusionAttributeTypeID
-            //                            {filterIntersectTypeIDText}
-            //					) RT
-            //					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
-            //														and R.SourceObject = 'FusionAttribute'
-            //														and R.SourceObjectID = A.ID
-            //			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
-            //			) as I
-            //	pivot	(
-            //			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
-            //			) as P
-            //	) RT";
-            //            }
-
-//            var countSql = $@"
-//select  A.ID, 
-//        A.Name, 
-//        A.FusionAttributeTypeID,
-//        'FusionAttribute' as [Type]
-//        {filtercolumns} 
-//        {parentFilterColumnText} 
-//        {intersectsColumnReference}
-//from	FusionAttribute A {parentFilterJoinText} {filterjoins}
-//        {intersectsOuterApply}
-//where   A.FusionID = @f 
-//        and A.FusionAttributeTypeID = @t 
-//        and A.Deleted = 0";
-
 
             var countSql = $@"
 select  A.ID, 
@@ -1080,37 +1008,6 @@ where   A.FusionID = @f
             #endregion
 
             #region Query
-
-            //            var sql = $@"
-            //select  A.ID 
-            //        , A.Name 
-            //        , A.FusionAttributeTypeID
-            //        , 'FusionAttribute' as [Type]
-            //        {columns} 
-            //        {parentQueryColumnText} 
-            //        , RT.*
-            //from	FusionAttribute A {parentQueryJoinText} {joins}
-            //outer apply (
-            //	select	{intersectQueryColumnText}
-            //	from	(
-            //			select	'IntersectType' + cast(RT.IntersectTypeID as varchar(10)) as [IntersectType],
-            //					count(R.IntersectTypeID) as [Count]
-            //			from	(
-            //					select	IntersectTypeID 
-            //					from	utility.RelationshipTypes 
-            //					where	SourceObjectType = 'FusionAttributeType'
-            //							and SourceObjectID = A.FusionAttributeTypeID
-            //					) RT
-            //					left join cache.Relationships R on R.IntersectTypeID = RT.IntersectTypeID 
-            //														and R.SourceObject = 'FusionAttribute'
-            //														and R.SourceObjectID = A.ID
-            //			group by 'IntersectType' + cast(RT.IntersectTypeID as varchar(10))
-            //			) as I
-            //	pivot	(
-            //			min([Count]) for [IntersectType] in ({intersectQueryPivotText})
-            //			) as P
-            //	) RT
-            //where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             var sql = $@"
 select  A.ID 

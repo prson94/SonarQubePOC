@@ -28,8 +28,8 @@ namespace d360.web.Controllers
 	from	Taxonomy T
 			CROSS APPLY (
 				select	count(1) as [ItemsCount]
-				from	IntersectNode
-				where	ObjectType = 'Taxonomy' and ObjectID = T.ID
+				from	[Intersect]
+				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
 				) DC
 where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID });
 
@@ -45,8 +45,8 @@ where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren,
 	from	Taxonomy T
 			CROSS APPLY (
 				select	count(1) as [ItemsCount]
-				from	IntersectNode
-				where	ObjectType = 'Taxonomy' and ObjectID = T.ID
+				from	[Intersect]
+				where	([Subject] = 'Taxonomy' and SubjectID = T.ID) OR ([Object] = 'Taxonomy' and ObjectID = T.ID)
 				) DC
 where T.TaxonomyTypeID = @id", new { id = id }).Select(i => new { i.HasChildren, i.ID, i.Name, i.ParentID, i.Description });
 

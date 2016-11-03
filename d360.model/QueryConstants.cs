@@ -621,8 +621,8 @@ from	h
                                 when count(1) > 0 then 1
                                 else 0
                             end as RelationshipsExist
-                    from    IntersectNode N 
-                    where   ObjectType = 'Taxonomy' and ObjectID = h.ID
+                    from    [Intersect] N 
+                    where   ([Subject] = 'Taxonomy' and [SubjectID] = h.ID) OR ([Object] = 'Taxonomy' and [ObjectID] = h.ID)
                     ) R";
 
         public static string LineageSearchQuery = @"
@@ -873,28 +873,6 @@ from	PolicyType T
 					where	ObjectType = 'PolicyType' and ObjectID = T.ID
 					) R
 where	T.ID = @id";
-
-//        public static string PredicateInfoByAllocationList = @"
-//select	p.id, p.name, p.type 
-//from	predicate p
-//		join intersecttypepredicate t on t.predicatetype = p.[type] 
-//									and t.intersecttypeid in (
-//															select	t.intersecttypeid 
-//															from	intersectmap m
-//																	join intersectnode n on n.id = subjectintersectnodeid
-//																	join intersecttypenode t on t.id = n.intersecttypenodeid
-//															where	m.id = @id
-//															union all
-//															select	t.intersecttypeid 
-//															from	intersectmap m
-//																	join intersectnode n on n.id = objectintersectnodeid
-//																	join intersecttypenode t on t.id = n.intersecttypenodeid
-//															where	m.id = @id
-//															)
-//where	p.type = (select type from intersectmap where id = @id)";
-
-//        public static string PredicateInfoByTypeList = @"
-//select id, name from predicate where type = @type";
 
         public static string PromotionHistoryList = @"
 select	ID,

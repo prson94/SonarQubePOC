@@ -9751,7 +9751,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         [Route("IntersectType_FormData")]
         public JsonNetResult IntersectType_FormData(int id)
         {
-            var type = Company.GetById<IntersectType>(id, i => i.IntersectTypePredicates);
+            var type = Company.GetById<IntersectType>(id);
             if (type == null) return new JsonNetResult { Data = null };
 
             var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
@@ -10635,7 +10635,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         [Route("Lineage_IntersectTypes")]
         public JsonNetResult Lineage_IntersectTypes()
         {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.Lineage).Select(i => i.ID).Distinct().ToList();
             return new JsonNetResult
             {
                 Data = Company
@@ -10653,7 +10653,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         [Route("Lineage_IntersectTypeSources")]
         public JsonNetResult Lineage_IntersectTypeSources()
         {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.Lineage).Select(i => i.ID).Distinct().ToList();
 
             var detail = Company
                     .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&
@@ -10675,7 +10675,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         [Route("Lineage_IntersectTypeTargets")]
         public JsonNetResult Lineage_IntersectTypeTargets(string type, int id)
         {
-            var lineageIntersectTypeIDs = Company.Filter<IntersectTypePredicate>(i => i.PredicateType == PredicateType.Lineage).Select(i => i.IntersectTypeID).Distinct().ToList();
+            var lineageIntersectTypeIDs = Company.Filter<IntersectType>(i => i.Predicate.Type == PredicateType.Lineage).Select(i => i.ID).Distinct().ToList();
 
             var targets = Company
                     .Filter<IntersectTypeDetail>(i => lineageIntersectTypeIDs.Contains(i.ID) &&

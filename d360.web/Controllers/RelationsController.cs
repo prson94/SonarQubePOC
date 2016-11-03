@@ -381,38 +381,14 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [HttpGet, Route("GetFieldsByIntersectMap")]
-        public JsonNetResult GetFieldsByIntersectMap(int id)
-        {
-            var sql = @" select t.Name, t.FriendlyName, t.[Type], f.Value, f.FormattedValue from field f
-                        join fieldtype t on  f.fieldtypeid = t.id
-						join intersectmap m on m.id = @id
-						join intersectnode n on n.id = m.subjectintersectnodeid and f.objectid = n.intersectid
-                        where f.objecttype = 'Intersect'";
-
-            var fields = Company.Query<dynamic>(sql, new { id });
-            return new JsonNetResult
-            {
-                Data = fields,
-                Formatting = Formatting.None
-            };
-        }
-
         #region Hierarchy
 
         [HttpGet, Route("hierarchy/{mapType}/{type}/{id:int}")]
         public JsonNetResult GetHierarchy(SystemObjects type, int id, PredicateType mapType)
         {
-            //var sql = "EXEC GetHierarchyByMapType @type, @id, @mapType";
-
-            //if (mapType == PredicateType.GroupHierarchy)
-            //    sql = "EXEC GetGroupHierarchy @type, @id";
-
-            //var results = Company.Query<HierarchyModel>(sql, new { type = type.ToString(), id = id, mapType = (int)mapType });
-
             return new JsonNetResult
             {
-                Data = new { },// results,
+                Data = new { },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -426,83 +402,6 @@ order by	O.SortOrder, O.Menu, O.SubMenu, O.Name";
         [HttpGet, Route("hierarchy/artifacts")]
         public JsonNetResult GetHierarchyArtifacts(HierarchyArtifactsModel model)
         {
-
-            //var sql = @"select  [Object], 
-            //            ObjectID, 
-            //            ObjectTypeName + ': ' + TextPath as DisplayName,
-            //            TextPath as Name,
-            //            ObjectTypeName
-            //            from cache.ObjectDetails d
-            //            where ObjectID <> 0  and ObjectTypeName is not null
-            //            and [Object] + '|' + cast(ObjectID as varchar(20)) not in
-            //            (
-	           //             select distinct n.objecttype + '|' + cast(n.objectid as varchar(20)) from intersectmap m
-	           //             join intersectnode n on n.id = m.{0}
-            //                {1}
-	           //             where m.type = @mapType
-            //            ) {2}";
-
-            //var nodeId = "objectintersectnodeid";
-            //if (model.IsAddingParent)
-            //    nodeId = "subjectintersectnodeid";
-
-            //switch(model.MapType)
-            //{
-            //    case PredicateType.TypeHierarchy:
-            //        sql = string.Format(sql, nodeId, "", " and ObjectType = @type and ObjectTypeID = @id order by Name");
-            //        break;
-            //    case PredicateType.GroupHierarchy:
-            //        sql = string.Format(sql, nodeId, "join intersectmapgroup g on g.intersectmapid = m.id and g.groupnumber = @groupNumber", " and ObjectType = @type and ObjectTypeID = @id order by Name");
-            //        break;
-            //    default:
-            //        sql += " order by Name";
-            //        break;
-            //}
-
-            //var obj = Company.GetObjectDetail(model.Type, model.ID);
-            //var allItems = Company.Query<dynamic>(sql, new { type = obj.Type, id = obj.TypeID, mapType = model.MapType, groupNumber = model.GroupNumber});
-            //var itemList = allItems.ToList();
-
-            //var intersectMap = Company.GetById<IntersectMap>(model.IntersectMapID);
-            //var hierarchy = new List<HierarchyModel>();
-
-            //if (intersectMap != null)
-            //{
-            //    var intersectNode = Company.GetById<IntersectNode>(intersectMap.SubjectIntersectNodeID);
-            //    if (model.MapType == PredicateType.GroupHierarchy)
-            //        hierarchy = Company.Query<HierarchyModel>("EXEC GetGroupHierarchy @type, @id", new { type = model.Type.ToString(), id = model.ID }).ToList();
-            //    else
-            //        hierarchy = Company.Query<HierarchyModel>("EXEC GetHierarchyByMapType @type, @id, @mapType", new { type = model.Type.ToString(), id = model.ID, mapType = model.MapType }).ToList();
-            //}
-            //else
-            //{
-            //    hierarchy.Add(new HierarchyModel() { Subject = model.Type.ToString(), SubjectID = model.ID });
-            //}
-
-            //foreach (dynamic d in allItems)
-            //{
-            //    switch(model.MapType)
-            //    {
-            //        case PredicateType.TypeHierarchy:
-            //        case PredicateType.ParentChildHierarchy:
-            //            var t = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID).FirstOrDefault();
-            //            var t2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID).FirstOrDefault();
-
-            //            if (t != null || t2 != null)
-            //                itemList.Remove(d);
-            //            break;
-            //        case PredicateType.GroupHierarchy:
-            //            if (d.Object == model.Type.ToString() && d.ObjectID == model.ID)
-            //                itemList.Remove(d);
-            //            var g = hierarchy.Where(r => r.Object == d.Object && r.ObjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
-            //            var g2 = hierarchy.Where(r => r.Subject == d.Object && r.SubjectID == d.ObjectID && r.GroupNumber == model.GroupNumber).FirstOrDefault();
-
-            //            if (g != null || g2 != null)
-            //                itemList.Remove(d);
-            //            break;
-            //    }
-            //}
-
             return new JsonNetResult
             {
                 Data = null,//itemList,

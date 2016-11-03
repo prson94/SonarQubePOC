@@ -246,13 +246,13 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
         this.relationshipsService.getObjectRelations('ArtifactType', this.artifactType.ID)
             .then(result => {
-                this.relationshipTypes = result;     
+                this.relationshipTypes = result;
 
                 this.addRelationshipTypesToAvailable(this.relationshipTypes);                
             });
     }
 
-    private addRelationshipTypesToAvailable(relTypes) {
+    private addRelationshipTypesToAvailable(relTypes) { 
         for (let relationship of relTypes) {
             this.availableFilters.push({
                 Data: relationship, Name: `Relationship - ${relationship.TargetName}`, Type: FilterFieldType.Relationship
