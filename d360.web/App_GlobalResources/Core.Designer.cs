@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Issue.
+        ///   Looks up a localized string similar to Issues.
         /// </summary>
         internal static string CommentType_Issue {
             get {

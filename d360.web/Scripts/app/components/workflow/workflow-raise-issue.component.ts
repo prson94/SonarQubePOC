@@ -49,10 +49,10 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                                     <div class="FieldName">What type of problem are you reporting?</div>                                    
                                 </div>                 
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Issue" checked="checked" />Issue with System Data</label></div>
+                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Issue" checked="checked" />Business Data Incorrect</label></div>
                                 </div>
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
-                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Challenge"/>Issue with Metadata in Data3Sixty</label></div>                                    
+                                    <div style="padding-left:20px"><label><input required type="radio" name="issueType" [(ngModel)]="issueType" value="Challenge"/>Governance Information Incorrect</label></div>                                    
                                 </div>
                                 <div class="col s12" *ngIf="selectedObjectId&&selectedObjectType">
                                     <div>&nbsp;</div>

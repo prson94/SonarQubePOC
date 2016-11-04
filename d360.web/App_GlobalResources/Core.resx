@@ -124,7 +124,7 @@
     <value>Data Event</value>
   </data>
   <data name="CommentType_Issue" xml:space="preserve">
-    <value>Issue</value>
+    <value>Issues</value>
   </data>
   <data name="CommentType_Social" xml:space="preserve">
     <value>Comment</value>
