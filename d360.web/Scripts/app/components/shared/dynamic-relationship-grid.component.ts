@@ -7,6 +7,8 @@ import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-dynamic-relationship-grid',    
     providers: [GridDefinitionService, RelationshipsService],
@@ -41,7 +43,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="selectObject(item)">{{item.Name}}</a></d3s-tooltip>
                             </template> 
                         </p-column>                                                                                                                                                                              
-                        <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>    
+                        <p-column header="Classification" field="ClassificationText" sortable="true" [style]="{'width':'150px'}"  [filter]="!simpleFilter"></p-column>                            
                         <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{'width':'250px'}"  [filter]="!simpleFilter"></p-column>        
                         <p-column></p-column>
                     </p-dataTable>   
@@ -74,7 +76,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
 
     @Input() simpleFilter: boolean;
-    
+
+    get taxonomyName() {
+        return CompanySettings.ArtifactType_TaxonomyTypeID || '';
+    }
+
     
     relations: any[] = [];
     columns: GridColumn[] = [];
@@ -107,6 +113,15 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType')
             .then(result => {
                 this.columns = result.Columns;
+                if (result.Fields.findIndex(x => x.name == 'TaxonomyType') >= 0) {
+                    this.columns.unshift({
+                        text: this.taxonomyName,
+                        cellsformat: '',
+                        datafield: 'TaxonomyType',
+                        type: 'string',
+                        width: ''
+                    });
+                }
             });
     }
 

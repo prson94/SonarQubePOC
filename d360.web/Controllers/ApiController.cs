@@ -459,6 +459,11 @@ namespace d360.web.Controllers
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Description", type = "string" });
+
+                    if(intersectType.Subject == "ArtifactType")
+                    {
+                        fields.Add(new GridField { name = "TaxonomyType", type = "string", });
+                    }
                     //fields.Add(new GridField { name = "Role", type = "string" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "ObjectID", type = "number" });
@@ -6650,6 +6655,12 @@ left join FieldType {pfx}T on {pfx}T.ID = {pfx}T.FieldTypeID and {pfx}T.IsListab
                 joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
             }
 
+            if(targetType == SystemObjects.ArtifactType)
+            {
+                var name = $"{targetID}";
+                columns += $"TAX_{name}.Name as 'TaxonomyType', ";
+                joins += $" left join Artifact ART_{name} on A.ObjectID = ART_{name}.ID left join TaxonomyType TAX_{name} on TAX_{name}.ID = ART_{name}.TaxonomyTypeId ";
+            }
 
             var querySql = $@"
 select  {columns} 

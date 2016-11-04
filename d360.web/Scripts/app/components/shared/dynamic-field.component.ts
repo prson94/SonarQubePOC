@@ -5,14 +5,16 @@ import { SelectItem } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { UriBasedService } from '../../services/index';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-dynamic-field',
     template: ` <div [formGroup]="form">    
                    <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />              
                   <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
-                        <div class="FieldName">
-                            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{field.Name}}</span>
-                            <span *ngIf="!fieldTooltip">{{field.Name}}</span>
+                        <div class="FieldName">                            
+                            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
+                            <span *ngIf="!fieldTooltip">{{currentFieldName}}</span>
                         </div>
                         <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" style="width: 100%;" type="string" (change)="getSimilarItems()" [(ngModel)]="field.Value" >  
                         <div *ngIf="similarItems.length > 0">
@@ -127,7 +129,7 @@ export class DynamicFieldComponent implements OnInit {
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
 
-    private supportedFormats: string[] = [ 'bold' ];
+    private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
 
     constructor(private uriBasedService: UriBasedService) { }
 
@@ -142,6 +144,10 @@ export class DynamicFieldComponent implements OnInit {
 
         if (this.field && this.field.FieldDescription) {
             this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
+        }
+
+        if (this.field && this.field.FieldName == 'TaxonomyTypeID') {
+            this.isTaxonomyType = true;
         }
     }
 
@@ -163,6 +169,15 @@ export class DynamicFieldComponent implements OnInit {
             return this.fieldMessage(this.field.FieldName, this.field.Name);
     }
 
+    get taxonomyName() {
+        return CompanySettings.ArtifactType_TaxonomyTypeID || '';
+    }
+
+    get currentFieldName() {
+        if (this.isTaxonomyType) return this.taxonomyName;
+        return this.field ? this.field.Name : '';
+    }
+
     private fieldMessage(field: string, fieldName: string) {        
         if (this.form.controls[field] == undefined) return '';
         var errors = this.form.controls[field].errors;
@@ -170,15 +185,15 @@ export class DynamicFieldComponent implements OnInit {
         if (!errors) return '';
         var message = ""
         if (errors["maxlength"]) {
-            message += `${this.field.Name} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
+            message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
         }
 
         if (errors["minlength"]) {
-            message += `${this.field.Name} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}]`;
+            message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}]`;
         }
 
         if (errors["required"]) {
-            message += `${this.field.Name} is required.  `;
+            message += `${this.currentFieldName} is required.  `;
         }
 
         if (errors["pattern"]) {
