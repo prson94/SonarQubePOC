@@ -11,8 +11,7 @@ import { Highcharts } from 'angular2-highcharts';
         display: block;
       }
     `],
-    template: `
-            <!--header>Health</header-->
+    template: `            
             <table class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">
                 <tr>
                     <td>
@@ -31,7 +30,7 @@ import { Highcharts } from 'angular2-highcharts';
     providers: [ScoreService],    
 })
 
-export class ObjectHealthComponent extends BaseComponent implements OnInit, OnChanges {    
+export class ObjectHealthComponent extends BaseComponent implements OnChanges {    
     @Input() score: any = 0;
 
     @Input() showDetails: boolean = false;    
@@ -44,17 +43,11 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit, OnCh
     smallChart: Object;
 
     averageScore: AverageScore;
-
-   
-
+    
     constructor(private scoreService: ScoreService) {
         super();
     }
-
-    ngOnInit() {
         
-    }
-
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.objectType && this.objectID) {
             this.loadSeriesData();
@@ -216,8 +209,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnInit, OnCh
                                         radius: 2
                                     }
                                 }
-                            },
-                           // fillOpacity: 0.25
+                            },                           
                         },
                         column: {
                             negativeColor: '#910000',

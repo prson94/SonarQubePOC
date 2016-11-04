@@ -1,19 +1,18 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-object-issues',
     template: `
-            <div (click)="toggleDetails()" >
-                <!--header>Issues</header-->
+            <div (click)="toggleDetails()" >                
                 <div class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}">
                     {{issueCount}}
                     <span class="title">Issues</span>
                 </div>
                 <div class="governance-note">{{lastIssueMessage()}}</div>
             </div>
-        `
+        `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
@@ -33,7 +32,6 @@ export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
         if (this.lastIssueDate) {
             this.dateDiff = new Date(Date.now() - Date.parse(this.lastIssueDate));
         }
-
     }
 
     private isWarning(): boolean {

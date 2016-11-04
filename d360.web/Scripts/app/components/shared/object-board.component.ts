@@ -1,19 +1,18 @@
-﻿
-import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-object-board',
     template: `
-            <div (click)="toggleDetails()" >
-                <!--header>Board</header-->
+            <div (click)="toggleDetails()" >                
                 <div class="governance-value">
                     {{commentCount}}
                     <span class="title">Comments</span>
                 </div>
                 <div class="governance-note">{{lastBoardMessage()}}</div>
             </div>            
-        `
+        `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class ObjectBoardComponent extends BaseComponent implements OnChanges {    
@@ -28,8 +27,6 @@ export class ObjectBoardComponent extends BaseComponent implements OnChanges {
     constructor() {
         super();
     }
-
-    
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.lastCommentDate) {
