@@ -286,7 +286,7 @@ where	A.{3} = {2}", name, objectType, typeID, objectTypeKeyName, tableName, owni
             sql.AppendFormat("VIEW {0} AS ", objectName);
 
             sql.AppendFormat("select R.ID as IntersectID, A.ID as [{0}ID], A.Name as [{0}Name], ", name);
-            if (includeOwningModel) sql.Append("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, ");
+            if (includeOwningModel) sql.AppendFormat("A.Status, V.ID as SubjectAreaID, V.Name as SubjectArea, P.ID as [{0}ParentID], P.TextPath as [{0}ParentName], ", name);
             sql.Append(@"case when (R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectTypeName else R.SubjectTypeName end as TargetType, 
 case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.Object else R.Subject end as Target,
 case when(R.Subject = 'Artifact' and A.ID = R.SubjectID) then R.ObjectID else R.SubjectID end as TargetID,
@@ -298,6 +298,7 @@ TR.[Count] as ChildRelationshipCount ");
             sql.Append("from IntersectDetail R ");
             sql.Append($"inner join {tableName} A on A.{objectTypeKeyName} = {typeID} and ((R.Subject = '{objectType}' and A.ID = R.SubjectID) OR (R.Object = '{objectType}' and A.ID = R.ObjectID)) ");
             if (includeOwningModel) sql.Append("inner join TaxonomyType V on V.ID = A.TaxonomyTypeID ");
+            if (includeOwningModel) sql.Append("left join Artifact P on P.ID = A.ParentID ");
             sql.Append("outer apply (select	count(1) as [Count] from [Intersect] where Subject = 'Intersect' and SubjectID = R.ID) TR");
 
             try
