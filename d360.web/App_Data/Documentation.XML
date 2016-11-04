@@ -348,7 +348,7 @@
         </member>
         <member name="P:Resources.Core.CommentType_Issue">
             <summary>
-              Looks up a localized string similar to Issue.
+              Looks up a localized string similar to Issues.
             </summary>
         </member>
         <member name="P:Resources.Core.CommentType_Social">
@@ -378,7 +378,7 @@
         </member>
         <member name="P:Resources.Core.WorkflowType_WorkIssue">
             <summary>
-              Looks up a localized string similar to Work Issue.
+              Looks up a localized string similar to Issues.
             </summary>
         </member>
         <member name="T:Resources.FieldInfo">

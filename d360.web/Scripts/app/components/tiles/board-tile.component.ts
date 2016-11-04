@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/index';
 import { Count } from '../../models/counts.model';
@@ -27,8 +26,7 @@ import { Count } from '../../models/counts.model';
 
 export class BoardTile extends BaseComponent implements OnInit {
     private counts: Count[] = [];
-    private selected: any;
-    private isLoaded: boolean = false;
+    private selected: any;    
     @Input() daysToLookBack: number = 7;
     @Output() daysToLookBackChange = new EventEmitter();
 
@@ -39,7 +37,7 @@ export class BoardTile extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this.isLoaded) this.load();
+        this.load();
     }
 
     private load() {
@@ -47,13 +45,12 @@ export class BoardTile extends BaseComponent implements OnInit {
 
         this.socialService.getMyCounts(this.daysToLookBack).then(
             res => {
-                this.counts = res.filter(item => item.Total > 0 && item.Name != 'Challenge');
-                this.isLoading = false;
-                this.isLoaded = true;
+                this.counts = res.filter(item => item.Total > 0);
+                this.isLoading = false;                
             });
     }
 
-    private doSelect(item) {        
+    private doSelect(item: Count) {        
         this.showItemDetail.emit({
             selected: item
         });

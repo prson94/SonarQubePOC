@@ -56,19 +56,21 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.socialMessage = `Social for ${this.objectName}`;
         }
         else {
-            if (this.limitToType == SocialCommentType.Challenge)
-                this.socialMessage = `My Challenge's for last ${this.daysToLookBack} days`;
-            else if (this.limitToType == SocialCommentType.Social)
-                this.socialMessage = `My Comment's for last ${this.daysToLookBack} days`;
+            if (this.limitToType == SocialCommentType.Social)
+                this.socialMessage = `My Comment's ${this.daysMessage()}`;
             else if (this.limitToType == SocialCommentType.Issue)
-                this.socialMessage = `My Issue's for last ${this.daysToLookBack} days`;
+                this.socialMessage = `My Issue's ${this.daysMessage()}`;
             else if (this.limitToType == SocialCommentType.Task)
-                this.socialMessage = `My Task's for last ${this.daysToLookBack} days`;
+                this.socialMessage = `My Task's ${this.daysMessage()}`;
             else
                 this.socialMessage = 'My Social';
         }
                 
         this.loadComments();
+    }
+
+    private daysMessage(): string {
+        return this.daysToLookBack > 0 ? ('for the last ' + this.daysToLookBack + ' days') : '- all';
     }
 
     loadComments() {

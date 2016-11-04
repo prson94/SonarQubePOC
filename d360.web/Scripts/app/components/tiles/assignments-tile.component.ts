@@ -53,7 +53,7 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
 
         this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
             .then(res => {
-                this.counts = res.filter(item => (item.Name != 'Challenge' && item.Total > 0));
+                this.counts = res.filter(item => (item.Total > 0));
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)
                         .then(r => {
@@ -84,7 +84,7 @@ export class AssignmentsTile extends BaseComponent implements OnInit {
                 return WorkflowType.ChallengeArtifact;
             case "PROPOSE NEW ARTIFACT":
                 return WorkflowType.SuggestNewArtifact;
-            case "WORK ISSUE":
+            case "ISSUES":
                 return WorkflowType.WorkIssue;            
         }        
         return null;

@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Work Issue.
+        ///   Looks up a localized string similar to Issues.
         /// </summary>
         internal static string WorkflowType_WorkIssue {
             get {

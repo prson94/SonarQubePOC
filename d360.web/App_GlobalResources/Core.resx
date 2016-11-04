@@ -142,6 +142,6 @@
     <value>Propose New Artifact</value>
   </data>
   <data name="WorkflowType_WorkIssue" xml:space="preserve">
-    <value>Work Issue</value>
+    <value>Issues</value>
   </data>
 </root>

@@ -1,5 +1,4 @@
-﻿
-import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RightSidebarService, ObjectActionsService, WebAnalyticsService } from '../../services/index';
@@ -20,7 +19,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private showAssignmentDetails: boolean = false;
 
     private activityDaysToLookBack: number = 7;
-    private boardDaysToLookBack: number = 6;
+    private boardDaysToLookBack: number = 7;
 
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;
@@ -30,8 +29,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private selectedWorkflowType: WorkflowType;
 
     constructor(protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        //private objectActionsService: ObjectActionsService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,        
         webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
         super(rightSidebarService, webAnalyticsService);
@@ -72,14 +70,11 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             console.log("ERROR NO SELECTION PASSED ON BOARD DETAILS CLICK.");
             return;
         }
-        switch (event.selected.Name.toUpperCase()) {
-            case "CHALLENGE":
-                this.selectedSocialType = SocialCommentType.Challenge;
-                break;
+        switch (event.selected.Name.toUpperCase()) {            
             case "COMMENT":
                 this.selectedSocialType = SocialCommentType.Social;
                 break;
-            case "ISSUE":
+            case "ISSUES":
                 this.selectedSocialType = SocialCommentType.Issue;
                 break;
             case "TASK":
