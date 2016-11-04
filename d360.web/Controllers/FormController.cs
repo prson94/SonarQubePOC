@@ -157,7 +157,8 @@ namespace d360.web.Controllers
                 FieldName = "Status",
                 Name = "Status",
                 FieldType = DataType.Lookup.ToString(),
-                Value = value
+                Value = value,
+                Required = true
             };
 
             var statusList = new List<SelectListItem>();
