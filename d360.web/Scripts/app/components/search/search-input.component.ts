@@ -16,17 +16,17 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <div class="search-input-text-container">                        
                             <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
                         </div>
-                        <div class="search-input-exact-container">
+                        <div class="search-input-exact-container hide-on-med-and-down">
                             <div class="adv-search-btn">
                                 <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Exact match</label>
                             </div>
                         </div>
-                        <div class="search-input-types-container">
+                        <div class="search-input-types-container hide-on-med-and-down">
                             <div class="search-btn">
                                 <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                             </div>
                         </div>
-                        <div class="search-input-adv-container">
+                        <div class="search-input-adv-container hide-on-med-and-down">
                             <button type="button" name="action" id="home-adv-btn" class="adv-search-btn" (click)="handleAdvancedClick()">Advanced&nbsp;<i class="fa fa-caret-down"></i></button>
                         </div>
                         <div class="search-input-button-container">

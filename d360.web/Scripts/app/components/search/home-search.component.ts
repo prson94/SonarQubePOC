@@ -9,7 +9,7 @@ import { CurrentCompanySettings } from '../../static/company-settings'
     selector: 'd3s-home-search',
     template: `               
                 <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
-                <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (categoryClick)="filterByCategory($event);"></d3s-search-results>
+                <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -37,8 +37,8 @@ export class HomeSearchComponent extends BaseComponent {
             });
     }
        
-    private filterByCategory(event) {        
-        this.selectedCategory = event.category;
+    private filterByCategory(category) {        
+        this.selectedCategory = category;
         this.doSearch(this.selectedCategory);
     }
 

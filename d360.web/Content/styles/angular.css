@@ -406,6 +406,15 @@ div.powerbi iframe {
   border-top: 1px solid #CCCCCC;
   border-bottom: 1px solid #CCCCCC;
 }
+.search-nodata ul {
+  list-style: initial;
+  margin: initial;
+  padding: 0 0 0 40px;
+}
+.search-nodata li {
+  display: list-item;
+  list-style-type: disc;
+}
 /* overrides to search box*/
 /* icons for enabled diasbled*/
 .enabled {
