@@ -2497,6 +2497,13 @@ from	cte a
             return list;
         }
 
+        //private bool AnyFilteredLookupGridValues(FieldTypeFilteredLookupDefinition def)
+        //{
+        //    string sql = string.Empty;
+        //    sql = "select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end " + sql;
+        //    return Company.Query<bool>(sql).First();
+        //}
+
         [Route("FilteredLookupField/{type}/{id:int}/{definitionID:int}/values")]
         public HttpResponseMessage GetFilteredLookupGridField(string type, int id, int definitionID)
         {
@@ -2577,11 +2584,17 @@ from	cte a
                 gridFields.Add(new GridField { name = "Url", type = "string" });
                 gridFields.Add(new GridField { name = "ID", type = "number" });
 
+                #region Where
+
                 foreach (var df in displayFields.Where(i => i.Filter))
                 {
                     sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
                     sqlWhere += $" F{df.FieldTypeID}.Value = {id}";
                 }
+
+                #endregion
+
+                #region OrderBy
 
                 foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
                 {
@@ -2612,6 +2625,8 @@ from	cte a
                         }
                     }
                 }
+
+                #endregion
 
                 #endregion
 
@@ -2693,7 +2708,10 @@ from    [Lookup] I
                 case 2: //Parent Reference
                 case 3: //Child Reference
                 case 4: //Relationship Reference
-                    list.Add(new DetailReadOnlyRowModel {
+                    if (AnyFusionLookupGrid(fusionAttributeID, def))
+                    {
+                        list.Add(new DetailReadOnlyRowModel
+                        {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
                                 new ReadOnlyField {
@@ -2708,11 +2726,47 @@ from    [Lookup] I
                                 }
                             },
                             Category = k.Category
-                    });
+                        });
+                    }
                     break;
             }
 
             return list;
+        }
+
+        private bool AnyFusionLookupGrid(int sourceFusionAttributeID, FieldTypeFusionLookupDefinition def)
+        {
+            string sql = string.Empty;
+
+            switch (def.ReferenceType)
+            {
+                case 1: //Self Reference
+                    sql = $@"
+from    FusionAttribute A
+where   A.ID = {sourceFusionAttributeID}";
+                    break;
+                case 2: //Parent Reference
+                    sql = $@"
+from    FusionAttribute c
+        inner join FusionAttribute A on c.ID = {sourceFusionAttributeID} and A.ID = c.ParentID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+                    break;
+                case 3: //Child Reference
+                    sql = $@"
+from    FusionAttribute A
+where   A.ParentID = {sourceFusionAttributeID}
+        and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+                    break;
+                default: //Relationship Reference
+                    sql = $@"
+from    [Intersect] I
+        inner join FusionAttribute A on (I.Subject = 'FusionAttribute' and I.Object = 'FusionAttribute') and I.SubjectID = {sourceFusionAttributeID} 
+                                        and A.ID = I.ObjectID and A.FusionAttributeTypeID = {def.TargetFusionAttributeTypeID}";
+                    break;
+            }
+
+            sql = "select  case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end " + sql;
+
+            return Company.Query<bool>(sql).First();
         }
 
         [Route("FusionLookupField/{sourceFusionAttributeID:int}/{fieldTypeFusionLookupDefinitionID:int}/values")]
@@ -3024,10 +3078,12 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     {
                         case 1: //Self Reference
                         case 2: //Child Reference
-                            list.Add(new DetailReadOnlyRowModel
+                            if (AnyRelationLookupGridValues(type, id, def))
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
+                                list.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
                                         Column = 1,
                                         Name = ft.FriendlyName,
@@ -3039,14 +3095,52 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                         LookupGridUrl = $"/api/RelationLookupField/{type}/{id}/{def.ID}/values"
                                     }
                                 },
-                                Category = ft.Category
-                            });
+                                    Category = ft.Category
+                                });
+                            }
                             break;
                     }
                 }
             }
 
             return list;
+        }
+
+        private bool AnyRelationLookupGridValues(string type, int id, FieldTypeRelationLookupDefinition def)
+        {           
+            #region Calculate SQL statement
+
+            string sql = string.Empty;
+
+            switch (def.ReferenceType)
+            {
+                case 1: //Self Reference
+                    sql = $@"
+select  case
+			when count(1) > 0 then cast(1 as bit)
+			else cast(0 as bit)
+		end
+    from    [Intersect]
+	where   IntersectTypeID = {def.IntersectTypeID} 
+                and ( (Subject = '{type}' and SubjectID = {id}) or (Object = '{type}' and ObjectID = {id}) )";
+                    break;
+                default: //Child Reference
+                    sql = $@"
+select  case
+			when count(1) > 0 then cast(1 as bit)
+			else cast(0 as bit)
+		end
+    from    [Intersect] I1
+		    inner join [Intersect] I2 on I1.IntersectTypeID = {def.IntersectTypeID} 
+                and ( (I1.Subject = '{type}' and I1.SubjectID = {id}) OR (I1.Object = '{type}' and I1.ObjectID = {id}) )
+                and I2.IntersectTypeID = {def.ChildIntersectTypeID} 
+                and ( (I2.Subject = 'Intersect' and I2.SubjectID = I1.ID) OR (I2.Object = 'Intersect' and I2.ObjectID = I1.ID) )";
+                    break;
+            }
+
+            #endregion
+
+            return Company.Query<bool>(sql).First();
         }
 
         [Route("RelationLookupField/{type}/{id:int}/{definitionID:int}/values")]
@@ -3329,10 +3423,12 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 
             if (ft != null && lookup != null)
             {
-                list.Add(new DetailReadOnlyRowModel
+                if (AnyComplexLookupGridValues(type, id, lookup))
                 {
-                    columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> {
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
                                         Column = 1,
                                         Name = ft.FriendlyName,
@@ -3344,8 +3440,9 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                                         LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values"
                                     }
                                 },
-                    Category = ft.Category
-                });
+                        Category = ft.Category
+                    });
+                }
             }
 
             return list;
@@ -3729,6 +3826,102 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 }
                 pos++;
             });
+        }
+
+        private bool AnyComplexLookupGridValues(string type, int id, FieldTypeLookup lookup)
+        {
+            var def = lookup.ParseDefinition();
+            type = type.CleanForSql();
+
+            #region Process Relations
+
+            for (var i = 0; i < def.Relations.Count; i++)
+            {
+                var join = def.Relations[i];
+                var currentObj = join.Object.Replace("Type", "");
+                var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
+                var objColumn = "";
+                var objIDColumn = "";
+
+                switch (join.RelationType)
+                {
+                    case ComplexLookupRelationType.StandardRelationhip:
+                        #region
+                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                        if (i == 0)
+                        {
+                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                        }
+                        else
+                        {
+                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
+                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                        }
+                        break;
+                    #endregion
+                    case ComplexLookupRelationType.ChildRelationship:
+                        #region
+                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
+                        join.JoinStatement += $" inner join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                        objColumn = $"'{join.Object.Replace("Type", "")}'";
+                        objIDColumn = $"I{i}.ObjectID";
+                        if (i == 0)
+                            join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                        break;
+                    #endregion
+                    case ComplexLookupRelationType.ChildItem:
+                        #region
+                        switch (join.Object)
+                        {
+                            case "ArtifactType":
+                                join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                break;
+                            case "FusionAttributeType":
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                break;
+                        }
+                        objColumn = $"'{currentObj}'";
+                        objIDColumn = $"I{i}.ID";
+                        if (i == 0)
+                            join.WhereStatement = $"I{i}.ID = {id}";
+                        break;
+                    #endregion
+                    case ComplexLookupRelationType.ParentItem:
+                        #region
+                        switch (join.Object)
+                        {
+                            case "ArtifactType":
+                                join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                break;
+                            case "FusionAttributeType":
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                break;
+                        }
+                        objColumn = $"'{currentObj}'";
+                        objIDColumn = $"I{i}.ID";
+                        if (i == 0)
+                            join.WhereStatement = $"I{i}.ID = {id}";
+                        break;
+                    #endregion
+                    default:
+                        continue;
+                }
+            }
+
+            #endregion
+
+            var sqlQuery = @"select  case 
+            when count(1) > 0 then cast(1 as bit)
+			else cast(0 as bit)
+
+        end ";
+            sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement));
+
+            return Company.Query<bool>(sqlQuery).First();
         }
 
         [Route("ComplexLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
