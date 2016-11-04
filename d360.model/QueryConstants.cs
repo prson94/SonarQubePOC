@@ -560,11 +560,11 @@ from	[fusion].[RuleStepMapping] I
 where   I.RuleStepID = @id";
 
         public static string FusionStatisticsItem = @"select
-	(select count(1) from fusion.agenterror where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentErrors,
-	(select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as AgentExecutions,
-    (select count(1) from fusion.execution where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionExecutions,	
-	(select count(1) from fusion.error where [date] > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as FusionErrors,
-	(select sum(PromotedTaxonomies) + sum(PromotedDomainItems) + sum(PromotedDomains) + sum(PromotedArtifacts) from fusion.RuleLog where datestarted > Dateadd(Day, -7, CURRENT_TIMESTAMP )) as NumberOfPromotions";
+	(select count(1) from fusion.agenterror where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentErrors,
+	(select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentExecutions,
+    (select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionExecutions,	
+	(select count(1) from fusion.error where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionErrors,
+	(select sum(PromotedTaxonomies) + sum(PromotedDomainItems) + sum(PromotedDomains) + sum(PromotedArtifacts) from fusion.RuleLog where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as NumberOfPromotions";
 
         public static string GroupResourceInfoList = @"
 select  RG.GroupID,

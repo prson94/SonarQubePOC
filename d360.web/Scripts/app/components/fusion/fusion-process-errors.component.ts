@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionProcessError } from '../../models/fusion.model';
@@ -8,7 +7,7 @@ import { FusionProcessError } from '../../models/fusion.model';
     selector: 'd3s-fusion-process-errors',
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading">
+                <span *ngIf="!isLoading">
                     <header>Fusion Processing Error History</header>
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable  [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="errors" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
@@ -25,7 +24,7 @@ import { FusionProcessError } from '../../models/fusion.model';
                             </template>
                         </p-column>                                                
                     </p-dataTable>      
-                </div>
+                </span>
           `,
     providers: [FusionService],
 })
@@ -34,7 +33,8 @@ export class FusionProcessErrorsComponent extends BaseComponent implements OnIni
     private errors: FusionProcessError[] = [];
     private selected: FusionProcessError;
 
-    @Input() maxRows: number = 100;
+    @Input() maxRows: number = 1000;
+    @Input() days: number = 0; // 0 = all up to max
 
     constructor(private fusionService: FusionService) {
         super();
@@ -46,7 +46,7 @@ export class FusionProcessErrorsComponent extends BaseComponent implements OnIni
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionProcessErrorHistory(this.maxRows)
+        this.fusionService.getFusionProcessErrorHistory(this.maxRows,this.days)
             .then(res => {
                 this.errors = res;
                 this.selected = this.errors.length > 0 ? this.errors[0] : null;

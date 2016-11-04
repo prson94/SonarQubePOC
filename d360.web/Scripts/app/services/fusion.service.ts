@@ -98,15 +98,28 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionAgentErrorHistory(maxRows?: number): Promise<FusionAgentError[]> {
-        return this.http.get(`services/fusion/agenterrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`)
+    getFusionAgentErrorHistory(maxRows?: number, days?: number): Promise<FusionAgentError[]> {
+        let url = `services/fusion/agenterrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
+        if (days) {
+            var d = new Date();
+            d.setDate(d.getDate() - days);
+            url += `&$filter=Date ge DateTime'${d.toISOString()}'`;
+        }
+        return this.http.get(url)
             .toPromise()
             .then(response => <FusionAgentError[]>response.json())
             .catch(err => this.handleError(err));
     }
 
-    getFusionProcessErrorHistory(maxRows?: number): Promise<FusionProcessError[]> {
-        return this.http.get(`services/fusion/executionerrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`)
+    getFusionProcessErrorHistory(maxRows?: number, days?: number): Promise<FusionProcessError[]> {
+        let url = `services/fusion/executionerrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
+        
+        if (days) {
+            var d = new Date();
+            d.setDate(d.getDate() - days);
+            url += `&$filter=Date ge DateTime'${d.toISOString()}'`;
+        }
+        return this.http.get(url)
             .toPromise()
             .then(response => <FusionProcessError[]>response.json())
             .catch(err => this.handleError(err));
@@ -132,8 +145,8 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionStatsSummary(): Promise<FusionSummaryStats> {
-        return this.http.get('api/fusion/statistics')
+    getFusionStatsSummary(daysToLookBack: number): Promise<FusionSummaryStats> {
+        return this.http.get(`api/fusion/statistics?daysToLookBack=${daysToLookBack}`)
             .toPromise()
             .then(response => <FusionSummaryStats>response.json())
             .catch(err => this.handleError(err));

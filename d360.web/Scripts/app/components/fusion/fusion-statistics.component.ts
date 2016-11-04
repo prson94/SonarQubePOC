@@ -12,7 +12,9 @@ import { FusionSummaryStats } from '../../models/fusion.model';
     `],
     template: ` 
                 <div class="tile tile-detail" *ngIf="!showAgentHistory && !showFusionHistory">
-                    <header>Statistics</header>
+                    <header>Statistics <span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
+                        <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
+                    </header>
                     <div class="row">                        
                         <div class="col s6">
                             <div class="row" (click)="showAgentHistory=true;">
@@ -33,19 +35,19 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                     </div>  
                     <div class="row">
                         <div class="col s12">
-                            <h6>&nbsp;* Percentage is based off statistics for the past 7 days.  Click on charts for more information.</h6>
+                            <h6>&nbsp;* Percentage is based off {{timeFrameMessage()}}.  Click on charts for more information.</h6>
                         </div>
                     </div>
                 </div> 
                 <div class="tile tile-detail" *ngIf="showAgentHistory">
                     <div class="row">
-                        <d3s-fusion-agent-errors></d3s-fusion-agent-errors>
+                        <d3s-fusion-agent-errors [days]="daysToLookBack"></d3s-fusion-agent-errors>
                         <button pButton type="button" (click)="showAgentHistory=false;" label="Close" style="width: 150px;"></button>
                     </div>                 
                 </div>
                 <div class="tile tile-detail" *ngIf="showFusionHistory">
                     <div class="row" *ngIf="showFusionHistory">                        
-                        <d3s-fusion-process-errors></d3s-fusion-process-errors>
+                        <d3s-fusion-process-errors [days]="daysToLookBack"></d3s-fusion-process-errors>
                         <button pButton type="button" (click)="showFusionHistory=false;" label="Close" style="width: 150px;"></button>
                     </div>   
                 </div>
@@ -61,6 +63,8 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
     private showAgentHistory: boolean;
     private showFusionHistory: boolean;
 
+    private daysToLookBack: number = 7;
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -71,7 +75,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionStatsSummary()
+        this.fusionService.getFusionStatsSummary(this.daysToLookBack)
             .then(res => {
                 this.fusionSummaryStats = res;
                 let agentSuccess = this.calculateSuccess(res.AgentExecutions, res.AgentErrors);
@@ -135,5 +139,22 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
             }
             ]
         };
+    }
+
+    private changeDates(event) {
+        this.daysToLookBack = event.days;        
+        this.load();
+    }
+
+    private timeFrameMessage() {
+        switch (this.daysToLookBack) {
+            case 7:
+                return ' (Past week)';
+            case 30:
+                return ' (Past month)';
+            case 365:
+                return ' (Past year)';
+        }
+        return ' (All Activity)'
     }
 };

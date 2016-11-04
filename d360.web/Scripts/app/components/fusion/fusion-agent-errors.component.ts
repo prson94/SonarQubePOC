@@ -7,7 +7,7 @@ import { FusionAgentError } from '../../models/fusion.model';
     selector: 'd3s-fusion-agent-errors',
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading">
+                <span *ngIf="!isLoading">
                     <header>Agent Error History</header>
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
                     <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="errors" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
@@ -21,7 +21,7 @@ import { FusionAgentError } from '../../models/fusion.model';
                         </p-column>                        
                         <p-column field="MachineName" header="Host" [sortable]="true" [style]="{width:'150px'}"></p-column> 
                     </p-dataTable>      
-                </div>
+                </span>
           `,
     providers: [FusionService],
 })
@@ -30,7 +30,8 @@ export class FusionAgentErrorsComponent extends BaseComponent implements OnInit 
     private errors: FusionAgentError[] = [];
     private selected: FusionAgentError;
 
-    @Input() maxRows: number = 100;
+    @Input() maxRows: number = 1000;
+    @Input() days: number = 0; // 0 = all up to max
 
     constructor(private fusionService: FusionService) {
         super();
@@ -42,7 +43,7 @@ export class FusionAgentErrorsComponent extends BaseComponent implements OnInit 
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionAgentErrorHistory(this.maxRows)
+        this.fusionService.getFusionAgentErrorHistory(this.maxRows, this.days)
             .then(res => {
                 this.errors = res;
                 this.selected = this.errors.length > 0 ? this.errors[0] : null;

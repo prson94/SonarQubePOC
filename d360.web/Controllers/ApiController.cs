@@ -6332,9 +6332,10 @@ from    (
         }
 
         [Route("fusion/statistics")]
-        public FusionStatisticTileModel GetFusionStatistics()
+        public FusionStatisticTileModel GetFusionStatistics(int daysToLookBack)
         {
-            return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem).FirstOrDefault();
+            if (daysToLookBack <= 0) daysToLookBack = 5000;
+            return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem, new { days = (daysToLookBack * -1) }).FirstOrDefault();
         }
 
         [Route("{type}/{id:int}/fieldlookup")]
