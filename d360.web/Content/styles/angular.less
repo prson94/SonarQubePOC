@@ -260,15 +260,6 @@ d3s-navbar-item {
   margin-right:75px;
 }
 
-div.breadcrumbs{    
-    margin-left:20px;
-    vertical-align:top;
-    display:inline-block;   
-    color:@rgba-primary-0;    
-    .active, .sep{
-        color:@primary-nav;    
-    }
-}
 
 /* end main content*/
 
@@ -685,3 +676,29 @@ div.child-container{
 }
 
  /* end right sidebar styles*/
+
+ /* breadcrumbs*/
+
+ div.breadcrumbs{    
+    margin-left:20px;
+    vertical-align:top;
+    display:inline-block;   
+    color:@rgba-primary-0;    
+    .active, .sep{
+        color:@primary-nav;    
+    }
+}
+
+a.breadcrumb {
+    color:@d3s-primary-blue !important;
+ }
+.breadcrumb {
+    font-weight:bold;
+    text-transform:uppercase;
+}
+ .breadcrumb-link {
+    border-bottom: 1px solid @d3s-blue-1;
+    cursor:pointer;
+}           
+
+/*end breadcrumbs */

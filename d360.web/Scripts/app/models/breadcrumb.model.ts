@@ -8,7 +8,7 @@ export class Breadcrumb {
     objectId: number;
     treeItems: TreeNode[];
     selectedTreeNode: TreeNode;
-
+    
     constructor(text?: string, link?: string, active?: boolean, type?: string, objectId?: number, treeItems?: TreeNode[], selectedTreeNode?: TreeNode) {
         this.text = text === undefined ? "-" : text;
         this.link = link === undefined ? null : link;
@@ -27,5 +27,5 @@ export class Breadcrumb {
 export class BreadcrumbItem {
     Name: string;
     Url: string;
-    Active: boolean;
+    Active: boolean;    
 }

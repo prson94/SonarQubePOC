@@ -10,23 +10,10 @@ import { TreeNode } from 'primeng/primeng';
     providers: [TypeaheadSearchService, ModelsService],    
     host: {
         '(document:click)': 'onClick($event)',
-    },
-    styles: [`
-    a.breadcrumb {
-        color:#54a4da;
-    }
-    .breadcrumb {
-        font-weight:bold;
-        text-transform:uppercase;
-    }
-    .link {
-        border-bottom: 1px solid #3979a2;
-        cursor:pointer;
-    }           
-  `],
+    },  
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
-                <p-autoComplete size="50"                                                      
+                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
+                <p-autoComplete size="40"                                                      
                             *ngIf="showSearch" 
                             [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
                             styleClass="searchTypeahead"             
@@ -69,10 +56,6 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.breadcrumb)
             this.treeItems = this.breadcrumb.treeItems;
-    }
-
-    ngAfterViewInit() {
-        
     }
 
     private isChangableItem() {
@@ -122,5 +105,4 @@ export class HeaderBreadcrumbItemComponent implements OnChanges {
         };
         return styles;
     }
-
 }

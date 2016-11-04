@@ -23336,16 +23336,6 @@ d3s-navbar-item.top > div > span.nav-item:hover {
   margin-left: 70px;
   margin-right: 75px;
 }
-div.breadcrumbs {
-  margin-left: 20px;
-  vertical-align: top;
-  display: inline-block;
-  color: #54a4da;
-}
-div.breadcrumbs .active,
-div.breadcrumbs .sep {
-  color: #383127;
-}
 /* end main content*/
 /* grid tiles*/
 .tile {
@@ -23697,3 +23687,26 @@ div.child .empty-count {
   background-color: #D32F2F;
 }
 /* end right sidebar styles*/
+/* breadcrumbs*/
+div.breadcrumbs {
+  margin-left: 20px;
+  vertical-align: top;
+  display: inline-block;
+  color: #54a4da;
+}
+div.breadcrumbs .active,
+div.breadcrumbs .sep {
+  color: #383127;
+}
+a.breadcrumb {
+  color: #55A4DA !important;
+}
+.breadcrumb {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.breadcrumb-link {
+  border-bottom: 1px solid #3979a2;
+  cursor: pointer;
+}
+/*end breadcrumbs */
