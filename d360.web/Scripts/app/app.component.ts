@@ -62,12 +62,9 @@ export class AppComponent implements AfterViewInit, OnInit {
                                 if (me.componentRef) {
                                     me.componentRef.destroy();
                                 }
-
-                                // add router links
-                                data = data.replace('href', 'routerLink');
-                                // wrap with a div with id we know
-                                data = `<div id='qTipContentCnt' style='display:none'>${data}</div>`;
                                 
+                                // wrap with a div with id we know
+                                data = `<div id='qTipContentCnt' style='display:none'>${data}</div>`;                                
                                 // here we get Factory (just compiled or from cache)
                                 me.typeBuilder
                                     .createComponentFactory(data)

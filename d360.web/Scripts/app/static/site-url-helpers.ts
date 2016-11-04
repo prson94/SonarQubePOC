@@ -28,6 +28,7 @@
     //workflow child routes
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
     static SITE_URL_WORKFLOW_VIEW_ISSUE = 'work/issue';
+    static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
 
     //fusion child routes
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute'

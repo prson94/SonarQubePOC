@@ -55,7 +55,7 @@ export class WorkflowDetailedViewComponent extends BaseComponent implements OnCh
         this.workflowService.getWorkflowStatus(this.workflowId)
             .then(result => {             
                 this.workflowStatusData = result;   
-                this.isLoading = false;
+                this.isLoading = false;                
             });
     }    
 
