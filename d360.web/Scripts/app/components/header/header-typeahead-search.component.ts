@@ -45,9 +45,7 @@ export class HeaderTypeaheadSearchComponent {
             this.results = data;
         });       
     }
-
     
-
     selectItem() {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
@@ -75,8 +73,8 @@ export class HeaderTypeaheadSearchComponent {
 
     checkKey(event) {
         if (event.keyCode == 13) {
-            this.showSearch = false;
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(this.searchText)}`);
+            this.showSearch = false;            
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(event.srcElement.value)}`);
         }
     }
 }
