@@ -6891,6 +6891,7 @@ from	IntersectDetail I
 					) A
 where	Subject ='{type.ToString()}'  and SubjectID = {id}
 		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
+        and IntersectTypeID = {intersectTypeID} 
 union
 select	ID,
         IntersectTypeID,
@@ -6924,6 +6925,7 @@ from	IntersectDetail I
 
 where	Object = '{type.ToString()}' and ObjectID = {id}
 		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
+        and IntersectTypeID = {intersectTypeID} 
         ) A {joins}";
 
             if (criticalOnly)

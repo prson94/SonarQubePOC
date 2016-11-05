@@ -1,4 +1,33 @@
-﻿CREATE TABLE [dbo].[FieldTypeFilteredLookupDefinition](
+﻿delete T
+from	IntersectType T
+		inner join	(
+					select	Subject, SubjectID, Object, ObjectID, count(1) as [Count], max(ID) as ID
+					from	IntersectType
+					group by Subject, SubjectID, Object, ObjectID
+					having count(1) > 1		
+					) S on S.ID = T.ID
+--delete [IntersectType] where Subject is null
+ALTER TABLE dbo.[IntersectType] ADD CONSTRAINT UQ_IntersectType UNIQUE (Subject, SubjectID, Object, ObjectID, PredicateID)
+GO
+--delete [Intersect] where Subject is null
+delete T
+from	[Intersect] T
+		inner join	(
+					select	IntersectTypeID, Subject, SubjectID, Object, ObjectID, count(1) as [Count], min(ID) as ID
+					from	[Intersect]
+					where	Subject is not null
+					group by IntersectTypeID, Subject, SubjectID, Object, ObjectID
+					having count(1) > 1		
+					) S on S.ID < T.ID and S.IntersectTypeID = T.IntersectTypeID and S.Subject = T.Subject and S.SubjectID = T.SubjectID and S.Object = T.Object and S.ObjectID = T.ObjectID
+
+
+ALTER TABLE dbo.[Intersect] ADD CONSTRAINT UQ_Intersect UNIQUE (IntersectTypeID, Subject, SubjectID, Object, ObjectID)
+GO
+
+
+
+
+CREATE TABLE [dbo].[FieldTypeFilteredLookupDefinition](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[FieldTypeID] [int] NOT NULL,
 	[Object] [varchar](50) NOT NULL,

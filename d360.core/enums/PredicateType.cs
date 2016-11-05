@@ -95,7 +95,18 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true)
         ]
-        FusionMapping = 8
+        FusionMapping = 8,
+        [
+            Name("See Also"),
+            Graph("Glossary"),
+            Description("This type of predicate allows for items to be related together to express similarity between them."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(false)
+        ]
+        SeeAlso = 9
     }
 
     public class PredicateTypeInfo

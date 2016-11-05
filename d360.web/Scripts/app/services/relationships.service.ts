@@ -58,8 +58,15 @@ export class RelationshipsService extends BaseService {
         return this.putDynamic(this.http, 'intersecttype', relationship);
     }
 
-    getRelationshipPredicates(): Promise<DropdownOption[]> {
-        return this.http.get('form/IntersectType_PredicateOptions')
+    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Promise<DropdownOption[]> {
+        let url = `form/IntersectType_PredicateOptions?subject=${subject}&subjectID=${subjectId}`;
+        if (object != undefined)
+            url = url += `&object=${object}`;
+        if (objectId != undefined)
+            url = url += `&objectID=${objectId}`;
+        if (predicateId != undefined)
+            url = url += `&predicateID=${predicateId}`;
+        return this.http.get(url)
             .toPromise()
             .then(response => <DropdownOption[]>response.json())
             .catch(err => this.handleError(err));
@@ -72,12 +79,14 @@ export class RelationshipsService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getSide2Options(id: number, type: string, selectedId?: number, selectedType?: string): Promise<DropdownOption[]> {
+    getSide2Options(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Promise<DropdownOption[]> {
         let url = `form/IntersectType_Side2Options?id=${id}&type=${type}`;
         if (selectedId != undefined)
             url = url += `&side2ID=${selectedId}`;
         if (selectedType != undefined)
             url = url += `&side2Type=${selectedType}`;
+        if (predicateId != undefined)
+            url = url += `&predicateID=${predicateId}`;
 
         return this.http.get(url)
             .toPromise()

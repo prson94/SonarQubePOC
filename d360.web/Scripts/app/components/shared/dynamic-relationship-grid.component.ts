@@ -125,7 +125,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             });
     }
 
-    getData() {
+    getData() { 
         this.isLoading = true;
         this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
             .then(result => {

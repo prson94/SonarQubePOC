@@ -9761,28 +9761,43 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 { "ID", id },
                 { "LimitedChangesOnly", currentIntersects },
                 { "Side1", $"{type.Subject}|{type.SubjectID}" },
-                //{ "Side1DisplayText", first.MenuDisplayText },
                 { "Side2", $"{type.Object}|{type.ObjectID}" },
-                { "Predicate", type.PredicateID }//{ "Side2DisplayText", last.MenuDisplayText }
+                { "Predicate", type.PredicateID }
             };
-
-            //model.Add("Predicates", type.IntersectTypePredicates.Select(i => (int)i.PredicateType).ToArray());
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [Route("IntersectType_PredicateOptions")]
-        public JsonNetResult IntersectType_PredicateOptions()
+        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
-            //var models = PredicateType.Lineage.GetAsList().Select(i => new { title = i.Name, value = (int)i.ID }).OrderBy(i => i.title); //Company.Table<Predicate>().ToList().Select(i => new { title = $"{i.Type.ToString()}: {i.Name}", value = i.ID }).OrderBy(i => i.title);
+            var usedPredicateIDs = new List<int>();
+
+            var sSubject = subject.ToString();
+            if (@object.HasValue && objectID.HasValue)
+            {
+                var sObject = @object.Value.ToString();
+                usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
+            }
+            //else
+            //{
+            //    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
+            //}
+
+            if (predicateID.HasValue)
+            {
+                usedPredicateIDs.Remove(predicateID.Value);
+            }
+
             var models = Company.Table<Predicate>()
                 .ToList()
-                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment)
+                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && !usedPredicateIDs.Contains(i.ID))
                 .Select(i => new {
                     title = $"{i.Name} <span style='color: #999; font-size: 85%'>({i.Type.AsInfoModel().Name})</span>",
                     value = i.ID
                 })
                 .OrderBy(i => i.title);
+
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -9796,9 +9811,9 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
         }
 
         [Route("IntersectType_Side2Options")]
-        public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null)
+        public JsonNetResult IntersectType_Side2Options(SystemObjects type, int id, SystemObjects? side2Type = null, int? side2ID = null, int? predicateID = null)
         {
-            var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID)
+            var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID)
                 .Where(i => i.Type != "IntersectType")
                 .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
@@ -14268,7 +14283,7 @@ from ArtifactType A
                 case "FusionAttributeType":
                     if (relationshipType.Predicate.Type == PredicateType.FusionMapping)
                     {
-                        sql = @"
+                        sql = $@"
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
         F.Name + '.' + FA.TextPath as Name
@@ -14283,7 +14298,7 @@ order by F.Name, FA.TextPath";
                     }
                     else
                     {
-                        sql = @"
+                        sql = $@"
 declare @OwnerSourceType varchar(50)
 declare @owners table (ID int)
 IF @source = 'Intersect'
@@ -14340,14 +14355,14 @@ from	FusionAttribute FA with(nolock)
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
-					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
+					where	IntersectTypeID = {it} and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
 order by F.Name, FA.TextPath";
                     }
                     break;
                 case "Group":
                 case "GroupType":
-                    sql = @"
+                    sql = $@"
 select	'Group' as [Object], 
         D.ID as ObjectID, 
         D.Name
@@ -14358,7 +14373,7 @@ where	D.ID not in (
                                 else ObjectID
                             end
 					from	[IntersectDetail]
-					where	(
+					where	IntersectTypeID = {it} and (
 							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group' and ObjectTypeID = 1) ) OR
 							 ( (SubjectType = 'Group' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
 							)
@@ -14367,7 +14382,7 @@ order by D.Name";
                     break;
                 case "Resource":
                 case "ResourceType":
-                    sql = @"
+                    sql = $@"
 select	'Resource' as [Object], 
         D.ResourceID as ObjectID, 
         D.LastName + ', ' + D.FirstName as Name
@@ -14378,7 +14393,7 @@ where   D.ResourceID not in (
                                 else ObjectID
                             end
 					from	[IntersectDetail]
-					where	(
+					where	IntersectTypeID = {it} and (
 							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
 							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
 							)
@@ -14386,12 +14401,12 @@ where   D.ResourceID not in (
 order by D.LastName, D.FirstName";
                     break;
                 default:
-                    sql = @"
+                    sql = $@"
 select	D.[Object], 
         D.ObjectID, 
         D.TextPath as Name
 from	cache.ObjectDetails D with(nolock)
-		left join [IntersectDetail] I on	(
+		left join [IntersectDetail] I on	I.IntersectTypeID = {it} and (
 											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
 											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 											)
@@ -14514,19 +14529,13 @@ order by D.TextPath";
                         var classification = parseBooleanField(form, "Classification");
                         var description = parseTextField(form, "Description");
 
-                        var intersect = Company.Query<Intersect>(
-                            @"AddSingleIntersect @ResourceID, @IntersectTypeID, @Subject, @SubjectID, @Object, @ObjectID, @Classification, @Description",
-                            new {
-                                ResourceID = Company.CurrentResourceID,
-                                IntersectTypeID = typeID,
-                                Subject = source,
-                                SubjectID = sourceID,
-                                Object = itemInfo[0],
-                                ObjectID = int.Parse(itemInfo[1]),
-                                Classification = (classification) ? IntersectClassification.Critical : IntersectClassification.Normal,
-                                Description = description
-                            }
-                        ).SingleOrDefault();
+                        var intersect = Company.AddIntersect(typeID,
+                            source, sourceID,
+                            itemInfo[0], int.Parse(itemInfo[1]),
+                            (classification) ? IntersectClassification.Critical : IntersectClassification.Normal,
+                            description
+                        );
+
                         var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
                         Company.AddOrUpdateFields(fields);
                     }

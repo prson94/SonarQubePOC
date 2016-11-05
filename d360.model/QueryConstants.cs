@@ -732,30 +732,31 @@ from	@points O
 		inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
-            (select 
-	            IT.ID as IntersectTypeID	           
-	            ,IT.[Object] as 'Object'
-	            ,IT.[ObjectID] as 'ObjectID'
-	            ,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
-	            ,COD_s.[Name] as 'Name'
-            from
-	            cache.[Object] CO	
-	            inner join IntersectType IT on ( (IT.[Subject] = CO.[ObjectType] and IT.[SubjectID] = CO.[ObjectTypeID]))
-	            inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
-            where CO.[Object] = @obj and CO.ObjectID = @objId)
-            union (select 
-	            IT.ID as IntersectTypeID	            
-	            ,IT.[Subject] as 'Object'
-	            ,IT.[SubjectID] as 'ObjectID'
-	            ,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
-	            ,COD_s.[Name] as 'Name'
-            from
-	            cache.[Object] CO	
-	            inner join IntersectType IT on ( (IT.[Object] = CO.[ObjectType] and IT.[ObjectID] = CO.[ObjectTypeID]))
-	            inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Subject] and COD_s.[ObjectID] = IT.[SubjectID])
-            where CO.[Object] = @obj and CO.ObjectID = @objId)
-            order by Name
-";
+(select 
+	IT.ID as IntersectTypeID	           
+	,IT.[Object] as 'Object'
+	,IT.[ObjectID] as 'ObjectID'
+	,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
+	,COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as 'Name'
+from
+	cache.[Object] CO	
+	inner join IntersectType IT on ( (IT.[Subject] = CO.[ObjectType] and IT.[SubjectID] = CO.[ObjectTypeID]))
+	inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
+    left join [Predicate] P on P.ID = IT.PredicateID
+where CO.[Object] = @obj and CO.ObjectID = @objId)
+union (select 
+	IT.ID as IntersectTypeID	            
+	,IT.[Subject] as 'Object'
+	,IT.[SubjectID] as 'ObjectID'
+	,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
+	,COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Inverse + ']', '') as 'Name'
+from
+	cache.[Object] CO	
+	inner join IntersectType IT on ( (IT.[Object] = CO.[ObjectType] and IT.[ObjectID] = CO.[ObjectTypeID]))
+	inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Subject] and COD_s.[ObjectID] = IT.[SubjectID])
+    left join [Predicate] P on P.ID = IT.PredicateID
+    where CO.[Object] = @obj and CO.ObjectID = @objId)
+order by Name";
 
         public static string ObjectRelationshipCounts = @"
 select [Object], [ObjectID], Name, sum([Count]) as [Count], max( x.IntersectTypeID) as IntersectTypeID from

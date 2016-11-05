@@ -1264,6 +1264,72 @@ order by Name");
 
         #region Relationships
 
+        public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID, IntersectClassification? classification, string description)
+        {
+            Intersect intersect = null;
+            IntersectDetail dtl = null;
+
+            var subjectDetail = GetObjectDetail(subject, subjectID);
+            var objectDetail = GetObjectDetail(@object, objectID);
+
+            if (subjectDetail == null)
+                throw new NotFoundException("Subject");
+
+            if (objectDetail == null)
+                throw new NotFoundException("Object");
+
+            var intersectType = GetById<IntersectType>(intersectTypeID);
+
+            if (intersectType == null)
+                throw new NotFoundException("Intersect Type");
+
+            if (
+                (intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
+                (intersectType.Subject == objectDetail.Type && intersectType.SubjectID == objectDetail.TypeID && intersectType.Object == subjectDetail.Type && intersectType.ObjectID == subjectDetail.TypeID)
+                )
+            {
+                dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
+                        (i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
+                        (i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
+                    )
+                ).SingleOrDefault();
+
+                if (dtl == null)
+                {
+                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Classification = classification.HasValue ? classification : IntersectClassification.Normal, Description = description };
+
+                    if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
+                    {
+                        intersect.Subject = subject;
+                        intersect.SubjectID = subjectID;
+                        intersect.Object = @object;
+                        intersect.ObjectID = objectID;
+
+                        Intersects.Add(intersect);
+                    }
+                    else
+                    {
+                        intersect.Subject = @object;
+                        intersect.SubjectID = objectID;
+                        intersect.Object = subject;
+                        intersect.ObjectID = subjectID;
+
+                        Intersects.Add(intersect);
+                    }
+
+                    SaveChanges();
+
+                    dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
+                }
+
+                return dtl;
+            }
+            else
+            {
+                throw new NotFoundException("Intersect Type");
+            }
+        }
+
         public Intersect AddIntersect(SystemObjects subject, int subjectID, SystemObjects @object, int objectID, IntersectClassification classification, int? predicateID, string description)
         {
             return AddIntersect(subject.ToString(), subjectID, @object.ToString(), objectID, classification, predicateID, description);
@@ -1469,7 +1535,10 @@ where	R.SourceObject = 'FusionAttribute'
         and R.TargetTypeID = 302", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
         }
 
-        public List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? startType = null, int? startID = null, SystemObjects? endType = null, int? endID = null)
+        public List<IntersectTypeOption> GetIntersectTypeOptions(
+            SystemObjects? subject = null, int? subjectID = null, 
+            SystemObjects? @object = null, int? objectID = null,
+            int? predicateID = null)
         {
             var sql = @"
 	SELECT		I.ID,
@@ -1532,20 +1601,30 @@ where	R.SourceObject = 'FusionAttribute'
 						'RuleType' as Type
 ) I";
 
-            if (startType.HasValue && startID.HasValue)
+            if (subject.HasValue && subjectID.HasValue)
             {
-                sql += $@" left join IntersectType T on ( 
-(T.Subject = '{startType.Value.ToString()}' and T.SubjectID = {startID.Value} and T.Object = I.[Type] and T.ObjectID = I.ID) OR
-(T.Object = '{startType.Value.ToString()}' and T.ObjectID = {startID.Value} and T.Subject = I.[Type] and T.SubjectID = I.ID) 
-)";
-
-                if (endType.HasValue && endID.HasValue)
+                sql += $@" left join IntersectType T on 
+(T.Subject = '{subject.Value.ToString()}' and T.SubjectID = {subjectID.Value} and T.Object = I.[Type] and T.ObjectID = I.ID)";
+                if ((@object.HasValue && objectID.HasValue) || predicateID.HasValue)
                 {
-                    sql += $@" where (T.ID is null OR ( (T.Object = '{endType.Value.ToString()}' and T.ObjectID = {endID.Value}) OR (T.Subject = '{endType.Value.ToString()}' and T.SubjectID = {endID.Value}) ) )";
-                }
-                else
-                {
-                    sql += " where T.ID is null";
+                    if (@object.HasValue && objectID.HasValue)
+                    {
+                        if (predicateID.HasValue)
+                        {
+                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value} and T.PredicateID = {predicateID.Value}) or T.ID is null)";
+                        }
+                        else
+                        {
+                            sql += $@" and ((T.Object = '{@object.Value.ToString()}' and T.ObjectID = {objectID.Value}) or T.ID is null)";
+                        }
+                    }
+                    else
+                    {
+                        if (predicateID.HasValue)
+                        {
+                            sql += $@" and T.PredicateID = {predicateID.Value} where T.ID is null";
+                        }
+                    }
                 }
             }
 
