@@ -12,7 +12,7 @@ import { TreeNode } from 'primeng/primeng';
         '(document:click)': 'onClick($event)',
     },  
     template: ` <a *ngIf="breadcrumb.hasLink()" [routerLink]="[breadcrumb.link]" class="breadcrumb">{{ breadcrumb.text }}</a>
-                <span *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</span>
+                <div *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
                 <p-autoComplete size="40"                                                      
                             *ngIf="showSearch" 
                             [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
@@ -25,7 +25,7 @@ import { TreeNode } from 'primeng/primeng';
                             [placeholder]="breadcrumb.text"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
-                <span *ngIf="!lastItem" class="sep breadcrumb"> :: </span>                
+                <div *ngIf="!lastItem" class="sep breadcrumb">::</div>                
                 <p-overlayPanel #treePanel>  
                         <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
                         <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':'800px','overflow':'auto','line-height':'25px'}" 

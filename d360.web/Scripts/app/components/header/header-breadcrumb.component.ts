@@ -5,12 +5,12 @@ import { Subscription }   from 'rxjs/Subscription';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
-    template: ` <div #bread class="breadcrumbs hide-on-small-only" (window:resize)="onResize($event,bread)">
-                 <span *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{active:last}">
+    template: ` <div #bread class="breadcrumbs hide-on-med-and-down" (window:resize)="onResize($event,bread)">
+                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{'active':last,'inactive':!last}">
                     <d3s-header-breadcrumb-item [breadcrumb]="breadcrumb" [lastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
-                 </span>                
+                 </div>                
                 </div>
-                <div class="breadcrumbs hide-on-med-and-up" *ngIf="breadcrumbs.length>0">
+                <div class="breadcrumbs hide-on-large-only" *ngIf="breadcrumbs.length>0">
                     <d3s-header-breadcrumb-item [breadcrumb]="breadcrumbs[this.breadcrumbs.length-1]" lastItem="true" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
                 </div>
               `
@@ -22,7 +22,6 @@ export class HeaderBreadcrumbComponent {
     subscriptionAdd: Subscription;
     breadcrumbs: Breadcrumb[];
     
-
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {
         this.breadcrumbs = [];
         this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(

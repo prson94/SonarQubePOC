@@ -595,15 +595,30 @@ div.breadcrumbs .active,
 div.breadcrumbs .sep {
   color: #383127;
 }
+div.breadcrumbs .active,
+div.breadcrumbs .inactive {
+  display: inline-block;
+  background-color: transparent;
+  vertical-align: top;
+}
+div.breadcrumbs .sep {
+  display: inline-block;
+  margin: 0 3px;
+}
 a.breadcrumb {
   color: #55A4DA !important;
 }
 .breadcrumb {
   font-weight: bold;
   text-transform: uppercase;
+  display: inline-block;
+  max-width: 250px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .breadcrumb-link {
-  border-bottom: 1px solid #3979a2;
   cursor: pointer;
+  text-decoration: underline;
 }
 /*end breadcrumbs */

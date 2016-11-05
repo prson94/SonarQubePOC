@@ -687,18 +687,32 @@ div.child-container{
     .active, .sep{
         color:@primary-nav;    
     }
+    .active, .inactive{
+        display:inline-block;
+        background-color:transparent;
+        vertical-align:top;
+    }
+    .sep{
+        display:inline-block;
+        margin: 0 3px;
+    }
 }
 
 a.breadcrumb {
-    color:@d3s-primary-blue !important;
+    color:@d3s-primary-blue !important;    
  }
 .breadcrumb {
-    font-weight:bold;
-    text-transform:uppercase;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    max-width: 250px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
- .breadcrumb-link {
-    border-bottom: 1px solid @d3s-blue-1;
+ .breadcrumb-link {    
     cursor:pointer;
+    text-decoration: underline;
 }           
 
 /*end breadcrumbs */
