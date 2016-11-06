@@ -33,7 +33,7 @@ import { StringConstants } from '../../static/string-constants';
                     </div>                                        
                     <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
-                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
+                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
                             <p-column field="Name" header="Name" sortable="true"  [style]="{'width':'250px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="selectArtifact(item)">{{item.Name}}</a>
@@ -47,14 +47,14 @@ import { StringConstants } from '../../static/string-constants';
                             <p-column [style]="{width:'30px'}">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'certificate'" [icon]="'certificate'" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
+                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="certificate" icon="certificate" [iconColor]="certificateColor(item)"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
                             <p-column [style]="{width:'30px'}">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
-                                            <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" (click)="selectArtifact(item)" [tooltipType]="'Preview'" [icon]="'info'"></d3s-tooltip>                                            
+                                            <d3s-tooltip objectType="Artifact" [objectId]="item.ID" (click)="selectArtifact(item)" tooltipType="Preview" icon="info"></d3s-tooltip>                                            
                                         </div>
                                     </template>
                             </p-column>
@@ -79,7 +79,7 @@ import { StringConstants } from '../../static/string-constants';
                 <delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
-                            [method]="'callback'"
+                            method="callback"
                             [prompt]="'Are you sure you want to delete ['+ selected?.Name + ']?'"                                         
                             (onCancel)="showDelete=false;"
                 ></delete-form>  
@@ -104,7 +104,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         
     searchValue: string = "";
     
-    searchDelayMilliSeconds: number = 300;
+    searchDelayMilliSeconds: number = 500;
 
     error: any;
     items: any[];
@@ -217,11 +217,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     selectArtifact(artifact) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Artifact', artifact.ID, this.artifactType.ID));
     }
-
-    simpleSearchChanged(event) {
-        console.log(event);
-    }
-
+        
     private loadArtifactsLazy(event: LazyLoadEvent) {        
         //event.first = First row offset
         //event.rows = Number of rows per page
@@ -239,28 +235,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     private checkSimpleSearchEnter(event, dt: DataTable) {
         if (event.keyCode == 13) this.doSimpleSearch(dt);
         else {
-            if (this.simpleSearchID > 0) {
+            if (this.simpleSearchID > 0) {                
                 window.clearTimeout(this.simpleSearchID);
                 this.simpleSearchID = 0;
-            }
-
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-            
+            }            
+            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);            
         }
     }
 
-    private doSimpleSearch(dt: DataTable) {
-        if (dt) dt.reset();
-        this.getData();
-    }
-
-    /*private columnDataType(column: GridColumn): string {
-        var fields = this.fields.filter(x => x.name == column.datafield);
-
-        if (fields.length > 0)
-            return fields[0].type;
-        return 'string';
-    }*/
+    private doSimpleSearch(dt: DataTable) {        
+        if (dt) dt.reset();      
+    }    
 }
 
 

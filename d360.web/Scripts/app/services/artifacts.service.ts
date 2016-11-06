@@ -47,7 +47,7 @@ export class ArtifactService extends BaseService {
             uri += '&hidfilterscount=' + hidFilters.length;
 
             for (let filter of hidFilters) {
-                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${filter.value}`;
+                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field","")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
         }
@@ -61,7 +61,7 @@ export class ArtifactService extends BaseService {
         }
 
         if (simpleFilter != undefined) {
-            uri += `&filter=${simpleFilter}`;
+            uri += `&filter=${encodeURIComponent(simpleFilter)}`;
         }
 
         return this.http.get(uri)        
