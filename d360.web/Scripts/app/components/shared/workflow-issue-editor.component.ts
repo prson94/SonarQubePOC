@@ -1,6 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService, WorkflowService } from '../../services/index';
@@ -33,10 +31,10 @@ import * as _ from 'lodash';
                         </div>
                         <div class="row">                                          
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity == 3">
-                                <input required id="accept" type="radio" name="Action" [(ngModel)]="action" value="assign" checked="checked" /><label for="accept">Accept Assignment</label>
+                                <label><input required type="radio" name="Action" [(ngModel)]="action" value="assign" checked="checked" />Accept Assignment</label>
                             </div>
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity != 3">
-                                <input required type="radio" id="reassign" [(ngModel)]="action" name="Action" value="reassign" /><label for="reassign">Re-assign</label>
+                                <label><input required type="radio" [(ngModel)]="action" name="Action" value="reassign" />Re-assign</label>
                                 <div class="FieldName">Re-assign To:</div>
                                 <select name="reassignTo" style="width:100%;" [(ngModel)]="assignToId" [disabled]="action != 'reassign'">
                                       <option></option>
@@ -44,7 +42,7 @@ import * as _ from 'lodash';
                                 </select>
                             </div>
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity != 3">
-                                <input required type="radio" id="close" [(ngModel)]="action" name="Action" value="close" checked="checked"/><label for="close">Close</label>
+                                <label><input required type="radio" [(ngModel)]="action" name="Action" value="close" checked="checked"/>Close</label>
                             </div>     
                         </div>
                         <div id="CommentArea">
@@ -56,8 +54,8 @@ import * as _ from 'lodash';
                 <div class="row">
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12">
-                        <button pButton type="submit" [disabled]="!issueEditorForm.form.valid" style="width: 150px;" label="Save"></button>                            
-                        <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: 150px;"></button>
+                        <button pButton type="submit" [disabled]="!issueEditorForm.form.valid" label="Save"></button>                            
+                        <button pButton type="button" (click)="closeClick.emit();" label="Cancel"></button>
                     </div>
                 </div>
                 </form>
@@ -81,8 +79,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     ngOnInit() {
         if (this.resources.length <= 0) {
             this.loadResources();
-        }
-        
+        }        
     }
 
     loadResources() {
@@ -95,8 +92,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     }
 
     onSubmit() {
-        this.isLoading = true;
-        //console.log(this.assignToId);
+        this.isLoading = true;        
         this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
             res => {
                 this.isLoading = false;
