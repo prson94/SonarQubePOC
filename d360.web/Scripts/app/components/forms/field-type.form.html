@@ -192,7 +192,7 @@
                                             <th>Sort</th>
                                             <th>Display Name Override</th>
                                             <th>Filter</th>
-                                            <th>Order</th>
+                                            <th>Field Order</th>
                                         </tr>
                                     </thead>
                                     <tbody style="max-height:250px; overflow-y: scroll">
@@ -205,6 +205,7 @@
                                             </td>
                                             <td style="width: 10%">
                                                 <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                    <option></option>
                                                     <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
                                                 </select>
                                             </td>

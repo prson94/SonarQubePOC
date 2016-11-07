@@ -25,7 +25,11 @@ import * as _ from 'lodash';
     ],
     template:
     `
-        <span (click)="handleClick()" [class.active]="active" class="favorite">
+        <span *ngIf="active" (click)="handleClick()" class="favorite active">
+            <i *ngIf="!isLoading" class="fa fa-star"></i>
+            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
+        </span>
+        <span *ngIf="!active" (click)="handleClick()" class="favorite">
             <i *ngIf="!isLoading" class="fa fa-star"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
@@ -117,6 +121,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             if (f.Route == this.uri)
                 this.active = true;
         }
+
     }
 
     ngOnDestroy() {

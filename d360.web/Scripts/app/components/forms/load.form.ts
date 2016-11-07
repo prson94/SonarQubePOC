@@ -54,7 +54,8 @@ export class LoadForm implements OnInit, OnChanges, FormEvents {
 
     private load(): void {
         this.actions = this.loadService.getActionOptions();
-        this.selectedAction = '';
+        this.selectedAction = this.actions[0].value;
+        this.loadTypes();
         this.onLoadComplete.emit(null);
     }
 

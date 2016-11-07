@@ -36,9 +36,15 @@ import * as _ from 'lodash';
                                     </div>
                          </template>
                     </p-column>                                                                                         
-                </p-dataTable>               
-               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
-                    <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter" [sortable]="column.sortable" [field]="column.datafield">
+                </p-dataTable>   
+                <div *ngIf="!hideFilter && !hideHeader">                
+                    <header>
+                        &nbsp;<d3s-tile-actions hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                    </header>   
+                </div>      
+                <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;" />
+               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3" [globalFilter]="gb">  
+                    <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
                                         <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
@@ -72,6 +78,7 @@ export class DynamicLookupGridComponent implements OnInit {
     @Input() hideFilter = true;
 
     isComplex = false;
+    showSimpleFilter = true;
 
     visibleColumns;
 

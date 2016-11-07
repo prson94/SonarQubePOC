@@ -270,11 +270,11 @@ import { TreeNode, Column } from 'primeng/primeng';
         </div>
 
         <div *ngSwitchCase="FormMode.AddStep">
-            <d3s-fusion-rule-step [ruleID]="selectedFusionRule.ID" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; loadSteps();"></d3s-fusion-rule-step>
+            <d3s-fusion-rule-step [ruleID]="selectedFusionRule.ID" (onClose)="formMode = FormMode.Default;" (onSave)="saveAddEditStep($event)"></d3s-fusion-rule-step>
         </div>
 
         <div *ngSwitchCase="FormMode.EditStep">
-            <d3s-fusion-rule-step [ruleID]="selectedFusionRuleStep.RuleID" [ruleStepID]="selectedFusionRuleStep.ID" (onClose)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; loadSteps();"></d3s-fusion-rule-step>
+            <d3s-fusion-rule-step [ruleID]="selectedFusionRuleStep.RuleID" [ruleStepID]="selectedFusionRuleStep.ID" (onClose)="formMode = FormMode.Default" (onSave)="saveAddEditStep($event)"></d3s-fusion-rule-step>
         </div>
 
         <div *ngSwitchCase="FormMode.DeleteMapping">
@@ -550,6 +550,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.postAddFusionRuleItem(form)
             .then(r => {
                 //console.log(r);
+                this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
                 this.selectAllItems = false;
                 this.attributeNodes = [];
@@ -658,6 +659,12 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
             });
+    }
+
+    saveAddEditStep(e: any) {
+        this.showMessageForResult(this.messagesService, e);
+        this.formMode = FormMode.Default;
+        this.loadSteps();
     }
 };
 

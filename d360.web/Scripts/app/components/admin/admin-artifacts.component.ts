@@ -4,6 +4,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService, MessagesService } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component'
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 
 
@@ -26,7 +28,13 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, private artifactsService: ArtifactTypeService, titleService: Title, protected messagesService: MessagesService) {        
+    constructor(private stateService: StateService,
+        rightSidebarService: RightSidebarService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private artifactsService: ArtifactTypeService,
+        titleService: Title,
+        protected messagesService: MessagesService,
+        private router: Router) {        
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Artifacts";
         this.setCommonItems();        
@@ -43,6 +51,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.artifactsService.getArtifactTypeTree()
             .then(data => {
                 this.ArtifactTypes = data;
+                console.log(data);
                 this.selectedRow = this.ArtifactTypes[0];
                 this.isLoading = false;
             }); 
@@ -102,6 +111,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.load();    
         this.showMessageForResult(this.messagesService, msg);    
         this.stateService.reloadLeftNavMenu();
+    }
+
+    navigate(item: any) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
     }
 }
 

@@ -10,7 +10,7 @@
     </div>
     <div *ngIf="!isLoading">
         <div *ngIf="!isEditing && !isDeleting && !isAdding">
-            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;" />
             <p-dataTable [globalFilter]="gb" [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;">
                 <p-column field="Role" header="Role" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ResponsibleObjectName" header="Resource" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '20%' }" [filter]="!showSimpleFilter">

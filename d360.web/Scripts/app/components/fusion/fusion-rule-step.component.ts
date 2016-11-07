@@ -855,7 +855,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
             console.log(this.model.RuleStep);
             this.fusionService.putEditFusionRuleStep(this.model.RuleStep)
                 .then(r => {
-                    this.onSave.emit();
+                    this.onSave.emit(r);
                 });
         } else {
             //add
@@ -863,7 +863,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
             console.log(this.model.RuleStep);
             this.fusionService.postAddFusionRuleStep(this.model.RuleStep)
                 .then(r => {
-                    this.onSave.emit();
+                    this.onSave.emit(r);
                 });
         }
     }

@@ -107,6 +107,21 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         });
         
     }
+
+    moveUp(field: FieldDefinition) {
+
+        this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID)
+            .then(r => {
+                this.load();
+            });
+    }
+
+    moveDown(field: FieldDefinition) {
+        this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID)
+            .then(r => {
+                this.load();
+            });
+    }
 }
 
 

@@ -48,6 +48,8 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     isLoading = false;
     sub: any;
 
+    private tooltipMessage: string = 'Follow this item';
+
     constructor(
         private router: Router,
         private route: ActivatedRoute,
@@ -60,7 +62,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.objectType = c.type;
             this.objectId = c.id;
-            //console.log(c);
+            console.log(c);
             this.checkActive();
         });
 
@@ -94,6 +96,8 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     }
 
     toggleFollow() {
+        
+        console.log('follow',this.isFollowingParent, this.objectType, this.objectId);
         if (this.isFollowingParent)
             return;
         if (this.objectType == null || this.objectType == "" || this.objectId < 0) {

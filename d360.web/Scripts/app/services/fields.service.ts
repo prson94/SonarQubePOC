@@ -155,6 +155,20 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    moveUp(type: string, id: number, fieldId: number) {
+        return this.http.post(`fields/${type}/${id}/${fieldId}/move/up`, null)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    moveDown(type: string, id: number, fieldId: number) {
+        return this.http.post(`fields/${type}/${id}/${fieldId}/move/dpwn`, null)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     //RelationshipObjectsByType        public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
     //getChildItem(
 }

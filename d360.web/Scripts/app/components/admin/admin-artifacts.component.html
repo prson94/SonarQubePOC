@@ -14,7 +14,7 @@
                             <a style="cursor:pointer;" (click)="add(item.data.ID)"><i class="fa fa-plus"></i></a>
                             <a style="cursor:pointer;" (click)="edit(item.data.ID)"><i class="fa fa-pencil"></i></a>
                             <a style="cursor:pointer;" (click)="delete(item.data.ID)"><i class="fa fa-trash-o"></i></a>
-                            <a style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                            <d3s-tooltip objectType="ArtifactType" [objectId]="item.data.ID" tooltipType="preview"><a (click)="navigate(item.data)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-tooltip>
                         </div>
                     </template>
                 </p-column>
