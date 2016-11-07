@@ -7,7 +7,7 @@
                     Workflows
                     <d3s-tile-actions [hasMenu]="true" [menuItems]="addMenu" (menuClick)="add($event)" style="display:inline-block;"></d3s-tile-actions>
                 </header>
-                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                 <p-dataTable [globalFilter]="gb" [value]="workflowItems" selectionMode="single" (onRowDblclick)="selectedRow=$event.data;isEditing=true" [(selection)]="selectedRow" (onRowClick)="isAdding=false;" [rows]="20" [paginator]="true">
                     <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [style]="{ 'width': '28%' }"  [filter]="!showSimpleFilter"></p-column>
                     <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '28%' }" [filter]="!showSimpleFilter"></p-column>

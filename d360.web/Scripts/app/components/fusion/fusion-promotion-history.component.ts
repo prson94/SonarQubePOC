@@ -11,7 +11,7 @@ import * as _ from 'lodash';
                     <header>Promotion History<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >                        
                             <p-column field="DateStarted" header="Started" sortable="custom" (sortFunction)="nullDateSort($event)" [style]="{width:'150px'}" [filter]="!showSimpleFilter">
                                 <template let-col let-data="rowData" pTemplate type="body">

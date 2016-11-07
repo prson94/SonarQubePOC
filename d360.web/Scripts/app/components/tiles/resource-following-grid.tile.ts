@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;" [hidden]="!simpleFilter">   
+    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter" [hidden]="!simpleFilter">   
    <p-dataTable [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single" (onRowDblclick)="navigate($event)">
         <p-column header="Name" field="Name" [filter]="!simpleFilter">
             <template let-row="rowData" pTemplate type="body">

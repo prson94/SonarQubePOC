@@ -7,7 +7,7 @@
     </div>
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
-            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
             <p-dataTable [globalFilter]="gb" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedRow">
                 <p-column field="LastName" header="Last Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="FirstName" header="First Name" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>

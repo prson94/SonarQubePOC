@@ -12,8 +12,8 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
     template: `                   
                 <div *ngIf="!showEditor && !addTechnicalRelationship">
                     <h4>Technical Relations for <em>{{objectName}}/{{relationship?.Name}}</em></h4>
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
-                    <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="relations" selectionMode="single" rows="10" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;openFusionItem();">                                                                                                  
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
+                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;openFusionItem();">                                                                                                  
                         <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}">
                              <template let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview"><a (click)="openFusionItem()">{{item.Name}}</a></d3s-tooltip>
@@ -53,11 +53,10 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                     <header>Add A Technical Relation</header>
                     <div *ngIf="possibleTechnicalIntersectTypes.length > 0" class="form-instructions">What type of object would you like to add a technical relationship to the relationship <b>{{relationship.Name}} / {{objectName}}</b>?</div>
                     <div class="row" *ngIf="possibleTechnicalIntersectTypes.length > 0">
-                        <div class="col s12">
-                            <select style="width:100%;" (change)="showEditor=true;selectedIntersectType=$event.target.value" >
-                                <option></option>
-                                <option *ngFor="let p of possibleTechnicalIntersectTypes" [value]="p.IntersectTypeID">{{getFriendlyName(p.ObjectType)}} - {{p.Title}}</option>
-                            </select>                    
+                        <div class="col s12">                            
+                            <div class="row">
+                                <div class="col s12" *ngFor="let p of possibleTechnicalIntersectTypes"><a style="cursor:pointer" (click)="showEditor=true;selectedIntersectType=p.IntersectTypeID">{{getFriendlyName(p.ObjectType)}} - {{p.Title}}</a></div>
+                            </div>
                         </div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">

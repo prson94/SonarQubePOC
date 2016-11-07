@@ -22,7 +22,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                             <header>Rule Types</header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>     
                             <span *ngIf="!isLoading">
-                                <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                                <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                                 <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="ruleTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selected">                                                                                        
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
                                 </p-dataTable>                                

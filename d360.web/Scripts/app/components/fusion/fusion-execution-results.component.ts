@@ -8,7 +8,7 @@ import { FusionExecutionResult } from '../../models/fusion.model';
     selector: 'd3s-fusion-execution-results',
     template: `     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="results" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >                            
                             <p-column field="FusionAttributeType" header="Type" [sortable]="true" [style]="{width:'100px'}"></p-column>
                             <p-column field="FusionAttribute" header="Attribute" [sortable]="true" [style]="{width:'100px'}"></p-column>

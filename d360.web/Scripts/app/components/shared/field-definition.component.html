@@ -18,7 +18,7 @@
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></delete-form>            
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
-        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                             
+        <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
         <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;" sortField="SortOrder" [sortOrder]="1">
             <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>

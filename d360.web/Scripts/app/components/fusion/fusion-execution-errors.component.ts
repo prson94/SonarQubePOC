@@ -10,7 +10,7 @@ import { FusionExecutionError } from '../../models/fusion.model';
                 
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                         <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="errors" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" >
                             <p-column field="Date" header="Date" [sortable]="true" [style]="{width:'100px'}">
                                 <template let-col let-data="rowData" pTemplate type="body">

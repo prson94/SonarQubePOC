@@ -12,7 +12,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor && !showDelete">
-                        <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                        <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                         <p-dataTable [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
                             <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
                             <p-column [style]="{width:'28px'}">

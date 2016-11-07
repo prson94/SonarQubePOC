@@ -11,7 +11,7 @@ import { CertifyItem } from '../../models/workflow.model';
             <div class="row" *ngIf="!isLoading && !showEditor">
                 <header>Open Artifact Certifications<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12">     
-                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                  
+                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                  
                     <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">

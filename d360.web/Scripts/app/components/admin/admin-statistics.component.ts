@@ -32,7 +32,7 @@ import { Title } from '@angular/platform-browser';
                             </header>  
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading">
-                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                                <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                                 <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
                                     <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        

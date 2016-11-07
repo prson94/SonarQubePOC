@@ -3,7 +3,7 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading" class="tile tile-detail">
             <header>History<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
             <p-dataTable [globalFilter]="gb" [value]="loads" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">
                 <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter"></p-column>

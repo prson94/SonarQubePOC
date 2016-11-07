@@ -16,7 +16,7 @@ import { Title } from '@angular/platform-browser';
                             <d3s-tile-actions [hasAdd]="true" (addClick)="isAdding = true;isEditing=false;isDeleting=false;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                         </header>    
                         <span  *ngIf="!isLoading">
-                            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                  
+                            <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                  
                             <p-dataTable [globalFilter]="gb" [value]="templates" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selectedTemplate" (onRowDblclick)="isEditing=true;" >                                                        
                                 <p-column field="Name" header="Name" [sortable]="true" [style]="{width : '150px' }" [filter]="!showSimpleFilter"></p-column>
                                 <p-column field="Action" header="Action" [sortable]="true"  [style]="{width : '100px' }" [filter]="!showSimpleFilter"></p-column>                            

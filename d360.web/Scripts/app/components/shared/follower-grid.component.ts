@@ -11,7 +11,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <header *ngIf="objectName">Followers of {{objectName}}</header>
                 <span *ngIf="!isLoading">
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                     <p-dataTable sortField="FollowerLastName" [sortOrder]="1" [globalFilter]="gb" [value]="items" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" selectionMode="single">
                         <p-column field="FollowerLastName" header="Last Name" sortable="true">
                             <template let-item="rowData" pTemplate type="body">

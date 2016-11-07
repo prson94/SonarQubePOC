@@ -23774,6 +23774,6 @@ a.breadcrumb {
 }
 /* end header search*/
 .grid-simple-filter {
-  margin-bottom: 10px;
+  margin-bottom: 10px !important;
   width: 100%;
 }

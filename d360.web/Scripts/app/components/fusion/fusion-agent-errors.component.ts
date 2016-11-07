@@ -9,7 +9,7 @@ import { FusionAgentError } from '../../models/fusion.model';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
                     <header>Agent Error History</header>
-                    <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                              
+                    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="errors" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
                         <p-column field="Message" header="Error" [sortable]="true" [style]="{width:'300px'}"></p-column>
                         <p-column field="FusionType" header="Type" [sortable]="true" [style]="{width:'150px'}"></p-column>                        
