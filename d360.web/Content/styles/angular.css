@@ -638,3 +638,7 @@ a.breadcrumb {
   border-radius: 0 0 3px 3px;
 }
 /* end header search*/
+.grid-simple-filter {
+  margin-bottom: 10px;
+  width: 100%;
+}

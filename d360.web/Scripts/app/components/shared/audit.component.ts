@@ -14,31 +14,31 @@ import { BaseComponent } from './base.component';
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">   
-                            <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
-                            <p-dataTable scrollable="true" scrollWidth="100%"  [lazy]="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="[5,10,20]">
-                                <p-column field="ResourceName" header="User" [sortable]="true" [style]="{'width':'150px'}" [filter]="true"></p-column>                                                                                    
-                                <p-column field="Date" header="Date" [sortable]="true" [style]="{'width':'200px'}" [filter]="true">
+                            <header>Audit History for {{objectName}}<d3s-tile-actions hasAdd="false" hasExport="true" (exportClick)="export()"></d3s-tile-actions></header>                                                                                           
+                            <p-dataTable scrollable="true" scrollWidth="100%" lazy="true" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onLazyLoad)="loadAuditsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
+                                <p-column field="ResourceName" header="User" sortable="true" [style]="{'width':'150px'}" filter="true"></p-column>                                                                                    
+                                <p-column field="Date" header="Date" sortable="true" [style]="{'width':'200px'}" filter="true">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <span>{{data.Date | date: 'medium'}}</span>
                                     </template>
                                 </p-column>
-                                <p-column field="Action" header="Action" [sortable]="true" [style]="{'width':'100px'}" [filter]="true"></p-column>                                                            
-                                <p-column field="Field" header="Field" [sortable]="true" [style]="{'width':'200px'}" [filter]="true"></p-column>                                
-                                <p-column field="NewValue" header="New Value" [sortable]="true" [style]="{'width':'250px'}" [filter]="true">
+                                <p-column field="Action" header="Action" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>                                                            
+                                <p-column field="Field" header="Field" sortable="true" [style]="{'width':'200px'}" filter="true"></p-column>                                
+                                <p-column field="NewValue" header="New Value" sortable="true" [style]="{'width':'250px'}" filter="true">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.NewValue"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="PreviousValue" header="Previous Value" [sortable]="true" [style]="{'width':'250px'}" [filter]="true">
+                                <p-column field="PreviousValue" header="Previous Value" sortable="true" [style]="{'width':'250px'}" filter="true">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <div [innerHtml]="data?.PreviousValue"></div>
                                     </template>                                                        
                                 </p-column>
-                                <p-column field="ActionObject" header="Object" [sortable]="true" [style]="{'width':'100px'}" [filter]="true"></p-column>
-                                <p-column field="ActionObjectTypeName" header="Type" [sortable]="true" [style]="{'width':'100px'}" [filter]="true"></p-column>
-                                <p-column field="ActionObjectName" header="Item" [sortable]="true" [style]="{'width':'100px'}" [filter]="true"></p-column>
-                                <p-column field="ActionDescription" header="Audit Description" [sortable]="true" [style]="{'width':'250px'}" [filter]="true"></p-column>                                                                                        
-                                <p-column field="Version" header="Revision" [sortable]="true"  [style]="{'width':'100px'}" [filter]="true"></p-column>
+                                <p-column field="ActionObject" header="Object" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
+                                <p-column field="ActionObjectTypeName" header="Type" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
+                                <p-column field="ActionObjectName" header="Item" sortable="true" [style]="{'width':'100px'}" filter="true"></p-column>
+                                <p-column field="ActionDescription" header="Audit Description" sortable="true" [style]="{'width':'250px'}" filter="true"></p-column>                                                                                        
+                                <p-column field="Version" header="Revision" sortable="true"  [style]="{'width':'100px'}" filter="true"></p-column>
                             </p-dataTable>       
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
                         </div>
@@ -61,8 +61,7 @@ export class AuditComponent extends BaseComponent {
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
-
-
+    
     constructor(private auditService: AuditService, private headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }

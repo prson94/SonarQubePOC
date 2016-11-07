@@ -1,18 +1,17 @@
-﻿
-import { Component, Input, Output, OnInit } from '@angular/core';
+﻿import { Component, Input, Output, OnInit } from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../models/grid-definition.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { BaseComponent } from './base.component';
 
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
     template: `    
-
-               <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3">  
+               <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3">  
                     <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
@@ -43,7 +42,7 @@ import * as _ from 'lodash';
                     </header>   
                 </div>      
                 <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;" />
-               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="10" [paginator]="!hideFooter" [pageLinks]="3" [globalFilter]="gb">  
+               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">  
                     <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
@@ -71,7 +70,7 @@ import * as _ from 'lodash';
                 `
 })
 
-export class DynamicLookupGridComponent implements OnInit {
+export class DynamicLookupGridComponent extends BaseComponent implements OnInit {
     @Input() data: LookupGrid;
     @Input() hideFooter = false;
     @Input() hideHeader = false;
@@ -83,6 +82,7 @@ export class DynamicLookupGridComponent implements OnInit {
     visibleColumns;
 
     constructor(private router: Router) {
+        super();
     }
     
     ngOnInit() {
@@ -91,8 +91,7 @@ export class DynamicLookupGridComponent implements OnInit {
 
         //do this on init to avoid binding to function call
         this.data.Columns.forEach(c => {
-            c.type = this.columnDataType(c);
-            //console.log(c.type);
+            c.type = this.columnDataType(c);            
         });
 
         this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {
@@ -102,8 +101,7 @@ export class DynamicLookupGridComponent implements OnInit {
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
-        //console.log(this.visibleColumns);
+        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');        
     }
 
     private columnDataType(column: GridFilterColumn): string {

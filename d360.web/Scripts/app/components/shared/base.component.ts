@@ -30,6 +30,10 @@ export class BaseComponent {
     // child classes that support permissions input....
     permissions: Permission[] = [];
 
+    //default paging options
+    defaultPagingOptions: number[] = [10, 25, 50, 100];
+    defaultInitialItemsPerPage: number = 10;
+
     constructor(protected rightSidebarService?: RightSidebarService, protected webAnalyticsService?: WebAnalyticsService) { }
 
     protected setBrowserTitle(tileService: Title, area: string) {

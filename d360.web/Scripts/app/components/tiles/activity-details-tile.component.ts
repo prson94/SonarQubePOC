@@ -13,18 +13,18 @@ import * as _ from 'lodash';
     template: `
                 <div class="tile tile-detail">
                    <header>Activity for {{objectName}}
-                    <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions hasAdd="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                        <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="10" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                    
+                        <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;navigateToArtifact();" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
                             <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)"  [filter]="!showSimpleFilter">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <a (click)="artifactLink(item.ArtifactTypeID, item.ID)">{{item.Name}}</a>
                                 </template>
                             </p-column>                                                                                                   
-                            <p-column field="Status" header="Status" [sortable]="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}"></p-column>
+                            <p-column field="Status" header="Status" sortable="true" [filter]="!showSimpleFilter" [style]="{'width':'150px'}"></p-column>
                             <p-column [style]="{width:'40px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">

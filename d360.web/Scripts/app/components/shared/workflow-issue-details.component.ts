@@ -8,10 +8,10 @@ import * as _ from 'lodash';
     template: `
             <d3s-workflow-issue-editor *ngIf="!isLoading && showEditor" [issue]="selected" (saveClick)="handleSave();" (closeClick)="showEditor=false"></d3s-workflow-issue-editor>
             <div class="row" *ngIf="!isLoading && issues.length > 0 && !showEditor">
-                <header>Open Issues<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                <header>Open Issues<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                       
-                    <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="issues" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                    <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="issues" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>

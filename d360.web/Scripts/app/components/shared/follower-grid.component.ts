@@ -12,7 +12,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <header *ngIf="objectName">Followers of {{objectName}}</header>
                 <span *ngIf="!isLoading">
                     <input #gb type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">
-                    <p-dataTable sortField="FollowerLastName" [sortOrder]="1" [globalFilter]="gb" [value]="items" [rows]="10" [paginator]="true" selectionMode="single">
+                    <p-dataTable sortField="FollowerLastName" [sortOrder]="1" [globalFilter]="gb" [value]="items" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" selectionMode="single">
                         <p-column field="FollowerLastName" header="Last Name" sortable="true">
                             <template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.FollowerLastName}}</a>
@@ -36,9 +36,6 @@ export class FollowerGridComponent extends BaseComponent implements OnInit {
     @Input() objectName: string;
 
     private items: FollowDetail[] = new Array<FollowDetail>();
-
-
-    isLoading = false;
 
     constructor(private followerService: FollowerService, private router: Router) {
         super();

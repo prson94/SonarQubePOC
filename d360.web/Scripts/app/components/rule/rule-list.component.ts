@@ -19,10 +19,10 @@ import * as _ from 'lodash';
                             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAddRule()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
+                                        <d3s-tile-actions hasAdd="true" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>      
-                                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." style="margin-bottom:10px;width:100%;">                                                                                     
-                                    <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="20" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
+                                    <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
+                                    <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
                                         <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'45%'}" [filter]="!showSimpleFilter">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <a (click)="showRule(item)">{{item.Name}}</a>

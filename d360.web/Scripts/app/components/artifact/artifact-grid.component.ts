@@ -13,15 +13,6 @@ import { StringConstants } from '../../static/string-constants';
 @Component({
     selector: 'd3s-artifact-grid',
     providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
-    styles: [`
-           .simple-search{
-                width:100%;
-                padding:10px;
-                border: 1px solid #CCCCCC;
-                border-radius: 5px;
-                margin: 5px;
-            }
-        `],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
                     <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
@@ -29,11 +20,11 @@ import { StringConstants } from '../../static/string-constants';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
                     <div class="col s12" *ngIf="stateService.artifactTypeFilters.showSimpleFilter">                                                
-                        <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
+                        <input type="text" pInputText style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                     </div>                                        
                     <d3s-artifact-column-filter [hidden]="stateService.artifactTypeFilters.showSimpleFilter" [(attributeFilter)]="stateService.artifactTypeFilters.attributes" [(relationshipFilter)]="stateService.artifactTypeFilters.relationships" [(filters)]="stateService.artifactTypeFilters.filters" [artifactType]="artifactType" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-artifact-column-filter>
                     <div class="col s12">
-                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="4" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="[5,10,20]">                                                                       
+                       <p-dataTable #dt lazy="true" [totalRecords]="totalRecords"  scrollable="true" scrollWidth="100%" [value]="items" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selectArtifact($event.data)" [(selection)]="selected" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                             <p-column field="Name" header="Name" sortable="true"  [style]="{'width':'250px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="selectArtifact(item)">{{item.Name}}</a>
@@ -92,7 +83,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() rowID: string = 'ID';
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
-    @Input() rowsPerPage: number = 20;
+    @Input() rowsPerPage: number = 25;
         
     @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
         

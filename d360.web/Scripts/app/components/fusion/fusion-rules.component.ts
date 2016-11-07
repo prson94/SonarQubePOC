@@ -46,7 +46,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="col l4 m6 s12">
                     <div class="tile tile-detail">
                         <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions></header>
-                        <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [rowsPerPageOptions]="[5,10,20]">
+                        <p-dataTable [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]">
                             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
                             <p-column header="">
                                 <template pTemplate type="body" let-row="rowData">

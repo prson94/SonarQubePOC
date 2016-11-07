@@ -12,18 +12,18 @@ import { WorkflowStatusDetails } from '../../models/workflow.model';
                     <div class="col s6">
                         {{field.Name}}
                     </div>
-                    <div class="col s6"  *ngIf="!isDateField(field.Name)" [innerHtml]="field.Value"></div>                    
-                    <div class="col s6"  *ngIf="isDateField(field.Name)">{{field.Value | date : 'short'}}</div>                    
+                    <div class="col s6" *ngIf="!isDateField(field.Name)" [innerHtml]="field.Value"></div>                    
+                    <div class="col s6" *ngIf="isDateField(field.Name)">{{field.Value | date : 'short'}}</div>                    
                 </div>
                 <div class="row">&nbsp;</div>                
-                <p-dataTable [rows]="10" [paginator]="true" [pageLinks]="3" [value]="workflowStatusData?.Assignments" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
-                    <p-column field="ActivityTypeName" header="Activity" [sortable]="true"></p-column>                                
-                    <p-column field="ResourceID" header="User" [sortable]="true">
+                <p-dataTable [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="workflowStatusData?.Assignments" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
+                    <p-column field="ActivityTypeName" header="Activity" sortable="true"></p-column>                                
+                    <p-column field="ResourceID" header="User" sortable="true">
                         <template let-item="rowData" pTemplate type="body">
-                            <span><d3s-tooltip [objectType]="'Resource'" [objectId]="item.ResourceID" [tooltipType]="'preview'">{{item.ResourceName}}</d3s-tooltip></span>
+                            <span><d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview">{{item.ResourceName}}</d3s-tooltip></span>
                         </template>
                     </p-column>
-                    <p-column field="IsComplete" header="Completed?" [sortable]="true">
+                    <p-column field="IsComplete" header="Completed?" sortable="true">
                         <template let-activity="rowData" pTemplate type="body">
                             <span><i class="fa fa-times disabled" *ngIf="!activity.IsComplete"></i><i class="fa fa-check enabled" *ngIf="activity.IsComplete"></i></span>
                         </template>

@@ -14,8 +14,8 @@ import { StringConstants } from '../../static/string-constants';
     template: `            
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">        
-                        <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="filter" placeholder="Search..." autofocus autocomplete="off" />                                             
-                        <p-dataTable lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" >                                                                       
+                        <input type="text" class="grid-simple-filter" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="filter" placeholder="Search..." autofocus autocomplete="off" />                                             
+                        <p-dataTable lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
                             <p-column field="Name" header="Name" sortable="true"  [style]="{'width':'250px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="preview"><a (click)="selectArtifact(item)">{{item.Name}}</a></d3s-tooltip>
@@ -43,7 +43,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
 
-    private numberOfRows: number = 20;
+    private numberOfRows: number = this.defaultInitialItemsPerPage;
     private currentPage: number = 0;
     private sortField: string;
     private sortOrder: SortOrder;

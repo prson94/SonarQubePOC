@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FusionAttributeService, GridDefinitionService } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
@@ -16,7 +16,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="filters" (filtersChange)="doFilterResults($event)"></d3s-fusion-attribute-summary-filters>                 
-                        <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" [paginator]="true" [pageLinks]="4" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
+                        <p-dataTable [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">
                             <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [sortable]="column.sortable"  [style]="{'width':'250px'}">
                                 <template let-col let-item="rowData" pTemplate type="body">
                                     <span [innerHtml]="item[column.datafield]" class="truncate" style="display:inline-block;width:245px"></span>
@@ -29,7 +29,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     providers: [FusionAttributeService, GridDefinitionService],
 })
 
-export class FusionAttributeSummaryComponent extends BaseComponent implements OnInit {
+export class FusionAttributeSummaryComponent extends BaseComponent implements OnChanges {
 
     @Input() fusionId: number;
     @Input() fusionAttributeTypeId: number;
@@ -46,10 +46,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     private fusionObject: string = 'FusionAttributeType';
     private fusionObjectID: number = 0;
     private filters: FusionAttributeFilter[] = [];
-        
-    
-    //private totalRecords: number;
-    private rowsPerPage: number = 10;
+                
+    private rowsPerPage: number = this.defaultInitialItemsPerPage;
     private results: FusionAttributePagedResults;    
     columns: GridColumn[] = [];    
     filtercolumns: GridFilterColumn[] = [];
@@ -62,11 +60,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     constructor(private gridDefinitionService: GridDefinitionService, private fusionAttributeService: FusionAttributeService) {
         super();
     }
-
-    ngOnInit() {
-
-    }
-    
+        
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {
             this.fusionObject = 'FusionAttributeType';
