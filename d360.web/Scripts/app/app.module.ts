@@ -3,7 +3,7 @@ import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
 import { routing }        from './app.routes';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
 
 import { ChartModule } from 'angular2-highcharts';
@@ -30,6 +30,8 @@ import { AdminUserGuard } from './guards/admin-user.guard';
 import { AuthenticationService } from './services/authentication.service';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
+
+import { AuthenticationConnectionBackend } from './authentication-connection-backend';
 
 import {
     GrowlModule,
@@ -341,6 +343,7 @@ import {
     bootstrap: [AppComponent],
     providers: [
         AdminUserGuard,
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
         AuthenticationService,
         COMPILER_PROVIDERS,
         DynamicTypeBuilder,
