@@ -674,3 +674,12 @@ a.breadcrumb {
   margin-bottom: 10px !important;
   width: 100%;
 }
+/* follow header styles*/
+.follow {
+  font-size: 1.2em;
+  color: #666;
+  padding: 0 15px;
+}
+.follow.active {
+  color: #0376c4;
+}

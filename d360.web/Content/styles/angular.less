@@ -622,7 +622,7 @@ div.relationship{
 }
 div.relationship .name{
     text-transform: uppercase;
-    color: rgba(84,164,218,1);
+    color: @rgba-primary-0;
     font-weight:bold;
 }
 div.relationship .count, div.relationship .empty-count{
@@ -635,10 +635,10 @@ div.active{
     background:#d3d5d8;
 }
 div.relationship .count{
-    background-color: rgba(84,164,218,1);
+    background-color: @rgba-primary-0;
 }
 div.relationship .empty-count{
-    background-color:#646464;
+    background-color:@d3s-primary-gray;
 }
 
 /*end  relationship itme control*/
@@ -775,4 +775,16 @@ a.breadcrumb {
 .grid-simple-filter{
     margin-bottom:10px !important;
     width:100%;
+}
+
+/* follow header styles*/
+
+.follow {
+    font-size: 1.2em;
+    color: #666;
+    padding: 0 15px;
+}
+
+.follow.active {
+    color: #0376c4;
 }

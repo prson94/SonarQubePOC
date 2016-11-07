@@ -1,5 +1,4 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { FollowerService } from '../../services/index';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -9,20 +8,7 @@ import * as _ from 'lodash';
 
 
 @Component({
-    selector: 'd3s-header-follow',
-    styles: [
-        `
-            .follow {
-                font-size: 1.2em;
-                color: #666;
-                padding: 0 15px;
-            }
-
-            .follow.active {
-                color: #0376c4;
-            }
-        `
-    ],
+    selector: 'd3s-header-follow',    
     template:
     `
         <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow">
@@ -61,20 +47,10 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.objectType = c.type;
-            this.objectId = c.id;
-            console.log(c);
+            this.objectId = c.id;            
             this.checkActive();
-        });
-
-        //this.sub = this.router.events.subscribe(e => {
-        //    if (e instanceof NavigationEnd) {
-        //        this.uri = _.trimStart(e.url, '/');
-        //        console.log('nav change');
-        //        console.log(this.route.snapshot.params);
-        //        }
-        //    });
+        });        
     }
-
 
     checkActive() {
         this.active = false;
@@ -83,7 +59,6 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             this.visible = false;
             return;
         }
-
 
         this.followerService.getFollowInfo(this.objectType, this.objectId)
             .then(f => {
@@ -95,9 +70,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             });
     }
 
-    toggleFollow() {
-        
-        console.log('follow',this.isFollowingParent, this.objectType, this.objectId);
+    toggleFollow() {                
         if (this.isFollowingParent)
             return;
         if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
@@ -107,8 +80,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         let includeChildren = this.objectType.endsWith('Type');
 
         this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren)
-            .then(f => {
-                console.log('success: ' + f);
+            .then(f => {                
                 this.active = f;
             });
     }
