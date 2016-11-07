@@ -23136,14 +23136,6 @@ nav.top,
   -moz-box-shadow: none;
   box-shadow: none;
 }
-/* type ahead search in top menu*/
-.searchTypeahead > div {
-  margin-top: 10px;
-}
-#typesearch.active {
-  padding-right: 20px;
-}
-/* end type ahead*/
 /* end top menu*/
 /* side menu*/
 .left-side-nav {
@@ -23725,3 +23717,27 @@ a.breadcrumb {
   text-decoration: underline;
 }
 /*end breadcrumbs */
+/* header search */
+.header-search {
+  position: relative;
+}
+.header-search .search-child {
+  display: none;
+  padding: 20px;
+  position: absolute;
+  margin: 0;
+  outline: 0;
+  line-height: 1.3;
+  text-decoration: none;
+  font-size: 100%;
+  list-style: none;
+}
+.header-search-active > .header-search-panel {
+  display: block !important;
+  width: auto;
+}
+.header-search-panel {
+  background-color: #E7E7E7;
+  border-radius: 0 0 3px 3px;
+}
+/* end header search*/

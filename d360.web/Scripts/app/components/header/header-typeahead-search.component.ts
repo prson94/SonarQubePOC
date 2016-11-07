@@ -1,81 +1,84 @@
-﻿import { Component, ElementRef } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { TypeaheadSearchService } from '../../services/index';
 import { SearchResult } from '../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
-    selector: 'd3s-header-typeahead-search',
-    host: {
-        '(document:click)': 'onClick($event)',
-    },  
-    template: ` <span style="display:table;" id="typesearch" [ngClass]="{'active':showSearch}" (mouseover)="in()" (keyup)="checkKey($event)" >
-                    <a style="display:table-cell;" (click)="showSearch=!showSearch;" ><i class="fa fa-search"></i></a>
-                    <p-autoComplete size="50" 
-                            styleClass="searchTypeahead" 
-                            scrollHeight="400px" *ngIf="showSearch" 
-                            [(ngModel)]="result" 
-                            [suggestions]="results" 
-                            field="Name"
-                            (completeMethod)="search($event)"                              
-                            placeholder="Search Data3Sixty"
-                            (onSelect)="selectItem()">                       
-                        <template let-result>
-                            <div style="padding:5px 0;">                                
-                                <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.Name}}</div>
-                            </div>                            
-                        </template>
-                    </p-autoComplete>
+    selector: 'd3s-header-typeahead-search',    
+    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" (keyup)="checkKey($event)" >
+                    <a><i class="fa fa-search"></i></a>
+                    <div class="search-child header-search-panel">
+                        <p-autoComplete size="50" *ngIf="active"
+                                styleClass="searchTypeahead" 
+                                scrollHeight="400px"
+                                [(ngModel)]="result" 
+                                [suggestions]="results" 
+                                field="Name"
+                                (completeMethod)="search($event)"                              
+                                placeholder="Search Data3Sixty"                                
+                                (onSelect)="selectItem()">                       
+                            <template let-result>
+                                <div style="padding:5px 0;">                                
+                                    <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.Name}}</div>
+                                </div>                            
+                            </template>
+                        </p-autoComplete>
+                    </div>
                 <span>`,
     providers: [TypeaheadSearchService]
 })
 
 export class HeaderTypeaheadSearchComponent {
-    constructor(private elementRef: ElementRef, private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
+    constructor(private router: Router, private typeaheadSearchService : TypeaheadSearchService) { }
 
-    result: SearchResult;
-    showSearch: boolean = false;
-    hideTimeoutID: number = 0;
-    searchText: string;
-    results: SearchResult[];
-
+    private result: SearchResult; 
+    private searchText: string;
+    private results: SearchResult[];
+    private active: boolean = false;
+    
     search(event) {
         this.searchText = event.query;
         this.typeaheadSearchService.getResults(10, event.query).then(data => {
             this.results = data;
-        });       
+        });
+    }
+
+    show(item) {
+        let panel = item.children[0].nextElementSibling;
+        if (panel) {
+            this.active = true;
+
+            panel.style.zIndex = 1000;
+
+            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
+            panel.style.right = '0px';
+
+            //focus the input so user can just type
+            // this needs to be done on timer so the elements are all visible and there.
+            window.setTimeout(() => {
+                var inputs = panel.getElementsByClassName("ui-autocomplete-input");                
+                if (inputs && inputs.length > 0) {                    
+                    inputs[0].focus();
+                }
+            }, 300);            
+        }
+        
+    }
+
+    hide(item) {
+        this.active = false;
     }
     
-    selectItem() {
+    selectItem() {                
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
 
-    hide() {        
-        this.showSearch = false;
-        this.hideTimeoutID = 0;
-    }
-
-    out() {
-        if (this.hideTimeoutID <= 0)
-            this.hideTimeoutID = window.setTimeout(() => this.hide(), 2000);
-    }
-
-    in() {
-        if (this.hideTimeoutID > 0) window.clearTimeout(this.hideTimeoutID);
-        this.showSearch = true;
-    }
-
-    onClick(event) {
-        if (this.showSearch && !this.elementRef.nativeElement.contains(event.target)) { // or some similar check
-            this.showSearch = false;
-        }        
-    }
-
-    checkKey(event) {
+    checkKey(event) {        
         if (event.keyCode == 13) {
-            this.showSearch = false;            
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(event.srcElement.value)}`);
+            this.active = false;
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(event.srcElement.value)}`);            
         }
-    }
+    }    
 }
 
