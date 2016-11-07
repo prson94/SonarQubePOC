@@ -4,6 +4,7 @@ import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorMode
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
 import { ObjectDetailService } from '../../services/index';
+import { BaseComponent } from '../shared/base.component';
 
 import * as _ from 'lodash';
 
@@ -35,7 +36,7 @@ import * as _ from 'lodash';
     providers: [FieldsService, ObjectDetailService],
 })
 
-export class FieldTypeForm implements OnInit, OnChanges {
+export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() id: number;
     @Input() objectType: string;
     @Input() objectID: number;
@@ -48,8 +49,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     //TODO: cleanup, probably some unused properties here
 
     private lookups: Lookups = new Lookups();
-    private model: FieldTypeEditorModel;
-    private isLoading = false;
+    private model: FieldTypeEditorModel;    
     private isSaving = false;
     private initialItem: FieldTypeEditorModel;
 
@@ -66,6 +66,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private errorMessage: string = "";
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
+        super();
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType();
         this.model.FieldType.Object = this.objectType;
@@ -286,28 +287,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
-
-
-                    //this.lookups.IntersectTypes.forEach(i => {
-                    //    let params = i.value.split('|');
-
-                    //    if (params[1] == this.objectType && params[2] == this.objectID.toString()) {
-                    //        r.IntersectType = parseInt(i.id);
-                    //        r.selectedIntersectName = i.label;
-                    //    }
-
-                    //});
-                    //let s = null;
-                    ////if (r.IntersectType == null) {
-                    //    this.objectDetailService.getObject(this.objectID, this.objectType)
-                    //        .then(o => {
-                    //            r.selectedIntersectName = o.Name
-                    //        });
-                    //    s = '0|' + this.objectType + '|' + this.objectID;
-                    //    this.changeRefType(r, s);
-                    //}
-                    //console.log(this.lookups);
-
                     if (this.objectName == null || this.objectName == '') {
                         this.objectDetailService.getObject(this.objectID, this.objectType).then(o => {
                             this.objectName = o.Name;
@@ -326,8 +305,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                     r.Object = this.objectType;
                     r.ObjectID = this.objectID;
                     this.model.RelationItem = r;
-                    this.relationItemCount = 1;
-                    //console.log(this.lookups);
+                    this.relationItemCount = 1;                    
                 }
                 break;
             default:
@@ -361,7 +339,8 @@ export class FieldTypeForm implements OnInit, OnChanges {
             return;
         }
 
-        if (objectType != "DomainItem") objectType += 'Type';
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType") objectType += 'Type';
+
 
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
@@ -456,12 +435,9 @@ export class FieldTypeForm implements OnInit, OnChanges {
         } else {
             this.fieldsService.postFieldType(this.model)
                 .then(r => {
+                    this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
-                    if (r.isError) {
-                        this.messagesService.showError(r.title, r.message);
-                    }
-                    else {
-                        this.messagesService.showInfoMessage("Success", "Field Definition Created");
+                    if (r.type != 'error') {                                                                
                         this.onComplete.emit({ action: 'add', field: this.model });
                     }
                 });
@@ -471,8 +447,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private validate(): boolean {
         let valid = true;
         this.errorMessage = '';
-        //console.log(this.model.FieldType.Type);
-
+        
         switch (this.model.FieldType.Type.toLowerCase()) {
             case 'relationlookup':
                 if (this.model.RelationItem.DisplayFields) {
@@ -520,8 +495,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
-        //console.log('changeRefType()', item);
-
+        
         let object = this.objectType;
         let objectId = this.objectID;
 
@@ -573,9 +547,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
     private changeRel(index: number): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-
-        //console.log(item);
-
+                
         let params = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
@@ -662,7 +634,6 @@ export class FieldTypeForm implements OnInit, OnChanges {
     }
 
     private changeLegacyChild(): Promise<any> {
-        //console.log(this.model.RelationItem);
 
         let intersectType = this.model.RelationItem.IntersectType;
         let type = this.model.RelationItem.Object;
@@ -690,8 +661,7 @@ export class FieldTypeForm implements OnInit, OnChanges {
                         d.SortOrder = null;
                         d.value = i.value;
                         let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
-                        if (e != null) {
-                            //console.log('found matching display field');
+                        if (e != null) {                            
                             e.Show = true;
                             e.value = i.value;
                         } else
@@ -762,6 +732,5 @@ export class FieldTypeForm implements OnInit, OnChanges {
         this.model.RelationItems.pop();
         this.relationItemCount = this.model.RelationItems.length;
     }
-
 }
 

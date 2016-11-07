@@ -4840,10 +4840,13 @@ order by  D.TextPath", new { id });
                     list.Add("Description", "Description");
                     list.Add("TextPath", "TextPath");
                     break;
-                    //default:
-                    //    list.Add("Name", "Name");
-                    //    list.Add("TextPath", "TextPath");
-                    //    break;
+                case SystemObjects.ReferenceItemType:
+                    if (list.Count == 0) list.Add("Code", "Code");
+                    break;
+                //default:
+                //    list.Add("Name", "Name");
+                //    list.Add("TextPath", "TextPath");
+                //    break;
             }
 
             return new JsonNetResult
@@ -4888,14 +4891,7 @@ order by  D.TextPath", new { id });
                         order by Name  
                     "));
 
-                lookups.AddRange(Company.Query<KnockoutListItem>(@"
-                        select
-                            'Reference List: ' + [Name] as title
-                            ,'ReferenceItemType|' + cast(ID as varchar) as value
-                        from 
-                            [dbo].[ReferenceItemType]
-                        order by Name  
-                    "));
+                lookups.Add(new KnockoutListItem { title = "Reference List", value = "ReferenceItemType|0" });               
             }
 
             var filteredLookups = Company.Query<KnockoutListItem>($@"
