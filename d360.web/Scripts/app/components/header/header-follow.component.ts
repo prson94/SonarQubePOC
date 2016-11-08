@@ -71,11 +71,13 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         //set values on initial load
         let o = this.breadcrumbService.currentObject;
-        this.objectType = o.type;
-        this.objectId = o.id;
+        if (o != null) {
+            this.objectType = o.type;
+            this.objectId = o.id;
+        }
+        this.checkActive();
 
         //console.log(o);
-        this.checkActive();
 
     }
 
@@ -105,11 +107,11 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
                 this.updateTooltip();
             });
 
-        
+
     }
 
     toggleFollow() {
-        
+
         //console.log('follow', this.isFollowingParent, this.objectType, this.objectId);
         if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId))
             return;
