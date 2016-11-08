@@ -1,5 +1,5 @@
 ﻿<div class="row">
-    <div class="col l5 m5">
+    <div class="col l6 m12 s12">
         <div class="tile tile-detail">
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading">
@@ -7,15 +7,27 @@
                     Workflows
                     <d3s-tile-actions [hasMenu]="true" [menuItems]="addMenu" (menuClick)="add($event)" style="display:inline-block;"></d3s-tile-actions>
                 </header>
-                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
+                <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
                 <p-dataTable [globalFilter]="gb" [value]="workflowItems" selectionMode="single" (onRowDblclick)="selectedRow=$event.data;isEditing=true" [(selection)]="selectedRow" (onRowClick)="isAdding=false;" [rows]="20" [paginator]="true">
-                    <p-column field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [style]="{ 'width': '28%' }"  [filter]="!showSimpleFilter"></p-column>
-                    <p-column field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '28%' }" [filter]="!showSimpleFilter"></p-column>
-                    <p-column field="ParentName" header="Subject Area" sortable="true" [style]="{ 'width': '28%' }" [filter]="!showSimpleFilter"></p-column>
-                    <p-column [style]="{ 'width': '16%' }">
+                    <p-column priority="1" field="WorkflowTypeDisplayName" header="Workflow" sortable="true" [style]="{ 'width': '25%' }" [filter]="!showSimpleFilter"></p-column>
+                    <p-column priority="1" field="ObjectName" header="Type" sortable="true" [style]="{ 'width': '25%' }" [filter]="!showSimpleFilter"></p-column>
+                    <p-column priority="4" field="ParentName" header="Subject Area" sortable="true" [style]="{ 'width': '25%' }" [filter]="!showSimpleFilter"></p-column>
+                    <p-column priority="6" field="Enabled" header="Enabled?" sortable="true" [style]="{ 'width': '14%' }" [filter]="!showSimpleFilter">
+                        <template let-item="rowData" pTemplate type="body">
+                            <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                            <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+                        </template>
+                    </p-column>
+                    <p-column priority="1" [style]="{ 'width': '5%' }">
                         <template let-workflow="rowData" pTemplate type="body">
                             <div class="RowTools">
                                 <a (click)="editRow(workflow)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </template>
+                    </p-column>
+                    <p-column priority="1" [style]="{ 'width': '6%' }">
+                        <template let-workflow="rowData" pTemplate type="body">
+                            <div class="RowTools">
                                 <a (click)="selectedRow=workflow;isDeleting=true;isEditing=false;isAdding=false;" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </template>
@@ -24,24 +36,24 @@
             </div>
         </div>
     </div>
-    <div class="col l7 m7">
+    <div class="col l6 m12 s12">
         <div id="DetailTile" class="tile tile-detail" *ngIf="!isEditing && !isDeleting && !isAdding && selectedRow">
             <object-detail [objectType]="'WorkflowTypeRelation'" [objectID]="selectedRow?.ID"></object-detail>
         </div>
     </div>
-    <div class="col l7 m7" *ngIf="isEditing && selectedRow">
+    <div class="col l6 m12 s12" *ngIf="isEditing && selectedRow">
         <div class="tile tile-detail">
             <header>Edit Workflow</header>
             <workflow-item-form [item]="selectedRow" (onCancel)="isEditing = false;" (onSaveComplete)="confirmEdit($event);"></workflow-item-form>
         </div>
     </div>
-    <div class="col l7 m7" *ngIf="isAdding">
+    <div class="col l6 m12 s12" *ngIf="isAdding">
         <div class="tile tile-detail">
             <header>Add Workflow</header>
-            <workflow-item-form [item]="addingRow" (onCancel)="isAdding = false;" (onSaveComplete)="confirm($event);"></workflow-item-form>
+            <workflow-item-form [item]="addingRow" (onCancel)="isAdding = false;" (onSaveComplete)="confirmAdd($event);"></workflow-item-form>
         </div>
     </div>
-    <div class="col l7 m7" *ngIf="isDeleting">
+    <div class="col l6 m12 s12" *ngIf="isDeleting">
         <div class="tile tile-detail">
             <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
                          [method]="'delete'"

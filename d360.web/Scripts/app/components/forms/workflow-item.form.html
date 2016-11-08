@@ -30,7 +30,7 @@
                 <span *ngIf="isLoadingResponsibility"><i class="fa fa-spinner fa-spin"></i></span>
             </div>
             <div class="col s6 input-field">
-                <p-checkbox [(ngModel)]="item.Enabled" name="enabled"></p-checkbox>
+                <input type="checkbox" name="Enabled" [(ngModel)]="item.Enabled" />
                 <label id='EnabledTip' for="Enabled">Enabled?</label>
             </div>
         </div>

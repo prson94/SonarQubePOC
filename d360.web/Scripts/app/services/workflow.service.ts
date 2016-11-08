@@ -158,7 +158,6 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .catch(this.handleError);
     }
 
-
     certifyArtifact(certify: CertifyItem): Promise<JsonResult> {
         let headers = new Headers({
             'Content-Type': 'application/json'
@@ -169,7 +168,6 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
     }
-
 
     raiseIssue(objectId: number, objectType: string, issue: string, type: string): Promise<any> {
         let headers = new Headers({

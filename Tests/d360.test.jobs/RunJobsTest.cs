@@ -26,8 +26,8 @@ namespace d360.test.jobs
         [TestMethod]
         public void DeployFusionConnector()
         {
-            var companyID = 8; //10
-            var fusionTypeID = 8;//13;
+            var companyID = 40; //10
+            var fusionTypeID = 16;//13;
             var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
 
             var fusionType = community.GetById<d360.core.entities.Plugins.FusionType>(fusionTypeID, i => i.FusionTypeFields);
@@ -55,7 +55,7 @@ SET IDENTITY_INSERT FusionType OFF", new { i = fusionType.ID, n = fusionType.Nam
 
             fusionIntersectTypes.ForEach(t => {
                 company.Execute(@"
-if not exists(select 1 from IntersectType and S.Subject = @type and S.SubjectID = @si and T.Object = @type and T.ObjectID = @ti) 
+if not exists(select 1 from IntersectType where Subject = @type and SubjectID = @si and Object = @type and ObjectID = @ti) 
 BEGIN 
 			INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy) values (@type, @si, @type, @ti, getutcdate(), 0)
 END", 

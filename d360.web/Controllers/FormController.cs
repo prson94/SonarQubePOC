@@ -20587,8 +20587,15 @@ order by TextPath
                     throw new DuplicateObjectException("Workflow Allocation");
                 }
 
-                var model = Company.GetById<WorkflowTypeRelation>(r.ID);
-                if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                WorkflowTypeRelation model = null;
+                if (r.ID > 0)
+                {
+                    model = Company.GetById<WorkflowTypeRelation>(r.ID);
+                    if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
+                }
+                else {
+                    model = new WorkflowTypeRelation { WorkflowType = r.WorkflowType };
+                }
 
                 // Static fields
                 model.Object = r.Object;
@@ -20600,33 +20607,13 @@ order by TextPath
                     model.ParentID = r.ParentID;
                 }
 
-                model.Enabled = r.Enabled; // parseBooleanField(form, "Enabled");
-                model.ResponsibilityTypeID = r.ResponsibilityTypeID; // responsibilityTypeID;
+                model.Enabled = r.Enabled;
+                model.ResponsibilityTypeID = r.ResponsibilityTypeID;
+                model.FieldsXml = r.FieldsXml ?? "<fields/>";
 
+                Company.SaveOrUpdate<WorkflowTypeRelation>(model);
 
-                var xml = XElement.Parse("<fields/>");
-               
-                if (r.WorkflowType == WorkflowType.CertifyArtifact)
-                {
-                    foreach(var key in r.Fields.Keys)
-                    {
-                        try
-                        {
-                            if (xml.Element(key) != null)
-                                xml.Element(key).SetValue(r.Fields[key]);
-                            else
-                                xml.Add(new XElement(key, r.Fields[key]));
-                        }
-                        catch { }
-
-                    }
-                }
-
-                model.FieldsXml = xml.ToString();
-
-                Company.Update<WorkflowTypeRelation>(model);
-
-                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, "0", null, "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, model.ID.ToString(), null, "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

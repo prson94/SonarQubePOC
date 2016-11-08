@@ -14,7 +14,7 @@ declare var CompanySettings: cs;
     templateUrl: './workflow-item.form.html',
     providers: [WorkflowService],
 })
-
+     
 export class WorkflowItemForm implements OnInit {
     @Input() item: WorkflowItem;
     @Output() onSaveComplete = new EventEmitter();
@@ -42,7 +42,7 @@ export class WorkflowItemForm implements OnInit {
 
     private numDays: number = 14;
     private numMonths: number = 12;
-    private dateScheduleCalculation: string;
+    private dateScheduleCalculation: Date;
 
     private isLoading = false;
     private isSaving = false;
@@ -84,9 +84,17 @@ export class WorkflowItemForm implements OnInit {
 
             //this.objectTypeChange();
 
-            this.numDays = data.WorkflowTypeRelation.Fields["DaysGivenToCompleteCertification"] || this.numDays;
-            this.numMonths = data.WorkflowTypeRelation.Fields["MonthsUntilCertification"] || this.numMonths;
-            this.dateScheduleCalculation = data.WorkflowTypeRelation.Fields["DateForScheduleCalculation"] || this.dateScheduleCalculation;
+            if (this.item.WorkflowType == WorkflowType.CertifyArtifact) {
+                this.numDays = data.WorkflowTypeRelation.Fields["DaysGivenToCompleteCertification"] || this.numDays;
+                this.numMonths = data.WorkflowTypeRelation.Fields["MonthsUntilCertification"] || this.numMonths;
+                if (data.WorkflowTypeRelation.Fields["DateForScheduleCalculation"] != undefined)
+                    this.dateScheduleCalculation = new Date(data.WorkflowTypeRelation.Fields["DateForScheduleCalculation"]);
+            }
+            else {
+                this.numDays = null;
+                this.numMonths = null;
+                this.dateScheduleCalculation = null;
+            }
 
             this.isLoading = false;
             this.onLoadComplete.emit({ item: this.item });
@@ -110,9 +118,15 @@ export class WorkflowItemForm implements OnInit {
         }
 
         this.item.Fields = [];
-        this.item.Fields.push({ key: 'DateForScheduleCalculation', value: this.dateScheduleCalculation });
-        this.item.Fields.push({ key: 'DaysGivenToCompleteCertification', value: this.numDays });
-        this.item.Fields.push({ key: 'MonthsUntilCertification', value: this.numMonths });
+        if (this.item.WorkflowType == WorkflowType.CertifyArtifact)
+        {
+            if (this.dateScheduleCalculation != null)
+                this.item.Fields.push({ key: 'DateForScheduleCalculation', value: this.dateScheduleCalculation });
+            if (this.numDays != null)
+                this.item.Fields.push({ key: 'DaysGivenToCompleteCertification', value: this.numDays });
+            if (this.numMonths != null)
+                this.item.Fields.push({ key: 'MonthsUntilCertification', value: this.numMonths });
+        }
 
         this.workflowService.postWorkflow(this.item).then(p => {
             this.isSaving = false;
