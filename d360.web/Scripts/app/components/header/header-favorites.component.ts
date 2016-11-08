@@ -25,11 +25,11 @@ import * as _ from 'lodash';
     ],
     template:
     `
-        <span *ngIf="active" (click)="handleClick()" class="favorite active">
+        <span *ngIf="active" (click)="handleClick()" class="favorite active" alt="Remove from favorites" title="Remove from favorites">
             <i *ngIf="!isLoading" class="fa fa-star"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
-        <span *ngIf="!active" (click)="handleClick()" class="favorite">
+        <span *ngIf="!active" (click)="handleClick()" class="favorite" alt="Add to favorites" title="Add to favorites" >
             <i *ngIf="!isLoading" class="fa fa-star"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>

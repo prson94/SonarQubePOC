@@ -1,4 +1,5 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { FollowerService } from '../../services/index';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -8,10 +9,23 @@ import * as _ from 'lodash';
 
 
 @Component({
-    selector: 'd3s-header-follow',    
+    selector: 'd3s-header-follow',
+    styles: [
+        `
+            .follow {
+                font-size: 1.2em;
+                color: #666;
+                padding: 0 15px;
+            }
+
+            .follow.active {
+                color: #0376c4;
+            }
+        `
+    ],
     template:
     `
-        <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow">
+        <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow" [title]="tooltipString">
             <i *ngIf="!isLoading" class="fa fa-bookmark"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
@@ -31,10 +45,13 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     objectType: string = "";
     objectId: number = 0;
 
+    parentObjectType: string = "";
+    parentObjectId: number = 0;
+
     isLoading = false;
     sub: any;
 
-    private tooltipMessage: string = 'Follow this item';
+    private tooltipString: string = 'Stop following';
 
     constructor(
         private router: Router,
@@ -47,10 +64,21 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.objectType = c.type;
-            this.objectId = c.id;            
+            this.objectId = c.id;
+            //console.log(c);
             this.checkActive();
-        });        
+        });
+
+        //set values on initial load
+        let o = this.breadcrumbService.currentObject;
+        this.objectType = o.type;
+        this.objectId = o.id;
+
+        //console.log(o);
+        this.checkActive();
+
     }
+
 
     checkActive() {
         this.active = false;
@@ -60,33 +88,63 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             return;
         }
 
+
         this.followerService.getFollowInfo(this.objectType, this.objectId)
             .then(f => {
+                //console.log('getFollowInfo', f);
                 this.isFollowing = f.isFollowing;
                 this.isFollowingParent = f.isFollowingParent;
 
-                if (f.isFollowing || f.isFollowingParent)
-                    this.active = true;
+                if (f.parent) {
+                    this.parentObjectType = f.parent.ObjectType;
+                    this.parentObjectId = f.parent.ObjectID;
+                } else {
+                    this.parentObjectType = '';
+                    this.parentObjectId = 0;
+                }
+                this.updateTooltip();
             });
+
+        
     }
 
-    toggleFollow() {                
-        if (this.isFollowingParent)
+    toggleFollow() {
+        
+        //console.log('follow', this.isFollowingParent, this.objectType, this.objectId);
+        if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId))
             return;
         if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
             return;
         }
-
+        this.isLoading = true;
         let includeChildren = this.objectType.endsWith('Type');
 
         this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren)
-            .then(f => {                
-                this.active = f;
+            .then(f => {
+                //console.log(f);
+                if (f.type == 'notification') {
+                    this.active = !this.active;
+                    this.checkActive();
+                }
+                this.isLoading = false;
             });
     }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    updateTooltip() {
+        if (this.isFollowing || this.isFollowingParent)
+            this.active = true;
+        if (!this.isFollowingParent && this.isFollowing)
+            this.tooltipString = 'Stop following';
+        else if (!this.isFollowingParent && !this.isFollowing)
+            this.tooltipString = 'Follow this item';
+        else if (this.isFollowingParent && this.objectType.endsWith('Type'))
+            this.tooltipString = 'Stop following';
+        else if (this.isFollowingParent && !this.objectType.endsWith('Type'))
+            this.tooltipString = 'Following parent item';
     }
 }
 

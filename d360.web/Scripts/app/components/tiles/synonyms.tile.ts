@@ -63,7 +63,6 @@ declare var CompanySettings: any;
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-{{selectedItem.IntersectID}}
             <delete-form [uri]="'/form/DeleteSynonymByID?id=' + selectedItem.IntersectID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedItem.Name + '?'"

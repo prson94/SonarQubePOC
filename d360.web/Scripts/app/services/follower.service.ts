@@ -26,11 +26,10 @@ export class FollowerService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    updateFollowStatus(type: string, id: number, includeChildren: boolean = false): Promise<boolean> {
+    updateFollowStatus(type: string, id: number, includeChildren: boolean = false): Promise<any> {
         return this.http.post('resources/UpdateFollowStatus', { type: type, id: id, includeChildren: includeChildren })
             .toPromise()
-            .then(response => response.json())
-            .then(r => { return (r.type == "error") ? false : true })
+            .then(response => <any>response.json())
             .catch(err => this.handleError(err));
     }
 
