@@ -15,6 +15,8 @@ import {
     FusionRuleStepEditorModel } from '../../models/fusion.model';
 import { TreeNode, Column } from 'primeng/primeng';
 
+import * as _ from 'lodash';
+
 @Component({
     selector: 'd3s-fusion-rules',
     template: ` 
@@ -303,7 +305,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                                     <p-column header="Name" field="Name"></p-column>
                                     <p-column [style]="{ 'width' : '30px' }">
                                         <template pTemplate type="body" let-row="rowData">
-                                            <input type="checkbox" [(ngModel)]="row.data.selected" />
+                                            <input type="checkbox" [ngModel]="row?.data?.selected" (ngModelChange)="row.data.selected = $event;selectInOriginalTree(row.data.ID,$event);" />
                                         </template>
                                     </p-column>
                                 </p-treeTable>
@@ -317,7 +319,7 @@ import { TreeNode, Column } from 'primeng/primeng';
                 <div class="row">
                     <div class="col s12">
                         <button type="button" label="Save" (click)="saveAddItem()" pButton ></button>
-                        <button type="button" label="Close" (click)="formMode = FormMode.Default;" pButton ></button>
+                        <button type="button" label="Close" (click)="formMode = FormMode.Default;addItemSearch = '';" pButton ></button>
                     </div>
                 </div>  
             </div>
@@ -541,11 +543,15 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     saveAddItem() {
         let form: any = {};
 
-        this.attributeNodes.forEach
+        //this.attributeNodes.forEach
 
         form.RuleID = this.selectedFusionRule.ID;
         form.AllSelected = this.selectAllItems;
         form.FusionAttributeID = this.getSelectedAttributeNodeIDs().join(',');
+
+        //console.log(this.attributeNodes);
+        //console.log(this.attributeNodes.filter(a => a.data.selected));
+        //console.log(form);
 
         this.fusionService.postAddFusionRuleItem(form)
             .then(r => {
@@ -553,6 +559,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
                 this.selectAllItems = false;
+                this.addItemSearch = '';
                 this.attributeNodes = [];
                 this.loadRules();
             });
@@ -665,6 +672,14 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.showMessageForResult(this.messagesService, e);
         this.formMode = FormMode.Default;
         this.loadSteps();
+    }
+
+    selectInOriginalTree(id: number, event) {
+        let node = this.attributeNodes.find(x => x.data.ID == id);
+
+        if (node) {
+            node.data.selected = event;
+        }
     }
 };
 
