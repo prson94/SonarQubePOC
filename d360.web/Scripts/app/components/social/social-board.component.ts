@@ -53,7 +53,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     ngOnInit() {
 
         if (this.objectID > 0) {
-            this.socialMessage = `Social for ${this.objectName}`;
+            this.socialMessage = `Comments for ${this.objectName}`;
         }
         else {
             if (this.limitToType == SocialCommentType.Social)
@@ -63,7 +63,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             else if (this.limitToType == SocialCommentType.Task)
                 this.socialMessage = `My Task's ${this.daysMessage()}`;
             else
-                this.socialMessage = 'My Social';
+                this.socialMessage = 'My Comments';
         }
                 
         this.loadComments();
