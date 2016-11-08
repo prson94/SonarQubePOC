@@ -27,7 +27,7 @@ import * as _ from 'lodash';
                                         </span>
                                         <span *ngSwitchCase="'preview'">
                                             <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
-                                                <a (click)="navigate(item[column.datafield + '_Url'])">{{item[column.datafield + '_Name']}}</a>
+                                                <a (click)="navigate(item[column.datafield + '_Url'])" [innerHtml]="item[column.datafield+'_Name']"></a>
                                             </d3s-tooltip>
                                             <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
@@ -58,7 +58,7 @@ import * as _ from 'lodash';
                                         </span>
                                         <span *ngSwitchCase="'preview'">
                                             <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
-                                                <a (click)="navigate(item[column.datafield + '_Url'])">{{item[column.datafield + '_Name']}}</a>
+                                                <a (click)="navigate(item[column.datafield + '_Url'])" [innerHtml]="item[column.datafield+'_Name']"></a>
                                             </d3s-tooltip>
                                             <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
@@ -101,7 +101,9 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');        
+        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');   
+
+        //console.log(this.data);
     }
 
     private columnDataType(column: GridFilterColumn): string {
