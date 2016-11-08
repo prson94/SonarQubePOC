@@ -15,7 +15,7 @@ import { StringConstants } from '../../static/string-constants';
     providers: [GridDefinitionService, UriBasedService, ArtifactService, PermissionsService],
     template: ` 
                 <header *ngIf="!showEditor && !showDelete">{{artifactType?.Name}}{{titlePostfix}}
-                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions()" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="showAddButton && hasRootCreatePermissions() && !hasSuggest" [hasSuggest]="hasSuggest" (suggestClick)="add()" [hasExport]="true" (addClick)="add()" (exportClick)="export()" [hasFilterMode]="true" [filterMode]="stateService.artifactTypeFilters.showSimpleFilter" (filterModeChange)="stateService.artifactTypeFilters.showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>                            
                 </header>           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !showDelete && !showEditor" >       
@@ -84,7 +84,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
-    @Input() hasWorkflows: boolean = false;
+    @Input() hasSuggest: boolean = false;
         
     @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
         
@@ -120,7 +120,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     get newActionName(){
-        return this.hasWorkflows ? "Suggest New" : "New";
+        return this.hasSuggest ? "Suggest New" : "New";
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -201,7 +201,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true; 
         this.showEditor = false;              
-        this.artifactService.saveArtifact(event.item, this.hasWorkflows)
+        this.artifactService.saveArtifact(event.item, this.hasSuggest)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode

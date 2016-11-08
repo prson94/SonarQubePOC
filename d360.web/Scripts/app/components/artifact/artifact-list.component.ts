@@ -17,7 +17,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                     <div class="col s12">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                         <div class="tile tile-detail" *ngIf="!isLoading && !isDashboardVisible && !isMetricsVisible && !isWorkflowStatusVisible">
-                            <d3s-artifact-grid [artifactType]="artifactType" [hasWorkflows]="hasWorkflows"></d3s-artifact-grid>                                                                       
+                            <d3s-artifact-grid [artifactType]="artifactType" [hasSuggest]="hasSuggest"></d3s-artifact-grid>                                                                       
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
     private isMetricsVisible: boolean = false;
     private isWorkflowStatusVisible: boolean = false;
-    private hasWorkflows: boolean = false;
+    private hasSuggest: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -69,7 +69,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .then(actions => {                     
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, actions.HasDashboards);
-                    this.hasWorkflows = actions.HasWorkflows;
+                    this.hasSuggest = actions.HasSuggest;
                     this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics'));
                     this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus'));
                 });

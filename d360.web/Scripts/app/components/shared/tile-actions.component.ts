@@ -16,6 +16,7 @@ import {MenuItem} from 'primeng/primeng';
                     <div *ngIf="!hasDate && !hasMenu">
                         <ul>                                                      
                             <li class="left" *ngIf="hasAdd"><a class="Action" (click)="addClick.emit(null)" pTooltip="Add"><i class="fa fa-plus fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" pTooltip="Suggest"><i class="fa fa-commenting fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExport"><a class="Action" (click)="exportClick.emit(null)" pTooltip="Export to Excel"><i class="fa fa-download fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" pTooltip="Export Errors to Excel"><i class="fa fa-download red-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>
@@ -48,6 +49,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() authenticateClick = new EventEmitter();
     @Output() apiClick = new EventEmitter();
     @Output() passwordClick = new EventEmitter();
+    @Output() suggestClick = new EventEmitter();
 
     @Input() filterMode: boolean = false;        
     @Output() filterModeChange = new EventEmitter();
@@ -65,6 +67,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasApi: boolean = false;
     @Input() hasPassword: boolean = false;
     @Input() hasFullScreen: boolean = false;
+    @Input() hasSuggest: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];

@@ -883,8 +883,8 @@ where   h.ID <> @t order by h.[Level] desc;
                     //check for dashboards
                     bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == id && x.ReportType == "powerbi").Any();
                     actionsObj.HasDashboards = hasDashboards;
-                    var workflowEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.WorkflowType == WorkflowType.CertifyArtifact).Any();
-                    actionsObj.HasWorkflows = workflowEnabled;
+                    var suggestEnabled = Company.Filter<WorkflowTypeRelation>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.WorkflowType == WorkflowType.SuggestNewArtifact).Any();
+                    actionsObj.HasSuggest = suggestEnabled;
                     break;
             }
 
