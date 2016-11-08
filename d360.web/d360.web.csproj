@@ -1609,9 +1609,7 @@
     <TypeScriptCompile Include="Scripts\app\static\site-url-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\tree-search.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\pipes.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\pipes\classification-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\dropdown-to-selectitem.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\pipes\filter-name.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\model-type.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />

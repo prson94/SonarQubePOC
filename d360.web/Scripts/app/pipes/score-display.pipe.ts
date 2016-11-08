@@ -1,5 +1,4 @@
-﻿
-import { Pipe, PipeTransform, Injectable } from '@angular/core';
+﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 
 @Pipe({ name: 'scoreDisplay' })
