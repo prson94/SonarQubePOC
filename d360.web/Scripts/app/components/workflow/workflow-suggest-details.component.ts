@@ -1,5 +1,4 @@
-﻿
-import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
 import { SuggestedItem } from '../../models/workflow.model';
@@ -12,7 +11,13 @@ import { SuggestedItem } from '../../models/workflow.model';
                 <header>Open Proposed New Artifacts<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12">                    
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                   
-                    <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                    <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                            <template let-col let-data="rowData" pTemplate type="body">
+                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
+                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                            </template>
+                        </p-column>
                         <p-column field="Name" header="Type" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-item="rowData" pTemplate type="body">
                                 <d3s-tooltip [objectType]="'ArtifactType'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
@@ -33,8 +38,7 @@ import { SuggestedItem } from '../../models/workflow.model';
                                 <span [innerHtml]="item?.ProposedName"></span>
                             </template>
                         </p-column>
-                        <p-column field="TaxonomyTypeName" header="Subject Area" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="TaxonomyTypeName" header="Subject Area" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>                        
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                

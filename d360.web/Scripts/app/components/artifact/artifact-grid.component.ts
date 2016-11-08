@@ -66,7 +66,7 @@ import { StringConstants } from '../../static/string-constants';
                         </p-dataTable>                           
                     </div>
                 </div>                                  
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
                 <delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
@@ -84,6 +84,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
+    @Input() hasWorkflows: boolean = false;
         
     @ViewChild(ArtifactColumnFilterComponent) private filtersComponent: ArtifactColumnFilterComponent;
         
@@ -116,6 +117,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     constructor(private messagesService: MessagesService, private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
+    }
+
+    get newActionName(){
+        return this.hasWorkflows ? "Suggest New" : "New";
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -195,8 +200,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     saveItem(event) {
         this.isLoading = true; 
-        this.showEditor = false;       
-        this.uriBasedService.saveItem("form/dynamicedit/create/artifact", "form/dynamicedit/edit/artifact", event.item)
+        this.showEditor = false;              
+        this.artifactService.saveArtifact(event.item, this.hasWorkflows)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode

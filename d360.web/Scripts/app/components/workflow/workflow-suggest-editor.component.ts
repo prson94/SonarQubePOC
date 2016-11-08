@@ -1,6 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
@@ -20,8 +18,8 @@ import * as _ from 'lodash';
                         <div><d3s-tooltip [objectType]="'ArtifactType'" [objectId]="suggest.ID" [tooltipType]="'preview'">{{suggest.Name}}</d3s-tooltip></div>
                         <div class="FieldName">Proposed Name</div>
                         <div [innerHtml]="suggest.ProposedName"></div>
-                        <div *ngIf="suggest.PropsoedDescription" class="FieldName">Proposed Description</div>
-                        <div *ngIf="suggest.PropsoedDescription">{{suggest.PropsoedDescription}}</div>
+                        <div *ngIf="suggest.ProposedDescription" class="FieldName">Proposed Description</div>
+                        <div *ngIf="suggest.ProposedDescription" [innerHtml]="suggest.ProposedDescription"></div>
                         <div class="FieldName">Requestor</div>
                         <div><d3s-tooltip [objectType]="'Resource'" [objectId]="suggest.RequestingResourceID" [tooltipType]="'preview'">{{suggest.RequestingResourceName}}</d3s-tooltip></div>
                         <div class="FieldName">Subject Area</div>
@@ -61,7 +59,7 @@ export class WorkflowSuggestEditorComponent extends BaseComponent {
 
     private handleApproval(approved: boolean) {
         this.isLoading = true;
-        this.workflowService.updateSuggestion(this.suggest, true, this.comments).then(
+        this.workflowService.updateSuggestion(this.suggest, approved, this.comments).then(
             res => {
                 this.isLoading = false;
                 this.saveClick.emit();

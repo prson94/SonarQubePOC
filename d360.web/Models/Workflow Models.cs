@@ -225,7 +225,7 @@ namespace d360.web.Models
         public string Url { get; set; }
         public DateTime StartDate { get; set; }
         public string ProposedName { get; set; }
-        public string PropsoedDescription { get; set; }
+        public string ProposedDescription { get; set; }
         public int RequestingResourceID { get; set; }
         public string RequestingResourceName { get; set; }
         public int TaxonomyTypeID { get; set; }

@@ -615,6 +615,8 @@ namespace d360.web.Controllers
                     return AddAttributeType(form);
                 case "ARTIFACT":
                     return AddArtifact(form);
+                case "SUGGESTARTIFACT":
+                    return SuggestNewArtifact(form);
                 case "ATTRIBUTE":
                     return AddAttribute(form);
                 case "RULE":

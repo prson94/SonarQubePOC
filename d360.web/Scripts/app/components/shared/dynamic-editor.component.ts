@@ -43,6 +43,7 @@ export class DynamicEditorComponent extends BaseComponent {
     @Input() targetType: string;
     @Input() targetTypeID: number;
     @Input() hasCloseButton = false;
+    @Input() newActionName: string = "New";
     
 
     @Output() closeClick = new EventEmitter();
@@ -64,7 +65,7 @@ export class DynamicEditorComponent extends BaseComponent {
         if (this.selection != undefined)
             this.editedItem = _.cloneDeep(this.selection);
         else {            
-            this.action = "New";
+            this.action = this.newActionName;
             this.editedItem = new Object();
         }
         this.getDefinition();

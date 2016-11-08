@@ -93,7 +93,7 @@ export class SuggestedItem {
     Name: string;
     ID: number;
     ProposedName: string;
-    PropsoedDescription: string;
+    ProposedDescription: string;
     TaxonomyTypeName: string;
     RequestingResourceName: string;
     RequestingResourceID: number;
