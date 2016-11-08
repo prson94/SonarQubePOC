@@ -132,7 +132,7 @@ export class ObjectDetail {
     ParentID: number;
     ParentType: string;
     Url: string;
-    TypeID: number;
+    TypeID: any;
     Type: string;
     TypeName: string;
     IconBackColor: string;

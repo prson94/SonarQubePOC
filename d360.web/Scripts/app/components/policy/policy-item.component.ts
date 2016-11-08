@@ -23,7 +23,7 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!isLoading && isOwnershipVisible" class="row">
+              <div *ngIf="!isLoading && isOwnershipVisible" class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-people-responsibilities-tile objectType="Policy" [objectID]="selected?.ID" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
@@ -33,7 +33,7 @@ import { StringConstants } from '../../static/string-constants';
                 <div class="row" *ngIf="!isLoading && isFollowersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">       
-                            <d3s-follower-grid objectType="Policy" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
+                            <d3s-follower-grid [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
                         </div>
                     </div>
                 </div>
@@ -54,7 +54,7 @@ import { StringConstants } from '../../static/string-constants';
                                     <object-detail [objectType]="'Policy'" [objectID]="selected?.ID"></object-detail>
                                 </div>
                             </div>
-                        </div>                          
+                        </div>                       
                     </div> 
                     <div *ngIf="formMode == FormMode.Editing" class="col s12">
                          <div class="row">
@@ -68,7 +68,7 @@ import { StringConstants } from '../../static/string-constants';
                                         editUri="form/dynamicedit/edit/policy"
                                         hasCloseButton="true"
                                         (closeClick)="formMode = FormMode.Default"
-                                        (saveClick)="formMode = FormMode.Default" >
+                                        (saveClick)="save($event)" >
                                     </d3s-dynamic-editor>
                                 </div>
                             </div>
@@ -133,23 +133,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 this.policyTypeId = newPolicyTypeId;
 
                 this.isLoading = true;
-                this.policiesService.getPolicyType(this.policyTypeId)
-                    .then(result => {
-                        this.policyType = result;
-
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
-
-                        this.loadPolicyItems(this.policyTypeId, hierarchyId);
-
-                        this.setBrowserTitle(this.titleService, this.policyType.Name);
-
-                        this.clearSidebar();
-                        this.setCommonRightSideBar(true, true, false, true, true, true, true);
-
-                        this.isLoading = false;
-                    });
+                this.load(hierarchyId).then(() => this.isLoading = false);
             } else {
                 this.headerBreadcrumbService.popLastBreadcrumb();
                 this.selectPolicyHierarchy(hierarchyId);
@@ -159,14 +143,34 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         
     }
 
+
     ngOnDestroy() {
         this.clearSidebar();
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
+
     }
 
-    loadPolicyItems(policyTypeId: number, selectedHierarchyId: number ) {
-        this.policiesService.getPolicies(policyTypeId).then(r => {
+    load(hierarchyId: number): Promise<any> {
+        return this.policiesService.getPolicyType(this.policyTypeId)
+            .then(result => {
+                this.policyType = result;
+
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
+
+                this.loadPolicyItems(this.policyTypeId, hierarchyId);
+
+                this.setBrowserTitle(this.titleService, this.policyType.Name);
+
+                this.clearSidebar();
+                this.setCommonRightSideBar(true, true, false, true, true, true, true);
+            });
+    }
+
+    loadPolicyItems(policyTypeId: number, selectedHierarchyId: number ): Promise<any> {
+        return this.policiesService.getPolicies(policyTypeId).then(r => {
             this.policies = r;
             this.treeNodeArray = this.buildTreeNodeArray(this.policies);
             this.selectPolicyHierarchy(selectedHierarchyId);
@@ -253,6 +257,24 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     private edit() {
         this.formMode = FormMode.Editing;
+    }
+
+    private save(e: any) {
+        console.log(e);
+        
+        if (this.selected && e.values) {
+            this.selected.Name = e.values.Name;
+            let hierarchyId = e.values.ID;
+
+            this.headerBreadcrumbService.clearBreadcrumbs();
+
+            this.load(hierarchyId)
+                .then(() => {
+                this.formMode = FormMode.Default;
+            });
+
+        }
+
     }
 
 };

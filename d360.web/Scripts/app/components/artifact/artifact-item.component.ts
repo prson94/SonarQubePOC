@@ -65,7 +65,7 @@ import { StringConstants } from '../../static/string-constants';
                     <div class="row">
                         <div class="col s12">
                             <div class="tile tile-detail">                               
-                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [hasSynonyms]="artifact?.AllowSynonyms"></d3s-object-definition-tile>
+                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [hasSynonyms]="artifact?.AllowSynonyms" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
                             </div>
                         </div>
                     </div>                    
@@ -112,36 +112,40 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId);
 
-            this.artifactService.getArtifact(artifactId)
-                .then(artifact => {                    
-                    this.artifact = artifact;
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    let index = 0;
-                    for (let breadcrumb of this.artifact.Breadcrumbs) {
-                        index++;
-                        if (index == this.artifact.Breadcrumbs.length)
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', this.artifactTypeId));
-                        else if (index == 1) //top level link
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink, breadcrumb.Active));                                
-                        else
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));                                
-                    }             
-                    this.setBrowserTitle(this.titleService, this.artifact.Name);       
+            this.load(artifactId).then(() => this.isLoading = false);
 
-                    this.clearSidebar();
-                    this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
-                    if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children'));
-
-                    this.loadItemSurvey(artifactId);
-                    
-                    this.isLoading = false;
-                });
+           
         });
     }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    private load(id: number): Promise<any> {
+        return this.artifactService.getArtifact(id)
+            .then(artifact => {
+                this.artifact = artifact;
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                let index = 0;
+                for (let breadcrumb of this.artifact.Breadcrumbs) {
+                    index++;
+                    if (index == this.artifact.Breadcrumbs.length)
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', this.artifactTypeId));
+                    else if (index == 1) //top level link
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink, breadcrumb.Active));
+                    else
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
+                }
+                this.setBrowserTitle(this.titleService, this.artifact.Name);
+
+                this.clearSidebar();
+                this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
+                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children'));
+
+                this.loadItemSurvey(id);
+            });
     }
 
     private loadItemSurvey(artifactId: number) {
@@ -171,5 +175,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'children') this.isChildrenVisible = !this.isChildrenVisible;        
+    }
+
+    private editArtifact(e: any) {
+        this.isLoading = true;
+        this.load(e.ID).then(() => this.isLoading = false);
     }
 };

@@ -47,7 +47,7 @@ import { StringConstants } from '../../static/string-constants';
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false"></d3s-object-definition-tile>
+                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" [hasSynonyms]="false" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
@@ -88,22 +88,30 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
-            this.rulesService.getRule(ruleId)
-                .then(result => {
-                    this.rule = result;
+            this.load(ruleId).then(() => this.isLoading = false);
 
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', SiteUrlHelpers.SITE_URL_RULE_ROOT));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
-
-                    this.setBrowserTitle(this.titleService, this.rule.Name);
-                    this.isLoading = false;
-                });
         });
     }
 
     ngOnDestroy() {        
         this.sub.unsubscribe();
         this.clearSidebar();
+    }
+
+    load(ruleId: number): Promise<any> {
+        return this.rulesService.getRule(ruleId)
+            .then(result => {
+                this.rule = result;
+
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', SiteUrlHelpers.SITE_URL_RULE_ROOT));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
+
+                this.setBrowserTitle(this.titleService, this.rule.Name);
+            });
+    }
+
+    editRule(e: any) {
+        this.load(e.ID);
     }
 };

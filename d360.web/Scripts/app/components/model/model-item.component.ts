@@ -60,7 +60,7 @@ import { StringConstants } from '../../static/string-constants';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [hasAttributes]="model.AllowAttributes" [hasSynonyms]="model.AllowSynonyms"></d3s-object-definition-tile>
+                                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectType]="'Taxonomy'" [objectID]="selected?.ID" [hasAttributes]="model.AllowAttributes" [hasSynonyms]="model.AllowSynonyms" (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
                                 </div>
                             </div>
                         </div>                        
@@ -115,23 +115,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             if (this.modelId != newModelId) {
                 this.modelId = newModelId;
                 this.isLoading = true;
-                this.modelsService.getModel(this.modelId)
-                    .then(result => {
-                        this.isLoading = false;
-                        this.model = result;
-
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
-
-                        this.loadModelHierarchy(this.modelId, hierarchyId);
-
-                        this.setBrowserTitle(this.titleService, this.model.Name);
-
-                        this.clearSidebar();
-                        this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
-                    });
+                this.load(hierarchyId).then(() => this.isLoading = false);
+              
             }
             else {
                 // pop last breadcrumb
@@ -147,7 +132,25 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
     }
-    
+
+    private load(hierarchyId: number): Promise<any> {
+        return this.modelsService.getModel(this.modelId)
+            .then(result => {
+                this.model = result;
+
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.ClassificationName, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}/${this.model.ClassificationName}`));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+
+                this.loadModelHierarchy(this.modelId, hierarchyId);
+
+                this.setBrowserTitle(this.titleService, this.model.Name);
+
+                this.clearSidebar();
+                this.setCommonRightSideBar(true, true, this.model.HasDashboards, true, true, true, true);
+            });
+    }
 
     private selectModelHierarchy(selectedHierarchyId: number) {
         if (selectedHierarchyId > 0) {
@@ -264,4 +267,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         if (index >= 0 && index < this.messages.length)
             this.messages.splice(index, 1);
     }
+
+    private editComplete(e: any) {
+        this.load(e.ID);
+    }
+
 };
