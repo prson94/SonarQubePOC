@@ -36,6 +36,7 @@ export class HeaderTypeaheadSearchComponent {
     private searchText: string;
     private results: SearchResult[];
     private active: boolean = false;
+    private hideHandle: number = 0;
     
     search(event) {
         this.searchText = event.query;
@@ -45,6 +46,11 @@ export class HeaderTypeaheadSearchComponent {
     }
 
     show(item) {
+        // check for any pending hides and cancel them
+        if (this.hideHandle > 0) {
+            window.clearTimeout(this.hideHandle);
+            this.hideHandle = 0;
+        }
         let panel = item.children[0].nextElementSibling;
         if (panel) {
             this.active = true;
@@ -67,7 +73,12 @@ export class HeaderTypeaheadSearchComponent {
     }
 
     hide(item) {
-        this.active = false;
+        if (this.hideHandle > 0) return; //pending hide ignore new request
+        //queue up a request to hide the window.
+        this.hideHandle = window.setTimeout(() => {
+                this.active = false;
+            },
+            500);        
     }
     
     selectItem() {                
