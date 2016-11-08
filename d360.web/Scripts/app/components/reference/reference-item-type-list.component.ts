@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService, ReferenceService, MessagesService } from '../../services/index';
 import { ReferenceItemType } from '../../models/reference.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -87,12 +88,15 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     if (index >= 0 && index < this.referenceTypes.length) {
                         this.referenceTypes.splice(index, 1);
                     }
+                    if (this.referenceTypes.length > 0) {
+                        this.selected = this.referenceTypes[0];
+                        this.selectedChange.emit(this.selected);
+                    }
                 }
                 this.isLoading = false;
                 this.showDelete = false;
             });        
     }
-
 
     private saveReferenceItemType(event) {
         this.isLoading = true;
@@ -106,19 +110,15 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     }
                     else {
                         let index = this.referenceTypes.findIndex(x => x.ID == event.referenceItemType.ID);
-                        if (index >= 0 && index < this.referenceTypes.length) {
+                        if (index >= 0 && index < this.referenceTypes.length) {                            
                             this.referenceTypes[index] = event.referenceItemType;                            
                         }
-                    }
+                    }                    
                     this.selected = event.referenceItemType;
+                    this.selectedChange.emit(this.selected);
                 }
                 this.isLoading = false;
                 this.showEditor = false;
-            });
-        //add / edit reference item type
-        
+            });        
     }
-
-
-    
 };

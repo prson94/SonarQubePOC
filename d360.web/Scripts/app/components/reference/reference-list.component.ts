@@ -31,7 +31,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                     <div class="col s12 l3">
                         <d3s-reference-item-type-list [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
                     </div>
-                    <div class="col s12 l9">
+                    <div class="col s12 l9" *ngIf="selectedReferenceItemType">
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
