@@ -20,7 +20,7 @@ export class TreeSearchPipe implements PipeTransform {
         for (let node of dupTree) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && (nameField.toLowerCase().startsWith(search) || this.findSelectedTreeNode(node.children, search, field))) {
+            if (nameField && (nameField.toLowerCase().indexOf(search) != -1 || this.findSelectedTreeNode(node.children, search, field))) {
                 node = this.removeChildren(node, search, field);
 
                 newTree.push(node);
@@ -40,7 +40,7 @@ export class TreeSearchPipe implements PipeTransform {
 
             if (!nameField) continue;
 
-            if (!nameField.toLowerCase().startsWith(search) && !this.findSelectedTreeNode(cNode.children, search, field)) {
+            if (nameField.toLowerCase().indexOf(search) == -1 && !this.findSelectedTreeNode(cNode.children, search, field)) {
                 node.children.splice(i, 1);
             }
             else if (cNode.children) {
@@ -68,7 +68,7 @@ export class TreeSearchPipe implements PipeTransform {
         while (node) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && nameField.toLowerCase().startsWith(search)) return true;
+            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return true;
 
             //push children
             if (node.children) {
