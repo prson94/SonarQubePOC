@@ -30,7 +30,7 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <button pButton [disabled]="isSaving || !responsibilityForm.form.valid" label="Save" type="submit"></button> <button pButton (click)="cancel()" label="Cancel" type="button"></button> <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span> &nbsp; <form-message [message]="message" [inline]="true"></form-message>
+                <button pButton [disabled]="!responsibilityForm.form.valid" label="Save" type="submit"></button> <button pButton (click)="cancel()" label="Cancel" type="button"></button>  <form-message [message]="message" [inline]="true"></form-message>
             </div>
         </div>
     </form>

@@ -1,10 +1,10 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityContextItem, IResponsibilityService } from '../models/responsibility.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
+import { JsonResult } from '../models/jsonresult.model'
 
 @Injectable()
 export class ResponsibilityService extends BaseService implements IResponsibilityService {
@@ -50,11 +50,12 @@ export class ResponsibilityService extends BaseService implements IResponsibilit
             .catch(err=>this.handleError(err));
     }
 
-    postResponsibility(responsibility: ResponsibilityItem): Promise<any> {
+    postResponsibility(responsibility: ResponsibilityItem): Promise<JsonResult> {
         var headers = new Headers();
         headers.append('Content-Type', 'application/json');
         return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers: headers })
             .toPromise()
+            .then(response => <JsonResult>response.json())
             .catch(err=>this.handleError(err));
     }    
 }

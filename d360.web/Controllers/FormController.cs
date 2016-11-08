@@ -15445,6 +15445,9 @@ order by    Name
         List<ResponsibilityContextItem> getContextFieldForResponsibility(int responsibilityID, List<ResponsibilityContextItem> contexts)
         {
             var ctx = new List<ResponsibilityContextItem>();
+
+            if (contexts == null) return ctx;
+
             var IDs = contexts.Select(c => c.ObjectID).ToList();
 
             IDs.ForEach(id =>
@@ -15842,7 +15845,7 @@ order by	D.Name, I.Name";
                     #endregion
 
                     Company.Add(model);
-                    processContextFieldForResponsibility(model.ID, r.ResponsibilityContextItems.ToList());
+                    processContextFieldForResponsibility(model.ID, (r.ResponsibilityContextItems == null ? null : r.ResponsibilityContextItems.ToList()));
                     Company.Update(model);
                 }
                 catch (BaseException ex)

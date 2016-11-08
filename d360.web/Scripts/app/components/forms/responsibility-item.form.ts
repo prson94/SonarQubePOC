@@ -1,9 +1,9 @@
-﻿
-import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
+﻿import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
 import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../models/responsibility.model';
 import { FormMessage, FormHelper } from '../../models/form.model';
 import { SelectItem } from 'primeng/primeng';
-import { ResponsibilityService } from '../../services/responsibility.service';
+import { MessagesService, ResponsibilityService } from '../../services/index';
+import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';
 
 @Component({
@@ -12,23 +12,21 @@ import * as _ from 'lodash';
     providers: [ ResponsibilityService ],
 })
 
-export class ResponsibilityItemForm implements OnInit {
+export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     @Input() item: ResponsibilityItem;
     @Output() onSaveComplete = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
     private model: ResponsibilityEditorModel;
-
-    private isLoading = false;
-    private isSaving = false;
-
+    
     private message: FormMessage = new FormMessage();
     private initialItem = new ResponsibilityItem();
 
     private showVisible: boolean = false;
 
-    constructor(private responsibilityService: ResponsibilityService) {
+    constructor(private responsibilityService: ResponsibilityService, private messagesService: MessagesService) {
+        super();
     }
 
     ngOnInit() {
@@ -50,8 +48,7 @@ export class ResponsibilityItemForm implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityItemEditor(this.item.ObjectID, this.item.ObjectType, this.item.ID)
-            .then(data => {
-                //console.log(data);
+            .then(data => {                
                 this.model = data;
                 if (!this.item.ID) {
                     this.item.ObjectID = data.responsibility.ObjectID;
@@ -64,16 +61,13 @@ export class ResponsibilityItemForm implements OnInit {
             });
     }
 
-    private save(): void {
-        this.isSaving = true;
-
+    private save(): void {        
         try {
             this.item.ResponsibleObjectType = this.model.selectedResource.split('|')[0];
             this.item.ResponsibleObjectID = parseInt(this.model.selectedResource.split('|')[1]);
             this.item.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
 
-        } catch (exception) {
-            this.isSaving = false;
+        } catch (exception) {            
             this.message.Error("An error occurred while parsing the select item values.");
             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             return;
@@ -87,22 +81,20 @@ export class ResponsibilityItemForm implements OnInit {
                 ObjectType: "DomainType"
             });
         });
-
-        //console.log(this.item);
-        //console.log(contextItems);
-
+                
         this.item.ResponsibilityContextItems = contextItems;
         this.item.ContextItems = this.model.contexts.filter(c => this.model.selectedContexts.findIndex(x => x == c.value) > -1).map(c => c.label).join('; ');
         this.item.Role = this.model.responsibilityTypes.find(r => r.value == this.model.selectedResponsibilityType).label;
         this.item.ResponsibleObjectName = this.model.resources.find(r => r.value == this.model.selectedResource).label;
 
-        this.item.ContextItems = null;
-        this.item.Visible = true;
+        this.item.ContextItems = null;      
         this.item.ResponsibilityContextItems = contextItems;
-        
+
+        this.isLoading = true;
         this.responsibilityService.postResponsibility(this.item)
             .then(data => {
-                this.isSaving = false;
+                this.showMessageForResult(this.messagesService, data);
+                this.isLoading = false;                
                 this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.initialItem });
             });
     }

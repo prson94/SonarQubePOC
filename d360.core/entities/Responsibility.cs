@@ -27,6 +27,7 @@ namespace d360.core.entities
         [DataMember]
         public int ResponsibleObjectID { get; set; }
 
+        [DataMember]
         public bool Visible { get; set; }
 
         [DataMember]
