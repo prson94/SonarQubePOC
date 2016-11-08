@@ -23,10 +23,17 @@ import { StringConstants } from '../../static/string-constants';
                         </div>
                     </div>
                 </div>
+                <div *ngIf="!isLoading && isOwnershipVisible" class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-people-responsibilities-tile objectType="Policy" [objectID]="selected?.ID" [title]="'Ownership of ' + selected?.Name"></d3s-people-responsibilities-tile>
+                        </div>
+                    </div>
+                </div>
                 <div class="row" *ngIf="!isLoading && isFollowersVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">       
-                            <d3s-follower-grid [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
+                            <d3s-follower-grid objectType="Policy" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-follower-grid> 
                         </div>
                     </div>
                 </div>
@@ -47,14 +54,7 @@ import { StringConstants } from '../../static/string-constants';
                                     <object-detail [objectType]="'Policy'" [objectID]="selected?.ID"></object-detail>
                                 </div>
                             </div>
-                        </div>  
-                        <div *ngIf="formMode == FormMode.Default" class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">
-                                    <d3s-people-responsibilities-tile [objectType]="'Policy'" [objectID]="selected?.ID"></d3s-people-responsibilities-tile>
-                                </div>
-                            </div>
-                        </div>                        
+                        </div>                          
                     </div> 
                     <div *ngIf="formMode == FormMode.Editing" class="col s12">
                          <div class="row">
@@ -121,6 +121,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             let newPolicyTypeId = +params['policyTypeId'];
             let hierarchyId = +params['hierarchyId'] || 0;
 
+            this.hideSidebarItems();
 
             if (hierarchyId != 0)
                 this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
@@ -145,7 +146,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.setBrowserTitle(this.titleService, this.policyType.Name);
 
                         this.clearSidebar();
-                        this.setCommonRightSideBar(true, false, false, true, true, true, true);
+                        this.setCommonRightSideBar(true, true, false, true, true, true, true);
 
                         this.isLoading = false;
                     });
@@ -162,7 +163,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.clearSidebar();
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
-
     }
 
     loadPolicyItems(policyTypeId: number, selectedHierarchyId: number ) {
