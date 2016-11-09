@@ -9,14 +9,14 @@ declare var CurrentResourceID;
     template: `
                 <header *ngIf="isMe">
                     Items You Own
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions> 
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" [(filterMode)]="showFilter"></d3s-tile-actions> 
                 </header>
                 <header *ngIf="!isMe">
                     Items {{resource?.FirstName}} Owns
-                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions> 
+                    <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" [(filterMode)]="showFilter"></d3s-tile-actions> 
                 </header>
                 <div *ngIf="!isLoading" class="row">
-                    <div class="col l3 s12 relationship-container"><!--left nav-->
+                    <div class="col l3 s12 relationship-container">
                         <div class="row relationship" *ngFor="let r of items; let i = index" [ngClass]="{'active' : isSelected(r)}" (click)="select(r)">
                             <div class="col s10 name" [title]="r.Type | technicalNameToDisplayValue">{{r.TypeName}}</div>
                             <div class="col s2 count center" [ngClass]="{'empty-count': r.Count == 0, 'count': r.Count != 0}">{{r.Count}}</div>
@@ -31,19 +31,17 @@ declare var CurrentResourceID;
     providers: [ResourcesService]
 })
 
-export class ResourceResponsibilityComponent implements OnInit, OnChanges {
+export class ResourceResponsibilityComponent implements OnChanges {
     @Input() resourceId: any = 0;
     @Input() resource: Resource = null;
     private items: CountObject[] = new Array<CountObject>();
     private selected: CountObject;
     isLoading = false;
     isMe = false;
-    showFilter = true;
+    showFilter: boolean = true;
 
     constructor(private resourcesService: ResourcesService) { }
-
-    ngOnInit() { }
-
+    
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['resourceId'] && this.resourceId > 0) this.resource = null;
         this.load();
@@ -85,5 +83,4 @@ export class ResourceResponsibilityComponent implements OnInit, OnChanges {
     export() {
         this.resourcesService.exportResponsibilitiesByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID);
     }
-
 }
