@@ -213,5 +213,25 @@ BEGIN
 								(T.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
 								)
 		end
+		if @Object = 'ReferenceItemType'
+		begin
+			insert into @tbl
+				select	'Reference Item Type Direct' as [Source],
+						R.Visible,
+						R.ID,
+						R.ResponsibilityTypeID,
+						@Object as AssigningItemType,
+						T.ID as AssigningItemID,
+						@Object as ObjectType,
+						T.ID as ObjectID,
+						utility.GetResponsibilityContextHash(R.ID),
+						@Priority as [Priority]
+				from	ReferenceItemType T 
+						inner join Responsibility R on R.ObjectType = @Object and R.ObjectID = T.ID
+							and (
+									(T.ID = @ObjectID and @ObjectID is not null)
+									or (@ObjectID is null)
+								);
+		end
 	RETURN 
 END

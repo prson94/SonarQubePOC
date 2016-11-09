@@ -502,6 +502,8 @@ end", new { ss = source, tt = target });
 			select	'FusionType' as ObjectType, ID as ObjectTypeID, 'Fusion Types :: ' + Name as Name from FusionType
 			union
 			select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+            union
+			select	'ReferenceItemType' as ObjectType, ID as ObjectTypeID, 'Reference Item Type :: ' + Name as Name from ReferenceItemType
 ").ToList();
             RuleType ruleType = RuleType.Informational;
             foreach (var rt in ruleType.GetRuleTypeEnumList())

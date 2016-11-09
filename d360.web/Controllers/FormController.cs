@@ -15823,21 +15823,24 @@ order by	D.Name, I.Name";
                     var existing = Company.Filter<Responsibility>(i => i.ResponsibilityTypeID == model.ResponsibilityTypeID && i.ObjectType == model.ObjectType && i.ObjectID == model.ObjectID, i => i.ResponsibilityContextItems).FirstOrDefault();
                     if (existing != null)
                     {
-                        var newContexts = r.ResponsibilityContextItems.ToList();
+                        if (r.ResponsibilityContextItems != null)
+                        {
+                            var newContexts = r.ResponsibilityContextItems.ToList();
 
-                        //var newContexts = getContextFormFieldForResponsibility(0, form);
-                        var existingContexts = existing.ResponsibilityContextItems.ToList();
-                        var matchingCount = 0;
-                        existingContexts.ForEach(ec =>
-                        {
-                            if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                            //var newContexts = getContextFormFieldForResponsibility(0, form);
+                            var existingContexts = existing.ResponsibilityContextItems.ToList();
+                            var matchingCount = 0;
+                            existingContexts.ForEach(ec =>
                             {
-                                matchingCount++;
+                                if (newContexts.Any(nc => nc.ObjectType == ec.ObjectType && nc.ObjectID == ec.ObjectID))
+                                {
+                                    matchingCount++;
+                                }
+                            });
+                            if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
+                            {
+                                throw new ArgumentException("A responsibility with these settings already exists for the item.");
                             }
-                        });
-                        if (matchingCount == existingContexts.Count && matchingCount > 0 && existingContexts.Count > 0)
-                        {
-                            throw new ArgumentException("A responsibility with these settings already exists for the item.");
                         }
                     }
 
