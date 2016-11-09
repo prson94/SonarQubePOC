@@ -4038,13 +4038,14 @@ select  case
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
-
+                columnModels = columnModels.OrderBy(c => c.DisplayOrder).ToList();
                 columnModels.ForEach(c =>
                 {
                     gridFields.Add(new GridField { name = c.datafield, type = c.datafieldtype });
                     var gc = new GridColumn { text = c.text, datafield = c.datafield, width = "auto", columntype = c.texttype };
                     if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
                     columns.Add(gc);
+                    
                 });
 
 
