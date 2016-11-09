@@ -73,7 +73,7 @@
             </div>
             <div class="col s3">
                 <div id='MinimumLengthTip' class="FieldName">Minimum Length</div>
-                <input name="minLength" type="number" [(ngModel)]="model.FieldType.MinimumLength" style="width: 98%; display: block;" />
+                <input name="minLength" type="number" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" style="width: 98%; display: block;" />
             </div>
             <div class="col s3">
                 <div id='MaximumLengthTip' class="FieldName">Maximum Length</div>
