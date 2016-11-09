@@ -22,6 +22,7 @@ import { CommunityModule } from './components/community/community.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
+import { HelpModule } from './components/help/help.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -180,12 +181,9 @@ import {
     AssignmentsTile,
     BoardTile,
     ActivityDetailsTile,
-    ResourceFollowingTile,
-    ResourceResponsibilityTile,
+    ResourceFollowingTile,    
     ResourceFollowingGridTile,    
 } from './components/tiles/index';
-
-//import {ColorPickerModule} from 'angular2-color-picker';
 
 @NgModule({
     declarations: [
@@ -266,8 +264,7 @@ import {
         ResourceComponent,
         ResourceFollowingGridTile,
         ResourceFollowingTile,
-        ResourceItemComponent,        
-        ResourceResponsibilityTile,
+        ResourceItemComponent,                
         ResourceListComponent,     
         ResourceGroupsComponent,
         RightSidebarComponent,
@@ -338,7 +335,7 @@ import {
         MonitorModule,
         ReferenceModule,
         PolicyModule,
-        
+        HelpModule,
     ],
     bootstrap: [AppComponent],
     providers: [

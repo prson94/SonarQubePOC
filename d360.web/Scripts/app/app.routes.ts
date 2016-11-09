@@ -1,6 +1,7 @@
 ﻿import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent} from './components/index';
 import { AdminRoutes } from './components/admin/admin.routes';
+import { HelpRoutes } from './components/help/help.routes';
 import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
 import { ModelRoutes } from './components/model/model.routes';
@@ -22,6 +23,7 @@ export const routes: Routes = [
     ...HomeRoutes,
     ...ArtifactRoutes,
     ...GroupRoutes,
+    ...HelpRoutes,
     ...ModelRoutes,
     ...PolicyRoutes,
     ...FusionRoutes,

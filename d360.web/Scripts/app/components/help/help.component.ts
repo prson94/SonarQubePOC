@@ -1,11 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
 @Component({
-    selector: 'd3s-community-summary',
+    selector: 'd3s-help-component',
     template: `
         <div class="row">
             <div class="col s10 offset-s1">
@@ -74,23 +74,22 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
                         </div>
                     </div>
 
-                </div>
-                <!--<script src="//fast.wistia.net/assets/external/E-v1.js" async></script>-->
+                </div>                
             </div>
         </div>
          `
 })
 
-export class CommunitySummaryComponent extends BaseComponent implements OnInit {
+export class HelpComponent extends BaseComponent implements OnInit {
     constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Community');
+        this.setBrowserTitle(this.titleService, 'Help');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));        
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Help'));
     }
 };

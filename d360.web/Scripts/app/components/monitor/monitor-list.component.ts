@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService, WorkflowService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Issue, IssueDetail } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -103,5 +104,11 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private export() {
         this.workflowService.exportAllIssueDetails();
+    }
+
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.issues = _.orderBy(this.issues, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
     }
 };

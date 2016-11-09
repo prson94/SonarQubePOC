@@ -30,3 +30,19 @@ export enum ResponsibilityTypeGroup {
     People = 1,
     Sourcing = 2
 }
+
+export class ResponsibilityTypeCount {
+    Count: number;
+    ResponsibilityType: string;
+    ResponsibilityTypeID: number;
+}
+
+
+export class ResourceResponsibilityTypeCount {
+    FirstName: string;
+    LastName: string;
+    OwnedItemCount: number;
+    ResourceID: number;
+    ResponsibilityType: string;
+    ResponsibilityTypeID: number;
+}

@@ -1,15 +1,121 @@
-﻿
-import { Component } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
+import { HeaderBreadcrumbService, ResponsibilityTypeService } from '../../services/index';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Highcharts } from 'angular2-highcharts';
+import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 
 @Component({
-    selector: 'd3s-community',
+    selector: 'd3s-community-component',
+    styles: [`
+      chart {
+        display: block;
+      }
+    `],
     template: `
-                <div id="main">
-                    <router-outlet></router-outlet>
+        <div class="row">
+            <div class="col l6 m12 s12">
+                <div class="tile tile-detail">   
+                    <header>User's Responsibilities</header>
+                    <chart [options]="responsibilitiesPie">
+                        <series (click)="onPieClick($event)">
+                        </series>
+                    </chart>
                 </div>
-             ` ,
+            </div>
+            <div class="col l6 m12 s12" *ngIf="selectedResponsibilityId">
+                <div class="tile tile-detail">  
+                    <d3s-community-responsibility-count [responsibilityTypeName]="selectedResponsibilityName" [responsibilityTypeId]="selectedResponsibilityId" [(selected)]="selectedResource"></d3s-community-responsibility-count>                    
+                </div>
+            </div>
+            <div class="col s12" *ngIf="selectedResource">
+                <div class="tile tile-detail">   
+                   <d3s-resource-responsibility-tile [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
+                </div>
+            </div>
+        </div>
+         `,
+    providers: [ResponsibilityTypeService],
 })
 
-export class CommunityComponent {
+export class CommunityComponent extends BaseComponent implements OnInit {
+    private responsibilitiesPie: Object;
+    private selectedResponsibilityId: number = 0;
+    private selectedResponsibilityName: string;
+    private selectedResourceId: ResourceResponsibilityTypeCount;
+    
+    constructor(protected responsibilityTypeService: ResponsibilityTypeService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService
+    ) {
+        super();
+    }
 
-}
+    ngOnInit() {
+        this.setBrowserTitle(this.titleService, 'Community');
+
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.clearCurrentObjectInfo();
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));
+
+        this.load();
+    }
+
+    private load() {
+        this.isLoading = true;
+        this.responsibilityTypeService.getResponsibilityTypeBreakdown().
+            then(result => {
+                this.responsibilitiesPie = {
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        plotShadow: false,
+                        type: 'pie',
+                        backgroundColor: 'transparent',
+                    },
+                    title: {
+                        text: null
+                    },
+                    subtitle: {
+                        text: 'Click on a pie piece for more details.'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        pointFormat: '{point.y} Assigned Users'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b>: {point.y}',
+                                style: {
+                                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                }
+                            }                            
+                        }
+                    },
+                    series: [{
+                        name: 'Responsibilities',
+                        colorByPoint: true,
+                        data: result.map(x => ({
+                            name: x.ResponsibilityType,
+                            y: x.Count,
+                            id: x.ResponsibilityTypeID
+                        })),
+                    }]
+                };
+
+                this.isLoading = false;
+            });
+    }
+        
+    onPieClick(e) {
+        this.selectedResponsibilityName = e.originalEvent.point.name; //name
+        this.selectedResponsibilityId = e.originalEvent.point.id; // triggers user responsibilities piece to load.    
+    }
+};

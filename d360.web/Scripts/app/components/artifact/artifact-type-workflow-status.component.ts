@@ -202,7 +202,7 @@ export class ArtifactTypeWorkflowStatusComponent extends BaseComponent implement
 
     onSeriesClick(e) {        
         var selected = this.workflowTypes.filter(x => x.ID == e.originalEvent.point.id);
-        console.log(selected);
+        
         if (selected.length > 0) {
             this.selected = selected[0];
             this.workflowTypeChanged();

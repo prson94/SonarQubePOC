@@ -11,6 +11,7 @@
     static SITE_URL_REFERENCE_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}reference`;
     static SITE_URL_ARTIFACT_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}artifact`;
     static SITE_URL_COMMUNITY_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}community`;
+    static SITE_URL_HELP_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}help`;
     static SITE_URL_MONITOR_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}monitor`;
     static SITE_URL_POLICY_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}policy`;
     static SITE_URL_GROUP_ROOT = `${SiteUrlHelpers.SITE_URL_PREFIX}group`;

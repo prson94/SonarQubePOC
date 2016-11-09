@@ -1,7 +1,6 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { IResponsibilityTypeService, ResponsibilityType, ResponsibilityTypeGroup, ResponsibilityTypeRelation } from '../models/responsibility-type.model';
+import { IResponsibilityTypeService, ResponsibilityType, ResponsibilityTypeGroup, ResponsibilityTypeRelation, ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../models/responsibility-type.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 
@@ -21,8 +20,7 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
         return this.http.get(`form/ResponsibilityType?id=${id}&group=${group}`)
             .toPromise()
             .then(r => r.json())
-            .then(r => {
-                //console.log(r);
+            .then(r => {                
                 let t = new ResponsibilityType();
                 t = r.model;
                 t.AllocationsList = r.allocations;
@@ -52,6 +50,20 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
         return this.http.delete(`form/DeleteResponsibilityTypeByID?id=${id}`)
             .toPromise()
             .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getResponsibilityTypeBreakdown(): Promise<ResponsibilityTypeCount[]> {
+        return this.http.get('queries/ResponsibilityTypeBreakdown')
+            .toPromise()
+            .then(response => <ResponsibilityTypeCount[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getResourceResponsibilityByType(responsibilityTypeId: number): Promise<ResourceResponsibilityTypeCount[]> {
+        return this.http.get(`queries/${responsibilityTypeId}/ResourcesByResponsibilityType`)
+            .toPromise()
+            .then(response => <ResourceResponsibilityTypeCount[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

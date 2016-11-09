@@ -10,6 +10,7 @@
     static ObjectRule = "Rule";
     static ObjectPolicy = "Policy";
     static ObjectFusion = "Fusion";
+    static ObjectResource = "Resource";
 
     //claim types
     static ClaimRead = "Read";

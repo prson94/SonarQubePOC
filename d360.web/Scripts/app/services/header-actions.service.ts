@@ -1,5 +1,4 @@
-﻿
-import { Injectable, EventEmitter } from '@angular/core';
+﻿import { Injectable, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Favorite } from '../models/favorite.model';
 
@@ -8,7 +7,7 @@ export class HeaderActionsService {
     showFavorite: boolean = true;
     showNotifications: boolean = false;
     showLegacy: boolean = true;
-    showHelp: boolean = false;
+    showHelp: boolean = true;
     showSearch: boolean = true;
     showRaiseIssue: boolean = false;  
     showFollow: boolean = true;

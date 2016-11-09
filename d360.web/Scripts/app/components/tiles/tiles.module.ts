@@ -20,7 +20,6 @@ import { ActivityTile } from './activity-tile.component';
 import { AssignmentsTile } from './assignments-tile.component';
 import { BoardTile} from './board-tile.component';
 import { ActivityDetailsTile} from './activity-details-tile.component';
-import { ResourceResponsibilityTile } from './resource-responsibility.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 
@@ -49,8 +48,7 @@ import {
         LoadItemTile,        
         ObjectDefinitionTile,                             
         ResourceFollowingGridTile,
-        ResourceFollowingTile,       
-        ResourceResponsibilityTile,        
+        ResourceFollowingTile,               
         StructureTile,        
         SynonymsTile,        
     ],
@@ -66,8 +64,7 @@ import {
         LoadItemTile,                
         ObjectDefinitionTile,                        
         ResourceFollowingGridTile,
-        ResourceFollowingTile,        
-        ResourceResponsibilityTile,        
+        ResourceFollowingTile,                      
         StructureTile,        
         SynonymsTile,        
         ]
