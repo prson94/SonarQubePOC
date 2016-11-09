@@ -741,14 +741,13 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
 
-            if (a.ParentID.HasValue)
+            var type = Company.GetById<ArtifactType>(a.ArtifactTypeID, i => i.Parent);
+
+            if (type.ParentID.HasValue) //a.ParentID.HasValue)
             {
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var currentParent = Company.GetById<Artifact>(a.ParentID.Value);
-                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == currentParent.ArtifactTypeID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(currentParent.ArtifactType.Name)}", FieldType = DataType.Lookup.ToString(), Value = a.ParentID.ToString(), Items = parents });
-                currentParent = null;
-                pluralize = null;
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);                
+                var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+                list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
             }
 
             bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
