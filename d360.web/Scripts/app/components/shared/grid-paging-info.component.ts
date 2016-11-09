@@ -21,7 +21,10 @@ export class GridPagingInfoComponent extends BaseComponent {
         return '';
     }
 
-    get endValue() {          
-        return ((this.first + this.rows > this.totalRecords) ? this.totalRecords : (this.first + this.rows)).toLocaleString();
+    get endValue() {       
+        if ((this.first + Number(this.rows)) > this.totalRecords) {
+            return this.totalRecords.toLocaleString();
+        }
+        return (this.first + Number(this.rows)).toLocaleString();                
     }
 }

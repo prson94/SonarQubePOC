@@ -14,18 +14,15 @@ import { Subscription }   from 'rxjs/Subscription';
 
 export class PageLinksComponent {    
     @Output() onSideBarActivated = new EventEmitter();
-
-
+    
     subscription: Subscription;
     items: RightSidebarItem[];
 
     constructor(private rightSidebarService: RightSidebarService) {
-
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
             item => {
-                this.items.push(item);
-                // console.log(breadcrumb);
+                this.items.push(item);                
             });
         this.subscription = rightSidebarService.rightSidebarClear$.subscribe(
             item => {
@@ -37,11 +34,7 @@ export class PageLinksComponent {
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
     }
-
-    ngOnInit() {
-        
-    }
-
+    
     hasLinks() {
         return this.items && this.items.length > 0;
     }
