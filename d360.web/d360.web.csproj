@@ -1347,6 +1347,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />

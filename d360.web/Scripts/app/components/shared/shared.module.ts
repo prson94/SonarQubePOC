@@ -52,6 +52,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
 import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
+import { GridPagingInfoComponent } from './grid-paging-info.component';
 import { GroupMembersComponent } from './group-members.component';
 import { ImpactComponent } from './impact.component';
 import { IconPickerComponent } from './icon-picker.component';
@@ -103,6 +104,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FollowerGridComponent,
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
+        GridPagingInfoComponent,
         GroupMembersComponent,
         ImpactComponent,
         IconPickerComponent,
@@ -153,6 +155,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
+        GridPagingInfoComponent,
         GroupMembersComponent,
         ImpactComponent,
         IconPickerComponent,
