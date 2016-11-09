@@ -11,6 +11,13 @@ declare var CompanySettings: any;
 
 @Component({
     selector: 'd3s-synonyms-tile',
+    styles: [
+    `
+    p-autoComplete>span>input {
+     width:100%;
+    }
+`]
+    ,
     template: `
 <div *ngIf="isLoading">
     <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
@@ -47,13 +54,12 @@ declare var CompanySettings: any;
             </p-dataTable>
         </div>
         <div *ngSwitchCase="FormMode.Adding">
-            <h4>Add Synonym</h4>
-            <div class="row">
+            <header>Add Synonym</header>
+            <div class="row" style="padding-bottom: 15px">
                 <div class="col s12">
-                <div class="FieldName">Synonym</div>
-                <select [(ngModel)]="selectedSynonym" style="width:300px;display:block;">
-                    <option *ngFor="let i of synonymItems" [value]="i.ID">{{i.Name}}</option>
-                </select>
+                <div class="FieldName" style="display:block;">Synonym</div>
+                <p-autoComplete [suggestions]="synonymItems" (completeMethod)="search($event)" field="Name" [(ngModel)]="selectedSynonym" placeholder="Search..." size="65"></p-autoComplete>
+                <span *ngIf="isLoadingItems"><i class="fa fa-spinner fa-spin"></i></span>
                 </div>
             </div>
             <div class="row">
@@ -96,11 +102,12 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     private items;
     private selectedItem;
 
-    private synonymItems;
-    private typeIsSubject;
-    private selectedSynonym;
+    private synonymItems = [];
+    private selectedSynonym: SynonymItem;
     private subjectAreaName = 'SubjectArea';
     private areSynonymOptionsLoaded: boolean = false;
+
+    private isLoadingItems = false;
 
     constructor(private objectDetailService: ObjectDetailService, private router: Router) {
         super();
@@ -132,20 +139,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     }
 
     add() {
-        // only load synonym optons when we need to add things.
-        if (!this.areSynonymOptionsLoaded) {
-            this.isLoading = true;
-            this.objectDetailService.getSynonymOptions(this.objectID, this.objectType)
-                .then(d => {
-                    this.typeIsSubject = d.typeIsSubject;
-                    this.synonymItems = d.items;
-                    this.formMode = FormMode.Adding;
-                    this.areSynonymOptionsLoaded = true;
-                    this.isLoading = false;
-                });
-        }
-        else
-            this.formMode = FormMode.Adding;
+        this.selectedSynonym = null;
+        this.formMode = FormMode.Adding;
     }
 
     delete() {
@@ -156,10 +151,10 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
         this.isLoading = true;
         var model = new SynonymEditModel();
-        model.Synonym = this.selectedSynonym;
+        model.Synonym = this.selectedSynonym.ID;
         model.ID = this.objectID;
         model.Type = this.objectType;
-        model.TypeIsSubject = this.typeIsSubject
+        model.TypeIsSubject = this.selectedSynonym.TargetingSubject;
 
 
         this.objectDetailService.postSynonym(model)
@@ -177,5 +172,14 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     navigate(url: string) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+    }
+
+    search(e: any) {
+        this.isLoadingItems = true;
+        this.objectDetailService.getSynonymOptions(this.objectID, this.objectType, e.query)
+            .then(r => {
+                this.isLoadingItems = false;
+                this.synonymItems = r.items;
+            });
     }
 }

@@ -18709,10 +18709,12 @@ from    [IntersectType] RT
         #region Json
 
         [HttpGet, Route("SynonymsOptions")]
-        public JsonResult SynonymsOptions(string type, int id)
+        public JsonResult SynonymsOptions(string type, int id, string query = "")
         {
+            query = query.Replace("_", "[_]").Replace("%", "[%]");
+
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {

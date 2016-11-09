@@ -1023,6 +1023,7 @@ from		cache.ObjectDetails D
 															    )
 						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @type + '|' + cast(@id as varchar)
             inner join [Predicate] P on P.Type = 6
+			where (@query = '') or (@query != '' and d.textpath like '%'+@query+'%')
 order by	D.ObjectTypeName,
 			D.TextPath";
 
