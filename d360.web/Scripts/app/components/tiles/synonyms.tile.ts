@@ -176,10 +176,15 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     search(e: any) {
         this.isLoadingItems = true;
+        if (e.query == null || e.query == '') {
+            this.isLoadingItems = false;
+            return;
+        }
         this.objectDetailService.getSynonymOptions(this.objectID, this.objectType, e.query)
             .then(r => {
                 this.isLoadingItems = false;
                 this.synonymItems = r.items;
-            });
+            })
+            .catch(() => this.isLoadingItems = false);
     }
 }
