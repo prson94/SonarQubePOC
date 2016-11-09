@@ -80,13 +80,13 @@ declare var CompanySettings;
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <input [(colorPicker)]="field.Value" 
+                                            <input [(colorPicker)]="colorValue" 
                                                 cpOutputFormat="hex"
                                                 cpAlphaChannel="disabled"
                                                 cpFallbackColor="#000"
                                                 cpPosition="bottom"
                                                 spellcheck="false"
-                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="field.Value" (colorPickerChange)="setColorPickerValue($event)"/>
+                                                style="width: 100%;height:25px;" [formControlName]="field.FieldName" [value]="colorValue" (colorPickerChange)="setColorPickerValue($event)"/>
                                         </td>
                                         <td>
                                             <span [style.background-color]="field.Value" style="height:25px;width:25px;display:block;border:1px solid black"></span>
@@ -129,6 +129,9 @@ export class DynamicFieldComponent implements OnInit {
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
 
+
+    private colorValue: string = '#000';
+
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
 
     constructor(private uriBasedService: UriBasedService) { }
@@ -148,6 +151,11 @@ export class DynamicFieldComponent implements OnInit {
 
         if (this.field && this.field.FieldName == 'TaxonomyTypeID') {
             this.isTaxonomyType = true;
+        }
+
+        if (this.field.FieldType == 'Color') {
+            this.colorValue = this.field.Value;
+
         }
     }
 
@@ -218,6 +226,7 @@ export class DynamicFieldComponent implements OnInit {
     }
 
     setColorPickerValue(e: any) {
+        this.form.controls[this.field.FieldName].setValue(e);
         this.field.Value = e;
     }
     
