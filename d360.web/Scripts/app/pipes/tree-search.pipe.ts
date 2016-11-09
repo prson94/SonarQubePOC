@@ -20,7 +20,7 @@ export class TreeSearchPipe implements PipeTransform {
         for (let node of dupTree) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && (nameField.toLowerCase().indexOf(search) != -1 || this.findSelectedTreeNode(node.children, search, field))) {
+            if (((nameField || '').toLowerCase().indexOf(search) != -1 || this.findSelectedTreeNode(node.children, search, field))) {
                 node = this.removeChildren(node, search, field);
 
                 newTree.push(node);

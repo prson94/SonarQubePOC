@@ -14,8 +14,11 @@ import { FormMode } from '../../models/form.model';
                 Technical Mappings
                 <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
-            <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;" *ngIf="formMode == FormMode.Default">   
-            <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree | treeSearch: searchValue: 'SourceFusion'" selectionMode="single" [(selection)]="selected">
+            <select [(ngModel)]="searchField" style="width:150px;display:inline-block">
+                <option *ngFor="let f of searchFields" [value]="f.value">{{f.label}}</option>
+            </select>
+            <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 300px;display:inline-block;" *ngIf="formMode == FormMode.Default">   
+            <p-treeTable *ngIf="formMode == FormMode.Default" [value]="technicalMappingsTree|treeSearch: searchValue: searchField" selectionMode="single" [(selection)]="selected">
             <p-column header="Group">
                 <template let-row="rowData" pTemplate type="body">
                     <div *ngIf="row.data.ID != 0">{{row.data.ID}}</div>
@@ -87,12 +90,14 @@ import { FormMode } from '../../models/form.model';
 
 export class FusionTechnicalMappingsComponent extends BaseComponent implements OnInit {
     technicalMappings: MapRuleItemDetail[];
-    technicalMappingsTree: TreeNode[];
+    technicalMappingsTree: TreeNode[] = [];
 
     selection: TreeNode;
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
-    searchValue: string;
+    searchValue: string = '';
+    searchFields = [];
+    searchField: string = 'group';
     selectedParentID: number = null;
 
     constructor( private fusionService: FusionService) {   
@@ -100,24 +105,41 @@ export class FusionTechnicalMappingsComponent extends BaseComponent implements O
     }
 
     ngOnInit() {
+
+        this.searchFields = [
+            { value: 'Transformation', label: 'Transformation' },
+            { value: 'SourceObjectName', label: 'Source Object' },
+            { value: 'SourceFusion', label: 'Source Configuration' },
+            { value: 'SourceFusionAttributeTextPath', label: 'Source Attribute' },
+            { value: 'TargetObjectName', label: 'Target Object' },
+            { value: 'TargetFusion', label: 'Target Configuration' },
+            { value: 'TargetFusionAttributeTextPath', label: 'Target Attribute' }
+        ];
+
+        this.searchField = this.searchFields[0].value;
+
         this.fusionService.getFusionTechnicalMappings().then(m => {
-            console.log(m);
+            //console.log(m);
             this.technicalMappingsTree = [];
             this.technicalMappings = m.filter(i => i.Type == "MapRule");
             
             for (let t of this.technicalMappings) {
-                let n: TreeNode = {};
-                n.data = t;
-                n.children = [];
-                
+
+                let len = this.technicalMappingsTree.push({
+                    data: t,
+                    label: '',
+                    children: []
+                });
                 t.children = m.filter(i => i.Type == "MapRuleItem" && i.ParentTextID == t.TextID);
                 for (let c of t.children) {
-                    let cn: TreeNode = {};
-                    cn.data = c;
-                    n.children.push(cn);
-                }
 
-                this.technicalMappingsTree.push(n);
+                    this.technicalMappingsTree[len - 1].children.push({
+                        data: c,
+                        label: '',
+                        children: [],
+                        leaf: true
+                    });
+                }
             }
             console.log(this.technicalMappingsTree);
 
