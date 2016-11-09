@@ -17,7 +17,8 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="policyTypes" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" expandableRows="true" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="Name" header="Name" [sortable]="true"></p-column>                                                        
                                     <p-column [style]="{width:'40px'}">
                                         <template let-policy="rowData"  pTemplate type="body">

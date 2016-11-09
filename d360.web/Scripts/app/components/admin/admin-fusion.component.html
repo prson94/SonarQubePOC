@@ -6,7 +6,8 @@
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable [globalFilter]="gb" [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+            <p-dataTable #dt [globalFilter]="gb" [value]="fusionTypes" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '75%' }"></p-column>
                 <p-column [style]="{width:'40px'}">
                     <template let-col let-item="rowData" pTemplate type="body">

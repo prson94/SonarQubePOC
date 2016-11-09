@@ -16,7 +16,8 @@ import { WorkflowStatusDetails } from '../../models/workflow.model';
                     <div class="col s6" *ngIf="isDateField(field.Name)">{{field.Value | date : 'short'}}</div>                    
                 </div>
                 <div class="row">&nbsp;</div>                
-                <p-dataTable [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="workflowStatusData?.Assignments" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
+                <p-dataTable #dt [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [value]="workflowStatusData?.Assignments" selectionMode="single" scrollable="true" scrollWidth="100%" >                    
+                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column field="ActivityTypeName" header="Activity" sortable="true"></p-column>                                
                     <p-column field="ResourceID" header="User" sortable="true">
                         <template let-item="rowData" pTemplate type="body">

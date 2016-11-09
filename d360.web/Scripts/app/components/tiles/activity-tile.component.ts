@@ -13,7 +13,8 @@ import { Count} from '../../models/counts.model';
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-dataTable *ngIf="!isLoading && counts.length > 0" sortField="Name" [sortOrder]="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)" [rows]="10" [paginator]="true" [pageLinks]="3">                    
+                    <p-dataTable #dt *ngIf="!isLoading && counts.length > 0" sortField="Name" sortOrder="1" [value]="counts" selectionMode="single" [(selection)]="selected" (onRowDblclick)="selected=$event.data;doSelect(selected)" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">                    
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="Name" header="Name" [sortable]="true">
                             <template let-item="rowData" pTemplate type="body">
                                     <a (click)="doSelect(item)">{{item.Name}}</a>

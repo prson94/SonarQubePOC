@@ -11,7 +11,8 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
     template: `    
-               <p-dataTable *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3">  
+               <p-dataTable #dt *ngIf="hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3">  
+                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
@@ -43,7 +44,8 @@ import * as _ from 'lodash';
                     </header>   
                 </div>      
                 <input #gb type="text" [hidden]="!showSimpleFilter || hideFilter || hideHeader" pInputText size="100" placeholder="Search..." class="grid-simple-filter" />
-               <p-dataTable *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">  
+               <p-dataTable #dt2 *ngIf="!hideHeader" [value]="data.Values" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [paginator]="!hideFooter" pageLinks="3" [globalFilter]="gb">  
+                    <footer *ngIf="dt2.totalRecords"><d3s-grid-paging-info [totalRecords]="dt2.totalRecords" [first]="dt2.first" [rows]="dt2.rows"></d3s-grid-paging-info></footer>
                     <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">

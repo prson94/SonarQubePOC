@@ -15,7 +15,8 @@ import { StringConstants } from '../../static/string-constants';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">        
                         <input type="text" class="grid-simple-filter" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="filter" placeholder="Search..." autofocus autocomplete="off" />                                             
-                        <p-dataTable lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
+                        <p-dataTable #dt lazy="true" [totalRecords]="artifacts?.total" [value]="artifacts?.results" selectionMode="single" [rows]="numberOfRows" paginator="true" pageLinks="3" (onLazyLoad)="loadArtifactsLazy($event)" [rowsPerPageOptions]="defaultPagingOptions">                                                                       
+                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" sortable="true"  [style]="{'width':'250px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="preview"><a (click)="selectArtifact(item)">{{item.Name}}</a></d3s-tooltip>

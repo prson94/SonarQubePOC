@@ -13,7 +13,8 @@ import * as _ from 'lodash';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <span *ngIf="!isLoading">
                     <header>Users Assigned As {{responsibilityTypeName}}</header>          
-                    <p-dataTable [globalFilter]="gb" sortField="OwnedItemCount" sortOrder="-1" [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
+                    <p-dataTable #dt [globalFilter]="gb" sortField="OwnedItemCount" sortOrder="-1" [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                    
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="FirstName" header="Name" [sortable]="true" sortable="custom" (sortFunction)="columnSort($event)" >
                             <template let-col let-item="rowData" pTemplate type="body">                            
                                 <d3s-tooltip objectType="Resource" [objectId]="item.ResourceID" tooltipType="preview"><a (click)="selectResource(item)">{{item.FirstName}} {{item.LastName}}</a></d3s-tooltip>

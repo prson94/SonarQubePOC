@@ -8,7 +8,8 @@
             </header>
             <div id="AdminResponsibilityTypeGrid"></div>
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable [globalFilter]="gb" [value]="responsibilityTypeItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+            <p-dataTable #dt [globalFilter]="gb" [value]="responsibilityTypeItems" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true">
+                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '70%' }"></p-column>
                 <p-column [style]="{ 'width': '30%' }">
                     <template let-col let-item="rowData" pTemplate type="body">

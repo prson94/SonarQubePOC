@@ -17,7 +17,8 @@ import { SurveyType } from '../../models/survey.model';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
                                 <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                                <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                                <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="surveys" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'25%'}" [filter]="!showSimpleFilter"></p-column>                                                                                        
                                     <p-column field="ValidForDays" header="Valid Days" [sortable]="true" [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>
                                     <p-column [style]="{width:'60px'}">

@@ -33,7 +33,8 @@ import { Title } from '@angular/platform-browser';
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span  *ngIf="!isLoading">
                                 <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                                <p-dataTable sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                <p-dataTable #dt sortField="ObjectName" [sortOrder]="1" [value]="statistics" selectionMode="single" [paginator]="true" [pageLinks]="3" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showEditor=true;" >
+                                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                     <p-column field="ObjectName" header="Object" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        
                                     <p-column field="Score" header="Score" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                        

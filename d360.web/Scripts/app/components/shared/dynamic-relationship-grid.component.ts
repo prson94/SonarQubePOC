@@ -17,6 +17,7 @@ declare var CompanySettings;
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical">                    
                     <input #gb [hidden]="!simpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
                     <p-dataTable #dt [globalFilter]="gb"  scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="defaultPagingOptions" [value]="relations" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" (onRowDblclick)="selected=$event.data;showEditor=true;" [(selection)]="selected" >                                                                                                  
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column  [style]="{width:'28px'}">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools" *ngIf="hasEdit">                                

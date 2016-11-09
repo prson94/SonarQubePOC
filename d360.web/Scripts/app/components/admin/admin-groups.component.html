@@ -4,7 +4,8 @@
             <header>Groups<d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions></header>
             <div id="List">
                 <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
+                <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [value]="groupItems" selectionMode="single" [rows]="20" [paginator]="true" [style]="{'width':'100%'}" (onRowSelect)="select($event)" >
+                    <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column field="Name" header="Name" sortable="true" [style]="{ 'width': '100px' }"></p-column>
                     <p-column [style]="{ 'width': '20px' }">
                         <template let-col let-item="rowData" pTemplate type="body">

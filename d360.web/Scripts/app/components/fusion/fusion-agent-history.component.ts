@@ -12,7 +12,8 @@ import * as _ from 'lodash';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span  *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                        <p-dataTable [globalFilter]="gb" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
+                        <p-dataTable #dt [globalFilter]="gb" [value]="executions" selectionMode="single" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected" (onRowDblclick)="selected=$event.data" >
+                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="FusionType" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="Fusion" header="Configuration" sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'20%'}" [filter]="!showSimpleFilter"></p-column>
                             <p-column field="DateStarted" header="Started" [sortable]="true" [style]="{width:'20%'}" [filter]="!showSimpleFilter">

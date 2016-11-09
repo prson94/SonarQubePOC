@@ -27,7 +27,8 @@ declare var CompanySettings: any;
         <div *ngSwitchDefault>
             <header>&nbsp;<d3s-tile-actions *ngIf="!readonly" (addClick)="add();" [hasAdd]="hasAdd"></d3s-tile-actions></header>
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [(selection)]="selectedItem" sortField="ObjectTypeName" [sortOrder]="-1">                
+            <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" [(selection)]="selectedItem" sortField="ObjectTypeName" sortOrder="-1">                
+                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="ObjectTypeName" header="Type" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
                 <p-column header="Parent" field="ParentName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
                     <template pTemplate type="body" let-item="rowData">                        

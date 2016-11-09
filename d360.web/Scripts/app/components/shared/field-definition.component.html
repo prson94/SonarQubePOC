@@ -19,7 +19,8 @@
                      (onCancel)="isDeleting=false; onCancel.emit();"></delete-form>            
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                             
-        <p-dataTable [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;" sortField="SortOrder" [sortOrder]="1">
+        <p-dataTable #dt [globalFilter]="gb" [value]="fieldDefinitions" selectionMode="single" [(selection)]="selectedRow" [rows]="20" [paginator]="true" (onRowDblclick)="isEditing=true;" sortField="SortOrder" [sortOrder]="1">
+            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
             <p-column field="FriendlyName" header="Field" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="Category" header="Category" sortable="true" [style]="{ 'width': '22%' }" [filter]="!showSimpleFilter"></p-column>
             <p-column field="IsRequired" header="Required?" sortable="true" [style]="{ 'width': '22%' }">

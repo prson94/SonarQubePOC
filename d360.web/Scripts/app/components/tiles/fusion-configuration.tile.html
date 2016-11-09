@@ -3,7 +3,8 @@
         <div *ngSwitchDefault>
             <header>{{title}}<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormModeConfig.Adding;"  [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-            <p-dataTable scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true" >
+            <p-dataTable #dt scrollable="true" scrollWidth="100%" [globalFilter]="gb" [value]="fusionConfigurations" selectionMode="single" (onRowSelect)="selectedRow = $event.data;" (onRowDblclick)="openFusion($event.data);" [rows]="20" [paginator]="true" >
+                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{ 'width': '200px' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column [style]="{ 'width': '30px' }">
                     <template let-col let-item="rowData" pTemplate type="body">

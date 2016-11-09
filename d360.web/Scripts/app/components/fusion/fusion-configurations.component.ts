@@ -18,7 +18,8 @@ import * as _ from 'lodash';
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-                        <p-dataTable sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion(selected);" >
+                        <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="fusions" selectionMode="single" [rows]="10" [rowsPerPageOptions]="[5,10,20]" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showFusion(selected);" >
+                            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name"  sortable="custom" (sortFunction)="caseInsensitiveSort($event)" [style]="{width:'25%'}" [filter]="!showSimpleFilter">
                                 <template let-item="rowData" pTemplate type="body">
                                     <a (click)="showFusion(item)">{{item.Name}}</a>

@@ -12,24 +12,25 @@ import { CertifyItem } from '../../models/workflow.model';
                 <header>Open Artifact Certifications<d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12">     
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                  
-                    <p-dataTable [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rowsPerPageOptions]="[5,10,20]" [value]="items" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                    <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [value]="items" selectionMode="single" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
+                        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
-                        <p-column field="Name" header="Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-item="rowData" pTemplate type="body">
-                                <d3s-tooltip [objectType]="'Artifact'" [objectId]="item.ID" [tooltipType]="'preview'">{{item.Name}}</d3s-tooltip>                                
+                                <d3s-tooltip objectType="Artifact" [objectId]="item.ID" tooltipType="preview">{{item.Name}}</d3s-tooltip>                                
                             </template>
                         </p-column>                                                                        
-                        <p-column field="StartDate" header="Created" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="StartDate" header="Created" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.StartDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
-                        <p-column field="DueDate" header="Due" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <p-column field="DueDate" header="Due" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DueDate | date: 'medium'}}</span>
                             </template>
                         </p-column>
-                        <p-column field="ActivityName" header="Status" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                
