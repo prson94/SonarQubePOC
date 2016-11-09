@@ -147,6 +147,19 @@ export class FieldsService extends BaseService implements IFieldsService {
         return s;
     }
 
+    getChildRelations(type: string, id: number): Promise<any> {
+        return this.http.get(`api/${type}/${id}/childrelationshiptypes`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getParentRelations(type: string, id: number): Promise<any> {
+        return this.http.get(`api/${type}/${id}/parentrelationshiptypes`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 
     getStandardRelations(type: string, id: number): Promise<any> {
         return this.http.get(`api/${type}/${id}/relationshiptypes`)

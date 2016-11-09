@@ -203,7 +203,7 @@ import { TreeNode, Column } from 'primeng/primeng';
             </div>
             <div *ngSwitchCase="'relate'">
                 <div class="row">
-                    <div class="col s8 offset-s2">
+                    <div class="col s8 offset-s2"> 
                         <div class="FieldName" style="display:block">Intersect Type</div>
                         <select [(ngModel)]="selectedRelateIntersectType" style="width:95%">
                             <option *ngFor="let i of relateIntersectTypes" [value]="i.ID">{{i.Name}}</option>
@@ -600,9 +600,10 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                 }
                 break;
             case 'find':
-                s.FilterField = this.selectedFindSourceField.toString();
                 s.FindSearchType = this.selectedFindSearchType.toString();
+
                 if (this.selectedFindSearchType == 'glossary') {
+                    s.FilterField = this.selectedFindSourceField.toString();
                     s.Object = this.selectedFindObjectType;
                     s.ObjectID = this.selectedFindObject;
                     s.TargetField = this.selectedFindTargetField;
@@ -612,6 +613,7 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
                     s.FindParent = this.findByParent;
                     s.FindObjectStep = this.selectedFindStep;
                 } else if (this.selectedFindSearchType == 'fusion') {
+                    s.FilterField = this.selectedFindSourceField.toString();
                     s.Object = 'FusionAttributeType';
                     s.ObjectID = this.selectedFindFusionItem;
                 } else if (this.selectedFindSearchType == 'fusionowner') {

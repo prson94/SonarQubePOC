@@ -7485,7 +7485,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
 
                 var findSearchType = settings["FindSearchType"]; //ObjectSearch
 
-                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = findSearchType });
+                item.FusionRuleStepSettings.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = "ObjectSearch", Value = settings["FindSearchType"] });
 
                 //if the search type is result from step the object is step and the object id is the step id
                 var findType = (findSearchType ?? "").ToUpper();
@@ -20601,7 +20601,8 @@ order by TextPath
                 model.Object = r.Object;
                 model.ObjectID = r.ObjectID;
 
-                if (!string.IsNullOrEmpty(r.Parent))
+                if (r.Parent == "undefined") r.Parent = null;
+                if (!string.IsNullOrEmpty(r.Parent) && r.ParentID.HasValue)
                 {
                     model.Parent = r.Parent;
                     model.ParentID = r.ParentID;
@@ -20611,7 +20612,10 @@ order by TextPath
                 model.ResponsibilityTypeID = r.ResponsibilityTypeID;
                 model.FieldsXml = r.FieldsXml ?? "<fields/>";
 
-                Company.SaveOrUpdate<WorkflowTypeRelation>(model);
+                if (model.ID > 0)
+                    Company.Update<WorkflowTypeRelation>(model);
+                else
+                    Company.Add<WorkflowTypeRelation>(model);
 
                 return jsonSuccess(Resources.FormInfo.Edit_Workflow_Allocation_Confirmation, model.ID.ToString(), null, "edit", HttpStatusCode.OK);
             }
@@ -20644,8 +20648,10 @@ order by TextPath
 
                 var ParentValue = form["ParentType"];
                 var ParentArray = (string.IsNullOrEmpty(ParentValue)) ? new string[2] { null, "0" } : ParentValue.Split('|');
-                var Parent = ParentArray[0];
+                string Parent = ParentArray[0];
                 int? ParentID = null;
+
+                if (Parent == "undefined") Parent = null;
                 if (ParentArray[1] != "0") ParentID = int.Parse(ParentArray[1]);
 
                 var id = parseIntField(form, "ID");
@@ -20668,7 +20674,7 @@ order by TextPath
                 model.Object = Object;
                 model.ObjectID = ObjectID;
 
-                if (!string.IsNullOrEmpty(Parent))
+                if (!string.IsNullOrEmpty(Parent) && ParentID.HasValue)
                 {
                     model.Parent = Parent;
                     model.ParentID = ParentID;

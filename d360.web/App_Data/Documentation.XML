@@ -2184,6 +2184,18 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetChildRelationshipTypes(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Gets a list of available relationships types based on the source type specified in parameters. 
+            Used in the Filter By Relationship tile on artifact list pages.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetParentRelationshipTypes(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Gets a list of available relationships types based on the source type specified in parameters. 
+            Used in the Filter By Relationship tile on artifact list pages.
+            </summary>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetRelationshipTypes(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available relationships types based on the source type specified in parameters. 

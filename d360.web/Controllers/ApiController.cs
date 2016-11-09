@@ -3853,7 +3853,7 @@ select  case
                         if (i == 0)
                         {
                             join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                            join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                            join.WhereStatement = $"I{0}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                             objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                             objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
@@ -3880,10 +3880,10 @@ select  case
                         switch (join.Object)
                         {
                             case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                 break;
                             case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
@@ -3897,10 +3897,10 @@ select  case
                         switch (join.Object)
                         {
                             case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                 break;
                             case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
@@ -3963,7 +3963,7 @@ select  case
                             if (i == 0)
                             {
                                 join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
-                                join.WhereStatement = $"( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
+                                join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
@@ -3990,10 +3990,10 @@ select  case
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                     break;
                                 case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ParentID = I{i - 1}.ID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
@@ -4007,10 +4007,10 @@ select  case
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact I{i}" : $"inner join Artifact I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                     break;
                                 case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute I{i}" : $"inner join FusionAttribute I{i} on I{i}.ID = A{i - 1}.ParentID and I{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
@@ -4137,6 +4137,42 @@ select  case
             }
 
             return Company.Query<FilterObjectItem>(sql, new { id = id }).ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of available relationships types based on the source type specified in parameters. 
+        /// Used in the Filter By Relationship tile on artifact list pages.
+        /// </summary>
+        [Route("{type}/{id:int}/childrelationshiptypes")]
+        public List<AllowedIntersectionType> GetChildRelationshipTypes(SystemObjects type, int id)//List<GetRelationshipModel>
+        {
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    return Company.Filter<ArtifactType>(i => i.ParentID == id).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Name, TargetType = "ArtifactType", TargetTypeID = i.ID }).ToList();
+                case SystemObjects.FusionAttributeType:
+                    return Company.Filter<FusionAttributeType>(i => i.ParentID == id).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Name, TargetType = "FusionAttributeType", TargetTypeID = i.ID }).ToList();
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of available relationships types based on the source type specified in parameters. 
+        /// Used in the Filter By Relationship tile on artifact list pages.
+        /// </summary>
+        [Route("{type}/{id:int}/parentrelationshiptypes")]
+        public List<AllowedIntersectionType> GetParentRelationshipTypes(SystemObjects type, int id)//List<GetRelationshipModel>
+        {
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    return Company.Filter<ArtifactType>(i => i.ID == id, i => i.Parent).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Parent.Name, TargetType = "ArtifactType", TargetTypeID = i.ParentID }).ToList();
+                case SystemObjects.FusionAttributeType:
+                    return Company.Filter<FusionAttributeType>(i => i.ID == id, i => i.Parent).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Parent.Name, TargetType = "FusionAttributeType", TargetTypeID = i.ParentID }).ToList();
+                default:
+                    return null;
+            }
         }
 
         /// <summary>

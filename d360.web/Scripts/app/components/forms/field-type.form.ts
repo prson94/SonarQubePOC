@@ -506,7 +506,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getStandardRelations(object, objectId)
+                return this.fieldsService.getChildRelations(object, objectId)
                     .then(ci => {
                         item.relationItems = ci;
 
@@ -522,7 +522,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     item.relationsLoading = false;
                 });
             case ComplexLookupRelationType.ParentItem.toString():
-                return this.fieldsService.getStandardRelations(object, objectId)
+                return this.fieldsService.getParentRelations(object, objectId)
                     .then(pi => {
                         item.relationItems = pi;
                         item.relationItems.forEach(i => {

@@ -11,7 +11,7 @@ import { Title } from '@angular/platform-browser';
     selector: 'admin-workflow',
     providers: [WorkflowService],
     templateUrl: './admin-workflow.component.html'
-})
+}) 
 
 export class AdminWorkflowComponent extends AdminBaseComponent  {
     messages = new Array<any>();
