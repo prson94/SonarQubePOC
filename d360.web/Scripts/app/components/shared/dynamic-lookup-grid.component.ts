@@ -15,11 +15,12 @@ import * as _ from 'lodash';
                     <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
-                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'medium'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
+                                        <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                                         <span *ngSwitchCase="'tooltip'">
                                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
                                                 <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
@@ -46,11 +47,12 @@ import * as _ from 'lodash';
                     <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
-                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'short'}}</span>
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'medium'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
+                                        <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                                         <span *ngSwitchCase="'tooltip'">
                                             <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
                                                 <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
@@ -91,7 +93,12 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
 
         //do this on init to avoid binding to function call
         this.data.Columns.forEach(c => {
-            c.type = this.columnDataType(c);            
+            c.type = this.columnDataType(c);  
+            if (c.type == 'number') {
+                this.data.Values.forEach(v => {
+                    v[c.datafield] = this.formatAsNumber(v[c.datafield]);
+                });
+            }      
         });
 
         this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {
@@ -102,14 +109,15 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         });
 
         this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');   
+    }
 
-        //console.log(this.data);
+    private formatAsNumber(val): string {
+        return val != '' && val != null ? Number(val).toLocaleString() : "";
     }
 
     private columnDataType(column: GridFilterColumn): string {
         var fields = this.data.Fields.filter(x => x.name == column.datafield);
 
-        //TODO: need to modify values from server to contain object
         if (column.type == 'preview')
             return 'preview';
         if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
