@@ -34,8 +34,7 @@ import * as _ from 'lodash';
                                 <label><input required type="radio" name="Action" [(ngModel)]="action" value="assign" checked="checked" />Accept Assignment</label>
                             </div>
                             <div class="col s12 m4 l4" *ngIf="issue?.Activity != 3">
-                                <label><input required type="radio" [(ngModel)]="action" name="Action" value="reassign" />Re-assign</label>
-                                <div class="FieldName">Re-assign To:</div>
+                                <label><input required type="radio" [(ngModel)]="action" name="Action" value="reassign" />Re-assign</label>                                
                                 <select name="reassignTo" style="width:100%;" [(ngModel)]="assignToId" [disabled]="action != 'reassign'">
                                       <option></option>
                                       <option *ngFor="let p of resources" [value]="p.ID">{{p.FirstName}} {{p.LastName}}</option>
