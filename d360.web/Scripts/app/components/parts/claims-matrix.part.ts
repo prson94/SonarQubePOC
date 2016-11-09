@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, OnInit } from '@angular/core';
+﻿import { Input, Component, OnInit } from '@angular/core';
 import { FormMessage, MessageType } from '../../models/form.model';
 import { ClaimsMatrixDisplayModel, Claim, ClaimObject, ClaimsMatrixEditorItemModel } from '../../models/claims.model';
 import { ClaimsService } from '../../services/claims.service';
@@ -8,39 +7,29 @@ import { ClaimsService } from '../../services/claims.service';
     selector: 'd3s-claims-matrix',
     providers: [ClaimsService],
     template: `
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-        <table class="striped">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th style="width: 15%" *ngFor="let o of claimObject">{{o.text}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let c of claim">
-                    <td>{{c.text}}</td>
-                    <td *ngFor="let o of claimObject"> 
-                        <input type="checkbox" [disabled]="readonly" [(ngModel)]="items[o.val - 1][c.val - 1].checked" /> 
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div *ngIf="!readonly" class="pull-right" style="padding:5px">
-            <button pButton label="Save Changes" (click)="save()" [disabled]="isSaving || isLoading"></button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span>
-        </div>
-</div>
-
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <div *ngIf="!isLoading">
+                        <table class="striped">
+                            <thead>
+                                <tr>
+                                    <th class="permission-header"></th>
+                                    <th style="width: 15%;" class="permission-header" *ngFor="let o of claimObject">{{o.text}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let c of claim">
+                                    <td>{{c.text}}</td>
+                                    <td *ngFor="let o of claimObject"> 
+                                        <input type="checkbox" [disabled]="readonly" [(ngModel)]="items[o.val - 1][c.val - 1].checked" /> 
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div *ngIf="!readonly" class="pull-right" style="padding:5px">
+                            <button pButton label="Save Changes" (click)="save()" [disabled]="isSaving || isLoading"></button><span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i></span>
+                        </div>
+                </div>
     `,
-    styles: [
-    `
-    th {
-    border-top: 0 !important;
-    border-left: 0 !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #C1C1C1 !important;    
-}
-`]
 })
 
 export class ClaimsMatrixPart implements OnInit {
@@ -75,7 +64,7 @@ export class ClaimsMatrixPart implements OnInit {
                 for (var o in Claim) {
                     if (typeof Claim[o] === 'number') this.claim.push({ val: Claim[o], text: o });
                 }
-                for (var o in ClaimObject) {
+                for (var o in ClaimObject) {                    
                     if (typeof ClaimObject[o] === 'number') this.claimObject.push({ val: ClaimObject[o], text: o });
                 }
 

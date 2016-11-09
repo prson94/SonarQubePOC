@@ -23786,3 +23786,12 @@ a.breadcrumb {
 .follow.active {
   color: #0376c4;
 }
+/* permission tile header styles*/
+th.permission-header {
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid #cbcaca !important;
+  color: #646464 !important;
+}
+/* permission tile header styles*/
