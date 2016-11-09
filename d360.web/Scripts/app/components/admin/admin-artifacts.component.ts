@@ -8,7 +8,6 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 
-
 @Component({
     selector: 'd3s-admin-artifacts',
     providers: [ArtifactTypeService, AuditService],
@@ -50,8 +49,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree()
             .then(data => {
-                this.ArtifactTypes = data;
-                console.log(data);
+                this.ArtifactTypes = data;                
                 this.selectedRow = this.ArtifactTypes[0];
                 this.isLoading = false;
             }); 

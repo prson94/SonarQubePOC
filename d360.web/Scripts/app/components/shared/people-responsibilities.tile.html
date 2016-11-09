@@ -28,10 +28,16 @@
                     </template>
                 </p-column>
                 <p-column field="ContextItems" header="Context" sortable="custom" (sortFunction)="columnSort($event)" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
-                <p-column>
+                <p-column [style]="{'width':'28px'}">
                     <template let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="selectedRow = item; edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
+                        </div>
+                    </template>
+                </p-column>
+                <p-column [style]="{'width':'28px'}">
+                    <template let-item="rowData" pTemplate type="body">
+                        <div class="RowTools">                            
                             <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </template>
