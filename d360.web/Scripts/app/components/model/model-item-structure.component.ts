@@ -35,7 +35,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </p-column>                        
                         <p-column field="description" header="Description">
                             <template let-item="rowData" pTemplate type="body">
-                               <span [innerHtml]="item.data.description"></span>
+                               <span class="table-desc-cell" [innerHtml]="item.data.description"></span>
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" >
