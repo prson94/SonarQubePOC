@@ -17,7 +17,7 @@ export enum RuleClassification {
     Profile = 4
 }
 
-export class Rule {
+export class Rule {    
     Name: string;
     ID: number;
     Description: string;
@@ -27,8 +27,9 @@ export class Rule {
     Status: string;
     RuleDimensionID: number;
     RuleType: RuleClassification;
+    RuleTypeName: string;
     SourceID: number;
-    Dimension: RuleDimension;
+    Dimension: RuleDimension;    
 }
 
 

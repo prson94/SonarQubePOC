@@ -30,16 +30,8 @@ import * as _ from 'lodash';
                                             </template>
                                         </p-column>
                                         <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
-                                        <p-column field="RuleType" header="Type" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'15%'}">
-                                            <template let-col let-data="rowData" pTemplate type="body">
-                                                <span>{{ruleTypeName(data)}}</span>
-                                            </template>                          
-                                        </p-column>
-                                        <p-column field="Dimension" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}">
-                                            <template let-col let-data="rowData" pTemplate type="body">
-                                                <span>{{data.Dimension?.Name}}</span>
-                                            </template>                          
-                                        </p-column>                                        
+                                        <p-column field="RuleTypeName" header="Type" sortable="custom" [filter]="!showSimpleFilter" (sortFunction)="columnSort($event)" [style]="{width:'15%'}"></p-column>
+                                        <p-column field="Dimension.Name" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>                                        
                                         <p-column [style]="{width:'40px'}">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
@@ -102,7 +94,12 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.rulesService.getRules()
             .then(result => {
                 this.isLoading = false;
-                this.rules = result;                                   
+                for (let rule of result) {
+                    if (!rule.Dimension) rule.Dimension = new RuleDimension(); //prime grid has issues with null objects make sure we dont have any.
+                    rule.RuleTypeName = RuleClassification[rule.RuleType];        
+                }
+                this.rules = result;     
+                                              
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });
     }
@@ -138,20 +135,14 @@ export class RuleListComponent extends BaseComponent implements OnInit {
             if (rule.ID == id) return index;
         }
     }
-
-
+    
     private deleteRule(id: number) {
         this.rulesService.deleteRule(id);
         this.showDelete = false;
         this.selected = this.rules.length > 0 ? this.rules[0] : null;
         this.rules.splice(this.findRuleIndex(id), 1);
     }
-
-    private ruleTypeName(rule: Rule): string {
-        return RuleClassification[rule.RuleType];        
-    }
-
-
+    
     private columnDimSort(event) {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
