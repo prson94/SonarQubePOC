@@ -6,8 +6,7 @@
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>
     <div *ngIf="!isLoading">
-        <p-dataTable #dt [value]="claimItems" selectionMode="single" [rows]="20" [paginator]="true" expandableRows="true">            
-            <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+        <p-dataTable #dt [value]="claimItems" selectionMode="single" [rows]="20" [paginator]="true" expandableRows="true">                        
             <template let-item>
                 <d3s-claims-matrix [objectType]="item.ObjectType" [objectID]="item.ObjectID" [responsibilityTypeID]="item.ResponsibilityTypeID" [readonly]="readonly"></d3s-claims-matrix>
             </template>
