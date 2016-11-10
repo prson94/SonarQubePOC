@@ -2,6 +2,8 @@
     Name: string;
     Description: string;   
     ID: number;
+    PolicyTypeClass: string;
+    PolicyTypeClassID: number;
 }
 
 export class Policy {

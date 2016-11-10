@@ -90,8 +90,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
-
-
+    
     constructor(
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -109,7 +108,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy',`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
 
         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
             id => {
@@ -156,8 +155,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             .then(result => {
                 this.policyType = result;
 
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
+                this.headerBreadcrumbService.clearBreadcrumbs();                
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.PolicyTypeClass, SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', this.policyType.PolicyTypeClassID)));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
 
                 this.loadPolicyItems(this.policyTypeId, hierarchyId);

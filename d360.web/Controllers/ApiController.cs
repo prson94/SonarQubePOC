@@ -4372,6 +4372,14 @@ select  case
             return Company.Table<PolicyType>();
         }
 
+        [Route("policytypesWithClassification")]
+        public HttpResponseMessage GetPolicyTypesWithClassification()
+        {
+            return Request.CreateResponse<dynamic>(HttpStatusCode.OK,
+                Company.Table<PolicyType>().OrderBy(i => i.Name).Select(i => new { i.Description, i.ID, i.Name, PolicyTypeClassID = i.PolicyTypeClassID, PolicyTypeClass = i.PolicyTypeClass.Name })
+            );
+        }
+
         [Route("policytypes/{id:int}")]
         public HttpResponseMessage GetPolicyType(int id)
         {
@@ -4381,7 +4389,9 @@ select  case
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
-                    { "AllowAttributes", (bool)row.AllowAttributes }
+                    { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "PolicyTypeClass", row.PolicyTypeClass },
+                    { "PolicyTypeClassID", row.PolicyTypeClassID }
                 }
             );
         }

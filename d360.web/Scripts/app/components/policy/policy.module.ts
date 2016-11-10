@@ -13,6 +13,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { PolicyComponent } from './policy.component';
 import { PolicyItemComponent } from './policy-item.component';
 import { PolicyItemStructureComponent } from './policy-item-structure.component';
+import { PolicyListComponent } from './policy-list.component';
 
 import {
     GrowlModule,
@@ -81,6 +82,7 @@ import {
         PolicyComponent,
         PolicyItemComponent,
         PolicyItemStructureComponent,
+        PolicyListComponent,
     ]
 })
 export class PolicyModule { }

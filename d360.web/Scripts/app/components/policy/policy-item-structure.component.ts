@@ -98,9 +98,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
     selectedParentID: number;
-
     
-
     searchValue: string;
 
     formMode: FormMode = FormMode.Default;
@@ -131,7 +129,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                     this.isLoading = false;
                     this.policyType = result;
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy'));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.PolicyTypeClass, SiteUrlHelpers.getObjectUrl('POLICYTYPECLASS', this.policyType.PolicyTypeClassID)));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`));
 
                     this.loadModelHierarchy(this.policyTypeId);
@@ -143,15 +142,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-
     }
-
 
     private loadModelHierarchy(policyTypeId: number) {
         this.policiesService.getPolicies(policyTypeId)
             .then(result => {
-                this.policies = result;
-                console.log(this.policies);
+                this.policies = result;                
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies)
             });
     }
@@ -207,5 +203,4 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         this.selected = null;
         this.formMode = FormMode.Adding;
     }
-
 };

@@ -35,12 +35,12 @@ import * as _ from 'lodash';
                                             <a (click)="showModelType(item)">{{item.TaxonomyTypeClass}}</a>
                                     </template>
                                 </p-column>
-                                <p-column field="Name" header="Name" [sortable]="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter">
+                                <p-column field="Name" header="Name" sortable="true" [style]="{width:'200px'}" [filter]="!showSimpleFilter">
                                     <template let-item="rowData" pTemplate type="body">
                                             <a (click)="showModel(item)">{{item.Name}}</a>
                                     </template>
                                 </p-column>                                                                                                                                                        
-                                <p-column field="Description" header="Description" [sortable]="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
+                                <p-column field="Description" header="Description" sortable="true" [style]="{width:'500px'}"  [filter]="!showSimpleFilter">
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <span [innerHtml]="data?.Description"></span>
                                     </template>                                                        
@@ -97,8 +97,8 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.modelsService.getModels()
             .then(result => {
                 this.isLoading = false;
-                this.models = result;           
-                this.models = _.sortBy(this.models, 'TaxonomyTypeClass');     
+                this.models = result;                
+                this.models = _.sortBy(this.models, 'TaxonomyTypeClass');                     
                 if (this.models.length && this.models.length > 0) this.selected = this.models[0];
             });
     }

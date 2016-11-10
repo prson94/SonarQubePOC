@@ -863,8 +863,9 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 ";
 
         public static string PolicySettingsItem = @"
-select	* 
+select	T.*, PT.Name as 'PolicyTypeClass', R.*
 from	PolicyType T
+        inner join PolicyTypeClass PT on (T.PolicyTypeClassID = PT.ID)
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)

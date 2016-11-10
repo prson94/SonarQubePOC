@@ -18,6 +18,13 @@ export class PoliciesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getPolicyTypesWithClassification(): Promise<PolicyType[]> {        
+        return this.http.get('api/policytypesWithClassification')
+            .toPromise()
+            .then(response => <PolicyType[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getPolicies(policyTypeId: number): Promise<Policy[]> {
         return this.http.get(`api/policytypes/${policyTypeId}/policies`)
             .toPromise()

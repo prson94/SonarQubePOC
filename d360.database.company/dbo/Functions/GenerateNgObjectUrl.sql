@@ -23,7 +23,7 @@ BEGIN
 		WHEN 'Lookup' THEN 'lookups/administration/' + CAST(@TypeID as varchar(15)) + '/' + + CAST(@ObjectID as varchar(15))
 		WHEN 'LookupType' THEN 'lookups/administration/' + CAST(@TypeID as varchar(15))
 		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/' + CAST(@ObjectID as varchar(15))
-		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar(15))
+		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/structure'
 		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar(15))
 		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar(15))
 		WHEN 'Rule' THEN 'rule/' + CAST(@ObjectID as varchar(15))

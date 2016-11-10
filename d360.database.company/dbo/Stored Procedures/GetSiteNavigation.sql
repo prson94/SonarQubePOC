@@ -86,8 +86,8 @@ SELECT	n.Name as MenuID,
 		n.Icon as Icon,
 		n.Title as Title,
 		(
-		SELECT	ft.name, 
-				'policy/classification/' + ft.name As url,
+		SELECT	ft.name, 				
+				'policy/classification/' + cast(ft.id as varchar(15)) As url,
 				0 as feature,
 				(
 				SELECT	t.name, 
