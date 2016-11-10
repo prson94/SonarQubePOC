@@ -49,4 +49,15 @@ export class PoliciesService extends BaseService {
         }
         return this.putDynamic(this.http, 'policytype', policyType);
     }
+
+    deletePolicyItem(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'policy', id);
+    }
+
+    savePolicy(policy: Policy): Promise<JsonResult> {
+        if (policy.ID == undefined || !policy.ID) {
+            return this.postDynamic(this.http, 'policy', policy);
+        }
+        return this.putDynamic(this.http, 'policy', policy);
+    }
 }
