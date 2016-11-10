@@ -27,6 +27,7 @@ export class FieldDefinition {
     DisplayDescription: string;
     FormDescription: string;
     Name: string;
+    Type: string;
 }
 
 

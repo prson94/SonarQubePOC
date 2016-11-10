@@ -58,6 +58,7 @@ export class Synonym {
     ObjectTypeName: string;
     Url: string;
     SubjectArea: string;
+    TaxonomyTypeID: number;
     ParentName: string;
     ParentID: number;
     ParentUrl: string;

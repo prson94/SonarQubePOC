@@ -44,7 +44,13 @@ declare var CompanySettings: any;
                         </d3s-tooltip>
                     </template>
                 </p-column>
-                <p-column field="SubjectArea" [header]="subjectAreaName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)"></p-column>
+                <p-column field="SubjectArea" [header]="subjectAreaName" sortable="custom" (sortFunction)="caseInsensitiveSort($event)">
+                    <template pTemplate type="body" let-item="rowData">                        
+                        <d3s-tooltip *ngIf="item.TaxonomyTypeID != null" [objectType]="'TaxonomyType'" [objectId]="item.TaxonomyTypeID" [tooltipType]="'Preview'">
+                            <a (click)="navigateTaxonomy(item)">{{item.SubjectArea}}</a>
+                        </d3s-tooltip>
+                    </template>
+                </p-column>
                 <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '28px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
@@ -173,6 +179,10 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     navigate(url: string) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+    }
+
+    navigateTaxonomy(item: Synonym) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TaxonomyType', item.TaxonomyTypeID));
     }
 
     search(e: any) {

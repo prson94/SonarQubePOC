@@ -68,7 +68,8 @@ namespace d360.web.Controllers
                     i.SortOrder,
                     ObjectType = i.Object,
                     i.ObjectID,
-                    i.Name
+                    i.Name,
+                    i.Type
                 }),
                 JsonRequestBehavior.AllowGet
                 );
