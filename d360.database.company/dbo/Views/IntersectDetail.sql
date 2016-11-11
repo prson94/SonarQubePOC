@@ -1,4 +1,4 @@
-﻿CREATE view [dbo].[IntersectDetail]
+﻿create view [dbo].[IntersectDetail]
 as
 	select	I.ID,
 			I.IntersectTypeID,
@@ -15,7 +15,7 @@ as
 				when 'Resource' then SRE.FirstName + ' ' + SRE.LastName
 				else coalesce(SA.TextPath, SD.Name, SF.TextPath, SG.Name, SP.TextPath, SR.Name, ST.TextPath) 
 			end as SubjectName,
-			dbo.GenerateObjectUrl(
+			dbo.GenerateNgObjectUrl(
 				I.Subject, 
 				case I.Subject
 					when 'Resource' then 1
@@ -52,7 +52,7 @@ as
 				when 'Resource' then ORE.FirstName + ' ' + ORE.LastName
 				else coalesce(OA.TextPath, OD.Name, [OF].TextPath, OG.Name, OP.TextPath, [OR].Name, OT.TextPath)
 			end as ObjectName,
-			dbo.GenerateObjectUrl(
+			dbo.GenerateNgObjectUrl(
 				I.Object, 
 				case I.Object
 					when 'Resource' then 1
@@ -149,3 +149,8 @@ as
 
 	where	coalesce(SA.ID, SD.ID, SF.ID, SG.ID, SI.ID, SP.ID, SR.ID, SRE.ResourceID, ST.ID) is not null
 			and coalesce(OA.ID, OD.ID, [OF].ID, OG.ID, OI.ID, OP.ID, [OR].ID, ORE.ResourceID, OT.ID) is not null
+
+
+GO
+
+

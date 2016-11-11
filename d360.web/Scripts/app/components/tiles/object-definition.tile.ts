@@ -1,23 +1,47 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
-import { FormMode } from '../../models/form.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
 import { Permission } from '../../models/permission.model'
-import { HeaderBreadcrumbService } from '../../services/index';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 
 @Component({
     selector: 'd3s-object-definition-tile',
-    templateUrl: './object-definition.tile.html',
+    template: `
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div *ngIf="!showEditor && !isLoading">
+                        <header>&nbsp;<d3s-tile-actions [hasEdit]="hasRootUpdatePermissions()" (editClick)="showEditor=true"></d3s-tile-actions></header>
+                        <simple-accordion header="Definition" [active]="true">
+                            <object-detail [objectID]="objectID" [objectType]="objectType"></object-detail>
+                        </simple-accordion>
+                        <simple-accordion header="Synonyms ({{synonyms.itemCount}})" [active]="false" *ngIf="hasSynonyms">
+                            <d3s-synonyms-tile #synonyms [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasRelationshipCreatePermissions()" [hasDelete]="hasRelationshipDeletePermissions()"></d3s-synonyms-tile>
+                        </simple-accordion>
+                        <simple-accordion header="Attributes ({{attributes.itemCount}})" [active]="false" *ngIf="hasAttributes">
+                            <d3s-attributes-tile #attributes [objectID]="objectID" [objectType]="objectType" [readonly]="false" [hasAdd]="hasAttributeCreatePermissions()" [hasEdit]="hasAttributeUpdatePermissions()" [hasDelete]="hasAttributeDeletePermissions"></d3s-attributes-tile>
+                        </simple-accordion>
+                     <!--   <simple-accordion header="Structure" [active]="false">
+                            <d3s-structure-tile [objectID]="objectID" [objectType]="objectType" [readonly]="false"></d3s-structure-tile>
+                        </simple-accordion>-->
+            </div>
+            <d3s-dynamic-editor *ngIf="showEditor"
+                                            [objectID]="objectID" 
+                                            [parentID]="object?.ParentID" 
+                                            [objectType]="objectType" 
+                                            [selection]="object"
+                                            [editUri]="'form/dynamicedit/edit/' + objectType"
+                                            [title]="object?.Name" 
+                                            (saveClick)="save($event)" 
+                                            (closeClick)="showEditor=false">
+            </d3s-dynamic-editor>
+            `,
     providers: [ObjectDetailService],
 })
 
 export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
-
+    
     @Input() hasSynonyms: boolean = true;
     @Input() hasAttributes: boolean = true;
 
@@ -25,13 +49,13 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     
     private object: ObjectDetail = null;
 
-    private formMode: FormMode = FormMode.Default;
-    FormMode = FormMode;    
+    private showEditor: boolean = false;;
+    
 
     //ideally base permissions would be an input but angular doesnt support this yet
     @Input() objectPermissions: Permission[] = [];
 
-    constructor(private objectDetailService: ObjectDetailService, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+    constructor(private objectDetailService: ObjectDetailService) {
         super();
     }
 
@@ -58,14 +82,9 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     save(e): void {
         this.load().then(() => {
-            this.onEditComplete.emit(this.object);
-            //this.headerBreadcrumbService.popLastBreadcrumb();
-            //this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.object.Name, null, true, this.objectType, this.object.TypeID));
-            this.formMode = FormMode.Default;
+            this.onEditComplete.emit(this.object);            
+            this.showEditor = false;
         });
     }
-
-    close(): void { 
-        this.formMode = FormMode.Default;
-    }
+    
 }
