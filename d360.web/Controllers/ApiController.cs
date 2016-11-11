@@ -1812,7 +1812,7 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("artifacttypes")]
         public IQueryable<ArtifactType> GetArtifactTypes()
         {
-            return Company.ArtifactTypes;
+            return Company.Table<ArtifactType>();
         }
 
         [Route("artifacts/{id}/{take?}")]

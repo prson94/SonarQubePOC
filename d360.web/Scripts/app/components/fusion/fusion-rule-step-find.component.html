@@ -1,0 +1,73 @@
+﻿<div class="row">
+    <div class="col l6 m6 s12">
+        <div class="FieldName" style="display: block">Search Type</div>
+        <select [(ngModel)]="settings.ObjectSearch" style="width:100%" (ngModelChange)="changeFindSearchType($event)">
+            <option *ngFor="let i of searchTypes" [value]="i.value">{{i.text}}</option>
+        </select>
+    </div>
+    <div class="col l6 m6 s12">
+
+        <div *ngIf="settings.ObjectSearch == 'Fusion'">
+            <div class="FieldName" style="display: block">Source Matching Field</div>
+            <select [(ngModel)]="settings.FilterField" style="width:100%">
+                <option *ngFor="let i of sourceFields" [value]="i.ID">{{i.FriendlyName}}</option>
+            </select>
+
+            <div class="FieldName" style="display:block">Fusion Attribute Type</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of objects" [value]="i.ID">{{i.Name}}</option>
+            </select>
+        </div>
+
+        <div *ngIf="settings.ObjectSearch == 'FusionOwner'">
+            <div class="FieldName" style="display:block">Fusion Owner</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of owners" [value]="i.ID">{{i.Name}}</option>
+            </select>
+        </div>
+
+        <div *ngIf="settings.ObjectSearch == 'Glossary'">
+            <div class="FieldName" style="display: block">Source Matching Field</div>
+            <select [(ngModel)]="settings.FilterField" style="width:100%">
+                <option *ngFor="let i of sourceFields" [value]="i.ID">{{i.FriendlyName}}</option>
+            </select>
+
+            <div class="FieldName" style="display: block">Type</div>
+            <select [(ngModel)]="settings.Object" style="width:100%" (ngModelChange)="changeGlossaryType()">
+                <option *ngFor="let i of glossaryFindObjectTypes" [value]="i.value">{{i.text}}</option>
+            </select>
+
+            <div class="FieldName" style="display: block">Item</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%" (ngModelChange)="changeGlossaryTypeFields()">
+                <option *ngFor="let i of objects" [value]="i.ID">{{i.Name}}</option>
+            </select>
+
+            <div class="FieldName" style="display: block">Target Matching Field</div>
+            <select [(ngModel)]="settings.TargetField" style="width:100%">
+                <option *ngFor="let i of targetFields" [value]="i.ID">{{i.FriendlyName}}</option>
+            </select>
+        </div>
+
+        <div *ngIf="settings.ObjectSearch == 'Promotion'">
+            <div class="FieldName" style="display:block">Source Matching Field</div>
+            <select [(ngModel)]="settings.FilterField" style="width:100%">
+                <option *ngFor="let i of sourceFields" [value]="i.ID">{{i.FriendlyName}}</option>
+            </select>
+
+            <div class="FieldName" style="display:block">Fusion Attribute Type</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of objects" [value]="i.ID">{{i.TextPath}}</option>
+            </select>
+        </div>
+
+        <div *ngIf="settings.ObjectSearch == 'ResultFromStep'">
+            <div class="FieldName" style="display: block">Result From Step</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
+            </select>
+            <div class="FieldName" style="display: block">Find items parent?</div>
+            <input type="checkbox" [(ngModel)]="settings.FindParent" /> Enabled?
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,44 @@
+﻿<div class="row">
+    <div class="col l4 m12 s12">
+        <div class="FieldName" style="display:block">Intersect Type</div>
+        <select [(ngModel)]="settings.IntersectType" style="width:100%">
+            <option *ngFor="let i of relations" [value]="i.ID">{{i.Name}}</option>
+        </select>
+    </div>
+    <div class="col l4 m12 s12">
+        <div class="FieldName" style="display:block">Subject Search Type</div>
+        <select [(ngModel)]="settings.SubjectSearch" style="width:100%">
+            <option *ngFor="let i of searchTypes" [value]="i.value">{{i.text}}</option>
+        </select>
+        <div *ngIf="settings.SubjectSearch == 'ResultFromStep'">
+            <div class="FieldName" style="display:block">Subject Step</div>
+            <select [(ngModel)]="settings.SubjectID" style="width:100%">
+                <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
+            </select>
+        </div>
+        <div *ngIf="settings.SubjectSearch == 'FusionOwner'">
+            <div class="FieldName" style="display:block">Subject Fusion Owner</div>
+            <select [(ngModel)]="settings.SubjectID" style="width:100%">
+                <option *ngFor="let i of owners" [value]="i.ID">{{i.Name}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="col l4 m12 s12">
+        <div class="FieldName" style="display:block">Object Search Type</div>
+        <select [(ngModel)]="settings.ObjectSearch" style="width:100%">
+            <option *ngFor="let i of searchTypes" [value]="i.value">{{i.text}}</option>
+        </select>
+        <div *ngIf="settings.ObjectSearch == 'ResultFromStep'">
+            <div class="FieldName" style="display:block">Object Step</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
+            </select>
+        </div>
+        <div *ngIf="settings.ObjectSearch == 'FusionOwner'">
+            <div class="FieldName" style="display:block">Object Fusion Owner</div>
+            <select [(ngModel)]="settings.ObjectID" style="width:100%">
+                <option *ngFor="let i of owners" [value]="i.ID">{{i.Name}}</option>
+            </select>
+        </div>
+    </div>
+</div> 

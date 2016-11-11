@@ -506,6 +506,13 @@ export class FusionService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    getFindReferenceItemTypes() {
+        return this.http.get('api/referenceitemtypes?$orderby=Name')
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getLineageRoles() {
         return this.http.get('/api/fusion/rule/lineage/roles')
             .toPromise()

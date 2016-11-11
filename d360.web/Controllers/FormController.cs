@@ -7205,12 +7205,6 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     RuleID = rule.ID
                 };
 
-                item.Settings = s.Settings;
-
-                //TODO: rewrite to accept non-form logic
-                //AddPromotionStepSettings(item, form);
-                AddPromotionStepSettings(item);
-
                 rule.FusionRuleSteps.Add(item);
                 if (rule != null)
                 {
@@ -7218,6 +7212,20 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                     rule.UpdatedOn = DateTime.UtcNow;
                 }
 
+                Company.SaveChanges();
+
+                foreach (var setting in s.Settings)
+                {
+                    if (!string.IsNullOrEmpty(setting.Value))
+                    {
+                        Company.Add<FusionRuleStepSetting>(new FusionRuleStepSetting
+                        {
+                            RuleStepID = item.ID,
+                            Name = setting.Key,
+                            Value = setting.Value
+                        });
+                    }
+                }
                 Company.SaveChanges();
 
                 return jsonSuccess("New Fusion Rule Step Added", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Created);
@@ -7924,7 +7932,7 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
             step.Settings.Add("SubjectSearch", step.GetSettingValueByName("SubjectSearch"));
             step.Settings.Add("Subject", step.GetSettingValueByName("Subject"));
             step.Settings.Add("SubjectID", step.GetSettingValueByName("SubjectID"));
-            step.Settings.Add("ObjectSearch", step.GetSettingValueByName("PbjectSearch"));
+            step.Settings.Add("ObjectSearch", step.GetSettingValueByName("ObjectSearch"));
             step.Settings.Add("Object", step.GetSettingValueByName("Object"));
             step.Settings.Add("ObjectID", step.GetSettingValueByName("ObjectID"));
 
@@ -7997,12 +8005,20 @@ order by L.Name", new { type = type.Replace("Type", ""), id });
                 {
                     Company.ObjectContext.DeleteObject(step.FusionRuleStepSettings.ElementAt(i));
                 }
+                Company.SaveChanges();
 
-
-                //TODO: rewrite to accept non-form object
-                //AddPromotionStepSettings(step, form);
-                AddPromotionStepSettings(step);
-
+                foreach (var setting in s.Settings)
+                {
+                    if (!string.IsNullOrEmpty(setting.Value))
+                    {
+                        Company.Add<FusionRuleStepSetting>(new FusionRuleStepSetting
+                        {
+                            RuleStepID = step.ID,
+                            Name = setting.Key,
+                            Value = setting.Value
+                        });
+                    }
+                }
                 Company.SaveChanges();
 
                 return jsonSuccess("Step updated", "0", ContextList.FusionRuleStep, "add", HttpStatusCode.Accepted);

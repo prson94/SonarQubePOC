@@ -44,9 +44,9 @@ namespace d360.workers.FusionWorkerRole
 
             FusionProcessingData fusionData = new FusionProcessingData
             {
-                CompanyID = 4,
-                FusionID = 69,
-                LogFileName = "1.69.2016-10-25_05.15.16.json"
+                CompanyID = 40,
+                FusionID = 9,
+                LogFileName = "13.3.2016-11-09_09.33.24.json"
             };
             
             //the biggest fusion job i can find 30.9 MB for Demo dev - gmo has a 35.3MB file in fusion-15 22 has 38.6mb
