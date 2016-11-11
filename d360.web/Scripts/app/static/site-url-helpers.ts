@@ -123,6 +123,9 @@
             if (parts.length == 4) {
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parts[2]};hierarchyId=${parts[3]}`;
             }
+            else if (parts.length == 3) {
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parts[2]}/structure`;
+            }
             console.log('[ERROR] - INVALID FORMAT FOR MODEL URL', url);
         }
         else if (url.startsWith('#/domains')) {

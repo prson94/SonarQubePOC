@@ -18,6 +18,7 @@ namespace d360.core.entities
         public string IconBackColor { get; set; }
         public string IconForeColor { get; set; }
         public string IconText { get; set; }
+        public string NgUrl { get; set; }
 
         [NotMapped]
         public string PluralizedName { get; set; }

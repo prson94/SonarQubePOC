@@ -628,7 +628,7 @@ namespace d360.web.Models
         public int? TooltipID { get; set; }
 
         [DataMember]
-        public string TooltipUrl { get; set; }
+        public string TooltipUrl { get; set; }        
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

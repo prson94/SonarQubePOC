@@ -4821,6 +4821,8 @@ from    (
                     {
                         if (artifact.Parent != null)
                         {
+                            var parentDetails = GetObjectDetail(SystemObjects.Artifact, artifact.Parent.ID);
+
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 2,
@@ -4828,7 +4830,7 @@ from    (
                                     new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = artifact.Name }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name }
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name, TooltipUrl = parentDetails.Url, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
                                 }
                             });
                         }
@@ -4878,11 +4880,13 @@ from    (
                             });
                         }
 
+                        var taxonomyDetails = GetObjectDetail(SystemObjects.TaxonomyType, artifact.TaxonomyType.ID);
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name, TooltipContext = "Preview", TooltipType="TaxonomyType", TooltipUrl = taxonomyDetails.Url, TooltipID = artifact.TaxonomyType.ID }
                                 },
                             SecondColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes }
