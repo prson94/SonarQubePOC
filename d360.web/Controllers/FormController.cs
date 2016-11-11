@@ -17474,20 +17474,22 @@ order by	D.Name, I.Name";
         {
             var statuses = RuleStatus.Active.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            dimensions.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-
+            
             var list = new List<EditableField>();
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
             //list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString() });
+                        
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString()});
+            list.Add(new EditableField { Row = 4, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.RuleDescription_Name, FieldDescription = FieldInfo.RuleDescription_Description, FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 2, Required = false, FieldName = "Measurement", Name = FieldInfo.RuleMeasurement_Name, FieldDescription = FieldInfo.RuleMeasurement_Description, FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString() });
 
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = FieldInfo.RuleDescription_Name, FieldDescription = FieldInfo.RuleDescription_Description, FieldType = DataType.Html.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Measurement", Name = FieldInfo.RuleMeasurement_Name, FieldDescription = FieldInfo.RuleMeasurement_Description, FieldType = DataType.Html.ToString() });
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString() });
-            list.Add(new EditableField { Row = 4, Column = 2, Required = true, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString() });
+            
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -17513,8 +17515,7 @@ order by	D.Name, I.Name";
         {
             var statuses = RuleStatus.Active.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            dimensions.Insert(0, new SelectListItem { Text = "Choose...", Value = "" });
-
+            
             var model = Company.GetById<Rule>(id);
 
             if ((!Company.HasPermission(SystemObjects.Rule, id, Claim.Update)) && (!Company.HasPermission(SystemObjects.RuleType, (int)model.RuleType, Claim.Update)))
@@ -17526,13 +17527,15 @@ order by	D.Name, I.Name";
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = "form/Rule_SimilarItems?query=" });
             //list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "RuleType", Name = FieldInfo.Name_Name, FieldDescription = FieldInfo.RuleName_Description, Items = RuleType.Informational.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList(), FieldType = DataType.Lookup.ToString() });
 
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString() });
 
-            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Description", Name = FieldInfo.RuleDescription_Name, FieldDescription = FieldInfo.RuleDescription_Description, FieldType = DataType.Html.ToString(), Value = model.Description });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "Measurement", Name = FieldInfo.RuleMeasurement_Name, FieldDescription = FieldInfo.RuleMeasurement_Description, FieldType = DataType.Html.ToString(), Value = model.Measurement });
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString(), Value = model.Purpose });
-            list.Add(new EditableField { Row = 4, Column = 2, Required = true, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString(), Value = model.Resolution });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
+
+            list.Add(new EditableField { Row = 4, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.RuleDescription_Name, FieldDescription = FieldInfo.RuleDescription_Description, FieldType = DataType.Html.ToString(), Value = model.Description });
+            list.Add(new EditableField { Row = 4, Column = 2, Required = false, FieldName = "Measurement", Name = FieldInfo.RuleMeasurement_Name, FieldDescription = FieldInfo.RuleMeasurement_Description, FieldType = DataType.Html.ToString(), Value = model.Measurement });
+            list.Add(new EditableField { Row = 5, Column = 1, Required = false, FieldName = "Purpose", Name = FieldInfo.RulePurpose_Name, FieldDescription = FieldInfo.RulePurpose_Description, FieldType = DataType.Html.ToString(), Value = model.Purpose });
+            list.Add(new EditableField { Row = 5, Column = 2, Required = false, FieldName = "Resolution", Name = FieldInfo.RuleResolution_Name, FieldDescription = FieldInfo.RuleResolution_Description, FieldType = DataType.Html.ToString(), Value = model.Resolution });
 
             return Json(list, JsonRequestBehavior.AllowGet);
 
@@ -17597,8 +17600,8 @@ order by	D.Name, I.Name";
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
                     RuleType = RuleType.Informational,//ruleType,
                     Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
-                    Threshold = parseNullableIntField(form, "Threshold", 0).GetValueOrDefault()
-                };
+                    Threshold = decimal.Parse(form["Threshold"])
+            };
 
                 Company.Add<Rule>(model);
 
@@ -17710,7 +17713,18 @@ order by	D.Name, I.Name";
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
                 //model.RuleType = (RuleType)Enum.Parse(typeof(RuleType), form["RuleType"]);
-                model.RuleDimensionID = parseNullableIntField(form, "RuleDimensionID");
+                var dimension = parseNullableIntField(form, "RuleDimensionID");
+
+                if (dimension.HasValue && dimension.GetValueOrDefault() > 0)
+                    model.RuleDimensionID = dimension;
+                else
+                    model.RuleDimensionID = null;
+                
+                model.Measurement = parseTextField(form, "Measurement");
+                model.Purpose = parseTextField(form, "Purpose");
+                model.Resolution = parseTextField(form, "Resolution");
+                model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
+                model.Threshold = decimal.Parse(form["Threshold"]);
 
                 Company.Update<Rule>(model);
 

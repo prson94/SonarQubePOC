@@ -44,7 +44,9 @@ namespace d360.core
         [Description("Filtered Lookup")]//, ReadOnly(true)]
         FilteredLookup,
         [Description("Complex Relation Lookup")]//, ReadOnly(true)]
-        ComplexRelationLookup
+        ComplexRelationLookup,
+        [Description("Percentage"), ReadOnly(true)]
+        Percentage, // used for range of > 0 and < 1
     }
 
     public class DataTypeInfo

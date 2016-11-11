@@ -17,6 +17,12 @@ export enum RuleClassification {
     Profile = 4
 }
 
+export enum RuleStatus {    
+    Draft = 1,
+    Active = 2,
+    Inactive = 3
+}
+
 export class Rule {    
     Name: string;
     ID: number;
@@ -24,7 +30,8 @@ export class Rule {
     Measurement: string;
     Purpose: string;
     Resolution: string;
-    Status: string;
+    Status: RuleStatus;
+    StatusName: string;
     RuleDimensionID: number;
     RuleType: RuleClassification;
     RuleTypeName: string;

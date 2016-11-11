@@ -4,7 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, RulesService, MessagesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
+import { RuleDimension, Rule, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import * as _ from 'lodash';
 
@@ -30,7 +30,7 @@ import * as _ from 'lodash';
                                             </template>
                                         </p-column>
                                         <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
-                                        <p-column field="RuleTypeName" header="Type" sortable="custom" [filter]="!showSimpleFilter" (sortFunction)="columnSort($event)" [style]="{width:'15%'}"></p-column>
+                                        <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" (sortFunction)="columnSort($event)" [style]="{width:'15%'}"></p-column>
                                         <p-column field="Dimension.Name" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>                                        
                                         <p-column [style]="{width:'40px'}">
                                             <template let-item="rowData" pTemplate type="body">
@@ -99,7 +99,8 @@ export class RuleListComponent extends BaseComponent implements OnInit {
                 this.isLoading = false;
                 for (let rule of result) {
                     if (!rule.Dimension) rule.Dimension = new RuleDimension(); //prime grid has issues with null objects make sure we dont have any.
-                    rule.RuleTypeName = RuleClassification[rule.RuleType];        
+                    rule.RuleTypeName = RuleClassification[rule.RuleType];
+                    rule.StatusName = RuleStatus[rule.Status];
                 }
                 this.rules = result;     
                                               
