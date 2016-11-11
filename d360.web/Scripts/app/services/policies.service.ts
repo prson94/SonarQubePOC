@@ -43,7 +43,7 @@ export class PoliciesService extends BaseService {
         return this.deleteDynamicWithResult(this.http, 'policytype', id);
     }
     
-    saveDimension(policyType: PolicyType): Promise<JsonResult> {
+    savePolicyType(policyType: PolicyType): Promise<JsonResult> {
         if (policyType.ID == undefined || !policyType.ID) {
             return this.postDynamic(this.http, 'policytype', policyType);
         }

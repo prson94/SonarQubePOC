@@ -129,19 +129,13 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     }
 
     savePolicyType(event) {
-        this.policiesService.saveDimension(event.item)
+        
+        this.policiesService.savePolicyType(event.item)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
-                    this.policyTypes[this.policyTypes.length] = event.item;
+                if (result.type != 'error') {
+                    this.getPolicyTypes();
                 }
-                else {
-                    let index = this.policyTypes.findIndex(x => x.ID == event.item.ID);
-                    if (index >= 0 && index < this.policyTypes.length)
-                        this.policyTypes[index] = event.item;
-                }
-                this.selected = event.item;
                 this.showEditor = false;
                 this.stateService.reloadLeftNavMenu();
             });

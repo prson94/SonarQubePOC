@@ -114,24 +114,23 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         if (this.selectedTaxonomy == null && this.taxonomies.length > 0) this.selectedTaxonomy = this.taxonomies[0];
     }
 
-    saveModel(event) {
+    saveModel(event) {        
         this.taxonomiesService
              .saveTaxonomy(event.taxonomy)
-            .then(response => {
+            .then(response => {                
                 this.showEditor = false;
                 if (response.type == 'error') {                    
                     this.selectedTaxonomy = this.taxonomies.length > 0 ? this.taxonomies[0] : null;
                 }
-                else {                    
-                    let actionName = "Created";
+                else {                                        
+                    
                     if (event.action == "new") {
                         event.taxonomy.ID = Number(response.id);
-                        event.taxonomy.Class = undefined;
+                        event.taxonomy.Class = undefined;                        
                         this.taxonomies[this.taxonomies.length] = event.taxonomy;
                     }
                     else {
-                        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);
-                        actionName = "Edited";
+                        var index = this.taxonomies.findIndex(x => x.ID == event.taxonomy.ID);                        
                         if (index >= 0)
                             this.taxonomies[index] = event.taxonomy;
                     }                    
