@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
 import { SuggestedItem } from '../../models/workflow.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-suggest-details',
@@ -99,4 +100,9 @@ export class WorkflowSuggestDetailsComponent extends BaseComponent implements On
         if (this.selected.Activity > 0) this.showEditor = true;
     }
 
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 }

@@ -4856,7 +4856,7 @@ from    (
                         }
 
                         var nodes = "None assigned";
-
+                        var values = new List<ReadOnlyFieldValue>();
 
                         var owningModels = Company.Query<dynamic>(
                             QueryConstants.ObjectRelationships, 
@@ -4870,13 +4870,14 @@ from    (
 
                         if (owningModels.Count > 0)
                         {
-                            nodes = "";
+                         //   nodes = "";
                             owningModels.ForEach(i =>
                             {
                                 string displayName = (i.Name ?? string.Empty);
                                 displayName = displayName.ReplaceFirst($"{artifact.TaxonomyType.Name}/","");
-                                
-                                nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.Url, displayName, i.ObjectID);
+
+                                values.Add(new ReadOnlyFieldValue { Value = displayName, TooltipContext = "Preview", TooltipID = i.ObjectID, TooltipType = "Taxonomy", TooltipUrl = i.Url });
+                           //     nodes += string.Format("<div><a data-context='Preview' data-type='Taxonomy' data-id='{2}' href='{0}'>{1}</a></div>", i.Url, displayName, i.ObjectID);
                             });
                         }
 
@@ -4889,7 +4890,7 @@ from    (
                                     new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name, ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeID", FieldName = "ArtifactTaxonomyType", FieldDescription = artifact.GetDescription(i => i.TaxonomyTypeID), Value = artifact.TaxonomyType.Name, TooltipContext = "Preview", TooltipType="TaxonomyType", TooltipUrl = taxonomyDetails.Url, TooltipID = artifact.TaxonomyType.ID }
                                 },
                             SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = nodes }
+                                    new ReadOnlyField { Name = Resources.FieldInfo.TaxonomyType_Name + " Nodes", ScriptProperty = "CompanySettings.ArtifactType_TaxonomyTypeIDNodes", FieldName = "ArtifactTaxonomyTypeNodes", Value = ((values.Count > 0) ? "": nodes), Values = values }
                                 }
                         });
 

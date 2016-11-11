@@ -1,8 +1,8 @@
-﻿
-import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/index';
 import { CertifyItem } from '../../models/workflow.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-certify-details',
@@ -14,6 +14,12 @@ import { CertifyItem } from '../../models/workflow.model';
                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                  
                     <p-dataTable #dt [globalFilter]="gb" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [value]="items" selectionMode="single" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;handleRowDblClick();" >
                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                        <p-column field="ActivityName" header="Status" sortable="custom" (sortFunction)="columnSort($event)" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                            <template let-col let-data="rowData" pTemplate type="body">
+                                <span *ngIf="data.Activity <= 0">{{data.ActivityName}}</span>
+                                <a *ngIf="data.Activity > 0" (click)="selected=data;showEditor=true">{{data.ActivityName}}</a>
+                            </template>
+                        </p-column>
                         <p-column field="TypeName" header="Type Name" [sortable]="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                         <p-column field="Name" header="Name" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
                             <template let-col let-item="rowData" pTemplate type="body">
@@ -29,8 +35,7 @@ import { CertifyItem } from '../../models/workflow.model';
                             <template let-col let-data="rowData" pTemplate type="body">
                                 <span>{{data.DueDate | date: 'medium'}}</span>
                             </template>
-                        </p-column>
-                        <p-column field="ActivityName" header="Status" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                        </p-column>                        
                         <p-column  *ngIf="hasCertifyButton" [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools" *ngIf="item.Activity > 0">                                
@@ -89,4 +94,9 @@ export class WorkflowCertifyDetailsComponent extends BaseComponent implements On
         if (this.selected.Activity > 0) this.showEditor = true;
     }
 
+    private columnSort(event) {
+        //event.field = Field to sort
+        //event.order = Sort order, 1 ascending , -1 descending                        
+        this.items = _.orderBy(this.items, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
+    }
 }

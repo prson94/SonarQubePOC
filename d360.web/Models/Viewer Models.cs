@@ -577,6 +577,24 @@ namespace d360.web.Models
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
+    public class ReadOnlyFieldValue
+    {
+        [DataMember]
+        public string Value { get; set; }
+        [DataMember]
+        public string TooltipType { get; set; }
+
+        [DataMember]
+        public string TooltipContext { get; set; }
+
+        [DataMember]
+        public int? TooltipID { get; set; }
+
+        [DataMember]
+        public string TooltipUrl { get; set; }
+    }
+
+    [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyField
     {
         [DataMember]
@@ -590,6 +608,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string Value { get; set; }
+
+        [DataMember]
+        public List<ReadOnlyFieldValue> Values { get; set; }
 
         [DataMember]
         public string FieldDescription { get; set; }

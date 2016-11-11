@@ -10,7 +10,7 @@ export class EditorField {
     FieldType: string;
     FieldDescription: string;
     Name: string;
-    Value: any;
+    Value: any;    
     ReadOnly: boolean;
     Required: boolean;
     Items: string[];

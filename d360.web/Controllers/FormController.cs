@@ -1302,10 +1302,28 @@ namespace d360.web.Controllers
                         throw new ConflictException("Certification Not Allowed", "There is already a certification request in process for this item.");
                 }
 
-                var workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
+                //try taxonomy type first
+                WorkflowTypeRelation workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
                     && i.WorkflowType == WorkflowType.CertifyArtifact
                     && i.Object == "ArtifactType"
-                    && i.ObjectID == artifact.ArtifactTypeID).SingleOrDefault();
+                    && i.ObjectID == artifact.ArtifactTypeID
+                    && i.Parent == "TaxonomyType"
+                    && i.ParentID == artifact.TaxonomyTypeID
+                    && i.Enabled
+                    ).SingleOrDefault();
+
+                //if null try null taxonomy
+                if (workflowSettings == null)
+                {
+                    workflowSettings = Company.Filter<WorkflowTypeRelation>(i => i.Enabled
+                       && i.WorkflowType == WorkflowType.CertifyArtifact
+                       && i.Object == "ArtifactType"
+                       && i.ObjectID == artifact.ArtifactTypeID                   
+                       && i.Parent == null
+                       && i.Enabled
+                   ).SingleOrDefault();
+                }
+
 
                 if (workflowSettings == null)
                     throw new ConflictException("Certification Not Allowed", string.Format("There is no enabled workflow allocated to {0}.  Please check with an administrator.", artifact.ArtifactType.Name));

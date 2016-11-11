@@ -24,6 +24,13 @@ export enum DetailFieldType {
     Hidden,
 }
 
+export class DetailSubField {
+    TooltipContext: any;
+    TooltipID: any;
+    TooltipType: any;
+    TooltipUrl: string;
+    Value: string;
+}
 
 export class DetailField {
     Column: any;
@@ -43,7 +50,7 @@ export class DetailField {
     TooltipType: any;
     TooltipUrl: string;
     Value: string;
-
+    Values: DetailSubField[];
     Type: DetailFieldType = DetailFieldType.Field;
     Data: any;
 }
