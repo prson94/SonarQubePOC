@@ -35,7 +35,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </p-column>                        
                         <p-column field="description" header="Description">
                             <template let-item="rowData" pTemplate type="body">
-                               <span class="table-desc-cell" [innerHtml]="item.data.description"></span>
+                               <div class="truncate" [title]="item.data.description">{{item.data.description}}</div>
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" >
@@ -156,7 +156,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 label: root.Name,
                 expanded: true,
                 data: {
-                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: root.Description
+                    id: root.ID, hasRelations: root.HasChildren, name: root.Name, description: root.Description.replace(/<[^>]+>/gm, '')
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });

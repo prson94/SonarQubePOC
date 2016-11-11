@@ -32,9 +32,9 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <a (click)="showHierarchy(item.data.ID)" [ngStyle]="setTreeNodeStyles(item)">{{item.data.Name}} <i *ngIf="item.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
                             </template>
                         </p-column>                        
-                        <p-column field="Description" header="Description">
+                         <p-column field="Description" header="Description">
                             <template let-item="rowData" pTemplate type="body">
-                               <span class="table-desc-cell" [innerHtml]="item.data.Description"></span>
+                               <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
                             </template>
                         </p-column>
                         <p-column [style]="{width:'40px'}" >
@@ -156,7 +156,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.Name,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: root.Description, ParentID: root.ParentID
+                    ID: root.ID, Name: root.Name, Description: root.Description.replace(/<[^>]+>/gm, ''), ParentID: root.ParentID
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
