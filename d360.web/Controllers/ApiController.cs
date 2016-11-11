@@ -5885,10 +5885,14 @@ from    (
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = policyType.GetName(i => i.MaximumDepth), FieldName = "MaximumDepth", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.MaximumDepth.ToString() }
                             }
                         });
                     }
