@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -34,8 +33,8 @@ export class RulesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    deleteRule(id: number) {
-        return this.deleteDynamic(this.http, 'rule', id);
+    deleteRule(id: number): Promise<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'rule', id);
     }
 
     saveRule(rule: Rule): Promise<JsonResult> {

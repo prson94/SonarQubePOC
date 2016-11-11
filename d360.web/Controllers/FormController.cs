@@ -17569,6 +17569,8 @@ order by	D.Name, I.Name";
 
                 if (!form.HasKeys()) throw new NoFormDataException("Rule");
 
+                
+
                 var model = new Rule
                 {
                     Name = parseTextField(form, "Name"),
@@ -17579,7 +17581,7 @@ order by	D.Name, I.Name";
                     RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
                     RuleType = RuleType.Informational,//ruleType,
                     Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
-                    Threshold = decimal.Parse(form["Threshold"])
+                    Threshold = parseNullableIntField(form, "Threshold", 0).GetValueOrDefault()
                 };
 
                 Company.Add<Rule>(model);

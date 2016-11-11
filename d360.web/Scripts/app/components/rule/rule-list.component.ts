@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RulesService } from '../../services/index';
+import { HeaderBreadcrumbService, RulesService, MessagesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -26,7 +26,7 @@ import * as _ from 'lodash';
                                         <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                                         <p-column field="Name" header="Name" sortable="custom" (sortFunction)="columnSort($event)" [style]="{width:'45%'}" [filter]="!showSimpleFilter">
                                             <template let-item="rowData" pTemplate type="body">
-                                                <a (click)="showRule(item)">{{item.Name}}</a>
+                                                <a (click)="showRule(item)">{{item?.Name}}</a>
                                             </template>
                                         </p-column>
                                         <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
@@ -73,7 +73,10 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     
     constructor(private route: ActivatedRoute,
         private router: Router,
-        protected rulesService: RulesService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        protected rulesService: RulesService,
+        protected titleService: Title,
+        protected messagesService: MessagesService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
 
         this.theDeleteCallback = this.deleteRule.bind(this);
@@ -112,14 +115,10 @@ export class RuleListComponent extends BaseComponent implements OnInit {
     private saveRule(event) {
         this.rulesService.saveRule(event.item)
             .then(result => {
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
-                    this.rules[this.rules.length] = event.item;
+                this.showMessageForResult(this.messagesService, result);
+                if (result.type != 'error') {
+                    this.loadRules();
                 }
-                else {
-                    this.rules[this.findRuleIndex(event.item.ID)] = event.item;
-                }
-                this.selected = event.item;
                 this.showEditor = false;
             });
     }
@@ -128,19 +127,14 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID));
     }
 
-    findRuleIndex(id: number) {
-        var index: number = -1;
-        for (var rule of this.rules) {
-            index++;
-            if (rule.ID == id) return index;
-        }
-    }
     
     private deleteRule(id: number) {
-        this.rulesService.deleteRule(id);
-        this.showDelete = false;
-        this.selected = this.rules.length > 0 ? this.rules[0] : null;
-        this.rules.splice(this.findRuleIndex(id), 1);
+        this.rulesService.deleteRule(id).then(result => {
+            this.showMessageForResult(this.messagesService, result);
+            this.showDelete = false;
+            this.selected = this.rules.length > 0 ? this.rules[0] : null;
+            this.rules = this.rules.filter(x => x.ID != id);
+        });
     }
     
     private columnDimSort(event) {
