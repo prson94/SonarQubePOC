@@ -519,6 +519,7 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-lineage.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-relate.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-promote.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-find.component.html" />

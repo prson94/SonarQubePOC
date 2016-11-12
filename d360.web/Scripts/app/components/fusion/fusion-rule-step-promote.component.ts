@@ -48,7 +48,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
         this.loadTypes()
             .then(() => {
                 this.switchParentDisplay(this.settings.ObjectID).then(() => {
-                    this.changeParentSearch();
+                    this.switchParentSearch();
                 });
             });
     }
@@ -109,11 +109,9 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
         return this.switchParentDisplay(id);
     }
 
-    changeParentSearch(): Promise<any> {
+    switchParentSearch(): Promise<any> {
         this.parents = [];
-        this.settings.ParentObjectID = null;
-        switch (this.settings.ParentObjectSearch)
-        {
+        switch (this.settings.ParentObjectSearch) {
             case "Direct":
                 let item = this.promotionObjects.find(i => i.ID == this.settings.ObjectID);
                 let obj = this.settings.Object;
@@ -141,6 +139,11 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
                     });
         }
         return Promise.resolve();
+    }
+
+    changeParentSearch(): Promise<any> {
+        this.settings.ParentObjectID = null;
+        return this.switchParentSearch();
     }
 
 };

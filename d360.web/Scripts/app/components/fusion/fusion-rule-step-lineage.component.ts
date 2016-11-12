@@ -20,6 +20,7 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
 
     rule: FusionRule;
 
+    technicalsteps: any[] = [];
     steps: any[] = [];
     roles: any[] = [];
 
@@ -38,7 +39,9 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
             .then(() => {
                 this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
                     .then(r => {
-                        this.steps = r;
+                        this.steps = r.slice(0);            //take a copy of the r array
+                        this.technicalsteps = r.slice(0);   //take a copy of the r array
+                        this.technicalsteps.unshift({ID: null, Description: ''});
                     });
             });
     }

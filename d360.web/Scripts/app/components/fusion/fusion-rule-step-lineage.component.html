@@ -1,7 +1,7 @@
 ﻿<div class="row">
     <div class="col s12">
         <div class="FieldName" style="display:block">Role</div>
-        <select [(ngModel)]="settings.Role" style="width:100%">
+        <select [(ngModel)]="settings.Role" style="width:100%" required>
             <option *ngFor="let i of roles" [value]="i.ID">{{i.Name}}</option>
         </select>
     </div>
@@ -9,13 +9,13 @@
 <div class="row">
     <div class="col l6 m6 s12">
         <div class="FieldName" style="display:block">Source From Step (Business Relation)</div>
-        <select [(ngModel)]="settings.SubjectID" style="width:100%">
+        <select [(ngModel)]="settings.SubjectID" style="width:100%" required>
             <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
         </select>
     </div>
     <div class="col l6 m6 s12">
         <div class="FieldName" style="display:block">Target From Step (Business Relation)</div>
-        <select [(ngModel)]="settings.ObjectID" style="width:100%">
+        <select [(ngModel)]="settings.ObjectID" style="width:100%" required>
             <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
         </select>
     </div>
@@ -24,13 +24,13 @@
     <div class="col l6 m6 s12">
         <div class="FieldName" style="display:block">Source From Step (Technical Relation)</div>
         <select [(ngModel)]="settings.TechnicalSubjectID" style="width:100%">
-            <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
+            <option *ngFor="let i of technicalsteps" [value]="i.ID">{{i.Description}}</option>
         </select>
     </div>
     <div class="col l6 m6 s12">
         <div class="FieldName" style="display:block">Target From Step (Technical Relation)</div>
         <select [(ngModel)]="settings.TechnicalObjectID" style="width:100%">
-            <option *ngFor="let i of steps" [value]="i.ID">{{i.Description}}</option>
+            <option *ngFor="let i of technicalsteps" [value]="i.ID">{{i.Description}}</option>
         </select>
     </div>
 </div>

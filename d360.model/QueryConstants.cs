@@ -732,85 +732,54 @@ from	@points O
 		inner join IntersectDetail TI ON TI.ID = O.TargetIntersectID";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
-(select 
-	IT.ID as IntersectTypeID	           
-	,IT.[Object] as 'Object'
-	,IT.[ObjectID] as 'ObjectID'
-	,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
-	,COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as 'Name'
-from
-	cache.[Object] CO	
-	inner join IntersectType IT on ( (IT.[Subject] = CO.[ObjectType] and IT.[SubjectID] = CO.[ObjectTypeID]))
-	inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
-    left join [Predicate] P on P.ID = IT.PredicateID
-where CO.[Object] = @obj and CO.ObjectID = @objId)
-union (select 
-	IT.ID as IntersectTypeID	            
-	,IT.[Subject] as 'Object'
-	,IT.[SubjectID] as 'ObjectID'
-	,(select count(1) from [intersect] where intersecttypeid = IT.ID and (([subject] = @obj and [subjectid] = @objId) or ([object] = @obj and [objectid] = @objId))) as 'Count'
-	,COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Inverse + ']', '') as 'Name'
-from
-	cache.[Object] CO	
-	inner join IntersectType IT on ( (IT.[Object] = CO.[ObjectType] and IT.[ObjectID] = CO.[ObjectTypeID]))
-	inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Subject] and COD_s.[ObjectID] = IT.[SubjectID])
-    left join [Predicate] P on P.ID = IT.PredicateID
-    where CO.[Object] = @obj and CO.ObjectID = @objId)
-order by Name";
+select	IT.ID as IntersectTypeID,
+		IT.[Object],
+		IT.[ObjectID],
+		I.[Count],
+		COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+from	cache.[Object] CO	
+		inner join IntersectType IT on ( 
+										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
+										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
+									   )
+		inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
+		left join [Predicate] P on P.ID = IT.PredicateID
+		cross apply (
+					select	count(1) as [Count]
+					from	[Intersect] 
+					where	IntersectTypeID = IT.ID 
+							and (
+								(Subject = @obj and SubjectID = @objId) or 
+								(Object = @obj and ObjectID = @objId)
+								)
+					) I
+where	CO.[Object] = @obj and CO.ObjectID = @objId
+order by COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
 
         public static string ObjectRelationshipCounts = @"
-select [Object], [ObjectID], Name, sum([Count]) as [Count], max( x.IntersectTypeID) as IntersectTypeID from
-((select	
-	OD.ObjectType as [Object]
-	,OD.ObjectTypeID as [ObjectID]
-	,OD.ObjectTypeName as Name
-	,count(1) as [Count]
-	,Max(T.ID) as IntersectTypeID
-	from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID
-		inner join cache.objectdetails OD on (OD.[Object] = I.[Object] and OD.ObjectID = I.ObjectID)
-	where	(I.[Subject] = @obj and I.SubjectID = @objId)	
-	group by ObjectType,ObjectTypeID,ObjectTypeName
-)
-union all (select	
-	OD.ObjectType as [Object]
-	,OD.ObjectTypeID as [ObjectID]
-	,OD.ObjectTypeName as Name
-	,count(1) as [Count]
-	,max(T.ID) as IntersectTypeID
-	from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID
-		inner join cache.objectdetails OD on (OD.[Object] = I.[Subject] and OD.ObjectID = I.SubjectID)
-	where	(I.[Object] = @obj and I.ObjectID = @objId)
-	group by ObjectType,ObjectTypeID,ObjectTypeName	
-)) as x
-group by [Object], [ObjectID], x.Name
-";
-
-   /*     public static string ObjectRelationshipCounts = @"
-select	    O.Object,
-		    O.ObjectID,
-		    D.Name,
-		    count(1) as [Count],
-            max(O.IntersectTypeID) as IntersectTypeID
-from	    (
-		    select	case 
-					    when I.Subject = @obj and I.SubjectID = @objid then T.Object
-					    else T.Subject
-				    end as Object,
-				    case 
-					    when I.Subject = @obj and I.SubjectID = @objid then T.ObjectID
-					    else T.SubjectID
-				    end as ObjectID,
-                    T.ID as IntersectTypeID
-		    from	[Intersect] I
-				    inner join IntersectType T on T.ID = I.IntersectTypeID
-		    where	(I.Subject = @obj and I.SubjectID = @objid) OR
-				    (I.Object = @obj and I.ObjectID = @objid)
-		    ) O
-		    inner join cache.ObjectDetails D on D.Object = O.Object and D.ObjectID = O.ObjectID
-group by	O.Object, O.ObjectID, D.Name
-order by    D.Name";*/
+select	IT.ID as IntersectTypeID,
+		IT.[Object] as 'Object',
+		IT.[ObjectID] as 'ObjectID',
+		I.[Count],
+		COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+from	cache.[Object] CO	
+		inner join IntersectType IT on ( 
+										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
+										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
+									   )
+		inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
+		left join [Predicate] P on P.ID = IT.PredicateID
+		cross apply (
+					select	count(1) as [Count]
+					from	[Intersect] 
+					where	IntersectTypeID = IT.ID 
+							and (
+								(Subject = @obj and SubjectID = @objId) or 
+								(Object = @obj and ObjectID = @objId)
+								)
+					) I
+where	CO.[Object] = @obj and CO.ObjectID = @objId and I.[Count] > 0
+order by COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
 
         public static string ObjectInjectableRelationships = @"
 select	I.ID,
