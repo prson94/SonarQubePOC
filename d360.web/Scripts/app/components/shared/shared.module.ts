@@ -59,6 +59,7 @@ import { IconPickerComponent } from './icon-picker.component';
 import { LineageComponent } from './lineage.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
+import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
 import { ObjectDetailComponent } from './object-detail.component';
@@ -110,7 +111,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         IconPickerComponent,
         LineageComponent,
         MessagesBarComponent,        
-        MessagesComponent,        
+        MessagesComponent,  
+        MultiSelectGridComponent,      
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectDetailComponent,
@@ -162,6 +164,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         LineageComponent,
         MessagesBarComponent,        
         MessagesComponent,
+        MultiSelectGridComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectDetailComponent,

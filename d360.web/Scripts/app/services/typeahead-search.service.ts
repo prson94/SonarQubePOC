@@ -1,5 +1,4 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -22,5 +21,5 @@ export class TypeaheadSearchService extends BaseService {
             .toPromise()
             .then(response => <SearchResult[]>response.json())
             .catch(err => this.handleError(err));
-    }
+    }    
 }

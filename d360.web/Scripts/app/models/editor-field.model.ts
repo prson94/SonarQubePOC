@@ -18,6 +18,7 @@ export class EditorField {
     Column: number;
     SimilarItemsUri: string;
     Validations: FieldValidation[];
+    TypeaheadUri: string;
 }
 
 export class EditorRow {

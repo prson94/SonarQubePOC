@@ -47,6 +47,8 @@ namespace d360.core
         ComplexRelationLookup,
         [Description("Percentage"), ReadOnly(true)]
         Percentage, // used for range of > 0 and < 1
+        [Description("DataTableSelect"), ReadOnly(true)]
+        DataTableSelect,
     }
 
     public class DataTypeInfo

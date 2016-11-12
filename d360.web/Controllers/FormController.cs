@@ -448,7 +448,7 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "INTERSECTTYPE":
-                    return Relationship_AddFields(objectID, targetType, targetID);                
+                    return Relationship_AddFields(objectID, targetType, targetID,true);                
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -14273,7 +14273,7 @@ from ArtifactType A
         /// <param name="type">Object</param>
         /// <param name="id">ObjectID</param>
         [Route("Relationship_AddFields")]
-        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id)
+        public JsonResult Relationship_AddFields(int it, SystemObjects type, int id, bool isNg = false)
         {
             if (!Company.HasPermission(type, id, Claim.Create, ClaimObject.Relationship))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -14452,24 +14452,41 @@ order by D.TextPath";
 
             #endregion
 
-            list.Add(new EditableField
+            if (isNg)
             {
-                Row = 1,
-                Column = 1,
-                Required = true,
-                FieldName = "Items",
-                Name = "What Items Are You Relating?",
-                //DataUri = $"",
-                MultiSelect = true,
-                //FieldDescription = Resources.FieldInfo.,
-                FieldType = DataType.Lookup.ToString(),
-                Items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id }).Select(i => new SelectListItem { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList()
-            });
+                list.Add(new EditableField
+                {
+                    Row = 1,
+                    Column = 1,
+                    Required = true,
+                    FieldName = "Items",
+                    Name = "What Items Are You Relating?",                    
+                    MultiSelect = true,                    
+                    FieldType = DataType.DataTableSelect.ToString(),
+                    TypeaheadUri = $"/form/Relationship_DataTable?intersectTypeId={it}&type={type}&objectId={id}"
+                });
+            }
+            else
+            {
+                list.Add(new EditableField
+                {
+                    Row = 1,
+                    Column = 1,
+                    Required = true,
+                    FieldName = "Items",
+                    Name = "What Items Are You Relating?",
+                    //DataUri = $"",
+                    MultiSelect = true,
+                    //FieldDescription = Resources.FieldInfo.,
+                    FieldType = DataType.Lookup.ToString(),
+                    Items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id }).Select(i => new SelectListItem { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList()
+                });
+            }
 
-            list.Add(new EditableField { Row = 1, Column = 2, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Classification", Name = "Critical?", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Description", Name = "Is There Anything Else We Should Know?", FieldType = DataType.Html.ToString() });
 
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 3);
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.IntersectType, it).ToList(), 4);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -14692,6 +14709,187 @@ order by D.TextPath";
             }
         }
 
+
+        #endregion
+
+        #region DataTable Select Source
+
+        [HttpGet, Route("Relationship_DataTable")]
+        public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
+        {
+            var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
+            var obj = Company.GetObjectDetail(type, objectId);
+
+            if (obj == null || relationshipType == null)
+            {
+                return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
+            }
+
+            var targetType = "";
+            var targetTypeID = 0;
+            if (relationshipType.Subject == obj.Type && relationshipType.SubjectID == obj.TypeID)
+            {
+                targetType = relationshipType.Object;
+                targetTypeID = relationshipType.ObjectID;
+            }
+            else
+            {
+                targetType = relationshipType.Subject;
+                targetTypeID = relationshipType.SubjectID;
+            }
+            
+            #region sql
+
+            var sql = "";
+
+            switch (targetType)
+            {
+                case "FusionAttributeType":
+                    if (relationshipType.Predicate.Type == PredicateType.FusionMapping)
+                    {
+                        sql = $@"
+select	'FusionAttribute' as [Object], 
+        FA.ID as ObjectID, 
+        F.Name + '.' + FA.TextPath as Name
+from	FusionAttribute FA with(nolock)
+		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
+where	FA.ID not in (
+					select	1 
+					from	[IntersectDetail]
+					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
+					)
+order by F.Name, FA.TextPath";
+                    }
+                    else
+                    {
+                        sql = $@"
+declare @OwnerSourceType varchar(50)
+declare @owners table (ID int)
+IF @source = 'Intersect'
+BEGIN
+	set @OwnerSourceType = 'Artifact'
+
+	insert into @owners
+		select	SubjectID
+		from	[IntersectDetail] N
+				inner join Artifact A with(nolock) on N.[Subject] = 'Artifact' and A.ID = N.SubjectID and N.ID = @id
+				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+	insert into @owners
+		select	ObjectID
+		from	[IntersectDetail] N
+				inner join Artifact A with(nolock) on N.[Object] = 'Artifact' and A.ID = N.ObjectID and N.ID = @id
+				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+END
+ELSE
+BEGIN
+	set @OwnerSourceType = @source
+	insert into @owners values (@id)
+END
+
+declare @h table (ID int);
+
+if @OwnerSourceType = 'Artifact'
+	begin
+		with h as	(
+					select	A.ID,
+							A.ParentID
+					from	Artifact A with(nolock)
+							inner join @owners O on O.ID = A.ID
+					union all
+					select	P.ID,
+							P.ParentID
+					from	Artifact P with(nolock)
+							inner join h as C on C.ParentID = P.ID
+					)
+		insert into @h
+			select ID from h;
+	end
+else
+	begin
+		insert into @h values (@id)
+	end;
+
+select	'FusionAttribute' as [Object], 
+        FA.ID as ObjectID, 
+        F.Name + '.' + FA.TextPath as Name
+from	FusionAttribute FA with(nolock)
+		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
+        inner join FusionOwner FO on FO.FusionID = FA.FusionID
+        inner join @h H on H.ID = FO.ArtifactID
+where	FA.ID not in (
+					select	1 
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
+					)
+order by F.Name, FA.TextPath";
+                    }
+                    break;
+                case "Group":
+                case "GroupType":
+                    sql = $@"
+select	'Group' as [Object], 
+        D.ID as ObjectID, 
+        D.Name
+from	[Group] D with(nolock)
+where	D.ID not in (
+					select	case 
+                                when SubjectType = 'Group' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group' and ObjectTypeID = 1) ) OR
+							 ( (SubjectType = 'Group' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+order by D.Name";
+                    break;
+                case "Resource":
+                case "ResourceType":
+                    sql = $@"
+select	'Resource' as [Object], 
+        D.ResourceID as ObjectID, 
+        D.LastName + ', ' + D.FirstName as Name
+from	reporting.Global_Resource D with(nolock)
+where   D.ResourceID not in (
+					select	case 
+                                when SubjectType = 'ResourceType' then SubjectID
+                                else ObjectID
+                            end
+					from	[IntersectDetail]
+					where	IntersectTypeID = @it and (
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ResourceType' and ObjectTypeID = 1) ) OR
+							 ( (SubjectType = 'ResourceType' and SubjectTypeID = 1) AND (Object = @source and ObjectID = @id) )
+							)
+					)
+order by D.LastName, D.FirstName";
+                    break;
+                default:
+                    sql = $@"
+select	D.[Object], 
+        D.ObjectID, 
+        D.TextPath as Name
+from	cache.ObjectDetails D with(nolock)
+		left join [IntersectDetail] I on	I.IntersectTypeID = @it and (
+											 ( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											 ( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+											)
+where	D.[ObjectType] = @targetType and D.ObjectTypeID = @targetTypeID 
+        and D.ObjectTypeID <> D.ObjectID 
+        and D.ObjectTypeID <> 0
+        and (D.[Object] + cast(D.ObjectID as varchar) <> @source + cast(@id as varchar))
+        and I.ID is null
+order by D.TextPath";
+                    break;
+            }
+
+            #endregion
+
+            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId }).Select(i => new { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList();
+
+            return Json(items, JsonRequestBehavior.AllowGet);
+        }
+        
 
         #endregion
 

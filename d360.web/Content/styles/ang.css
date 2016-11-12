@@ -23799,3 +23799,12 @@ label {
   font-size: 0.8rem;
   color: #646464;
 }
+/* multiselect grid control footer*/
+.multiselect-grid-sel {
+  text-align: left;
+  padding-top: 10px;
+}
+.multiselect-grid-sel p {
+  font-weight: normal;
+}
+/* multiselect grid control footer end*/
