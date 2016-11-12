@@ -5,13 +5,14 @@
     [Name]         NVARCHAR (500) NOT NULL,
     [Path]         AS             ([utility].[GetBreadcrumbWrapper]('FusionAttributeType',[ID])),
     [TextPath]     AS             ([utility].[GetBreadcrumbStringWrapper]('FusionAttributeType',[ID],'.')),
-    [Tab]          NVARCHAR (250) NULL,
     [Assignable]   BIT            CONSTRAINT [DF_FusionAttributeType_Assignable] DEFAULT ((0)) NOT NULL,
     [UpdatedOn]    DATETIME       NULL,
     [UpdatedBy]    INT            NULL,
     CONSTRAINT [PK_FusionAttributeType] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_FusionAttributeType_Parent] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[FusionAttributeType] ([ID])
 );
+
+
 
 
 

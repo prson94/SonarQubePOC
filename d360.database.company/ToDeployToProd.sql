@@ -456,6 +456,9 @@ Pull the following object updates:
 	[fusion].[Rules] 
 	[utility].[GetHierarchyAssignedResponsibilityList]
 	[utility].[ObjectDetail]
+	[dbo].[IntersectDetail]
+	[dbo].[GenerateObjectUrl] 
+
 */
 
 

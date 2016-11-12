@@ -1,4 +1,4 @@
-﻿create PROCEDURE [dbo].[ProcessEagleMCToEagleFieldRelations]
+﻿CREATE PROCEDURE [dbo].[ProcessEagleMCToEagleFieldRelations]
 	@StagingFileID int,
 	@FusionID int
 AS
@@ -7,8 +7,6 @@ BEGIN
 		
 	declare	@eagleStreamID int,
 			@streamToFieldIntersectTypeID int,				
-			@streamSourceIntersectTypeNodeID int,
-			@streamTargetIntersectTypeNodeID int,
 			@currentEagleFusionId int;
 
 	declare	@IDList Table(IntersectID int,StageID Int);
@@ -43,16 +41,15 @@ BEGIN
 			Declare @StreamToFieldList Table(FieldFusionAttributeID int, StreamFusionAttributeID int,IntersectTypeID int, ID int);
 			
 			-- load the intersect type ids
-			select	@streamToFieldIntersectTypeID = IntersectTypeID,
-					@streamSourceIntersectTypeNodeID = SourceIntersectTypeNodeID,
-					@streamTargetIntersectTypeNodeID = TargetIntersectTypeNodeID
-			from	utility.RelationshipTypes
-			where	SourceObjectType = 'FusionAttributeType' and 
-					SourceObjectID = @MessageStreamFussionAttributeID and 
-					TargetObjectType = 'FusionAttributeType' and 
-					TargetObjectID = @EagleFieldFusionAttributeID
+			select	@streamToFieldIntersectTypeID = ID
+			from	IntersectType
+			where	(Subject = 'FusionAttributeType' and Object = 'FusionAttributeType') 
+					and	( 
+						(SubjectID = @MessageStreamFussionAttributeID and ObjectID = @EagleFieldFusionAttributeID) OR
+						(SubjectID = @EagleFieldFusionAttributeID and ObjectID = @MessageStreamFussionAttributeID)
+						)
 
-			if @streamToFieldIntersectTypeID is null or @streamSourceIntersectTypeNodeID is null or @streamTargetIntersectTypeNodeID is null
+			if @streamToFieldIntersectTypeID is null
 			begin
 				raiserror('ERROR : UNABLE TO LOCATE INTERSECT TYPE IDS FOR EAGLE TO EAGLE MESSAGE STREAMS', 15, 1);
 				return;
@@ -65,26 +62,17 @@ BEGIN
 							@streamToFieldIntersectTypeID, 
 							ROW_NUMBER() OVER (Order by fa.id) AS 'RowNumber'
 				from		field f 
-							inner join fusionAttribute fa on (f.ObjectID = fa.ID and fa.fusionid = @currentEagleFusionId)
-							inner join fieldtype ft on (f.fieldtypeid = ft.id)
-							inner join [fusion].[StagingFileItem] sfi on (sfi.tag = f.value)				
-							inner join [fusion].[StagingFile] sf on (sfi.stagingfileid = sf.id)
+							inner join FusionAttribute fa on f.ObjectID = fa.ID and fa.fusionid = @currentEagleFusionId
+							inner join FieldType ft on f.fieldtypeid = ft.id
+							inner join fusion.StagingFileItem sfi on sfi.tag = f.value				
+							inner join fusion.StagingFile sf on sfi.stagingfileid = sf.id
 							left join	(
-										select	srcINode.ObjectID as SourceObjectID,
-												tgtINode.ObjectID as TargetObjectID,
+										select	SubjectID,
+												ObjectID,
 												1 as hasExisting
-										from	[Intersect] isect 
-												inner join intersectnode srcINode on	(
-																						isect.intersecttypeid = @streamToFieldIntersectTypeID and 
-																						isect.id = srcINode.IntersectID and 
-																						srcINode.IntersectTypeNodeID = @streamSourceIntersectTypeNodeID
-																						)
-												inner join intersectnode tgtINode on	(
-																						isect.intersecttypeid = @streamToFieldIntersectTypeID and 
-																						isect.id = tgtINode.IntersectID and 
-																						tgtINode.IntersectTypeNodeID = @streamTargetIntersectTypeNodeID
-																						)
-										) existing on existing.SourceObjectID = sf.FusionAttributeID and existing.TargetObjectID = fa.ID
+										from	[Intersect]
+										where	Subject = 'FusionAttribute' and Object= 'FusionAttribute'
+										) existing on ( (existing.SubjectID = sf.FusionAttributeID and existing.ObjectID = fa.ID) OR (existing.SubjectID = fa.ID and existing.ObjectID = sf.FusionAttributeID) )
 				where		fa.fusionattributetypeid = @EagleFieldFusionAttributeID and 
 							ft.name = 'startag' and 
 							sfi.stagingfileid = @StagingFileID and 
@@ -111,33 +99,5 @@ BEGIN
 				INSERT  (IntersectTypeID, Classification, Description, Subject, SubjectID, Object, ObjectID)
 				VALUES  (s.IntersectTypeID, s.class, NULL, s.Subject, s.SubjectID, s.Object, s.ObjectID)
 				OUTPUT  INSERTED.ID, s.srID into @IDList;
-
-			--insert start records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-				select	@streamSourceIntersectTypeNodeID, 
-						il.IntersectID, 
-						'FusionAttribute',
-						sr.StreamFusionAttributeID 
-				from	@StreamToFieldList sr 
-						inner join @IDList il on sr.ID = il.StageID;
-
-			--insert end records into intersect node
-			INSERT INTO IntersectNode	(IntersectTypeNodeID, IntersectID, ObjectType, ObjectID)
-				select	@streamTargetIntersectTypeNodeID, 
-						il.IntersectID, 
-						'FusionAttribute',
-						sr.FieldFusionAttributeID 
-				from	@StreamToFieldList sr 
-						inner join @IDList il on sr.ID = il.StageID;
-
-			insert into @Intersects select idl.intersectid from @IDList idl;
-			
-			declare @IntersectCount int
-			select @IntersectCount = count(1) from @Intersects
-			
-			if @IntersectCount > 0 
-			begin				
-				EXEC cache.SynchronizeRelationships @Intersects
-			end
 	end;
 end

@@ -119,10 +119,10 @@ begin
 					insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
 					values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
 
-					insert into cache.Relationship ( IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @s, @sid, @o, @oid );
-					insert into cache.Relationship ( IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID )
-					values	( @IntersectID, @o, @oid, @s, @sid );
+					--insert into cache.Relationship ( IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID )
+					--values	( @IntersectID, @s, @sid, @o, @oid );
+					--insert into cache.Relationship ( IntersectID, SourceObject, SourceObjectID, TargetObject, TargetObjectID )
+					--values	( @IntersectID, @o, @oid, @s, @sid );
 
 					--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
 					if ( (@s = 'Taxonomy' and @o = 'Artifact') OR (@s = 'Artifact' and @o = 'Taxonomy') )

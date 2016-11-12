@@ -10,3 +10,15 @@
     CONSTRAINT [FK_LoadItemColumn_LoadItem] FOREIGN KEY ([LoadID], [RowIndex]) REFERENCES [dbo].[LoadItem] ([LoadID], [RowIndex]) ON DELETE CASCADE
 );
 
+
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load_ColumnIndex_LookupObjectID]
+    ON [dbo].[LoadItemColumn]([LoadID] DESC, [ColumnIndex] ASC, [LookupObjectID] ASC);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load_ColumnIndex]
+    ON [dbo].[LoadItemColumn]([LoadID] DESC, [ColumnIndex] ASC);
+

@@ -177,32 +177,6 @@ begin
 
 			if @Object = 'IntersectType'
 			begin
-				-- Stores the sources we have identified through the loop below.
-				declare @tblRelationshipIDs table (ID int)
-
-				--Seed initial tables values
-				insert into @tblRelationshipIDs
-					select	R.ID 
-					from	Responsibility R
-							inner join [Intersect] I on I.IntersectTypeID = 2 and R.ObjectType = 'Intersect' and R.ObjectID = I.ID 
-
-				-- follow trail all the way back.
-				while exists(
-						select	1 
-						from	Responsibility
-						where	TargetResponsibilityID in (select ID from @tblRelationshipIDs)
-								and ID not in (select ID from @tblRelationshipIDs)
-				)
-				begin
-					insert into @tblRelationshipIDs
-						select	ID
-						from	Responsibility
-						where	TargetResponsibilityID in (select ID from @tblRelationshipIDs)
-								and ID not in (select ID from @tblRelationshipIDs)
-				end
-
-				delete Responsibility where ID in (select ID from @tblRelationshipIDs)
-
 				delete [Intersect] where IntersectTypeID = @ObjectID
 				delete IntersectType where ID = @ObjectID
 			end
@@ -247,21 +221,20 @@ begin
 		else
 		begin
 			delete Attribute							where ObjectType = @Object and ObjectID = @ObjectID
-			delete cache.Relationship					where [SourceObject] = @Object and SourceObjectID = @ObjectID
-			delete cache.Relationship					where [TargetObject] = @Object and TargetObjectID = @ObjectID
 
 			BEGIN TRY
 				DECLARE @tblIntersectIDs table (ID int)
 
 				INSERT INTO @tblIntersectIDs
-					SELECT	IntersectID
-					FROM	IntersectNode
-					WHERE	ObjectType = @Object and ObjectID = @ObjectID
+					SELECT	ID
+					FROM	[Intersect]
+					WHERE	(Subject = @Object and SubjectID = @ObjectID) OR (Object = @Object and ObjectID = @ObjectID)
 
-				delete	[Intersect] where ID in (select ID from @tblIntersectIDs)
 				delete	MapItem 
 				where	SourceIntersectID in (select ID from @tblIntersectIDs) OR
 						TargetIntersectID in (select ID from @tblIntersectIDs)
+
+				delete [Intersect] where ID in (select ID from @tblIntersectIDs)
 			END TRY
 			BEGIN CATCH
 

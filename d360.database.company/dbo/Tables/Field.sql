@@ -13,6 +13,8 @@
 
 
 
+
+
 GO
 CREATE NONCLUSTERED INDEX [IX_Field_ObjectType-ObjectID]
     ON [dbo].[Field]([ObjectType] ASC, [ObjectID] ASC);
@@ -41,3 +43,8 @@ AS
 	from	Field TF
 			inner join FieldType FT on FT.ID = TF.FieldTypeID
 			inner join	inserted SF on FT.LookupObjectType = SF.ObjectType and TF.Value = cast(SF.ObjectID as varchar(25))
+GO
+CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID]
+    ON [dbo].[Field]([FieldTypeID] ASC)
+    INCLUDE([Value]);
+

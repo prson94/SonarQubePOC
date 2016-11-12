@@ -239,7 +239,6 @@
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="utility\Views\RelationshipTypes.sql" />
     <Build Include="dbo\Views\SecurityDetail.sql" />
     <Build Include="dbo\Views\FollowDetail.sql" />
     <Build Include="fusion\Views\AttributeOwner.sql" />
@@ -289,7 +288,6 @@
       <AnsiNulls>On</AnsiNulls>
       <QuotedIdentifier>On</QuotedIdentifier>
     </Build>
-    <Build Include="dbo\Functions\GetRelatedObjectsByEventType.sql" />
     <Build Include="utility\Functions\GetObjectHierarchy.sql" />
     <Build Include="dbo\Stored Procedures\GetScoreHistoryByObject.sql">
       <AnsiNulls>On</AnsiNulls>
@@ -463,10 +461,7 @@
     <Build Include="dbo\Stored Procedures\GetLineage.sql" />
     <Build Include="dbo\Tables\FusionOwner.sql" />
     <Build Include="dbo\Tables\Favorite_1.sql" />
-    <Build Include="quality\Tables\Dimension.sql" />
     <Build Include="quality\Tables\RuleResult.sql" />
-    <Build Include="quality\Tables\RuleMap.sql" />
-    <Build Include="quality\Tables\Rule.sql" />
     <Build Include="dbo\Views\MapRuleItemDetail.sql" />
     <Build Include="quality\Functions\CalculatePassed.sql" />
     <Build Include="bulkload\Stored Procedures\BusinessLineage.sql" />
@@ -481,6 +476,30 @@
     <Build Include="bulkload\Stored Procedures\UpdateItemColumnByType.sql" />
     <Build Include="quality\Functions\CalculatePassedWrapper.sql" />
     <None Include="utility\Functions\GetFormattedFieldReferenceItemValue.sql" />
+    <Build Include="dbo\Tables\SiteNav_1.sql" />
+    <Build Include="dbo\Tables\RuleResult.sql" />
+    <Build Include="dbo\Tables\RuleMap.sql" />
+    <Build Include="dbo\Tables\ReferenceItemType.sql" />
+    <Build Include="dbo\Tables\ReferenceItem.sql" />
+    <Build Include="dbo\Tables\FusionQueryAttributeType.sql" />
+    <Build Include="dbo\Tables\FusionQueryAttribute.sql" />
+    <Build Include="dbo\Views\SiteNavFlat.sql" />
+    <Build Include="dbo\Views\SiteNavAvailable_1.sql" />
+    <Build Include="utility\Functions\GetFormattedFieldReferenceItemValue_1.sql" />
+    <Build Include="utility\Functions\CalculatePassedWrapper.sql" />
+    <Build Include="utility\Functions\CalculatePassed.sql" />
+    <Build Include="dbo\Functions\CustomSiteNavigation_1.sql" />
+    <Build Include="fusion\Stored Procedures\Rules_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByObject_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetTechnicalRelationshipsByIntersect_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetSiteNavigation_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg_1.sql" />
+    <Build Include="dbo\Stored Procedures\GetAvailableSiteNavigation.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateDynamicLookupFieldColumns.sql" />
+    <Build Include="bulkload\Stored Procedures\Synonyms.sql" />
+    <Build Include="bulkload\Stored Procedures\Relationships.sql" />
+    <Build Include="bulkload\Stored Procedures\Promotions.sql" />
+    <Build Include="bulkload\Stored Procedures\MergeDynamicLookupFields.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

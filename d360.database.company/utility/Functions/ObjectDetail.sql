@@ -20,14 +20,15 @@ RETURNS @tbl TABLE
 	[TypeName] nvarchar(250),
 	IconBackColor varchar(15),
 	IconForeColor varchar(15),
-	IconText varchar(15)
+	IconText varchar(15),
+	Status nvarchar(25) null
 ) 
 AS
 BEGIN
 	if @type = 'Artifact'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.ArtifactTypeID, O.ID),	O.ArtifactTypeID,	'ArtifactType',	T.Name
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	O.Name,	O.TextPath,	O.Description,	O.ParentID,	@type,		dbo.GenerateObjectUrl(@type, O.ArtifactTypeID, O.ID),	O.ArtifactTypeID,	'ArtifactType',	T.Name, O.Status
 			FROM	Artifact O
 					INNER JOIN ArtifactType T ON O.ArtifactTypeID = T.ID and O.ID = @id
 	end
@@ -171,6 +172,14 @@ BEGIN
 			WHERE	ID = @id
 	end
 
+	if @type = 'FusionQueryAttributeType'
+	begin
+		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		dbo.GenerateObjectUrl(@type, 0, ID),	ID,		@type,	'Fusion Query Attribute Type'
+			FROM	FusionQueryAttributeType O
+			WHERE	ID = @id
+	end
+
 	if @type = 'Policy'
 	begin
 		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
@@ -220,8 +229,8 @@ BEGIN
 
 	if @type = 'Rule'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
-			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleType,	'RuleType',	'Rule'
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		dbo.GenerateObjectUrl(@type, 0, O.ID),	O.RuleType,	'RuleType',	'Rule', case O.Status when 1 then 'Draft' when 2 then 'Active' else 'Inactive' end
 			FROM	[Rule] O
 			WHERE	O.ID = @id
 	end

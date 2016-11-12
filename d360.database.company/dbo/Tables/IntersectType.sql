@@ -11,8 +11,11 @@
     [CreatedBy]   INT          NULL,
     [CreatedOn]   DATETIME     NULL,
     [PredicateID] INT          NULL,
-    CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ([ID] ASC),
+    CONSTRAINT [UQ_IntersectType] UNIQUE NONCLUSTERED ([Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC, [PredicateID] ASC)
 );
+
+
 
 
 

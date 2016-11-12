@@ -29,18 +29,14 @@ AS
 															(F.ObjectType + 'Type' = T.[Object] and F.ObjectType <> 'Event') OR 
 															(T.[Object] = 'Rule' and F.ObjectType = 'Event') 
 														   )
-			--left join cache.ObjectDetails D on D.[Object] = F.ObjectType and D.ObjectID = F.ObjectID
-			--left join Attribute AD on F.ObjectType = 'Attribute' and AD.ID = F.ObjectID
 			left join cache.ObjectDetails LD on 
 				LD.[Object] = case T.LookupObjectType
-									--when 'Lookup' then 'LookupType' 
 									when 'DomainItem' then 'Domain' 
 									else T.LookupObjectType 
 							  end
 				and LD.ObjectID = case 
-									when T.LookupObjectType = 'Lookup' then T.LookupObjectID 
 									when T.LookupObjectType = 'DomainItem' then T.LookupObjectID 
 									when T.LookupObjectType = 'Resource' then T.LookupObjectID 
 									when T.LookupObjectType is null then NULL 
-									else F.Value 
+									else F.Value
 								end

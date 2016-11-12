@@ -82,15 +82,16 @@ BEGIN
 							P.ResponsibilityTypeID,
 							P.AssigningItemType,
 							P.AssigningItemID,
-							R.TargetObject, 
-							R.TargetObjectID,
+							case when (R.Subject = 'Taxonomy' and R.SubjectID = P.ID and R.Object = 'Artifact') then R.Object else R.Subject end, 
+							case when (R.Subject = 'Taxonomy' and R.SubjectID = P.ID and R.Object = 'Artifact') then R.ObjectID else R.SubjectID end,
 							P.ContextHash,
 							P.[Level]
 				from		ModelRelationHierarchy P
-							inner join cache.Relationship R on 
-								R.SourceObject = 'Taxonomy' and R.SourceObjectID = P.ID 
-								and R.TargetObject = 'Artifact'
-							inner join Artifact A on A.ID = R.TargetObjectID and A.TaxonomyTypeID = P.TaxonomyTypeID
+							inner join [Intersect] R on 
+														(R.Subject = 'Taxonomy' and R.SubjectID = P.ID and R.Object = 'Artifact') OR
+														(R.Object = 'Taxonomy' and R.ObjectID = P.ID and R.Subject = 'Artifact')
+							inner join Artifact A on A.ID = case when (R.Subject = 'Taxonomy' and R.SubjectID = P.ID and R.Object = 'Artifact') then R.ObjectID else R.SubjectID end 
+													and A.TaxonomyTypeID = P.TaxonomyTypeID
 								and (
 									(A.ID = @ObjectID and @ObjectID is not null) or (@ObjectID is null)
 									)

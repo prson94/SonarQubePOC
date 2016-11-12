@@ -15,11 +15,12 @@ BEGIN
 			--		NULL AS items
 			--FROM	(
 					SELECT		TOP 1000
-								id,
-								name,
-								dbo.GenerateNgObjecturl('ArtifactType', ID, 0) As url
-					FROM		ArtifactType 
-					WHERE		ParentID = @id
+								a.id,
+								a.name,
+								dbo.GenerateNgObjecturl('ArtifactType', a.ID, 0) As url
+					FROM		ArtifactType a
+					LEFT JOIN SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
+					WHERE		a.ParentID = @id AND v.ObjectID IS NULL
 					ORDER BY	name
 			--		) A
 			) BG

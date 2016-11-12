@@ -1,47 +1,43 @@
 ﻿CREATE view [dbo].[Relationship]
 as
-	select	I.IntersectTypeID,
-			R.IntersectID,
-			case I.Classification
+	select	R.IntersectTypeID,
+			R.ID as IntersectID,
+			case R.Classification
 				when 0 then 2
-				else I.Classification
+				else R.Classification
 			end as Classification,
-			I.Description,
+			R.Description,
 			'' as [Role],
-			--R.[Role],
-			R.SourceIntersectTypeNodeID,
-			R.SourceObject as SourceObjectType,
-			R.SourceObjectID,
-			coalesce(S.TextPath, S.Name) as SourceName, 
-			S.Parent as SourceParent,
-			S.ParentID as SourceParentID,
-			S.ParentName as SourceParentName,
-			S.ObjectTypeID as SourceTypeID,
-			S.ObjectType as SourceType,
-			S.ObjectTypeName as SourceTypeName,
-			S.[Url] as SourceUrl,
-			R.TargetIntersectTypeNodeID,
-			T.Object as TargetObjectType,
-			T.ObjectID as TargetObjectID,
-			coalesce(T.TextPath, T.Name) as TargetName,
-			T.Parent as TargetParent,
-			T.ParentID as TargetParentID,
-			T.ParentName as TargetParentName,
-			T.ObjectTypeID as TargetTypeID,
-			T.ObjectType as TargetType,
-			T.ObjectTypeName as TargetTypeName,
-			T.[Url] as TargetUrl,
+			0 as SourceIntersectTypeNodeID,
+			R.Subject as SourceObjectType,
+			R.SubjectID as SourceObjectID,
+			R.SubjectName as SourceName, 
+			'' as SourceParent,
+			0 as SourceParentID,
+			'' as SourceParentName,
+			R.SubjectTypeID as SourceTypeID,
+			R.SubjectType as SourceType,
+			R.SubjectTypeName as SourceTypeName,
+			R.[SubjectUrl] as SourceUrl,
+			0 as TargetIntersectTypeNodeID,
+			R.Object as TargetObjectType,
+			R.ObjectID as TargetObjectID,
+			R.ObjectName as TargetName,
+			'' as TargetParent,
+			0 as TargetParentID,
+			'' as TargetParentName,
+			R.ObjectTypeID as TargetTypeID,
+			R.ObjectType as TargetType,
+			R.ObjectTypeName as TargetTypeName,
+			R.[ObjectUrl] as TargetUrl,
 			TR.[Exists] as HasTechnicalRelationships
-	from	cache.Relationship R
-			inner join [Intersect] I on I.ID = R.IntersectID
-			left join [cache].[ObjectDetails] S on S.[Object] = R.SourceObject and S.ObjectID = R.SourceObjectID
-			left join [cache].[ObjectDetails] T on T.[Object] = R.TargetObject and T.ObjectID = R.TargetObjectID
+	from	IntersectDetail R
 			cross apply (
 						select	case 
 									when count(1) > 0 then cast(1 as bit) 
 									else cast(0 as bit) 
 								end as [Exists]
-						from	cache.Relationships
-						where	SourceObject = 'Intersect' and SourceObjectID = R.IntersectID
+						from	[Intersect]
+						where	Subject = 'Intersect' and SubjectID = R.ID
 						) TR
 

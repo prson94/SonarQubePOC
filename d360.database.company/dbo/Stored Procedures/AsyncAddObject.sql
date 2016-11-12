@@ -1,4 +1,4 @@
-﻿create procedure [dbo].[AsyncAddObject]
+﻿CREATE procedure [dbo].[AsyncAddObject]
 	@Object varchar(50),
 	@ObjectID int,
 	@ParentObject varchar(50),
@@ -17,16 +17,7 @@ begin
 		
 		exec [cache].[SynchronizeObjectDetails] @Object, @ObjectID
 
-		--INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [Priority]) values ('ObjectIndex', 'A', @Object, @ObjectID, 4)
-
 		exec [utility].[AddAuditEntry] @ParentObject, @ParentObjectID, @ResourceID, @date, 'Created', @Object, @ObjectID
-
-		if @Object = 'Intersect'
-		begin
-			declare @IDs dbo.IDTable
-			insert into @IDs values (@ObjectID)
-			exec [cache].[SynchronizeRelationships] @IDs
-		end
 
 		if @Object in ('AttributeTypeRelation', 'AttributeTypeRelation', 'ResponsibilityTypeRelation', 'ResponsibilityType')
 		begin
@@ -35,6 +26,11 @@ begin
 		else
 		begin
 			exec utility.CalculateStatistics @Object, @ObjectID
+		end
+
+		if @Object = 'Intersect'
+		begin
+			exec cache.SynchronizeResponsibilitiesForObject @ParentObject, @ParentObjectID 
 		end
 
 		if @Object = 'Responsibility'

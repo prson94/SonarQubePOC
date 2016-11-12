@@ -118,32 +118,14 @@ begin
 		-- Add indexes to temp table
 		CREATE NONCLUSTERED INDEX [IX_SourceBusinessIntersect] ON #Items ( SourceIntersectTypeID ASC, SourceSubject ASC, SourceSubjectID ASC, SourceObject ASC, SourceObjectID ASC )
 
+		/*	BEGIN: SOURCE BUSINESS INTERSECT LOGIC */
 
-		-- update rows with existing source and target business intersects
+		-- update rows with existing source business intersects
 		update	T
 		set		T.SourceIntersectID = S.ID,
 				T.SourceIntersectChangeType = 'U'
 		from	#Items T
 				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
-
-		update	T
-		set		T.TargetIntersectID = S.ID,
-				T.TargetIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
-
-		-- update rows with existing source and target technical intersects
-		update	T
-		set		T.SourceFusionIntersectID = S.ID,
-				T.SourceFusionIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionID
-
-		update	T
-		set		T.TargetFusionIntersectID = S.ID,
-				T.TargetFusionIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
 
 		-- insert source business relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
@@ -166,6 +148,18 @@ begin
 				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
 				and T.SourceIntersectChangeType <> 'U';
 
+		/*	END: SOURCE BUSINESS INTERSECT LOGIC */
+
+
+		/*	BEGIN: TARGET BUSINESS INTERSECT LOGIC */
+
+		-- update rows with existing target business intersects
+		update	T
+		set		T.TargetIntersectID = S.ID,
+				T.TargetIntersectChangeType = 'U'
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
+
 		-- insert target business relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 			select	distinct
@@ -186,6 +180,18 @@ begin
 		from	#Items T
 				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
 				and T.TargetIntersectChangeType <> 'U';
+
+		/*	END: TARGET BUSINESS INTERSECT LOGIC */
+
+
+		/*	BEGIN: SOURCE TECHNICAL INTERSECT LOGIC */
+
+		-- update rows with existing source technical intersects
+		update	T
+		set		T.SourceFusionIntersectID = S.ID,
+				T.SourceFusionIntersectChangeType = 'U'
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionID
 
 		-- insert source technical relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
@@ -208,6 +214,18 @@ begin
 				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.SourceIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionID
 				and T.SourceFusionIntersectChangeType <> 'U';
 
+		/*	END: SOURCE TECHNICAL INTERSECT LOGIC */
+
+
+		/*	BEGIN: TARGET TECHNICAL INTERSECT LOGIC */
+		
+		-- update rows with existing target technical intersects
+		update	T
+		set		T.TargetFusionIntersectID = S.ID,
+				T.TargetFusionIntersectChangeType = 'U'
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
+
 		-- insert target technical relationships
 		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 			select	distinct
@@ -228,6 +246,8 @@ begin
 		from	#Items T
 				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
 				and T.TargetFusionIntersectChangeType <> 'U';
+
+		/*	END: TARGET TECHNICAL INTERSECT LOGIC */
 
 		-- update rows with existing map items
 		update	T

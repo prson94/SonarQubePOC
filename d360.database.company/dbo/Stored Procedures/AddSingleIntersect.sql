@@ -14,33 +14,30 @@ begin
 	declare @Date datetime = getutcdate(),
 			@ErrorMessage nvarchar(2500),
 			@IntersectID int,
-			@SubjectIntersectTypeNodeID int,
-			@SubjectIntersectNodeID int,
-			@ObjectIntersectTypeNodeID int,
-			@ObjectIntersectNodeID int
+			@Reversed bit = 0
 
-	select	@IntersectID = I.ID,
-			@SubjectIntersectTypeNodeID = N1.IntersectTypeNodeID,	@SubjectIntersectNodeID = N1.ID,
-			@ObjectIntersectTypeNodeID = N2.IntersectTypeNodeID,	@ObjectIntersectNodeID = N2.ID
-	from	[Intersect] I
-			inner join IntersectNode N1 on N1.IntersectID = I.ID and N1.ObjectType = @Subject and N1.ObjectID = @SubjectID
-			inner join IntersectNode N2 on N2.IntersectID = I.ID and N2.ObjectType = @Object and N2.ObjectID = @ObjectID
+	select	@IntersectID = ID,
+			@Reversed = case
+				when (Subject = @Subject and SubjectID = @SubjectID and Object = @Object and ObjectID = @ObjectID) then 0
+				else 1
+			end
+	from	[Intersect]
+	where	(
+			(Subject = @Subject and SubjectID = @SubjectID and Object = @Object and ObjectID = @ObjectID) OR 
+			(Subject = @Object and SubjectID = @ObjectID and Object = @Subject and ObjectID = @SubjectID)
+			)
 
 	if @IntersectID is not null and @IntersectID > 0
 		begin
 			-- Update
-
 			update	[Intersect]
 			set		Classification = @Classification,
 					Description = @Description
 			where	ID = @IntersectID
-
-			--exec utility.AddAuditEntry 'Intersect', @IntersectID, @ResourceID, @Date, 'Updated', 'Intersect', @IntersectID
 		end
 	else
 		begin
 			-- Create
-
 			declare @SubjectType varchar(50),
 					@SubjectTypeID int,
 					@ObjectType varchar(50),
@@ -50,13 +47,18 @@ begin
 			select	@ObjectType = ObjectType, @ObjectTypeID = ObjectTypeID		from cache.[Object] where [Object] = @Object and ObjectID = @ObjectID 
 
 			select	distinct 
-					@SubjectIntersectTypeNodeID = SourceIntersectTypeNodeID, 
-					@ObjectIntersectTypeNodeID = TargetIntersectTypeNodeID
-			from	utility.RelationshipTypes R 
-			where	SourceObjectType = @SubjectType and SourceObjectID = @SubjectTypeID 
-					and TargetObjectType = @ObjectType and TargetObjectID = @ObjectTypeID
+					@IntersectTypeID = ID,
+					@Reversed = case
+						when (Subject = @SubjectType and SubjectID = @SubjectTypeID and Object = @ObjectType and ObjectID = @ObjectTypeID) then 0
+						else 1
+					end
+			from	IntersectType 
+			where	(
+						(Subject = @SubjectType and SubjectID = @SubjectTypeID and Object = @ObjectType and ObjectID = @ObjectTypeID) OR
+						(Subject = @ObjectType and SubjectID = @ObjectTypeID and Object = @SubjectType and ObjectID = @SubjectTypeID)
+					)
 
-			if @SubjectIntersectTypeNodeID is not null and @ObjectIntersectTypeNodeID is not null
+			if @IntersectTypeID is not null
 				begin
 					INSERT INTO [Intersect] (
 						IntersectTypeID, 
@@ -71,8 +73,10 @@ begin
 						@IntersectTypeID, 
 						@Classification, 
 						@Description,
-						@Subject, @SubjectID,
-						@Object, @ObjectID,
+						case @Reversed when 0 then @Subject else @Object end, 
+						case @Reversed when 0 then @SubjectID else @ObjectID end,
+						case @Reversed when 0 then @Object else @Subject end, 
+						case @Reversed when 0 then @ObjectID else @SubjectID end,
 						@ResourceID, @Date,
 						@ResourceID, @Date
 					)
@@ -81,11 +85,6 @@ begin
 
 					insert into cache.[Object] ( [Object], [ObjectID], [ObjectType], [ObjectTypeID] )
 					values	( 'Intersect', @IntersectID, 'IntersectType', @IntersectTypeID );
-
-					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, 0, 0, @Subject, @SubjectID, 0, 0, @Object, @ObjectID );
-					insert into cache.Relationship ( IntersectID, SourceIntersectTypeNodeID, SourceIntersectNodeID, SourceObject, SourceObjectID, TargetIntersectTypeNodeID, TargetIntersectNodeID, TargetObject, TargetObjectID )
-					values	( @IntersectID, 0, 0, @Object, @ObjectID, 0, 0, @Subject, @SubjectID );
 
 					--Update the responsibilities of the object that should inherit form the other (Taxonomy can push relationships down to artifact)
 					if ( (@Subject = 'Taxonomy' and @Object = 'Artifact') OR (@Subject = 'Artifact' and @Object = 'Taxonomy') )
@@ -99,9 +98,6 @@ begin
 								exec [cache].[SynchronizeResponsibilitiesForObject] @Object, @ObjectID
 							end
 						end
-
-					--exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
-					--exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @Date, 'Created', 'Intersect', @IntersectID
 				end
 		end
 

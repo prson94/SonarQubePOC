@@ -519,7 +519,7 @@ begin
 	end
 	else
 	begin
-		-- This is for actions: R, U, L
+		-- This is for actions: R, U, S
 		declare @current int,
 				@max int,
 				@sourceObject varchar(50),
@@ -541,207 +541,6 @@ begin
 				
 				@predicateID int,
 				@rundate datetime = CURRENT_TIMESTAMP
-
-		if @Action = 'L' -- LINEAGE (create lineage from input spreadsheet)
-		begin
-			declare @focalObject varchar(50),
-					@focalObjectID int,
-					@focalObjectTypeName nvarchar(1000),
-					@focalName nvarchar(500),
-					@intersectPredicate varchar(50),
-					@focalIntersectID int,
-					@focalSubject nvarchar(500),
-					@lineageErrorDetailMessage varchar(200)
-			
-			select	@current = min(I.RowIndex),
-					@max = max(I.RowIndex)
-			from	LoadItem I
-					inner join LoadItemColumn FT on FT.LoadID = I.LoadID and FT.RowIndex = I.RowIndex and FT.ColumnIndex = 1  --focal point object type
-						inner join LoadItemColumn FTN on FTN.LoadID = I.LoadID and FTN.RowIndex = I.RowIndex and FTN.ColumnIndex = 2   --focal point object type name
-						inner join LoadItemColumn F on F.LoadID = I.LoadID and F.RowIndex = I.RowIndex and F.ColumnIndex = 4--focal point name		
-						inner join LoadItemColumn ST on ST.LoadID = I.LoadID and ST.RowIndex = I.RowIndex and St.ColumnIndex = 5 --source object type
-						inner join LoadItemColumn STN on STN.LoadID = I.LoadID and STN.RowIndex = I.RowIndex and StN.ColumnIndex = 6 --source object type name
-						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 8 --source object name
-						inner join LoadItemColumn TT on TT.LoadID = I.LoadID and TT.RowIndex = I.RowIndex and TT.ColumnIndex = 9 --target object type
-						inner join LoadItemColumn TTN on TTN.LoadID = I.LoadID and TTN.RowIndex = I.RowIndex and TTN.ColumnIndex = 10 --target object type name
-						inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 12 --source object name
-						inner join LoadItemColumn P on P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 13 --predicate
-			where	I.LoadID = @LoadID
-			
-			-- go row by row
-			while @current <= @max
-			begin
-				--load the objects / id's for the focal, source, and target objects
-				select	@focalObject = FT.Value,
-						@focalObjectTypeName = FTN.Value,
-						@focalName = F.Value,
-						@focalSubject = FS.Value,
-						@sourceObject = ST.Value,
-						@sourceObjectTypeName = STN.Value,
-						@sourceName = S.Value,
-						@sourceSubject = SS.Value,
-						@targetObject = TT.Value,
-						@targetObjectTypeName = TTN.Value,
-						@targetName = T.Value,
-						@targetSubject = TS.Value,
-						@intersectPredicate = P.Value
-				from	LoadItem I
-						inner join LoadItemColumn FT on FT.LoadID = I.LoadID and FT.RowIndex = I.RowIndex and FT.ColumnIndex = 1  --focal point object type
-						inner join LoadItemColumn FTN on FTN.LoadID = I.LoadID and FTN.RowIndex = I.RowIndex and FTN.ColumnIndex = 2  --focal point object type name
-						inner join LoadItemColumn FS on FS.LoadID = I.LoadID and FS.RowIndex = I.RowIndex and FS.ColumnIndex = 3 --focal point subject area		
-						inner join LoadItemColumn F on F.LoadID = I.LoadID and F.RowIndex = I.RowIndex and F.ColumnIndex = 4 --focal point name		
-						inner join LoadItemColumn ST on ST.LoadID = I.LoadID and ST.RowIndex = I.RowIndex and St.ColumnIndex = 5 --source object type
-						inner join LoadItemColumn STN on STN.LoadID = I.LoadID and STN.RowIndex = I.RowIndex and StN.ColumnIndex = 6 --source object type name
-						inner join LoadItemColumn SS on SS.LoadID = I.LoadID and SS.RowIndex = I.RowIndex and SS.ColumnIndex = 7 --source object subject
-						inner join LoadItemColumn S on S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 8 --source object name
-						inner join LoadItemColumn TT on TT.LoadID = I.LoadID and TT.RowIndex = I.RowIndex and TT.ColumnIndex = 9 --target object type
-						inner join LoadItemColumn TTN on TTN.LoadID = I.LoadID and TTN.RowIndex = I.RowIndex and TTN.ColumnIndex = 10 --target object type name
-						inner join LoadItemColumn TS on TS.LoadID = I.LoadID and TS.RowIndex = I.RowIndex and TS.ColumnIndex = 11 --target object subject
-						inner join LoadItemColumn T on T.LoadID = I.LoadID and T.RowIndex = I.RowIndex and T.ColumnIndex = 12 --source object name
-						inner join LoadItemColumn P on P.LoadID = I.LoadID and P.RowIndex = I.RowIndex and P.ColumnIndex = 13 --predicate
-				where	I.LoadID = @LoadID and I.RowIndex = @current
-
-				select @focalObjectID = 0, @sourceObjectID = 0, @targetObjectID = 0, @predicateID = 0;
-
-				select @predicateID = id from predicate where name = @intersectPredicate;				
-
-				-- load focal object
-				if @focalObject = 'Artifact'
-				begin
-					select top 1
-						@focalObjectID = cod.objectid										
-					from 
-						[cache].objectdetails cod
-						inner join artifact a on (cod.objectid = a.id)
-						inner join taxonomytype t on (a.taxonomytypeid = t.id)
-					where 
-						cod.[object] = @focalObject and cod.textpath = @focalName and cod.objecttypename = @focalObjectTypeName and t.Name = @focalSubject
-				end
-				else
-				begin
-					select top 1
-							@focalObjectID = cod.objectid										
-					from 
-						[cache].objectdetails cod
-					where 
-						cod.[object] = @focalObject and cod.textpath = @focalName and cod.objecttypename = @focalObjectTypeName
-				end
-
-				if @sourceObject = 'Artifact'
-				begin
-					select top 1
-						@sourceObjectID = cod.objectid										
-					from 
-						[cache].objectdetails cod
-						inner join artifact a on (cod.objectid = a.id)
-						inner join taxonomytype t on (a.taxonomytypeid = t.id)
-					where 
-						cod.[object] = @sourceObject and cod.textpath = @sourceName and cod.objecttypename = @sourceObjectTypeName and t.Name = @sourceSubject
-				end
-				else
-				begin
-					-- load source object
-					select top 1
-							@sourceObjectID = cod.objectid						
-					from 
-						[cache].objectdetails cod
-					where 
-						cod.[object] = @sourceObject and cod.textpath = @sourceName and cod.objecttypename = @sourceObjectTypeName
-				end
-
-				if @targetObject = 'Artifact'
-				begin
-					-- load target object
-					select top 1
-							@targetObjectID = cod.objectid												
-					from 
-						[cache].objectdetails cod
-						inner join artifact a on (cod.objectid = a.id)
-						inner join taxonomytype t on (a.taxonomytypeid = t.id)
-					where 
-						cod.[object] = @targetObject and cod.textpath = @targetName and cod.objecttypename = @targetObjectTypeName and t.Name = @targetSubject
-				end
-				else
-				begin
-					-- load target object
-					select top 1
-							@targetObjectID = cod.objectid												
-					from 
-						[cache].objectdetails cod
-					where 
-						cod.[object] = @targetObject and cod.textpath = @targetName and cod.objecttypename = @targetObjectTypeName
-				end
-
-				--debug 
-				--select @focalObjectID, @focalObject, @sourceObjectID, @sourceObject, @targetObjectID, @targetObject, @predicateID
-
-				--if all are provided we are good otherwise error
-				if @focalObjectID > 0 and @sourceObjectID > 0 and @targetObjectID > 0 and @predicateID > 0
-					begin
-
-					-- add intersect between focal object and source if one doesnt exist					
-					exec [dbo].[AddRelationship] @UpdatedBy,@rundate,@focalObject,@focalObjectID,2,null,null,@sourceObject,@sourceObjectID;
-
-					-- add intersect between focal object and target if one doesnt exist
-					exec [dbo].[AddRelationship] @UpdatedBy,@rundate,@focalObject,@focalObjectID,2,null,null,@targetObject,@targetObjectID;
-					
-					-- add intersect between source / target if one doesnt exist
-					exec [dbo].[AddRelationship] @UpdatedBy,@rundate,@sourceObject,@sourceObjectID,2,null,null,@targetObject,@targetObjectID;
-
-					-- add intersect map between source / target if one doesnt exist for source to target intersect
-					if not exists (select 1 from intersectmap map
-							inner join intersectnode node1 on ( map.subjectintersectnodeid = node1.id and node1.objectid = @sourceObjectID and node1.objecttype = @sourceObject)
-							inner join intersectnode node2 on ( map.objectintersectnodeid = node2.id and node2.objectid = @targetObjectID and node2.objecttype = @targetObject)
-						where map.[type] = 1)
-						begin							
-							insert into intersectmap
-								select 
-									node1.ID as SubjectIntersectNode,
-									node2.ID as ObjectIntersectNode,
-									@predicateID as PredicateID,
-									1 as [Type]
-								from						
-									intersectnode node1 
-									inner join intersectnode node2 on (node1.objectid = @sourceObjectID and node1.objecttype =@sourceObject and node2.objectid = @targetObjectID and node2.objecttype = @targetObject and node1.intersectid = node2.intersectid);
-						end
-
-
-						update	LoadItem
-						set		[Status] = 1,
-								StatusMessage = 'Successfully added item to lineage'
-						where	LoadID = @LoadID
-								and RowIndex = @current
-					end -- if valid
-				else
-					begin
-						set @lineageErrorDetailMessage = '';
-
-						if @focalObjectID = 0
-						begin
-							set @lineageErrorDetailMessage = '  Focal point is invalid.';
-						end
-
-						if @sourceObjectID = 0
-						begin
-							set @lineageErrorDetailMessage = @lineageErrorDetailMessage + '  Source object is invalid.';
-						end
-
-						if @targetObjectID = 0
-						begin
-							set @lineageErrorDetailMessage = @lineageErrorDetailMessage + '  Target object is invalid.';
-						end
-
-						update	LoadItem
-						set		[Status] = 0,
-								StatusMessage = 'Failed to add item to lineage.' + @lineageErrorDetailMessage + ' [focal id:' + convert(varchar(10), @focalObjectID) + ' type:' + @focalObject + '] [source id:' + convert(varchar(10),@sourceObjectID) + ' type:' + @sourceObject +'] [target id:' + convert(varchar(10), @targetObjectID) + ' type:' + @targetObject + ']'
-						where	LoadID = @LoadID
-								and RowIndex = @current
-					end -- else not valid
-				
-				set @current = @current + 1
-			end
-
-		end
 
 		if @Action = 'S' -- SYNONYM (create synonyms from input spreadsheet)
 		begin
@@ -829,28 +628,8 @@ begin
 				--if all are provided we are good otherwise error
 				if @sourceObjectID > 0 and @targetObjectID > 0 and @predicateID > 0
 					begin
-
-					-- add intersect between source / target if one doesnt exist
-					exec [dbo].[AddRelationship] @UpdatedBy, @rundate, @sourceObject, @sourceObjectID, 2, null, null, @targetObject, @targetObjectID;
-
-					-- add intersect map between source / target if one doesnt exist for source to target intersect
-					if not exists (
-							select	1 
-							from	intersectmap map
-									inner join intersectnode node1 on ( map.subjectintersectnodeid = node1.id and node1.objectid = @sourceObjectID and node1.objecttype = @sourceObject)
-									inner join intersectnode node2 on ( map.objectintersectnodeid = node2.id and node2.objectid = @targetObjectID and node2.objecttype = @targetObject)
-						where map.[type] = 6)
-						begin							
-							insert into intersectmap
-								select 
-									node1.ID as SubjectIntersectNode,
-									node2.ID as ObjectIntersectNode,
-									@predicateID as PredicateID,
-									6 as [Type]
-								from						
-									intersectnode node1 
-									inner join intersectnode node2 on (node1.objectid = @sourceObjectID and node1.objecttype =@sourceObject and node2.objectid = @targetObjectID and node2.objecttype = @targetObject and node1.intersectid = node2.intersectid);
-						end
+						-- add intersect between source / target if one doesn't exist
+						exec [dbo].[AddRelationship] @UpdatedBy, @rundate, @sourceObject, @sourceObjectID, 2, null, null, @targetObject, @targetObjectID;
 
 						update	LoadItem
 						set		[Status] = 1,
@@ -905,8 +684,8 @@ begin
 								from	[Load] L
 										inner join [LoadColumn] C on C.LoadID = L.ID and L.ID = @LoadID
 										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-										inner join IntersectTypeNode IT on IT.IntersectTypeID = @ObjectID and IT.[Order] = IC.[ColumnIndex]
-										inner join cache.ObjectDetails T on (T.[TextPath] = IC.Value or T.Name = IC.Value) and T.[ObjectType] = IT.[ObjectType] and T.ObjectTypeID = IT.ObjectID
+										inner join IntersectType IT on IT.ID = @ObjectID
+										inner join cache.ObjectDetails T on (T.[TextPath] = IC.Value or T.Name = IC.Value) and ( (T.[ObjectType] = IT.Subject and T.ObjectTypeID = IT.SubjectID) OR (T.[ObjectType] = IT.Object and T.ObjectTypeID = IT.ObjectID) )
 								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 			update	T
 			set		T.[Status] = 0,
@@ -915,9 +694,9 @@ begin
 											(
 											select	LIC.Value + ' could not be located in the <a href="' + T.Url + '">' + T.Name + '</a> list, '
 											from	[Load] L
-													inner join [IntersectTypeNode] ITN on ITN.IntersectTypeID = L.ObjectID and L.ID = @LoadID
-													inner join [LoadItemColumn] LIC on LIC.LoadID = L.ID and LIC.ColumnIndex = ITN.[Order] and LIC.ColumnIndex = IC.ColumnIndex and LIC.RowIndex = IC.RowIndex and LIC.LookupObject is null
-													inner join cache.ObjectDetails T on T.[Object] = ITN.[ObjectType] and T.ObjectID = ITN.ObjectID
+													inner join IntersectType IT on IT.ID = L.ObjectID and L.ID = @LoadID
+													inner join [LoadItemColumn] LIC on LIC.LoadID = L.ID and LIC.ColumnIndex = IC.ColumnIndex and LIC.RowIndex = IC.RowIndex and LIC.LookupObject is null
+													inner join cache.ObjectDetails T on (T.[Object] = IT.[Subject] and T.ObjectID = IT.SubjectID) OR (T.[Object] = IT.[Object] and T.ObjectID = IT.ObjectID)
 											for xml path('')
 											), 1, 0, ''),
 										'&lt;', '<'), '&gt;', '>')
@@ -961,9 +740,6 @@ begin
 					values		(@ObjectID, 2, @sourceObject, @sourceObjectID, @targetObject, @targetObjectID, 0, @date, 0, @date)
 
 					set @intersectID = SCOPE_IDENTITY()
-
-					exec utility.AddAuditEntry @sourceObject, @sourceObjectID, 0, @date, 'Created', 'Intersect', @intersectID
-					exec utility.AddAuditEntry @targetObject, @targetObjectID, 0, @date, 'Created', 'Intersect', @intersectID
 				end
 
 				if @intersectID is not null
