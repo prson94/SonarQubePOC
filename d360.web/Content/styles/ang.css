@@ -23795,3 +23795,7 @@ th.permission-header {
   color: #646464 !important;
 }
 /* permission tile header styles*/
+label {
+  font-size: 0.8rem;
+  color: #646464;
+}

@@ -26,7 +26,7 @@ import * as _ from 'lodash';
                     </div>
                     <div class="col s12 l6">      
                         <div id="PoolMessage">
-                            By clicking Save above, you are assigning yourself to this issue.  Please provide a comment below.  As you are working on this issue,
+                            By clicking Save below, you are assigning yourself to this issue.  Please provide a comment below.  As you are working on this issue,
                             you may also comment on the issue where it is listed on your Board.
                         </div>
                         <div class="row">                                          

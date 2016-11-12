@@ -27,7 +27,7 @@ import * as _ from 'lodash';
                     </div>
                     <div class="col s12 l6">      
                         <div id="PoolMessage">
-                           By clicking the Certify button above, I certify that all data on this item is correct.
+                           By clicking the Certify button below, I certify that all data on this item is correct.
                         </div>                                                                                                                 
                     </div>                    
                 </div>
