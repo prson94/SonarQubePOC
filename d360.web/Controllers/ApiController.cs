@@ -4827,7 +4827,7 @@ from    (
                             {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = artifact.Name }
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = $"<b>{artifact.Name}</b>" }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = artifact.GetName(i => i.ParentID), FieldName = "ArtifactParentName", FieldDescription = artifact.GetDescription(i => i.ParentID), Value = artifact.Parent.Name, TooltipUrl = parentDetails.Url, TooltipType="Artifact", TooltipContext="Preview", TooltipID = artifact.Parent.ID }
@@ -4840,7 +4840,7 @@ from    (
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = artifact.Name }
+                                    new ReadOnlyField { Name = artifact.GetName(i => i.Name), FieldName = "ArtifactName", FieldDescription = artifact.GetDescription(i => i.Name), Value = $"<b>{artifact.Name}</b>" }
                                 }
                             });
                         }
