@@ -54,7 +54,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <p-column  [style]="{width:'40px'}">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
-                                    <a *ngIf="!item.children" style="cursor:pointer;" (click)="delete(item)"><i class="fa fa-trash-o"></i></a>                                    
+                                    <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>
                         </p-column>       
@@ -63,7 +63,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.data?.ID"
                         [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.name] + ']?'"                                         
+                        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.Name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
                     ></delete-form>        
                     <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="'Policy'" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
@@ -203,7 +203,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
         // add root nodes
         for (var i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.id && this.treeNodeArray[i].data.id == id) {
+            if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
             }
@@ -217,7 +217,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         let node = nodes[0];
 
         while (node) {
-            if (node.data.id && node.data.id == id) {
+            if (node.data.ID && node.data.ID == id) {
 
                 return node;
             }
@@ -225,7 +225,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             //push children
             if (node.children) {
                 for (var i = 0; i < node.children.length; i++) {
-                    if (node.children[i].data.id && node.children[i].data.id == id) {
+                    if (node.children[i].data.ID && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
                         return
                     }
