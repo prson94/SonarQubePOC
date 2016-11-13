@@ -2184,18 +2184,6 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetChildRelationshipTypes(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Gets a list of available relationships types based on the source type specified in parameters. 
-            Used in the Filter By Relationship tile on artifact list pages.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetParentRelationshipTypes(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Gets a list of available relationships types based on the source type specified in parameters. 
-            Used in the Filter By Relationship tile on artifact list pages.
-            </summary>
-        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetRelationshipTypes(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available relationships types based on the source type specified in parameters. 
@@ -2347,6 +2335,30 @@
         <member name="M:d360.web.Controllers.FormController.EventGroup_EditFields(System.Int32)">
             <param name="id">EventGroupID</param>
         </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_ComplexLookup_ChildItems(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Used to get the child types of a specific parent type.
+            </summary>
+            <param name="type">The Type></param>
+            <param name="id">The Type ID></param>
+            <returns>A list of child realtionship types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_ComplexLookup_ParentItems(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Used to get the parent types of a specific child type.
+            </summary>
+            <param name="type">The Type></param>
+            <param name="id">The Type ID></param>
+            <returns>A list of child realtionship types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_ComplexLookup_IntersectTypes(d360.core.SystemObjects,System.Int32)">
+            <summary>
+            Used for complex lookup
+            </summary>
+            <param name="type">The Type></param>
+            <param name="id">The Type ID></param>
+            <returns>A list of relationship types</returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_FilteredLookup_DisplayFields(System.String,System.Int32,System.String,System.Int32)">
             <summary>
             Gets a list of display fields that match a lookup.
@@ -2371,6 +2383,13 @@
             <param name="s">The Source FusionAttributeType ID</param>
             <param name="r">The Reference Type we are checking</param>
             <returns>A list of relevant fusion attribute types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.FieldType_RelationLookup_ChildIntersectTypes(System.Int32)">
+            <summary>
+            Used for both relation lookup and complex lookup
+            </summary>
+            <param name="id">IntersectTypeID></param>
+            <returns>A list of child relationship types</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.FieldType_DeleteFields(System.Int32)">
             <param name="id">ID of the object</param>
@@ -2543,7 +2562,7 @@
         <member name="M:d360.web.Controllers.FormController.Predicate_EditFields(System.Int32)">
             <param name="id">PredicateID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32)">
+        <member name="M:d360.web.Controllers.FormController.Relationship_AddFields(System.Int32,d360.core.SystemObjects,System.Int32,System.Boolean)">
             <param name="it">IntersectTypeID</param>
             <param name="type">Object</param>
             <param name="id">ObjectID</param>

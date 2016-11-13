@@ -41,14 +41,6 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
-    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]> {
-        return this.http.get(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
-    }
-
     getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_DisplayFields?id=${id}&type=${type}&intersectTypeID=${intersectTypeID}`)
             .toPromise()
@@ -147,22 +139,29 @@ export class FieldsService extends BaseService implements IFieldsService {
         return s;
     }
 
+    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]> {
+        return this.http.get(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err)); 
+    }
+
     getChildRelations(type: string, id: number): Promise<any> {
-        return this.http.get(`api/${type}/${id}/childrelationshiptypes`)
+        return this.http.get(`form/FieldType_ComplexLookup_ChildItems?type=${type}&id=${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
     getParentRelations(type: string, id: number): Promise<any> {
-        return this.http.get(`api/${type}/${id}/parentrelationshiptypes`)
+        return this.http.get(`form/FieldType_ComplexLookup_ParentItems?type=${type}&id=${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 
     getStandardRelations(type: string, id: number): Promise<any> {
-        return this.http.get(`api/${type}/${id}/relationshiptypes`)
+        return this.http.get(`form/FieldType_ComplexLookup_IntersectTypes?type=${type}&id=${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
@@ -181,9 +180,6 @@ export class FieldsService extends BaseService implements IFieldsService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
-
-    //RelationshipObjectsByType        public List<FilterObjectItem> RelationshipObjectsByType(SystemObjects type, int id)//, SystemObjects targetObject)
-    //getChildItem(
 }
 
 

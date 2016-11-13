@@ -736,13 +736,15 @@ select	IT.ID as IntersectTypeID,
 		IT.[Object],
 		IT.[ObjectID],
 		I.[Count],
-		COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
 from	cache.[Object] CO	
-		inner join IntersectType IT on ( 
+		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
 										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
 									   )
-		inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
 		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
 					select	count(1) as [Count]
@@ -754,20 +756,25 @@ from	cache.[Object] CO
 								)
 					) I
 where	CO.[Object] = @obj and CO.ObjectID = @objId
-order by COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
+order by case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
 
         public static string ObjectRelationshipCounts = @"
 select	IT.ID as IntersectTypeID,
 		IT.[Object] as 'Object',
 		IT.[ObjectID] as 'ObjectID',
 		I.[Count],
-		COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
 from	cache.[Object] CO	
-		inner join IntersectType IT on ( 
+		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
 										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
 									   )
-		inner join cache.[ObjectDetails] COD_s on (COD_s.[Object] = IT.[Object] and COD_s.[ObjectID] = IT.[ObjectID])
 		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
 					select	count(1) as [Count]
@@ -779,7 +786,10 @@ from	cache.[Object] CO
 								)
 					) I
 where	CO.[Object] = @obj and CO.ObjectID = @objId and I.[Count] > 0
-order by COD_s.[Name] + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
+order by case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
+			else IT.SubjectName
+		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]";
 
         public static string ObjectInjectableRelationships = @"
 select	I.ID,

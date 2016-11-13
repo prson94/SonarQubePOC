@@ -7,6 +7,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from './base.component';
 
 import * as _ from 'lodash';
+/*
+contextfield
+objectfield
+objectidfield
+urlfield
+*/
 
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
@@ -22,16 +28,10 @@ import * as _ from 'lodash';
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
                                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
-                                        <span *ngSwitchCase="'tooltip'">
-                                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
-                                                <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
+                                        <span *ngSwitchCase="'lookup'">
+                                            <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
+                                                <a (click)="navigate(item[column.urlfield])">{{item[column.datafield]}}</a>
                                             </d3s-tooltip>
-                                        </span>
-                                        <span *ngSwitchCase="'preview'">
-                                            <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
-                                                <a (click)="navigate(item[column.datafield + '_Url'])" [innerHtml]="item[column.datafield+'_Name']"></a>
-                                            </d3s-tooltip>
-                                            <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                     </div>
@@ -55,16 +55,10 @@ import * as _ from 'lodash';
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
                                         </span>
                                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
-                                        <span *ngSwitchCase="'tooltip'">
-                                            <d3s-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" tooltipType="preview">
-                                                <a (click)="navigate(item.Url)">{{item[column.datafield]}}</a>
+                                        <span *ngSwitchCase="'lookup'">
+                                            <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
+                                                <a (click)="navigate(item[column.urlfield])">{{item[column.datafield]}}</a>
                                             </d3s-tooltip>
-                                        </span>
-                                        <span *ngSwitchCase="'preview'">
-                                            <d3s-tooltip *ngIf="item[column.datafield + '_Type'] != 'none'" [objectType]="item[column.datafield + '_Object']" [objectId]="item[column.datafield + '_ObjectID']" [tooltipType]="item[column.datafield + '_Type']">
-                                                <a (click)="navigate(item[column.datafield + '_Url'])" [innerHtml]="item[column.datafield+'_Name']"></a>
-                                            </d3s-tooltip>
-                                            <div *ngIf="item[column.datafield + '_Type'] == 'none'" [innerHtml]="item[column.datafield]"></div>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
                                     </div>

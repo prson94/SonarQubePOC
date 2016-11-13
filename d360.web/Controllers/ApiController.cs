@@ -2340,45 +2340,6 @@ from	cte a
 
         #endregion
 
-        //#region IntersectType
-
-        //[HttpGet, Route("IntersectTypePredicates/{id:int}")]
-        //public IQueryable<Predicate> GetAllocatedPredicates(int id)
-        //{
-        //    var allocations = Company.Filter<IntersectTypePredicate>(p => p.IntersectTypeID == id);
-        //    return Company.Filter<Predicate>(p => allocations.Select(a => a.PredicateType).Distinct().ToList().Contains(p.Type));
-        //}
-
-        //[HttpGet, Route("IntersectTypePredicates/{id:int}/available")]
-        //public IQueryable<Predicate> GetAvailablePredicates(int id)
-        //{
-        //    var allocated = GetAllocatedPredicates(id).ToList();
-
-        //    var availableTypes = new List<int>();
-
-        //    availableTypes.Add((int)PredicateType.Lineage);
-        //    availableTypes.Add((int)PredicateType.ParentChildHierarchy);
-
-        //    var intersectType = Company.GetById<IntersectType>(id);
-        //    if (intersectType == null)
-        //    {
-        //        return null;
-        //    }
-        //    if (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID)
-        //    {
-        //        availableTypes.Add((int)PredicateType.TypeHierarchy);
-        //        availableTypes.Add((int)PredicateType.GroupHierarchy);
-        //    }
-
-        //    var predicates = Company.Filter<Predicate>(p => availableTypes.Contains((int)p.Type));
-        //    var allocatedIDs = allocated.Select(a => a.ID).Distinct().ToList();
-
-        //    var availablePredicates = predicates.Where(p => !allocatedIDs.Contains(p.ID));
-
-        //    return availablePredicates;
-        //}
-        //#endregion
-
         #region Loads
 
         [HttpGet, Route("loads")]
@@ -3452,23 +3413,49 @@ select  case
 
         internal class ComplexColumnModel
         {
+            public ComplexColumnModel()
+            {
+                SortColumn = null;
+                SortOrder = null;
+                DisplayOrder = 1;
+                OutputColumn = false;
+            }
+
             public string text { get; set; }
             public string texttype { get; set; }
             public string datafield { get; set; }
-            public string datafieldtype { get; set; }
             public string format { get; set; }
+
+            public string datafieldtype { get; set; }
 
             public string DisplayColumn { get; set; }
             public int DisplayOrder { get; set; }
 
             public string SortColumn { get; set; }
-            public int SortOrder { get; set; }
+            public int? SortOrder { get; set; }
 
             public string Filter { get; set; }
 
+            public bool OutputColumn { get; set; }
+
+            public string objectfield { get; set; }
+
+            public string objectidfield { get; set; }
+
+            public string urlfield { get; set; }
+
+            public string contextfield { get; set; }
         }
 
-        private void loadComplexLookupColumns(List<FieldType> fieldTypes, List<FieldTypeLookupDefinitionField> fields, List<ComplexColumnModel> columnModels, FieldTypeLookupDefinitionRelation join, string intersectIDColumn, string objColumn, string objIDColumn, int position)
+        private void loadComplexLookupColumns(List<FieldType> fieldTypes,
+            List<FieldTypeLookupDefinitionField> fields,
+            List<ComplexColumnModel> columnModels,
+            FieldTypeLookupDefinitionRelation join, 
+            string intersectIDColumn, 
+            string objColumn, 
+            string objIDColumn,
+            string joinType,
+            int pos)
         {
             Func<FieldType, FieldTypeLookupDefinitionField, ComplexColumnModel, string> setColumnTypeInfo = (ft,  df, c) => {
 
@@ -3512,321 +3499,161 @@ select  case
                 return "";
             };
 
-            var pos = position;
+
+            var multiFieldReferencePosition = 1;
             fields.ForEach(i => {
-                ComplexColumnModel c = null;
-                List<ComplexColumnModel> lookupColumns = new List<ComplexColumnModel>();
-                var columnName = "";
+
                 FieldType ft = null;
-                var displayColumn = "";
 
-                if (i.Object == "IntersectType" && join.IntersectTypeID == i.ObjectID)
+                var dataField = $"H{pos}_{i.FieldTypeName}";
+                
+                // As long as field type is NOT null, you can go ahead and add the field.
+                if (i.FieldTypeID > 0 && ( (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || (join.Object == i.Object && join.ObjectID == i.ObjectID) ) )
                 {
-                    if (i.FieldTypeID > 0)
+                    #region IF FieldTypeID has value
+
+                    ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
+
+                    if (ft != null)
                     {
-                        ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
-                        columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
+                        var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
 
-                        if (ft == null)
+                        // Determine the join syntax for the eventual query.
+                        if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
+                            join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
+                        else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
+                            join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
+
+                        //Create the column/field to display the visible column cell.
+                        var fc = new ComplexColumnModel
                         {
-                            displayColumn = $"F{pos}.FormattedValue";
-                        }
-                        else
+                            DisplayColumn = $"{tbPrefix}.FormattedValue",
+                            text = i.OverrideDisplayName ?? ft.FriendlyName,
+                            datafield = $"{dataField}",
+                            OutputColumn = true
+                        };
+                        setColumnTypeInfo(ft, i, fc);
+
+
+                        if (ft.LookupObjectType == "Lookup")
                         {
-                            displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
+                            var context = "Preview";
+                            if (ft.LookupObjectType == "Lookup")
+                                context = "LookupPreview";
 
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then 'lookuppreview' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup'  then 'preview' else 'none' end",
-                                SortColumn = null,
-                                datafield = $"Type",
-                                text = $"Type",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
+                            // Add the fields that you need to create link in Angular component.
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbPrefix}.[LookupObjectType]", datafield = $"{dataField}_Object" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast({tbPrefix}.Value as varchar)", datafield = $"{dataField}_ObjectID" });
+                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbPrefix}.LookupUrl", datafield = $"{dataField}_Url" });
 
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.FormattedValue",
-                                SortColumn = null,
-                                datafield = $"Name",
-                                text = $"Name",
-                                datafieldtype = "preview",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.Value",
-                                SortColumn = null,
-                                datafield = $"ObjectID",
-                                text = $"ObjectID",
-                                datafieldtype = "preview",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.LookupObjectType",
-                                SortColumn = null,
-                                datafield = $"Object",
-                                text = $"Object",
-                                datafieldtype = "preview",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.LookupUrl",
-                                SortColumn = null,
-                                datafield = $"Url",
-                                text = $"Url",
-                                datafieldtype = "preview",
-                                DisplayOrder = 1
-                            });
+                            // Now set the fields to reference to create the preview link in Angular component.
+                            fc.datafieldtype = "lookup";
+                            fc.contextfield = $"{dataField}_Context";
+                            fc.objectfield = $"{dataField}_Object";
+                            fc.objectidfield = $"{dataField}_ObjectID";
+                            fc.urlfield = $"{dataField}_Url";
                         }
 
-                        c = new ComplexColumnModel
-                        {
-                            DisplayColumn = displayColumn,
-                            SortColumn = $"F{pos}.FormattedValue",
-                            datafield = columnName,
-                            text = (ft != null) ? ft.FriendlyName : columnName
-                        };
-                        setColumnTypeInfo(ft, i, c);
-                        join.JoinStatement += $" left join FieldWithRelation F{pos} on F{pos}.FieldTypeID = {i.FieldTypeID} and F{pos}.ObjectType = 'Intersect' and F{pos}.ObjectID = {intersectIDColumn}"; 
-                    }
-                    else
-                    {
-                        c = new ComplexColumnModel
-                        {
-                            DisplayColumn = $"A{position}.{i.FieldTypeName}",
-                            SortColumn = $"A{position}.{i.FieldTypeName}",
-                            datafield = i.FieldTypeName,
-                            text = i.OverrideDisplayName ?? i.FieldTypeName
-                        };
-                        setColumnTypeInfo(ft, i, c);
-                    }
+                        //Add here, only after you determine if this should be a link ABOVE.
+                        columnModels.Add(fc);
+
+
+                        multiFieldReferencePosition++;  //Increment in case you reference multiple fields from the same objects, in a SINGLE hop.
+                    } //check if field type is NOT null
+                    
+                    #endregion
                 }
-                else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
+                else
                 {
-                    if (i.FieldTypeID > 0)
+                    #region DEFAULT
+
+                    if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
                     {
-                        ft = fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID);
-                        columnName = (ft != null) ? ft.Name : $"Field{i.FieldTypeID}";
+                        #region IntersectType field
 
-                        if (ft == null)
+                        var oc = new ComplexColumnModel
                         {
-                            displayColumn = $"F{pos}.FormattedValue";
-                        }
-                        else
-                        {
-                            displayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"LookupPreview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup' then '<a href=\"' + F{pos}.LookupUrl + '\" data-context=\"Preview\" data-type=\"' + F{pos}.LookupObjectType + '\" data-id=\"' + cast(F{pos}.Value as varchar) + '\">' + F{pos}.FormattedValue + '</a>' else F{pos}.FormattedValue end";
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"case when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] = 'Lookup' then 'lookuppreview' when F{pos}.[Type] = 'Lookup' and F{pos}.[LookupObjectType] <> 'Lookup'  then 'preview' else 'none' end",
-                                SortColumn = null,
-                                datafield = $"Type",
-                                text = $"Type",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.FormattedValue",
-                                SortColumn = null,
-                                datafield = $"Name",
-                                text = $"Name",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.Value",
-                                SortColumn = null,
-                                datafield = $"ObjectID",
-                                text = $"ObjectID",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.LookupObjectType",
-                                SortColumn = null,
-                                datafield = $"Object",
-                                text = $"Object",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
-
-                            lookupColumns.Add(new ComplexColumnModel
-                            {
-                                DisplayColumn = $"F{pos}.LookupUrl",
-                                SortColumn = null,
-                                datafield = $"Url",
-                                text = $"Url",
-                                datafieldtype = "hidden",
-                                DisplayOrder = 1
-                            });
-                        }
-
-                        c = new ComplexColumnModel
-                        {
-                            DisplayColumn = displayColumn,
-                            SortColumn = $"F{pos}.FormattedValue",
-                            datafield = columnName,
-                            text = (ft != null) ? ft.FriendlyName : columnName
+                            DisplayColumn = $"A{pos}.{i.FieldTypeName}",
+                            SortColumn = $"A{pos}.{i.FieldTypeName}",
+                            datafield = $"{dataField}",
+                            text = i.OverrideDisplayName ?? i.FieldTypeName,
+                            OutputColumn = true
                         };
-                        setColumnTypeInfo(ft, i, c);
-                        join.JoinStatement += $" left join FieldWithRelation F{pos} on F{pos}.FieldTypeID = {i.FieldTypeID} and F{pos}.ObjectType = {objColumn} and F{pos}.ObjectID = {objIDColumn}";
+                        setColumnTypeInfo(ft, i, oc);
+                        columnModels.Add(oc);
+
+                        #endregion
                     }
-                    else
+                    else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
                     {
+                        #region ObjectType field
+
                         switch (i.Object)
                         {
                             case "ArtifactType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"Artifact\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
-
-                                lookupColumns.Add(new ComplexColumnModel
+                                //Create the column/field to display the visible column cell.
+                                var ac = new ComplexColumnModel
                                 {
-                                    DisplayColumn = $"'preview'",
-                                    SortColumn = null,
-                                    datafield = $"Type",
-                                    text = $"Type",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
+                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
+                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    contextfield = $"{dataField}_Context",
+                                    objectfield = $"{dataField}_Object",
+                                    objectidfield = $"{dataField}_ObjectID",
+                                    urlfield = $"{dataField}_Url"
+                                };
+                                setColumnTypeInfo(ft, i, ac);
+                                ac.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(ac);
 
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"A{position}.{i.FieldTypeName}",
-                                    SortColumn = null,
-                                    datafield = $"Name",
-                                    text =  $"Name",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"A{position}.ID",
-                                    SortColumn = null,
-                                    datafield = $"ObjectID",
-                                    text = $"ObjectID",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"'Artifact'",
-                                    SortColumn = null,
-                                    datafield = $"Object",
-                                    text = $"Object",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{position}.ArtifactTypeID, A{position}.ID)",
-                                    SortColumn = null,
-                                    datafield = $"Url",
-                                    text = $"Url",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Artifact'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('Artifact', A{pos}.ArtifactTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 break;
                             case "FusionAttributeType":
-                                displayColumn = $"'<a href=\"' + dbo.GenerateNgObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID) + '\" data-context=\"Preview\" data-type=\"FusionAttribute\" data-id=\"' + cast(A{position}.ID as varchar) + '\">' + A{position}.{i.FieldTypeName} + '</a>'";
-
-                                lookupColumns.Add(new ComplexColumnModel
+                                var oc = new ComplexColumnModel
                                 {
-                                    DisplayColumn = $"'preview'",
-                                    SortColumn = null,
-                                    datafield = $"Type",
-                                    text = $"Type",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
+                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
+                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    contextfield = $"{dataField}_Context",
+                                    objectfield = $"{dataField}_Object",
+                                    objectidfield = $"{dataField}_ObjectID",
+                                    urlfield = $"{dataField}_Url"
+                                };
+                                setColumnTypeInfo(ft, i, oc);
+                                oc.datafieldtype = "lookup"; //must be done after function call above.
+                                columnModels.Add(oc);
 
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"A{position}.{i.FieldTypeName}",
-                                    SortColumn = null,
-                                    datafield = $"Name",
-                                    text = $"Name",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"A{position}.ID",
-                                    SortColumn = null,
-                                    datafield = $"ObjectID",
-                                    text = $"ObjectID",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"'FusionAttribute'",
-                                    SortColumn = null,
-                                    datafield = $"Object",
-                                    text = $"Object",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
-
-                                lookupColumns.Add(new ComplexColumnModel
-                                {
-                                    DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{position}.FusionAttributeTypeID, A{position}.ID)",
-                                    SortColumn = null,
-                                    datafield = $"Url",
-                                    text = $"Url",
-                                    datafieldtype = "hidden",
-                                    DisplayOrder = 1
-                                });
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'FusionAttribute'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateNgObjectUrl('FusionAttribute', A{pos}.FusionAttributeTypeID, A{pos}.ID)", datafield = $"{dataField}_Url" });
                                 break;
                             default:
-                                displayColumn = $"A{position}.{i.FieldTypeName}";
+                                var dc = new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"A{pos}.{i.FieldTypeName}",
+                                    text = i.OverrideDisplayName ?? i.FieldTypeName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true
+                                };
+                                setColumnTypeInfo(ft, i, dc);
+                                columnModels.Add(dc);
                                 break;
                         }
 
-                        c = new ComplexColumnModel
-                        {
-                            DisplayColumn = displayColumn,
-                            SortColumn = $"A{position}.{i.FieldTypeName}",
-                            datafield = i.FieldTypeName,
-                            text = i.OverrideDisplayName ?? i.FieldTypeName
-                        };
-                        setColumnTypeInfo(ft, i, c);
+                        #endregion
                     }
-                }
 
-                if (c != null)
-                {
-                    var count = columnModels.Count(cc => cc.datafield == c.datafield);
-                    if (count > 0) c.datafield += count;
-                    columnModels.Add(c);
-
-                    if (lookupColumns.Count > 0)
-                    {
-                        foreach(var col in lookupColumns)
-                        {
-                            col.datafield = c.datafield + '_' + col.datafield;
-                            col.text = c.datafield;
-                            columnModels.Add(col);
-                        }
-                    }
+                    #endregion
                 }
-                pos++;
             });
         }
 
@@ -3844,12 +3671,13 @@ select  case
                 var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                 var objColumn = "";
                 var objIDColumn = "";
+                var joinType = "left"; //the SQL join.
 
                 switch (join.RelationType)
                 {
                     case ComplexLookupRelationType.StandardRelationhip:
                         #region
-                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
                         if (i == 0)
                         {
                             join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
@@ -3859,7 +3687,7 @@ select  case
                         }
                         else
                         {
-                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                            join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                             objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
                             objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
@@ -3867,7 +3695,7 @@ select  case
                     #endregion
                     case ComplexLookupRelationType.ChildRelationship:
                         #region
-                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
+                        join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
                         join.JoinStatement += $" inner join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
                         objColumn = $"'{join.Object.Replace("Type", "")}'";
                         objIDColumn = $"I{i}.ObjectID";
@@ -3880,10 +3708,10 @@ select  case
                         switch (join.Object)
                         {
                             case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                 break;
                             case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
@@ -3897,10 +3725,10 @@ select  case
                         switch (join.Object)
                         {
                             case "ArtifactType":
-                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                 break;
                             case "FusionAttributeType":
-                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                 break;
                         }
                         objColumn = $"'{currentObj}'";
@@ -3954,12 +3782,13 @@ select  case
                     var previousObj = (i > 0) ? def.Relations[i - 1].Object.Replace("Type", "") : "";
                     var objColumn = "";
                     var objIDColumn = "";
+                    var joinType = "inner"; //the SQL join.
 
                     switch (join.RelationType)
                     {
                         case ComplexLookupRelationType.StandardRelationhip:
                             #region
-                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
+                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
                             if (i == 0)
                             {
                                 join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
@@ -3969,7 +3798,7 @@ select  case
                             }
                             else
                             {
-                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.ID) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
@@ -3977,8 +3806,8 @@ select  case
                             #endregion
                         case ComplexLookupRelationType.ChildRelationship:
                             #region
-                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"inner join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
-                            join.JoinStatement += $" inner join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                            join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID}";
+                            join.JoinStatement += $" {joinType} join [{currentObj}] A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
                             objColumn = $"'{join.Object.Replace("Type", "")}'";
                             objIDColumn = $"I{i}.ObjectID";
                             if (i == 0)
@@ -3990,10 +3819,10 @@ select  case
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                     break;
                                 case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
@@ -4007,10 +3836,10 @@ select  case
                             switch (join.Object)
                             {
                                 case "ArtifactType":
-                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"inner join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
                                     break;
                                 case "FusionAttributeType":
-                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"inner join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+                                    join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
@@ -4023,7 +3852,7 @@ select  case
                             continue;
                     }
 
-                    loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, i);
+                    loadComplexLookupColumns(fieldTypes, fields, columnModels, join, $"I{i}.ID", objColumn, objIDColumn, "left", i);
                 }
 
                 var sqlQuery = "select " + string.Join(", ", columnModels.Where(i => i.DisplayOrder > 0).OrderBy(i => i.DisplayOrder).Select(i => $"{i.DisplayColumn} as [{i.datafield}]")) + " ";
@@ -4034,18 +3863,36 @@ select  case
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 
-                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
+                var orderQuery = string.Join(", ", columnModels.Where(i => i.SortOrder.HasValue && !string.IsNullOrEmpty(i.SortColumn)).OrderBy(i => i.SortOrder).Select(i => i.SortColumn));
                 if (!string.IsNullOrEmpty(orderQuery)) orderQuery = " order by " + orderQuery;
                 sqlQuery += orderQuery;
 
                 columnModels = columnModels.OrderBy(c => c.DisplayOrder).ToList();
                 columnModels.ForEach(c =>
                 {
-                    gridFields.Add(new GridField { name = c.datafield, type = c.datafieldtype });
-                    var gc = new GridColumn { text = c.text, datafield = c.datafield, width = "auto", columntype = c.texttype };
-                    if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
-                    columns.Add(gc);
-                    
+                    if (!gridFields.Any(gf => gf.name == c.datafield))
+                    {
+                        gridFields.Add(new GridField { name = c.datafield, type = c.datafieldtype ?? "string" });
+                    }
+
+                    if (c.OutputColumn)
+                    {
+                        if (!columns.Any(gc => gc.datafield == c.datafield && gc.text == c.text))
+                        {
+                            var gc = new GridColumn {
+                                text = c.text,
+                                datafield = c.datafield,
+                                width = "auto",
+                                columntype = c.texttype,
+                                contextfield = c.contextfield,
+                                objectfield = c.objectfield,
+                                objectidfield = c.objectidfield,
+                                urlfield = c.urlfield
+                            };
+                            if (!string.IsNullOrEmpty(c.format)) gc.cellsformat = c.format;
+                            columns.Add(gc);
+                        }
+                    }
                 });
 
 
@@ -4138,42 +3985,6 @@ select  case
             }
 
             return Company.Query<FilterObjectItem>(sql, new { id = id }).ToList();
-        }
-
-        /// <summary>
-        /// Gets a list of available relationships types based on the source type specified in parameters. 
-        /// Used in the Filter By Relationship tile on artifact list pages.
-        /// </summary>
-        [Route("{type}/{id:int}/childrelationshiptypes")]
-        public List<AllowedIntersectionType> GetChildRelationshipTypes(SystemObjects type, int id)//List<GetRelationshipModel>
-        {
-            switch (type)
-            {
-                case SystemObjects.ArtifactType:
-                    return Company.Filter<ArtifactType>(i => i.ParentID == id).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Name, TargetType = "ArtifactType", TargetTypeID = i.ID }).ToList();
-                case SystemObjects.FusionAttributeType:
-                    return Company.Filter<FusionAttributeType>(i => i.ParentID == id).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Name, TargetType = "FusionAttributeType", TargetTypeID = i.ID }).ToList();
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets a list of available relationships types based on the source type specified in parameters. 
-        /// Used in the Filter By Relationship tile on artifact list pages.
-        /// </summary>
-        [Route("{type}/{id:int}/parentrelationshiptypes")]
-        public List<AllowedIntersectionType> GetParentRelationshipTypes(SystemObjects type, int id)//List<GetRelationshipModel>
-        {
-            switch (type)
-            {
-                case SystemObjects.ArtifactType:
-                    return Company.Filter<ArtifactType>(i => i.ID == id, i => i.Parent).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Parent.Name, TargetType = "ArtifactType", TargetTypeID = i.ParentID }).ToList();
-                case SystemObjects.FusionAttributeType:
-                    return Company.Filter<FusionAttributeType>(i => i.ID == id, i => i.Parent).Select(i => new AllowedIntersectionType { IntersectTypeID = 0, TargetName = i.Parent.Name, TargetType = "FusionAttributeType", TargetTypeID = i.ParentID }).ToList();
-                default:
-                    return null;
-            }
         }
 
         /// <summary>
@@ -6967,9 +6778,7 @@ from	IntersectDetail I
 					from	[Attribute]
 					where	ObjectType = 'Intersect' and ObjectID = I.ID
 					) A
-where	Subject ='{type.ToString()}'  and SubjectID = {id}
-		and ObjectType = '{targetType.ToString()}' and ObjectTypeID = {targetID}
-        and IntersectTypeID = {intersectTypeID} 
+where	Subject ='{type.ToString()}'  and SubjectID = {id} and IntersectTypeID = {intersectTypeID} 
 union
 select	ID,
         IntersectTypeID,
@@ -7000,10 +6809,7 @@ from	IntersectDetail I
 					from	[Attribute]
 					where	ObjectType = 'Intersect' and ObjectID = I.ID
 					) A
-
-where	Object = '{type.ToString()}' and ObjectID = {id}
-		and SubjectType = '{targetType.ToString()}' and SubjectTypeID = {targetID}
-        and IntersectTypeID = {intersectTypeID} 
+where	Object = '{type.ToString()}' and ObjectID = {id} and IntersectTypeID = {intersectTypeID} 
         ) A {joins}";
 
             if (criticalOnly)

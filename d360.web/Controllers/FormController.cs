@@ -4571,6 +4571,92 @@ namespace d360.web.Controllers
         #region Supporting Json Feeds
 
         /// <summary>
+        /// Used to get the child types of a specific parent type.
+        /// </summary>
+        /// <param name="type">The Type></param>
+        /// <param name="id">The Type ID></param>
+        /// <returns>A list of child realtionship types</returns>
+        [Route("FieldType_ComplexLookup_ChildItems")]
+        public JsonNetResult FieldType_ComplexLookup_ChildItems(SystemObjects type, int id)
+        {
+            dynamic list = null;
+
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    list = Company.Filter<ArtifactType>(i => i.ParentID == id)
+                        .ToList()
+                        .Select(i => new { value = $"0|ArtifactType|{i.ID}", title = i.Name })
+                        .ToList();
+                    break;
+                case SystemObjects.FusionAttributeType:
+                    list = Company.Filter<FusionAttributeType>(i => i.ParentID == id)
+                        .ToList()
+                        .Select(i => new { value = $"0|FusionAttributeType|{i.ID}", title = i.Name })
+                        .ToList();
+                    break;
+            }
+
+            return new JsonNetResult
+            {
+                Data = list,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Used to get the parent types of a specific child type.
+        /// </summary>
+        /// <param name="type">The Type></param>
+        /// <param name="id">The Type ID></param>
+        /// <returns>A list of child realtionship types</returns>
+        [Route("FieldType_ComplexLookup_ParentItems")]
+        public JsonNetResult FieldType_ComplexLookup_ParentItems(SystemObjects type, int id)
+        {
+            dynamic list = null;
+
+            switch (type)
+            {
+                case SystemObjects.ArtifactType:
+                    list = Company.Filter<ArtifactType>(i => i.ID == id, i => i.Parent)
+                        .ToList()
+                        .Select(i => new { value = $"0|ArtifactType|{i.ParentID}", title = i.Parent.Name })
+                        .ToList();
+                    break;
+                case SystemObjects.FusionAttributeType:
+                    list = Company.Filter<FusionAttributeType>(i => i.ID == id, i => i.Parent)
+                        .ToList()
+                        .Select(i => new { value = $"0|FusionAttributeType|{i.ParentID}", title = i.Parent.Name })
+                        .ToList();
+                    break;
+            }
+
+            return new JsonNetResult
+            {
+                Data = list,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
+        /// Used for complex lookup
+        /// </summary>
+        /// <param name="type">The Type></param>
+        /// <param name="id">The Type ID></param>
+        /// <returns>A list of relationship types</returns>
+        [Route("FieldType_ComplexLookup_IntersectTypes")]
+        public JsonNetResult FieldType_ComplexLookup_IntersectTypes(SystemObjects type, int id)
+        {
+            var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type.ToString()}', {id}) order by title");
+
+            return new JsonNetResult
+            {
+                Data = intersectTypes,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        /// <summary>
         /// Gets a list of display fields that match a lookup.
         /// </summary>
         /// <param name="type">The type of object we are adding field type to.</param>
@@ -4667,118 +4753,15 @@ namespace d360.web.Controllers
             }
         }
 
-        //        public JsonNetResult FieldType_RelationLookup_IntersectTypes(SystemObjects type, int id)
-        //        {
-        //            #region
-        //            var sql = @"
-        //declare @tbl table(ID int, ParentID int, ObjectType varchar(50), ObjectTypeID int, Name nvarchar(250), Inferred bit)
-
-        //insert into @tbl
-        //	select	T.ID,
-        //			NULL,
-        //			case 
-        //				when (T.Subject = @type and T.SubjectID = @id) then T.Object
-        //				else T.Subject 
-        //			end,
-        //			case 
-        //				when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-        //				else T.SubjectID
-        //			end,
-        //			D.TextPath,
-        //			0
-        //	from	IntersectType T
-        //			inner join cache.ObjectDetails D on 
-        //												D.Object = case 
-        //																when (T.Subject = @type and T.SubjectID = @id) then T.Object
-        //																else T.Subject 
-        //															end 
-        //											and D.ObjectID = case 
-        //																when (T.Subject = @type and T.SubjectID = @id) then T.ObjectID
-        //																else T.SubjectID
-        //															end
-        //	where	(T.Subject = @type and T.SubjectID = @id) OR (T.Object = @type and T.ObjectID = @id)
-
-        //-- Get inferred relationship types
-        //insert into @tbl
-        //	select	T.ID,
-        //			P.ID,
-        //			case 
-        //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-        //				else T.Subject 
-        //			end,
-        //			case 
-        //				when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-        //				else T.SubjectID
-        //			end,
-        //			'Inferred :: ' + D.TextPath,
-        //			1
-        //	from	@tbl P
-        //			inner join IntersectType T on (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) OR (T.Object = P.ObjectType and T.ObjectID = P.ObjectTypeID)
-        //			inner join cache.ObjectDetails D on 
-        //												D.Object = case 
-        //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.Object
-        //																else T.Subject 
-        //															end 
-        //											and D.ObjectID = case 
-        //																when (T.Subject = P.ObjectType and T.SubjectID = P.ObjectTypeID) then T.ObjectID
-        //																else T.SubjectID
-        //															end
-
-        //-- Get child relationship types
-        //insert into @tbl
-        //	select	T.ID,
-        //			P.ID,
-        //			case 
-        //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-        //				else T.Subject 
-        //			end,
-        //			case 
-        //				when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-        //				else T.SubjectID
-        //			end,
-        //			'Child :: ' + D.TextPath,
-        //			0
-        //	from	@tbl P
-        //			inner join IntersectType T on (T.Subject = 'IntersectType' and T.SubjectID = P.ID) OR (T.Object = 'IntersectType' and T.ObjectID = P.ID) and P.Inferred = 0
-        //			inner join cache.ObjectDetails D on 
-        //												D.Object = case 
-        //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.Object
-        //																else T.Subject 
-        //															end 
-        //											and D.ObjectID = case 
-        //																when (T.Subject = 'IntersectType' and T.SubjectID = P.ID) then T.ObjectID
-        //																else T.SubjectID
-        //															end
-
-
-
-        //select * from @tbl";
-        //            #endregion
-
-        //            var intersectTypes = Company.Query<dynamic>(sql, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id });
-
-        //            return new JsonNetResult
-        //            {
-        //                Data = intersectTypes,
-        //                Formatting = Newtonsoft.Json.Formatting.None
-        //            };
-        //        }
-
+        /// <summary>
+        /// Used for both relation lookup and complex lookup
+        /// </summary>
+        /// <param name="id">IntersectTypeID></param>
+        /// <returns>A list of child relationship types</returns>
         [Route("FieldType_RelationLookup_ChildIntersectTypes")]
         public JsonNetResult FieldType_RelationLookup_ChildIntersectTypes(int id)
         {
-            var intersectTypes = Company.Query<dynamic>(@"
-select  distinct 
-        cast(RT.ID as varchar) + '|' + D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-        D.TextPath as title
-from    [IntersectType] RT
-        inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = 'IntersectType' and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-                                            and D.ObjectID = case when (RT.Subject = 'IntersectType' and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-                                            and ( 
-                                                (RT.Subject = 'IntersectType' and RT.SubjectID = @id) OR 
-                                                (RT.Object = 'IntersectType' and RT.ObjectID = @id) 
-                                                )
-order by  D.TextPath", new { id });
+            var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('IntersectType', {id}) order by title");
 
             return new JsonNetResult
             {
@@ -4887,58 +4870,18 @@ order by  D.TextPath", new { id });
         }
 
         [Route("FieldType_Lookups")]
-        public JsonNetResult FieldType_Lookups(string type, int id, bool isNg = false)
+        public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
         {
             #region Load static lists
 
-            var intersectTypes = Company.Query<dynamic>(@"
-            select  distinct 
-                    cast(RT.ID as varchar) + '|' + D.Object + '|' + cast(D.ObjectID as varchar) as value, 
-                    D.TextPath as title
-            from    [IntersectType] RT
-                    inner join cache.ObjectDetails D on D.[Object] = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.Object else RT.Subject end 
-                                                        and D.ObjectID = case when (RT.Subject = @type and RT.SubjectID = @id) then RT.ObjectID else RT.SubjectID end
-                                                        and ( 
-                                                            (RT.Subject = @type and RT.SubjectID = @id) OR 
-                                                            (RT.Object = @type and RT.ObjectID = @id) 
-                                                            )
-            order by  D.TextPath", new { type, id });
-                        
-            var attributes = Company.Filter<AttributeType>(x => !x.ParentID.HasValue).OrderBy(x => x.Name).ToList().Select(i => new { title = i.Name, value = $"AttributeType|{i.ID}" });
-            var fusionAttributeTypes = Company.Table<FusionAttributeType>().OrderBy(x => x.TextPath).Select(i => new { title = i.TextPath, value = i.ID });
-            var lookups = Company.GetFieldTypeLookupOptions().Select(i => new KnockoutListItem { title = i.Name, value = $"{i.LookupObjectType}|{i.LookupObjectID}" }).ToList();
+            var lists = Company.Query<dynamic>("exec utility.GetFieldTypeLookupList @type, @id", new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+            var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+            var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+            var fusionAttributeTypes = lists.Where(i => i.type == "F").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+            var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+            var filteredLookups = lists.Where(i => i.type == "FL").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
 
             var complexLookupRelations = ComplexLookupRelationType.ChildItem.GetComplexLookupRelationTypeInfoList().ToList();
-            //if is angular append the new reference type lookups to this list of lookups
-            if (isNg)
-            {
-                lookups.AddRange(Company.Query<KnockoutListItem>(@"
-                        select
-                            'Reference List Item: ' + [Name] as title
-                            ,'ReferenceItem|' + cast(ID as varchar) as value
-                        from 
-                            [dbo].[ReferenceItemType]
-                        order by Name  
-                    "));
-
-                lookups.Add(new KnockoutListItem { title = "Reference List", value = "ReferenceItemType|0" });               
-            }
-
-            var filteredLookups = Company.Query<KnockoutListItem>($@"
-select	L.Name as title,
-		'Lookup|' + cast(L.ID as varchar) as value
-from	LookupType L
-		cross apply (
-					select	count(1) as [Count]
-					from	FieldType
-					where	Object = 'LookupType' 
-							and ObjectID = L.ID
-							and [Type] = 'Lookup'
-							and LookupObjectType = @type 
-							and LookupObjectID = @id
-					) F
-where	F.[Count] > 0
-order by L.Name", new { type = type.Replace("Type", ""), id });
 
             var patterns = new Dictionary<string, string>() {
                 { "Choose sample...", "" },

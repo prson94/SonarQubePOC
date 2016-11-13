@@ -402,7 +402,19 @@ namespace d360.web.Models
         public string filtertype { get; set; }
 
         [DataMember]
-        public List<string> filteritems { get; set; }        
+        public List<string> filteritems { get; set; }
+
+        [DataMember]
+        public string objectfield { get; set; }
+
+        [DataMember]
+        public string objectidfield { get; set; }
+
+        [DataMember]
+        public string urlfield { get; set; }
+
+        [DataMember]
+        public string contextfield { get; set; }
     }
 
     [DataContract]

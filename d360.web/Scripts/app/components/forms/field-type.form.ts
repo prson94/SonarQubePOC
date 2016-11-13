@@ -112,7 +112,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                     });
 
-                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
+                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
                 })
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
@@ -152,7 +152,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadComplexRelationLookup() {
         //load existing values
         this.model.RelationItems.forEach(r => {
+            //console.log(r);
+
             let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
+
             if (r.Object == null || r.Object == '')
                 r.Object = intersectType.value.split('|')[1];
             if (r.ObjectID == null || r.ObjectID < 0)
@@ -167,6 +170,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (!d.value)
                     d.value = d.FieldTypeID + '|' + d.FieldTypeName;
             });
+
         });
 
 
@@ -182,6 +186,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             this.objectName = o.Name;
                         });
                 }
+
+                //console.log(item);
 
                 //load cascading dropdowns
                 this.changeRefType(i)
@@ -204,8 +210,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         });
 
                         let r = item.relationItems.find(f => f.value == item.selectedRelationItemID);
-                        if (r) item.displayValue = r.label;
-                        console.log(item);
+                        if (r) item.displayValue = r.title;
                     });
 
                 //load display order/sort order drop down lists
@@ -367,6 +372,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#endregion
     
     //#region form actions
+
     private cancel(): void {
         this.onCancel.emit(null);
     }
@@ -486,9 +492,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
         return valid;
     }
+
     //#endregion
 
     //#region dropdown functions
+
     private changeRefType(index: number, selected: string = null): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
@@ -506,48 +514,46 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getChildRelations(object, objectId)
+                return this.fieldsService
+                    .getChildRelations(object, objectId)
                     .then(ci => {
                         item.relationItems = ci;
-
-                        item.relationItems.forEach(i => {
-                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
-                            i.label = i.TargetName;
-                            item.relationsLoading = false;
-                        });
-                    });
+                    })
+                    .then(() => item.relationsLoading = false);
             case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
-                return this.fieldsService.getRelationLookupChildIntersectTypes(item.IntersectType).then(ci => {
-                    item.relationItems = ci;
-                    item.relationsLoading = false;
-                });
+                let intersectIdToGetChildrenFor = item.IntersectType;
+                if (last) {
+                    intersectIdToGetChildrenFor = last.IntersectType;
+                }
+                return this.fieldsService
+                    .getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor)
+                    .then(ci => {
+                        item.relationItems = ci;
+                    })
+                    .then(() => item.relationsLoading = false);
             case ComplexLookupRelationType.ParentItem.toString():
-                return this.fieldsService.getParentRelations(object, objectId)
+                return this.fieldsService
+                    .getParentRelations(object, objectId)
                     .then(pi => {
                         item.relationItems = pi;
-                        item.relationItems.forEach(i => {
-                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
-                            i.label = i.TargetName;
-                            item.relationsLoading = false;
-                        });
-                    });
+                    })
+                    .then(() => item.relationsLoading = false);
             case ComplexLookupRelationType.StandardRelationhip.toString():
-                return this.fieldsService.getStandardRelations(object, objectId)
+                return this.fieldsService
+                    .getStandardRelations(object, objectId)
                     .then(sr => {
                         item.relationItems = sr;
-                        item.relationItems.forEach(i => {
-                            i.value = i.IntersectTypeID + '|' + i.TargetType + '|' + i.TargetTypeID;
-                            i.label = i.TargetName;
-                        });
-
-                    }).then(() => item.relationsLoading = false);
+                    })
+                    .then(() => item.relationsLoading = false);
         }
     }
 
     private changeRel(index: number): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-                
+
+        //console.log(item);
+
         let params = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
@@ -677,6 +683,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 });
         } else return Promise.resolve();
     }
+
     //#endregion
 
     private selectToken(value: string) {
@@ -721,7 +728,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         i.Object = type;
         i.IntersectTypeID = intersectType;
         i.IntersectType = intersectType;
-        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).label;
+        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
 
         this.model.RelationItems.push(i);
         this.relationItemCount = this.model.RelationItems.length;
