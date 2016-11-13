@@ -66,6 +66,13 @@ import { Title } from '@angular/platform-browser';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
+                                    <d3s-admin-level-grid objectType="PolicyType" [maxDepth]="selected?.MaximumDepth" [objectId]="selected?.ID"></d3s-admin-level-grid>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="tile tile-detail">                                              
                                     <d3s-claims-tile [objectType]="'PolicyType'" [objectID]="selected?.ID" [readonly]="false"></d3s-claims-tile>                 
                                 </div>
                             </div>

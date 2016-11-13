@@ -24,52 +24,6 @@ export class TaxonomiesService extends BaseService {
             .catch(err => this.handleError(err));
     }   
 
-    getTaxonomyLevels(taxonomy: Taxonomy): Promise<TaxonomyLevel[]> {
-        return this.http.get(`/api/TaxonomyType/${taxonomy.ID}/levels`)
-            .toPromise()
-            .then(response => <TaxonomyLevel[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    saveTaxonomyLevel(level: TaxonomyLevel): Promise<JsonResult> {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = `form/AddTaxonomyTypeLevelRaw`;
-
-        return this.http
-            .post(url, JSON.stringify(level), { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
-    editTaxonomyLevel(level: TaxonomyLevel): Promise<JsonResult> {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = `form/EditTaxonomyTypeLevelRaw`;
-
-        return this.http
-            .put(url, JSON.stringify(level), { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
-    deleteTaxonomyLevel(taxonomyTypeId: number, taxonomyLevelId: number): Promise<JsonResult> {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-                
-        let url = `form/TaxonomyType/${taxonomyTypeId}/levels/${taxonomyLevelId}`;
-
-        return this.http
-            .delete(url, headers)
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
-    }
-
     getTaxonomyClassifications(): Promise<TaxonomyClassification[]> {
         return this.http.get('/api/TaxonomyClassifications')
             .toPromise()

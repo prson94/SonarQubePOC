@@ -381,8 +381,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return TaxonomyTypeClass_EditFields(ID);
                 case "REFERENCEITEMTYPE":
-                    return ReferenceItem_EditFields(ID);
-
+                    return ReferenceItem_EditFields(ID);                
                 case "POLICY":
                     return Policy_EditFields(ID);
                 case "MAPRULE":
@@ -516,8 +515,12 @@ namespace d360.web.Controllers
                     return EditMapRuleItem(form);
                 case "TAXONOMYTYPECLASS":
                     return EditTaxonomyTypeClass(form);
+                case "TAXONOMYTYPELEVEL":
+                    return EditTaxonomyTypeLevel(form);
                 case "RELATIONSHIPROLE":
-                    return EditIntersectRole(form);                
+                    return EditIntersectRole(form);
+                case "POLICYTYPELEVEL":
+                    return EditPolicyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -570,7 +573,11 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return DeleteTaxonomyTypeClass(form);
                 case "RELATIONSHIPROLE":
-                    return DeleteIntersectRole(form);                
+                    return DeleteIntersectRole(form);
+                case "TAXONOMYTYPELEVEL":
+                    return DeleteTaxonomyTypeLevel(form);
+                case "POLICYTYPELEVEL":
+                    return DeletePolicyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -640,7 +647,11 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPECLASS":
                     return AddTaxonomyTypeClass(form);
                 case "RELATIONSHIPROLE":
-                    return AddIntersectRole(form);                
+                    return AddIntersectRole(form);
+                case "TAXONOMYTYPELEVEL":
+                    return AddTaxonomyTypeLevel(form);
+                case "POLICYTYPELEVEL":
+                    return AddPolicyTypeLevel(form);
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -13946,6 +13957,15 @@ from ArtifactType A
             }
         }
 
+        [Route("PolicyType/{policyTypeId:int}/levels/{policyTypeLevelId:int}")]
+        public ActionResult DeletePolicyTypeLevelById(int policyTypeId, int policyTypeLevelId)
+        {
+            var form = new FormCollection();
+            form.Add("Level", policyTypeLevelId.ToString());
+            form.Add("ID", policyTypeId.ToString());
+            return DeletePolicyTypeLevel(form);
+        }
+
         [Route("DeletePolicyTypeLevel")]
         public ActionResult DeletePolicyTypeLevel(int id, int level)
         {
@@ -20067,19 +20087,7 @@ order by TextPath
             public string Level { get; set; }
             public string TaxonomyTypeID { get; set; }
         }
-
-        [HttpPost, ValidateInput(false), Route("AddTaxonomyTypeLevelRaw")]
-        public JsonResult AddTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
-        {
-            var form = new FormCollection();
-            form.Add("Name", template.Name);
-            form.Add("Description", template.Description);
-            form.Add("Level", template.Level);
-            form.Add("ID", template.TaxonomyTypeID);
-
-            return AddTaxonomyTypeLevel(form);
-        }
-
+                
         [Route("AddTaxonomyTypeLevel")]
         public ActionResult AddTaxonomyTypeLevel(int id)
         {
@@ -20188,18 +20196,7 @@ order by TextPath
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpPut, ValidateInput(false), Route("EditTaxonomyTypeLevelRaw")]
-        public JsonResult EditTaxonomyTypeLevelRaw(TaxonomyTypeLevelModel template)
-        {
-            var form = new FormCollection();
-            form.Add("Name", template.Name);
-            form.Add("Description", template.Description);
-            form.Add("Level", template.Level);
-            form.Add("ID", template.TaxonomyTypeID);
-
-            return EditTaxonomyTypeLevel(form);
-        }
+        
 
         [Route("EditTaxonomyTypeLevel")]
         public ActionResult EditTaxonomyTypeLevel(int id, int level)

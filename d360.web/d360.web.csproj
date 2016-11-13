@@ -1337,7 +1337,7 @@
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-level-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-template-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
@@ -1537,7 +1537,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-level.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-relationships.component.ts" />
@@ -1619,6 +1619,7 @@
     <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-constants.ts" />

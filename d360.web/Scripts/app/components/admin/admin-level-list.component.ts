@@ -1,11 +1,11 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Taxonomy, TaxonomyLevel } from '../../models/taxonomy.model';
-import { TaxonomiesService, MessagesService  } from '../../services/index';
+import { LevelsService, MessagesService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-admin-model-level',
-    providers: [TaxonomiesService],
+    selector: 'd3s-admin-level-grid',
+    providers: [LevelsService],
     template: `
                <header *ngIf="!showEditor && !showDelete">Levels
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
@@ -18,8 +18,8 @@ import { BaseComponent } from '../shared/base.component';
                     <p-column field="Level" header="Level" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                            
                     <p-column field="Description" header="Description" [sortable]="true" [filter]="!showSimpleFilter">
-                        <template let-col let-taxonomy="rowData" pTemplate type="body">
-                            <div [innerHtml]="taxonomy?.Description"></div>
+                        <template let-col let-level="rowData" pTemplate type="body">
+                            <div [innerHtml]="level?.Description"></div>
                         </template>                                                        
                     </p-column>    
                         <p-column [style]="{width:'40px'}">
@@ -45,12 +45,14 @@ import { BaseComponent } from '../shared/base.component';
                     [prompt]="'Are you sure you want to delete the level [' + [selectedLevel?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
                 ></delete-form> 
-                <d3s-admin-model-level-editor *ngIf="showEditor" [taxonomyLevel]="selectedLevel" [taxonomy]="taxonomy" (closeClick)="closeEditor()" (saveClick)="saveLevel($event)"></d3s-admin-model-level-editor>                                           
+                <d3s-admin-level-editor *ngIf="showEditor" [maxDepth]="maxDepth" [level]="selectedLevel" [objectId]="objectId" [objectType]="objectType" (closeClick)="closeEditor()" (saveClick)="saveLevel($event)"></d3s-admin-level-editor>                                           
                 `
 })
 
-export class AdminModelLevelComponent extends BaseComponent implements OnChanges {
-    @Input() taxonomy: Taxonomy = null;
+export class AdminLevelListComponent extends BaseComponent implements OnChanges {
+    @Input() objectId: number;
+    @Input() objectType: string;
+    @Input() maxDepth: number;
     error: any;    
     levels: TaxonomyLevel[] = [];
     showEditor: boolean = false;
@@ -58,19 +60,19 @@ export class AdminModelLevelComponent extends BaseComponent implements OnChanges
     selectedLevel: TaxonomyLevel = null;
     theDeleteCallback: Function;
 
-    constructor(private taxonomiesService: TaxonomiesService, private messagesService: MessagesService) {
+    constructor(private levelsService: LevelsService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteLevel.bind(this);  
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {    
-        if (this.taxonomy != null) this.getLevels();
+        if (this.objectId > 0) this.getLevels();
     }
         
     getLevels() {
         this.isLoading = true;
-        this.taxonomiesService
-            .getTaxonomyLevels(this.taxonomy)
+        this.levelsService
+            .getObjectLevels(this.objectId, this.objectType)
             .then(levels => {
                 this.levels = levels;
                 this.isLoading = false;
@@ -79,11 +81,11 @@ export class AdminModelLevelComponent extends BaseComponent implements OnChanges
     }
 
     deleteLevel(id: number) {
-        this.taxonomiesService.deleteTaxonomyLevel(this.taxonomy.ID, id)
+        this.levelsService.deleteObjectLevel(this.objectType,this.objectId, id)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.levels.splice(this.findTaxonomyLevel(id), 1);
+                this.levels = this.levels.filter(x => x.Level != id);                
             });        
     }
 
@@ -97,35 +99,14 @@ export class AdminModelLevelComponent extends BaseComponent implements OnChanges
         if (this.selectedLevel == null && this.levels.length > 0)
             this.selectedLevel = this.levels[0];
     }
-
-    findTaxonomyLevel(level: number) {
-        var index: number = -1;
-        for (var taxonomyLevel of this.levels) {
-            index++;
-            if (taxonomyLevel.Level == level) return index;
-        }
-    }
-
+    
     saveLevel(event) {
-        if (event.action == "new") {
-            this.taxonomiesService.saveTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showMessageForResult(this.messagesService, result);
-                    this.showEditor = false;                    
-                    this.levels[this.levels.length] = event.level;
-                    this.selectedLevel = event.level;
-                });            
-        }
-        else {
-            this.taxonomiesService.editTaxonomyLevel(event.level)
-                .then(result => {
-                    this.showMessageForResult(this.messagesService, result);
-                    this.showEditor = false;
-                    this.levels[this.findTaxonomyLevel(event.level.Level)] = event.level;
-                    this.selectedLevel = event.level;
-                });
-            
-        }        
+        this.levelsService.saveObjectLevel(event.level, this.objectType, this.objectId, event.action)
+            .then(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.showEditor = false;
+                this.getLevels();
+            });        
     }
 }
 

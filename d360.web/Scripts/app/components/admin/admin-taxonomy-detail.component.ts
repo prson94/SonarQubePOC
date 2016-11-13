@@ -6,22 +6,20 @@ import { MessagesService } from '../../services/index';
     selector: 'd3s-admin-model-detail-component',
     template: `
                     <div class="tile tile-detail">                                              
-                        <d3s-field-definition-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>
+                        <d3s-field-definition-tile objectType="TaxonomyType" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>
                     </div>
                     <div class="tile tile-detail">
-                        <d3s-admin-model-level [(taxonomy)]="taxonomy"></d3s-admin-model-level>
+                        <d3s-admin-level-grid objectType="TaxonomyType" [maxDepth]="taxonomy?.MaximumDepth" [objectId]="taxonomy?.ID"></d3s-admin-level-grid>
                     </div>                    
                     <div class="tile tile-detail">
-                        <d3s-people-responsibilities-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" [showHidden]="true"></d3s-people-responsibilities-tile>                        
+                        <d3s-people-responsibilities-tile objectType="TaxonomyType" [objectID]="taxonomy?.ID" showHidden="true"></d3s-people-responsibilities-tile>                        
                     </div>                    
                     <div class="tile tile-detail">
-                        <d3s-claims-tile [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID" [readonly]="false"></d3s-claims-tile>                 
+                        <d3s-claims-tile objectType="TaxonomyType" [objectID]="taxonomy?.ID" readonly="false"></d3s-claims-tile>                 
                     </div>    
                 `
 })
 
 export class AdminTaxonomyDetailComponent {
-    @Input() taxonomy: Taxonomy = null;
-    
-    constructor() {  }    
+    @Input() taxonomy: Taxonomy = null;    
 }
