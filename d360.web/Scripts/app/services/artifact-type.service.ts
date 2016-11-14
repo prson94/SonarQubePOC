@@ -63,7 +63,7 @@ export class ArtifactTypeService extends BaseService {
         var tree = new Array<TreeNode>();
 
         data.filter(d => d.ParentID == null).forEach(d => {
-            tree.push({ data: d, children: [], expanded:true });
+            tree.push({ data: d, children: [], expanded:false });
         });
 
         tree.forEach(t => {
@@ -80,16 +80,13 @@ export class ArtifactTypeService extends BaseService {
         });
     }
 
-
-
     public getTopLevelSummary(): Promise<ArtifactTypeSummary[]> {
         return this.http.get('internal/artifacts/typeswithstatistics')
             .toPromise()
             .then(response => <ArtifactTypeSummary[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-
+    
     public getArtifactTypeStatus(artifactTypeId: number): Promise<ArtifactTypeStatusCount[]> {
         return this.http.get(`/queries/${artifactTypeId}/StatusBreakdownByArtifactType`)
             .toPromise()
