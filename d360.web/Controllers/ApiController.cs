@@ -3602,6 +3602,7 @@ select  case
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
+                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, ac);
@@ -3621,6 +3622,7 @@ select  case
                                     text = i.OverrideDisplayName ?? i.FieldTypeName,
                                     datafield = $"{dataField}",
                                     OutputColumn = true,
+                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
                                     contextfield = $"{dataField}_Context",
                                     objectfield = $"{dataField}_Object",
                                     objectidfield = $"{dataField}_ObjectID",
@@ -3642,6 +3644,7 @@ select  case
                                     DisplayColumn = $"A{pos}.{i.FieldTypeName}",
                                     text = i.OverrideDisplayName ?? i.FieldTypeName,
                                     datafield = $"{dataField}",
+                                    SortColumn = (i.SortOrder > 0) ? $"A{pos}.{i.FieldTypeName}" : string.Empty,
                                     OutputColumn = true
                                 };
                                 setColumnTypeInfo(ft, i, dc);
@@ -3680,10 +3683,10 @@ select  case
                         join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
                         if (i == 0)
                         {
-                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             join.WhereStatement = $"I{0}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
-                            objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
-                            objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                            objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                            objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                         }
                         else
                         {
@@ -3791,10 +3794,10 @@ select  case
                             join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.ID) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.ID ) )";
                             if (i == 0)
                             {
-                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                join.JoinStatement += $" inner join [{currentObj}] A{i} on A{i}.ID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
-                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
-                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                             }
                             else
                             {
