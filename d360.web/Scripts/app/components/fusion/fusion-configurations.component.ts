@@ -78,8 +78,7 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
         this.fusionService.getFusionConfigurations()
             .then(res => {
                 this.isLoading = false;
-                this.fusions = res;
-                //this.fusions = _.sortBy(this.fusions, 'Name');
+                this.fusions = res;                
                 this.selected = this.fusions.length > 0 ? this.fusions[0] : null;
             });
     }

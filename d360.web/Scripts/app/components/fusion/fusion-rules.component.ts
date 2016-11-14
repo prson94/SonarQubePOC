@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionService, MessagesService } from '../../services/index';
 import {
@@ -25,8 +24,7 @@ import * as _ from 'lodash';
 
 export class FusionRulesComponent extends BaseComponent implements OnInit {
     @Input() fusionID: number;
-    @Input() fusionTypeID: number;
-    @Input() rowsPerPage: number = 10;
+    @Input() fusionTypeID: number;    
 
     fusionRules: FusionRule[] = [];
     selectedFusionRule: FusionRule;
@@ -51,6 +49,14 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     addItemLoading = false;
     selectAllItems = false;
     addItemSearch = "";
+
+    //this is a hack because there are 4 grid in the same component and we cannot 
+    // reuse the normal property in the base class
+    // this has the code sniffs of a module that needs to be refactored to smaller components...    
+    showRuleSimpleFilter: boolean = true;
+    showRuleStepsFilter: boolean = true;
+    showRuleMappingsFilter: boolean = true;
+    
 
     constructor(private fusionService: FusionService, private messagesService: MessagesService) {
         super();
@@ -132,8 +138,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.selectedFusionRule = row;
         this.fusionService.getEditFusionRule(this.selectedFusionRule.ID)
             .then(r => {
-                this.fusionRuleEditorModel = r;
-                //console.log(this.fusionRuleEditorModel);
+                this.fusionRuleEditorModel = r;                
                 this.formMode = FormMode.EditRule;
             });
     }
@@ -208,8 +213,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                         expanded: false,
                         leaf: false
                     });
-                });
-                //console.log(r);
+                });                
                 this.addItemLoading = false;
             });
     }
@@ -239,38 +243,28 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
     saveAddItem() {
         let form: any = {};
-
-        //this.attributeNodes.forEach
-
+        
         form.RuleID = this.selectedFusionRule.ID;
         form.AllSelected = this.selectAllItems;
         form.FusionAttributeID = this.getSelectedAttributeNodeIDs().join(',');
-
-        //console.log(this.attributeNodes);
-        //console.log(this.attributeNodes.filter(a => a.data.selected));
-        //console.log(form);
-
+        
         this.fusionService.postAddFusionRuleItem(form)
-            .then(r => {
-                //console.log(r);
+            .then(r => {                
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
                 this.selectAllItems = false;
                 this.addItemSearch = '';
                 this.attributeNodes = [];
                 this.loadRules();
-            });
-        //console.log(form);
+            });        
     }
 
     getSelectedAttributeNodeIDs(nodes: TreeNode[] = null, values: number[]  = []) {
         if (nodes == null)
             nodes = this.attributeNodes;
-        nodes.forEach(n => {
-            //console.log(n);
+        nodes.forEach(n => {            
             if (n.data.selected) {
-                values.push(n.data.ID);
-                //console.log(n.data.ID);
+                values.push(n.data.ID);                
             }
             if (n.children) {
                 let v = this.getSelectedAttributeNodeIDs(n.children);
@@ -282,8 +276,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     deleteItem(row: FusionRuleItem) {
-        this.selectedFusionRuleItem = row;
-        //console.log(row);
+        this.selectedFusionRuleItem = row;        
         this.formMode = FormMode.DeleteItem;
     }
 
@@ -303,8 +296,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                 this.fusionRuleMappingEditorModel.sourceValue = this.fusionRuleMappingEditorModel.Item.SourceFieldName + '|' + this.fusionRuleMappingEditorModel.Item.SourceFieldTypeID.toString();
                 this.fusionRuleMappingEditorModel.targetValue = this.fusionRuleMappingEditorModel.Item.TargetFieldName + '|' + this.fusionRuleMappingEditorModel.Item.TargetFieldTypeID.toString();
 
-                this.formMode = FormMode.EditMapping;
-                //console.log(r);
+                this.formMode = FormMode.EditMapping;                
             });
     }
 
@@ -341,8 +333,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.fusionService.getAddFusionRuleStepMapping(this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
-                this.formMode = FormMode.AddMapping;
-                //console.log(r);
+                this.formMode = FormMode.AddMapping;                
             });
     }
 

@@ -2,31 +2,35 @@
     <div [ngSwitch]="formMode">
         <div *ngSwitchDefault>
             <div class="row">
-                <div class="col l8 m6 s12 tile tile-detail">
-                    <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="addRule();" style="float:right;"></d3s-tile-actions></header>
-                    <p-dataTable [value]="fusionRules" selectionMode="single" [(selection)]="selectedFusionRule" (onRowSelect)="loadSteps();">
-                        <p-column header="Enabled" field="Enabled" [sortable]="true" [style]="{width:'15%'}">
-                            <template let-item="rowData" pTemplate type="body">
-                                <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
-                                <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
-                            </template>
-                        </p-column>
-                        <p-column header="Name" field="ObjectName"></p-column>
-                        <p-column header="Description" field="Description"></p-column>
-                        <p-column header="">
-                            <template pTemplate type="body" let-row="rowData">
-                                <div class="RowTools">
-                                    <a (click)="editRule(row);"><i class="fa fa-pencil"></i></a>
-                                    <a (click)="deleteRule(row);"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </template>
-                        </p-column>
-                    </p-dataTable>
+                <div class="col l8 m6 s12">
+                    <div class="tile tile-detail">
+                        <header>Rules<d3s-tile-actions hasAdd="true" (addClick)="addRule();" [hasFilterMode]="true" [(filterMode)]="showRuleSimpleFilter"></d3s-tile-actions></header>
+                        <input [hidden]="!showRuleSimpleFilter" #gbRules type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-dataTable #dtRules [globalFilter]="gbRules" [value]="fusionRules" selectionMode="single" [(selection)]="selectedFusionRule" (onRowSelect)="loadSteps();" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                            <footer *ngIf="dtRules.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRules.totalRecords" [first]="dtRules.first" [rows]="dtRules.rows"></d3s-grid-paging-info></footer>
+                            <p-column header="Enabled" field="Enabled" sortable="true" [style]="{width:'15%'}">
+                                <template let-item="rowData" pTemplate type="body">
+                                    <i *ngIf="item.Enabled" class="fa fa-check enabled" title="Enabled"></i>
+                                    <i *ngIf="!item.Enabled" class="fa fa-times disabled" title="Disabled"></i>
+                                </template>
+                            </p-column>
+                            <p-column header="Name" field="ObjectName" [filter]="!showRuleSimpleFilter"></p-column>
+                            <p-column header="Description" field="Description" [filter]="!showRuleSimpleFilter"></p-column>
+                            <p-column header="">
+                                <template pTemplate type="body" let-row="rowData">
+                                    <div class="RowTools">
+                                        <a (click)="editRule(row);"><i class="fa fa-pencil"></i></a>
+                                        <a (click)="deleteRule(row);"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
+                    </div>
                 </div>
                 <div class="col l4 m6 s12">
                     <div class="tile tile-detail">
-                        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();" style="float:right;"></d3s-tile-actions></header>
-                        <p-dataTable #dt [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="rowsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="[5,10,20]">
+                        <header>Items for selected rule<d3s-tile-actions hasAdd="true" (addClick)="addItem();"></d3s-tile-actions></header>                        
+                        <p-dataTable #dt [value]="fusionRuleItems" selectionMode="single" [(selection)]="selectedFusionRuleItem" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column header="Limiting Attribute" field="FusionAttributeName"></p-column>
                             <p-column header="">
@@ -41,38 +45,46 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 tile tile-detail">
-                    <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="addStep();" style="float:right;"></d3s-tile-actions></header>
-                    <p-dataTable [value]="fusionRuleSteps" selectionMode="single" [(selection)]="selectedFusionRuleStep" (onRowSelect)="loadMappings();">
-                        <p-column header="Step" field="Step" [style]="{width:'10%'}"></p-column>
-                        <p-column header="Action" field="Action" [style]="{width:'15%'}"></p-column>
-                        <p-column header="Description" field="Description"></p-column>
-                        <p-column header="" [style]="{width:'15%'}">
-                            <template pTemplate type="body" let-row="rowData">
-                                <div class="RowTools">
-                                    <a (click)="editStep(row);"><i class="fa fa-pencil"></i></a>
-                                    <a (click)="deleteStep(row);"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </template>
-                        </p-column>
-                    </p-dataTable>
+                <div class="col s12">
+                    <div class="tile tile-detail">
+                        <header>Steps for selected rule <d3s-tile-actions hasAdd="true" (addClick)="addStep();" [hasFilterMode]="true" [(filterMode)]="showRuleStepsFilter"></d3s-tile-actions></header>
+                        <input [hidden]="!showRuleStepsFilter" #gbRuleSteps type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-dataTable #dtRuleSteps [globalFilter]="gbRuleSteps" [value]="fusionRuleSteps" selectionMode="single" [(selection)]="selectedFusionRuleStep" (onRowSelect)="loadMappings();" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                            <footer *ngIf="dtRuleSteps.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleSteps.totalRecords" [first]="dtRuleSteps.first" [rows]="dtRuleSteps.rows"></d3s-grid-paging-info></footer>
+                            <p-column header="Step" field="Step" [style]="{width:'10%'}" [filter]="!showRuleStepsFilter"></p-column>
+                            <p-column header="Action" field="Action" [style]="{width:'15%'}" [filter]="!showRuleStepsFilter"></p-column>
+                            <p-column header="Description" field="Description" [filter]="!showRuleStepsFilter"></p-column>
+                            <p-column header="" [style]="{width:'15%'}">
+                                <template pTemplate type="body" let-row="rowData">
+                                    <div class="RowTools">
+                                        <a (click)="editStep(row);"><i class="fa fa-pencil"></i></a>
+                                        <a (click)="deleteStep(row);"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
+                    </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 tile tile-detail">
-                    <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="addMapping();" style="float:right;"></d3s-tile-actions></header>
-                    <p-dataTable [value]="fusionRuleMappings" selectionMode="single" [(selection)]="selectedFusionRuleMapping">
-                        <p-column header="Source" field="SourceFieldName"></p-column>
-                        <p-column header="Target" field="TargetFieldName"></p-column>
-                        <p-column header="">
-                            <template pTemplate type="body" let-row="rowData">
-                                <div class="RowTools">
-                                    <a (click)="editMapping(row);"><i class="fa fa-pencil"></i></a>
-                                    <a (click)="deleteMapping(row);"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </template>
-                        </p-column>
-                    </p-dataTable>
+                <div class="col s12">
+                    <div class="tile tile-detail">
+                        <header>Mappings for selected step<d3s-tile-actions hasAdd="true" (addClick)="addMapping();" [hasFilterMode]="true" [(filterMode)]="showRuleMappingsFilter"></d3s-tile-actions></header>
+                        <input [hidden]="!showRuleMappingsFilter" #gbRuleMappings type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+                        <p-dataTable #dtRuleMappings [globalFilter]="gbRuleMappings" [value]="fusionRuleMappings" selectionMode="single" [(selection)]="selectedFusionRuleMapping" paginator="true" pageLinks="3" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                            <footer *ngIf="dtRuleMappings.totalRecords"><d3s-grid-paging-info [totalRecords]="dtRuleMappings.totalRecords" [first]="dtRuleMappings.first" [rows]="dtRuleMappings.rows"></d3s-grid-paging-info></footer>
+                            <p-column header="Source" field="SourceFieldName" [filter]="!showRuleMappingsFilter"></p-column>
+                            <p-column header="Target" field="TargetFieldName" [filter]="!showRuleMappingsFilter"></p-column>
+                            <p-column header="">
+                                <template pTemplate type="body" let-row="rowData">
+                                    <div class="RowTools">
+                                        <a (click)="editMapping(row);"><i class="fa fa-pencil"></i></a>
+                                        <a (click)="deleteMapping(row);"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </template>
+                            </p-column>
+                        </p-dataTable>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,6 +110,7 @@
                     <input type="checkbox" [(ngModel)]="fusionRuleEditorModel.Rule.Enabled" /> Enabled?
                 </div>
             </div>
+            <div class="row">&nbsp;</div>
             <div class="row">
                 <div class="col s12">
                     <button pButton type="button" label="Save" (click)="saveRule();"></button>
