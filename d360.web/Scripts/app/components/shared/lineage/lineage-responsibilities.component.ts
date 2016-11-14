@@ -1,0 +1,54 @@
+﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
+import { LineageService } from '../../../services/index';
+import { Responsibility } from '../../../models/lineage.model';
+import { BaseComponent } from '../base.component';
+
+@Component({
+    selector: 'd3s-lineage-responsibilities',
+    template: `
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading">
+            <p-dataTable #dt [value]="items" [rowsPerPageOptions]="defaultPagingOptions" >
+                <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+                <p-column field="Role" header="Role"></p-column>
+                <p-column field="ResponsibleObjectName" header="Resource"></p-column>
+                <p-column field="ResponsibleObjectType" header="Group Owmer"></p-column>
+            </p-dataTable>
+        </div>
+    `,
+    providers: [LineageService]
+})
+
+export class LineageResponsibilitiesComponent extends BaseComponent implements OnInit, OnChanges {
+    @Input() objectType: string;
+    @Input() objectId: number;
+    isLoading = false;
+
+    items: Responsibility[] = [];
+
+    constructor(private lineageService: LineageService) {
+        super();
+    }
+
+    ngOnChanges() {
+        this.load();
+    }
+
+    ngOnInit() { }
+
+    load() {
+
+        if (this.objectType == null || this.objectId == null) {
+            this.items = [];
+            return;
+        }
+
+        this.isLoading = true;
+        this.lineageService.getLineageResponsibilities(this.objectType, this.objectId)
+            .then(data => {
+                this.isLoading = false;
+                //console.log(data);
+                this.items = data;
+            });
+    }
+}

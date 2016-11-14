@@ -27,6 +27,9 @@ import {
     DragDropModule,
     PaginatorModule,
     SharedModule,
+    DialogModule,
+    TabViewModule,
+    SliderModule,
 } from 'primeng/primeng';
 
 import { ChartModule } from 'angular2-highcharts';
@@ -56,7 +59,14 @@ import { GridPagingInfoComponent } from './grid-paging-info.component';
 import { GroupMembersComponent } from './group-members.component';
 import { ImpactComponent } from './impact.component';
 import { IconPickerComponent } from './icon-picker.component';
-import { LineageComponent } from './lineage.component';
+import { LineageComponent } from './lineage/lineage.component';
+import { LineageFusionComponent } from './lineage/lineage-fusion.component';
+import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
+import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
+import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibilities.component';
+import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
+import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
+import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
@@ -110,6 +120,13 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ImpactComponent,
         IconPickerComponent,
         LineageComponent,
+        LineageFusionComponent,
+        LineageMappingRulesComponent,
+        LineageObjectDetailComponent,
+        LineageResponsibilitiesComponent,
+        LineageSourceRuleEditorComponent,
+        LineageSourceRulesComponent,
+        LineageTechnicalRelationshipsComponent,
         MessagesBarComponent,        
         MessagesComponent,  
         MultiSelectGridComponent,      
@@ -220,7 +237,10 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         TooltipModule,
         DragDropModule,
         PaginatorModule, 
-        SharedModule,      
+        SharedModule,  
+        DialogModule,
+        TabViewModule,
+        SliderModule,
 
         //highcharts
         ChartModule,

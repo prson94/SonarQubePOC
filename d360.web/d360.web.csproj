@@ -885,7 +885,8 @@
     <Content Include="Scripts\app\components\forms\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\impact.component.html" />
-    <Content Include="Scripts\app\components\shared\lineage.component.html" />
+    <Content Include="Scripts\app\components\shared\lineage\lineage.component.html" />
+    <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
@@ -1360,11 +1361,19 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-fusion.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-mapping-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-object-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-responsibilities.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-source-rule-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-source-rules.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-technical-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
@@ -1509,7 +1518,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-relationship-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\lineage.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-challenge.component.ts" />
@@ -1618,6 +1627,7 @@
     <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />

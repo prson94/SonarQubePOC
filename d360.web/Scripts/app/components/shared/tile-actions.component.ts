@@ -21,6 +21,7 @@ import {MenuItem} from 'primeng/primeng';
                             <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" pTooltip="Export Errors to Excel"><i class="fa fa-download red-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasEdit"><a class="Action" (click)="editClick.emit(null)" pTooltip="Edit"><i class="fa fa-pencil fa-fw"></i></a></li>
+                            <li class="left" *ngIf="hasSave"><a class="Action" (click)="saveClick.emit(null)" pTooltip="Save"><i class="fa fa-floppy-o fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasClose"><a class="Action" (click)="closeClick.emit(null)" pTooltip="Close"><i class="fa fa-remove fa-fw"></i></a></li>
                             <li class="left" *ngIf="hasFilterMode"><a class="Action" (click)="filterClick()" pTooltip="Filter Mode">
                                 <i class="fa fa-filter fa-fw" [ngClass]="{'red-text darken-2':!filterMode}"></i>                                
@@ -50,6 +51,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Output() apiClick = new EventEmitter();
     @Output() passwordClick = new EventEmitter();
     @Output() suggestClick = new EventEmitter();
+    @Output() saveClick = new EventEmitter();
 
     @Input() filterMode: boolean = false;        
     @Output() filterModeChange = new EventEmitter();
@@ -68,6 +70,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasPassword: boolean = false;
     @Input() hasFullScreen: boolean = false;
     @Input() hasSuggest: boolean = false;
+    @Input() hasSave: boolean = false;
 
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
