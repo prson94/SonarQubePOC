@@ -26,6 +26,7 @@ export class ObjectRelationship {
     TargetName: string;
     TargetType: string;
     TargetTypeID: number;
+    PredicateName: string;
 }
 
 export class RelatedItem {

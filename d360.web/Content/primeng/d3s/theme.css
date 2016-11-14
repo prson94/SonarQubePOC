@@ -808,7 +808,7 @@ button.ui-button.ui-state-active, .ui-button.ui-state-active {
 }
 
 /* make single select input filter width of container.*/
-.ui-dropdown-filter-container{
+.ui-dropdown-filter-container, .ui-multiselect-filter-container input{
     width:100%;
 }
 

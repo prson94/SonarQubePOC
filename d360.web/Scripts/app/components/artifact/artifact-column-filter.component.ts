@@ -255,7 +255,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     private addRelationshipTypesToAvailable(relTypes) { 
         for (let relationship of relTypes) {
             this.availableFilters.push({
-                Data: relationship, Name: `Relationship - ${relationship.TargetName}`, Type: FilterFieldType.Relationship
+                Data: relationship, Name: `Relationship - ${relationship.TargetName}${relationship.PredicateName ? '(' + relationship.PredicateName + ')': ''}`, Type: FilterFieldType.Relationship
             });
         }
 

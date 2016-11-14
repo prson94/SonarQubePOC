@@ -11,5 +11,7 @@
         public string TargetName { get; set; }
 
         public int? ParentIntersectID { get; set; }
+
+        public string PredicateName { get; set; }
     }
 }

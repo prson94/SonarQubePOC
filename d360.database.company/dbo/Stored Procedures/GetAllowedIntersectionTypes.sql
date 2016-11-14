@@ -10,7 +10,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int);
+	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int, PredicateName nvarchar(100));
 
 	insert into @tbl
 		SELECT	RT.ID,
@@ -26,7 +26,8 @@ BEGIN
 					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
 					else RT.SubjectName
 				end AS TargetName,
-				NULL
+				NULL,
+				RT.PredicateName
 		FROM	IntersectTypeDetail RT
 		WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
 				(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
@@ -52,7 +53,8 @@ BEGIN
 							when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
 							else RT.SubjectName
 						end AS TargetName,
-						NULL
+						NULL,
+						RT.PredicateName
 			FROM		IntersectTypeDetail RT
 			WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
 					(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
@@ -90,7 +92,8 @@ BEGIN
 					when 'PolicyType' then 'Policies: '
 					else ''
 				end + ' : ' + TargetName as TargetName, 
-				ParentIntersectID
+				ParentIntersectID,
+				PredicateName
 	from		@tbl 
 	order by	case TargetType
 					when 'TaxonomyType' then 'Model: '
@@ -103,4 +106,7 @@ BEGIN
 					else ''
 				end + ' : ' + TargetName
 END
+
+
+
 
