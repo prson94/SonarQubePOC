@@ -4221,6 +4221,7 @@ select  case
         A.ParentID,
         {0}
 		A.Name,
+        A.Status,
 		A.Description
 from	[Policy] A  {1} 
 where    A.PolicyTypeID = @id", columns, joins);

@@ -175,6 +175,11 @@ namespace d360.web.Controllers
                     statusList.Add(new SelectListItem { Text = "Assigned", Value = "Assigned" });
                     statusList.Add(new SelectListItem { Text = "Closed", Value = "Closed" });
                     break;
+                case SystemObjects.Policy:
+                    statusList.Add(new SelectListItem { Text = "Draft", Value = "Draft" });
+                    statusList.Add(new SelectListItem { Text = "Active", Value = "Active" });
+                    statusList.Add(new SelectListItem { Text = "Retired", Value = "Retired" });
+                    break;
             }
             f.Items.AddRange(statusList);
 
@@ -13068,10 +13073,13 @@ from ArtifactType A
             if (!Company.HasPermission(SystemObjects.Policy, 0, Claim.Create, ClaimObject.Root))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+            var statuses = PolicyStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
             if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250), SimilarItemsUri = $"form/Policy_SimilarItems?typeID={typeID}&query=" });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
 
             list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, typeID).ToList(), 3);
@@ -13102,8 +13110,11 @@ from ArtifactType A
             var list = new List<EditableField>();
             var model = Company.GetById<Policy>(id);
 
+            var statuses = PolicyStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString(), Value = model.Description });
 
             list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 5, true);
@@ -13157,6 +13168,7 @@ from ArtifactType A
                 {
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
+                    Status = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), form["Status"]),
                     PolicyTypeID = parseIntField(form, "PolicyTypeID")
                 };
 
@@ -13285,6 +13297,7 @@ from ArtifactType A
 
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
+                model.Status = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), form["Status"]);
 
                 Company.Update<Policy>(model);
 
@@ -17651,7 +17664,7 @@ order by	D.Name, I.Name";
         [Route("Rule_AddFields")]
         public JsonResult Rule_AddFields()
         {
-            var statuses = RuleStatus.Active.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var list = new List<EditableField>();
@@ -17692,7 +17705,7 @@ order by	D.Name, I.Name";
         [Route("Rule_EditFields")]
         public JsonResult Rule_EditFields(int id)
         {
-            var statuses = RuleStatus.Active.GetRuleTypeEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var model = Company.GetById<Rule>(id);

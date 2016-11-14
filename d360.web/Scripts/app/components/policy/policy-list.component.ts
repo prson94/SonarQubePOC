@@ -44,7 +44,7 @@ import * as _ from 'lodash';
                                     <template let-col let-data="rowData" pTemplate type="body">
                                         <span [innerHtml]="data?.Description"></span>
                                     </template>                                                        
-                                </p-column>                                
+                                </p-column>                              
                             </p-dataTable>      
                         </div>
                     </div>

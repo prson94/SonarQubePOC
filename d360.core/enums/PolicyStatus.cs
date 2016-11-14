@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace d360.core.enums
 {
-    public enum RuleStatus
+    public enum PolicyStatus
     {
         [Name("Draft"), Description("The rule is in draft and not yet active.")]
         Draft = 1,
@@ -16,36 +16,36 @@ namespace d360.core.enums
         Inactive = 3
     }
 
-    public class RuleStatusInfo
+    public class PolicyStatusInfo
     {
-        public RuleStatus ID { get; set; }
+        public PolicyStatus ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
 
-    public static class RuleStatusExtensions
+    public static class PolicyStatusExtensions
     {
-        public static string GetDisplayName(this RuleStatus type)
+        public static string GetStatusDisplayName(this RuleStatus type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
         }
 
-        public static string GetDescription(this RuleStatus type)
+        public static string GetStatusDescription(this RuleStatus type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
         }
 
-        public static List<RuleStatusInfo> GetStatusEnumList(this RuleStatus type)
+        public static List<PolicyStatusInfo> GetStatusEnumList(this PolicyStatus type)
         {
-            var list = new List<RuleStatusInfo>();
+            var list = new List<PolicyStatusInfo>();
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                list.Add(new RuleStatusInfo
+                list.Add(new PolicyStatusInfo
                 {
                     Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (RuleStatus)Enum.Parse(typeof(RuleStatus), tm.Name)
+                    ID = (PolicyStatus)Enum.Parse(typeof(PolicyStatus), tm.Name)
                 });
             }
 

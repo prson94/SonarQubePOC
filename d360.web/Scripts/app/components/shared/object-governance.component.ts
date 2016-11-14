@@ -91,6 +91,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
         {
             case "ARTIFACT":
             case "RULE":
+            case "POLICY":
                 this.showStatus = true;
                 break;
         }

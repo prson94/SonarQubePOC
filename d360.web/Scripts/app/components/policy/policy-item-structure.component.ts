@@ -4,7 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType } from '../../models/policy.model';
+import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -37,6 +37,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                <div class="truncate" [title]="item.data.Description">{{item.data.Description}}</div>
                             </template>
                         </p-column>
+                        <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" [style]="{width:'10%'}"></p-column>  
                         <p-column [style]="{width:'40px'}" >
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
@@ -137,6 +138,9 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     private loadPolicyHierarchy(policyTypeId: number) {
         this.policiesService.getPolicies(policyTypeId)
             .then(result => {
+                for (let policy of result) {
+                    policy.StatusName = PolicyStatus[policy.Status];
+                }
                 this.policies = result;                
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies)
             });
@@ -156,7 +160,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.Name,
                 expanded: true,
                 data: {
-                    ID: root.ID, Name: root.Name, Description: root.Description.replace(/<[^>]+>/gm, ''), ParentID: root.ParentID
+                    ID: root.ID, Name: root.Name, Description: root.Description.replace(/<[^>]+>/gm, ''), ParentID: root.ParentID, StatusName: root.StatusName
                 },
                 children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
             });
@@ -192,7 +196,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     
 
     private add() {    
-        console.log(this.selected);    
+        //console.log(this.selected);    
         this.selectedParentID = this.selected ? this.selected.data.ID : null;
         this.selected = null;
         this.showEditor = true;

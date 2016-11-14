@@ -4,7 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType } from '../../models/policy.model';
+import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -43,7 +43,7 @@ import { StringConstants } from '../../static/string-constants';
                         <div class="row">
                             <div class="col s12">
                                  <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                    <d3s-object-governance [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name"></d3s-object-governance>
+                                    <d3s-object-governance [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name" [status]="selected?.StatusName"></d3s-object-governance>
                                 </div>
                             </div>
                         </div>
@@ -171,6 +171,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     loadPolicyItems(policyTypeId: number, selectedHierarchyId: number ): Promise<any> {
         return this.policiesService.getPolicies(policyTypeId).then(r => {
+            for (let policy of r) {
+                policy.StatusName = PolicyStatus[policy.Status];
+            }
             this.policies = r;
             this.treeNodeArray = this.buildTreeNodeArray(this.policies);
             this.selectPolicyHierarchy(selectedHierarchyId);
@@ -217,7 +220,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID);
 
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.Name, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
     }
 
     private findSelectedTreeNode(id: number): TreeNode {

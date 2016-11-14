@@ -304,6 +304,7 @@
     <Compile Include="enums\JobIntervalType.cs" />
     <Compile Include="enums\ObjectType.cs" />
     <Compile Include="enums\ResponsibilityTransformationType.cs" />
+    <Compile Include="enums\PolicyStatus.cs" />
     <Compile Include="enums\RuleStatus.cs" />
     <Compile Include="enums\RuleType.cs" />
     <Compile Include="enums\QueueType.cs" />
