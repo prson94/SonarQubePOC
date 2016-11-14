@@ -161,10 +161,10 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private doExport() {
         if (this.fusionObject == "FusionQueryAttributeType") {
-            this.fusionAttributeService.getFusionQueryAttributeExcel(this.fusionId, this.fusionQueryAttributeTypeId);
+            this.fusionAttributeService.getFusionQueryAttributeExcel(this.fusionId, this.fusionQueryAttributeTypeId, this.filters);
         }
         else {
-            this.fusionAttributeService.getFusionAttributeExcel(this.fusionId, this.fusionAttributeTypeId);
+            this.fusionAttributeService.getFusionAttributeExcel(this.fusionId, this.fusionAttributeTypeId, this.filters);
         }
     }
 };

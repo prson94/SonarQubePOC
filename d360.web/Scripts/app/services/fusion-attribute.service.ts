@@ -9,7 +9,6 @@ import { SortOrder } from '../models/enums.model';
 export class FusionAttributeService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-
     getFusionAttributes(fusionId: number, fusionAttributeTypeId: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
         let sortOrderText = '';
 
@@ -58,14 +57,37 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number) {
-        window.location.assign(`internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&filterscount=0`);
+    getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number, filters?: FusionAttributeFilter[]) {
+        let url = `internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}`;
+
+        if (filters && filters.length > 0) {
+            url += `&filterscount=${filters.length}`;
+
+            let index = 0;
+            for (let filter of filters) {
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                index++;
+            }
+        }
+
+        window.location.assign(url);
     }
 
-    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number) {
-        window.location.assign(`internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&filterscount=0`);
+    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number, filters?: FusionAttributeFilter[]) {
+        let url = `internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}`;
+
+        if (filters && filters.length > 0) {
+            url += `&filterscount=${filters.length}`;
+
+            let index = 0;
+            for (let filter of filters) {
+                url += `&filterdatafield${index}=${filter.dataField}&filtercondition${index}=${filter.condition}&filtervalue${index}=${filter.value}`;
+                index++;
+            }
+        }
+        window.location.assign(url);
     }
-    Query
+    
     getFusionAttributeDetails(fusionAttributeId: number): Promise<FusionAttributeValueDetails> {
         return this.http.get(`internal/fusion/details/FusionAttribute/${fusionAttributeId}`)
             .toPromise()
