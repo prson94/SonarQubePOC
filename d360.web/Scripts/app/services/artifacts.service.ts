@@ -80,8 +80,56 @@ export class ArtifactService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getArtifactsXls(artifactType: ArtifactType) {                
-        window.location.assign(`internal/artifacts/download/excel/${artifactType.ID}.xls`);        
+    getArtifactsXls(artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string) {                
+        let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
+        let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
+        if (filters != undefined) {
+            //regular fields
+            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
+            let count = 0;
+            uri += '&filterscount=' + normalFilters.length;
+
+            for (let filter of normalFilters) {
+                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //related filter fields
+            let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
+            count = 0;
+
+            uri += '&relfilterscount=' + rellFilters.length;
+
+            for (let filter of rellFilters) {
+                uri += `&relfilterdatafield${count}=${filter.field.replace("Field", "")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
+                count++;
+            }
+
+            //hiden filter fields
+            let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
+            count = 0;
+
+            uri += '&hidfilterscount=' + hidFilters.length;
+
+            for (let filter of hidFilters) {
+                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
+                count++;
+            }
+        }
+
+        if (attributes != undefined) {
+            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
+        }
+
+        if (relationships != undefined) {
+            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
+        }
+
+        if (simpleFilter != undefined) {
+            uri += `&filter=${encodeURIComponent(simpleFilter)}`;
+        }
+
+        window.location.assign(uri);        
     }
 
     getArtifact(id: number): Promise<Artifact> {

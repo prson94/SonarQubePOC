@@ -196,7 +196,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     export() {
-        this.artifactService.getArtifactsXls(this.artifactType);
+        this.artifactService.getArtifactsXls(this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter);
     }
 
     saveItem(event) {

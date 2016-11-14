@@ -27,63 +27,107 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id)
+        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter)
         {
-            return ToExcel(id, null);
+            return ToExcel(id, null, sortDataField, sortOrder, filter);
         }
 
         [Route("{id:int}.xls"), FileDownload, HttpPost]
-        public FileResult ToExcel(int id, ArtifactListFilterModel model)//string Name)
+        public FileResult ToExcel(int id, ArtifactListFilterModel model, string sortDataField, string sortOrder, string filter)
         {
             var joins = "";
             var columns = "";
 
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, false, true);
+            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns);
 
-            var sql = string.Format(@"select * from (
+            var dbArgs = new Dapper.DynamicParameters();
+
+            dbArgs.Add("id", id);
+
+            var sql = string.Format(@"
 select	A.ID,
 		A.Name,
 		A.Description,
+        A.ParentID,
+		P.TextPath as Parent,
 		A.TextPath,
 		A.Status,
-		V.Name as SubjectArea,
+		V.Name as TaxonomyType,
         {0}
-		dbo.GenerateObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
-from	Artifact A inner join TaxonomyType V on V.ID = A.TaxonomyTypeID and A.ArtifactTypeID = {2} {1}) A", columns, joins, id);
+		dbo.GenerateNgObjectUrl('Artifact', A.ArtifactTypeID, A.ID) as Url
+from	Artifact A inner join TaxonomyType V on (V.ID = A.TaxonomyTypeID)
+        left join Artifact P on P.ID = A.ParentID 
+        {1}
+where A.ArtifactTypeID = @id ", columns, joins);
+
+            //if simple filter specified add that citeria to the sql
+            if (!string.IsNullOrEmpty(filter))
+            {
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(new string[] { "A.Name", "A.Status", "V.Name", "A.TextPath" }, "Artifact", id, filter, dbArgs)}";
+            }
 
             var type = Company.GetById<ArtifactType>(id);
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
-            // The data reader.
-            var query = Company.Read(sql);
-            var metafields = query.GetSchemaTable();
+            sql = string.Format(@"select * from ({0}) A", sql);
+
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs);
+            sql = applySortSuffix(sql, sortDataField, sortOrder);
+                        
+            var results = Company.Query<dynamic>(sql, dbArgs);
+           
+            var fields = Company.Filter<FieldType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+
+            var settings = Community.GetCompanySettings();
 
             #region Create the list sheet
 
             #region Header
 
-            for (int i = 0; i < metafields.Rows.Count; i++)
+            int index = 1;
+            document.SetCellValue(1, index++, "Name");
+            document.SetCellValue(1, index++, "Description");
+            document.SetCellValue(1, index++, "TextPath");
+            if(type.ParentID > 0)
             {
-                document.SetCellValue(1, i, (string)metafields.Rows[i]["ColumnName"]);
+                document.SetCellValue(1, index++, "Parent");
             }
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            document.SetCellValue(1, index++, settings["ArtifactType_TaxonomyTypeID"]);
+            document.SetCellValue(1, index++, "Status");
+            document.SetCellValue(1, index++, "Url");
 
             #endregion
 
-            int r = 1;
-            while (query.Read())
+            int rowNumber = 1;
+            foreach (var row in results)
             {
-                r++;
-                for (int i = 0; i < metafields.Rows.Count; i++)
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (string)row.Name);
+                document.SetCellValue(rowNumber, index++, (string)row.Description);
+                document.SetCellValue(rowNumber, index++, (string)row.TextPath);
+                if (type.ParentID > 0)
                 {
-                    document.SetCellValue(r, i, query[i].ToString());
+                    document.SetCellValue(rowNumber, index++, (string)row.Parent);
                 }
+
+                foreach (var field in fields)
+                {
+                    document.SetCellValue(rowNumber, index++, (string)((row as IDictionary<string, object>)[$"Field{field.ID}"]));
+                }
+
+                document.SetCellValue(rowNumber, index++, (string)row.TaxonomyType);
+                document.SetCellValue(rowNumber, index++, (string)row.Status);                
+                document.SetCellValue(rowNumber, index++, (string)row.Url);
             }
-
-            metafields = null;
-            query.Dispose();
-
+            
             #endregion
 
             var stream = new MemoryStream();
