@@ -1,11 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
 import { RelationshipsService } from '../../services/index';
 import { RelationshipDetail } from '../../models/relationship.model';
-import { DropdownOption } from '../../models/dropdown.model';
-
 import * as _ from 'lodash';
 
 @Component({
@@ -18,20 +15,15 @@ import * as _ from 'lodash';
                     <form (ngSubmit)="onSubmit()" #relationshipEditorForm="ngForm">                        
                         <div class="col l12 s12">
                             <div class="FieldName">Side 1</div>
-                            <div>                                 
-                                <select (change)="side1Changed($event.target);" [disabled]="editedRelationship.LimitedChangesOnly"  required [(ngModel)]="editedRelationship.Side1" name="Side1" #side1="ngModel" style="width:100%;">
-                                  <option></option>
-                                  <option *ngFor="let p of side1Options" [value]="p.value">{{p.title}}</option>
-                                </select>
+                            <div>                       
+                                <p-dropdown filter="true" name="side1" [disabled]="editedRelationship.LimitedChangesOnly" required [ngModel]="editedRelationship.Side1" (ngModelChange)="editedRelationship.Side1=$event;side1Changed($event);" [options]="side1Options" #side1="ngModel" [style]="{ 'width': '100%' }"></p-dropdown>                                          
                             </div>
                             <div [hidden]="side1.valid || side1.pristine">Relationship Side 1 is required</div>
                         </div>                                                
                         <div class="col l12 s12">                                                        
                             <div class="FieldName">Predicates</div>
                             <div>
-                                <select (change)="predicateChanged($event.target);" name="predicates" required [disabled]="!canChangePredicate" [(ngModel)]="editedRelationship.Predicate" #predicate="ngModel" style="width:100%;">
-                                    <option *ngFor="let p of predicates" [value]="p.value" [innerHtml]="p.title"></option>
-                                </select>
+                                <p-dropdown filter="true" name="predicates" required [options]="predicates" [disabled]="!canChangePredicate" [ngModel]="editedRelationship.Predicate" (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" #predicate="ngModel" [style]="{ 'width': '100%' }"></p-dropdown>                                
                             </div>
                             <div [hidden]="predicate.valid || predicate.pristine">A predicate is required</div>
                         </div>
@@ -39,10 +31,7 @@ import * as _ from 'lodash';
                         <div class="col l12 s12" *ngIf="!isLoadingSide2">
                             <div class="FieldName">Side 2</div>
                             <div>                                
-                                <select required [disabled]="editedRelationship.LimitedChangesOnly"  [(ngModel)]="editedRelationship.Side2" name="Side2" #side2="ngModel" style="width:100%;">
-                                  <option></option>
-                                  <option *ngFor="let p of side2Options" [value]="p.value">{{p.title}}</option>
-                                </select>
+                                <p-dropdown filter="true" name="Side2" required [options]="side2Options" [disabled]="editedRelationship.LimitedChangesOnly" [(ngModel)]="editedRelationship.Side2" #side2="ngModel" [style]="{ 'width': '100%' }"></p-dropdown>                                
                             </div>
                             <div [hidden]="side2.valid || side2.pristine">Relationship Side 2 is required</div>
                         </div>
@@ -64,9 +53,9 @@ export class AdminRelationshipsEditor {
     action: string = "Edit";
     error: any;
     editedRelationship: RelationshipDetail;
-    side1Options: DropdownOption[] = [];
-    side2Options: DropdownOption[] = [];
-    predicates: DropdownOption[] = [];
+    side1Options: SelectItem[] = [];
+    side2Options: SelectItem[] = [];
+    predicates: SelectItem[] = [];
     isLoading: boolean = false;
     isLoadingSide2: boolean = false;
     isLoadingItem: boolean = false;
@@ -110,9 +99,9 @@ export class AdminRelationshipsEditor {
         });
     }
 
-    private side1Changed(event) {        
-        if (!event.value) return;
-        let info = event.value.split('|');
+    private side1Changed(value) {        
+        if (!value) return;
+        let info = value.split('|');
         if (info.length < 2) return;
 
         this.editedRelationship.Side2 = null;
@@ -120,9 +109,9 @@ export class AdminRelationshipsEditor {
         this.loadPredicates(info[0], Number(info[1]));
     }
 
-    private predicateChanged(event) {
-        if (!event.value) return;
-        let predicateId = Number(event.value);
+    private predicateChanged(value) {
+        if (!value) return;
+        let predicateId = Number(value);
 
         let subject = this.editedRelationship.Side1.split('|');
         if (!this.editedRelationship.LimitedChangesOnly) {
@@ -134,14 +123,28 @@ export class AdminRelationshipsEditor {
     private loadPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .then(result => {
-                this.predicates = result;
+                this.predicates = [];
+                this.predicates.push({ label: 'Select A Predicate', value: null });
+                for (let item of result) {
+                    this.predicates.push({
+                        label: item.title,
+                        value: item.value
+                    });
+                }                
             });
     }
 
     private loadSide1Options() {
         this.isLoading = true;
         this.relationshipsService.getSide1Options().then(result => {            
-            this.side1Options = result;
+            this.side1Options = [];
+            this.side1Options.push({ label: 'Select Side 1', value: null });
+            for (let item of result) {
+                this.side1Options.push({
+                    value:item.value,
+                    label:item.title
+                });
+            }
             this.isLoading = false;
         });
     }
@@ -149,7 +152,14 @@ export class AdminRelationshipsEditor {
     private loadSide2Options(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.isLoadingSide2 = true;
         this.relationshipsService.getSide2Options(subjectId, subject, objectId, object, predicateId).then(result => {
-            this.side2Options = result;            
+            this.side2Options = [];   
+            this.side2Options.push({ label: 'Select Side 2', value: null });     
+            for (let item of result) {
+                this.side2Options.push({
+                    value: item.value,
+                    label: item.title
+                });
+            }    
             this.isLoadingSide2 = false;
         }); 
     }

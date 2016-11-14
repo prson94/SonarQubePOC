@@ -9778,7 +9778,7 @@ namespace d360.web.Controllers
                 .ToList()
                 .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && !usedPredicateIDs.Contains(i.ID))
                 .Select(i => new {
-                    title = $"{i.Name} <span style='color: #999; font-size: 85%'>({i.Type.AsInfoModel().Name})</span>",
+                    title = $"{i.Name} ({i.Type.AsInfoModel().Name})",
                     value = i.ID
                 })
                 .OrderBy(i => i.title);
