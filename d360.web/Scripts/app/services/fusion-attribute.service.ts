@@ -57,8 +57,13 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number, filters?: FusionAttributeFilter[]) {
-        let url = `internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}`;
+    getFusionAttributeExcel(fusionId: number, fusionAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
+        let sortOrderText = '';
+
+        if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
+        if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
+
+        let url = `internal/fusion/ExportItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;
@@ -73,8 +78,13 @@ export class FusionAttributeService extends BaseService {
         window.location.assign(url);
     }
 
-    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number, filters?: FusionAttributeFilter[]) {
-        let url = `internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}`;
+    getFusionQueryAttributeExcel(fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]) {
+        let sortOrderText = '';
+
+        if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
+        if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
+
+        let url = `internal/fusion/ExportQueryItemsByAttributeType?fusionID=${fusionId}&fusionQueryAttributeTypeID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;
