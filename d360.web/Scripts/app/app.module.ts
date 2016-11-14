@@ -144,8 +144,7 @@ import {
     ActionBar,    
     ClaimsMatrixPart,    
     MenuPartItem,
-    MenuPart,
-    SimpleDropdown,    
+    MenuPart,    
 } from './components/parts/index';
 
 import {
@@ -273,8 +272,7 @@ import {
         RuleComponent,        
         RuleItemComponent,
         RuleListComponent,    
-        RuleResultsGridComponent,    
-        SimpleDropdown,    
+        RuleResultsGridComponent,            
         StructureTile,        
         SynonymsTile,
         ActivityTile,

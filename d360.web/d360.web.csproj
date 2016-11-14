@@ -1459,7 +1459,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\object-detail-field.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\parts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\simple-dropdown.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.routes.ts" />

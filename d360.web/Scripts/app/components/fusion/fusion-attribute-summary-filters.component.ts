@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';
 import { FusionAttributeValueDetails, FusionAttributeFilter } from '../../models/fusion-attribute.model';
@@ -40,6 +39,7 @@ import * as _ from 'lodash';
                 </form>
                 `,
     providers: [FusionAttributeService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class FusionAttributeSummaryFiltersComponent extends BaseComponent implements OnChanges {
