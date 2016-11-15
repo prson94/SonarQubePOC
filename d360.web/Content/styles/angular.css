@@ -210,7 +210,7 @@ d3s-navbar-item.top > div > span.nav-item:hover {
 /* main content*/
 .maincontent {
   margin-left: 70px;
-  margin-right: 75px;
+  margin-right: 40px;
 }
 /* end main content*/
 /* grid tiles*/
@@ -577,17 +577,15 @@ div.child .empty-count {
 /* right sidebar item styles*/
 .right-sidebar {
   position: absolute;
-  width: 75px;
+  width: 40px;
   right: 5px;
   top: 65px;
 }
 .right-side-item {
   background-color: #54a4da;
-  padding: 2px 2px;
+  padding: 8px;
   border-radius: 4px;
   color: white;
-  font-weight: bold;
-  font-size: 0.9em;
   cursor: pointer;
   margin-bottom: 10px;
 }
