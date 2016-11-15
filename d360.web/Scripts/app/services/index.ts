@@ -51,7 +51,7 @@ import { GroupService } from './group.service';
 import { AuthenticationService } from './authentication.service';
 import { ReferenceService } from './reference.service';
 import { FavoritesService } from './favorites.service';
-import { LineageService } from './lineage.service';
+import { DiagramService } from './diagram.service';
 import { LevelsService } from './levels.service';
 
 export * from './messages.service';
@@ -107,5 +107,5 @@ export * from './group.service';
 export * from './authentication.service';
 export * from './reference.service';
 export * from './favorites.service';
-export * from './lineage.service';
+export * from './diagram.service';
 export * from './levels.service';

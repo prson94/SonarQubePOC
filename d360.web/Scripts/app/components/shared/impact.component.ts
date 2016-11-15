@@ -1,36 +1,403 @@
-﻿
-import { Component, Input, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { BaseComponent } from './base.component';
+import { PermissionsService, DiagramService } from '../../services/index';
+import { Permission } from '../../models/permission.model';
+import { ImpactDiagramModel, NodeModel, LinkModel } from '../../models/impact.model';
+import { MenuItem } from 'primeng/primeng';
 
-declare var ImpactDiagramWrapper: ImpactAdapter;
+import * as go from 'gojs';
+import * as _ from 'lodash';
+
+declare var window: any;
+
 
 @Component({
     selector: 'd3s-impact',
-    templateUrl: './impact.component.html'
+    templateUrl: './impact.component.html',
+    providers: [ PermissionsService, DiagramService ]
 })
 
-export class ImpactComponent implements OnInit, AfterViewInit {
+export class ImpactComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
     @Input() readonly: boolean = true;
+    @ViewChild('diagram') diagramRef;
 
-    constructor(private myElement: ElementRef) {
+    private originalObject: string;
+    private originalObjectID: number;
+    private viewID: number = 1;
+    private fullscreen = false;
+    private initialLinks: go.Link[] = [];
+    private initialNodes: go.Node[] = [];
+    private newLink: go.Link = null;
+    private overlayEditLinkKey = null;
+    private selection = null;
+    private model: ImpactDiagramModel;
+    private selectedObject: string;
+    private selectedObjectID: number;
 
+    private g = go.GraphObject.make;
+    private myDiagram: go.Diagram;
+
+    private menuItems: MenuItem[] = [];
+    private zoomLevel: number = 50;
+    private tab: string = 'info';
+    private isWindowVisible = false;
+
+    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
+        super();
     }
 
     public ngOnInit() {
+        this.originalObject = this.objectType;
+        this.originalObjectID = this.objectID;
 
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
+        this.menuItems.push({
+            icon: 'fa-refresh menu-icon'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-info-circle menu-icon'
+        });
+
+        this.initializeDiagram();
     }
 
     public ngAfterViewInit() {
-        //TODO: clean this up after changes to Lineage Diagram in old UI stop
-        ImpactDiagramWrapper(this.myElement.nativeElement, this.objectType, this.objectID);
+        this.resizeDiagram();
+    }
+
+    private initializeDiagram() {
+        this.myDiagram = this.createDiagram();
+
+        this.myDiagram.nodeTemplateMap.add("NonFocal", this.createNonFocalNode());
+        this.myDiagram.nodeTemplateMap.add("", this.createDefaultNode());
+        this.myDiagram.linkTemplate = this.createLinkTemplate();
+
+        this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        //this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+
+        this.myDiagram.grid.visible = false;
+        this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
+        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = false;
+
+
+        this.populateDiagram();
+
+    }
+
+    private populateDiagram() {
+        this.isLoading = true;
+        this.diagramService.getImpactDiagram(this.objectType, this.objectID)
+            .then(data => {
+                this.model = data;
+
+                this.model.nodes.forEach(n => {
+                    let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
+
+                    n.everExpanded = isFocal;
+                    n.template = isFocal ? "" : "NonFocal";
+
+                });
+
+                this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
+                this.isLoading = false;
+                //console.log(data);
+            });
+    }
+
+    private expandNode(node) {
+        var diagram = node.diagram;
+        diagram.startTransaction("CollapseExpandTree");
+        var data = node.data;
+        if (!data.everExpanded) {
+            // only create children once per node
+            diagram.model.setDataProperty(data, "everExpanded", true);
+
+            this.diagramService.getImpactDiagram(data.obj, data.objid)
+                .then(r => {
+                    r.nodes.forEach(n => {
+                        if (!(n.obj == data.obj && n.objid == data.objid)) {
+                            n.everExpanded = false;
+                            n.template = 'NonFocal';
+
+                            let allowAdd = true;
+
+                            diagram.model.nodeDataArray.forEach(d => {
+                                if (d.obj == n.obj && d.objid == n.objid) {
+                                    allowAdd = false;
+                                }
+                            });
+
+                            if (allowAdd)
+                                this.myDiagram.model.addNodeData(n);
+                        }
+                    });
+
+                    r.links.forEach(l => {
+                        let links: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+                        links.addLinkData(l);
+                    });
+                });
+        }
+        if (node.isTreeExpanded) {
+            diagram.commandHandler.collapseTree(node);
+        } else {
+            diagram.commandHandler.expandTree(node);
+        }
+        diagram.commitTransaction("CollapseExpandTree");
+        this.myDiagram.zoomToFit();
+    }
+
+    private htmlDecode(s: string): string {
+        s = s.replace(/&#39;/g, '\'');
+        s = s.replace(/&amp;/g, '&')
+        s = s.replace(/&lt;/g, '<')
+        s = s.replace(/&gt;/g, '>')
+        s = s.replace(/&#34;/g, '"');
+
+        return s;
+    }
+
+    //#region events
+
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        this.resizeDiagram();
+    }
+
+    private resizeDiagram() {
+        //set the diagram div to a specific height
+        //required for GoJS
+
+        let offset = this.diagramRef.nativeElement.offsetTop;
+        let height = window.innerHeight;
+
+        if (this.diagramRef.nativeElement.offsetParent) {
+            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
+        }
+        //console.log(offset, height);
+        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+    }
+
+    private menuAction(e: MenuItem) {
+        if (e.icon == 'fa-refresh menu-icon') {
+            this.objectType = this.originalObject;
+            this.objectID = this.originalObjectID;
+            this.populateDiagram();
+        } else if (e.icon == 'fa-info-circle menu-icon') {
+            this.isWindowVisible = !this.isWindowVisible;
+        }
+    }
+
+    private ViewPortBoundsChanged() {
+        var s = this.myDiagram.scale;
+        var h = 500;
+        if (s > 1) {
+            h = h * s;
+        }
+        this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
+        //$('#LineageZoomSlider').val(Math.round(myDiagram.scale * 1500));
+    }
+
+    private ChangedSelection(e: any) {
+        let node = e.diagram.selection.first();
+        let data = (node != null) ? node.data : null;
+
+        if (data && data.obj && data.objid) {
+            this.selectedObject = data.obj;
+            this.selectedObjectID = data.objid;
+        } else {
+            this.selectedObject = null;
+            this.selectedObjectID = null;
+        }
+        //'ChangedSelection', function (e) {
+        //    var node = e.diagram.selection.first();
+        //    var data = (node != null) ? node.data : null;
+    }
+    //#endregion
+
+    //#region templates
+
+    private createDiagram(): go.Diagram {
+        return this.g(go.Diagram,
+            "ImpactDiagram",
+            {
+                initialAutoScale: go.Diagram.UniformToFill,  // an initial automatic zoom-to-fit
+                contentAlignment: go.Spot.Center,  // align document to the center of the viewport
+                layout:
+                this.g(go.ForceDirectedLayout,  // automatically spread nodes apart
+                    { defaultSpringLength: 30, defaultElectricalCharge: 100 })
+            }
+        );
     }
 
 
-}
+    private createNonFocalNode(): go.Node {
+        let nodeWidth = 200;
+        let nodeHeight = 125;
+        let nodeFontSize = 12;
 
-interface ImpactAdapter {
-    (w: any, o: any, oid: any): any;
+        return this.g(go.Node, "Spot",
+            {
+                selectionObjectName: "PANEL",
+                isTreeExpanded: false,
+                isTreeLeaf: false
+            },
+            this.g(go.Panel, "Auto", {
+                name: "PANEL",
+                width: nodeWidth,
+                height: nodeHeight
+            },
+                this.g(go.Shape, "RoundedRectangle", {
+                    stroke: '#000',
+                    strokeWidth: 2,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight,
+                    name: "NodeShape"
+                },
+                    new go.Binding("fill", "back").makeTwoWay()
+                ),
+                this.g(go.Panel, "Table",
+                    this.g(go.TextBlock, {
+                        row: 0,
+                        margin: 3,
+                        alignment: go.Spot.Top,
+                        editable: false,
+                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                        font: "bold " + nodeFontSize + "pt sans-serif"
+                    },
+                        new go.Binding("text", "name").makeTwoWay(),
+                        new go.Binding("stroke", "fore").makeTwoWay()
+                    ),
+                    this.g(go.TextBlock, {
+                        row: 1,
+                        margin: 3,
+                        maxSize: new go.Size(180, NaN),
+                        font: (nodeFontSize - 2) + "pt sans-serif"
+                    },
+                        new go.Binding("stroke", "fore").makeTwoWay(),
+                        new go.Binding("text", "typeName").makeTwoWay()
+                    )
+                )
+            ),
+            // the expand/collapse button, at the top-right corner
+            this.g("TreeExpanderButton",
+                {
+                    name: 'TREEBUTTON',
+                    width: 20, height: 20,
+                    alignment: go.Spot.TopRight,
+                    alignmentFocus: go.Spot.Center,
+                    // customize the expander behavior to
+                    // create children if the node has never been expanded
+                    click: (e, obj) => {  // OBJ is the Button
+                        var node = obj.part;  // get the Node containing this Button
+                        if (node === null) return;
+                        e.handled = true;
+                        this.expandNode(node);
+                    }
+                }
+            )  // end TreeExpanderButton
+        );
+    }
+
+    private createDefaultNode(): go.Node {
+        let nodeWidth = 200;
+        let nodeHeight = 125;
+        let nodeFontSize = 12;
+
+        return this.g(go.Node, "Spot",
+            {
+                selectionObjectName: "PANEL",
+                isTreeExpanded: true,
+                isTreeLeaf: false
+            },
+            this.g(go.Panel, "Auto", {
+                name: "PANEL",
+                width: nodeWidth,
+                height: nodeHeight
+            },
+                this.g(go.Shape, "RoundedRectangle", {
+                    stroke: '#000',
+                    strokeWidth: 2,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight,
+                    name: "NodeShape"
+                },
+                    new go.Binding("fill", "back").makeTwoWay()
+                ),
+                this.g(go.Panel, "Table",
+                    this.g(go.TextBlock, {
+                        row: 0,
+                        margin: 3,
+                        alignment: go.Spot.Top,
+                        editable: false,
+                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                        font: "bold " + nodeFontSize + "pt sans-serif"
+                    },
+                        new go.Binding("text", "name").makeTwoWay(),
+                        new go.Binding("stroke", "fore").makeTwoWay()
+                    ),
+                    this.g(go.TextBlock, {
+                        row: 1,
+                        margin: 3,
+                        maxSize: new go.Size(180, NaN),
+                        font: (nodeFontSize - 2) + "pt sans-serif"
+                    },
+                        new go.Binding("stroke", "fore").makeTwoWay(),
+                        new go.Binding("text", "typeName").makeTwoWay()
+                    )
+                )
+            ),
+            // the expand/collapse button, at the top-right corner
+            this.g("TreeExpanderButton",
+                {
+                    name: 'TREEBUTTON',
+                    width: 20, height: 20,
+                    alignment: go.Spot.TopRight,
+                    alignmentFocus: go.Spot.Center,
+                    // customize the expander behavior to
+                    // create children if the node has never been expanded
+                    click: (e, obj) => {  // OBJ is the Button
+                        var node = obj.part;  // get the Node containing this Button
+                        if (node === null) return;
+                        e.handled = true;
+                        this.expandNode(node);
+                    }
+                }
+            )  // end TreeExpanderButton
+        );
+    }
+
+
+    private createLinkTemplate(): go.Link {
+        return this.g(go.Link,  // the whole link panel
+            this.g(go.Shape,  // the link shape
+                { stroke: "black" }),
+            this.g(go.Shape,  // the arrowhead
+                { toArrow: "standard", stroke: null }),
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape,  // the label background, which becomes transparent around the edges
+                    {
+                        fill: this.g(go.Brush, "Radial", { 0: "rgb(240, 240, 240)", 0.3: "rgb(240, 240, 240)", 1: "rgba(240, 240, 240, 0)" }),
+                        stroke: null
+                    }),
+                this.g(go.TextBlock,  // the label text
+                    {
+                        textAlign: "center",
+                        font: "10pt helvetica, arial, sans-serif",
+                        stroke: "#555555",
+                        margin: 4
+                    },
+                    new go.Binding("text", "text"))
+            )
+        );
+    }
+
+    //#endregion
 }

@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
-import { PermissionsService, LineageService } from '../../../services/index';
+import { PermissionsService, DiagramService } from '../../../services/index';
 import { BaseComponent } from '../base.component';
 import { DiagramObjectType, LinkModel, NodeModel, MapItem, Responsibility, TechnicalRelation } from '../../../models/lineage.model';
 
@@ -8,13 +8,12 @@ import { MenuItem } from 'primeng/primeng';
 import * as go from 'gojs';
 import * as _ from 'lodash';
 
-//TODO: wrap this, also may cause issues on mobile browsers if window object is not available
 declare var window: any;
 
 @Component({
     selector: 'd3s-lineage',
     templateUrl: './lineage.component.html',
-    providers: [ PermissionsService, LineageService ]
+    providers: [ PermissionsService, DiagramService ]
 })
 
 export class LineageComponent extends BaseComponent implements OnInit, AfterViewInit  {
@@ -59,7 +58,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private g = go.GraphObject.make;
     private myDiagram: go.Diagram;
 
-    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private lineageService: LineageService, private renderer: Renderer) {
+    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService, private renderer: Renderer) {
         super();
     }
 
@@ -71,7 +70,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
-        this.initializeGo();
+        this.initializeDiagram();
         
     }
 
@@ -96,8 +95,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         
     }
 
-    private initializeGo() {
-        this.myDiagram = this.initializeDiagram();
+    private initializeDiagram() {
+        this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
         this.myDiagram.nodeTemplateMap.add("Normal", this.createNormalNode());
@@ -120,99 +119,12 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.populateDiagram();
     }
 
-    private initializeDiagram(): go.Diagram {
-        
-
-        let dg = this.g(go.Diagram, 'LineageDiagram', {
-            initialContentAlignment: go.Spot.Left,
-            allowDrop: true,
-            initialAutoScale: go.Diagram.UniformToFill,
-            scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
-            "undoManager.isEnabled": true
-        });
-
-        dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = "template";
-        dg.model.linkFromPortIdProperty = "frompid";
-        dg.model.linkToPortIdProperty = "topid";
-        dg.model.nodeDataArray = [];
-        dg.model.linkDataArray = [];
-        dg.toolManager.hoverDelay = 250;
-        dg.toolManager.linkingTool.isEnabled = !this.readonly;
-        dg.model.isReadOnly = this.readonly;
-
-        return dg;
-    }
-
-    private makeIconPanel(icon, tooltip, binding, fontSize) {
-    fontSize -= 2;
-    let iconPanel = this.g(go.Panel,
-        "Auto",
-        {
-            alignment: go.Spot.Center,
-            margin: 2
-        },
-        this.g(go.Shape, "Circle",
-            {
-                stroke: null,
-                toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
-            },
-            new go.Binding("fill", "fore")),
-        this.g(go.TextBlock,
-            {
-                row: 0,
-                margin: 0,
-                alignment: go.Spot.Center,
-                editable: false,
-                font: (fontSize) + "pt FontAwesome",
-                text: icon,
-                toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
-            },
-            new go.Binding("stroke", "back")
-        ),
-        new go.Binding("visible", binding)
-    );
-
-    return iconPanel;
-}
-
-    private makePort(name: string, leftside: boolean) {
-        var port = this.g(go.Shape, "Circle", {
-            fill: "white",
-            stroke: "gray",
-            strokeWidth: 3,
-            desiredSize: new go.Size(9, 9),
-            portId: name, // declare this object to be a "port"
-            //toMaxLinks: 1, // don't allow more than one link into a port
-            cursor: "pointer" // show a different cursor to indicate potential link point
-        });
-
-        var panel = this.g(go.Panel, "Horizontal", {
-            margin: new go.Margin(2, 0)
-        });
-
-        if (leftside) {
-            port.toSpot = go.Spot.Left;
-            port.toLinkable = true;
-            panel.alignment = go.Spot.TopLeft;
-            panel.add(port);
-        } else {
-            port.fromSpot = go.Spot.Right;
-            port.fromLinkable = true;
-            panel.alignment = go.Spot.TopRight;
-            panel.add(port);
-        }
-        return panel;
-    }
-
     private populateDiagram(): Promise<any> {
         this.isLoading = true;
         let windowVisible = this.isWindowVisible;
 
         this.isWindowVisible = false;
-        return this.lineageService.getLineageDiagram(this.objectType, this.objectID, this.viewID)
+        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.viewID)
             .then(data => {
                 //console.log(data);
                 this.parseData(data);
@@ -422,8 +334,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.myDiagram.layout.invalidateLayout();
         this.myDiagram.requestUpdate();
     }
-    //#endregion
 
+    //#endregion
 
     //#region events
 
@@ -464,6 +376,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         if (s > 1) {
             h = h * s;
         }
+        this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
         //$('#LineageZoomSlider').val(Math.round(myDiagram.scale * 1500));
     }
 
@@ -523,11 +436,39 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.headerText = 'Lineage';
         this.diagramMode = DiagramMode.Diagram;
     }
+
     //#endregion
 
     //#region templates
 
-    private createFocalNode(): any {
+    private createDiagram(): go.Diagram {
+
+
+        let dg = this.g(go.Diagram, 'LineageDiagram', {
+            initialContentAlignment: go.Spot.Left,
+            allowDrop: true,
+            initialAutoScale: go.Diagram.UniformToFill,
+            scrollMode: go.Diagram.DocumentScroll,
+            initialPosition: new go.Point(125, 125),
+            layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+            "undoManager.isEnabled": true
+        });
+
+        dg.model.class = go.GraphLinksModel;
+        dg.model.nodeCategoryProperty = "template";
+        dg.model.linkFromPortIdProperty = "frompid";
+        dg.model.linkToPortIdProperty = "topid";
+        dg.model.nodeDataArray = [];
+        dg.model.linkDataArray = [];
+        dg.toolManager.hoverDelay = 250;
+        dg.toolManager.linkingTool.isEnabled = !this.readonly;
+        dg.model.isReadOnly = this.readonly;
+
+        return dg;
+    }
+
+
+    private createFocalNode(): go.Node {
         let nodeWidth = 200;
         let nodeHeight = 150;
         let nodeBorderColor = '#000000';
@@ -598,7 +539,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 [this.makePort("OUT", false)]));
     }
 
-    private createNormalNode(): any {
+    private createNormalNode(): go.Node {
         let nodeWidth = 200;
         let nodeHeight = 105;
         let nodeBorderColor = 'transparent';
@@ -670,7 +611,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 [this.makePort("OUT", false)]));
     }
 
-    private createSupportFocalNode(): any {
+    private createSupportFocalNode(): go.Node {
         let nodeWidth = 140;
         let nodeHeight = 80;
         let nodeBorderColor = '#000000';
@@ -743,7 +684,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     }
 
-    private createSupportNormalNode(): any {
+    private createSupportNormalNode(): go.Node {
         let nodeWidth = 130;
         let nodeHeight = 70;
         let nodeBorderColor = 'transparent';
@@ -815,7 +756,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 [this.makePort("OUT", false)]));
     }
 
-    private createFusionNode(): any {
+    private createFusionNode(): go.Node {
         let nodeWidth = 225;
         let nodeHeight = 80;
         let nodeBorderColor = 'transparent';
@@ -883,7 +824,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
 
-    private createDefaultLink(): any {
+    private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
                 routing: go.Link.AvoidsNodes,
@@ -918,7 +859,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         );
     }
 
-    private createSupportLink(): any {
+    private createSupportLink(): go.Link {
         return this.g(
             go.Link, {
                 routing: go.Link.AvoidsNodes,
@@ -950,6 +891,68 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
                 )
             )
         );
+    }
+
+
+    private makeIconPanel(icon, tooltip, binding, fontSize) {
+        fontSize -= 2;
+        let iconPanel = this.g(go.Panel,
+            "Auto",
+            {
+                alignment: go.Spot.Center,
+                margin: 2
+            },
+            this.g(go.Shape, "Circle",
+                {
+                    stroke: null,
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
+                },
+                new go.Binding("fill", "fore")),
+            this.g(go.TextBlock,
+                {
+                    row: 0,
+                    margin: 0,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: (fontSize) + "pt FontAwesome",
+                    text: icon,
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
+                },
+                new go.Binding("stroke", "back")
+            ),
+            new go.Binding("visible", binding)
+        );
+
+        return iconPanel;
+    }
+
+    private makePort(name: string, leftside: boolean) {
+        var port = this.g(go.Shape, "Circle", {
+            fill: "white",
+            stroke: "gray",
+            strokeWidth: 3,
+            desiredSize: new go.Size(9, 9),
+            portId: name, // declare this object to be a "port"
+            //toMaxLinks: 1, // don't allow more than one link into a port
+            cursor: "pointer" // show a different cursor to indicate potential link point
+        });
+
+        var panel = this.g(go.Panel, "Horizontal", {
+            margin: new go.Margin(2, 0)
+        });
+
+        if (leftside) {
+            port.toSpot = go.Spot.Left;
+            port.toLinkable = true;
+            panel.alignment = go.Spot.TopLeft;
+            panel.add(port);
+        } else {
+            port.fromSpot = go.Spot.Right;
+            port.fromLinkable = true;
+            panel.alignment = go.Spot.TopRight;
+            panel.add(port);
+        }
+        return panel;
     }
 
     //#endregion

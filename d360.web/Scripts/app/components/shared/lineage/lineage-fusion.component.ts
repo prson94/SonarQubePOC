@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 
 @Component({
     selector: 'd3s-lineage-fusion',
@@ -7,14 +7,14 @@ import { LineageService } from '../../../services/index';
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageFusionComponent implements OnInit, OnChanges {
 
     isLoading = false;
 
-    constructor(private lineageService: LineageService) { }
+    constructor(private diagramService: DiagramService) { }
 
     ngOnChanges() {
         this.load();

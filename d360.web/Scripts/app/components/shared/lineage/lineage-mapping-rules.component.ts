@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 import { BaseComponent } from '../base.component';
 import { MapItem } from '../../../models/lineage.model';
 
@@ -59,7 +59,7 @@ import { MapItem } from '../../../models/lineage.model';
             </p-dataTable>
         </div>
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageMappingRulesComponent extends BaseComponent implements OnInit, OnChanges {
@@ -72,7 +72,7 @@ export class LineageMappingRulesComponent extends BaseComponent implements OnIni
 
     items: MapItem[];
 
-    constructor(private lineageService: LineageService) {
+    constructor(private diagramService: DiagramService) {
         super();
     }
 
@@ -90,7 +90,7 @@ export class LineageMappingRulesComponent extends BaseComponent implements OnIni
         }
 
         this.isLoading = true;
-        this.lineageService.getLineageMapItems(this.source, this.sourceId, this.target, this.targetId)
+        this.diagramService.getLineageMapItems(this.source, this.sourceId, this.target, this.targetId)
             .then(data => {
                 this.items = data;
                 this.isLoading = false;

@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 import { SourceRule } from '../../../models/lineage.model';
 
 @Component({
@@ -29,7 +29,7 @@ import { SourceRule } from '../../../models/lineage.model';
             </table>
         </div>
     `,
-    providers: [ LineageService ]
+    providers: [DiagramService ]
 })
 
 export class LineageSourceRulesComponent implements OnInit, OnChanges {
@@ -43,7 +43,7 @@ export class LineageSourceRulesComponent implements OnInit, OnChanges {
     items: SourceRule[] = [];
     isLoading = false;
 
-    constructor(private lineageService: LineageService) {
+    constructor(private diagramService: DiagramService) {
 
     }
 
@@ -64,13 +64,13 @@ export class LineageSourceRulesComponent implements OnInit, OnChanges {
         this.isLoading = true;
 
         if (this.focal == null || this.focalId == null) {
-            this.lineageService.getLineageSourceRules(this.source, this.sourceId, this.target, this.targetId)
+            this.diagramService.getLineageSourceRules(this.source, this.sourceId, this.target, this.targetId)
                 .then(data => {
                     this.items = data;
                     this.isLoading = false;
                 });
         } else {
-            this.lineageService.getLineageSourceRulesFocal(this.focal, this.focalId, this.source, this.sourceId, this.target, this.targetId)
+            this.diagramService.getLineageSourceRulesFocal(this.focal, this.focalId, this.source, this.sourceId, this.target, this.targetId)
                 .then(data => {
                     this.items = data;
                     this.isLoading = false;

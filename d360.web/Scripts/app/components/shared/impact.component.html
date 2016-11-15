@@ -1,42 +1,36 @@
 ﻿<div class="tile tile-detail">
     <header>
-        <span id="ImpactHeaderText">Impact</span>
-        <div class="TileTools" style="right: 5px; top: 5px; z-index: 1003">
-            <div id="ImpactTools" style="border: none !important; background-color: transparent !important">
-                <ul>
-                    <li>
-                        <div id="ImpactZoomSlider"></div>
-                    </li>
-                    <li data-action="reset"><i class="fa fa-2x fa-refresh" title="Refresh"></i></li>
-                    <li id="ToolWindows">
-                        <i class="fa fa-2x fa-universal-access" title="Toolbars"></i>
-                        <i class="fa fa-chevron-down" style="color: #999;line-height: 1.3;vertical-align: super;"></i>
-                        <ul style="width:200px">
-                            <li id="w_info" data-action="w_info"><i class="fa fa-info" title="Node Info"></i> Node Info</li>
-                            <li id="w_roles" data-action="w_roles"><i class="fa fa-user" title="Roles"></i> Roles</li>
-                            <li id="w_fusion" data-action="w_fusion"><i class="fa fa-database" title="Fusion"></i> Fusion</li>
-                        </ul>
-                    </li>
-                    <!--<li data-action="close"><i class="fa fa-2x fa-close" title="Close Impact"></i></li>-->
-                </ul>
-            </div>
-        </div>
+        <span>Impact</span>
+        <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
     </header>
 
-    <div id="ImpactDiagram" style="overflow: hidden" class="diagram"></div>
+    <div id="ImpactDiagram" style="overflow: hidden;" class="diagram" #diagram></div>
 
-    <div id="ImpactWindow0">
-        <div><i class="fa fa-info-circle"></i>&#160;Info</div>
-        <div id="Impact_info_detail"></div>
-    </div>
+    <p-dialog  [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="false" draggable="true" width="700" height="500">
+        <div *ngIf="!selectedObject && !selectedObjectID">Nothing selected</div>
+        <ul class="tab-menu" *ngIf="selectedObject && selectedObjectID">
+            <li (click)="tab = 'info'" class="tab-item" [class.selected]="tab == 'info'">
+                <i class="fa fa-info-circle fa-2x"></i>
+            </li>
+            <li (click)="tab = 'user'" class="tab-item" [class.selected]="tab == 'user'">
+                <i class="fa fa-user fa-2x"></i>
+            </li>
+            <li (click)="tab = 'fusion'" class="tab-item" [class.selected]="tab == 'fusion'">
+                <i class="fa fa-database fa-2x"></i>
+            </li>
+        </ul>
+        <div [ngSwitch]="tab">
+            <div *ngSwitchCase="'info'">
+                <d3s-lineage-object-detail *ngIf="selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-object-detail>
+            </div>
+            <div *ngSwitchCase="'user'">
+                <d3s-lineage-responsibilities *ngIf="selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-responsibilities>
+            </div>
+            <div *ngSwitchCase="'fusion'">
+                <d3s-lineage-technical *ngIf="selectedObject && selectedObjectID" [source]="objectType" [sourceId]="objectID" [target]="selectedObject" [targetId]="selectedObjectID"></d3s-lineage-technical>
+            </div>
 
-    <div id="ImpactWindow3">
-        <div><i class="fa fa-user"></i>&#160;Responsibilities</div>
-        <div id="Impact_responsibilities_content"></div>
-    </div>
-
-    <div id="ImpactWindow4">
-        <div><i class="fa fa-database"></i>&#160;Fusion Relationships</div>
-        <div id="Impact_fusion_content"></div>
-    </div>
+        </div>
+    </p-dialog>
 </div>

@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
-import { LineageService, MessagesService, PermissionsService } from '../../../services/index';
+import { DiagramService, MessagesService, PermissionsService } from '../../../services/index';
 import { MapSequenceItem, MapSequenceModel, MapContext, MapReferenceItem } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 import { Permission } from '../../../models/permission.model';
@@ -65,7 +65,7 @@ import { MenuItem } from 'primeng/primeng';
             </div>
         </div>
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageSourceRuleEditorComponent extends BaseComponent implements OnInit {
@@ -81,7 +81,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     isLoading = false;
     menuItems: MenuItem[] = [];
 
-    constructor(private lineageService: LineageService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
+    constructor(private diagramService: DiagramService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
         super();
     }
 
@@ -104,7 +104,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     load() {
         this.isLoading = true;
-        this.lineageService.getLineageMapSequence(this.object, this.objectId)
+        this.diagramService.getLineageMapSequence(this.object, this.objectId)
             .then(data => {
                 this.model = data;
 
@@ -158,7 +158,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                     }
                 });
 
-                console.log(this.topItems);
+                //console.log(this.topItems);
                 this.isLoading = false;
             });
     }
@@ -222,7 +222,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
             });
         });
 
-        this.lineageService.postLineageMapSequence(this.object, this.objectId, model)
+        this.diagramService.postLineageMapSequence(this.object, this.objectId, model)
             .then(r => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, r);

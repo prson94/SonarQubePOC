@@ -3,9 +3,10 @@ import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
 import { MapItem, DiagramObjectType, LinkModel, NodeModel, Responsibility, TechnicalRelation, SourceRule } from '../models/lineage.model';
+import { ImpactDiagramModel } from '../models/impact.model';
 
 @Injectable()
-export class LineageService extends BaseService {
+export class DiagramService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     public getLineageDiagram(type: string, id: number, viewID: number): Promise<any> {
@@ -69,6 +70,14 @@ export class LineageService extends BaseService {
         return this.http.post(`form/mapsequence/${object}/${objectId}/mapitems`, model)
             .toPromise()
             .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    //  $.getJSON('/diagrams/ImpactAnalysis?type=' + lineageObject + '&id=' + lineageObjectID, function (dataArray) {
+    public getImpactDiagram(object: string, objectId: number): Promise<ImpactDiagramModel> {
+        return this.http.get(`diagrams/ImpactAnalysis?type=${object}&id=${objectId}`)
+            .toPromise()
+            .then(response => <ImpactDiagramModel>response.json())
             .catch(err => this.handleError(err));
     }
 }

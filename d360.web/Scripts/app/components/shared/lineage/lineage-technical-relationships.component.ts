@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 import { TechnicalRelation } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 
@@ -19,7 +19,7 @@ import { BaseComponent } from '../base.component';
             </p-dataTable>
         </div>
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageTechnicalRelationshipsComponent extends BaseComponent implements OnInit, OnChanges {
@@ -32,7 +32,7 @@ export class LineageTechnicalRelationshipsComponent extends BaseComponent implem
 
     items: TechnicalRelation[] = [];
 
-    constructor(private lineageService: LineageService) {
+    constructor(private diagramService: DiagramService) {
         super();
         
     }
@@ -50,7 +50,7 @@ export class LineageTechnicalRelationshipsComponent extends BaseComponent implem
         }
 
         this.isLoading = true;
-        this.lineageService.getLineageTechnicalRelationships(this.source, this.sourceId, this.target, this.targetId)
+        this.diagramService.getLineageTechnicalRelationships(this.source, this.sourceId, this.target, this.targetId)
             .then(data => {
                 this.isLoading = false;
                 //console.log(data);

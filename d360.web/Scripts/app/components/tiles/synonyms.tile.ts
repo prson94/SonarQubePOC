@@ -160,7 +160,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
         this.objectDetailService.getSynonymTypes(this.objectID, this.objectType)
             .then(d => {
                 this.synonymTypes = d;
-                console.log('synonymTypes', d);
+                //console.log('synonymTypes', d);
             });            
     }
 

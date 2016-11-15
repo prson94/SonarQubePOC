@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 import { Responsibility } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 
@@ -16,7 +16,7 @@ import { BaseComponent } from '../base.component';
             </p-dataTable>
         </div>
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageResponsibilitiesComponent extends BaseComponent implements OnInit, OnChanges {
@@ -26,7 +26,7 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
 
     items: Responsibility[] = [];
 
-    constructor(private lineageService: LineageService) {
+    constructor(private diagramService: DiagramService) {
         super();
     }
 
@@ -44,7 +44,7 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
         }
 
         this.isLoading = true;
-        this.lineageService.getLineageResponsibilities(this.objectType, this.objectId)
+        this.diagramService.getLineageResponsibilities(this.objectType, this.objectId)
             .then(data => {
                 this.isLoading = false;
                 //console.log(data);

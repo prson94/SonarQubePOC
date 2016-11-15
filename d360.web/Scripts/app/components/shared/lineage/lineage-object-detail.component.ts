@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { LineageService } from '../../../services/index';
+import { DiagramService } from '../../../services/index';
 
 @Component({
     selector: 'd3s-lineage-object-detail',
@@ -7,7 +7,7 @@ import { LineageService } from '../../../services/index';
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div [hidden]="isLoading" [innerHtml]="data"></div>
     `,
-    providers: [LineageService]
+    providers: [DiagramService]
 })
 
 export class LineageObjectDetailComponent implements OnInit, OnChanges {
@@ -17,7 +17,7 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
     data: any = null;
     isLoading = false;
 
-    constructor(private lineageService: LineageService) { }
+    constructor(private diagramService: DiagramService) { }
 
     ngOnChanges() {
         this.load();
@@ -27,7 +27,7 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
 
     load() {
         this.isLoading = true;
-        this.lineageService.getLineageObjectDetail(this.objectType, this.objectId)
+        this.diagramService.getLineageObjectDetail(this.objectType, this.objectId)
             .then(data => {
                 //console.log(data);
                 this.data = data._body;

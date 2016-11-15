@@ -1372,7 +1372,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dynamic-type-builder.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
@@ -1626,7 +1628,6 @@
     <TypeScriptCompile Include="Scripts\app\models\search-result.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />
