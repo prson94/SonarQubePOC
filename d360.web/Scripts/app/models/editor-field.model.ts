@@ -5,6 +5,12 @@
     rule: string;
 }
 
+export class EditorDropDownItem {
+    Selected: boolean;
+    Text: any;
+    Value: any;
+}
+
 export class EditorField {
     FieldName: string;
     FieldType: string;
@@ -13,7 +19,7 @@ export class EditorField {
     Value: any;    
     ReadOnly: boolean;
     Required: boolean;
-    Items: string[];
+    Items: EditorDropDownItem[];
     Row: number;
     Column: number;
     SimilarItemsUri: string;

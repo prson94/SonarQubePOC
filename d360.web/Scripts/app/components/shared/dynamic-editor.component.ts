@@ -2,7 +2,7 @@
 import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { EditorDefinitionService, UriBasedService, MessagesService } from '../../services/index';
-import { EditorField, EditorRow, FieldValidation } from '../../models/editor-field.model';
+import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../models/editor-field.model';
 import { BaseComponent } from './base.component';
 
 import * as _ from 'lodash';
@@ -128,7 +128,14 @@ export class DynamicEditorComponent extends BaseComponent {
                 group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
                                 
             }
-            else {                                         
+            else {
+                if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                    let selected = field.Items.filter(x => x.Selected);                    
+                    field.Value = [];
+                    for (let item of selected) {                        
+                        field.Value.push(item.Value);
+                    }                    
+                }
                 group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
             }
         });        

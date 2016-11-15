@@ -32,8 +32,7 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
         super();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        //console.log('ngOnChanges');
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         for (let p in changes) {
             if (p == 'fusionType') {
                 this.load();

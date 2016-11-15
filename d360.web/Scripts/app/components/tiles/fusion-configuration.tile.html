@@ -39,7 +39,7 @@
         <div *ngSwitchCase="FormModeConfig.Adding">
             <d3s-dynamic-editor [objectType]="'Fusion'"
             [objectID]="fusionType.ID"
-            [title]="'Add Configuration'"
+            [title]="'Fusion Configuration'"
             [createUri]="'form/dynamicedit/create/fusion'"
             (closeClick)="formMode = FormModeConfig.Default"
             (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
@@ -47,7 +47,7 @@
         </div>
         <div *ngSwitchCase="FormModeConfig.Editing">
             <d3s-dynamic-editor [selection]="selectedRow"
-            [title]="'Edit Configuration'"
+            [title]="'Fusion Configuration'"
             [objectID]="fusionType.ID"
             [objectType]="'Fusion'"
             [editUri]="'form/dynamicedit/edit/fusion'"
