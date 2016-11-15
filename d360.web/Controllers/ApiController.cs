@@ -5447,7 +5447,7 @@ from    (
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = policy.Name }
+                                new ReadOnlyField { Name = policy.GetName(i => i.Name), FieldName = "PolicyName", FieldDescription = policy.GetDescription(i => i.Description), Value = $"<b>{policy.Name}</b>" }
                             }
                         });
 
@@ -5498,16 +5498,25 @@ from    (
                     var rule = Company.Rules.Include("dimension").Where(x => x.ID == id).FirstOrDefault();
                     if (rule != null)
                     {
-                        var dimensionLink = (rule.RuleDimensionID.HasValue) ?
+                       /* var dimensionLink = (rule.RuleDimensionID.HasValue) ?
                                 string.Format("<span data-context='Preview' data-type='RuleDimension' data-id='{1}'>{0} <i class='fa fa-question-circle' aria-hidden='true'></i></span>", rule.Dimension.Name, rule.RuleDimensionID) :
-                                "";
+                                "";*/
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleName_Name, FieldName = "RuleName", FieldDescription = Resources.FieldInfo.RuleName_Description, Value = $"<b>{rule.Name}</b>" }
+                            }
+                        });
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = dimensionLink }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (rule.RuleDimensionID.HasValue ? rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -6230,7 +6239,7 @@ from    (
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = taxonomy.Name }
+                                new ReadOnlyField { Name = taxonomy.GetName(i => i.Name), FieldName = "TaxonomyName", FieldDescription = taxonomy.GetDescription(i => i.Name), Value = $"<b>{taxonomy.Name}</b>" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {

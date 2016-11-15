@@ -493,6 +493,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string RuleName_Name {
+            get {
+                return ResourceManager.GetString("RuleName_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to What is the purpose of this rule?  Why does this rule exist?.
         /// </summary>
         internal static string RulePurpose_Description {

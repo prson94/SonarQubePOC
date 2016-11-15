@@ -637,6 +637,11 @@
               Looks up a localized string similar to The name of this rule within Data3Sixty..
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.RuleName_Name">
+            <summary>
+              Looks up a localized string similar to Name.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.RulePurpose_Description">
             <summary>
               Looks up a localized string similar to What is the purpose of this rule?  Why does this rule exist?.

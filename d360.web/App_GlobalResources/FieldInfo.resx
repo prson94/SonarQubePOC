@@ -261,6 +261,9 @@
   <data name="RuleName_Description" xml:space="preserve">
     <value>The name of this rule within Data3Sixty.</value>
   </data>
+  <data name="RuleName_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
   <data name="RulePurpose_Description" xml:space="preserve">
     <value>What is the purpose of this rule?  Why does this rule exist?</value>
   </data>
