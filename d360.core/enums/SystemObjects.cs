@@ -128,9 +128,7 @@ namespace d360.core
         [Description("Relation Type")]
         RelationType = 60,
         [Description("Rule Dimension"), AllowSurvey(false)]
-        RuleDimension = 61,
-        [Description("Monitor"), AllowSurvey(false)]
-        Monitor = 61,
+        RuleDimension = 61,        
         [Description("Map"), AllowSurvey(false)]
         Map= 62,
         [Description("Intersect Role"), AllowSurvey(false)]
@@ -142,7 +140,9 @@ namespace d360.core
         [Description("Fusion Query Attribute")]
         FusionQueryAttribute = 66,
         [Description("Fusion Query Attribute Type")]
-        FusionQueryAttributeType = 67
+        FusionQueryAttributeType = 67,
+        [Description("Monitor"), AllowSurvey(false)]
+        Monitor = 68,
     }
 
     public class SystemObjectInfo
