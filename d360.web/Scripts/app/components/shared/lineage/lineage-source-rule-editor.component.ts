@@ -3,6 +3,7 @@ import { LineageService, MessagesService, PermissionsService } from '../../../se
 import { MapSequenceItem, MapSequenceModel, MapContext, MapReferenceItem } from '../../../models/lineage.model';
 import { BaseComponent } from '../base.component';
 import { Permission } from '../../../models/permission.model';
+import { MenuItem } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-lineage-source-rule-editor',
@@ -10,7 +11,8 @@ import { Permission } from '../../../models/permission.model';
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
             <header>
-                <d3s-tile-actions hasClose="true" hasSave="true" (closeClick)="close()" (saveClick)="save()"></d3s-tile-actions>
+                Manage Source Rules 
+                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
             </header>
             <div class="row" *ngFor="let item of topItems">
                 <div style="margin-top: 25px" class="col s12">
@@ -77,12 +79,22 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     permissions: Permission[] = [];
 
     isLoading = false;
+    menuItems: MenuItem[] = [];
 
     constructor(private lineageService: LineageService, protected messagesService: MessagesService, protected permissionsService: PermissionsService) {
         super();
     }
 
     ngOnInit() {
+
+        this.menuItems.push({
+            icon: 'fa-floppy-o menu-icon'
+        });
+
+        this.menuItems.push({
+            icon: 'fa-close menu-icon'
+        });
+
         this.load();
         this.permissionsService.getPermissions(this.objectId, this.object)
             .then(data => {
@@ -169,6 +181,15 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
         let i = parent.Selected.findIndex(s => s.Sequence == index);
         parent.Selected.splice(i, 1);
         this.setSequenceNumbers(parent);
+    }
+
+
+    menuAction(e: MenuItem) {
+        if (e.icon == 'fa-close menu-icon') {
+            this.close();
+        } else if (e.icon == 'fa-floppy-o menu-icon') {
+            this.save();
+        }
     }
 
     close() {

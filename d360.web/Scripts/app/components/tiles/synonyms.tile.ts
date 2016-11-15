@@ -51,7 +51,7 @@ declare var CompanySettings: any;
                         </d3s-tooltip>
                     </template>
                 </p-column>
-                <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '28px' }">
+                <p-column *ngIf="!readonly && hasDelete" [style]="{ 'width': '48px' }">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
                             <a (click)="selectedItem=item;delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
@@ -62,16 +62,27 @@ declare var CompanySettings: any;
         </div>
         <div *ngSwitchCase="FormMode.Adding">
             <header>Add Synonym</header>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldName" style="display:block;">Synonym Type</div>
+                    <select [(ngModel)]="selectedType" style="width:35em;" (ngModelChanged)="clearSearch()">
+                        <option></option>
+                        <option *ngFor="let i of synonymTypes" [value]="i.Value">
+                            {{i.Name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
             <div class="row" style="padding-bottom: 15px">
                 <div class="col s12">
-                <div class="FieldName" style="display:block;">Synonym</div>
-                <p-autoComplete [suggestions]="synonymItems" (completeMethod)="search($event)" field="Name" [(ngModel)]="selectedSynonym" placeholder="Search..." size="65"></p-autoComplete>
-                <span *ngIf="isLoadingItems"><i class="fa fa-spinner fa-spin"></i></span>
+                    <div class="FieldName" style="display:block;">Synonym</div>
+                    <p-autoComplete [suggestions]="synonymItems" (completeMethod)="search($event)" field="Name" [(ngModel)]="selectedSynonym" placeholder="Search..." size="64" [disabled]="selectedType == ''"></p-autoComplete>
+                    <span *ngIf="isLoadingItems"><i class="fa fa-spinner fa-spin"></i></span>
                 </div>
             </div>
             <div class="row">
                 <div class="col s12">
-                    <button pButton type="button" label="Save" (click)="save();"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
+                    <button pButton type="button" label="Save" (click)="save();" [disabled]="selectedSynonym?.ID == null"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
                 </div>
             </div>
         </div>
@@ -109,6 +120,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     private items;
     private selectedItem;
 
+
+    private synonymTypes = [];
+    private selectedType = '';
     private synonymItems = [];
     private selectedSynonym: SynonymItem;
     private subjectAreaName = 'SubjectArea';
@@ -142,6 +156,11 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
                 //console.log(d);
                 this.itemCount = this.items.length;
                 this.isLoading = false;
+            });
+        this.objectDetailService.getSynonymTypes(this.objectID, this.objectType)
+            .then(d => {
+                this.synonymTypes = d;
+                console.log('synonymTypes', d);
             });            
     }
 
@@ -187,15 +206,21 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     search(e: any) {
         this.isLoadingItems = true;
-        if (e.query == null || e.query == '') {
+        let type = this.synonymTypes.find(t => t.Value == this.selectedType);
+        if (!type) {
             this.isLoadingItems = false;
             return;
         }
-        this.objectDetailService.getSynonymOptions(this.objectID, this.objectType, e.query)
+        this.objectDetailService.getSynonymOptions(type.Object, type.ObjectID, this.objectType, this.objectID, (e.query || ''))
             .then(r => {
                 this.isLoadingItems = false;
                 this.synonymItems = r.items;
             })
             .catch(() => this.isLoadingItems = false);
+    }
+
+    clearSearch() {
+        this.synonymItems = [];
+        this.selectedSynonym = null;
     }
 }

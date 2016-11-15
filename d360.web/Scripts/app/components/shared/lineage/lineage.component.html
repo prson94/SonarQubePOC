@@ -1,18 +1,21 @@
 ﻿<!--workaround template for new lineage to replace cshtml -->
 <div class="tile tile-detail">
-    <header>
-        <span id="LineageHeaderText">{{headerText}}</span>
+    <header *ngIf="diagramMode == DiagramMode.Diagram">
+        <span>Lineage</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <div class="TileTools" style="right: 5px; top: 5px; z-index:1000;width:100%">
-            <!--<p-slider [min]="750" [max]="2250" (onChange)="zoomDiagram($event)"></p-slider>-->
-            <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
+            <div style="width:15%">
+                <!--<p-slider [(ngModel)]="zoomLevel" [min]="0" [max]="100" (onChange)="zoomDiagram($event)"></p-slider>-->
+            </div>
+            <div>
+                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
+            </div>
         </div>
     </header>
-
     <div [hidden]="diagramMode != DiagramMode.Diagram">
-        <div #diagram id="LineageDiagram" style="overflow: hidden; height:800px;" class="diagram"></div>
 
-        <p-dialog *ngIf="diagramMode == DiagramMode.Diagram" [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="true" draggable="true" width="700" height="500">
+        <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+        <p-dialog *ngIf="diagramMode == DiagramMode.Diagram" [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="false" draggable="true" width="700" height="500">
             <div *ngIf="!showNodeTabs && !showLinkTabs">Nothing selected</div>
             <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">
                 <li (click)="tab = 'info'" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showNodeTabs">

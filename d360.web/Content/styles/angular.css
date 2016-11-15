@@ -702,3 +702,26 @@ label {
   color: #FFB230;
 }
 /*end favorite styles */
+/* lineage */
+.menu-icon {
+  font-size: 1.5em;
+}
+.tab-menu {
+  width: 100%;
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+  background-color: #eee;
+}
+.tab-item {
+  display: inline;
+  padding: 15px;
+  cursor: pointer;
+}
+.tab-item.selected {
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 3px solid #fff;
+  background-color: #fff;
+}
+/* end lineage*/

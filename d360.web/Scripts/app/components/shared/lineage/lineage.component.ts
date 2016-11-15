@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, Renderer, HostListener } from '@angular/core';
 import { PermissionsService, LineageService } from '../../../services/index';
 import { BaseComponent } from '../base.component';
 import { DiagramObjectType, LinkModel, NodeModel, MapItem, Responsibility, TechnicalRelation } from '../../../models/lineage.model';
@@ -8,37 +8,12 @@ import { MenuItem } from 'primeng/primeng';
 import * as go from 'gojs';
 import * as _ from 'lodash';
 
-//TODO: wrap this
+//TODO: wrap this, also may cause issues on mobile browsers if window object is not available
 declare var window: any;
 
 @Component({
     selector: 'd3s-lineage',
     templateUrl: './lineage.component.html',
-    styles: [
-        `
-
-        .tab-menu {
-            width:100%;
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
-            background-color: #eee;
-        }
-        
-        .tab-item {
-            display: inline;
-            padding: 15px;
-            cursor: pointer;
-        }
-
-        .tab-item.selected {
-            border-left: 1px solid #ddd;
-            border-top: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            border-bottom: 3px solid #fff;
-            background-color: #fff;
-        }
-`
-        ],
     providers: [ PermissionsService, LineageService ]
 })
 
@@ -78,15 +53,11 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private menuItems: MenuItem[] = [];
     private tab: string = 'info';
     private headerText = 'Lineage';
+    private zoomLevel: number = 50;
 
     //diagram properties
     private g = go.GraphObject.make;
     private myDiagram: go.Diagram;
-    private focalNode = null;
-    private normalNode = null;
-    private supportFocalNode = null;
-    private supportNode = null;
-    private fusionNode = null;
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private lineageService: LineageService, private renderer: Renderer) {
         super();
@@ -105,7 +76,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     public ngAfterViewInit() {
-
+        this.resizeDiagram();
     }
 
     public ngOnDestroy() {
@@ -128,17 +99,11 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private initializeGo() {
         this.myDiagram = this.initializeDiagram();
 
-        this.focalNode = this.createFocalNode();
-        this.normalNode = this.createNormalNode();
-        this.supportFocalNode = this.createSupportFocalNode();
-        this.supportNode = this.createSupportNormalNode();
-        this.fusionNode = this.createFusionNode();
-
-        this.myDiagram.nodeTemplateMap.add("Focal", this.focalNode);
-        this.myDiagram.nodeTemplateMap.add("Normal", this.normalNode);
-        this.myDiagram.nodeTemplateMap.add("SupportFocal", this.supportFocalNode);
-        this.myDiagram.nodeTemplateMap.add("SupportNormal", this.supportNode);
-        this.myDiagram.nodeTemplateMap.add("Fusion", this.fusionNode);
+        this.myDiagram.nodeTemplateMap.add("Focal", this.createFocalNode());
+        this.myDiagram.nodeTemplateMap.add("Normal", this.createNormalNode());
+        this.myDiagram.nodeTemplateMap.add("SupportFocal", this.createSupportFocalNode());
+        this.myDiagram.nodeTemplateMap.add("SupportNormal", this.createSupportNormalNode());
+        this.myDiagram.nodeTemplateMap.add("Fusion", this.createFusionNode());
 
         this.myDiagram.linkTemplateMap.add("", this.createDefaultLink());
         this.myDiagram.linkTemplateMap.add("Support", this.createSupportLink());
@@ -255,6 +220,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             .then(() => {
                 this.reOrderLayout();
                 this.myDiagram.zoomToFit();
+                this.zoomLevel = _.clamp(this.myDiagram.scale * 75, 0, 100);
                 this.isLoading = false;
                 this.isWindowVisible = windowVisible;
             });
@@ -382,11 +348,11 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private toggleMenuItems(data: NodeModel | LinkModel) {
         this.menuItems = [];
         this.menuItems.push({
-            icon: 'fa-refresh fa-2x'
+            icon: 'fa-refresh menu-icon'
         });
 
         let gears: MenuItem = {
-            icon: 'fa-gears fa-2x',
+            icon: 'fa-gears menu-icon',
             items: []
         }
 
@@ -395,7 +361,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         });
 
         let eye: MenuItem = {
-            icon: 'fa-eye fa-2x',
+            icon: 'fa-eye menu-icon',
             items: []
         }
 
@@ -413,11 +379,12 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.menuItems.push(eye); 
 
         this.menuItems.push({
-            icon: 'fa-info-circle fa-2x'
+            icon: 'fa-info-circle menu-icon'
         });
 
 
     }
+
     private setSourceValues(data: any) {
         if (!data || data == null) {
             this.source = null;
@@ -460,6 +427,25 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     //#region events
 
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        this.resizeDiagram();
+    }
+
+    private resizeDiagram() {
+        //set the diagram div to a specific height
+        //required for GoJS
+
+        let offset = this.diagramRef.nativeElement.offsetTop;
+        let height = window.innerHeight;
+
+        if (this.diagramRef.nativeElement.offsetParent) {
+            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
+        }
+
+        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+    }
+
     private onMouseEnterNode(e: any, node: go.Node) {
         node.isShadowed = true;
     }
@@ -469,7 +455,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private zoomDiagram(e: any) {
-        this.myDiagram.scale = (e.value / 1500);
+        this.myDiagram.scale = ((e.value + 25) / 75);
     }
 
     private ViewPortBoundsChanged() {
@@ -512,11 +498,11 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     private menuClick(e: MenuItem) {
         console.log(e);
-        if (e.icon == 'fa-refresh fa-2x') {
+        if (e.icon == 'fa-refresh menu-icon') {
             this.objectType = this.originalObject;
             this.objectID = this.originalObjectID;
             this.populateDiagram();
-        } else if (e.icon == 'fa-info-circle fa-2x') {
+        } else if (e.icon == 'fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.label == 'Business System Flow') {
             this.viewID = 1;

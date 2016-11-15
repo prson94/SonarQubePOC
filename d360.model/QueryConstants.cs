@@ -967,7 +967,77 @@ from	StatisticType S
 		inner join cache.ObjectDetails D on D.Object = S.Object and D.ObjectID = S.ObjectID 
 order by D.Name, S.Name";
 
+        public static string SynonymTypes = @"
+        declare	@ot varchar(50),
+		        @otid int
+
+        select	@ot = ObjectType,
+		        @otid = ObjectTypeID
+        from	cache.Object 
+        where	Object = @type 
+                and ObjectID = @id
+
+
+        select d.Name, d.Object + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.Object, d.ObjectID from intersecttype IT
+        inner join predicate p on p.id = IT.predicateid and p.type = 6
+        inner join cache.ObjectDetails d on
+	        case when IT.Subject = @ot then
+		        IT.Object
+	        else
+		        IT.Subject
+	        end = d.Object 
+	        and
+	        case when IT.SubjectID = @otid then
+		        IT.ObjectID
+	        else
+		        IT.SubjectID
+	        end = d.ObjectID
+        where 
+	        (IT.Subject = @ot and IT.SubjectID = @otid) OR (IT.Object = @ot and IT.ObjectID = @otid)";
+
         public static string SynonymOptions = @"
+declare	@ot varchar(50),
+		@otid int
+
+select	@ot = ObjectType,
+		@otid = ObjectTypeID
+from	cache.Object 
+where	Object = @object 
+        and ObjectID = @objectId
+
+select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varchar) as ID,
+			D.ObjectTypeName + ' :: ' + D.TextPath as Name,
+            O.TargetingSubject
+from cache.ObjectDetails d		
+{0}
+			inner join (
+						select	case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then IT.Object
+									else IT.Subject
+								end as Object,
+								case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then IT.ObjectID
+									else IT.SubjectID
+								end as ObjectID,
+								case 
+									when IT.Subject = @ot and IT.SubjectID = @otid then cast(0 as bit)
+									else cast(1 as bit)
+								end as TargetingSubject
+						from	IntersectType IT
+                                inner join Predicate P on   P.ID = IT.PredicateID 
+                                                            and P.Type = 6
+														    and (
+															    (IT.Subject = @ot and IT.SubjectID = @otid) OR
+															    (IT.Object = @ot and IT.ObjectID = @otid)
+															    )
+						) O on O.Object = D.ObjectType and O.ObjectID = D.ObjectTypeID and D.ObjectTypeName is not null and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
+            inner join [Predicate] P on P.Type = 6
+			where (@query = '') or (@query != '' and d.textpath like '%'+@query+'%')
+order by	D.ObjectTypeName,
+			D.TextPath
+";
+
+        public static string SynonymOptionsDELETEME = @"
 declare	@ot varchar(50),
 		@otid int
 

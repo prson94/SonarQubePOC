@@ -18935,13 +18935,51 @@ from    [IntersectType] RT
 
         #region Json
 
+        [HttpGet, Route("SynonymTypes")]
+        public JsonNetResult SynonymTypes(string type, int id)
+        {
+            var items = Company.Query<dynamic>(QueryConstants.SynonymTypes, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = items,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [HttpGet, Route("SynonymsOptions")]
-        public JsonResult SynonymsOptions(string type, int id, string query = "")
+        public JsonResult SynonymsOptions(string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
 
+            string joinStatement = "";
+
+            switch (type.ToLower())
+            {
+                case "artifacttype":
+                    joinStatement = "inner join artifact a on a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+                case "taxonomytype":
+                    joinStatement = "inner join taxonomy t on  t.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+                case "policytype":
+                    joinStatement = "inner join policy a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+                case "attributetype":
+                    joinStatement = "inner join attributetype a on  a.id = d.ObjectID and d.Object = @type and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+                case "fusionattributetype":
+                    joinStatement = "inner join fusionattribute a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+                case "domaingroup":
+                    joinStatement = "inner join domainitem a on  a.id = d.ObjectID and d.Object = @object and d.ObjectTypeID = @typeId and d.ObjectType = @type";
+                    break;
+
+            }
+
+
             var list = new List<EditableField>();
-            var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id, query }).ToList();
+            var items = Company.Query<dynamic>(string.Format(QueryConstants.SynonymOptions, joinStatement), new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() }, objectId = objId, typeId, query }).ToList();
             var typeIsSubject = true;
             if (items.Count > 0)
             {

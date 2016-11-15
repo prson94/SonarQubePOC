@@ -47,8 +47,17 @@ export class ObjectDetailService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    getSynonymOptions(objectID: number, objectType: string, query: string = ''): Promise<SynonymEditorModel> {
-        return this.http.get(`form/SynonymsOptions?id=${objectID}&type=${objectType}&query=${query}`)
+    getSynonymTypes(objectID: number, objectType: string): Promise<any> {
+        return this.http.get(`form/SynonymTypes?id=${objectID}&type=${objectType}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    getSynonymOptions(type: string, typeId: number, object: string, objectId: number, query: string = ''): Promise<SynonymEditorModel> {
+        //string type, int typeId, string obj, int objId, string query = ""
+
+        return this.http.get(`form/SynonymsOptions?type=${type}&typeId=${typeId}&obj=${object}&objid=${objectId}&query=${query}`)
             .toPromise()
             .then(response => <SynonymEditorModel>response.json())
             .then(r => {
