@@ -42,7 +42,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             this.loadMenu();
         });
 
-        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(s => {
+        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
         });
     }

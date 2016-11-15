@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RulesService, MessagesService } from '../../services/index';
+import { HeaderBreadcrumbService, RulesService, MessagesService, HeaderActionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -76,6 +76,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         protected rulesService: RulesService,
         protected titleService: Title,
         protected messagesService: MessagesService,
+        private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
 
@@ -119,6 +120,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.loadRules();
+                    this.headerActionsService.emitFavoritesChange();
                 }
                 this.showEditor = false;
             });
@@ -135,6 +137,7 @@ export class RuleListComponent extends BaseComponent implements OnInit {
             this.showDelete = false;
             this.selected = this.rules.length > 0 ? this.rules[0] : null;
             this.rules = this.rules.filter(x => x.ID != id);
+            this.headerActionsService.emitFavoritesChange();
         });
     }
     

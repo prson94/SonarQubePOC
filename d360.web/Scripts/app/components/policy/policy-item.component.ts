@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, PermissionsService } from '../../services/index';
+import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, PermissionsService, HeaderActionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
@@ -38,7 +38,7 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible" class="row">                    
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible && !isImpactVisible" class="row">                    
                     <div class="col s12">
                         <div class="row">
                             <div class="col s12">
@@ -92,6 +92,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     FormMode = FormMode;
     
     constructor(
+        private headerActionsService: HeaderActionsService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private policiesService: PoliciesService,
@@ -262,14 +263,13 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.formMode = FormMode.Editing;
     }
 
-    private save(e: any) {
-        console.log(e);
-        
+    private save(e: any) {                
         if (this.selected && e.values) {
             this.selected.Name = e.values.Name;
             let hierarchyId = e.values.ID;
 
             this.headerBreadcrumbService.clearBreadcrumbs();
+            this.headerActionsService.emitFavoritesChange();
 
             this.load(hierarchyId)
                 .then(() => {

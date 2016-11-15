@@ -23808,3 +23808,13 @@ label {
   font-weight: normal;
 }
 /* multiselect grid control footer end*/
+/* favorites styles*/
+.favorite {
+  font-size: 1.2em;
+  color: #666;
+  padding: 0 15px;
+}
+.favorite.active {
+  color: #FFB230;
+}
+/*end favorite styles */

@@ -2,7 +2,7 @@
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService} from '../../services/index';
+import { MessagesService, GridDefinitionService, UriBasedService, ArtifactService, PermissionsService, StateService, HeaderActionsService} from '../../services/index';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
@@ -115,7 +115,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     theDeleteCallback: Function;
     
-    constructor(private messagesService: MessagesService, private stateService: StateService, private permissionsService: PermissionsService, private router: Router, private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
+    constructor(private headerActionsService: HeaderActionsService,
+        private messagesService: MessagesService,
+        private stateService: StateService,
+        private permissionsService: PermissionsService,
+        private router: Router,
+        private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private artifactService: ArtifactService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -152,6 +157,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.artifactService.deleteArtifact(id).
             then(result => {
                 this.showMessageForResult(this.messagesService, result);
+                this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
                 this.showDelete = false;                
                 this.getData();
             });
@@ -206,6 +212,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);                
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
+                if(event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited
                 this.getData();                
                 this.isLoading = false;
             });

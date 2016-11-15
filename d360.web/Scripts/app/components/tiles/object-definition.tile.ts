@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { ObjectDetailService } from '../../services/object-detail.service';
+import { ObjectDetailService, HeaderActionsService } from '../../services/index';
 import { DetailRow, DetailField, DetailModel, IObjectDetailService } from '../../models/object-detail.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
@@ -55,7 +55,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     //ideally base permissions would be an input but angular doesnt support this yet
     @Input() objectPermissions: Permission[] = [];
 
-    constructor(private objectDetailService: ObjectDetailService) {
+    constructor(private objectDetailService: ObjectDetailService, private headerActionsService: HeaderActionsService) {
         super();
     }
 
@@ -82,6 +82,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     save(e): void {
         this.load().then(() => {
+            this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
             this.onEditComplete.emit(this.object);            
             this.showEditor = false;
         });

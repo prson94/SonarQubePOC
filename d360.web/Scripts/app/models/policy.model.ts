@@ -4,6 +4,7 @@
     ID: number;
     PolicyTypeClass: string;
     PolicyTypeClassID: number;
+    AllowAttributes: boolean;
 }
 
 export enum PolicyStatus {

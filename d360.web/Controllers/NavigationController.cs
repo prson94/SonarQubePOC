@@ -709,41 +709,39 @@ SELECT	'#Admin' as MenuID,
         }
 
         [Authorize, HttpPut, Route("ToggleFavorite")]
-        public JsonNetResult ToggleFavorite(Favorite favorite, bool admin = false)
+        public JsonNetResult ToggleFavorite(Favorite favorite)
         {
             var success = true;
             var message = "";
 
             try
             {
-                if (admin && !Company.CurrentResourceIsAdmin)
-                    throw new Exception("You do not have permission to perform this action");
-
-                favorite.ResourceID = admin ? 0 : Company.CurrentResourceID;
+                favorite.ResourceID = Company.CurrentResourceID;
                 favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
+                favorite.IsOverride = false;
 
-                var existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Route == favorite.Route);
-                var adminExisting = Company.Favorites.FirstOrDefault(f => f.ResourceID == 0 && f.Route == favorite.Route);
+                Favorite existing = null;
 
-                if (!admin)
-                    if (adminExisting != null)
-                        favorite.IsOverride = true;
-
-                if (existing != null && adminExisting != null && !admin)
-                {
-                    existing.IsOverride = !existing.IsOverride;
-                    Company.Update(existing);
+                if (!string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID > 0) {
+                    existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Object == favorite.Object && f.ObjectID == favorite.ObjectID);
                 }
-                else if (existing != null && existing.IsOverride && !admin)
-                {
-                    existing.IsOverride = false;
-                    Company.Update(existing);
-                }
-                else if (existing == null)
-                    Company.Add(favorite);
                 else
+                {
+                    existing = Company.Favorites.FirstOrDefault(f => f.ResourceID == favorite.ResourceID && f.Name == favorite.Name && f.Route == favorite.Route);
+                }
+                              
+                if (existing == null)
+                {
+                    Company.Add(favorite);
+
+                    message = "Favorite Added.";
+                }
+                else
+                {
                     Company.Delete(existing);
-                message = "Favorite updated.";
+
+                    message = "Favorite Removed.";
+                }                
             }
             catch (Exception ex)
             {
@@ -810,19 +808,54 @@ SELECT	'#Admin' as MenuID,
         [Authorize, HttpGet, Route("GetFavorites")]
         public JsonNetResult GetFavorites(bool adminOnly = false)
         {
-            var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && !f.IsOverride).OrderBy(f => f.SortOrder).ToList();
-            var overrides = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && f.IsOverride).Select(o => o.Route).ToList();
-            var adminFavorites = Company.Favorites.Where(f => f.ResourceID == 0).OrderBy(f => f.SortOrder).ToList();
-            var filteredAdminFavorites = adminFavorites.Where(f => !overrides.Contains(f.Route)).OrderBy(f => f.SortOrder).ToList();
-            favorites = favorites.Where(f => !filteredAdminFavorites.Select(a => a.Route).Contains(f.Route)).ToList();
+            //var favorites = Company.Favorites.Where(f => f.ResourceID == Company.CurrentResourceID && !f.IsOverride).OrderBy(f => f.SortOrder).ToList();
 
+            /*   var sql = @"select 
+                               COALESCE(od.Name,fav.Name) as Name,
+                               fav.Route as [Route],
+                               fav.[Object],
+                               fav.[ObjectId],
+                               fav.SortOrder,
+                               fav.Id,
+                               fav.ResourceId
+                           from
+                               [dbo].[favorite] fav
+                               left outer join[cache].[objectdetails]
+                                   od on(fav.[Object] = od.[Object] and fav.[ObjectId] = od.[ObjectId])
+                           where
+                              fav.resourceid = @resId order by fav.SortOrder";*/
+            var sql = @"select 
+	                    od.Name as Name,	
+	                    fav.Route as [Route],
+	                    fav.[Object],
+	                    fav.[ObjectId],
+	                    fav.SortOrder,
+	                    fav.Id,
+                        fav.ResourceId
+                    from
+	                    [dbo].[favorite] fav
+	                    inner join [cache].[objectdetails] od on ( fav.[Object] = od.[Object] and fav.[ObjectId] = od.[ObjectId])
+                    where 
+	                    fav.objectid > 0 and fav.resourceid = @resId  
+                    union
+                    select 
+	                    fav.Name as Name,	
+	                    fav.Route as [Route],
+	                    fav.[Object],
+	                    fav.[ObjectId],
+	                    fav.SortOrder,
+	                    fav.Id,
+                        fav.ResourceId
+                    from
+	                    [dbo].[favorite] fav	
+                    where 
+	                    fav.objectid is null and fav.resourceid = @resId  order by fav.sortorder";
 
-            favorites.InsertRange(0, filteredAdminFavorites);
-
+            var favorites = Company.Query<Favorite>(sql, new { resId = Company.CurrentResourceID }).ToList();
 
             return new JsonNetResult
             {
-                Data = adminOnly ? adminFavorites : favorites,
+                Data = favorites,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 

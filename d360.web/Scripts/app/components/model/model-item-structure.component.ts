@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService, HeaderActionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
@@ -89,7 +89,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     theDeleteCallback: Function;
 
-    constructor(private route: ActivatedRoute,
+    constructor(
+        private headerActionsService: HeaderActionsService,
+        private route: ActivatedRoute,
         private router: Router,
         rightSidebarService: RightSidebarService,
         protected modelsService: ModelsService,
@@ -108,7 +110,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.sub = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
-            
+
+            this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
             this.isLoading = true;
             this.modelsService.getModel(this.modelId)
                     .then(result => {
@@ -186,7 +189,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             }
 
             this.showMessageForResult(this.messagesService, res);
-
+            this.headerActionsService.emitFavoritesChange();
             this.isLoading = false;
         });
         this.showDelete = false;
@@ -241,6 +244,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.loadModelHierarchy(this.modelId);
+                this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.showEditor = false;
             });

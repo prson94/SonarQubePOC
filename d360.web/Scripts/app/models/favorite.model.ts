@@ -6,4 +6,6 @@
     SortOrder: number;
     isOverride: boolean = false;
     Category: string;
+    Object: string;
+    ObjectID: number;    
 }

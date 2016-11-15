@@ -25,7 +25,7 @@ declare var CurrentResourceID;
 export class HeaderActionsComponent {        
     private resourceId: number = CurrentResourceID;
     private sub;
-    private isAdminUrl = true;
+    private isAdminUrl = false;
     private uri = "";
     private hasRaiseIssueButton: boolean = true;
 

@@ -5,6 +5,8 @@
     [Name]       VARCHAR (250) NOT NULL,
     [SortOrder]  INT           NULL,
     [IsOverride] BIT           CONSTRAINT [DF_Favorite_IsOverride] DEFAULT ((0)) NOT NULL,
+    [Object] VARCHAR(50) NULL, 
+    [ObjectID] INT NULL, 
     CONSTRAINT [PK_Favorite_ID] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 GO

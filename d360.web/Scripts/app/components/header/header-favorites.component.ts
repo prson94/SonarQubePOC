@@ -1,6 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { FavoritesService } from '../../services/favorites.service';
+import { FavoritesService, MessagesService } from '../../services/index';
 import { Favorite } from '../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
@@ -9,29 +9,11 @@ import * as _ from 'lodash';
 
 
 @Component({
-    selector: 'd3s-header-favorites',
-    styles: [
-        `
-            .favorite {
-                font-size: 1.2em;
-                color: #666;
-                padding: 0 15px;
-            }
-
-            .favorite.active {
-                color: #FFB230;
-            }
-        `
-    ],
+    selector: 'd3s-header-favorites',    
     template:
     `
-        <span *ngIf="active" (click)="handleClick()" class="favorite active" alt="Remove from favorites" title="Remove from favorites">
-            <i *ngIf="!isLoading" class="fa fa-star"></i>
-            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
-        </span>
-        <span *ngIf="!active" (click)="handleClick()" class="favorite" alt="Add to favorites" title="Add to favorites" >
-            <i *ngIf="!isLoading" class="fa fa-star"></i>
-            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
+        <span (click)="handleClick()" class="favorite" [ngClass]="{'active':isFavoriteItem}" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
+            <i *ngIf="!isLoading" class="fa fa-star"></i>            
         </span>
     `,
     providers: [FavoritesService]
@@ -39,99 +21,106 @@ import * as _ from 'lodash';
 
 export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
-    @Input() active: boolean = false;
-    @Output() onClick = new EventEmitter();
-
-    private sub: any;
-    private subBread: any;
-    private subFavorites: any;
-    private name: string;
+    @Input() isFavoriteItem: boolean = false;
+    
+    private subObjectChange: any;    
+    private subFavorites: any;  
+    private subBreadcrumb: any;  
     private isLoading = false;
 
     private favItems: Favorite[];
 
-
-    constructor(private router: Router, private favoritesService: FavoritesService, private breadcrumbService: HeaderBreadcrumbService, protected headerActionsService: HeaderActionsService) { }
-
-    //TODO: refactor/cleanup initial load logic
-    ngOnInit() {
-        this.sub = this.router.events.subscribe(e => {
-            if (e instanceof NavigationEnd) {
-                //this.uri = _.trimStart(e.url, '/');
-                if (this.favItems == null) {
-                    this.favoritesService.getFavorites()
-                        .then(fav => {
-                            this.favItems = fav;
-                            this.activateFavorites();
-                        });
-                } else {
-                    this.activateFavorites();
-                }
+    private currentObject: string;
+    private currentObjectId: number;
+    private name: string;
+    
+    constructor(private router: Router,
+        private messagesService: MessagesService,
+        private favoritesService: FavoritesService,
+        private breadcrumbService: HeaderBreadcrumbService,
+        protected headerActionsService: HeaderActionsService) {        
+    }
+    
+    ngOnInit() {        
+        this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {            
+            this.currentObject = c.type;
+            this.currentObjectId = c.id;            
+            if (this.favItems == null) {
+                this.favoritesService.getFavorites()
+                    .then(fav => {
+                        this.favItems = fav;
+                        this.checkIsFavorite();
+                    });
+            } else {
+                this.checkIsFavorite();
             }
         });
 
-        this.subBread = this.breadcrumbService.breadcrumbs$.subscribe(b => {
-            this.name = b.text;
+        this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
+            this.name = b.text;            
         });
-
-        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(fav => {
-            this.favItems = fav;
-            this.activateFavorites();
+        
+        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {        
+            this.favoritesService.getFavorites().then(res => {
+                this.favItems = res;
+                this.checkIsFavorite();
+            });
         });
-
+        
         this.favoritesService.getFavorites()
             .then(fav => {
-                this.favItems = fav;
-                this.activateFavorites();
+                this.favItems = fav;    
+                this.checkIsFavorite();       
             });
     }
-
-
+    
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        this.activateFavorites();
+        if (this.uri && changes["uri"]) {
+            this.checkIsFavorite();
+        }
     }
 
     handleClick() {
-        if (this.isLoading)
+        if (this.isLoading) {
+            console.log('ERROR: CANNOT SAVE FAVORITE LOADING');
             return;
-
-        if (this.isAdminUri())
-            return;
-        this.isLoading = true;
-        this.favoritesService.toggleFavorite(this.name, this.uri)
-            .then(() => this.favoritesService.getFavorites())
-            .then(fav => {
-                this.headerActionsService.emitFavoritesChange(fav);
-                this.favItems = fav;
-                this.activateFavorites();
-                this.isLoading = false;
-            });
-    }
-
-
-    activateFavorites(favorites: Favorite[] = null) {
-        let favs = favorites
-        if (favs == null)
-            favs = this.favItems;
-        if (favs == null)
-            return;
-        this.active = false;
-        //console.log(this.uri);
-        for (let f of favs) {
-            if (f.Route == this.uri)
-                this.active = true;
         }
 
+        if (this.isAdminUri()) {
+            console.log('ERROR: CANNOT SAVE FAVORITE FOR ADMIN PAGES');
+            return;
+        }
+        this.isLoading = true;
+        let f = new Favorite();
+        f.ObjectID = this.currentObjectId;
+        f.Object = this.currentObject;
+        f.Name = this.name;
+        f.Route = this.uri ? this.uri : 'home';//null route is home        
+        this.isFavoriteItem = !this.isFavoriteItem;
+        this.favoritesService.toggleFavorite(f)
+            .then(fav => {                
+                this.headerActionsService.emitFavoritesChange();                
+                this.isLoading = false;
+            });            
+    }
+    
+    checkIsFavorite() {        
+        if (this.favItems == null) return;
+
+        this.isFavoriteItem = false;
+        if (!this.uri) this.uri = 'home';
+        let index = this.favItems.findIndex(x => x.Route == this.uri);
+        
+        this.isFavoriteItem = index >= 0;        
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
-        this.subBread.unsubscribe();
+        this.subObjectChange.unsubscribe();        
         this.subFavorites.unsubscribe();
+        this.subBreadcrumb.unsubscribe();
     }
 
-    isAdminUri() {        
-        //TODO: need a better way to do this
+    isAdminUri() {                
         return (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
     }
 }

@@ -16,7 +16,6 @@ export class FavoritesService extends BaseService {
             .toPromise()
             .then(response => <Favorite[]>response.json())
             .catch(err => this.handleError(err));
-
     }
 
     deleteCurrentUsersFavorites(): Promise<JsonResult> {
@@ -26,11 +25,8 @@ export class FavoritesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    toggleFavorite(name: string, route: string, admin: boolean = false) {
-        let f = new Favorite();
-        f.Name = name;
-        f.Route = route;
-        return this.http.put(`navigation/togglefavorite?admin=${admin}`, f)
+    toggleFavorite(favorite: Favorite) {        
+        return this.http.put(`navigation/togglefavorite`, favorite)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

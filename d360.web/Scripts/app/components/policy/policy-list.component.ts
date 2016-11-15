@@ -74,6 +74,10 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         this.sub = this.route.params.subscribe(params => {
             this.policyTypeClassificationId = +params['policyTaxonomyClass'];
 
+            if (this.policyTypeClassificationId > 0) {
+                this.headerBreadcrumbService.setCurrentObjectInfo('PolicyTypeClass', this.policyTypeClassificationId);
+            }
+
             this.headerBreadcrumbService.clearCurrentObjectInfo();
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', this.policyTypeClassificationId ? `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}` : undefined));

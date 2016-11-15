@@ -40,7 +40,7 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible" class="row">                    
+                <div *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isLineageVisible && !isDashboardVisible && !isRelationshipsVisible && !isFollowersVisible && !isImpactVisible" class="row">                    
                     <div class="col s12">
                         <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
                         <div class="row" *ngIf="showSurvey && surveyType">

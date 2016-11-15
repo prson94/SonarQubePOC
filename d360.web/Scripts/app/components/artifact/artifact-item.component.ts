@@ -163,7 +163,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     protected isTabVisible() {
-        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible || this.isChildrenVisible;
+        return this.isAuditVisible || this.isDashboardVisible || this.isLineageVisible || this.isOwnershipVisible || this.isRelationshipsVisible || this.isFollowersVisible || this.isChildrenVisible || this.isImpactVisible;
     }
 
     private completeSurvey() {

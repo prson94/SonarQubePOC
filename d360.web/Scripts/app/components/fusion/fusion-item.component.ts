@@ -116,9 +116,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         this.buildBreadcrumb();
 
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
-
-                        this.headerBreadcrumbService.setCurrentObjectInfo('Fusion', this.fusionId);
-
+                        
                         if (this.fusion.Manual)
                             this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload'));           
                     });

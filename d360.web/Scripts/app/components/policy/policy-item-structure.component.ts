@@ -2,7 +2,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService } from '../../services/index';
+import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService, HeaderActionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
@@ -94,6 +94,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     constructor(
         protected titleService: Title,
+        private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private policiesService: PoliciesService,
         private route: ActivatedRoute,
@@ -113,7 +114,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         this.sub = this.route.params.subscribe(params => {
 
             this.policyTypeId = +params['policyTypeId'];
-            
+            this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+
             this.isLoading = true;
             this.policiesService.getPolicyType(this.policyTypeId)
                 .then(result => {
@@ -188,6 +190,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             this.showMessageForResult(this.messagesService, res);
             if (res.type != 'error') {
                 this.deleteSelectedTreeNode(id);
+                this.headerActionsService.emitFavoritesChange();
             }
             this.isLoading = false;
         });
@@ -195,8 +198,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
     
 
-    private add() {    
-        //console.log(this.selected);    
+    private add() {            
         this.selectedParentID = this.selected ? this.selected.data.ID : null;
         this.selected = null;
         this.showEditor = true;
@@ -250,6 +252,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         this.policiesService.savePolicy(event.item)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
+                this.headerActionsService.emitFavoritesChange();
                 this.loadPolicyHierarchy(this.policyTypeId);
                 this.isLoading = false;
                 this.showEditor = false;
