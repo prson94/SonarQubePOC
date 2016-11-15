@@ -108,7 +108,7 @@ declare var CompanySettings;
                             <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >
                             <div>(Link Name)</div>
                             <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="string">
-                            <div>(Link Url)</div>
+                            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                         </div>
                         <div *ngSwitchCase="'FusionLookup'">
                             <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
