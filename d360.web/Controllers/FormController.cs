@@ -3070,9 +3070,26 @@ namespace d360.web.Controllers
         [HttpGet, Route("GetSiteNavFolderItems")]
         public JsonNetResult GetSiteNavFolderItems(int id)
         {
+            var sql = @"SELECT v.ID
+                          ,v.ParentID
+                          ,COALESCE(a.Name,pc.Name,tc.Name,v.Name) as Name
+                          ,v.Route
+                          ,v.SortOrder
+                          ,v.ObjectID
+                          ,v.[Object]
+                          ,v.Icon
+                          ,v.Title
+                      FROM [dbo].[SiteNav] v
+		                    left join artifacttype a on a.id = v.objectID and v.Object = 'ArtifactType'
+		                    left join policytypeclass pc on pc.id = v.objectID and v.Object = 'PolicyTypeClass'
+		                    left join taxonomytypeclass tc on tc.id = v.objectid and v.object = 'TaxonomyTypeClass'
+                            WHERE   v.ParentID = @parentId";
+
+            var items = Company.Query<SiteNav>(sql, new { parentId = id });
+
             return new JsonNetResult
             {
-                Data = Company.SiteNav.Where(s => s.ParentID == id).ToList(),
+                Data = items,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

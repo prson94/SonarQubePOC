@@ -8,7 +8,7 @@ AS
 BEGIN
 	 RETURN 
     (
-        SELECT  v.name
+        SELECT  COALESCE(a.Name,pc.Name,tc.Name,v.Name) as name --v.name
                 , v.[Route] AS url
 				, 0 as feature,
 				case when v.Object = 'ArtifactType' then
