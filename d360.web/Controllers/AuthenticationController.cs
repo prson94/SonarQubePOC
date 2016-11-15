@@ -445,14 +445,14 @@ namespace d360.web.Controllers
                 if (resource != null)
                 {
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
-                    //if (!string.IsNullOrEmpty(ReturnUrl))
-                    //{
-                    //    Redirect(Server.UrlDecode(ReturnUrl));
-                    //}
-                    //else
-                    //{
-                    return Redirect("/#");
-                    //}
+                    if (!string.IsNullOrEmpty(ReturnUrl))
+                    {
+                        Redirect(Server.UrlDecode(ReturnUrl));
+                    }
+                    else
+                    {
+                        return Redirect("/#");
+                    }
                 }
                 else
                 {

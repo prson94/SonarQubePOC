@@ -11335,24 +11335,20 @@ for json path");
 
             switch (type)
             {
-                case "Lineage":
+                case "DeleteLineage":
                     #region
-                    fieldTypeNames.Add("Focal point object type");
-                    fieldTypeNames.Add("Focal point object type name");
-                    fieldTypeNames.Add("Focal point subject area");
-                    fieldTypeNames.Add("Focal point");
-
-                    fieldTypeNames.Add("Source object type");
-                    fieldTypeNames.Add("Source object type name");
+                    fieldTypeNames.Add("Source Relation");
+                    fieldTypeNames.Add("Source subject subject area");
+                    fieldTypeNames.Add("Source subject");
                     fieldTypeNames.Add("Source object subject area");
                     fieldTypeNames.Add("Source object");
 
-                    fieldTypeNames.Add("Target object type");
-                    fieldTypeNames.Add("Target object type name");
+                    fieldTypeNames.Add("Target Relation");
+                    fieldTypeNames.Add("Target subject subject area");
+                    fieldTypeNames.Add("Target subject");
                     fieldTypeNames.Add("Target object subject area");
                     fieldTypeNames.Add("Target object");
 
-                    fieldTypeNames.Add("Predicate");
                     break;
                 #endregion
                 case "NewLineage":
@@ -11584,11 +11580,11 @@ from ArtifactType A
                     sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType where IsSystem = 0 order by Name";
                     break;
                     #endregion
-                case "L":   // Lineage
-                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
-                    break;
                 case "N":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "NewLineage|-1" } };
+                    break;
+                case "DL":   // Delete Lineage
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "DeleteLineage|-1" } };
                     break;
                 case "T":   // Technical Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "TechnicalLineage|-1" } };
@@ -11613,7 +11609,6 @@ from ArtifactType A
         [FileDownload, Route("Load_ExpectedColumns_ToExcel")]
         public FileResult Load_ExpectedColumns_ToExcel(string type, int id)
         {
-
             var document = new SLDocument();
             var defaultSheet = "Items";
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
@@ -11635,11 +11630,6 @@ from ArtifactType A
             }
 
             #region Header
-
-            /*
-                    "Resource Type",
-                    "Resource"             
-             */
 
             for (int i = 0; i < columns.Count; i++)
             {
@@ -11786,6 +11776,19 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
+                else if (type == "DeleteLineage" && lowerColName.In("source relation", "target relation"))
+                {
+                    var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
                 else if (type == "NewLineage" && lowerColName == "role")
                 {
                     var items = Company.Table<IntersectRole>().OrderBy(x => x.Name).Select(x => x.Name);
@@ -11799,23 +11802,9 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
-                else if (type == "Lineage" && lowerColName == "predicate")
-                {
-                    var items = Company.Filter<Predicate>(x => x.Type == PredicateType.Lineage).OrderBy(x => x.Name).Select(x => x.Name);
-
-                    if (items.Any())
-                    {
-                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
-
-                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
-
-                        document.AddDataValidation(dv);
-                    }
-                }                
                 else if (
-                    (type == "NewLineage" && (lowerColName == "source subject type" || lowerColName == "source object type" || lowerColName == "target subject type" || lowerColName == "target object type")) ||
-                    (type == "Lineage" && (lowerColName == "focal point object type" || lowerColName == "source object type" || lowerColName == "target object type")) ||
-                    (type == "Synonym" && (lowerColName == "source object type" || lowerColName == "target object type"))
+                    ((type == "DeleteLineage" || type == "NewLineage") && lowerColName.In("source subject type", "source object type", "target subject type", "target object type")) ||
+                    (type == "Synonym" && lowerColName.In("source object type", "target object type"))
                     )
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
@@ -11826,9 +11815,8 @@ from ArtifactType A
                     document.AddDataValidation(dv);
                 }
                 else if (
-                    (type == "NewLineage" && (lowerColName == "source subject subject area" || lowerColName == "source object subject area" || lowerColName == "target subject subject area" || lowerColName == "target object subject area")) ||
-                    (type == "Lineage" && (lowerColName == "focal point subject area" || lowerColName == "source object subject area" || lowerColName == "target object subject area") ) ||
-                    (type == "Synonym" && (lowerColName == "source object subject area" || lowerColName == "target object subject area"))
+                    ((type == "DeleteLineage" || type == "NewLineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
+                    (type == "Synonym" && lowerColName.In("source object subject area", "target object subject area"))
                     )
                 {
                     var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
@@ -11887,7 +11875,7 @@ from ArtifactType A
 
             var required = true;
 
-            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != parentColumnName))
+            if (type == "ArtifactType" && (columnName != "name" && columnName != "subject area" && columnName != "description" && columnName != parentColumnName))
                 required = false;
             else if (type == "Domain" && (columnName != "name" && columnName != "code"))
                 required = false;

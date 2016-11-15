@@ -721,6 +721,7 @@ from	DomainType
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
             when 'L' then 'Lineage'
+            when 'DL' then 'Remove Lineage : Business'
             when 'N' then 'Lineage : Business'
             when 'O' then 'Responsibilities'
             when 'T' then 'Lineage : Technical'

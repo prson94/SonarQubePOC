@@ -43,6 +43,7 @@ export class LoadService extends BaseService {
             { label: 'Unrelation', value: 'U' },
             { label: 'Lineage : Business', value: 'N' },
             { label: 'Lineage : Technical', value: 'T' },
+            { label: 'Remove Lineage : Business', value: 'DL' },
             { label: 'Synonyms', value: 'S' }
         ];
     }

@@ -668,6 +668,26 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 #endregion
             }
+            else if (load.Action == "DL")    // New Lineage
+            {
+                #region Lineage
+
+                try
+                {
+                    companyConnection.Open();
+
+                    // Call business lineage procedure.
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.RemoveBusinessLineage {load.ID}", 2400);
+
+                    companyConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
+                }
+
+                #endregion
+            }
             else if (load.Action == "T")    // Technical Fusion
             {
                 #region Technical Lineage
