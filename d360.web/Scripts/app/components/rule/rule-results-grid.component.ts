@@ -11,20 +11,20 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 @Component({
     selector: 'd3s-rule-results-grid',
     template: `                 
-                <div class="tile tile-detail">
-                    <header>
-                        Values
-                        <d3s-tile-actions hasAdd="false" hasExport="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions>
-                    </header>
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
+                <header>Values<d3s-tile-actions hasAdd="false" hasExport="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
+                <span *ngIf="!isLoading">
                         <div *ngIf="showSimpleFilter">                                                
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
                         <p-dataTable #dt [lazy]="true" [totalRecords]="results?.total" scrollable="true" scrollWidth="100%" [value]="results?.results" selectionMode="single" [rows]="rowsPerPage" paginator="true" pageLinks="3" (onLazyLoad)="loadRuleResultsLazy($event)" [rowsPerPageOptions]="[5,10,20]" [responsive]="true" [stacked]="stacked">                                                                       
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
-                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true"></p-column>
+                            <p-column field="EffectiveDate" header="Effective Date" [sortable]="true">
+                                <template let-col let-item="rowData" pTemplate type="body">
+                                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
+                                </template>
+                            </p-column>
                             <p-column field="PassFraction" header="Pass Fraction" [sortable]="true" [style]="{width:'15%'}"></p-column>
                             <p-column field="RowsPassed" header="Rows Passed" [sortable]="true" [style]="{width:'15%'}"></p-column>
                             <p-column field="RowsFailed" header="Rows Failed" [sortable]="true" [style]="{width:'15%'}"></p-column>
@@ -36,8 +36,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             </p-column>
                             <p-column field="TextPath" header="Fusion" [sortable]="true" [style]="{width:'25%'}"></p-column>
                         </p-dataTable>
-                    </span>
-                </div>
+                </span>                
                 `,
     providers: [RulesService],
 })
