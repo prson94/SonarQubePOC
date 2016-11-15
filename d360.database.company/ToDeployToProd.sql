@@ -458,9 +458,23 @@ Pull the following object updates:
 	[utility].[ObjectDetail]
 	[dbo].[IntersectDetail]
 	[dbo].[GenerateObjectUrl] 
-
+	[utility].[DeriveIntersectTypeName] 
+	[bulkload].[UpdateIntersectTypeColumn]
+	[bulkload].[UpdateItemColumnByIntersectType]
+	[bulkload].[RemoveBusinessLineage]
+	utility.GetIntersectTypesByType
+	utility.GetFieldTypeLookupList
 */
 
 
 -- add a constraint on name to reference item type to prevent duplicate names
 ALTER TABLE [dbo].[ReferenceItemType] ADD CONSTRAINT CONST_Reference_Item_Type_Name UNIQUE (Name); 
+
+alter table [Policy] add [Status] int not null CONSTRAINT [DF_Policy_Status] DEFAULT (1) 
+go
+
+ALTER TABLE [dbo].[Policy] ADD  CONSTRAINT [DF_Policy_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+GO
+
+alter table [Load] alter column [Action] varchar(2) not null
+go

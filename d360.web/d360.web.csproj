@@ -886,7 +886,6 @@
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\impact.component.html" />
     <Content Include="Scripts\app\components\shared\lineage\lineage.component.html" />
-    <Content Include="Scripts\app\components\tiles\object-definition.tile.html" />
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
