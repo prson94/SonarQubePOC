@@ -10,7 +10,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
                 <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
-                    <span [class]="'menu-level-indicator-' + level" [innerHtml]="getLevelDecorator()"></span> {{item.Name}}</a>                    
+                    <i [class]="'fa fa-circle menu-level-indicator-' + level" aria-hidden="true"></i>{{item.Name}}</a>                    
                 <d3s-site-menu-mega-item *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    
@@ -39,9 +39,5 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
 
         this.active = false;
         this.activeChange.emit(this.active);
-    }
-
-    getLevelDecorator() {
-        return (this.level+1);       
     }    
 };

@@ -23245,36 +23245,23 @@ nav.top,
 .menu-level-indicator-4,
 .menu-level-indicator-5,
 .menu-level-indicator-n {
-  background-color: #ED6C44;
-  border-radius: 2px;
-  border: 1px solid #ffb353;
-  margin-right: 3px;
-  font-size: .55rem;
-  padding: 2px 3px;
+  color: #ED6C44;
+  font-size: .6em;
+  margin-right: 7px;
   vertical-align: middle;
-  color: white;
-  opacity: 0.5;
-}
-.menu-level-indicator-0:hover,
-.menu-level-indicator-1:hover,
-.menu-level-indicator-2:hover,
-.menu-level-indicator-3:hover,
-.menu-level-indicator-4:hover,
-.menu-level-indicator-5:hover,
-.menu-level-indicator-n:hover {
-  color: white;
+  opacity: 0.85;
 }
 .menu-level-indicator-1 {
-  background-color: #55A4DA;
+  color: #55A4DA;
 }
 .menu-level-indicator-2 {
-  background-color: #02981B;
+  color: #FFB230;
 }
 .menu-level-indicator-3 {
-  background-color: #5c5e60;
+  color: #818385;
 }
 .menu-level-indicator-4 {
-  background-color: #818385;
+  color: #ED6C44;
 }
 d3s-navbar-item > div.router-link-active > a,
 d3s-navbar-item > div.router-link-active > span,
