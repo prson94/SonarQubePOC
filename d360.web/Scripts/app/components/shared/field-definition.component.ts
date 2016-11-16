@@ -119,6 +119,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
         this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {
+                //let thisFieldIndex = this.fieldDefinitions.findIndex(f => f.ID == field.ID);
+                //if (thisFieldIndex > 0) {
+                //    let previousField = this.fieldDefinitions[thisFieldIndex - 1];
+                //    previousField.SortOrder = (parseInt(field.SortOrder) + 1).toString();
+                //}
+                //field.SortOrder = (parseInt(field.SortOrder) - 1).toString();
                 this.load();
             });
     }
@@ -126,6 +132,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     moveDown(field: FieldDefinition) {
         this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID)
             .then(r => {
+                //let thisFieldIndex = this.fieldDefinitions.findIndex(f => f.ID == field.ID);
+                //if (thisFieldIndex < this.fieldDefinitions.length - 1) {
+                //    let nextField = this.fieldDefinitions[thisFieldIndex + 1];
+                //    nextField.SortOrder = (parseInt(field.SortOrder) - 1).toString();
+                //}
+                //field.SortOrder = (parseInt(field.SortOrder) + 1).toString();
                 this.load();
             });
     }
