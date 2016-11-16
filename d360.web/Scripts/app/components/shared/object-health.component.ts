@@ -4,6 +4,10 @@ import { ScoreService } from '../../services/index';
 import { PointBreakdown, AverageScore } from '../../models/score.model';
 import { Highcharts } from 'angular2-highcharts';
 
+
+require('highcharts/highcharts-more')(Highcharts);
+require('highcharts/modules/solid-gauge')(Highcharts);
+
 @Component({
     selector: 'd3s-object-health',
     styles: [`
@@ -12,20 +16,22 @@ import { Highcharts } from 'angular2-highcharts';
       }
     `],
     template: `            
-            <table class="governance-value" [ngClass]="{'governance-value-fail':isFail(), 'governance-value-warning': isWarning(), 'governance-value-pass': isPass()}" (click)="toggleDetails()">
+            <table class="governance-value" (click)="toggleDetails()">
                 <tr>
-                    <td>
-                        {{scoreValue()}}
+                    <td style="text-align:center;width:30px">
                         <i *ngIf="isTrend('up')" class="fa fa-arrow-circle-up governance-value-pass" aria-hidden="true" title="score trending up"></i>
                         <i *ngIf="isTrend('down')" class="fa fa-arrow-circle-down governance-value-fail" aria-hidden="true" title="score trending down"></i>
-                    </td>
-                    <td><chart [options]="smallChart"></chart></td>
-                    <td class="title">&nbsp;</td>
+                    </td>                 
+                    <td style="width:100px">
+                        <chart *ngIf="score" [options]="scoreChart"></chart>
+                        <span *ngIf="!score">N/A</span>
+                    <td>
+                    <td class="hide-on-med-and-down"><span class="title" style="vertical-align:top">Score</span></td>                    
                 </tr>
             </table>
             <div *ngIf="!isLoading" class="governance-note">
                 {{lastCalculatedMessage()}}
-            </div>
+            </div>            
         `,
     providers: [ScoreService],    
 })
@@ -41,6 +47,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
     private lastCalculatedDate: number;
 
     smallChart: Object;
+    scoreChart: Object;
 
     averageScore: AverageScore;
     
@@ -53,30 +60,101 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
             this.loadSeriesData();
             this.loadScoreData();
         }
-    }
+        if (this.score && changes['score']) {
+            this.scoreChart = {
 
-    private isWarning(): boolean {
-        return this.score < 80 && this.score > 60;
-    }
+                chart: {
+                    type: 'solidgauge',
+                    backgroundColor: 'transparent',
+                    height: 55,
+                    width: 100,
+                    spacingTop: 0,
+                    spacingLeft: 0,
+                    spacingRight: 0,
+                    spacingBottom: 0
+                },
 
-    private isPass(): boolean {
-        return this.score > 80;
-    }
+                title: '',
 
-    private isFail(): boolean {
-        return this.score < 60;
+                pane: {
+                    center: ['50%', '85%'],
+                    size: '150%',
+                    startAngle: -90,
+                    endAngle: 90,
+                    background: {
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                        innerRadius: '80%',
+                        outerRadius: '100%',
+                        shape: 'arc',
+                        borderColor: 'transparent'
+                    }
+                },
+
+                tooltip: {
+                    enabled: false
+                },
+
+                // the value axis
+                yAxis: {
+                    min: 0,
+                    max: 100,
+                    stops: [
+                        [0.1, '#BC1B01'], // red
+                        [0.5, '#FFB230'], // yellow
+                        [0.9, '#02981B'] // green
+                    ],
+                    lineWidth: 0,
+                    minorTickLength: 0,
+                    tickLength: 100,
+                    tickWidth: 4,
+                    tickColor: 'transparent',
+                    gridLineWidth: 0,
+                    gridLineColor: 'transparent',
+                    tickAmount: 2,
+                    title: {
+                        y: -70
+                    },
+                    labels: {
+                        y: 16
+                    }
+                },
+
+                plotOptions: {
+                    solidgauge: {
+                        innerRadius: '80%',
+                        outerRadius: '100%',
+                        dataLabels: {
+                            y: 8,
+                            borderWidth: 0,
+                            useHTML: true,
+                            style: {
+                                fontFamily: '',
+                                fontSize: '.9em',
+                                color: '#646464'
+                            }
+                        }
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+
+                series: [{
+                    data: [this.score],
+                    dataLabels: {
+                        format: '<div style="text-align:center">{y}%</div>',
+                    }
+                }],
+
+            };     
+        }
     }
 
     private toggleDetails() {        
         this.showDetails = !this.showDetails;        
         this.showDetailsChange.emit( this.showDetails );
     }
-
-    private scoreValue() {
-        if (this.score) return this.score + '%';
-        return 'N/A';
-    }
-
+    
     private lastCalculatedMessage() {
         if (!this.lastCalculatedDate) {
             return "Governance Score not yet calculated";
@@ -133,7 +211,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];
                 });
-
+                                
                 this.smallChart = {
 
                     chart: {
@@ -142,18 +220,18 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
                         type: 'area',
                         margin: [2, 0, 2, 0],
                         width: 100,
-                        height: 30,
+                        height: 40,
                         style: {
                             overflow: 'visible'
                         },
                         skipClone: true
                     },
-                    title: {                        
-                        text: '',                        
-                    },                    
+                    title: {
+                        text: '',
+                    },
                     credits: {
                         enabled: false
-                    },                    
+                    },
                     xAxis: {
                         type: 'datetime',
                         labels: {
@@ -209,13 +287,13 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
                                         radius: 2
                                     }
                                 }
-                            },                           
+                            },
                         },
                         column: {
                             negativeColor: '#910000',
                             borderColor: 'silver'
                         }
-                    },                    
+                    },
                     series: [{
                         type: 'area',
                         name: 'Governance Score',
@@ -226,5 +304,4 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
                 };
             });
     }
-
 }

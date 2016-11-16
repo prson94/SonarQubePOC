@@ -7,3 +7,6 @@ import '@angular/router';
 import 'primeng/primeng';
 import 'lodash';
 import 'angular2-highcharts';
+import 'highcharts/highcharts';
+import 'highcharts/highcharts-more';
+import 'highcharts/modules/solid-gauge';

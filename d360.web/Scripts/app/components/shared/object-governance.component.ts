@@ -8,7 +8,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
     selector: 'd3s-object-governance',    
     template: `     
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <div class="row" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
+                    <div class="row" style="display:flex" *ngIf="!isLoading" [ngClass]="{'activeTab':hasActiveTab()}">
                         <div class="col s12" [ngClass]="{'inactive': (hasActiveTab() && !showHealthDetails), 'active-left':showHealthDetails, 'l3':showStatus, 'l4':!showStatus}">                                                        
                             <d3s-object-health [score]="statistics?.Score" [objectType]="objectType" [objectID]="objectID" [showDetails]="showHealthDetails" (showDetailsChange)="showHealthDetails=$event;showIssueDetails=false;showBoardDetails=false;"></d3s-object-health>                            
                         </div>

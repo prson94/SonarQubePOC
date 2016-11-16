@@ -2,6 +2,11 @@
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/index';
 import { FusionSummaryStats } from '../../models/fusion.model';
+import { Highcharts } from 'angular2-highcharts';
+
+
+require('highcharts/highcharts-more')(Highcharts);
+require('highcharts/modules/solid-gauge')(Highcharts);
 
 @Component({
     selector: 'd3s-fusion-statistics',
@@ -16,7 +21,7 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                         <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                     </header>
                     <div class="row">                        
-                        <div class="col s6">
+                        <div class="col m6 s12">
                             <div class="row" (click)="showAgentHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Agent % Success</div>
                                 <div class="col s12">
@@ -24,7 +29,7 @@ import { FusionSummaryStats } from '../../models/fusion.model';
                                 </div>
                             </div>
                         </div>
-                        <div class="col s6">
+                        <div class="col m6 s12">
                             <div class="row" (click)="showFusionHistory=true;">
                                 <div class="col s12" style="font-weight:bold">Processing % Success</div>
                                 <div class="col s12">
@@ -84,8 +89,8 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                 agentSuccess = +agentSuccess.toFixed(2);
                 workerSuccess = +workerSuccess.toFixed(2);
                 
-                this.agentPie = this.getKpi(agentSuccess, 100 - (agentSuccess), agentSuccess+' %',"Agent % Success");               
-                this.workerPie = this.getKpi(workerSuccess, 100 - (workerSuccess), workerSuccess + ' %', "Processing % Success");               
+                this.agentPie = this.getKpi(agentSuccess,"Agent % Success");               
+                this.workerPie = this.getKpi(workerSuccess, "Processing % Success");               
                 this.isLoading = false;
             });
     }
@@ -96,49 +101,90 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
         return ((total - errors) / total) * 100;
     }
 
-    private getKpi(score: number, remaining: number, title?: string, label?:string) {
+    private getKpi(score: number, title?: string) {
         return {
+
             chart: {
-                type: 'pie',
+                type: 'solidgauge',
                 backgroundColor: 'transparent',
-                height: 187,
-                width: 187
+                height: 87,
+                width: 187                
             },
-            title: {
-                text: title,
-                align: 'center',
-                verticalAlign: 'middle',
-                y: 5
+
+            title: '',
+
+            pane: {
+                center: ['50%', '90%'],
+                size: '160%',
+                startAngle: -90,
+                endAngle: 90,
+                background: {
+                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    innerRadius: '80%',
+                    outerRadius: '100%',
+                    shape: 'arc',
+                    borderColor: 'transparent'
+                }
+            },
+
+            tooltip: {
+                enabled: false
+            },
+
+            // the value axis
+            yAxis: {
+                min: 0,
+                max: 100,
+                stops: [
+                    [0.1, '#BC1B01'], // red
+                    [0.5, '#FFB230'], // yellow
+                    [0.9, '#02981B'] // green
+                ],
+                lineWidth: 0,
+                minorTickLength: 0,
+                tickLength: 100,
+                tickWidth: 4,
+                tickColor: 'transparent',
+                gridLineWidth: 0,
+                gridLineColor: 'transparent',
+                tickAmount: 2,
+                title: {
+                    enabled: false,
+                },
+                labels: {
+                    enabled: false,
+                }
+            },
+
+            plotOptions: {
+                solidgauge: {
+                    innerRadius: '80%',
+                    outerRadius: '100%',
+                    dataLabels: {
+                        y: 5,
+                        borderWidth: 0,
+                        useHTML: true,
+                        style: {
+                            fontFamily: '',
+                            fontSize: '20px',
+                            color: '#646464'
+                        }
+                    }
+                }
             },
             credits: {
                 enabled: false
             },
-            yAxis: {
-                max: 1.0
-            },
-            plotOptions: {
-                pie: {
-                    shadow: false
-                }
-            },
-            tooltip: {
-                formatter: function () {
-                    if (!this.point.name) return null;
-                    return '<b>' + this.point.name + '</b>: ' + this.y + ' %';
-                }
-            },
+
             series: [{
-                name: 'Score',
-                data: [{ name: label, y: score, color: '#398D3A' }, { name: "", y: remaining, color: "white" }],
-                showInLegend: false,
-                innerSize: '70%',
-                size: '80%',
+                name: title,
+                data: [Math.round(score)],
                 dataLabels: {
-                    enabled: false,
+                    format: '<div style="text-align:center">{y}%</div>',
                 }
-            }
-            ]
-        };
+            }],
+
+        };     
     }
 
     private changeDates(event) {
