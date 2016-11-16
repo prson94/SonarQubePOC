@@ -66,7 +66,7 @@ BEGIN
 		end
 		else
 		begin
-			insert into @tbl values ('Name', '<a routerLink="' + @link + '">' + @n + '</a>')
+			insert into @tbl values ('Name', '<a routerLink="/' + @link + '">' + @n + '</a>')
 		end
 		insert into @tbl values ('Description', @d)
 	end
@@ -118,7 +118,7 @@ BEGIN
 				end
 				if @workflowID is not null
 				begin
-					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
+					set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
 				end
 			end
 		else
@@ -155,7 +155,7 @@ BEGIN
 						set @html = @html + '<div>Certifying Users: {Certifiers}</div>'
 						if @workflowID is not null
 						begin
-							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
+							set @html = @html + '<div><a class=''btn btn-info'' routerLink=''/workflow/status/' + cast(@workflowID as varchar(50)) + '''>Go to this workflow status</a>.</div>'
 						end
 					end
 			end
@@ -556,7 +556,7 @@ BEGIN
 			from	DomainGroup
 			where	ID = @ID
 
-			insert into @tbl values ('Name', '<a routerLink="' + @link + '">' + @n + '</a>')
+			insert into @tbl values ('Name', '<a routerLink="/' + @link + '">' + @n + '</a>')
 		end;
 
 		if @Type = 'Event'
@@ -936,4 +936,8 @@ BEGIN
 	select	'' as Title,
 			@html as Body;
 END
+
+
+GO
+
 
