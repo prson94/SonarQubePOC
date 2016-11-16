@@ -4,14 +4,17 @@
     [Name]         NVARCHAR (250)  NOT NULL,
     [Description]  NVARCHAR (MAX)  NULL,
     [TextPath]     NVARCHAR (2000) NULL,
-    [UpdatedOn]    DATETIME        NULL,
+    [UpdatedOn]    DATETIME        CONSTRAINT [DF_Policy_UpdatedOn] DEFAULT (getutcdate()) NULL,
     [UpdatedBy]    INT             NULL,
     [PolicyTypeID] INT             CONSTRAINT [DF_Policy_PolicyTypeID] DEFAULT ((50000)) NOT NULL,
     [Level]        INT             CONSTRAINT [DF_Policy_Level] DEFAULT ((1)) NOT NULL,
+    [Status]       INT             CONSTRAINT [DF_Policy_Status] DEFAULT ((1)) NOT NULL,
     CONSTRAINT [PK_Policy] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Policy_ParentPolicy] FOREIGN KEY ([ParentID]) REFERENCES [dbo].[Policy] ([ID]),
     CONSTRAINT [FK_Policy_PolicyType] FOREIGN KEY ([PolicyTypeID]) REFERENCES [dbo].[PolicyType] ([ID])
 );
+
+
 
 
 

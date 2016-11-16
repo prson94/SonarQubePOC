@@ -60,13 +60,9 @@ begin
 	begin
 		set @startDynamicFieldColumnIndex = 4
 	end
-	else if @Object = 'Domain'
+	else if @Object = 'ReferenceItemType'
 	begin
-		set @startDynamicFieldColumnIndex = 4
-	end
-	else if @Object = 'DomainType'
-	begin
-		set @startDynamicFieldColumnIndex = 4
+		set @startDynamicFieldColumnIndex = 2
 	end
 	else if @Object = 'TaxonomyType'
 	begin
@@ -287,76 +283,28 @@ begin
 				values (S.AttributeTypeID, S.[Object], S.ObjectID, getutcdate(), @UpdatedBy)
 		output	'Attribute', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;		
 	end
-	else if @Object = 'Domain'
+	else if @Object = 'ReferenceItemType'
 	begin
-		merge	DomainItem T
+		merge	ReferenceItem T
 		using	(
 				select	I.LoadID,
 						I.RowIndex,
-						@ObjectID as DomainID,
-						C.Value as Code,
-						N.Value as Name,
-						D.Value as Description
+						@ObjectID as ReferenceItemTypeID,
+						C.Value as Code
 				from	[LoadItem] I
 						inner join [LoadItemColumn] C on C.LoadID = I.LoadID and C.RowIndex = I.RowIndex and C.ColumnIndex = 1
-						inner join [LoadItemColumn] N on N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 2
-						left join [LoadItemColumn] D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 3
 						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
 				where	I.LoadID = @id
 				) S
-		on		(T.DomainID = S.DomainID and T.Code = S.Code)
+		on		(T.ReferenceItemTypeID = S.ReferenceItemTypeID and T.Code = S.Code)
 		when	matched then
-				update	set T.[Name] = S.[Name],
-							T.[Description] = S.[Description],
-							T.[DomainID] = S.[DomainID],
+				update	set T.[Code] = S.[Code],
 							T.UpdatedBy = @UpdatedBy,
 							T.UpdatedOn = @UpdatedOn
 		when	not matched then
-				insert (DomainID, Code, Name, [Description], UpdatedOn, UpdatedBy)
-				values (S.DomainID, S.Code, S.Name, S.[Description], @UpdatedOn, @UpdatedBy)
-		output	'DomainItem', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
-	end
-	else if @Object = 'DomainType'
-	begin	
-		-- PARSE any Domain Group fields.
-		update	T
-		set		T.LookupObject = 'DomainGroup',
-				T.LookupObjectID = S.ID
-		from	LoadItemColumn T
-				inner join DomainGroup S on T.LoadID = @id and T.ColumnIndex = 3 and S.Name = T.Value and S.DomainTypeID = @ObjectID;
-
-		-- Mark the rows with invalid domain groups.
-		update	I
-		set		I.StatusMessage = 'Domain group could not be found.'
-		from	LoadItem I
-				inner join LoadItemColumn S on I.LoadID = @id and S.LoadID = I.LoadID and S.RowIndex = I.RowIndex and S.ColumnIndex = 3 and S.LookupObjectID is null
-
-		-- Merge domains that are valid.
-		merge	Domain T
-		using	(
-				select	I.LoadID,
-						I.RowIndex,
-						@ObjectID as DomainTypeID,
-						N.Value as Name,
-						D.Value as Description,
-						G.LookupObjectID as DomainGroupID
-				from	[LoadItem] I
-						inner join [LoadItemColumn] N on N.LoadID = I.LoadID and N.RowIndex = I.RowIndex and N.ColumnIndex = 1
-						left join [LoadItemColumn] D on D.LoadID = I.LoadID and D.RowIndex = I.RowIndex and D.ColumnIndex = 2
-						inner join [LoadItemColumn] G on G.LoadID = I.LoadID and G.RowIndex = I.RowIndex and G.ColumnIndex = 3 and G.LookupObjectID is not null
-						inner join #FieldValidationRows V on V.RowIndex = I.RowIndex and V.Valid = 1
-				where	I.LoadID = @id
-				) S
-		on		(T.DomainTypeID = S.DomainTypeID and T.Name = S.Name)
-		when	matched then
-				update	set T.[Description] = S.Description,
-							T.DomainGroupID = S.DomainGroupID,
-							T.UpdatedOn = @UpdatedOn,
-							T.UpdatedBy = @UpdatedBy
-		when	not matched then
-				insert (DomainTypeID, DomainGroupID, Name, Description, UpdatedOn, UpdatedBy)
-				values (S.DomainTypeID, S.DomainGroupID, S.Name, S.Description, @UpdatedOn, @UpdatedBy)
-		output	'Domain', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
+				insert (ReferenceItemTypeID, Code, UpdatedOn, UpdatedBy)
+				values (S.ReferenceItemTypeID, S.Code, @UpdatedOn, @UpdatedBy)
+		output	'ReferenceItem', inserted.ID, $action, S.LoadID, S.RowIndex into @ResolvedObjects;
 	end
 	else if @Object = 'TaxonomyType'
 	begin

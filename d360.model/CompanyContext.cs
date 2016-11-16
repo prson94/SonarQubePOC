@@ -892,6 +892,7 @@ order by	ColumnIndex", new { id });
                 var item = new Dictionary<string, object>();
 
                 item.Add("ID", e.ID.ToString());
+                item.Add("Code", e.Code);
                 foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
                 {
                     var fieldName = $"Field{field.ID}";

@@ -9,6 +9,9 @@ namespace d360.core.entities
     public class ReferenceItem : BaseIntObject, IIntObject, ISearchable, ICreatedMetadata, IUpdatedMetadata
     {
         [DataMember]
+        public string Code { get; set; }
+
+        [DataMember]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string DisplayValue { get; set; }
 

@@ -11,7 +11,7 @@ BEGIN
 
 	SET @result =	(
 					SELECT	COALESCE(SA.Name, SD.Name, SF.TextPath, SP.Name, ST.Name, SI.Name, case I.Subject when 'RuleType' then 'Rule' else '' end) + 
-							' / ' + 
+							' ' + coalesce(P.Name,'/') + ' ' + 
 							COALESCE(OA.Name, OD.Name, [OF].TextPath, OP.Name, OT.Name, case I.Object when 'RuleType' then 'Rule' else '' end)
 					FROM	[IntersectType] I
 							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
@@ -31,6 +31,8 @@ BEGIN
 
 							left join [TaxonomyType] ST on I.Subject = 'TaxonomyType' and ST.ID = I.SubjectID
 							left join [TaxonomyType] OT on I.Object = 'TaxonomyType' and OT.ID = I.ObjectID
+
+							left join [Predicate] P on P.ID = I.PredicateID
 					WHERE	I.ID = @id
 					FOR XML PATH('')
 					)

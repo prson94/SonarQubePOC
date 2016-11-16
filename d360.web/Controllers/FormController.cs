@@ -11428,7 +11428,7 @@ for json path");
                         {
                             case "ArtifactType":
                             case "AttributeType":
-                            case "DomainType":
+                            case "ReferenceItemType":
                             case "IntersectType":
                             case "TaxonomyType":
                                 fieldTypeNames.AddRange(
@@ -11465,18 +11465,9 @@ for json path");
                                 fieldTypeNames.Insert(2, "Owner Name");
                                 break;
                             #endregion
-                            case "Domain":
+                            case "ReferenceItemType":
                                 #region
                                 fieldTypeNames.Insert(0, "Code");
-                                fieldTypeNames.Insert(1, "Name");
-                                fieldTypeNames.Insert(2, "Description");
-                                break;
-                            #endregion
-                            case "DomainType":
-                                #region
-                                fieldTypeNames.Insert(0, "Name");
-                                fieldTypeNames.Insert(1, "Description");
-                                fieldTypeNames.Insert(2, "Domain Group");
                                 break;
                             #endregion
                             case "IntersectType":
@@ -11577,9 +11568,7 @@ select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Glossary: ' + Name a
 union
 select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
 union
-select 'DomainType|' + cast(ID as varchar(10)) as value, 'Reference List: ' + Name as title from DomainType
-union
-select 'Domain|' + cast(D.ID as varchar(10)) as value, 'Reference List Item: ' + T.Name  + ' - ' + D.Name as title from Domain D inner join DomainType T on T.ID = D.DomainTypeID
+select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item: ' + Name as title from ReferenceItemType
 ) O order by title";
                     break;
                 #endregion
@@ -11691,15 +11680,15 @@ from ArtifactType A
                             }
                             break;
                             #endregion
-                        case "DomainType":
+                        case "ReferenceItemType":
                             #region
-                            var domainTypeItems = Company.Table<DomainType>().OrderBy(x => x.Name).Select(x => x.Name);
+                            var referenceItemTypeItems = Company.Table<ReferenceItemType>().OrderBy(x => x.Name).Select(x => x.Name);
 
-                            if (domainTypeItems.Any())
+                            if (referenceItemTypeItems.Any())
                             {
                                 var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
 
-                                CreateExcelList(lookupColumns++, document, "Lookups", dv, domainTypeItems);
+                                CreateExcelList(lookupColumns++, document, "Lookups", dv, referenceItemTypeItems);
 
                                 document.AddDataValidation(dv);
                             }
@@ -21118,7 +21107,8 @@ order by TextPath
             var type = Company.GetById<ReferenceItemType>(id);
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, id).ToList(), 1);
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -21148,7 +21138,8 @@ order by TextPath
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 1);
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
+            list = loadDynamicFields(list, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -21200,6 +21191,7 @@ order by TextPath
 
                 var a = new ReferenceItem
                 {
+                    Code = form["Code"],
                     ReferenceItemTypeID = typeID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
@@ -21239,6 +21231,8 @@ order by TextPath
 
                 if (!Company.HasPermission(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, Claim.Update))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+                model.Code = form["Code"];
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypeRelationsByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
                 Company.SaveOrUpdate<ReferenceItem>(model, fields);

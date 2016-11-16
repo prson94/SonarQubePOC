@@ -512,12 +512,14 @@ namespace d360.web.Controllers
                 case SystemObjects.ReferenceItemType:
                     #region
                     staticFieldCount = 1;
-                    remainingWidth = 90;
+                    remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code", width = calculateStaticColumnWidth(15, dynamicFieldWidth, remainingWidth, staticFieldCount) });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "Code", type = "string" });
                     fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
                     break;
                 #endregion

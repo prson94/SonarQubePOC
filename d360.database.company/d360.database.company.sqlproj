@@ -500,6 +500,11 @@
     <Build Include="bulkload\Stored Procedures\Relationships.sql" />
     <Build Include="bulkload\Stored Procedures\Promotions.sql" />
     <Build Include="bulkload\Stored Procedures\MergeDynamicLookupFields.sql" />
+    <Build Include="utility\Functions\GetIntersectTypesByType.sql" />
+    <Build Include="utility\Stored Procedures\GetFieldTypeLookupList.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateItemColumnByIntersectType.sql" />
+    <Build Include="bulkload\Stored Procedures\UpdateIntersectTypeColumn.sql" />
+    <Build Include="bulkload\Stored Procedures\RemoveBusinessLineage.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />

@@ -1474,34 +1474,37 @@ when not matched then
             // build in memory table that we will generate temp table from            
             foreach (var x in models)
             {
-                string actionString = string.Empty;
-
-                var sourceID = x[SourceIDAttribute];
-                var name = x[NameAttribute];
-                var fusionTypeID = Convert.ToInt32(x[FusionAttributeTypeIDAttribute]);
-
-                string parentSourceID = string.Empty;
-
-                x.TryGetValue(ParentSourceIDAttribute, out parentSourceID);                
-                x.TryGetValue(ActionAttribute, out actionString);
-
-                if (string.IsNullOrEmpty(name)) name = FUSION_ATTRIBUTE_MISSING_NAME_NAME;
-
-                FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
+                if (x.ContainsKey(SourceIDAttribute))
                 {
-                    SourceID = sourceID,
-                    FusionAttributeTypeID = fusionTypeID,
-                    Name = name,
-                    DeletedBit = false,
-                    ParentSourceID = parentSourceID
-                };
+                    string actionString = string.Empty;
 
-                val.Action = FusionAttributeTempTableValue.ActionFromString(actionString);
+                    var sourceID = x[SourceIDAttribute];
+                    var name = x[NameAttribute];
+                    var fusionTypeID = Convert.ToInt32(x[FusionAttributeTypeIDAttribute]);
 
-                if (val.Action == Action.Delete)
-                    val.DeletedBit = true;
+                    string parentSourceID = string.Empty;
 
-                _workArea.FusionAttributeTempValues.Add(val);
+                    x.TryGetValue(ParentSourceIDAttribute, out parentSourceID);
+                    x.TryGetValue(ActionAttribute, out actionString);
+
+                    if (string.IsNullOrEmpty(name)) name = FUSION_ATTRIBUTE_MISSING_NAME_NAME;
+
+                    FusionAttributeTempTableValue val = new FusionAttributeTempTableValue
+                    {
+                        SourceID = sourceID,
+                        FusionAttributeTypeID = fusionTypeID,
+                        Name = name,
+                        DeletedBit = false,
+                        ParentSourceID = parentSourceID
+                    };
+
+                    val.Action = FusionAttributeTempTableValue.ActionFromString(actionString);
+
+                    if (val.Action == Action.Delete)
+                        val.DeletedBit = true;
+
+                    _workArea.FusionAttributeTempValues.Add(val);
+                }
             }
         }
 
