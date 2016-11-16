@@ -60,8 +60,9 @@ SELECT	n.Name as MenuID,
 				'model/classification/' + ft.name As url,
 				0 as feature,
 				(
+
 				SELECT	t.name, 
-						dbo.GenerateNgObjectUrl('TaxonomyType', t.ID, 0)  As url,
+						dbo.GenerateNgObjectUrl('TaxonomyType', 0, t.ID)  As url,
 						0 as feature
 				FROM	TaxonomyType t
 				LEFT JOIN SiteNav v on v.ObjectID = t.ID and v.Object = 'TaxonomyType'
