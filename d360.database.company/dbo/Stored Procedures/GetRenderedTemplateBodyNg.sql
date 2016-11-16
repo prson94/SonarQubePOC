@@ -938,6 +938,3 @@ BEGIN
 END
 
 
-GO
-
-
