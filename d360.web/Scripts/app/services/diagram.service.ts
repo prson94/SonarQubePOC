@@ -73,11 +73,17 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    //  $.getJSON('/diagrams/ImpactAnalysis?type=' + lineageObject + '&id=' + lineageObjectID, function (dataArray) {
     public getImpactDiagram(object: string, objectId: number): Promise<ImpactDiagramModel> {
         return this.http.get(`diagrams/ImpactAnalysis?type=${object}&id=${objectId}`)
             .toPromise()
             .then(response => <ImpactDiagramModel>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public getCatalogDiagram(id: number): Promise<any> {
+        return this.http.get(`diagrams/InformationCatalogDiagramData?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
             .catch(err => this.handleError(err));
     }
 }

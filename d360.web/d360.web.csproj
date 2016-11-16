@@ -1370,7 +1370,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\model-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />

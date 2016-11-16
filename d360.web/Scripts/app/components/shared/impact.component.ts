@@ -40,10 +40,11 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private g = go.GraphObject.make;
     private myDiagram: go.Diagram;
 
-    private menuItems: MenuItem[] = [];
     private zoomLevel: number = 50;
     private tab: string = 'info';
+    private headerText: string = 'Info';
     private isWindowVisible = false;
+    private menuItems: MenuItem[] = [];
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
         super();
@@ -58,7 +59,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.menuItems.push({
             icon: 'fa-refresh menu-icon'
         });
-
         this.menuItems.push({
             icon: 'fa-info-circle menu-icon'
         });
@@ -164,6 +164,13 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         return s;
     }
 
+    private menuAction(e: MenuItem) {
+        if (e.icon == 'fa-refresh menu-icon') {
+            this.refreshDiagram();
+        } else if (e.icon == 'fa-info-circle menu-icon') {
+            this.isWindowVisible = !this.isWindowVisible;
+        }
+    }
     //#region events
 
     @HostListener('window:resize', ['$event'])
@@ -185,14 +192,10 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
-    private menuAction(e: MenuItem) {
-        if (e.icon == 'fa-refresh menu-icon') {
-            this.objectType = this.originalObject;
-            this.objectID = this.originalObjectID;
-            this.populateDiagram();
-        } else if (e.icon == 'fa-info-circle menu-icon') {
-            this.isWindowVisible = !this.isWindowVisible;
-        }
+    private refreshDiagram() {
+        this.objectType = this.originalObject;
+        this.objectID = this.originalObjectID;
+        this.populateDiagram();
     }
 
     private ViewPortBoundsChanged() {
@@ -219,6 +222,16 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         //'ChangedSelection', function (e) {
         //    var node = e.diagram.selection.first();
         //    var data = (node != null) ? node.data : null;
+    }
+
+    private selectTab(val: string) {
+        switch (val) {
+            case 'info': this.headerText = 'Info'; break;
+            case 'user': this.headerText = 'Responsibilities'; break;
+            case 'fusion': this.headerText = 'Fusion Relationships'; break;
+            default: this.headerText = ''; break;
+        }
+        this.tab = val;
     }
     //#endregion
 

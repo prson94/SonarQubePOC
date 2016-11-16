@@ -30,6 +30,7 @@ import {
     DialogModule,
     TabViewModule,
     SliderModule,
+    OverlayPanelModule,
 } from 'primeng/primeng';
 
 import { ChartModule } from 'angular2-highcharts';
@@ -69,6 +70,7 @@ import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.comp
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
+import { ModelDiagramComponent } from './model-diagram.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
@@ -80,6 +82,7 @@ import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
+import { OverlayWindowComponent } from './overlay-window.component';
 import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
@@ -128,7 +131,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
         MessagesBarComponent,        
-        MessagesComponent,  
+        MessagesComponent, 
+        ModelDiagramComponent, 
         MultiSelectGridComponent,      
         ObjectBoardComponent,
         ObjectChallengeComponent,
@@ -140,6 +144,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,       
         ObjectRelationshipsComponent, 
+        OverlayWindowComponent,
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
@@ -192,6 +197,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
         ObjectRelationshipsComponent,
+        OverlayWindowComponent,
         PageLinksComponent,
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
@@ -241,6 +247,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DialogModule,
         TabViewModule,
         SliderModule,
+        OverlayPanelModule,
 
         //highcharts
         ChartModule,

@@ -51,7 +51,7 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     private showLinkTabs = false;
     private menuItems: MenuItem[] = [];
     private tab: string = 'info';
-    private headerText = 'Lineage';
+    private headerText = 'Info';
     private zoomLevel: number = 50;
 
     //diagram properties
@@ -248,8 +248,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
 
-            if (this.showLinkTabs) this.tab = 'exchange';
-            else if (this.showNodeTabs) this.tab = 'info';
+            if (this.showLinkTabs) this.selectTab('exchange');
+            else if (this.showNodeTabs) this.selectTab('info');
         } else {
             this.showNodeTabs = false;
             this.showLinkTabs = false;
@@ -334,7 +334,18 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
         this.myDiagram.layout.invalidateLayout();
         this.myDiagram.requestUpdate();
     }
-
+    
+    private selectTab(val: string) {
+        switch (val) {
+            case 'info': this.headerText = 'Info'; break;
+            case 'code': this.headerText = 'Source Rules'; break;
+            case 'user': this.headerText = 'Responsibilities'; break;
+            case 'database': this.headerText = 'Fusion Relationships'; break;
+            case 'exchange': this.headerText = 'Mapping Rules'; break;
+            default: this.headerText = ''; break;
+        }
+        this.tab = val;
+    }
     //#endregion
 
     //#region events

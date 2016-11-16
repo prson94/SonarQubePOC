@@ -3,11 +3,56 @@
         <span>Impact</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
+        <!--<div class="TileTools">
+            <div>
+                <ul>
+                    <li class="left"><a class="Action" (click)="refreshDiagram()"><i class="fa fa-refresh menu-icon fa-fw"></i></a></li>
+                    <li class="left"><a class="Action" (click)="isWindowVisible = !isWindowVisible"><i class="fa fa-info-circle menu-icon fa-fw"></i></a></li>
+                </ul>
+            </div>
+
+        </div>-->
     </header>
+
+    <div style="position:relative;left: 100%; display: inline; width: 1px;">
+        <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(selectedObject || selectedObjectID) ? headerText : ''">
+            <div *ngIf="!selectedObject && !selectedObjectID">Nothing selected</div>
+            <ul class="tab-menu" *ngIf="selectedObject && selectedObjectID">
+                <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
+                    <i class="fa fa-info-circle fa-2x"></i>
+                </li>
+                <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'">
+                    <i class="fa fa-user fa-2x"></i>
+                </li>
+                <li (click)="selectTab('fusion')" class="tab-item" [class.selected]="tab == 'fusion'">
+                    <i class="fa fa-database fa-2x"></i>
+                </li>
+            </ul>
+            <div [ngSwitch]="tab">
+                <div *ngSwitchCase="'info'">
+                    <d3s-lineage-object-detail *ngIf="selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-object-detail>
+                </div>
+                <div *ngSwitchCase="'user'">
+                    <d3s-lineage-responsibilities *ngIf="selectedObject && selectedObjectID" [objectType]="selectedObject" [objectId]="selectedObjectID"></d3s-lineage-responsibilities>
+                </div>
+                <div *ngSwitchCase="'fusion'">
+                    <d3s-lineage-technical *ngIf="selectedObject && selectedObjectID" [source]="objectType" [sourceId]="objectID" [target]="selectedObject" [targetId]="selectedObjectID"></d3s-lineage-technical>
+                </div>
+            </div>
+        </d3s-overlay-window>
+        <!--<div style="background-color:maroon; width:500px; max-height:400px; position:absolute; left:0; top: 0; z-index:1100;display:block;box-shadow">
+            hello world
+        </div>-->
+        <!--<p-overlayPanel #infoPanel [dismissable]="false" [showCloseIcon]="true" [style]="{'width':'600px', 'height' : '450px', 'overflow-y' : 'auto'}">
+
+        </p-overlayPanel>-->
+    </div>
 
     <div id="ImpactDiagram" style="overflow: hidden;" class="diagram" #diagram></div>
 
-    <p-dialog  [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="false" draggable="true" width="700" height="500">
+   
+
+    <!--<p-dialog  [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="false" draggable="true" width="700" height="500">
         <div *ngIf="!selectedObject && !selectedObjectID">Nothing selected</div>
         <ul class="tab-menu" *ngIf="selectedObject && selectedObjectID">
             <li (click)="tab = 'info'" class="tab-item" [class.selected]="tab == 'info'">
@@ -32,5 +77,5 @@
             </div>
 
         </div>
-    </p-dialog>
+    </p-dialog>-->
 </div>
