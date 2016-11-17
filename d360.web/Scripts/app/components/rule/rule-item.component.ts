@@ -2,15 +2,17 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RightSidebarService, RulesService, PermissionsService } from '../../services/index';
+import { HeaderBreadcrumbService, RightSidebarService, RulesService, PermissionsService, SurveysService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDetail } from '../../models/rule.model';
+import { MessageBarItem } from '../../models/message-bar-item.model';
+import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-rule-item',
-    providers: [RulesService, PermissionsService],    
+    providers: [RulesService, PermissionsService, SurveysService],    
     template: ` 
                 <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-audit>                
                 <d3s-lineage *ngIf="!isLoading && isLineageVisible" [objectID]="rule?.ID" [objectName]="rule?.Name" [objectType]="'Rule'"></d3s-lineage>
@@ -38,6 +40,12 @@ import { StringConstants } from '../../static/string-constants';
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible && !isFollowersVisible">
+                    <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
+                    <div class="col s12" *ngIf="showSurvey && surveyType">
+                                <div class="tile tile-detail">
+                                    <d3s-take-survey [surveyType]="surveyType" [objectID]="selected?.ID" [objectType]="'Taxonomy'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
+                                </div>
+                    </div>
                     <div class="col s12">
                             <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
                             <d3s-object-governance [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
@@ -63,6 +71,9 @@ import { StringConstants } from '../../static/string-constants';
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private rule: RuleDetail;
+    private messages: MessageBarItem[] = [];
+    private surveyType: SurveyType;
+    private showSurvey: boolean = false;
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -70,7 +81,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             rightSidebarService: RightSidebarService,
             protected titleService: Title,
             protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected permissionsService: PermissionsService
+            protected permissionsService: PermissionsService,
+            protected surveysService: SurveysService
     ) {
         super(rightSidebarService);
 
@@ -89,7 +101,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
             this.load(ruleId).then(() => this.isLoading = false);
-
         });
     }
 
@@ -108,10 +119,36 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
 
                 this.setBrowserTitle(this.titleService, this.rule.Name);
+
+                this.messages = []; //clear any messages for this rule
+                this.loadItemSurvey();
             });
     }
 
     editRule(e: any) {
         this.load(e.ID);
     }
+
+    private loadItemSurvey() {
+
+        this.surveysService.getObjectSurvey(this.rule.TypeID, 'RuleType', this.rule.ID, 'Rule')
+            .then(result => {
+                this.surveyType = undefined;
+                if (result) {
+                    this.surveyType = result;
+                    this.messages.push({
+                        content: `<u>Click here</u> to take the survey: <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
+                    });
+                }
+
+            });
+    }
+
+    private completeSurvey() {
+        this.showSurvey = false;
+        var index = this.messages.findIndex(x => x.data == 'Survey');
+        if (index >= 0 && index < this.messages.length)
+            this.messages.splice(index, 1);
+    }
+
 };

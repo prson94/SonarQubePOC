@@ -179,7 +179,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
                 
                 this.selectModelHierarchy(selectedHierarchyId);            
-
+                this.messages = []; //clear any messages for this model
                 this.loadItemSurvey(this.modelId);
             });
     }

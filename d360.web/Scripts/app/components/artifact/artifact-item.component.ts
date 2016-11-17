@@ -124,6 +124,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     private load(id: number): Promise<any> {
+        this.messages = []; //clear any messages for this artifact
         return this.artifactService.getArtifact(id)
             .then(artifact => {
                 this.artifact = artifact;
@@ -143,7 +144,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 this.clearSidebar();
                 this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
                 if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children'));
-
+                                
                 this.loadItemSurvey(id);
             });
     }
