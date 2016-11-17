@@ -534,6 +534,7 @@
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
+    <None Include="RelationshipLookup to ComplexLookup Field Type Conversion.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

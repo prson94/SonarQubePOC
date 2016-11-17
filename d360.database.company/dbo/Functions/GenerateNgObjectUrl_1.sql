@@ -1,4 +1,5 @@
-﻿CREATE FUNCTION [dbo].[GenerateNgObjectUrl] 
+﻿
+CREATE FUNCTION [dbo].[GenerateNgObjectUrl] 
 (
 	@Type varchar(50),
 	@TypeID int,
@@ -28,7 +29,7 @@ BEGIN
 		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar(15))
 		WHEN 'Rule' THEN 'quality/rule/' + CAST(@ObjectID as varchar(15))
 		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar(15))
-		WHEN 'TaxonomyType' THEN 'model/' + CAST(@TypeID as varchar(15)) + '/structure'		
+		WHEN 'TaxonomyType' THEN 'model/' + CAST(@ObjectID as varchar(15)) + '/structure'		
 	END
 
 	SET @Url = @Prefix + @Url

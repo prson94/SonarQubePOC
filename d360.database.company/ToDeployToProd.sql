@@ -458,12 +458,18 @@ Pull the following object updates:
 	[utility].[ObjectDetail]
 	[dbo].[IntersectDetail]
 	[dbo].[GenerateObjectUrl] 
+	[dbo].[GenerateNgObjectUrl] 
 	[utility].[DeriveIntersectTypeName] 
 	[bulkload].[UpdateIntersectTypeColumn]
 	[bulkload].[UpdateItemColumnByIntersectType]
 	[bulkload].[RemoveBusinessLineage]
+	[bulkload].[Promotions]
+	[dbo].[GetAllowedIntersectionTypes]
 	utility.GetIntersectTypesByType
 	utility.GetFieldTypeLookupList
+	[dbo].[CustomSiteNavigation]
+	[dbo].[GetSiteNavigation]
+	[dbo].[GetRenderedTemplateBodyNg]
 */
 
 
@@ -478,3 +484,32 @@ GO
 
 alter table [Load] alter column [Action] varchar(2) not null
 go
+
+
+-- add a constraint on name to reference item type to prevent duplicate names
+ALTER TABLE [dbo].[ReferenceItemType] ADD CONSTRAINT CONST_Reference_Item_Type_Name UNIQUE (Name); 
+alter table ReferenceItem add [Code] nvarchar(250) null
+go
+
+update	T
+set		T.Code = S.Code
+from	ReferenceItem T
+		inner join ( 
+					select	RI.ID,
+							F.Value as Code
+					from	FieldType FT
+							inner join ReferenceItem RI on RI.ReferenceItemTypeID = FT.ObjectID
+							inner join Field F on F.FieldTypeID = FT.ID and F.ObjectID = RI.ID
+					where	FT.Object = 'ReferenceItemType' 
+							and FT.Name = 'Code'
+					) S on S.ID = T.ID
+go
+
+delete FieldType
+where	Object = 'ReferenceItemType' and Name = 'Code'
+go
+
+-- updates to favorites table to allow names to update and join to cache object details
+ALTER TABLE [dbo].[Favorite] ALTER COLUMN name varchar(250) NULL -- make name optional
+alter table [dbo].[favorite] add [Object] varchar(50)
+alter table [dbo].[favorite] add ObjectID int  
