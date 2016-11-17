@@ -2,8 +2,9 @@
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
-import { MapItem, DiagramObjectType, LinkModel, NodeModel, Responsibility, TechnicalRelation, SourceRule } from '../models/lineage.model';
+import { MapItem, DiagramObjectType, LinkModel, NodeModel, Responsibility, TechnicalRelation, SourceRule, RelationItem } from '../models/lineage.model';
 import { ImpactDiagramModel } from '../models/impact.model';
+import { HierarchyDiagramModel } from '../models/model.model';
 
 @Injectable()
 export class DiagramService extends BaseService {
@@ -80,10 +81,17 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    public getCatalogDiagram(id: number): Promise<any> {
+    public getCatalogDiagram(id: number): Promise<HierarchyDiagramModel[]> {
         return this.http.get(`diagrams/InformationCatalogDiagramData?id=${id}`)
             .toPromise()
-            .then(response => response.json())
+            .then(response => <HierarchyDiagramModel[]>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    public getRelations(object: string, objectId: number): Promise<RelationItem[]> {
+        return this.http.get(`api/${object}/${objectId}/relations`)
+            .toPromise()
+            .then(response => <RelationItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 }

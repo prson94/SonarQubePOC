@@ -11,7 +11,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-model-item-structure',
     providers: [ModelsService],
-    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="model?.ID" [objectName]="model?.Name" [objectType]="'TaxonomyType'"></d3s-audit>                
+    template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="model?.ID" [objectName]="model?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
+                <d3s-model-diagram *ngIf="!isLoading && isModelDiagramVisible" [id]="modelId"></d3s-model-diagram>                
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
                     <div class="col s12">
                         <div class="tile tile-detail">   
@@ -20,7 +21,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     </div>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
+                <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isModelDiagramVisible">                            
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
                         <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
@@ -74,6 +75,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export class ModelItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
     sub: any;
+    rightSub: any;
     
     model: Model;
     modelHierarchy: ModelHierarchy[] = [];
@@ -86,6 +88,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     searchValue: string;
     showEditor: boolean;
     showDelete: boolean;
+    isModelDiagramVisible = false;
 
     theDeleteCallback: Function;
 
@@ -101,6 +104,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true);
+        this.rightSidebarService.showItem({
+            icons: ['fa-sitemap'],
+            tag: 'modeldiagram',
+            title: 'Hierarchy Diagram',
+            active: false
+        });
 
         this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
     }
@@ -128,12 +137,21 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.setBrowserTitle(this.titleService, this.model.Name);
 
                 });
+
+            this.rightSub = this.rightSidebarService.rightSidebarClicked$.subscribe(r => {
+                if (r.tag == 'modeldiagram') {
+                    this.isModelDiagramVisible = !this.isModelDiagramVisible;
+                } else {
+                    this.isModelDiagramVisible = false;
+                }
+            });
         });
     }
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();        
+        this.sub.unsubscribe();
+        this.rightSub.unsubscribe();        
     }
 
     private loadModelHierarchy(modelId: number) {

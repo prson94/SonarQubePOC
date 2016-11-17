@@ -1364,6 +1364,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-mapping-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-object-detail.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-responsibilities.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-source-rule-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-source-rules.component.ts" />

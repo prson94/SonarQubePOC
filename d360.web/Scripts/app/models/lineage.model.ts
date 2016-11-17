@@ -139,3 +139,13 @@ export class MapReferenceItem {
     Contexts: MapContext[] = [];
     TargetIntersectID: number;
 }
+
+export class RelationItem {
+    ID: number;
+    IntersectTypeID: number;
+    Object: string;
+    ObjectID: number;
+    TypeName: string;
+    Name: string;
+    Url: string;
+}

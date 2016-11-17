@@ -64,6 +64,7 @@ import { LineageComponent } from './lineage/lineage.component';
 import { LineageFusionComponent } from './lineage/lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
 import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
+import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
 import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibilities.component';
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
@@ -128,6 +129,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         LineageFusionComponent,
         LineageMappingRulesComponent,
         LineageObjectDetailComponent,
+        LineageRelationshipsComponent,
         LineageResponsibilitiesComponent,
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
@@ -192,6 +194,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         MessagesBarComponent,        
         MessagesComponent,
         MultiSelectGridComponent,
+        ModelDiagramComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
         ObjectDetailComponent,

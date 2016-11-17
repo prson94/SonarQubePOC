@@ -22,3 +22,13 @@ export class ModelClassification {
     ID: number;
     Name: string;
 }
+
+export class HierarchyDiagramModel {
+    RelationshipsExist: boolean;
+    children: HierarchyDiagramModel[] = [];
+    key: string;
+    name: string;
+    parent: string;
+    url: string;
+
+}
