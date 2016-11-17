@@ -15,6 +15,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() objectID: number;
     @Input() title: string = 'Field Definition';
 
+    @Input() showAddButton: boolean = true;
+    @Input() showEditButton: boolean = true;
+    @Input() showDeleteButton: boolean = true;
+
     @Output() onEdit = new EventEmitter();
     @Output() onAdd = new EventEmitter();
     @Output() onDelete = new EventEmitter();

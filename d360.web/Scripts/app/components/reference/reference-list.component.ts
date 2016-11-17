@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarService, HeaderBreadcrumbService } from '../../services/index';
+import { RightSidebarService, HeaderBreadcrumbService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
 
@@ -42,27 +42,31 @@ import { ReferenceItemType } from '../../models/reference.model';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
+                                    <d3s-field-definition-tile  [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" ></d3s-field-definition-tile>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid [title]="'Items'" [itemName]="'Lookup'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Lookup'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-               `
+               `,
+    providers: [PermissionsService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {    
 
     private selectedReferenceItemType: ReferenceItemType;
 
-    constructor(rightSidebarService: RightSidebarService, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+    constructor(rightSidebarService: RightSidebarService,
+        private permissionsService: PermissionsService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true, false, true, true, true);
@@ -74,6 +78,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
+
+        this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
     }
 
     ngOnDestroy() {

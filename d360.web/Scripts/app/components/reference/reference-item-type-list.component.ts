@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService, ReferenceService, MessagesService } from '../../services/index';
+import { HeaderBreadcrumbService, ReferenceService, MessagesService, PermissionsService } from '../../services/index';
 import { ReferenceItemType } from '../../models/reference.model';
 import * as _ from 'lodash';
 
@@ -9,7 +9,7 @@ import * as _ from 'lodash';
     template: ` 
                 <div class="tile tile-detail">
                     <header *ngIf="!showEditor">Reference Types
-                        <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="!showDelete && hasRootCreatePermissions()" (addClick)="selected=null;showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor && !showDelete">
@@ -17,14 +17,14 @@ import * as _ from 'lodash';
                         <p-dataTable #dt [globalFilter]="gb" [value]="referenceTypes" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" scrollable="true" scrollWidth="100%" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions">                                                
                             <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                             <p-column field="Name" header="Name" [sortable]="true"></p-column>                                
-                            <p-column [style]="{width:'28px'}">
+                            <p-column [style]="{width:'28px'}" *ngIf="hasRootUpdatePermissions()">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                     </div>
                                 </template>
                             </p-column>                            
-                            <p-column  [style]="{width:'28px'}">
+                            <p-column  [style]="{width:'28px'}" *ngIf="hasRootDeletePermissions()">
                                 <template let-item="rowData" pTemplate type="body">
                                     <div class="RowTools">                                
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -43,7 +43,7 @@ import * as _ from 'lodash';
                     ></delete-form>  
                 </div>
               `,
-    providers: [ReferenceService],
+    providers: [ReferenceService, PermissionsService],
 })
 
 export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit {
@@ -56,7 +56,9 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     theDeleteCallback: Function;
     
-    constructor(private referenceService: ReferenceService, private messagesService: MessagesService) {
+    constructor(private referenceService: ReferenceService,
+        private permissionsService: PermissionsService,
+        private messagesService: MessagesService) {
         super();
 
         this.theDeleteCallback = this.deleteReferenceItemType.bind(this);
@@ -68,6 +70,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private load() {
         this.isLoading = true;
+        this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
         this.referenceService.getReferenceItemTypes()
             .then(result => {
                 this.referenceTypes = result;
