@@ -1,8 +1,8 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { LoadDetail } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
 import { GridColumn } from '../../models/grid-definition.model';
+import { BaseComponent } from './base.component'
 
 
 @Component({
@@ -11,24 +11,22 @@ import { GridColumn } from '../../models/grid-definition.model';
     providers: [LoadService]
 })
 
-export class LoadItemTile implements OnChanges {
+export class LoadItemTile extends BaseComponent implements OnChanges {
     @Input() id: number;
     @Input() title: string = "Load Details";
-
-    private isLoading = false;
-
+    
     columns: GridColumn[];
     items: any[];
 
 
     constructor(private loadService: LoadService) {
+        super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'id') {
-                this.load();
-                //this.objectType = changes['objectType'].currentValue;
+                this.load();                
             }
         }
 

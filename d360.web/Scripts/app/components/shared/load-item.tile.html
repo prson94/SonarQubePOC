@@ -1,0 +1,15 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <header>
+        {{title}}
+        <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasRefresh]="true" (refreshClick)="load()" [hasExportErrors]="true" (exportErrorsClick)="exportErrors()" [hasExportOriginal]="true" (exportOriginalClick)="exportOriginal()"></d3s-tile-actions>                                    
+    </header>
+    <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
+    <p-dataTable #dt [globalFilter]="gb" [value]="items" selectionMode="single" [rows]="20" paginator="true" scrollable="true" scrollWidth="100%">
+        <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
+        <p-column field="Status" header="Status" sortable="true" [style]="{'width':'125px'}" [filter]="!showSimpleFilter"></p-column>
+        <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+        <p-column field="RowIndex" header="Row" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>        
+        <p-column field="StatusMessage" header="Message" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+    </p-dataTable>
+</div>

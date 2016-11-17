@@ -2,7 +2,6 @@
 import { ClaimsTile } from './claims.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { LoadItemTile } from './load-item.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
@@ -17,7 +16,6 @@ export * from './attributes.tile';
 export * from './claims.tile';
 export * from './fusion-attributes.tile';
 export * from './fusion-configuration.tile';
-export * from './load-item.tile';
 export * from './object-definition.tile';
 export * from './structure.tile';
 export * from './synonyms.tile';

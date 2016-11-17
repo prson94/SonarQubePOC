@@ -68,6 +68,7 @@ import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibili
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
+import { LoadItemTile } from './load-item.tile';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ModelDiagramComponent } from './model-diagram.component';
@@ -131,6 +132,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
+        LoadItemTile,
         MessagesBarComponent,        
         MessagesComponent, 
         ModelDiagramComponent, 
@@ -186,6 +188,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ImpactComponent,
         IconPickerComponent,
         LineageComponent,
+        LoadItemTile,
         MessagesBarComponent,        
         MessagesComponent,
         MultiSelectGridComponent,
