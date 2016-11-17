@@ -733,8 +733,14 @@ from	@points O
 
         public static string ObjectRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
-		IT.[Object],
-		IT.[ObjectID],
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[Object]
+			else IT.[Subject]
+		end as [Object],
+		case 
+			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectID]
+			else IT.[SubjectID]
+		end as [ObjectID],		
 		I.[Count],
 		case 
 			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
@@ -761,35 +767,6 @@ order by case
 			else IT.SubjectName
 		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')";
 
-        public static string ObjectRelationshipCounts = @"
-select	IT.ID as IntersectTypeID,
-		IT.[Object] as 'Object',
-		IT.[ObjectID] as 'ObjectID',
-		I.[Count],
-		case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]
-from	cache.[Object] CO	
-		inner join IntersectTypeDetail IT on ( 
-										(IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) OR 
-										(IT.Object = CO.ObjectType and IT.ObjectID = CO.ObjectTypeID) 
-									   )
-		left join [Predicate] P on P.ID = IT.PredicateID
-		cross apply (
-					select	count(1) as [Count]
-					from	[Intersect] 
-					where	IntersectTypeID = IT.ID 
-							and (
-								(Subject = @obj and SubjectID = @objId) or 
-								(Object = @obj and ObjectID = @objId)
-								)
-					) I
-where	CO.[Object] = @obj and CO.ObjectID = @objId and I.[Count] > 0
-order by case 
-			when (IT.Subject = CO.ObjectType and IT.SubjectID = CO.ObjectTypeID) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name]";
 
         public static string ObjectInjectableRelationships = @"
 select	I.ID,
