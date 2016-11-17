@@ -10,6 +10,8 @@ import { ChartModule } from 'angular2-highcharts';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
+import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
+
 import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
 import { SearchModule } from './components/search/search.module';
@@ -277,7 +279,9 @@ import {
         ActivityTile,
         AssignmentsTile,
         BoardTile,
-        ActivityDetailsTile,         
+        ActivityDetailsTile,  
+        
+        AceEditorComponent,
     ],
     imports: [
         BrowserModule,

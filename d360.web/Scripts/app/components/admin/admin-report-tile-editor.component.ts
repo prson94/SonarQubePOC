@@ -3,6 +3,8 @@ import { ReportTile, ReportTileTypes } from '../../models/report.model';
 import { MessagesService, CompanySettingsService  } from '../../services/index';
 import { BaseComponent } from '../shared/base.component';
 import * as _ from 'lodash';
+import { AceEditorDirective } from 'ng2-ace-editor';
+
 
 @Component({
     selector: 'd3s-admin-report-tile-editor',
@@ -25,13 +27,14 @@ import * as _ from 'lodash';
                         <div class="col s12">
                             <div class="FieldName">SQL</div>
                             <div>
-                                <textarea pInputTextarea required name="sql" [(ngModel)]="editedTile.CommandText" style="width: 100%;height: 300px;" #sql="ngModel"></textarea>
+                                <ace-editor
+                                    [text]="editedTile.CommandText" 
+                                    (textChanged)="editedTile.CommandText=$event" 
+                                    [mode]="'sql'"
+                                    theme="eclipse"
+                                    #editor style="height:400px;"></ace-editor>                                 
                             </div>
-                            <div *ngIf="sql.errors && (sql.dirty || sql.touched)" class="alert alert-danger">
-                                <div [hidden]="!sql.errors.required">SQL is required</div>                                                                
-                            </div>                                                    
-                        </div>
-                        
+                        </div>                        
                         <div class="col s12" *ngIf="editedTile.ID">
                             <div class="FieldName" pTooltip="You can use this URI within a JSON-compatible reporting system to pull this data directly.">Tile URI</div>
                             <div>{{reportUrl()}}</div>
@@ -56,7 +59,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     action: string = "Edit";
     urlPrefix: string;
     editedTile: ReportTile;
-                
+    
     constructor(private companySettingsService: CompanySettingsService) {
         super();        
     }
@@ -74,7 +77,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
 
         this.load();
     }
-
+    
     load() {
         this.isLoading = true;
         this.companySettingsService.getAuthenticationModel().

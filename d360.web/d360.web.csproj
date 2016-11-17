@@ -889,7 +889,7 @@
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
-    <Content Include="Scripts\app\components\tiles\load-item.tile.html" />
+    <Content Include="Scripts\app\components\shared\load-item.tile.html" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
@@ -1313,6 +1313,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationship-roles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-tile-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics.component.ts" />
@@ -1376,6 +1377,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
@@ -1549,7 +1551,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\load-item.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\load-item.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
@@ -1557,7 +1559,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\predicates-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-layout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rule-dimensions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\structure.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-questions.component.ts" />

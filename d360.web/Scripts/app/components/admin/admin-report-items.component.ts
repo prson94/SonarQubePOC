@@ -13,20 +13,20 @@ import { BaseComponent } from '../shared/base.component';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
-                   <p-dataTable #dt [globalFilter]="gb" [value]="tiles" selectionMode="single" [rows]="10" [paginator]="true" [pageLinks]="3" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
+                   <p-dataTable #dt [globalFilter]="gb" [value]="tiles" selectionMode="single" [rows]="defaultInitialItemsPerPage" paginator="true" pageLinks="3" [rowsPerPageOptions]="defaultPagingOptions" (onRowDblclick)="selected=$event.data;showEditor=true" [(selection)]="selected" >                                                                        
                     <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                     <p-column field="Name" header="Name" [sortable]="true" [filter]="!showSimpleFilter"></p-column>                                                                                
                     <p-column [style]="{width:'40px'}">
-                        <template let-template="rowData" pTemplate type="body">
+                        <template let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="showEditor=true"><i class="fa fa-pencil"></i></a>                                        
+                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>                                        
                             </div>
                         </template>
                     </p-column>                            
                         <p-column  [style]="{width:'40px'}">
-                            <template let-template="rowData" pTemplate type="body">
+                            <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
-                                    <a style="cursor:pointer;" (click)="showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>                                    
                                 </div>
                             </template>
                         </p-column>                            
@@ -98,13 +98,13 @@ export class AdminReportItemsComponent extends BaseComponent implements OnChange
     }
     
     saveTile(event) {
+        this.showEditor = false;
         this.isLoading = true;
         this.reportsService.saveTile(event.tile)
             .then(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
-                this.getTiles();
-                this.showEditor = false;
+                this.getTiles();                
             });        
     }
     
