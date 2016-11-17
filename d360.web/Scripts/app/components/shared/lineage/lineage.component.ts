@@ -259,9 +259,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
     private toggleMenuItems(data: NodeModel | LinkModel) {
         this.menuItems = [];
-        this.menuItems.push({
-            icon: 'fa-refresh menu-icon'
-        });
 
         let gears: MenuItem = {
             icon: 'fa-gears menu-icon',
@@ -289,6 +286,10 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
 
         this.menuItems.push(gears);
         this.menuItems.push(eye); 
+
+        this.menuItems.push({
+            icon: 'fa-refresh menu-icon'
+        });
 
         this.menuItems.push({
             icon: 'fa-info-circle menu-icon'
