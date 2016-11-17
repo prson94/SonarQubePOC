@@ -447,7 +447,7 @@ namespace d360.web.Controllers
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
                     if (!string.IsNullOrEmpty(ReturnUrl))
                     {
-                        Redirect(Server.UrlDecode(ReturnUrl));
+                        return Redirect(Server.UrlDecode(ReturnUrl));
                     }
                     else
                     {

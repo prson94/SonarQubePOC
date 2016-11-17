@@ -875,6 +875,32 @@ where   h.ID <> @t order by h.[Level] desc;
             }
         }
 
+        [Route("authenticationModel")]        
+        public HttpResponseMessage GetAuthenticationModel()
+        {
+            string host = HttpContext.Current.Request.Url.Host;
+
+            if (string.IsNullOrEmpty(host)) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                        
+            var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
+
+            var authType = "sso";
+
+            foreach (var settings in c.CompanyDomainSettings)
+            {
+                if(host.StartsWith(settings.UrlPrefix)){
+                    authType = settings.AuthenticationType == AuthenticationType.Forms ? "forms" : "sso";
+                    break;
+                }
+            }
+            
+            return Request.CreateResponse<dynamic>(
+                new Dictionary<string, object>() {
+                    { "model", authType }                    
+                }
+            );
+        }
+
         [Route("{type}/{id:int}/angularactions/{context=default}")]
         public dynamic GetAngularObjectActions(SystemObjects type, int id, string context)
         {
@@ -4097,6 +4123,7 @@ select  case
                 return Company.Filter<ResponsibilityDetailForResource>(i => i.ResponsibleObjectType == "Resource" && i.ResponsibleObjectID == resourceID && i.ObjectType == type && i.ObjectTypeID == id);
             }
         }
+               
 
         [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
         public IQueryable<ResponsibilityDetail> GetResponsibilitiesByGroupByType(int groupID, string type, int id)

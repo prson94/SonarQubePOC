@@ -1,9 +1,9 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials } from '../models/resource.model';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class ResourcesService extends BaseService {
@@ -73,5 +73,24 @@ export class ResourcesService extends BaseService {
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
+    }
+
+    getAuthenticationModel(): Promise<any> {        
+        return this.http.get('api/authenticationModel')
+            .toPromise()
+            .then(response => <any>response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    resetResourcesPassword(resourceID: number): Promise<JsonResult> {
+        let headers = new Headers({
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
+        });
+
+        return this.http
+            .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(this.handleError);
     }
 }

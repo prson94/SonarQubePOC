@@ -25,7 +25,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     @Input() item: any;
 
     private fieldType: string;
-    private fieldValue: string;
+    private fieldValue: any;
 
     constructor() {
         super();
@@ -37,9 +37,13 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
-        
+
         if (this.item && this.column && this.column.datafield)
             this.fieldValue = this.item[this.column.datafield];
+
+        if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
+            this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.
+        }
     }
 
     private formatAsNumber(): string {

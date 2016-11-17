@@ -89,6 +89,7 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { PredicatesListComponent } from './predicates-list.component';
 import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
+import { UserListComponent } from './user-list.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { SimpleAccordion } from './simple-accordion.part';
@@ -151,6 +152,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         PredicatesListComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
+        UserListComponent,
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,        
         SimpleAccordion,
@@ -204,6 +206,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         PredicatesListComponent,
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,
+        UserListComponent,
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,        
         SimpleAccordion,

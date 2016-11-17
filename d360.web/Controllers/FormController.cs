@@ -17099,6 +17099,49 @@ order by	D.Name, I.Name";
             }
         }
 
+        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("ResetResourcePassword")]
+        public JsonResult ResetResourcePassword(FormCollection form)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin) throw new NotFoundException("resource"); // only admins can reset passwords
+
+                if (!form.HasKeys()) throw new NoFormDataException("resource");
+
+                var id = parseIntField(form, "ID");
+                var model = Community.GetById<Resource>(id);
+
+                if (model == null) throw new NotFoundException("resource");
+
+                //valid user at this point generate a password
+
+                var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
+                
+                Community.ChangePassword(model.ID, "", generatedPassword);
+
+                var templateValues = new Dictionary<string, string>();
+
+                templateValues["firstname"] = model.FirstName;
+                templateValues["password"] = generatedPassword;
+                //templateValues["url"] = Company.CurrentCompanyDomain;
+
+                //email user 
+                extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", model.Email, model.FormatDisplayName(), templateValues, "forms-password-reset");
+
+                return jsonSuccess("Users password has been successfully updated!", id.ToString(), form["_context"], "reset", HttpStatusCode.OK);
+
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [Route("resources/{typeID:int}/{id:int}/delete")]
         public ActionResult DeleteResource(int typeID, int id)
         {

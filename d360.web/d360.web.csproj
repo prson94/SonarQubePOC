@@ -1355,6 +1355,7 @@
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
@@ -1479,7 +1480,7 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\user-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rightsidebar\right-sidebar-item.component.ts" />
