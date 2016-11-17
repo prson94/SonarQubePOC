@@ -1,12 +1,9 @@
-﻿<!--workaround template for new lineage to replace cshtml -->
-<div class="tile tile-detail">
+﻿<div class="tile tile-detail">
+
     <header *ngIf="diagramMode == DiagramMode.Diagram">
         <span>Lineage</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
         <div class="TileTools" style="right: 5px; top: 5px; z-index:1000;width:100%">
-            <div style="width:15%">
-                <!--<p-slider [(ngModel)]="zoomLevel" [min]="0" [max]="100" (onChange)="zoomDiagram($event)"></p-slider>-->
-            </div>
             <div>
                 <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)" *ngIf="diagramMode == DiagramMode.Diagram"></d3s-tile-actions>
             </div>
@@ -53,47 +50,11 @@
         </d3s-overlay-window>
     </div>
 
-            <div [hidden]="diagramMode != DiagramMode.Diagram">
-                <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
-                <!--<p-dialog *ngIf="diagramMode == DiagramMode.Diagram" [(visible)]="isWindowVisible" minWidth="700" minHeight="500" header="Info" resizeable="false" draggable="true" width="700" height="500">
-                    <div *ngIf="!showNodeTabs && !showLinkTabs">Nothing selected</div>
-                    <ul class="tab-menu" *ngIf="showNodeTabs || showLinkTabs">
-                        <li (click)="tab = 'info'" class="tab-item" [class.selected]="tab == 'info'" *ngIf="showNodeTabs">
-                            <i class="fa fa-info-circle fa-2x"></i>
-                        </li>
-                        <li (click)="tab = 'code'" class="tab-item" [class.selected]="tab == 'code'" *ngIf="showNodeTabs">
-                            <i class="fa fa-code-fork fa-2x"></i>
-                        </li>
-                        <li (click)="tab = 'user'" class="tab-item" [class.selected]="tab == 'user'" *ngIf="showNodeTabs">
-                            <i class="fa fa-user fa-2x"></i>
-                        </li>
-                        <li (click)="tab = 'database'" class="tab-item" [class.selected]="tab == 'database'" *ngIf="showNodeTabs">
-                            <i class="fa fa-database fa-2x"></i>
-                        </li>
-                        <li (click)="tab = 'exchange'" class="tab-item" [class.selected]="tab == 'exchange'" *ngIf="showLinkTabs">
-                            <i class="fa fa-exchange fa-2x"></i>
-                        </li>
-                    </ul>
-                    <div [ngSwitch]="tab">
-                        <div *ngSwitchCase="'info'">
-                            <d3s-lineage-object-detail *ngIf="target && targetId" [objectType]="target" [objectId]="targetId"></d3s-lineage-object-detail>
-                        </div>
-                        <div *ngSwitchCase="'code'">
-                            <d3s-lineage-source-rules *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-source-rules>
-                        </div>
-                        <div *ngSwitchCase="'user'">
-                            <d3s-lineage-responsibilities *ngIf="target && targetId" [objectType]="target" [objectId]="targetId"></d3s-lineage-responsibilities>
-                        </div>
-                        <div *ngSwitchCase="'database'">
-                            <d3s-lineage-technical *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-technical>
-                        </div>
-                        <div *ngSwitchCase="'exchange'">
-                            <d3s-lineage-mapping-rules *ngIf="targetId && sourceId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-mapping-rules>
-                        </div>
-                    </div>
-                </p-dialog>-->
-            </div>
-            <div *ngIf="diagramMode == DiagramMode.SourceRuleEditor">
-                <d3s-lineage-source-rule-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()"></d3s-lineage-source-rule-editor>
-            </div>
+    <div [hidden]="diagramMode != DiagramMode.Diagram">
+        <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
     </div>
+    <div *ngIf="diagramMode == DiagramMode.SourceRuleEditor">
+        <d3s-lineage-source-rule-editor [object]="objectType" [objectId]="objectID" (onClose)="closeEditor()"></d3s-lineage-source-rule-editor>
+    </div>
+
+</div>

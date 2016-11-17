@@ -78,7 +78,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.myDiagram.linkTemplate = this.createLinkTemplate();
 
         this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
-        //this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
         this.myDiagram.grid.visible = false;
@@ -188,7 +187,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
-        //console.log(offset, height);
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
@@ -205,7 +203,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             h = h * s;
         }
         this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
-        //$('#LineageZoomSlider').val(Math.round(myDiagram.scale * 1500));
     }
 
     private ChangedSelection(e: any) {
@@ -219,9 +216,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.selectedObject = null;
             this.selectedObjectID = null;
         }
-        //'ChangedSelection', function (e) {
-        //    var node = e.diagram.selection.first();
-        //    var data = (node != null) ? node.data : null;
     }
 
     private selectTab(val: string) {

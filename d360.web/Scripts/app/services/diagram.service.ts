@@ -24,7 +24,6 @@ export class DiagramService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    //url: '/api/' + lineageObject + '/' + lineageObjectID + '/' + from.obj + '/' + from.objid + '/' + to.obj + '/' + to.objid + '/rules',
     public getLineageSourceRulesFocal(focal: string, focalId: number, source: string, sourceId: number, target: string, targetId: number): Promise<SourceRule[]> {
         return this.http.get(`api/${focal}/${focalId}/${source}/${sourceId}/${target}/${targetId}/rules`)
             .toPromise()

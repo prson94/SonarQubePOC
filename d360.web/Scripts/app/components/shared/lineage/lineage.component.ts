@@ -63,7 +63,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     public ngOnInit() {
-        console.log(this.diagramRef);
 
         this.originalObject = this.objectType;
         this.originalObjectID = this.objectID;
@@ -389,7 +388,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             h = h * s;
         }
         this.zoomLevel = _.clamp(_.round(this.myDiagram.scale * 75), 0, 100);
-        //$('#LineageZoomSlider').val(Math.round(myDiagram.scale * 1500));
     }
 
     private ChangedSelection(e: any) {
@@ -422,7 +420,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     private menuClick(e: MenuItem) {
-        console.log(e);
         if (e.icon == 'fa-refresh menu-icon') {
             this.objectType = this.originalObject;
             this.objectID = this.originalObjectID;
@@ -884,7 +881,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             },
                 new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
                 new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-            //g(go.Shape, { toArrow: "standard", fill: "blue", stroke: "blue" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
                     visible: false,
@@ -945,7 +941,6 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
             strokeWidth: 3,
             desiredSize: new go.Size(9, 9),
             portId: name, // declare this object to be a "port"
-            //toMaxLinks: 1, // don't allow more than one link into a port
             cursor: "pointer" // show a different cursor to indicate potential link point
         });
 

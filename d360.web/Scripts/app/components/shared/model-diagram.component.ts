@@ -114,7 +114,6 @@ export class ModelDiagramComponent extends BaseComponent implements OnInit, Afte
 
                 this.myDiagram.model = new go.TreeModel(this.items);
                 this.isLoading = false;
-                //console.log(data);
             });
 
     }
