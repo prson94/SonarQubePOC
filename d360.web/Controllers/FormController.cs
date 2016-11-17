@@ -17120,10 +17120,12 @@ order by	D.Name, I.Name";
                 Community.ChangePassword(model.ID, "", generatedPassword);
 
                 var templateValues = new Dictionary<string, string>();
+                                
+                string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
 
                 templateValues["firstname"] = model.FirstName;
                 templateValues["password"] = generatedPassword;
-                //templateValues["url"] = Company.CurrentCompanyDomain;
+                templateValues["url"] = strUrl;
 
                 //email user 
                 extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", model.Email, model.FormatDisplayName(), templateValues, "forms-password-reset");
