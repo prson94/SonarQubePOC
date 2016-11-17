@@ -1,5 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { LookupService } from '../../services/index';
 import { Lookup } from '../../models/lookup.model';

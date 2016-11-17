@@ -2,14 +2,14 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, UriBasedService, GridDefinitionService, MessagesService, PermissionsService, ResourcesService} from '../../services/index';
+import { HeaderBreadcrumbService, UriBasedService, GridDefinitionService, MessagesService, PermissionsService, ResourcesService, CompanySettingsService} from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-user-list',    
-    providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService],
+    providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
     template: `                                         
                 <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
                     <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
@@ -100,6 +100,7 @@ export class UserListComponent extends BaseComponent{
         protected messagesService: MessagesService,
         private permissionsService: PermissionsService,
         private resourcesService: ResourcesService,
+        private companySettingsService: CompanySettingsService,
         protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
         super();
     }    
@@ -122,7 +123,7 @@ export class UserListComponent extends BaseComponent{
         this.getFieldsDefinition();
         this.getData();
 
-        this.resourcesService.getAuthenticationModel().then(res => {            
+        this.companySettingsService.getAuthenticationModel().then(res => {            
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }

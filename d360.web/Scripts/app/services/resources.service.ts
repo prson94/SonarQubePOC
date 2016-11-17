@@ -74,14 +74,7 @@ export class ResourcesService extends BaseService {
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    getAuthenticationModel(): Promise<any> {        
-        return this.http.get('api/authenticationModel')
-            .toPromise()
-            .then(response => <any>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     resetResourcesPassword(resourceID: number): Promise<JsonResult> {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models

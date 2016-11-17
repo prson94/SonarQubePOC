@@ -174,6 +174,9 @@
   <data name="Add_RelationshipType_Directions" xml:space="preserve">
     <value>When creating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>
   </data>
+  <data name="Add_ReportTile_Confirmation" xml:space="preserve">
+    <value>Report tile successfully created.</value>
+  </data>
   <data name="Add_Report_Directions" xml:space="preserve">
     <value>Add a report to the list of reports, which can then be exposed in other areas of this system.</value>
   </data>
@@ -252,6 +255,9 @@
   <data name="Delete_Generic_Undone" xml:space="preserve">
     <value>You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
   </data>
+  <data name="Delete_ReportTile_Confirmation" xml:space="preserve">
+    <value>Report tile successfully deleted.</value>
+  </data>
   <data name="Edit_ArtifactType_Directions" xml:space="preserve">
     <value>Modify this artifact type using the form below.</value>
   </data>
@@ -299,6 +305,9 @@
   </data>
   <data name="Edit_RelationshipType_Directions" xml:space="preserve">
     <value>When updating a relationship, Side 1 should always be the higher-level item in the relationship, while Side 2 is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Side 1 and Business Term as Side 2.  This will impact how sourcing and synonym inheritance works, as Side 2 is what you are sourcing as well as where synonyms defined on the relationship will also appear.</value>
+  </data>
+  <data name="Edit_ReportTile_Confirmation" xml:space="preserve">
+    <value>Report tile successfully updated.</value>
   </data>
   <data name="Edit_Report_Directions" xml:space="preserve">
     <value>Edit the settings for this report and the components that make it up.</value>

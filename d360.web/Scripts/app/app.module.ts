@@ -36,6 +36,7 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
 
 import {
     GrowlModule,
+    InputTextareaModule,
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -96,8 +97,8 @@ import {
     AdminLevelEditorComponent,
     AdminTemplateEditorComponent,
     AdminStatisticCheckTypeInput,
-    AdminReportItemsComponent,
-    AdminReportLayoutComponent,
+    AdminReportItemsComponent,    
+    AdminReportTileEditorComponent,
     AdminRuleDimensionsComponent,   
     AdminSurveyQuestionsComponent,    
     AdminModelClassificationComponent, 
@@ -209,8 +210,8 @@ import {
         AdminRulesComponent,
         AdminSettingsComponent,
         AdminStatisticCheckTypeInput,
-        AdminReportItemsComponent,
-        AdminReportLayoutComponent,
+        AdminReportItemsComponent,        
+        AdminReportTileEditorComponent,
         AdminSurveyQuestionsComponent,
         AdminModelClassificationComponent,
         AdminRelationshipRolesComponent,
@@ -289,6 +290,7 @@ import {
 
         //primeng
         GrowlModule,
+        InputTextareaModule,
         InputTextModule,
         InputMaskModule,
         DataTableModule,

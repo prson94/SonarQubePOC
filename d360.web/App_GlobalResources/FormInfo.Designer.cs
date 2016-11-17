@@ -232,6 +232,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Report tile successfully created..
+        /// </summary>
+        internal static string Add_ReportTile_Confirmation {
+            get {
+                return ResourceManager.GetString("Add_ReportTile_Confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add a report to the list of reports, which can then be exposed in other areas of this system..
         /// </summary>
         internal static string Add_Report_Directions {
@@ -466,6 +475,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Report tile successfully deleted..
+        /// </summary>
+        internal static string Delete_ReportTile_Confirmation {
+            get {
+                return ResourceManager.GetString("Delete_ReportTile_Confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Modify this artifact type using the form below..
         /// </summary>
         internal static string Edit_ArtifactType_Directions {
@@ -606,6 +624,15 @@ namespace Resources {
         internal static string Edit_RelationshipType_Directions {
             get {
                 return ResourceManager.GetString("Edit_RelationshipType_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report tile successfully updated..
+        /// </summary>
+        internal static string Edit_ReportTile_Confirmation {
+            get {
+                return ResourceManager.GetString("Edit_ReportTile_Confirmation", resourceCulture);
             }
         }
         

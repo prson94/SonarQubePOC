@@ -84,14 +84,7 @@ import { Title } from '@angular/platform-browser';
                                     <d3s-admin-report-item [report]="selected"></d3s-admin-report-item>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row" *ngIf="isBasicReport(selected)">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-admin-report-layout [report]="selected"></d3s-admin-report-layout>
-                                </div>
-                            </div>
-                        </div>
+                        </div>                        
                     <div>
                 </div>  
                 `

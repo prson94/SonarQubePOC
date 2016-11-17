@@ -83,4 +83,11 @@ export class ReportsService extends BaseService {
             .then(res => <JsonResult>res.json())
             .catch(this.handleError);
     }
+
+    saveTile(tile: ReportTile): Promise<JsonResult> {
+        if (tile.ID == undefined || !tile.ID) {
+            return this.postDynamic(this.http, 'reporttile', tile);
+        }
+        return this.putDynamic(this.http, 'reporttile', tile);
+    }
 }

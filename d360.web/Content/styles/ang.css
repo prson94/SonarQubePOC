@@ -23803,7 +23803,7 @@ label {
   color: #FFB230;
 }
 /*end favorite styles */
-/* lineage */
+/* diagram */
 .menu-icon {
   font-size: 1.5em;
 }
@@ -23825,4 +23825,10 @@ label {
   border-bottom: 3px solid #fff;
   background-color: #fff;
 }
-/* end lineage*/
+.info-panel {
+  max-width: 600px;
+  width: 600px;
+  height: 450px;
+  overflow-y: scroll;
+}
+/* end diagram*/

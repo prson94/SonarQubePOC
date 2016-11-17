@@ -31,13 +31,13 @@ import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component'
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminTemplateEditorComponent } from './admin-template-editor';
 import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
-import { AdminReportLayoutComponent } from './admin-report-layout.component';
 import { AdminSurveyQuestionsComponent } from './admin-survey-questions.component';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
+import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 
 export * from './admin-attribute-allocation.component';
 export * from './admin-governance.component';
@@ -73,10 +73,10 @@ export * from './admin-level-editor.component';
 export * from './admin-template-editor';
 export * from './admin-statistic-checktype-input';
 export * from './admin-report-items.component';
-export * from './admin-report-layout.component';
 export * from './admin-survey-questions.component';
 export * from './admin-rule-dimensions.component';
 export * from './admin-relationships-list.component';
 export * from './admin-level-list.component';
 export * from './admin-model-classification.component';
 export * from './admin-relationship-roles.component';
+export * from './admin-report-tile-editor.component';

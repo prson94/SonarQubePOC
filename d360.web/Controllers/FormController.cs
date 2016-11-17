@@ -491,7 +491,7 @@ namespace d360.web.Controllers
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
-                    return EditReportTile(form);
+                    return EditReportTile(form,true);
                 case "ATTRIBUTETYPE":
                     return EditAttributeType(form);
                 case "ARTIFACT":
@@ -525,7 +525,7 @@ namespace d360.web.Controllers
                 case "RELATIONSHIPROLE":
                     return EditIntersectRole(form);
                 case "POLICYTYPELEVEL":
-                    return EditPolicyTypeLevel(form);
+                    return EditPolicyTypeLevel(form);                
             }
 
             throw new Exception("Invalid / unsupported edit type");
@@ -622,7 +622,7 @@ namespace d360.web.Controllers
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
-                    return AddReportTile(form);
+                    return AddReportTile(form,true);
                 case "ATTRIBUTETYPE":
                     return AddAttributeType(form);
                 case "ARTIFACT":
@@ -656,7 +656,7 @@ namespace d360.web.Controllers
                 case "TAXONOMYTYPELEVEL":
                     return AddTaxonomyTypeLevel(form);
                 case "POLICYTYPELEVEL":
-                    return AddPolicyTypeLevel(form);
+                    return AddPolicyTypeLevel(form);                
             }
 
             throw new Exception("Invalid / unsupported create type");
@@ -15412,7 +15412,7 @@ order by    Name
         }
 
         [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddReportTile")]
-        public JsonResult AddReportTile(FormCollection form)
+        public JsonResult AddReportTile(FormCollection form, bool isNg = false)
         {
             try
             {
@@ -15421,7 +15421,7 @@ order by    Name
                 var model = new ReportTile
                 {
                     Name = parseTextField(form, "Name"),
-                    CommandText = parseTextField(form, "SqlStatement"),
+                    CommandText = parseTextField(form, isNg ? "CommandText" : "SqlStatement"),
                     ReportID = parseIntField(form, "ReportID"),
                     ContentAreaNumber = parseIntField(form, "ContentAreaNumber"),
                     ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"])
@@ -15454,7 +15454,7 @@ order by    Name
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.ID.ToString(), ContextList.ReportTile, "add", HttpStatusCode.Created);
+                return jsonSuccess(Resources.FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), ContextList.ReportTile, "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15496,7 +15496,7 @@ order by    Name
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
                 Company.Delete<ReportTile>(model);
 
-                return jsonSuccess(Resources.FormInfo.Delete_FieldType_Confirmation, id.ToString(), ContextList.ReportTile, "delete", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Delete_ReportTile_Confirmation, id.ToString(), ContextList.ReportTile, "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -15543,20 +15543,20 @@ order by    Name
         }
 
         [HttpPut, ValidateInput(false), Route("EditReportTile")]
-        public JsonResult EditReportTile(FormCollection form)
+        public JsonResult EditReportTile(FormCollection form, bool isNg = false)
         {
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException(Resources.FormInfo.NoFormData_FieldType);
 
-                var id = parseIntField(form, "TileID");
+                var id = parseIntField(form, isNg ? "ID" : "TileID");
                 var model = Company.GetById<ReportTile>(id);
 
                 if (model == null) throw new NotFoundException(Resources.FormInfo.NoFormData_FieldType);
 
                 // Static fields
                 model.Name = parseTextField(form, "Name");
-                model.CommandText = parseTextField(form, "SqlStatement");
+                model.CommandText = parseTextField(form, isNg ? "CommandText":"SqlStatement");
                 model.ContentAreaNumber = parseIntField(form, "ContentAreaNumber");
                 model.ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"]);
 
@@ -15587,7 +15587,7 @@ order by    Name
                     throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
                 }
 
-                return jsonSuccess(Resources.FormInfo.Edit_FieldType_Confirmation, id.ToString(), ContextList.ReportTile, "edit", HttpStatusCode.OK);
+                return jsonSuccess(Resources.FormInfo.Edit_ReportTile_Confirmation, id.ToString(), ContextList.ReportTile, "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

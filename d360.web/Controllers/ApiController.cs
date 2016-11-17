@@ -25,6 +25,7 @@ using System.Dynamic;
 using System.Web;
 using System.IO;
 using SpreadsheetLight;
+using d360.extensions;
 
 namespace d360.web.Controllers
 {
@@ -33,13 +34,15 @@ namespace d360.web.Controllers
     {
         #region DI
 
+        ISecurityContextProvider SecProvider;
 
-        public D3SApiController(CommunityContext community, CompanyContext company)
+        public D3SApiController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
+            SecProvider = secProvider;
         }
 
         #endregion
@@ -877,18 +880,14 @@ where   h.ID <> @t order by h.[Level] desc;
 
         [Route("authenticationModel")]        
         public HttpResponseMessage GetAuthenticationModel()
-        {
-            string host = HttpContext.Current.Request.Url.Host;
-
-            if (string.IsNullOrEmpty(host)) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-                        
+        {            
             var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
 
             var authType = "sso";
 
             foreach (var settings in c.CompanyDomainSettings)
             {
-                if(host.StartsWith(settings.UrlPrefix)){
+                if(SecProvider.CompanyPrefix == settings.UrlPrefix){
                     authType = settings.AuthenticationType == AuthenticationType.Forms ? "forms" : "sso";
                     break;
                 }
@@ -896,7 +895,8 @@ where   h.ID <> @t order by h.[Level] desc;
             
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
-                    { "model", authType }                    
+                    { "model", authType },
+                    { "prefix", SecProvider.CompanyPrefix }                    
                 }
             );
         }

@@ -20,8 +20,8 @@ export class ReportTile {
     Name: string;
     ContentAreaNumber;
     ReportID: number;
-    ReportTileType: number;
-    CommandText: string;
+    ReportTileType: ReportTileTypes;
+    CommandText: string;    
     Settings: string;
 }
 

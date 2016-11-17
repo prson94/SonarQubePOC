@@ -1,9 +1,9 @@
-﻿
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
+import { AuthenticationProperties } from '../models/authentication-properties.model';
 
 @Injectable()
 export class CompanySettingsService extends BaseService implements ICompanySettingsService {
@@ -25,4 +25,11 @@ export class CompanySettingsService extends BaseService implements ICompanySetti
             .toPromise()
             .catch(err => this.handleError(err));
     }    
+    
+    getAuthenticationModel(): Promise<AuthenticationProperties> {
+        return this.http.get('api/authenticationModel')
+            .toPromise()
+            .then(response => <AuthenticationProperties>response.json())
+            .catch(err => this.handleError(err));
+    }
 }
