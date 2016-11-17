@@ -2,9 +2,9 @@
     <div class="col s12 m6 l4">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading" class="tile tile-detail">
-            <header>History<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+            <header>History<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasRefresh]="true" (refreshClick)="refreshGrid()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
             <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
-            <p-dataTable #dt [globalFilter]="gb" [value]="loads" selectionMode="single" (onRowSelect)="selectedRow=$event.data;" [rows]="20" [paginator]="true">
+            <p-dataTable #dt [globalFilter]="gb" [value]="loads" selectionMode="single" [(selection)]="selectedRow" [rows]="25" [paginator]="true" [rowsPerPageOptions]="defaultPagingOptions">
                 <footer *ngIf="dt.totalRecords"><d3s-grid-paging-info [totalRecords]="dt.totalRecords" [first]="dt.first" [rows]="dt.rows"></d3s-grid-paging-info></footer>
                 <p-column field="Action" header="Action" sortable="true" [style]="{ 'width': '30%' }" [filter]="!showSimpleFilter"></p-column>
                 <p-column field="ObjectName" header="Target" sortable="true" [style]="{ 'width': '40%' }" [filter]="!showSimpleFilter"></p-column>
@@ -23,12 +23,14 @@
             </div>
         </div>
         <div *ngSwitchDefault>
-            <div class="tile tile-detail">
-                <object-detail [objectType]="'Load'" [objectID]="selectedRow?.ID"></object-detail>
-            </div>
-            <div class="tile tile-detail">
-                <d3s-load-item-tile [id]="selectedRow?.ID"></d3s-load-item-tile>
-            </div>
+            <template [ngIf]="selectedRow">
+                <div class="tile tile-detail">
+                    <object-detail #objectDetails [objectType]="objectType" [objectID]="selectedRow?.ID"></object-detail>
+                </div>
+                <div class="tile tile-detail">
+                    <d3s-bulk-load-item [id]="selectedRow?.ID" (refreshClick)="objectDetails.load()"></d3s-bulk-load-item>
+                </div>
+            </template>
         </div>
     </div>
 </div>

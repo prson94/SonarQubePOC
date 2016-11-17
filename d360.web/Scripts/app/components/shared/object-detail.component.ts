@@ -42,10 +42,8 @@ export class ObjectDetailComponent implements OnChanges {
 
         this.load();
     }
-
-    private load(): void {
-
-
+        
+    public load(): void {
         if (this.objectType && this.objectID) {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)

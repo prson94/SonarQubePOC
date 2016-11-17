@@ -889,7 +889,6 @@
     <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
-    <Content Include="Scripts\app\components\shared\load-item.tile.html" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
     <Content Include="Scripts\d3s.MapItems.js" />
     <Content Include="Scripts\moment-with-locales.js" />
@@ -1551,7 +1550,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\load-item.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
