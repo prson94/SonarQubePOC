@@ -2,15 +2,16 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService, HeaderActionsService } from '../../services/index';
+import { HeaderBreadcrumbService, ModelsService, RightSidebarService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-model-item-structure',
-    providers: [ModelsService],
+    providers: [ModelsService, PermissionsService],
     template: ` <d3s-audit *ngIf="!isLoading && isAuditVisible" [objectID]="model?.ID" [objectName]="model?.Name" [objectType]="'TaxonomyType'"></d3s-audit>
                 <d3s-model-diagram *ngIf="!isLoading && isModelDiagramVisible" [id]="modelId"></d3s-model-diagram>                
                 <div class="row" *ngIf="!isLoading && isOwnershipVisible">
@@ -23,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isModelDiagramVisible">                            
                     <header *ngIf="!showDelete && !showEditor">{{model.Name}}
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="showAdd()"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAdd()"></d3s-tile-actions>                            
                     </header>                                                
                     <div *ngIf="!showDelete && !showEditor && model.Description && model.Description.length >0" [innerHtml]="model.Description" class="item-description"></div>  
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
@@ -39,21 +40,21 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                <div class="truncate" [title]="item.data.description">{{item.data.description}}</div>
                             </template>
                         </p-column>
-                        <p-column [style]="{width:'40px'}" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()" >
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showAdd()"><i class="fa fa-plus"></i></a>                                        
                                         </div>
                                     </template>
                         </p-column>     
-                        <p-column [style]="{width:'40px'}" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()" >
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                         </div>
                                     </template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}">
+                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
                                     <template let-item="rowData" pTemplate type="body">
                                         <div class="RowTools">                                
                                             <a *ngIf="!item.children || item.children?.length == 0" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -100,7 +101,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected modelsService: ModelsService,
         protected titleService: Title,
         protected messagesService: MessagesService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService
+    ) {
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true);
@@ -119,6 +122,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.sub = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
+
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
 
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
             this.isLoading = true;

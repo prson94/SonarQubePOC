@@ -2,12 +2,13 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService, HeaderActionsService } from '../../services/index';
+import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
 import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -23,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
                     <header *ngIf="!showDelete && !showEditor">{{policyType.Name}}
-                        <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>                            
+                        <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="add()"></d3s-tile-actions>                            
                     </header>                              
                     <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
                     <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
@@ -38,21 +39,21 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </template>
                         </p-column>
                         <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" [style]="{width:'10%'}"></p-column>  
-                        <p-column [style]="{width:'40px'}" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasRootCreatePermissions()">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;add()"><i class="fa fa-plus"></i></a>                                        
                                 </div>
                             </template>
                         </p-column>   
-                        <p-column [style]="{width:'40px'}" >
+                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                 </div>
                             </template>
                         </p-column>                            
-                        <p-column  [style]="{width:'40px'}">
+                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
                             <template let-item="rowData" pTemplate type="body">
                                 <div class="RowTools">                                
                                     <a *ngIf="!item.children" style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -70,7 +71,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="'Policy'" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
                 </div>                    
                 `,
-    providers: [PoliciesService]
+    providers: [PoliciesService, PermissionsService]
 })
 
 export class PolicyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -100,7 +101,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private route: ActivatedRoute,
         private router: Router,
         private messagesService: MessagesService,
-        rightSidebarService: RightSidebarService
+        rightSidebarService: RightSidebarService,
+        private permissionsService: PermissionsService
     ) {
 
         super(rightSidebarService);
@@ -115,6 +117,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
             this.policyTypeId = +params['policyTypeId'];
             this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
 
             this.isLoading = true;
             this.policiesService.getPolicyType(this.policyTypeId)
@@ -134,6 +138,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     ngOnDestroy() {
+        this.clearSidebar();
         this.sub.unsubscribe();
     }
 

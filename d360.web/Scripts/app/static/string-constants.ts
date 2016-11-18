@@ -11,6 +11,9 @@
     static ObjectPolicy = "Policy";
     static ObjectFusion = "Fusion";
     static ObjectResource = "Resource";
+    static ObjectTaxonomyType = "TaxonomyType";
+    static ObjectPolicyType = "PolicyType";
+    static ObjectRuleType = "RuleType";
 
     //claim types
     static ClaimRead = "Read";

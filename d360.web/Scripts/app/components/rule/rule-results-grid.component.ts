@@ -11,7 +11,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 @Component({
     selector: 'd3s-rule-results-grid',
     template: `                 
-                <header>Values<d3s-tile-actions hasAdd="false" hasExport="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
+                <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" hasFilterMode="true" [filterMode]="showSimpleFilter" (filterModeChange)="showSimpleFilter=$event;resetFilters();"></d3s-tile-actions></header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading">
                         <div *ngIf="showSimpleFilter">                                                

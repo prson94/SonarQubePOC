@@ -2,15 +2,16 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService, RulesService, MessagesService, HeaderActionsService } from '../../services/index';
+import { HeaderBreadcrumbService, RulesService, MessagesService, HeaderActionsService, PermissionsService } from '../../services/index';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleDimension, Rule, RuleClassification, RuleStatus } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-rule-list',
-    providers: [RulesService],
+    providers: [RulesService, PermissionsService],
     template: ` 
                 <div class="row">
                     <div class="col s12">
@@ -19,7 +20,7 @@ import * as _ from 'lodash';
                             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                                 <div class="col s12">
                                     <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions hasAdd="true" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
+                                        <d3s-tile-actions [hasAdd]="hasRootCreatePermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
                                     </header>      
                                     <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                                     
                                     <p-dataTable #dt sortField="Name" [sortOrder]="1" [globalFilter]="gb" [value]="rules" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showRule(selected);" >                                        
@@ -32,14 +33,14 @@ import * as _ from 'lodash';
                                         <p-column field="ID" header="ID" sortable="custom" (sortFunction)="columnSort($event)"  [style]="{width:'10%'}" [filter]="!showSimpleFilter"></p-column>                                                                                                                                                                                                                                                
                                         <p-column field="StatusName" header="Status" sortable="custom" [filter]="!showSimpleFilter" (sortFunction)="columnSort($event)" [style]="{width:'15%'}"></p-column>
                                         <p-column field="Dimension.Name" header="Dimension" sortable="custom" (sortFunction)="columnDimSort($event)" [style]="{width:'15%'}" [filter]="!showSimpleFilter"></p-column>                                        
-                                        <p-column [style]="{width:'40px'}">
+                                        <p-column [style]="{width:'40px'}" *ngIf="hasRootUpdatePermissions()">
                                             <template let-item="rowData" pTemplate type="body">
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
                                                 </div>
                                             </template>
                                         </p-column>                            
-                                        <p-column  [style]="{width:'40px'}">
+                                        <p-column  [style]="{width:'40px'}" *ngIf="hasRootDeletePermissions()">
                                                 <template let-item="rowData" pTemplate type="body">
                                                     <div class="RowTools">                                
                                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
@@ -77,7 +78,9 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         protected titleService: Title,
         protected messagesService: MessagesService,
         private headerActionsService: HeaderActionsService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService
+    ) {
         super();
 
         this.theDeleteCallback = this.deleteRule.bind(this);
@@ -89,6 +92,8 @@ export class RuleListComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules'));
+
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, 0);
 
         this.loadRules();
     }

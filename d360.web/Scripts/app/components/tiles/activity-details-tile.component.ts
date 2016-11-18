@@ -13,7 +13,7 @@ import * as _ from 'lodash';
     template: `
                 <div class="tile tile-detail">
                    <header>Activity for {{objectName}}
-                    <d3s-tile-actions hasAdd="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
