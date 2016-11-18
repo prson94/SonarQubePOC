@@ -25,7 +25,7 @@ import * as _ from 'lodash';
                         </div>
                         <div class="tile tile-detail" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible">                            
                             <header>{{policyClassName}} Policies
-                                <d3s-tile-actions hasAdd="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+                                <d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>         
                             <input #gb [hidden]="!showSimpleFilter" type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                                                   
                             <p-dataTable #dt sortField="PolicyTypeClass" sortOrder="1" [globalFilter]="gb"  [value]="policies" scrollable="true" scrollWidth="100%" selectionMode="single" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" paginator="true" pageLinks="3" [(selection)]="selected"  (onRowDblclick)="selected=$event.data;showPolicyType(selected);" >
