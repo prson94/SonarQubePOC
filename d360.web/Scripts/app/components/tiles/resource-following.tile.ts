@@ -15,6 +15,7 @@ declare var CurrentResourceID;
                     Items {{resource?.FirstName}} Follows
                     <d3s-tile-actions hasExport="true" (exportClick)="export()" hasFilter="true" [(filterMode)]="showFilter"></d3s-tile-actions>      
                 </header>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <div *ngIf="!isLoading" class="row">
                     <div class="col l3 s12 relationship-container">
                         <div class="row relationship" *ngFor="let r of items; let i = index" [ngClass]="{'active' : isSelected(r)}" (click)="select(r)">
