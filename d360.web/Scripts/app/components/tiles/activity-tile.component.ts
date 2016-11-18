@@ -22,9 +22,7 @@ import { Count} from '../../models/counts.model';
                         </p-column>                                                                           
                         <p-column field="New" header="Total" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                          
                     </p-dataTable>                      
-                    <div *ngIf="counts.length == 0 && !isLoading">
-                        No recent activity
-                    </div>
+                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No activity for this timeframe</div>                    
                 </div>
                 `
 })

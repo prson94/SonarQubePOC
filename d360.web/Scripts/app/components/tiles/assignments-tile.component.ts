@@ -25,7 +25,7 @@ import { WorkflowType } from '../../models/workflow.model';
                         </p-column>           
                         <p-column field="Total" header="Count" [sortable]="true" [style]="{'text-align':'center'}"></p-column>                                                                
                     </p-dataTable>                      
-                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No assignments currently</div>
+                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
                 </div>
                 `
 })
