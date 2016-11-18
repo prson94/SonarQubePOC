@@ -350,7 +350,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.fieldsService.getLookupTokens(objectId, objectType)
             .then(r => {
                 this.model.LookupTokens = r;
-                if (this.model.LookupTokens.length > 0)
+                if (this.model.LookupTokens.length > 0 && this.model.FieldType.LookupDisplayFormat.length == 0)
                     this.model.FieldType.LookupDisplayFormat = this.model.LookupTokens[0].value;
             });
     }

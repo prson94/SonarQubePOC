@@ -37,7 +37,7 @@ namespace d360.core
         Color,
         [Description("Fusion Lookup")]
         FusionLookup,
-        [Description("Relation Lookup")]
+        [Description("Relation Lookup"), ReadOnly(true)]
         RelationLookup,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute,

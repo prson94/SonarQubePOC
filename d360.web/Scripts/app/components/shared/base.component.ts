@@ -86,13 +86,13 @@ export class BaseComponent {
 
     setCommonRightSideBar(hasAudit?: boolean, hasOwnership?: boolean, hasDashboard?: boolean, hasLineage?: boolean, hasImpact?: boolean, hasRelationships?: boolean, hasFollowers?: boolean) {
         if (this.rightSidebarService) {
-            if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit', ['fa-calendar']));
-            if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership', ['fa-shopping-cart']));
+            if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage', ['fa-random']));
+            if (hasAudit || hasAudit === undefined) this.rightSidebarService.showItem(new RightSidebarItem('Audit', 'audit', ['fa-eye']));
+            if (hasOwnership) this.rightSidebarService.showItem(new RightSidebarItem('Ownership', 'ownership', ['fa-user']));
             if (hasDashboard) this.rightSidebarService.showItem(new RightSidebarItem('Dashboards', 'dashboards', ['fa-tachometer']));
-            if (hasLineage) this.rightSidebarService.showItem(new RightSidebarItem('Lineage', 'lineage', ['fa-tree']));
-            if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact', ['fa-cube']));
-            if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship'));
-            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-eye']));
+            if (hasImpact) this.rightSidebarService.showItem(new RightSidebarItem('Impact', 'impact', ['fa-exchange']));
+            if (hasRelationships) this.rightSidebarService.showItem(new RightSidebarItem('Relations', 'relationship', ['fa-retweet']));
+            if (hasFollowers) this.rightSidebarService.showItem(new RightSidebarItem('Followers', 'followers', ['fa-bookmark-o']));
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {

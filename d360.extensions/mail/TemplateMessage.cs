@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Mandrill.Model;
 using Mandrill;
-
+using d360.core;
 
 namespace d360.extensions.mail
 {
@@ -65,7 +65,7 @@ namespace d360.extensions.mail
             //message.Html = body;
             //message.Text = "Hello World plain text!"; 
 
-            var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
+            var api = new MandrillApi(constants.MANDRILL_API_KEY);
             api.Messages.SendTemplate(message, templateID);
             //var credential = new NetworkCredential(constants.SMTP_USERNAME, constants.SMTP_PASSWORD);
             //var transport = new Web(credential);

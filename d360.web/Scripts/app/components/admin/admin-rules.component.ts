@@ -65,7 +65,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.areaName = "Rule Types";
         this.setCommonItems();
         this.setCommonRightSideBar(false, false, false);
-        this.rightSidebarService.showItem(new RightSidebarItem('Dimensions', 'dimensions'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Dimensions', 'dimensions', ['fa-tag']));
     }
 
     ngOnInit() {

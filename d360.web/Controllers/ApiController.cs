@@ -113,7 +113,7 @@ namespace d360.web.Controllers
                             var ro = new ReadOnlyField
                             {
                                 Name = k.FriendlyName,
-                                Value = k.FormattedValue,
+                                Value = (k.LookupDisplayFormat == k.FormattedValue) ? "" : k.FormattedValue,
                                 FieldDescription = k.DisplayDescription,
                                 FieldName = k.Name
                             };
@@ -3879,15 +3879,19 @@ select  case
                             {
                                 case "ArtifactType":
                                     join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.ArtifactTypeID = {join.ObjectID}";
+
+                                    if (i == 0)
+                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ParentID = {id}";
                                     break;
                                 case "FusionAttributeType":
                                     join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ParentID = A{i - 1}.ID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+
+                                    if (i == 0)
+                                        join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ParentID = {id}";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
                             objIDColumn = $"I{i}.ID";
-                            if (i == 0)
-                                join.WhereStatement = $"I{i}.ID = {id}";
                             break;
                             #endregion
                         case ComplexLookupRelationType.ParentItem:
@@ -3896,15 +3900,19 @@ select  case
                             {
                                 case "ArtifactType":
                                     join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.ArtifactTypeID = {join.ObjectID}";
+
+                                    if (i == 0)
+                                        join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ParentID from Artifact where ID = {id})";
                                     break;
                                 case "FusionAttributeType":
                                     join.JoinStatement = (i == 0) ? $"from FusionAttribute A{i}" : $"{joinType} join FusionAttribute A{i} on A{i}.ID = A{i - 1}.ParentID and A{i}.FusionAttributeTypeID = {join.ObjectID}";
+
+                                    if (i == 0)
+                                        join.WhereStatement = $"A{i}.FusionAttributeTypeID = {join.ObjectID} and A{i}.ID in (select ParentID from FusionAttribute where ID = {id})";
                                     break;
                             }
                             objColumn = $"'{currentObj}'";
                             objIDColumn = $"I{i}.ID";
-                            if (i == 0)
-                                join.WhereStatement = $"I{i}.ID = {id}";
                             break;
                         #endregion
                         default:

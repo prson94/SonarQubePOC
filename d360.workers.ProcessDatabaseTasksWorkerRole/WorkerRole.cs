@@ -80,7 +80,7 @@ namespace d360.workers.ProcessDatabaseTasksWorkerRole
             //message.Html = body;
             //message.Text = "Hello World plain text!"; 
 
-            var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
+            var api = new MandrillApi(constants.MANDRILL_API_KEY);
             api.Messages.SendTemplate(message, templateID);
 
             message = null;
@@ -384,7 +384,7 @@ from    [queue].[Task] T
                                                             tags.Add("ownerName", comment.OwnerName);
                                                             tags.Add("ownerType", comment.OwnerTypeName);
                                                             tags.Add("body", comment.Body);
-                                                            tags.Add("ownerUrl", string.Format("https://{0}.data3sixty.com/{1}", domainPrefix, comment.OwnerUrl));
+                                                            tags.Add("ownerUrl", $"https://{domainPrefix}.data3sixty.com/{comment.OwnerUrl}");
                                                             var parentReference = "";
                                                             if (comment.ParentID.HasValue)
                                                             {
@@ -415,8 +415,8 @@ from    [queue].[Task] T
                                                             tags.Add("adds", execution.Adds.HasValue ? execution.Adds.Value.ToString() : "None");
                                                             tags.Add("updates", execution.Updates.HasValue ? execution.Updates.Value.ToString() : "None");
                                                             tags.Add("deletes", execution.Deletes.HasValue ? execution.Deletes.Value.ToString() : "None");
-                                                            tags.Add("fusionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID));
-                                                            tags.Add("executionUrl", string.Format("https://{0}.data3sixty.com/#/fusion/{1}/{2}/executions/{3}", domainPrefix, fusionInfo.FusionTypeID, fusionInfo.FusionID, execution.ID));
+                                                            tags.Add("fusionUrl", $"https://{domainPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}");
+                                                            tags.Add("executionUrl", $"https://{domainPrefix}.data3sixty.com/fusion/{fusionInfo.FusionID}?execution={execution.ID}");
                                                             tags.Add("startDate", execution.DateStarted.Value.ToShortDateString());
                                                             tags.Add("startTime", execution.DateStarted.Value.ToShortTimeString());
                                                             SendMailToUser(r.Name, r.Email, "Data3Sixty - Fusion Update Notification", "", "fusion-update-notification-immediate", tags, "Data3Sixty Fusion");

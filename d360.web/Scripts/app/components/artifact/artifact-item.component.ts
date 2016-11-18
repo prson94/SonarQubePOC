@@ -143,7 +143,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                 this.clearSidebar();
                 this.setCommonRightSideBar(true, true, this.artifact.HasDashboards, true, true, true, true);
-                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children'));
+                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap']));
                                 
                 this.loadItemSurvey(id);
             });

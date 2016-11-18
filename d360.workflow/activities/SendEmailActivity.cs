@@ -87,7 +87,7 @@ namespace d360.workflow
             //message.Html = body;
             //message.Text = "Hello World plain text!"; 
 
-            var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
+            var api = new MandrillApi(constants.MANDRILL_API_KEY);
             api.Messages.SendTemplate(message, templateID);
             //var credential = new NetworkCredential(constants.SMTP_USERNAME, constants.SMTP_PASSWORD);
             //var transport = new Web(credential);

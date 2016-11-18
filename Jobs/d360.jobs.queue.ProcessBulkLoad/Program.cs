@@ -50,7 +50,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
-#region Create EF connection
+            #region Create EF connection
 
             var sec = new UriSecurityContextProvider()
             {
@@ -65,11 +65,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
             var company = new CompanyContext(community, cache, queue, sec, true);
             var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
-#endregion
+            #endregion
 
             var companyConnection = GetCompanyConnection(loadInfo.CompanyID);
 
-#region Create Load Items from Load file
+            #region Create Load Items from Load file
 
             var load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
 
@@ -137,7 +137,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 companyConnection.Open();
 
-#region Bulk LoadItems
+                #region Bulk LoadItems
 
                 using (var trans = companyConnection.BeginTransaction())
                 {
@@ -171,9 +171,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     trans.Commit();
                 }
 
-#endregion
+                #endregion
 
-#region Bulk LoadItemColumns
+                #region Bulk LoadItemColumns
 
                 using (var trans = companyConnection.BeginTransaction())
                 {
@@ -220,18 +220,18 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     trans.Commit();
                 }
 
-#endregion
+                #endregion
 
                 companyConnection.Close();
             }
 
-#endregion
+            #endregion
 
-            if (load.Action == "O")                  // Ownership/Responsibilities
+            if (load.Action == "O")         // Ownership/Responsibilities
             {
-#region Ownership
+                #region Ownership
 
-#region
+                #region
                 /*
                     "Item Type",
                     "Subject Area", //ArtifactType only
@@ -239,9 +239,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     "Responsibility",
                     "Resource"
                  */
-#endregion
+                #endregion
 
-#region Get data to pre-populate
+                #region Get data to pre-populate
 
                 var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
 
@@ -276,9 +276,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 var allocations = company.Table<ResponsibilityTypeRelation>().ToList();
 
-#endregion
+                #endregion
 
-#region ForEach
+                #region ForEach
 
                 load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
@@ -508,16 +508,16 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     company.Update(loadItem);
                 }
 
-#endregion
+                #endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-#endregion
+                #endregion
             }
-            else if (load.Action == "P" && isDev)    // Relation
+            else if (load.Action == "P")    // Promotion
             {
-#region Promotions
+                #region Promotions
 
                 try
                 {
@@ -530,11 +530,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-#endregion
+                #endregion
             }
-            else if (load.Action == "R" && isDev)    // Relation
+            else if (load.Action == "R")    // Relation
             {
-#region Relationship
+                #region Relationship
 
 #region
                 /*
@@ -580,11 +580,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-#endregion
+                #endregion
             }
-            else if (load.Action == "S" && isDev)    // Relation
+            else if (load.Action == "S")    // Synonym
             {
-#region Synonyms
+                #region Synonyms
 
                 try
                 {
@@ -597,80 +597,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-#endregion
-            }
-            else if (load.Action == "N")    // New Lineage
-            {
-#region Lineage
-
-#region
-                /*
-                 * 1    Source subject type	            
-                 * 2    Source subject type name	    
-                 * 3    Source subject subject area	    
-                 * 4    Source subject	                
-                 * 
-                 * 5    Source object type	            
-                 * 6    Source object type name	
-                 * 7    Source object subject area	
-                 * 8    Source object                   
-                 * 
-                 * 9    Source Fusion Configuration
-                 * 10   Source Fusion Path              
-                 * 
-                 * 11   Target subject type	
-                 * 12   Target subject type name	
-                 * 13   Target subject subject area	
-                 * 14   Target subject	                
-                 * 
-                 * 15   Target object type	
-                 * 16   Target object type name	
-                 * 17   Target object subject area	
-                 * 18   Target object                   
-                 * 
-                 * 19   Target Fusion Configuration
-                 * 20   Target Fusion Path              
-                 * 
-                 * 21   Transformation
-                 * 22   Role                            
-                 */
-#endregion
-
-                try
-                {
-                    companyConnection.Open();
-
-#region DISABLE Intersect triggers
-
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-#endregion
-
-                    // Call business lineage procedure.
-                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.BusinessLineage {load.ID}", 2400);
-
-#region ENABLE Intersect triggers
-
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
-                    executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
-
-#endregion
-
-                    companyConnection.Close();
-                }
-                catch (Exception ex)
-                {
-                    logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
-                }
-
-#endregion
+                #endregion
             }
             else if (load.Action == "BL")    // Business Lineage
             {
-#region Lineage
+                #region Business Lineage
 
                 try
                 {
@@ -686,11 +617,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-#endregion
+                #endregion
             }
-            else if (load.Action == "T")    // Technical Fusion
+            else if (load.Action == "T")    // Technical Lineage
             {
-#region Technical Lineage
+                #region Technical Lineage
 
 #region
                 /*
@@ -948,11 +879,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-#endregion
+                #endregion
             }
             else if (load.Action == "W")    // Promotion Propose via Workflow
             {
-#region Propose
+                #region Propose
 
                 load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
@@ -1125,49 +1056,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-#endregion
-            }
-            else
-            {
-#region Legacy stored procedure method
-
-                bool writeStatus = true;
-
-                var connection = GetCompanyConnection(loadInfo.CompanyID);
-                connection.Open();
-
-                var task = connection.ExecuteAsync("exec ProcessBulkLoad @LoadID", new { LoadID = load.ID }, null, 3600);   // 60 minute timeout.
-
-                task.ContinueWith(t =>
-                {
-                    logger.WriteLine("");
-                    if (t.IsCompleted)
-                    {
-                        logger.WriteLine("Bulk load procedure completed for Load ID {0}", loadInfo.LoadID);
-                        connection.Close();
-                    }
-                    if (t.IsFaulted)
-                        logger.WriteLine("Bulk load procedure failed for Load ID {0}", loadInfo.LoadID);
-                    if (t.Exception != null)
-                    {
-                        if (t.Exception.InnerExceptions != null)
-                        {
-                            foreach (var ex in t.Exception.InnerExceptions)
-                            {
-                                logger.WriteLine(ex.GetFullExceptionData());
-                            }
-                        }
-                    }
-                    writeStatus = false;
-                });
-
-                while (writeStatus && (task.Exception == null))
-                {
-                    logger.Write(".");
-                    Thread.Sleep(45000);
-                }
-
-#endregion
+                #endregion
             }
         }
 

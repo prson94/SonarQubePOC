@@ -20,6 +20,8 @@
 
         public const string WEBJOBS_STORAGE_CONNECTION = "DefaultEndpointsProtocol=https;AccountName=data3sixty;AccountKey=akWskSolD1IWz+qmK2onCb10er80WsI02gNE83ufcOS1SUIMRF51p8BHPhGQ8EZTZCFkc5Pw4zIkVMnGbQnFUQ==";
 
+        public const string MANDRILL_API_KEY = "XBspYSVRlKva-pXOlDYWEg";
+
         public const string COMPANY_ICON_FOLDER = "company-icons";
         public const string COMPANY_ICON_URL = "https://data3sixty.blob.core.windows.net/company-icons/";
         public const string COMPANY_LOGO_FOLDER = "company-logos";

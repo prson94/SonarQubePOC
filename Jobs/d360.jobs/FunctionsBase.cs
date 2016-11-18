@@ -1,4 +1,5 @@
-﻿using d360.utils.company;
+﻿using d360.core;
+using d360.utils.company;
 using Mandrill;
 using Mandrill.Model;
 using Microsoft.ApplicationInsights;
@@ -125,7 +126,7 @@ namespace d360.jobs
             //message.Html = body;
             //message.Text = "Hello World plain text!"; 
 
-            var api = new MandrillApi("XBspYSVRlKva-pXOlDYWEg");
+            var api = new MandrillApi(constants.MANDRILL_API_KEY);
             api.Messages.SendTemplate(message, templateID);
 
             message = null;

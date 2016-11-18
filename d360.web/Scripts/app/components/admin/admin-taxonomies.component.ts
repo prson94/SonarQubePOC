@@ -77,7 +77,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.setCommonItems();
         this.setCommonRightSideBar(true);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Classification', 'classifications', ['fa-tag']));
     }
 
     ngOnInit() {

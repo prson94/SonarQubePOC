@@ -52,8 +52,8 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.setCommonItems();
         this.setCommonRightSideBar(true);    
 
-        this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates'));
-        this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles'));
+        this.rightSidebarService.showItem(new RightSidebarItem('Predicates', 'predicates', ['fa-map-signs']));
+        this.rightSidebarService.showItem(new RightSidebarItem('Relationship Roles', 'roles', ['fa-user']));
     }
 
     

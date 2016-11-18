@@ -1,8 +1,9 @@
 ﻿<d3s-audit *ngIf="isAuditVisible" [objectID]="selectedRow?.ID" [objectName]="selectedRow?.Name" [objectType]="'FusionType'"></d3s-audit>
 <div *ngIf="!isAuditVisible" class="row">
-    <div class="col s12 m12 l3">
+    <div class="col l3 m12 s12">
         <div class="tile tile-detail">
-            <header>Fusion
+            <header>
+                Fusion
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>
             <input #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">
@@ -12,7 +13,7 @@
                 <p-column [style]="{width:'40px'}">
                     <template let-col let-item="rowData" pTemplate type="body">
                         <div class="RowTools">
-                            <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>                            
+                            <a (click)="selectedRow = item; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </template>
                 </p-column>
@@ -26,121 +27,114 @@
             </p-dataTable>
         </div>
     </div>
-    <div *ngIf="formMode == FormMode.Default && selectedRow">
-        <div class="col s12 m12 l9">
-            <div class="row">
-                <div class="col hide-on-small-and-down m12 l6">
-                    <div class="tile tile-detail">
-                        <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
-                    </div>
-                    <div class="tile tile-detail">
-                        <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
-                    </div>
+
+    <div class="col l9 m12 s12" *ngIf="formMode == FormMode.Default && selectedRow">
+        <div class="row">
+            <div class="col hide-on-small-and-down m12 l6">
+                <div class="tile tile-detail">
+                    <object-detail [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></object-detail>
                 </div>
-                <div class="col s12 m12 l6">
-                    <div class="tile tile-detail">
-                        <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
-                    </div>
-                    <div class="tile tile-detail">
-                        <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
-                    </div>
-                </div>        
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div class="tile tile-detail">
-                        <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
-                    </div>
+                <div class="tile tile-detail">
+                    <d3s-people-responsibilities-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID" [title]="'Default Responsibilities'"></d3s-people-responsibilities-tile>
                 </div>
             </div>
-        </div>       
+            <div class="col s12 m12 l6">
+                <div class="tile tile-detail">
+                    <d3s-fusion-configuration-tile [fusionType]="selectedRow"></d3s-fusion-configuration-tile>
+                </div>
+                <div class="tile tile-detail">
+                    <d3s-field-definition-tile [objectType]="'FusionType'" [objectID]="selectedRow?.ID"></d3s-field-definition-tile>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="tile tile-detail">
+                    <d3s-fusion-attributes-tile [fusionType]="selectedRow" [title]="'Structure for ' + selectedRow?.Name"></d3s-fusion-attributes-tile>
+                </div>
+            </div>
+        </div>
     </div>
-    <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
+
+    <div class="col l9 m12 s12" *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
         <form #fusionForm="ngForm" (ngSubmit)="save()">
-            <div class="row">
-                <div class="col s9">
-                    <div class="tile tile-detail">
-                        <header *ngIf="formMode == FormMode.Adding">Add Fusion Type</header>
-                        <header *ngIf="formMode == FormMode.Editing">Edit {{newFusionType.Name}}</header>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="FieldName">Name</div>
-                                <input type="text" style="width:98%" [(ngModel)]="newFusionType.Name" name="name" required/>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="FieldName">Description</div>
-                                <p-editor [(ngModel)]="newFusionType.Description" name="description"></p-editor>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s6">
-                                <div class="FieldName">Background Color</div>
-                                <table style="width:100%">
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input [(colorPicker)]="newFusionStyle.IconBackColor"
-                                                       cpOutputFormat="hex"
-                                                       cpAlphaChannel="disabled"
-                                                       cpFallbackColor="#000"
-                                                       cpPosition="bottom"
-                                                       spellcheck="false"
-                                                       [value]="newFusionStyle.IconBackColor"
-                                                       style="width: 100%;height: 25px;" name="backcolor" required/>
-                                            </td>
-                                            <td>
-                                                <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="col s6">
-                                <div class="FieldName">Foreground Color</div>
-                                <table style="width:100%">
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input [(colorPicker)]="newFusionStyle.IconForeColor"
-                                                       cpOutputFormat="hex"
-                                                       cpAlphaChannel="disabled"
-                                                       cpPosition="bottom"
-                                                       spellcheck="false"
-                                                       [value]="newFusionStyle.IconForeColor"
-                                                       style="width: 100%;height: 25px;" name="forecolor" required />
-                                            </td>
-                                            <td>
-                                                <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12" style="padding-top:10px;">
-                                <button pButton type="submit" label="Save" [disabled]="!fusionForm.form.valid"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
-                            </div>
-                        </div>
+            <div class="tile tile-detail">
+                <header *ngIf="formMode == FormMode.Adding">Add Fusion Type</header>
+                <header *ngIf="formMode == FormMode.Editing">Edit {{newFusionType.Name}}</header>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="FieldName">Name</div>
+                        <input type="text" style="width:98%" [(ngModel)]="newFusionType.Name" name="name" required />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="FieldName">Description</div>
+                        <p-editor [(ngModel)]="newFusionType.Description" name="description"></p-editor>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s6">
+                        <div class="FieldName">Background Color</div>
+                        <table style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input [(colorPicker)]="newFusionStyle.IconBackColor"
+                                               cpOutputFormat="hex"
+                                               cpAlphaChannel="disabled"
+                                               cpFallbackColor="#000"
+                                               cpPosition="bottom"
+                                               spellcheck="false"
+                                               [value]="newFusionStyle.IconBackColor"
+                                               style="width: 100%;height: 25px;" name="backcolor" required />
+                                    </td>
+                                    <td>
+                                        <span [style.background-color]="newFusionStyle.IconBackColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col s6">
+                        <div class="FieldName">Foreground Color</div>
+                        <table style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input [(colorPicker)]="newFusionStyle.IconForeColor"
+                                               cpOutputFormat="hex"
+                                               cpAlphaChannel="disabled"
+                                               cpPosition="bottom"
+                                               spellcheck="false"
+                                               [value]="newFusionStyle.IconForeColor"
+                                               style="width: 100%;height: 25px;" name="forecolor" required />
+                                    </td>
+                                    <td>
+                                        <span [style.background-color]="newFusionStyle.IconForeColor" style="height:25px;width:25px;display:block;border:1px solid black"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12" style="padding-top:10px;">
+                        <button pButton type="submit" label="Save" [disabled]="!fusionForm.form.valid"></button><button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default;"></button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
-    <div *ngIf="formMode == FormMode.Deleting">
-        <div class="row">
-            <div class="col s9">
-                <div class="tile tile-detail">
-                    <delete-form [uri]="'/form/DeleteFusionTypeByID?id=' + selectedRow.ID"
-                                 [method]="'delete'"
-                                 [prompt]="'Are you sure you want to delete the ' + selectedRow.Name + ' fusion type?'"
-                                 (onDeleteSuccess)="formMode = FormMode.Default; load();"
-                                 (onCancel)="formMode = FormMode.Default;">
-                    </delete-form>
-                </div>
-            </div>
+
+    <div class="col l9 m12 s12" *ngIf="formMode == FormMode.Deleting">
+        <div class="tile tile-detail">
+            <delete-form [uri]="'/form/DeleteFusionTypeByID?id=' + selectedRow.ID"
+                            [method]="'delete'"
+                            [prompt]="'Are you sure you want to delete the ' + selectedRow.Name + ' fusion type?'"
+                            (onDeleteSuccess)="formMode = FormMode.Default; load();"
+                            (onCancel)="formMode = FormMode.Default;">
+            </delete-form>
         </div>
     </div>
 </div>

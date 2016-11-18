@@ -70,8 +70,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.clearSidebar();
                     this.setCommonRightSideBar(false, false, actions.HasDashboards);
                     this.hasSuggest = actions.HasSuggest;
-                    this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics'));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus'));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Metrics', 'metrics', ['fa-bar-chart-o']));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Workflows', 'workflowstatus', ['fa-hourglass-start']));
                 });
         });
     }

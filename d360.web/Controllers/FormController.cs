@@ -763,7 +763,7 @@ namespace d360.web.Controllers
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);                
                 var parents = Company.Filter<Artifact>(i => i.ArtifactTypeID == type.ParentID).OrderBy(i => i.Name).ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(type.Parent.Name)}", FieldType = DataType.Lookup.ToString(), Value = (a.ParentID.HasValue ? a.ParentID.ToString() : ""), Items = parents });                
             }
 
             bool isPromoted = false;// Company.Filter<FusionAttributePromotion>(i => i.ObjectType == "Artifact" && i.ObjectID == id).Any();
@@ -4690,7 +4690,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.LookupType, listID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .OrderBy(i => i.Name)
                 .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
                 .ToList()
@@ -4716,7 +4716,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(SystemObjects.FusionAttributeType, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
@@ -4796,7 +4796,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypeRelationsByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
@@ -4828,7 +4828,7 @@ namespace d360.web.Controllers
             if (type != SystemObjects.DomainItem)
             {
                 list = Company.GetFieldTypeRelationsByObject(type, id)
-                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString())
+                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.RelationLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                     .Select(i => new { i.ID, i.Name })
                     .ToDictionary(i => i.Name, i => i.Name);
             }
@@ -5517,7 +5517,6 @@ namespace d360.web.Controllers
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
-
                 ft.IsListable = (model.FieldType.Type != DataType.FusionLookup.ToString()) ? model.FieldType.IsListable : false;
                 ft.IsRequired = model.FieldType.IsRequired;
 
