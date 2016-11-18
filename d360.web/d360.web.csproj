@@ -1392,7 +1392,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following-grid.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-issue.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />

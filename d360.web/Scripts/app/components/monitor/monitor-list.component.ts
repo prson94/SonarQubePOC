@@ -100,7 +100,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit {
 
     private handleIssue(issue: IssueDetail) {
         this.showEditor = true;
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ISSUE}/${issue.WorkflowID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
     }
 
     private export() {

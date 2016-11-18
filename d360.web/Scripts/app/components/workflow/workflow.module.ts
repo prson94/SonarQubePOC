@@ -14,7 +14,7 @@ import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.compon
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
-import { WorkflowWorkIssueComponent } from './workflow-work-issue.component';
+import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 
 
 import {
@@ -80,7 +80,7 @@ import {
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
         WorkflowViewStatusComponent,
-        WorkflowWorkIssueComponent,
+        WorkflowWorkItemComponent,
     ],
     exports: [
         WorkflowCertifyDetailsComponent,
@@ -89,7 +89,7 @@ import {
         WorkflowRaiseIssueComponent,
         WorkflowSuggestDetailsComponent,
         WorkflowSuggestEditorComponent,
-        WorkflowWorkIssueComponent,
+        WorkflowWorkItemComponent,
     ]
 })
 export class WorkflowModule { }
