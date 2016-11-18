@@ -49,7 +49,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Lookup'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
+                                    <d3s-dynamic-grid [title]="'Items'" [showEditButton]="hasRootUpdatePermissions()" [showAddButton]="hasRootCreatePermissions()" [showDeleteButton]="hasRootDeletePermissions()" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'"></d3s-dynamic-grid>                                                                       
                                 </div>
                             </div>
                         </div>
