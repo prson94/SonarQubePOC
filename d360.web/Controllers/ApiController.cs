@@ -7527,6 +7527,11 @@ SELECT (
             comment.CommentTypeID = CommentType.Issue;
             comment.Body = issue;
 
+            //get the object name
+            var obj = Company.GetObjectDetail(type.ToString(), objectId);
+
+            if (obj == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
             //add relation to current artifact
             relations.Add(new CommentRelation { ObjectType = type.ToString(), ObjectID = objectId, Date = DateTime.UtcNow });
 
@@ -7539,6 +7544,8 @@ SELECT (
                 dictionary.Add("CompanyID", Company.CurrentCompanyID);
                 dictionary.Add("CommentID", dtl.ID);
                 dictionary.Add("IssueType", (int)issueType);
+                dictionary.Add("IssueTypeDesc", issueType == IssueType.Challenge ? "Governance Information Incorrect" : "Business Data Incorrect");
+                dictionary.Add("ObjectName", obj.Name);
 
                 processor.CreateNewWorkflowInstance(WorkflowVersionMap.WorkIssue_vCurrent, dictionary);
             }

@@ -27,12 +27,13 @@ BEGIN
 
 	SELECT		C.*,
 				C.CreatingResourceID,
-				O.Name as ObjectName,
+				O.Name as ObjectName,				
 				O.Url as ObjectUrl,
 				case
 					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
 					ELSE 'Resource'
 				end as ObjectType,
+				O.Name as ResourceName,
 				case 
 					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
 					ELSE C.CreatingResourceID
@@ -71,4 +72,3 @@ BEGIN
 				INNER JOIN P ON C.ID = P.ID
 	ORDER BY	C.ParentID, C.DateCreated DESC
 END
-
