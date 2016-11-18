@@ -21094,19 +21094,6 @@ order by TextPath
                         Object = SystemObjects.ReferenceItemType.ToString(),
                         IsListable = true,
                         IsRequired = true,
-                        FriendlyName = "Code",
-                        Name = "Code",
-                        MaximumLength = 250,
-                        MinimumLength = 1,
-                        SortOrder = 1,
-                        Type = DataType.Text.ToString()
-                    });
-                    Company.Add<FieldType>(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.ReferenceItemType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
                         FriendlyName = "Long Description",
                         Name = "LongDesc",
                         MaximumLength = 500,

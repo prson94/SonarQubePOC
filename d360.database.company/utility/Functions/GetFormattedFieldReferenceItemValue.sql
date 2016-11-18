@@ -29,6 +29,13 @@ BEGIN
 		WHERE	ObjectType = 'ReferenceItem' 
 				and ObjectID = @ReferenceItemID
 
+				
+	insert into @fieldValues
+		SELECT 'Code',
+				Code
+		FROM	ReferenceItem
+		WHERE	ID = @ReferenceItemID
+
 	declare @current int,
 			@max int
 
@@ -68,3 +75,6 @@ BEGIN
 
 	return @formattedValue
 END
+
+
+

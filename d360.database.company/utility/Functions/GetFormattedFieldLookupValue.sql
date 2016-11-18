@@ -212,6 +212,43 @@ BEGIN
 											NULL as LookupObjectID,
 											NULL as LookupDisplayFormat
 									FROM	(
+											SELECT	ID,
+													CAST(Code as nvarchar(max)) as Code
+											FROM	ReferenceItem A
+											WHERE	A.ID = @Value
+													and L.ObjectType = 'ReferenceItem'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (Code)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
+											SELECT	ID,
+													CAST(Name as nvarchar(max)) as Name,
+													CAST(Description as nvarchar(max)) as Description
+											FROM	ReferenceItemType A
+											WHERE	A.ID = @Value
+													and L.ObjectType = 'ReferenceItemType'
+											) A
+											unpivot	(
+													FieldValue for FieldName in (Name, Description)
+													) p
+
+									UNION
+
+									SELECT	P.FieldName as Name,
+											p.FieldValue as Value,
+											NULL as LookupObjectType,
+											NULL as LookupObjectID,
+											NULL as LookupDisplayFormat
+									FROM	(
 											SELECT	ResourceID as ID,
 													CAST(FirstName as nvarchar(max)) as FirstName,
 													CAST(LastName as nvarchar(max)) as LastName,
