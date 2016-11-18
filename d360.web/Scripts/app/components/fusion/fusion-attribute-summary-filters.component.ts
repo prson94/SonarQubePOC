@@ -30,10 +30,9 @@ import * as _ from 'lodash';
                     <div class="col s1" *ngIf="!last">
                         <button pButton type="button" (click)="removeFilter(i)" label="-" ></button>
                     </div>
-                    <div class="col s1 offset-s1" *ngIf="last">
-                        <button pButton type="button" (click)="removeAllFilters()" label="Clear All" style="width: 100px;"></button>
-                    </div>
-                    <div class="col s1" *ngIf="last"><button pButton type="submit" label="Filter" style="width: 100px; " ></button>
+                    <div class="col s4" *ngIf="last">
+                        <button pButton type="button" (click)="removeAllFilters()" label="Clear All"></button>
+                        <button pButton type="submit" label="Filter"></button>
                     </div>
                 </div>
                 </form>
