@@ -3575,7 +3575,7 @@ select  case
                         var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
 
                         // Determine the join syntax for the eventual query.
-                        if (i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID)
+                        if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation."))
                             join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
                         else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
                             join.JoinStatement += $" {joinType} join FieldWithRelation {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
