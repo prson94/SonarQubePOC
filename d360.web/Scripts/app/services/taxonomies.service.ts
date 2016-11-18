@@ -51,7 +51,7 @@ export class TaxonomiesService extends BaseService {
             .post("form/AddTaxonomyTypeRaw", JSON.stringify(taxonomy), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     private put(taxonomy: Taxonomy): Promise<JsonResult> {
@@ -63,7 +63,7 @@ export class TaxonomiesService extends BaseService {
             .put('form/EditTaxonomyTypeRaw', JSON.stringify(taxonomy), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     deleteTaxonomy(taxonomyId: number): Promise<JsonResult> {

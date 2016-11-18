@@ -10,8 +10,8 @@ export class BaseService {
     constructor(protected messages: MessagesService) {  }
 
     handleError(error: any) {
-        console.error('An error occurred', error);        
-        this.messages.showError('Error', error.toString());
+        console.error('An error occurred', error);
+        if (this && this.messages) this.messages.showError('Error', error.toString());
         return Promise.reject(error.message || error);
     }
 
@@ -53,7 +53,7 @@ export class BaseService {
                 .post(`form/dynamicedit/create/${type}`, form)
                 .toPromise()
                 .then(res => <JsonResult>res.json())
-                .catch(this.handleError);
+                .catch(err => this.handleError(err));
         }
                
         let headers = new Headers({
@@ -64,7 +64,7 @@ export class BaseService {
             .post(`form/dynamicedit/create/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     protected putDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {        
@@ -79,7 +79,7 @@ export class BaseService {
                 .put(`form/dynamicedit/edit/${type}`, form)
                 .toPromise()
                 .then(res => <JsonResult>res.json())
-                .catch(this.handleError);
+                .catch(err => this.handleError(err));
         }
 
         let headers = new Headers({
@@ -90,7 +90,7 @@ export class BaseService {
             .put(`form/dynamicedit/edit/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     protected addRequestVerificationHeaders(headers: Headers) {

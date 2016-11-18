@@ -45,7 +45,7 @@ export class LookupService extends BaseService {
             .post("form/AddLookupTypeRaw", JSON.stringify(lookup), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     private put(lookup: Lookup): Promise<JsonResult> {
@@ -57,7 +57,7 @@ export class LookupService extends BaseService {
             .put('form/EditLookupTypeRaw', JSON.stringify(lookup), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
     
 }

@@ -55,7 +55,7 @@ export class UriBasedService extends BaseService {
             .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     private put(uri: string, item: any): Promise<JsonResult> {
@@ -67,6 +67,6 @@ export class UriBasedService extends BaseService {
             .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 }

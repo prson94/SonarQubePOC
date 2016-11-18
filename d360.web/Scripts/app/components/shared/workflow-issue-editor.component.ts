@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { BaseComponent } from '../shared/base.component';
-import { ResourcesService, WorkflowService } from '../../services/index';
+import { ResourcesService, WorkflowService, MessagesService } from '../../services/index';
 import { Issue } from '../../models/workflow.model';
 import { Resource } from '../../models/resource.model';
 
@@ -73,7 +73,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     private assignToId: string;
     private action: string;
 
-    constructor(private resourcesService: ResourcesService, private workflowService: WorkflowService) { super(); }
+    constructor(private resourcesService: ResourcesService, private workflowService: WorkflowService, private messagesService: MessagesService) { super(); }
 
     ngOnInit() {
         if (this.resources.length <= 0) {
@@ -94,6 +94,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
         this.isLoading = true;        
         this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
             res => {
+                this.showMessageForResult(this.messagesService, res);
                 this.isLoading = false;
                 this.saveClick.emit();
             });

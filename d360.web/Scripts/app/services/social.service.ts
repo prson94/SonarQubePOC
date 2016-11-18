@@ -22,7 +22,7 @@ export class SocialService extends BaseService {
             .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers: headers })
             .toPromise()
             .then(res => <SocialComment[]>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     vote(commentID: number, vote: SocialVoteType): Promise<SocialVote[]>{
@@ -36,7 +36,7 @@ export class SocialService extends BaseService {
             .post('services/community/vote', `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
             .toPromise()
             .then(res => <SocialVote[]>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     editComment(commentEditData: SocialEditCommentData): Promise<SocialComment> {
@@ -50,7 +50,7 @@ export class SocialService extends BaseService {
             .post('services/community/edit', commentEditData, { headers: headers })
             .toPromise()
             .then(res => <SocialComment>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     addComment(commentAddData: SocialEditCommentData): Promise<SocialComment> {
@@ -64,7 +64,7 @@ export class SocialService extends BaseService {
             .post('services/community/comment', commentAddData, { headers: headers })
             .toPromise()
             .then(res => <SocialComment>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     getMyCounts(daysToLookBack: number): Promise<Count[]> {

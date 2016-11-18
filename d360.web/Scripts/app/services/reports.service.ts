@@ -81,7 +81,7 @@ export class ReportsService extends BaseService {
             .post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     saveTile(tile: ReportTile): Promise<JsonResult> {

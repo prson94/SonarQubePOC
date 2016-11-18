@@ -143,7 +143,7 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err=>this.handleError(err));
     }
 
     updateSuggestion(suggestion: SuggestedItem, approve: boolean, comments: string): Promise<JsonResult> {
@@ -155,7 +155,7 @@ export class WorkflowService extends BaseService implements IWorkflowService {
                 WorkflowAction: 'ApprovalFromOwner', Approved: approve, Notes: comments }), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     certifyArtifact(certify: CertifyItem): Promise<JsonResult> {
@@ -166,7 +166,7 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .post(`/services/workflow/tasks/${certify.WorkflowID}`, JSON.stringify({ WorkflowAction: 'CertificationFromOwner' }), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     raiseIssue(objectId: number, objectType: string, issue: string, type: string): Promise<any> {
@@ -177,7 +177,7 @@ export class WorkflowService extends BaseService implements IWorkflowService {
             .post(`/api/issue/raise/${objectType}/${objectId}/${type}`, JSON.stringify(issue), { headers: headers })
             .toPromise()
             .then(res => <any>res)
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     getWorkflowStepBreakdownByArtifactType(artifactTypeId: number): Promise<ArtifactTypeWorkflowBreakdown[]> {

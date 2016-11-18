@@ -64,7 +64,7 @@ export class SurveysService extends BaseService {
             .post('form/AddQuestionType', JSON.stringify(surveyQuestion), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     protected editSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Promise<JsonResult> {        
@@ -76,7 +76,7 @@ export class SurveysService extends BaseService {
             .put('form/EditQuestionType/', JSON.stringify(surveyQuestion), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     getObjectSurvey(parentObjectID: number, parentObjectType: string, objectID: number, objectType: string): Promise<SurveyType> {
@@ -101,7 +101,7 @@ export class SurveysService extends BaseService {
             .post(`api/survey/${surveyId}/${objectId}/${objectType}`, JSON.stringify(surveyResponse), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
 }

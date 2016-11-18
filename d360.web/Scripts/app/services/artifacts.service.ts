@@ -175,7 +175,7 @@ export class ArtifactService extends BaseService {
             .post('form/RequestCertification', `ID=${objectId}`, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {

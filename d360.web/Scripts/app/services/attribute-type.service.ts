@@ -55,7 +55,7 @@ export class AttributeTypeService extends BaseService {
             .post('form/AddAttributeTypeRelation', `AllowMultipleEntries=${allowMultiple}&ObjectTypeInfo=${objectTypeInfo}&AttributeTypeID=${attributeTypeId}`, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     editAttributeTypeAllocations(objectTypeInfo: string, allowMultiple: boolean, attributeTypeId: number): Promise<JsonResult> {
@@ -69,7 +69,7 @@ export class AttributeTypeService extends BaseService {
             .put('form/EditAttributeTypeRelation', `AllowMultipleEntries=${allowMultiple}&ObjectTypeInfo=${objectTypeInfo}&AttributeTypeID=${attributeTypeId}`, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 
     getAttributeTypesForObject(objectType: string, objectId: number): Promise<AttributeType[]> {        

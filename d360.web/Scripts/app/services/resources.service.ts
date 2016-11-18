@@ -84,6 +84,6 @@ export class ResourcesService extends BaseService {
             .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 }

@@ -31,6 +31,6 @@ export class SearchService extends BaseService {
             .post('search/results', url, { headers: headers })
             .toPromise()
             .then(res => <SearchResultsObject>res.json())
-            .catch(this.handleError);
+            .catch(err => this.handleError(err));
     }
 }
