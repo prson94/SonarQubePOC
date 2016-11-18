@@ -10,7 +10,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-category',    
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
-                        <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
+                        <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"><i *ngIf="url" [class]="'fa ' + rootIconName" [routerLink]="url"></i><i *ngIf="!url" [class]="'fa ' + rootIconName"></i></span>
                         <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel">
                             <div>
