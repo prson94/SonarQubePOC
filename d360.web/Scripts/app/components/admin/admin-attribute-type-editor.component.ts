@@ -106,8 +106,7 @@ export class AdminAttributeTypeEditor {
             .then(result => {
                 this.fieldTypes = [];
                 for (let field of result) {
-                    this.fieldTypes.push({ title: field.FriendlyName, value: '{' + field.Name + '}' });
-                    console.log(field);
+                    this.fieldTypes.push({ title: field.FriendlyName, value: '{' + field.Name + '}' });                    
                 }
             });
     }

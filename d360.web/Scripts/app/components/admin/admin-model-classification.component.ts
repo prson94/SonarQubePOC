@@ -95,8 +95,7 @@ export class AdminModelClassificationComponent extends BaseComponent {
         this.modelsService.saveClassification(event.item)
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID == undefined) {
-                    console.log(event);
+                if (event.item.ID == undefined) {                    
                     event.item.ID = Number(result.id.split('|')[1]);
                     this.classifications[this.classifications.length] = event.item;
                 }

@@ -75,8 +75,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.getFieldsDefinition();
         } 
         else if (changes['fusionQueryAttributeTypeId'] && this.fusionQueryAttributeTypeId) {
-            this.fusionObject = 'FusionQueryAttributeType';
-            console.log(this.fusionQueryAttributeTypeId);
+            this.fusionObject = 'FusionQueryAttributeType';            
             this.fusionObjectID = this.fusionQueryAttributeTypeId;
             this.fusionAttributeTypeId = null;
             this.filters = [];

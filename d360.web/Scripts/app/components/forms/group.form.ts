@@ -54,8 +54,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
                 //TODO: primeng does not currently support optgroups, I'm ignoring them here
                 FormHelper.mapSelectItems(this.model.resourceList);
                 this.onLoadComplete.emit(null);
-                this.isLoading = false;
-                console.log(this.model);
+                this.isLoading = false;                
             });
         this.onLoadComplete.emit(null);
     }

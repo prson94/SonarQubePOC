@@ -45,7 +45,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
 
     ngOnInit() {
         let s = this.settings;
-        console.log(s);
+        
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Find");
 
@@ -92,7 +92,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
 
         //Clear out values
         //this.findParentSetting = false;
-        console.log(search);
+        
         switch (search) {
             case 'Glossary':
                 return Promise.resolve();
@@ -124,7 +124,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     loadFusionOwners(): Promise<any> {
         return this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
             .then(r => {
-                console.log(r);
+                
                 this.owners = r;
             });
     }

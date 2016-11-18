@@ -61,23 +61,5 @@ export class DashboardTabComponent extends BaseComponent implements OnInit {
                 this.dashboards = result;
                 this.isLoading = false;
             });
-    }
-
-  /*  private showDashboard(event, item: Dashboard) {
-        console.log(item);
-    }
-
-    private selectDashboard(selected) {
-        var selectedArray = this.dashboards.filter(x => x.ID == selected.value);
-
-        if (selectedArray.length != 1) return;
-
-        var item = selectedArray[0];
-                
-        this.openedDashboards.push({
-            label: item.Name, command: (event) => {
-                this.showDashboard(event,item);
-            }
-        });
-    }*/
+    }  
 }

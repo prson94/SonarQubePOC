@@ -42,7 +42,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     }
 
     ngOnInit() {
-        console.log(this.settings);
+        
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Promote");
         this.loadTypes()

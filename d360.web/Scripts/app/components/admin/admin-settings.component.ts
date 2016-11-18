@@ -301,8 +301,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         } else {
 
             return this.siteMenuService.getAvailableItems()
-                .then(r => {
-                    console.log(r);
+                .then(r => {                    
                     this.availableItems = r;
                 })
                 .then(() => this.siteMenuService.getSiteNavFolderItems(this.selection.ID))

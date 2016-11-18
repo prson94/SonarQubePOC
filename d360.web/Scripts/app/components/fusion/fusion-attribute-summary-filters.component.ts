@@ -62,8 +62,7 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
                 this.internalFilters = _.cloneDeep(this.filters);
 
         }
-        else if (changes['filters'] && this.filters.length > 0) {
-            console.log(this.filters);
+        else if (changes['filters'] && this.filters.length > 0) {            
             this.internalFilters = _.cloneDeep(this.filters);
         }
     }

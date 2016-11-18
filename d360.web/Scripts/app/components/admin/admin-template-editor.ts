@@ -59,8 +59,7 @@ export class AdminTemplateEditorComponent {
         this.actions.push({ label: "View Statistics", value: "Statistics" });        
     }
 
-    ngOnInit() {
-        console.log(this.template);
+    ngOnInit() {        
         if (this.template != undefined)
             this.editedTemplate = _.cloneDeep(this.template);
         else {
