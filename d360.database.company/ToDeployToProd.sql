@@ -464,12 +464,14 @@ Pull the following object updates:
 	[bulkload].[UpdateItemColumnByIntersectType]
 	[bulkload].[RemoveBusinessLineage]
 	[bulkload].[Promotions]
+	[bulkload].[BusinessLineage]
 	[dbo].[GetAllowedIntersectionTypes]
 	utility.GetIntersectTypesByType
 	utility.GetFieldTypeLookupList
 	[dbo].[CustomSiteNavigation]
 	[dbo].[GetSiteNavigation]
 	[dbo].[GetRenderedTemplateBodyNg]
+	[dbo].[FieldWithRelation]
 */
 
 

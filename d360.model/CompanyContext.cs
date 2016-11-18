@@ -720,6 +720,7 @@ from	DomainType
 			when 'P' then 'Promotion'
 			when 'R' then 'Relation'
 			when 'U' then 'Unrelation'
+            when 'BL' then 'Lineage : Business'
             when 'L' then 'Lineage'
             when 'DL' then 'Remove Lineage : Business'
             when 'N' then 'Lineage : Business'

@@ -98,31 +98,59 @@ namespace d360.web.Controllers
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == typeCheck.Type && i.ObjectID == typeCheck.ID).OrderBy(i => i.SortOrder).ToList();
 
                 fieldTypes.ForEach(ft => {
-                    var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
-                    if (k != null)
+                var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+                if (k != null)
+                {
+                    if (!string.IsNullOrEmpty(k.Value))
                     {
-                        if (!string.IsNullOrEmpty(k.Value))
+                        if (k.Type == DataType.FusionLookup.ToString())
                         {
-                            if (k.Type == DataType.FusionLookup.ToString())
+                            //look at fusionlookup field and figure out what to show
+                            list.AddRange(RenderFusionLookupField(k));
+                        }
+                        else
+                        {
+                            var ro = new ReadOnlyField
                             {
-                                //look at fusionlookup field and figure out what to show
-                                list.AddRange(RenderFusionLookupField(k));
-                            }
-                            else
+                                Name = k.FriendlyName,
+                                Value = k.FormattedValue,
+                                FieldDescription = k.DisplayDescription,
+                                FieldName = k.Name
+                            };
+                            if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
                             {
-                                var ro = new ReadOnlyField
+                                ro.TooltipContext = TemplateAction.LookupPreview.ToString();
+
+                                if (k.LookupObjectType == "Lookup")
                                 {
-                                    Name = k.FriendlyName,
-                                    Value = k.FormattedValue,
-                                    FieldDescription = k.DisplayDescription,
-                                    FieldName = k.Name
-                                };
-                                if (!string.IsNullOrEmpty(k.LookupObjectType) && k.LookupObjectID.HasValue)
+                                        if (k.LookupObjectID.HasValue)
+                                        {
+                                            ro.TooltipID = k.LookupObjectID;
+                                        }
+                                        else
+                                        {
+                                            ro.TooltipID = 0;
+                                        }
+                                }
+                                else
                                 {
-                                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                                    ro.TooltipID = k.LookupObjectType == "Lookup" ? k.LookupObjectID : (string.IsNullOrEmpty(k.Value)) ? 0 : int.Parse(k.Value);
+                                        if (string.IsNullOrEmpty(k.Value))
+                                        {
+                                            ro.TooltipID = 0;
+                                        }
+                                        else
+                                        {
+                                            int textValue;
+                                            if (int.TryParse(k.Value, out textValue))
+                                            {
+                                                ro.TooltipID = textValue;
+                                            }
+                                        } 
+                                    }
+
                                     ro.TooltipType = k.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : k.LookupObjectType;
                                     ro.TooltipUrl = k.LookupUrl;
+
                                 }
 
                                 list.Add(new DetailReadOnlyRowModel
@@ -3890,7 +3918,10 @@ select  case
                 sqlQuery += string.Join(" ", def.Relations.Select(i => i.JoinStatement)) + " ";
 
                 var whereQuery = string.Join(" AND ", def.Relations.Where(i => !string.IsNullOrEmpty(i.WhereStatement)).Select(i => i.WhereStatement));
-                whereQuery += string.Join(" AND ", columnModels.Where(i => !string.IsNullOrEmpty(i.Filter)).Select(i => $"{i.SortColumn} like '{i.Filter.CleanForSql()}%'"));
+                var filterWhereQuery = string.Join(" AND ", columnModels.Where(i => !string.IsNullOrEmpty(i.Filter)).Select(i => $"{i.DisplayColumn} like '{i.Filter.CleanForSql()}%'"));
+                if (!string.IsNullOrEmpty(filterWhereQuery))
+                    whereQuery += " AND " + filterWhereQuery;
+
                 if (!string.IsNullOrEmpty(whereQuery)) whereQuery = " where " + whereQuery;
                 sqlQuery += whereQuery + " ";
 

@@ -5148,6 +5148,7 @@ namespace d360.web.Controllers
                         {
                             throw new ConflictException("Error Occurred!", $"{Resources.FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
+                        Company.Add<FieldType>(model.FieldType);
                         break;
                     #endregion
                     case "FilteredLookup":
@@ -5195,6 +5196,8 @@ namespace d360.web.Controllers
 
                             model.FieldType.FieldTypeFilteredLookupDefinitions = new List<FieldTypeFilteredLookupDefinition>() { def };
                             //Company.Add<FieldTypeRelationLookupDefinition>(def);
+
+                            Company.Add<FieldType>(model.FieldType);
                         }
                         break;
                     #endregion
@@ -5243,6 +5246,7 @@ namespace d360.web.Controllers
                             }
                             model.FieldType.FieldTypeFusionLookupDefinitions = new List<FieldTypeFusionLookupDefinition>() { def };
                         }
+                        Company.Add<FieldType>(model.FieldType);
                         break;
                     #endregion
                     case "RelationLookup":
@@ -5291,6 +5295,8 @@ namespace d360.web.Controllers
 
                             model.FieldType.FieldTypeRelationLookupDefinitions = new List<FieldTypeRelationLookupDefinition>() { def };
                             //Company.Add<FieldTypeRelationLookupDefinition>(def);
+
+                            Company.Add<FieldType>(model.FieldType);
                         }
                         break;
                     #endregion
@@ -5361,10 +5367,11 @@ namespace d360.web.Controllers
                         }
 
                         break;
-                        #endregion
+                    #endregion
+                    default:
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                 }
-
-                Company.Add<FieldType>(model.FieldType);
 
                 return jsonSuccess(Resources.FormInfo.Add_FieldType_Confirmation, model.FieldType.ID.ToString(), ContextList.FieldType, "add", HttpStatusCode.Created);
             }
@@ -11352,42 +11359,22 @@ for json path");
 
             switch (type)
             {
-                case "DeleteLineage":
+                case "Lineage":
                     #region
+                    fieldTypeNames.Add("Action");
+
                     fieldTypeNames.Add("Source Relation");
                     fieldTypeNames.Add("Source subject subject area");
                     fieldTypeNames.Add("Source subject");
                     fieldTypeNames.Add("Source object subject area");
                     fieldTypeNames.Add("Source object");
 
-                    fieldTypeNames.Add("Target Relation");
-                    fieldTypeNames.Add("Target subject subject area");
-                    fieldTypeNames.Add("Target subject");
-                    fieldTypeNames.Add("Target object subject area");
-                    fieldTypeNames.Add("Target object");
-
-                    break;
-                #endregion
-                case "NewLineage":
-                    #region
-                    fieldTypeNames.Add("Source subject type");
-                    fieldTypeNames.Add("Source subject type name");
-                    fieldTypeNames.Add("Source subject subject area");
-                    fieldTypeNames.Add("Source subject");
-                    fieldTypeNames.Add("Source object type");
-                    fieldTypeNames.Add("Source object type name");
-                    fieldTypeNames.Add("Source object subject area");
-                    fieldTypeNames.Add("Source object");
-
                     fieldTypeNames.Add("Source Fusion Configuration");
                     fieldTypeNames.Add("Source Fusion Path");
 
-                    fieldTypeNames.Add("Target subject type");
-                    fieldTypeNames.Add("Target subject type name");
+                    fieldTypeNames.Add("Target Relation");
                     fieldTypeNames.Add("Target subject subject area");
                     fieldTypeNames.Add("Target subject");
-                    fieldTypeNames.Add("Target object type");
-                    fieldTypeNames.Add("Target object type name");
                     fieldTypeNames.Add("Target object subject area");
                     fieldTypeNames.Add("Target object");
 
@@ -11396,8 +11383,9 @@ for json path");
 
                     fieldTypeNames.Add("Transformation");
                     fieldTypeNames.Add("Role");
+
                     break;
-                    #endregion
+                #endregion
                 case "Synonym":
                     #region
                     fieldTypeNames.Add("Source object type");
@@ -11586,13 +11574,10 @@ from ArtifactType A
                     sql = @"select 'IntersectType|' + cast(ID as varchar(10)) as value, Name as title from IntersectType where IsSystem = 0 order by Name";
                     break;
                     #endregion
-                case "N":   // Lineage
-                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "NewLineage|-1" } };
+                case "BL":   // Lineage
+                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
                     break;
-                case "DL":   // Delete Lineage
-                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "DeleteLineage|-1" } };
-                    break;
-                case "T":   // Technical Lineage
+                case "TL":   // Technical Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "TechnicalLineage|-1" } };
                     break;
                 case "S":   // Synonym
@@ -11652,6 +11637,19 @@ from ArtifactType A
                 if ((type == "ArtifactType" && lowerColName == "subject area") || (type == "IntersectType" && lowerColName.Contains("subject area")))
                 {
                     var items = Company.Table<TaxonomyType>().OrderBy(x => x.Name).Select(x => x.Name);
+
+                    if (items.Any())
+                    {
+                        var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
+
+                        CreateExcelList(lookupColumns++, document, "Lookups", dv, items);
+
+                        document.AddDataValidation(dv);
+                    }
+                }
+                else if (lowerColName == "action") //Lineage, Relationship
+                {
+                    var items = new List<string>() { "Add", "Remove" };
 
                     if (items.Any())
                     {
@@ -11782,7 +11780,7 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
-                else if (type == "DeleteLineage" && lowerColName.In("source relation", "target relation"))
+                else if (type == "Lineage" && lowerColName.In("source relation", "target relation"))
                 {
                     var items = Company.Table<IntersectType>().Where(o => !o.IsSystem.Value || !o.IsSystem.HasValue).OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -11795,7 +11793,7 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
-                else if (type == "NewLineage" && lowerColName == "role")
+                else if (type == "Lineage" && lowerColName == "role")
                 {
                     var items = Company.Table<IntersectRole>().OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -11808,10 +11806,7 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
-                else if (
-                    ((type == "DeleteLineage" || type == "NewLineage") && lowerColName.In("source subject type", "source object type", "target subject type", "target object type")) ||
-                    (type == "Synonym" && lowerColName.In("source object type", "target object type"))
-                    )
+                else if (type == "Synonym" && lowerColName.In("source object type", "target object type"))
                 {
                     var dv = document.CreateDataValidation(2, i + 1, 1000, i + 1);
                     var typesList = new List<string> { "Artifact", "Domain", "Policy", "Rule", "Taxonomy" };
@@ -11821,7 +11816,7 @@ from ArtifactType A
                     document.AddDataValidation(dv);
                 }
                 else if (
-                    ((type == "DeleteLineage" || type == "NewLineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
+                    ((type == "Lineage") && lowerColName.In("source subject subject area", "source object subject area", "target subject subject area", "target object subject area")) ||
                     (type == "Synonym" && lowerColName.In("source object subject area", "target object subject area"))
                     )
                 {
@@ -11836,7 +11831,7 @@ from ArtifactType A
                         document.AddDataValidation(dv);
                     }
                 }
-                else if ( (type == "NewLineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
+                else if ( (type == "Lineage" || type == "TechnicalLineage") && (lowerColName == "source fusion configuration" || lowerColName == "target fusion configuration") )
                 {
                     var items = Company.Table<Fusion>().OrderBy(x => x.Name).Select(x => x.Name);
 
@@ -11887,7 +11882,7 @@ from ArtifactType A
                 required = false;
             else if (type == "DomainType" && (columnName != "name" && columnName != "domain group"))
                 required = false;
-            else if (type == "NewLineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
+            else if (type == "Lineage" && (columnName == "source fusion configuration" || columnName == "target fusion configuration" || columnName == "source fusion path" || columnName == "target fusion path"))
                 required = false;
 
             if (type == "IntersectType")
@@ -12050,11 +12045,14 @@ from ArtifactType A
                 if (success)
                 {
                     Company.Add<Load>(load);
+#if DEBUG
                     // use bulkloaddev queue to debug bulk load web job
-                    //Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
-
+                    Company.Enqueue(QueueType.BulkLoadDev, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+#else
                     // regular production queue
                     Company.Enqueue(QueueType.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+#endif
+
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), ContextList.Load, "A", HttpStatusCode.Created);
                 }
                 else
@@ -12116,8 +12114,6 @@ from ArtifactType A
             document.SetColumnStyle(columnCount + 1, new SLStyle { Font = new SLFont { FontColor = System.Drawing.Color.Red } });
 
             #endregion
-
-
 
             var stream = new MemoryStream();
             document.SaveAs(stream);

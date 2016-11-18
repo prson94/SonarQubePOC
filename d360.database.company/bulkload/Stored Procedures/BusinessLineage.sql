@@ -1,383 +1,244 @@
 ﻿CREATE procedure [bulkload].[BusinessLineage]
 --declare
 	@id int
---set @id = 19
+--set @id = 271
 as
 begin
 	set nocount on;
 
 	declare @r int,
-			@dt datetime = getutcdate()
+			@dt datetime = getutcdate(),
+			@ActionColumn int = 1,
+			@SourceIntersectTypeColumn int = 2,
+			@SourceSubjectSubjectAreaColumn int = 3,
+			@SourceSubjectColumn int = 4,
+			@SourceObjectSubjectAreaColumn int = 5,
+			@SourceObjectColumn int = 6,
+			@SourceFusionConfigColumn int = 7,
+			@SourceFusionAttributeColumn int = 8,
+			@TargetIntersectTypeColumn int = 9,
+			@TargetSubjectSubjectAreaColumn int = 10,
+			@TargetSubjectColumn int = 11,
+			@TargetObjectSubjectAreaColumn int = 12,
+			@TargetObjectColumn int = 13,
+			@TargetFusionConfigColumn int = 14,
+			@TargetFusionAttributeColumn int = 15,
+			@TransformationColumn int = 16,
+			@RoleColumn int = 17
 
 	select	@r = UpdatedBy from [Load] where ID = @id
 
-	exec bulkload.UpdateTypeColumn @id, 1, 2				-- source subject type
-	exec bulkload.UpdateTypeColumn @id, 5, 6				-- source object type
-	exec bulkload.UpdateTypeColumn @id, 11, 12				-- target subject type
-	exec bulkload.UpdateTypeColumn @id, 15, 16				-- target object type
+	--Set the default Action to Add if blank or NULL.
+	update	LoadItemColumn
+	set		Value = 'Add'
+	where	LoadID = @id and ColumnIndex = @ActionColumn and (Value is null or Value = '')
 
-	exec bulkload.UpdateSubjectAreaColumn @id, 3			-- source subject subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, 7			-- source object subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, 13			-- target subject subject area
-	exec bulkload.UpdateSubjectAreaColumn @id, 17			-- target object subject area
+	exec bulkload.UpdateIntersectTypeColumn @id, @SourceIntersectTypeColumn																		-- source intersect type
+	exec bulkload.UpdateIntersectTypeColumn @id, @TargetIntersectTypeColumn																		-- target intersect type
 
-	exec bulkload.UpdateItemColumn @id, 1, 2, 3, 4			-- source subject
-	exec bulkload.UpdateItemColumn @id, 5, 6, 7, 8			-- source object
-	exec bulkload.UpdateItemColumn @id, 11, 12, 13, 14		-- target subject
-	exec bulkload.UpdateItemColumn @id, 15, 16, 17, 18		-- target object
+	exec bulkload.UpdateSubjectAreaColumn @id, @SourceSubjectSubjectAreaColumn																	-- source subject subject area
+	exec bulkload.UpdateSubjectAreaColumn @id, @SourceObjectSubjectAreaColumn																	-- source object subject area
+	exec bulkload.UpdateSubjectAreaColumn @id, @TargetSubjectSubjectAreaColumn																	-- target subject subject area
+	exec bulkload.UpdateSubjectAreaColumn @id, @TargetObjectSubjectAreaColumn																	-- target object subject area
 
-	exec bulkload.UpdateFusionConfigurationColumn @id, 9	-- source fusion config
-	exec bulkload.UpdateFusionConfigurationColumn @id, 19	-- target fusion config
+	exec bulkload.UpdateItemColumnByIntersectType @id, @SourceIntersectTypeColumn, 1, @SourceSubjectSubjectAreaColumn, @SourceSubjectColumn		-- source subject
+	exec bulkload.UpdateItemColumnByIntersectType @id, @SourceIntersectTypeColumn, 0, @SourceObjectSubjectAreaColumn, @SourceObjectColumn		-- source object
+	exec bulkload.UpdateItemColumnByIntersectType @id, @TargetIntersectTypeColumn, 1, @TargetSubjectSubjectAreaColumn, @TargetSubjectColumn		-- target subject
+	exec bulkload.UpdateItemColumnByIntersectType @id, @TargetIntersectTypeColumn, 0, @TargetObjectSubjectAreaColumn, @TargetObjectColumn		-- target object
 
-	exec bulkload.UpdateFusionAttributeColumn @id, 9, 10	-- source fusion attribute
-	exec bulkload.UpdateFusionAttributeColumn @id, 19, 20	-- target fusion attribute
+	exec bulkload.UpdateFusionConfigurationColumn @id, @SourceFusionConfigColumn																-- source fusion config
+	exec bulkload.UpdateFusionConfigurationColumn @id, @TargetFusionConfigColumn																-- target fusion config
 
-	exec bulkload.UpdateIntersectRoleColumn @id, 22			-- intersect role
+	exec bulkload.UpdateFusionAttributeColumn @id, @SourceFusionConfigColumn, @SourceFusionAttributeColumn										-- source fusion attribute
+	exec bulkload.UpdateFusionAttributeColumn @id, @TargetFusionConfigColumn, @TargetFusionAttributeColumn										-- target fusion attribute
 
-	drop table if exists #Items
+	exec bulkload.UpdateIntersectRoleColumn @id, @RoleColumn																					-- intersect role
 
+	drop table if exists #RemoveItems
+	drop table if exists #AddItems
+--select * from #RemoveItems
 	BEGIN TRANSACTION [Tran1]
 
 	BEGIN TRY
+		-- HANDLE THE REMOVEs
+
 		-- Load Temp table that we are going to work from
 		select	SS.RowIndex,
 		
-				SIT.ID as SourceIntersectTypeID,
-				SST.LookupObject as SourceSubjectType,
-				SST.LookupObjectID as SourceSubjectTypeID,
+				SIT.LookupObjectID as SourceIntersectTypeID,
 				SS.LookupObject as SourceSubject,
 				SS.LookupObjectID as SourceSubjectID,
-
-				SOT.LookupObject as SourceObjectType,
-				SOT.LookupObjectID as SourceObjectTypeID,
 				SO.LookupObject as SourceObject,
 				SO.LookupObjectID as SourceObjectID,
 
-				SIFT.ID as SourceFusionIntersectTypeID,
-				SF.LookupObject as SourceFusion,
-				SF.Value as SourceFusionRaw,
-				SF.LookupObjectID as SourceFusionID,
-
-				TIT.ID as TargetIntersectTypeID,
-				TST.LookupObject as TargetSubjectType,
-				TST.LookupObjectID as TargetSubjectTypeID,
+				TIT.LookupObjectID as TargetIntersectTypeID,
 				TS.LookupObject as TargetSubject,
 				TS.LookupObjectID as TargetSubjectID,
-
-				TOT.LookupObject as TargetObjectType,
-				TOT.LookupObjectID as TargetObjectTypeID,
 				[TO].LookupObject as TargetObject,
 				[TO].LookupObjectID as TargetObjectID,
 
-				TIFT.ID as TargetFusionIntersectTypeID,
-				TF.Value as TargetFusionRaw,
-				TF.LookupObject as TargetFusion,
-				TF.LookupObjectID as TargetFusionID,
+				SI.ID as SourceIntersectID,
+				TI.ID as TargetIntersectID,
+				M.ID as MapItemID,
 
-				cast(0 as int) as SourceIntersectID,
-				cast('' as char(1)) as SourceIntersectChangeType,
-				cast(0 as int) as TargetIntersectID,
-				cast('' as char(1)) as TargetIntersectChangeType,
-				cast(0 as int) as SourceFusionIntersectID,
-				cast('' as char(1)) as SourceFusionIntersectChangeType,
-				cast(0 as int) as TargetFusionIntersectID,
-				cast('' as char(1)) as TargetFusionIntersectChangeType,
-				cast(0 as int) as MapItemID,
-				cast('' as char(1)) as MapItemChangeType,
-				cast(0 as int) as MapRuleItemID,
-				cast('' as char(1)) as MapRuleItemChangeType,
+				MRI.ID as MapRuleItemID,
 
 				cast(0 as bit) as Status,
 				cast('' as nvarchar(500)) as StatusMessage,
 
 				@r as ResourceID  --THE USER THAT ADDED THE LOAD
-		into	#Items
+		into	#RemoveItems
 		from	LoadItemColumn SS
-				inner join LoadItemColumn SST	on SST.LoadID = SS.LoadID	and SST.RowIndex = SS.RowIndex	and SST.ColumnIndex = 2
-				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SO.ColumnIndex = 8
-				inner join LoadItemColumn SOT	on SOT.LoadID = SS.LoadID	and SOT.RowIndex = SS.RowIndex	and SOT.ColumnIndex = 6
-				left join IntersectType SIT on SIT.Subject = SST.LookupObject and SIT.SubjectID = SST.LookupObjectID and SIT.Object = SOT.LookupObject and SIT.ObjectID = SOT.LookupObjectID
+				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SS.ColumnIndex = @SourceSubjectColumn 	and SO.ColumnIndex = @SourceObjectColumn
+				inner join LoadItemColumn SA	on SA.LoadID = SS.LoadID	and SA.RowIndex = SS.RowIndex 	and SA.ColumnIndex = @ActionColumn and SA.Value = 'Remove'
+				inner join LoadItemColumn SIT	on SIT.LoadID = SS.LoadID	and SIT.RowIndex = SS.RowIndex 	and SIT.ColumnIndex = @SourceIntersectTypeColumn
+				left join [Intersect] SI		on SIT.LookupObject = 'IntersectType' and SI.IntersectTypeID = SIT.LookupObjectID 
+												and SI.Subject = SS.LookupObject and SI.SubjectID = SS.LookupObjectID 
+												and SI.Object = SO.LookupObject and SI.ObjectID = SO.LookupObjectID
 
-				left join LoadItemColumn SF	on SF.LoadID = SS.LoadID	    and SF.RowIndex = SS.RowIndex	and SF.ColumnIndex = 10
-				left join FusionAttribute SFA on SFA.ID = SF.LookupObjectID
-				left join IntersectType SIFT on SIFT.Subject = 'IntersectType' and SIFT.SubjectID = SIT.ID and SIFT.Object = 'FusionAttributeType' and SIFT.ObjectID = SFA.FusionAttributeTypeID
+				inner join LoadItemColumn TS 	on TS.LoadID = SS.LoadID 	and TS.RowIndex = SS.RowIndex	and TS.ColumnIndex = @TargetSubjectColumn
+				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = @TargetObjectColumn
+				inner join LoadItemColumn TIT	on TIT.LoadID = SS.LoadID	and TIT.RowIndex = SS.RowIndex 	and TIT.ColumnIndex = @TargetIntersectTypeColumn
+				left join [Intersect] TI		on TIT.LookupObject = 'IntersectType' and TI.IntersectTypeID = TIT.LookupObjectID 
+												and TI.Subject = TS.LookupObject and TI.SubjectID = TS.LookupObjectID 
+												and TI.Object = [TO].LookupObject and TI.ObjectID = [TO].LookupObjectID
 
-				inner join LoadItemColumn TS 	on TS.LoadID = SS.LoadID 	and TS.RowIndex = SS.RowIndex	and TS.ColumnIndex = 14
-				inner join LoadItemColumn TST	on TST.LoadID = SS.LoadID	and TST.RowIndex = SS.RowIndex	and TST.ColumnIndex = 12 
-				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = 18
-				inner join LoadItemColumn TOT	on TOT.LoadID = SS.LoadID	and TOT.RowIndex = SS.RowIndex	and TOT.ColumnIndex = 16
-				left join IntersectType TIT on TIT.Subject = TST.LookupObject and TIT.SubjectID = TST.LookupObjectID and TIT.Object = TOT.LookupObject and TIT.ObjectID = TOT.LookupObjectID
+				left join MapItem M				on M.SourceIntersectID = SI.ID and M.TargetIntersectID = TI.ID
 
-				left join LoadItemColumn TF	on TF.LoadID = SS.LoadID	    and TF.RowIndex = SS.RowIndex	and TF.ColumnIndex = 20
-				left join FusionAttribute TFA on TFA.ID = TF.LookupObjectID
-				left join IntersectType TIFT on TIFT.Subject = 'IntersectType' and TIFT.SubjectID = TIT.ID and TIFT.Object = 'FusionAttributeType' and TIFT.ObjectID = TFA.FusionAttributeTypeID
+				left join LoadItemColumn SFA	on SFA.LoadID = SS.LoadID	and SFA.RowIndex = SS.RowIndex 	and SFA.ColumnIndex = @SourceFusionAttributeColumn
+				left join LoadItemColumn TFA	on TFA.LoadID = SS.LoadID	and TFA.RowIndex = SS.RowIndex 	and TFA.ColumnIndex = @TargetFusionAttributeColumn
+				left join MapRuleItem MRI		on	SFA.LookupObject = 'FusionAttribute' and MRI.SourceFusionAttributeID = SFA.LookupObjectID and
+													TFA.LookupObject = 'FusionAttribute' and MRI.TargetFusionAttributeID = TFA.LookupObjectID
 
 		where	SS.LoadID = @id
-				and SS.ColumnIndex = 4
+
 
 		-- Add indexes to temp table
-		CREATE NONCLUSTERED INDEX [IX_SourceBusinessIntersect] ON #Items ( SourceIntersectTypeID ASC, SourceSubject ASC, SourceSubjectID ASC, SourceObject ASC, SourceObjectID ASC )
+		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_MapItem] ON #RemoveItems ( MapItemID ASC )
+		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_MapRuleItem] ON #RemoveItems ( MapRuleItemID ASC )
+		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_SourceIntersect] ON #RemoveItems ( SourceIntersectID ASC )
+		CREATE NONCLUSTERED INDEX [IX_TempRemoveItems_TargetIntersect] ON #RemoveItems ( TargetIntersectID ASC )
 
-		/*	BEGIN: SOURCE BUSINESS INTERSECT LOGIC */
+		/*	BEGIN: REMOVE TECHNICAL MAPPINGS THAT ARE TIED TO FOUND MAP ITEMS */
+		declare @mapRuleItems table(MapRuleItemID int, MapRuleID int)
+		insert into @mapRuleItems
+			select	T.MapRuleItemID,
+					TJ.MapRuleID
+			from	MapRuleItemMapItem T
+					inner join #RemoveItems S on S.MapItemID = T.MapItemID
+					left join MapRuleItemMapRule TJ on TJ.MapRuleItemID = T.MapRuleItemID
 
-		-- update rows with existing source business intersects
-		update	T
-		set		T.SourceIntersectID = S.ID,
-				T.SourceIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
+		delete	T
+		from	MapRuleItemMapItem T
+				inner join @mapRuleItems S on S.MapRuleItemID = T.MapRuleItemID
 
-		-- insert source business relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceIntersectTypeID, 
-					SourceSubject, SourceSubjectID, SourceObject, SourceObjectID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	#Items
-			where	SourceIntersectTypeID is not null
-					and SourceIntersectID = 0
-					and SourceIntersectChangeType <> 'U'
-					and SourceSubject is not null and SourceSubjectID is not null
-					and SourceObject is not null and SourceObjectID is not null;
+		delete	T
+		from	MapRuleItemMapRule T
+				inner join @mapRuleItems S on S.MapRuleItemID = T.MapRuleItemID
 
-		-- update rows with existing source business intersect
-		update	T
-		set		T.SourceIntersectID = S.ID,
-				T.SourceIntersectChangeType = 'A'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
-				and T.SourceIntersectChangeType <> 'U';
+		delete	T
+		from	MapRule T
+				inner join @mapRuleItems S on S.MapRuleID = T.ID
+				left join MapRuleItemMapRule NTJ on NTJ.MapRuleID = S.MapRuleID and NTJ.MapRuleItemID <> S.MapRuleItemID	--get all map rules that are used only once.
+		where	NTJ.MapRuleID is null
+		/*	END: REMOVE TECHNICAL MAPPINGS THAT ARE TIED TO FOUND MAP ITEMS */
 
-		/*	END: SOURCE BUSINESS INTERSECT LOGIC */
+		/*	BEGIN: REMOVE TECHNICAL MAPPING OPTIONALLY SPECIFIED IF NOT TIED ANYWHERE ELSE */
+		declare @mapRuleItemIDs table(MapRuleItemID int)
+		insert into @mapRuleItemIDs
+			select	S.MapRuleItemID
+			from	#RemoveItems S
+					left join MapRuleItemMapItem J on J.MapRuleItemID = S.MapRuleItemID
+			where	S.MapRuleItemID is not null;
 
+		delete	T
+		from	MapRuleItem T
+				inner join @mapRuleItemIDs S on S.MapRuleItemID = T.ID;
 
-		/*	BEGIN: TARGET BUSINESS INTERSECT LOGIC */
+		/*	END: REMOVE TECHNICAL MAPPING OPTIONALLY SPECIFIED IF NOT TIED ANYWHERE ELSE */
 
-		-- update rows with existing target business intersects
-		update	T
-		set		T.TargetIntersectID = S.ID,
-				T.TargetIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
+		/*	BEGIN: MAPPINGS FOUND MAP ITEMS */
+		declare @mapItems table(MapItemID int, MapID int)
+		insert into @mapItems
+			select	S.MapItemID,
+					J.MapID
+			from	#RemoveItems S
+					left join MapItemMap J on J.MapItemID = S.MapItemID;
 
-		-- insert target business relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					TargetIntersectTypeID, 
-					TargetSubject, TargetSubjectID, TargetObject, TargetObjectID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	#Items
-			where	TargetIntersectTypeID is not null
-					and TargetIntersectID = 0
-					and TargetIntersectChangeType <> 'U'
-					and TargetSubject is not null and TargetSubjectID is not null
-					and TargetObject is not null and TargetObjectID is not null;
+		delete	T
+		from	MapItemMap T
+				inner join @mapItems S on S.MapItemID = T.MapItemID;
 
-		-- update rows with existing target business intersect
-		update	T
-		set		T.TargetIntersectID = S.ID,
-				T.TargetIntersectChangeType = 'A'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
-				and T.TargetIntersectChangeType <> 'U';
+		delete	T
+		from	MapSequence T
+				inner join @mapItems S on S.MapItemID = T.MapItemID;
 
-		/*	END: TARGET BUSINESS INTERSECT LOGIC */
+		delete	T
+		from	MapItem T
+				inner join @mapItems S on S.MapItemID = T.ID;
 
+		delete	T
+		from	MapRule T
+				inner join @mapRuleItems S on S.MapRuleID = T.ID
+				left join MapRuleItemMapRule NTJ on NTJ.MapRuleID = S.MapRuleID and NTJ.MapRuleItemID <> S.MapRuleItemID	--get all map rules that are used only once.
+		where	NTJ.MapRuleID is null;
+		/*	END: REMOVE FOUND MAP ITEMS */
 
-		/*	BEGIN: SOURCE TECHNICAL INTERSECT LOGIC */
-
-		-- update rows with existing source technical intersects
-		update	T
-		set		T.SourceFusionIntersectID = S.ID,
-				T.SourceFusionIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionID
-
-		-- insert source technical relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceFusionIntersectTypeID, 
-					'Intersect', SourceIntersectID, 'FusionAttribute', SourceFusionID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	#Items
-			where	SourceFusionIntersectTypeID is not null
-					and SourceFusionIntersectID = 0
-					and SourceIntersectID <> 0
-					and SourceFusionIntersectChangeType <> 'U'
-					and SourceFusionID is not null;
-
-		-- update rows with existing source technical intersect
-		update	T
-		set		T.SourceFusionIntersectID = S.ID,
-				T.SourceFusionIntersectChangeType = 'A'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.SourceIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionID
-				and T.SourceFusionIntersectChangeType <> 'U';
-
-		/*	END: SOURCE TECHNICAL INTERSECT LOGIC */
-
-
-		/*	BEGIN: TARGET TECHNICAL INTERSECT LOGIC */
-		
-		-- update rows with existing target technical intersects
-		update	T
-		set		T.TargetFusionIntersectID = S.ID,
-				T.TargetFusionIntersectChangeType = 'U'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
-
-		-- insert target technical relationships
-		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					TargetFusionIntersectTypeID, 
-					'Intersect', TargetIntersectID, 'FusionAttribute', TargetFusionID,
-					0, ResourceID, @dt, ResourceID, @dt
-			from	#Items
-			where	TargetFusionIntersectTypeID is not null
-					and TargetFusionIntersectID = 0
-					and TargetIntersectID <> 0
-					and TargetFusionIntersectChangeType <> 'U'
-					and TargetFusionID is not null;
-
-		-- update rows with existing target technical intersect
-		update	T
-		set		T.TargetFusionIntersectID = S.ID,
-				T.TargetFusionIntersectChangeType = 'A'
-		from	#Items T
-				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionID
-				and T.TargetFusionIntersectChangeType <> 'U';
-
-		/*	END: TARGET TECHNICAL INTERSECT LOGIC */
-
-		-- update rows with existing map items
-		update	T
-		set		T.MapItemID = S.ID,
-				T.MapItemChangeType = 'U'
-		from	#Items T
-				inner join [MapItem] S on S.SourceIntersectID = T.SourceIntersectID and S.TargetIntersectID = T.TargetIntersectID
-
-		-- insert new map items
-		insert into MapItem (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceIntersectID, 
-					TargetIntersectID,
-					ResourceID,
-					@dt, 
-					ResourceID,
-					@dt
-			from	#Items
-			where	SourceIntersectID <> 0 and TargetIntersectID <> 0 and MapItemChangeType <> 'U'
-
-		-- update source data with newly created map item IDs
-		update	T
-		set		T.MapItemID = S.ID,
-				T.MapItemChangeType = 'A'
-		from	#Items T
-				inner join [MapItem] S on S.SourceIntersectID = T.SourceIntersectID and S.TargetIntersectID = T.TargetIntersectID and MapItemChangeType <> 'U'
-
-		-- update rows with existing map rule items
-		update	T
-		set		T.MapRuleItemID = S.ID,
-				T.MapRuleItemChangeType = 'U'
-		from	#Items T
-				inner join [MapRuleItem] S on S.SourceFusionAttributeID = T.SourceFusionID and S.TargetFusionAttributeID = T.TargetFusionID and T.SourceFusionID is not null and T.TargetFusionID is not null
-
-		-- insert new map rule items
-		insert into MapRuleItem (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-			select	distinct
-					SourceFusionID, 
-					TargetFusionID,
-					ResourceID,
-					@dt, 
-					ResourceID,
-					@dt
-			from	#Items
-			where	SourceIntersectID <> 0 and TargetIntersectID <> 0 and MapRuleItemChangeType <> 'U' and SourceFusionID is not null and TargetFusionID is not null;
-
-		-- update source data with newly created map rule item IDs
-		update	T
-		set		T.MapRuleItemID = S.ID,
-				T.MapRuleItemChangeType = 'A'
-		from	#Items T
-				inner join [MapRuleItem] S on S.SourceFusionAttributeID = T.SourceFusionID and S.TargetFusionAttributeID = T.TargetFusionID and T.SourceFusionID is not null and T.TargetFusionID is not null and MapRuleItemChangeType <> 'U';
-
-		-- MERGE MapRuleItemMapItem with all the IDs above
-		merge	MapRuleItemMapItem as T
-		using	(
-				select		MapItemID, 
-							MapRuleItemID
-				from		#Items
-				where		MapItemID > 0 and MapRuleItemID > 0
-				group by	MapItemID, 
-							MapRuleItemID
-				) as S
-		on		T.MapRuleItemID = S.MapRuleItemID and T.MapItemID = S.MapItemID
-		when	not matched by target then
-				insert (MapRuleItemID, MapItemID)
-				values (S.MapRuleItemID, S.MapItemID);
+		/*	BEGIN: REMOVE SOURCE AND TARGET INTERSECTS THAT ARE NOT REFERENCED ANYWHERE ELSE */
+		delete	T
+		from	[Intersect] T
+				inner join #RemoveItems S on (S.SourceIntersectID = T.ID or S.TargetIntersectID = T.ID)
+				left join IntersectGroup CG on CG.IntersectID = T.ID
+				left join MapItem CSM on CSM.SourceIntersectID = T.ID
+				left join MapItem CTM on CTM.TargetIntersectID = T.ID
+				left join [Intersect] CI on (CI.Subject = 'Intersect' and CI.SubjectID = T.ID) or (CI.Object = 'Intersect' and CI.ObjectID = T.ID)
+		where	CG.ID is null and
+				CSM.ID is null and 
+				CTM.ID is null and
+				CI.ID is null;
+		/*	BEGIN: REMOVE SOURCE INTERSECTS THAT ARE NOT REFERENCED ANYWHERE ELSE */
 
 		-- update status & status message for Items table
 		
 		-- SUCCESS STATUS
-		update	#Items
-		set		Status = 1,
-				StatusMessage = case MapItemChangeType
-									when 'A' then 'Business map created. '
-									when 'U' then 'Business map updated. '
-								end
-		where	MapItemID > 0;
+		update	T
+		set		T.Status = 1,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Business map removed. '
+		from	#RemoveItems T
+				left join MapItem S on S.ID = T.MapItemID
+		where	T.MapItemID is not null and S.ID is null;
 
-		update	#Items
-		set		StatusMessage = StatusMessage + 
-								case MapRuleItemChangeType
-									when 'A' then 'Technical map created. '
-									when 'U' then 'Technical map updated. '
-								end
-		where	Status = 1 and MapRuleItemID > 0;
+		update	T
+		set		T.StatusMessage = coalesce(T.StatusMessage,'') + 'Source relationship removed. '
+		from	#RemoveItems T
+				left join [Intersect] S on S.ID = T.SourceIntersectID
+		where	T.SourceIntersectID is not null and S.ID is null;
+
+		update	T
+		set		T.StatusMessage = coalesce(T.StatusMessage,'') + 'Target relationship removed. '
+		from	#RemoveItems T
+				left join [Intersect] S on S.ID = T.TargetIntersectID
+		where	T.TargetIntersectID is not null and S.ID is null;
 
 		-- FAILED STATUS
-
-		-- Business failures
 		update	T
 		set		T.Status = 0,
-				T.StatusMessage = T.StatusMessage +
-								'Business map could not be created nor updated. ' + 
-								IIF(SrcS.LookupObjectID is null, 'Could not find source subject. ', '') + 
-								IIF(SrcO.LookupObjectID is null, 'Could not find source object. ', '') + 
-								IIF(TgtS.LookupObjectID is null, 'Could not find target subject. ', '') + 
-								IIF(TgtO.LookupObjectID is null, 'Could not find target object. ', '')
-		from	#Items T
-				left join LoadItemColumn SrcS on SrcS.LoadID = @id and SrcS.RowIndex = T.RowIndex and SrcS.ColumnIndex = 4
-				left join LoadItemColumn SrcO on SrcO.LoadID = @id and SrcO.RowIndex = T.RowIndex and SrcO.ColumnIndex = 8
-				left join LoadItemColumn TgtS on TgtS.LoadID = @id and TgtS.RowIndex = T.RowIndex and TgtS.ColumnIndex = 14
-				left join LoadItemColumn TgtO on TgtO.LoadID = @id and TgtO.RowIndex = T.RowIndex and TgtO.ColumnIndex = 18
-		where	MapItemID = 0;
+				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find source relationship. '
+		from	#RemoveItems T
+		where	SourceIntersectID is null;
 
 		update	T
 		set		T.Status = 0,
-				T.StatusMessage = T.StatusMessage +
-								IIF(T.SourceIntersectTypeID is null, 'Could not find source relationship type. ', '') + 
-								IIF(T.TargetIntersectTypeID is null, 'Could not find target relationship type. ', '')
-		from	#Items T
-		where	(T.SourceIntersectTypeID is null OR T.TargetIntersectTypeID is null);
-
-		-- Technical failures
-		update	T
-		set		T.StatusMessage = T.StatusMessage +
-								'Technical map could not be created nor updated. ' +
-								IIF(src.LookupObjectID is null, 'Could not find source fusion attribute. ', '') + 
-								IIF(tgt.LookupObjectID is null, 'Could not find target fusion attribute. ', '')
-		from	#Items T
-				left join LoadItemColumn src on src.LoadID = @id and src.RowIndex = T.RowIndex and src.ColumnIndex = 10
-				left join LoadItemColumn tgt on tgt.LoadID = @id and tgt.RowIndex = T.RowIndex and tgt.ColumnIndex = 20
-		where	MapRuleItemID = 0 and T.SourceFusionRaw <> '' and T.SourceFusionRaw is not null and T.TargetFusionRaw <> '' and T.TargetFusionRaw is not null;
+				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find target relationship. '
+		from	#RemoveItems T
+		where	TargetIntersectID is null;
 
 		update	T
-		set		T.StatusMessage = T.StatusMessage +
-								IIF(T.SourceFusionIntersectTypeID is null, 'Could not find source fusion relationship type. ', '') + 
-								IIF(T.TargetFusionIntersectTypeID is null, 'Could not find target fusion relationship type. ', '')
-		from	#Items T
-		where	(T.SourceFusionRaw is not null AND T.SourceFusionIntersectTypeID is null) OR (T.TargetFusionRaw is not null AND T.TargetFusionIntersectTypeID is null);
+		set		T.Status = 0,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + 'Could not find business map. '
+		from	#RemoveItems T
+		where	MapItemID is null;
+
 
 		-- Now update LoadItems on original Load with status and messages created above
 		update	T
@@ -392,9 +253,347 @@ begin
 							else NULL
 						   end
 		from	LoadItem T
-				inner join #Items S on T.LoadID = @id and S.RowIndex = T.RowIndex;
+				inner join #RemoveItems S on T.LoadID = @id and S.RowIndex = T.RowIndex;
 
-		-- Close out the Load job
+
+
+		-- NOW HANDLE THE ADDs ---------------------------------------------------------------------------
+
+		-- Load Temp table that we are going to work from
+		select	SS.RowIndex,
+		
+				SIT.LookupObjectID as SourceIntersectTypeID,
+				SS.LookupObject as SourceSubject,
+				SS.LookupObjectID as SourceSubjectID,
+				SO.LookupObject as SourceObject,
+				SO.LookupObjectID as SourceObjectID,
+
+				TIT.LookupObjectID as TargetIntersectTypeID,
+				TS.LookupObject as TargetSubject,
+				TS.LookupObjectID as TargetSubjectID,
+				[TO].LookupObject as TargetObject,
+				[TO].LookupObjectID as TargetObjectID,
+
+				SFA.LookupObjectID as SourceFusionAttributeID,
+				SFA.Value as SourceFusionAttributeRaw,
+				TFA.LookupObjectID as TargetFusionAttributeID,
+				TFA.Value as TargetFusionAttributeRaw,
+
+				SI.ID as SourceIntersectID,
+				TI.ID as TargetIntersectID,
+				M.ID as MapItemID,
+				MRI.ID as MapRuleItemID,
+
+				SIFT.ID as SourceFusionIntersectTypeID,
+				TIFT.ID as TargetFusionIntersectTypeID,
+				SIF.ID as SourceFusionIntersectID,
+				TIF.ID as TargetFusionIntersectID,
+
+				cast(null as bit) as Status,
+				cast('' as nvarchar(500)) as StatusMessage,
+
+				@r as ResourceID  --THE USER THAT ADDED THE LOAD
+		into	#AddItems
+		from	LoadItemColumn SS
+				inner join LoadItemColumn SO	on SO.LoadID = SS.LoadID	and SO.RowIndex = SS.RowIndex 	and SS.ColumnIndex = @SourceSubjectColumn 	and SO.ColumnIndex = @SourceObjectColumn
+				inner join LoadItemColumn SA	on SA.LoadID = SS.LoadID	and SA.RowIndex = SS.RowIndex 	and SA.ColumnIndex = @ActionColumn and SA.Value = 'Add'
+				inner join LoadItemColumn SIT	on SIT.LoadID = SS.LoadID	and SIT.RowIndex = SS.RowIndex 	and SIT.ColumnIndex = @SourceIntersectTypeColumn
+				left join [Intersect] SI		on SIT.LookupObject = 'IntersectType' and SI.IntersectTypeID = SIT.LookupObjectID 
+												and SI.Subject = SS.LookupObject and SI.SubjectID = SS.LookupObjectID 
+												and SI.Object = SO.LookupObject and SI.ObjectID = SO.LookupObjectID
+
+				inner join LoadItemColumn TS 	on TS.LoadID = SS.LoadID 	and TS.RowIndex = SS.RowIndex	and TS.ColumnIndex = @TargetSubjectColumn
+				inner join LoadItemColumn [TO]	on [TO].LoadID = SS.LoadID	and [TO].RowIndex = SS.RowIndex	and [TO].ColumnIndex = @TargetObjectColumn
+				inner join LoadItemColumn TIT	on TIT.LoadID = SS.LoadID	and TIT.RowIndex = SS.RowIndex 	and TIT.ColumnIndex = @TargetIntersectTypeColumn
+				left join [Intersect] TI		on TIT.LookupObject = 'IntersectType' and TI.IntersectTypeID = TIT.LookupObjectID 
+												and TI.Subject = TS.LookupObject and TI.SubjectID = TS.LookupObjectID 
+												and TI.Object = [TO].LookupObject and TI.ObjectID = [TO].LookupObjectID
+
+				left join MapItem M				on M.SourceIntersectID = SI.ID and M.TargetIntersectID = TI.ID
+
+				left join LoadItemColumn SFA	on SFA.LoadID = SS.LoadID	and SFA.RowIndex = SS.RowIndex 	and SFA.ColumnIndex = @SourceFusionAttributeColumn
+				left join LoadItemColumn TFA	on TFA.LoadID = SS.LoadID	and TFA.RowIndex = SS.RowIndex 	and TFA.ColumnIndex = @TargetFusionAttributeColumn
+
+				left join MapRuleItem MRI		on	SFA.LookupObject = 'FusionAttribute' and MRI.SourceFusionAttributeID = SFA.LookupObjectID and
+													TFA.LookupObject = 'FusionAttribute' and MRI.TargetFusionAttributeID = TFA.LookupObjectID
+
+				left join FusionAttribute SFAO	on SFA.LookupObject = 'FusionAttribute' and SFAO.ID = SFA.LookupObjectID 
+				outer apply (
+						SELECT  MIN(ID) as ID
+						FROM    IntersectType
+						WHERE   Subject = 'IntersectType' and SubjectID = SIT.LookupObjectID and Object = 'FusionAttributeType' and ObjectID = SFAO.FusionAttributeTypeID
+				) SIFT
+				left join [Intersect] SIF		on	SIF.IntersectTypeID = SIFT.ID 
+													and SIF.Subject = 'Intersect' and SIF.SubjectID = SI.ID
+													and SIF.Object = SFA.LookupObject and SIF.ObjectID = SFA.LookupObjectID
+
+				left join FusionAttribute TFAO	on TFA.LookupObject = 'FusionAttribute' and TFAO.ID = TFA.LookupObjectID 
+				outer apply (
+						SELECT  MIN(ID) as ID
+						FROM    IntersectType
+						WHERE   Subject = 'IntersectType' and SubjectID = TIT.LookupObjectID and Object = 'FusionAttributeType' and ObjectID = TFAO.FusionAttributeTypeID
+				) TIFT
+				left join [Intersect] TIF		on	TIF.IntersectTypeID = TIFT.ID 
+													and TIF.Subject = 'Intersect' and TIF.SubjectID = TI.ID
+													and TIF.Object = TFA.LookupObject and TIF.ObjectID = TFA.LookupObjectID
+
+		where	SS.LoadID = @id
+
+		-- Add indexes to temp table
+		CREATE NONCLUSTERED INDEX [IX_SourceBusinessIntersect] ON #AddItems ( SourceIntersectTypeID ASC, SourceSubject ASC, SourceSubjectID ASC, SourceObject ASC, SourceObjectID ASC )
+/*
+update LoadItemColumn set Value = 'Bloomberg LP/Back Office Data License' where LoadID =  270 and RowIndex = 2 and ColumnIndex = 4
+select * from LoadItemColumn where LoadID = 270
+select * from #AddItems
+select * from LoadItem where LoadID = 270
+
+select I.LoadID, I.RowIndex, case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage
+from LoadItem I
+where I.LoadID = 270
+order by I.RowIndex
+*/
+		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE FUSION INTERSECT TYPE IDs.
+		update	#AddItems
+		set		Status = 0,
+				StatusMessage = coalesce(StatusMessage,'') +
+								IIF(SourceFusionIntersectTypeID is null, 'Could not find source fusion relationship type. ', '') + 
+								IIF(SourceFusionAttributeID is null, 'Could not find source fusion path. ', '') + 
+								IIF(TargetFusionIntersectTypeID is null, 'Could not find target fusion relationship type. ', '') + 
+								IIF(TargetFusionAttributeID is null, 'Could not find target fusion path. ', '')
+		where	(SourceFusionAttributeRaw is not null and SourceFusionIntersectTypeID is null) OR (TargetFusionAttributeRaw is not null and TargetFusionIntersectTypeID is null);
+
+		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE SOURCEs.
+		update	#AddItems
+		set		Status = 0,
+				StatusMessage = coalesce(StatusMessage,'') +
+								IIF(SourceSubjectID is null, 'Could not find source subject. ', '') + 
+								IIF(SourceObjectID is null, 'Could not find source object. ', '')
+		where	(SourceSubjectID is null) OR (SourceObjectID is null);
+
+		-- ERROR OUT THE ROWS THAT DO NOT HAVE THE APPROPRIATE TARGETs.
+		update	#AddItems
+		set		Status = 0,
+				StatusMessage = coalesce(StatusMessage,'') +
+								IIF(TargetSubjectID is null, 'Could not find target subject. ', '') + 
+								IIF(TargetObjectID is null, 'Could not find target object. ', '')
+		where	(TargetSubjectID is null) OR (TargetObjectID is null);
+
+
+
+
+		/*	BEGIN: SOURCE BUSINESS INTERSECT LOGIC */
+
+		-- insert source business relationships
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					SourceIntersectTypeID, 
+					SourceSubject, SourceSubjectID, SourceObject, SourceObjectID,
+					0, ResourceID, @dt, ResourceID, @dt
+			from	#AddItems
+			where	Status is null 
+					and SourceIntersectID is null
+
+		-- update rows with existing source business intersect
+		update	T
+		set		T.SourceIntersectID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Source business relationship created.'
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.SourceIntersectTypeID 
+											and T.SourceSubject = S.Subject and T.SourceSubjectID = S.SubjectID 
+											and T.SourceObject = S.Object and T.SourceObjectID = S.ObjectID
+											and T.SourceIntersectID is null
+											and T.Status is null;
+
+		/*	END: SOURCE BUSINESS INTERSECT LOGIC */
+
+
+		/*	BEGIN: TARGET BUSINESS INTERSECT LOGIC */
+
+		-- insert target business relationships
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					TargetIntersectTypeID, 
+					TargetSubject, TargetSubjectID, TargetObject, TargetObjectID,
+					0, ResourceID, @dt, ResourceID, @dt
+			from	#AddItems
+			where	Status is null 
+					and TargetIntersectID is null
+
+		-- update rows with existing target business intersect
+		update	T
+		set		T.TargetIntersectID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Target business relationship created.'
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetIntersectTypeID 
+											and T.TargetSubject = S.Subject and T.TargetSubjectID = S.SubjectID 
+											and T.TargetObject = S.Object and T.TargetObjectID = S.ObjectID
+											and T.TargetIntersectID is null
+											and T.Status is null;
+
+		/*	END: TARGET BUSINESS INTERSECT LOGIC */
+
+
+		/*	BEGIN: SOURCE TECHNICAL INTERSECT LOGIC */
+
+		-- insert source technical relationships
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					SourceFusionIntersectTypeID, 
+					'Intersect', SourceIntersectID, 'FusionAttribute', SourceFusionAttributeID,
+					0, ResourceID, @dt, ResourceID, @dt
+			from	#AddItems
+			where	Status is null
+					and SourceFusionIntersectTypeID is not null
+					and SourceFusionIntersectID is null
+					and SourceIntersectID is not null
+					and SourceFusionAttributeID is not null;
+
+		-- update rows with new source technical intersect
+		update	T
+		set		T.SourceFusionIntersectID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Source technical relationship created.'
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.SourceFusionIntersectTypeID 
+											and S.Subject = 'Intersect' and S.SubjectID = T.SourceIntersectID 
+											and S.Object = 'FusionAttribute' and S.ObjectID = T.SourceFusionAttributeID
+											and T.SourceFusionIntersectID is null 
+											and T.Status is null;
+
+		/*	END: SOURCE TECHNICAL INTERSECT LOGIC */
+
+
+		/*	BEGIN: TARGET TECHNICAL INTERSECT LOGIC */
+		
+		-- insert target technical relationships
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					TargetFusionIntersectTypeID, 
+					'Intersect', TargetIntersectID, 'FusionAttribute', TargetFusionAttributeID,
+					0, ResourceID, @dt, ResourceID, @dt
+			from	#AddItems
+			where	Status is null
+					and TargetFusionIntersectTypeID is not null
+					and TargetFusionIntersectID is null
+					and TargetIntersectID is not null
+					and TargetFusionAttributeID is not null;
+
+		-- update rows with new target technical intersect
+		update	T
+		set		T.TargetFusionIntersectID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Target technical relationship created.'
+		from	#AddItems T
+				inner join [Intersect] S on S.IntersectTypeID = T.TargetFusionIntersectTypeID 
+											and S.Subject = 'Intersect' and S.SubjectID = T.TargetIntersectID 
+											and S.Object = 'FusionAttribute' and S.ObjectID = T.TargetFusionAttributeID
+											and T.TargetFusionIntersectID is null 
+											and T.Status is null;
+
+		/*	END: TARGET TECHNICAL INTERSECT LOGIC */
+
+		-- insert new map items
+		insert into MapItem (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					SourceIntersectID, 
+					TargetIntersectID,
+					ResourceID,
+					@dt, 
+					ResourceID,
+					@dt
+			from	#AddItems
+			where	SourceIntersectID is not null 
+					and TargetIntersectID is not null 
+					and MapItemID is null
+					and Status is null;
+
+		-- update source data with newly created map item IDs
+		update	T
+		set		T.MapItemID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Business map created.'
+		from	#AddItems T
+				inner join [MapItem] S on	S.SourceIntersectID = T.SourceIntersectID 
+											and S.TargetIntersectID = T.TargetIntersectID 
+											and T.MapItemID is null 
+											and T.Status is null;
+
+		-- insert new map rule items
+		insert into MapRuleItem (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					SourceFusionAttributeID, 
+					TargetFusionAttributeID,
+					ResourceID,
+					@dt, 
+					ResourceID,
+					@dt
+			from	#AddItems
+			where	SourceIntersectID is not null 
+					and TargetIntersectID is not null
+					and SourceFusionAttributeID is not null 
+					and TargetFusionAttributeID is not null
+					and Status is null;
+
+		-- update source data with newly created map rule item IDs
+		update	T
+		set		T.MapRuleItemID = S.ID,
+				T.StatusMessage = coalesce(T.StatusMessage,'') + ' Technical map created.'
+		from	#AddItems T
+				inner join [MapRuleItem] S on	S.SourceFusionAttributeID = T.SourceFusionAttributeID 
+												and S.TargetFusionAttributeID = T.TargetFusionAttributeID 
+												and T.MapRuleItemID is null 
+												and Status is null;
+
+		-- MERGE MapRuleItemMapItem with all the IDs above
+		merge	MapRuleItemMapItem as T
+		using	(
+				select		MapItemID, 
+							MapRuleItemID
+				from		#AddItems
+				where		MapItemID is not null
+							and MapRuleItemID is not null
+				group by	MapItemID, 
+							MapRuleItemID
+				) as S
+		on		T.MapRuleItemID = S.MapRuleItemID and T.MapItemID = S.MapItemID
+		when	not matched by target then
+				insert (MapRuleItemID, MapItemID)
+				values (S.MapRuleItemID, S.MapItemID);
+
+		
+		-- CALCULATE STATUS BASED ON POPULATED IDs
+		update	#AddItems
+		set		Status = 1
+		where	MapItemID is not null 
+				and (
+					(SourceFusionAttributeRaw is not null and TargetFusionAttributeRaw is not null and MapRuleItemID is not null) 
+					or 
+					(SourceFusionAttributeRaw is null and TargetFusionAttributeRaw is null)
+				);
+
+		-- Now update LoadItems on original Load with status and messages created above
+		update	T
+		set		T.Status = S.Status,
+				T.StatusMessage = S.StatusMessage,
+				T.Object = case S.Status
+							when 1 then 'MapItem'
+							else NULL
+						   end,
+				T.ObjectID = case S.Status
+							when 1 then S.MapItemID
+							else NULL
+						   end
+		from	LoadItem T
+				inner join #AddItems S on T.LoadID = @id and S.RowIndex = T.RowIndex;
+
+
+--select *,  case [Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status] from LoadItem where LoadID = 270
+
+		-- NOW, Close out the Load job ----------------------------------------------------------------------------------
+		update	LoadItem
+		set		Status = cast(0 as bit),
+				StatusMessage = 'Incomplete : ' + coalesce(StatusMessage,''),
+				Object = null,
+				ObjectID = null
+		where	LoadID = @id and Status is null;
+
 		update	[Load]
 		set		DateCompleted = getutcdate()
 		where	ID = @id;

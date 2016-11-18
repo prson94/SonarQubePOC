@@ -38,5 +38,5 @@ AS
 									when T.LookupObjectType = 'DomainItem' then T.LookupObjectID 
 									when T.LookupObjectType = 'Resource' then T.LookupObjectID 
 									when T.LookupObjectType is null then NULL 
-									else F.Value
+									when dbo.IsInteger(F.Value) = 1 then F.Value
 								end

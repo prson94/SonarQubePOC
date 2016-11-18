@@ -50,7 +50,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
         {
             var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(queueMessage);
 
-            #region Create EF connection
+#region Create EF connection
 
             var sec = new UriSecurityContextProvider()
             {
@@ -65,11 +65,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
             var company = new CompanyContext(community, cache, queue, sec, true);
             var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
-            #endregion
+#endregion
 
             var companyConnection = GetCompanyConnection(loadInfo.CompanyID);
 
-            #region Create Load Items from Load file
+#region Create Load Items from Load file
 
             var load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
 
@@ -137,7 +137,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 companyConnection.Open();
 
-                #region Bulk LoadItems
+#region Bulk LoadItems
 
                 using (var trans = companyConnection.BeginTransaction())
                 {
@@ -171,9 +171,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     trans.Commit();
                 }
 
-                #endregion
+#endregion
 
-                #region Bulk LoadItemColumns
+#region Bulk LoadItemColumns
 
                 using (var trans = companyConnection.BeginTransaction())
                 {
@@ -220,18 +220,18 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     trans.Commit();
                 }
 
-                #endregion
+#endregion
 
                 companyConnection.Close();
             }
 
-            #endregion
+#endregion
 
             if (load.Action == "O")                  // Ownership/Responsibilities
             {
-                #region Ownership
+#region Ownership
 
-                #region
+#region
                 /*
                     "Item Type",
                     "Subject Area", //ArtifactType only
@@ -239,9 +239,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     "Responsibility",
                     "Resource"
                  */
-                #endregion
+#endregion
 
-                #region Get data to pre-populate
+#region Get data to pre-populate
 
                 var subjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
 
@@ -276,15 +276,15 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 var allocations = company.Table<ResponsibilityTypeRelation>().ToList();
 
-                #endregion
+#endregion
 
-                #region ForEach
+#region ForEach
 
                 load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
                 foreach (var loadItem in load.LoadItems)
                 {
-                    #region Vars
+#region Vars
 
                     var rawType = "";
                     var rawSubjectArea = "";
@@ -306,9 +306,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     var currentColumnIndex = 1;
 
-                    #endregion
+#endregion
 
-                    #region Verify Type
+#region Verify Type
 
                     typeColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawType = typeColumn.Value.Trim().ToLower();
@@ -321,9 +321,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     }
                     currentColumnIndex++;
 
-                    #endregion
+#endregion
 
-                    #region Verify Subject Area
+#region Verify Subject Area
 
                     if (load.Object == "ArtifactType")
                     {
@@ -338,11 +338,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         currentColumnIndex++;
                     }
 
-                    #endregion
+#endregion
 
                     if (verifiedType != null)
                     {
-                        #region Verify Item
+#region Verify Item
 
                         itemColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                         rawItemPath = itemColumn.Value.Trim().ToLower();
@@ -400,10 +400,10 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         }
                         currentColumnIndex++;
 
-                        #endregion
+#endregion
                     }
 
-                    #region Verify Responsibility
+#region Verify Responsibility
 
                     responsibilityColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawResponsibility = responsibilityColumn.Value.Trim().ToLower();
@@ -415,9 +415,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     }
                     currentColumnIndex++;
 
-                    #endregion
+#endregion
 
-                    #region Verify Resource
+#region Verify Resource
 
                     resourceColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawResource = resourceColumn.Value.Trim().ToLower();
@@ -428,7 +428,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         resourceColumn.LookupObjectID = verifiedResource.ID;
                     }
 
-                    #endregion
+#endregion
 
                     if (verifiedItem != null && verifiedResource != null && verifiedResponsibility != null)
                     {
@@ -508,16 +508,16 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     company.Update(loadItem);
                 }
 
-                #endregion
+#endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-                #endregion
+#endregion
             }
             else if (load.Action == "P" && isDev)    // Relation
             {
-                #region Promotions
+#region Promotions
 
                 try
                 {
@@ -530,13 +530,13 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-                #endregion
+#endregion
             }
             else if (load.Action == "R" && isDev)    // Relation
             {
-                #region Relationship
+#region Relationship
 
-                #region
+#region
                 /*
                  * 1    Side 1
                  * 2    Side 2
@@ -548,30 +548,30 @@ namespace d360.jobs.queue.ProcessBulkLoad
                  * 3    Side 2 Subject Area
                  * 4    Side 2
                  */
-                #endregion
+#endregion
 
                 try
                 {
                     companyConnection.Open();
 
-                    #region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+#region DISABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
                     //executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
-                    #endregion
+#endregion
 
                     // Call business lineage procedure.
                     executeWithTry(companyConnection, logger, $@"EXEC bulkload.Relationships {load.ID}", 2400);
 
-                    #region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
+#region ENABLE Intersect_AfterUpsert, Intersect_AfterInsert triggers
 
                     //executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
-                    #endregion
+#endregion
 
                     companyConnection.Close();
                 }
@@ -580,11 +580,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-                #endregion
+#endregion
             }
             else if (load.Action == "S" && isDev)    // Relation
             {
-                #region Synonyms
+#region Synonyms
 
                 try
                 {
@@ -597,13 +597,13 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-                #endregion
+#endregion
             }
             else if (load.Action == "N")    // New Lineage
             {
-                #region Lineage
+#region Lineage
 
-                #region
+#region
                 /*
                  * 1    Source subject type	            
                  * 2    Source subject type name	    
@@ -634,30 +634,30 @@ namespace d360.jobs.queue.ProcessBulkLoad
                  * 21   Transformation
                  * 22   Role                            
                  */
-                #endregion
+#endregion
 
                 try
                 {
                     companyConnection.Open();
 
-                    #region DISABLE Intersect triggers
+#region DISABLE Intersect triggers
 
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"DISABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
-                    #endregion
+#endregion
 
                     // Call business lineage procedure.
                     executeWithTry(companyConnection, logger, $@"EXEC bulkload.BusinessLineage {load.ID}", 2400);
 
-                    #region ENABLE Intersect triggers
+#region ENABLE Intersect triggers
 
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpsert] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterUpdate] ON dbo.[Intersect]", 400);
                     executeWithTry(companyConnection, logger, $@"ENABLE TRIGGER [Intersect_AfterInsert] ON dbo.[Intersect]", 400);
 
-                    #endregion
+#endregion
 
                     companyConnection.Close();
                 }
@@ -666,18 +666,18 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-                #endregion
+#endregion
             }
-            else if (load.Action == "DL")    // New Lineage
+            else if (load.Action == "BL")    // Business Lineage
             {
-                #region Lineage
+#region Lineage
 
                 try
                 {
                     companyConnection.Open();
 
                     // Call business lineage procedure.
-                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.RemoveBusinessLineage {load.ID}", 2400);
+                    executeWithTry(companyConnection, logger, $@"EXEC bulkload.BusinessLineage {load.ID}", 2400);
 
                     companyConnection.Close();
                 }
@@ -686,13 +686,13 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     logger.WriteLine("Bulk load procedure completed for Load ID {0}. {1}", loadInfo.LoadID, ex.GetFullExceptionData());
                 }
 
-                #endregion
+#endregion
             }
             else if (load.Action == "T")    // Technical Fusion
             {
-                #region Technical Lineage
+#region Technical Lineage
 
-                #region
+#region
                 /*
                     Source Fusion Configuration,
                     Source Fusion Path,
@@ -700,13 +700,13 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     Target Fusion Path,
                     Group
                  */
-                #endregion
+#endregion
 
-                #region Get data to pre-populate
+#region Get data to pre-populate
 
                 var fusions = company.Table<Fusion>().OrderBy(x => x.Name).Select(x => new SimpleTypeModel { Name = x.Name.ToLower(), ID = x.ID });
 
-                #endregion
+#endregion
 
                 var mappingList = new List<SimpleTypeModel>();
 
@@ -714,7 +714,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 foreach (var loadItem in load.LoadItems)
                 {
-                    #region Vars
+#region Vars
 
                     var rawSourceFusion = "";
                     var rawSourceFusionPath = "";
@@ -735,9 +735,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                     var currentColumnIndex = 1;
 
-                    #endregion
+#endregion
 
-                    #region Verify source fusion
+#region Verify source fusion
 
                     sourceFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawSourceFusion = (sourceFusionColumn.Value + "").Trim().ToLower();
@@ -750,9 +750,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         sourceFusionColumn.LookupObjectID = verifiedSourceFusion.ID;
                     }
 
-                    #endregion
+#endregion
 
-                    #region Verify source fusion attribute
+#region Verify source fusion attribute
 
                     if (verifiedSourceFusion != null)
                     {
@@ -768,9 +768,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     }
                     currentColumnIndex++;
 
-                    #endregion
+#endregion
 
-                    #region Verify target fusion
+#region Verify target fusion
 
                     targetFusionColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawTargetFusion = (targetFusionColumn.Value + "").Trim().ToLower();
@@ -783,9 +783,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         targetFusionColumn.LookupObjectID = verifiedTargetFusion.ID;
                     }
 
-                    #endregion
+#endregion
 
-                    #region Verify target fusion attribute
+#region Verify target fusion attribute
 
                     if (verifiedTargetFusion != null)
                     {
@@ -801,16 +801,16 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     }
                     currentColumnIndex++;
 
-                    #endregion
+#endregion
 
-                    #region Get group
+#region Get group
 
                     groupColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == currentColumnIndex);
                     rawGroup = (groupColumn.Value + "").Trim().ToLower();
 
-                    #endregion
+#endregion
 
-                    #region Validated data.  Decide if we should insert the record.
+#region Validated data.  Decide if we should insert the record.
 
                     if (verifiedSourceFusion != null && verifiedSourceFusionPath != null &&
                         verifiedTargetFusion != null && verifiedTargetFusionPath != null)
@@ -886,12 +886,12 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         }
                     }
 
-                    #endregion
+#endregion
 
                     company.Update(loadItem);
                 }
 
-                #region Now process maprules based on groups.
+#region Now process maprules based on groups.
 
                 try
                 {
@@ -943,26 +943,26 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     load.Notes += $" {ex.Message}";
                 }
 
-                #endregion
+#endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-                #endregion
+#endregion
             }
             else if (load.Action == "W")    // Promotion Propose via Workflow
             {
-                #region Propose
+#region Propose
 
                 load = company.Loads.Include("LoadColumns").Include("LoadItems.LoadItemColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
-                #region Get data to pre-populate
+#region Get data to pre-populate
 
                 var proposalSubjectAreas = company.Table<TaxonomyType>().Select(i => new SimpleTypeModel { ID = i.ID, Name = i.Name.ToLower() }).ToList();
 
-                #endregion
+#endregion
 
-                #region ForEach
+#region ForEach
 
                 var artifactType = company.GetById<ArtifactType>(load.ObjectID);
                 var processor = new Processor();
@@ -977,7 +977,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     LoadItemColumn parentColumn = null;
                     bool parentRequired = artifactType.ParentID.HasValue;
 
-                    #region Verify Subject Area
+#region Verify Subject Area
 
                     var subjectAreaColumn = loadItem.LoadItemColumns.Single(i => i.ColumnIndex == 3);
                     var rawSubjectArea = subjectAreaColumn.Value.Trim().ToLower();
@@ -988,9 +988,9 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         subjectAreaColumn.LookupObjectID = verifiedSubjectArea.ID;
                     }
 
-                    #endregion
+#endregion
 
-                    #region Verify Parent
+#region Verify Parent
 
                     if (parentRequired)
                     {
@@ -1011,7 +1011,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                         }
                     }
 
-                    #endregion
+#endregion
 
                     if (verifiedSubjectArea != null && 
                         (
@@ -1120,16 +1120,16 @@ namespace d360.jobs.queue.ProcessBulkLoad
 
                 }
 
-                #endregion
+#endregion
 
                 load.DateCompleted = DateTime.UtcNow;
                 company.Update(load);
 
-                #endregion
+#endregion
             }
             else
             {
-                #region Legacy stored procedure method
+#region Legacy stored procedure method
 
                 bool writeStatus = true;
 
@@ -1167,7 +1167,7 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     Thread.Sleep(45000);
                 }
 
-                #endregion
+#endregion
             }
         }
 

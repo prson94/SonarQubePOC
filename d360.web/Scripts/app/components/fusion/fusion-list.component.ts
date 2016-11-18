@@ -56,7 +56,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));
 
         this.clearSidebar();
-        this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
+        //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
 
         this.sub = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
             if (s.tag == 'technical')
