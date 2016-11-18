@@ -22,7 +22,7 @@ urlfield
                     <p-column *ngFor="let column of visibleColumns" [sortable]="column.sortable" [field]="column.datafield">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
-                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'medium'}}</span>
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
@@ -49,7 +49,7 @@ urlfield
                     <p-column *ngFor="let column of visibleColumns" [header]="column.text" [filter]="column.filterable && !hideFilter && !showSimpleFilter" [sortable]="column.sortable" [field]="column.datafield" filterMatchMode="contains">
                         <template let-item="rowData" pTemplate type="body">
                                     <div [ngSwitch]="column.type">
-                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'medium'}}</span>
+                                        <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
                                         <span *ngSwitchCase="'bool'">
                                             <i *ngIf="item[column.datafield] === 'true'" class="fa fa-check enabled" title="True"></i>
                                             <i *ngIf="item[column.datafield] === 'false'" class="fa fa-times disabled" title="False"></i>
