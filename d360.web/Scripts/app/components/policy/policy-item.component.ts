@@ -50,7 +50,7 @@ import { StringConstants } from '../../static/string-constants';
                         <div *ngIf="formMode == FormMode.Default" class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <header><d3s-tile-actions hasEdit="hasRootUpdatePermissions()" (editClick)="edit()"></d3s-tile-actions></header>
+                                    <header><d3s-tile-actions [hasEdit]="hasRootUpdatePermissions()" (editClick)="edit()"></d3s-tile-actions></header>
                                     <object-detail [objectType]="'Policy'" [objectID]="selected?.ID"></object-detail>
                                 </div>
                             </div>
