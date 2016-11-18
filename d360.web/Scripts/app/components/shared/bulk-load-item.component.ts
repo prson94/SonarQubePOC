@@ -19,7 +19,11 @@ import { BaseComponent } from './base.component'
                     <p-column field="Status" header="Status" sortable="true" [style]="{'width':'125px'}" [filter]="!showSimpleFilter"></p-column>
                     <p-column *ngFor="let column of columns" [field]="column.datafield" [header]="column.text" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
                     <p-column field="RowIndex" header="Row" sortable="true" [style]="{'width':'100px'}" [filter]="!showSimpleFilter"></p-column>        
-                    <p-column field="StatusMessage" header="Message" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter"></p-column>
+                    <p-column field="StatusMessage" header="Message" sortable="true" [style]="{'width':'250px'}" [filter]="!showSimpleFilter">
+                        <template let-item="rowData" pTemplate type="body">
+                            <span [innerHtml]="item.StatusMessage"></span>
+                        </template>
+                    </p-column>
                 </p-dataTable>
             </div>
     `,
