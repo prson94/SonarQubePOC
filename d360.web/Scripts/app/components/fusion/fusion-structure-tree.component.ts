@@ -41,14 +41,18 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
     private load() {
         this.isLoading = true;
         this.fusionService.getFusionFusionAttributeTypes(this.fusion.FusionTypeID).then(res => {
-            this.fusionAttributeTypes = res;
-            this.treeItems = this.buildTreeNodeArray(this.fusionAttributeTypes);
-            if (this.fusionAttributeTypeId) this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
-            else if (this.treeItems.length > 0){
+            
+            this.fusionAttributeTypes = res;            
+            this.treeItems = this.buildTreeNodeArray(this.fusionAttributeTypes);            
+            
+            if (this.fusionAttributeTypeId) {                
+                this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
+            }
+            else if (this.treeItems.length > 0) {                
                 this.fusionAttributeTypeId = this.treeItems[0].data.id;
                 this.selected = this.findSelectedTreeNode(this.fusionAttributeTypeId);
                 this.fusionAttributeTypeIdChange.emit(this.fusionAttributeTypeId);
-            }
+            }            
 
             this.fusionService.getFusionQueryAttributeTypes(this.fusion.FusionTypeID, this.fusion.ID).then(res => {
                 this.fusionQueryAttributeTypes = res;
@@ -80,7 +84,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
 
         let rootNodes = attributes.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
-        if (rootNodes.length == 0) return null;
+        if (rootNodes.length == 0) return [];
 
         let res: TreeNode[] = [];
 
@@ -121,7 +125,7 @@ export class FusionStructureTreeComponent extends BaseComponent implements OnCha
 
     private findSelectedTreeNode(id: number): TreeNode {
         let nodes: TreeNode[] = [];
-
+        
         // add root nodes
         for (let rNode of this.treeItems) {
             nodes.push(rNode);
