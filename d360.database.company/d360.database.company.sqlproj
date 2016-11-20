@@ -129,6 +129,7 @@
     <Folder Include="quality\Functions\" />
     <Folder Include="bulkload\" />
     <Folder Include="bulkload\Stored Procedures\" />
+    <Folder Include="Conversions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="fusion\Tables\StagingRelation.sql">
@@ -505,6 +506,10 @@
     <Build Include="bulkload\Stored Procedures\UpdateItemColumnByIntersectType.sql" />
     <Build Include="bulkload\Stored Procedures\UpdateIntersectTypeColumn.sql" />
     <Build Include="bulkload\Stored Procedures\RemoveBusinessLineage.sql" />
+    <None Include="Conversions\Domain to Reference Conversion Script.sql" />
+    <None Include="Conversions\Old Lineage to New Lineage Conversion.sql" />
+    <None Include="Conversions\RelatedArtifact to Intersect Conversion.sql" />
+    <None Include="Conversions\RelationshipLookup to ComplexLookup Field Type Conversion.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ProductionCompare.scmp" />
@@ -534,8 +539,6 @@
     <None Include="dbo\Stored Procedures\GetSiteNavigation.sql" />
     <None Include="dbo\Views\SiteNavAvailable.sql" />
     <None Include="dbo\Stored Procedures\GetRenderedTemplateBodyNg.sql" />
-    <None Include="RelationshipLookup to ComplexLookup Field Type Conversion.sql" />
-    <None Include="Domain to Reference Conversion Script.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="ToDeployToProd.sql" />

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AzureCredentials>{"ServiceManagementEndpoint":"https:\/\/management.core.windows.net\/","SubscriptionId":"ab4c26b1-281d-488b-9657-894d862f9816"}</AzureCredentials>
+    <AzureCredentials>{"ServiceManagementEndpoint":"https:\/\/management.core.windows.net\/","ResourceManagementEndpoint":"https:\/\/management.azure.com\/","SubscriptionId":"ab4c26b1-281d-488b-9657-894d862f9816"}</AzureCredentials>
     <AzureDeleteDeploymentOnFailure>False</AzureDeleteDeploymentOnFailure>
     <AzureDeploymentLabel>d360.worker.ProcessDatabaseTasks1</AzureDeploymentLabel>
     <AzureDeploymentReplacementMethod>AutomaticUpgrade</AzureDeploymentReplacementMethod>
@@ -9,8 +9,8 @@
     <AzureEnableRemoteDesktop>True</AzureEnableRemoteDesktop>
     <AzureEnableWebDeploy>False</AzureEnableWebDeploy>
     <AzureFallbackToDeleteAndRecreateIfUpgradeFails>False</AzureFallbackToDeleteAndRecreateIfUpgradeFails>
-    <AzureHostedServiceLabel>PrcoessDatabaseTasks</AzureHostedServiceLabel>
-    <AzureHostedServiceName>prcoessdatabasetasks</AzureHostedServiceName>
+    <AzureHostedServiceLabel>ProcessDatabaseTasks2</AzureHostedServiceLabel>
+    <AzureHostedServiceName>processdatabasetasks2</AzureHostedServiceName>
     <AzureEnableIntelliTrace>False</AzureEnableIntelliTrace>
     <AzureEnableProfiling>False</AzureEnableProfiling>
     <AzureServiceConfiguration>Cloud</AzureServiceConfiguration>
@@ -18,5 +18,6 @@
     <AzureStorageAccountLabel>data3sixty</AzureStorageAccountLabel>
     <AzureStorageAccountName>data3sixty</AzureStorageAccountName>
     <AzureAppendTimestampToDeploymentLabel>True</AzureAppendTimestampToDeploymentLabel>
+    <AzureHostedServiceResourceGroup>processdatabasetasks2</AzureHostedServiceResourceGroup>
   </PropertyGroup>
 </Project>

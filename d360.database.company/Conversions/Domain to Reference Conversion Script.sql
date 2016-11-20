@@ -1,12 +1,4 @@
-﻿--purge any existing reference records
---delete from field where objecttype = 'ReferenceItem'
---delete from fieldtype where object = 'ReferenceItemType'
---delete from referenceitem;
---delete from referenceitemtype;
-
-
---add column to keep track of old domain id
-alter table referenceitemtype add oldid int;
+﻿alter table referenceitemtype add oldid int;
 go
 
 --insert domain records into referenceitemtype
@@ -25,12 +17,12 @@ join referenceitemtype t on t.oldid = di.domainid;
 go
 
 --create name/description field types for the reference items
-insert into fieldtype (name, friendlyname, type, object, objectid)
-select 'Name' as Name, 'Name' as FriendlyName, 'Text' as type, 'ReferenceItemType' as object, id as objectid
+insert into fieldtype (name, friendlyname, type, object, objectid, IsListable)
+select 'Name' as Name, 'Name' as FriendlyName, 'Text' as type, 'ReferenceItemType' as object, id as objectid, 1
 from referenceitemtype;
 
-insert into fieldtype (name, friendlyname, type, object, objectid)
-select 'Description' as Name, 'Description' as FriendlyName, 'Html' as type, 'ReferenceItemType' as object, id as objectid
+insert into fieldtype (name, friendlyname, type, object, objectid, IsListable)
+select 'Description' as Name, 'Description' as FriendlyName, 'Html' as type, 'ReferenceItemType' as object, id as objectid, 1
 from referenceitemtype;
 
 --insert values for the name/description fields where applicable

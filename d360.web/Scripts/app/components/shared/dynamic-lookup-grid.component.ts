@@ -30,7 +30,7 @@ urlfield
                                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                                         <span *ngSwitchCase="'lookup'">
                                             <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
-                                                <a (click)="navigate(item[column.urlfield])">{{item[column.datafield]}}</a>
+                                                <a (click)="navigate(item[column.urlfield])" [innerHtml]="item[column.datafield]"></a>
                                             </d3s-tooltip>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>
@@ -57,7 +57,7 @@ urlfield
                                         <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                                         <span *ngSwitchCase="'lookup'">
                                             <d3s-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]" [tooltipType]="item[column.contextfield]">
-                                                <a (click)="navigate(item[column.urlfield])">{{item[column.datafield]}}</a>
+                                                <a (click)="navigate(item[column.urlfield])" [innerHtml]="item[column.datafield]"></a>
                                             </d3s-tooltip>
                                         </span>
                                         <span *ngSwitchDefault [innerHtml]="item[column.datafield]"></span>

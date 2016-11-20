@@ -5517,7 +5517,20 @@ namespace d360.web.Controllers
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
-                ft.IsListable = (model.FieldType.Type != DataType.FusionLookup.ToString()) ? model.FieldType.IsListable : false;
+                if (
+                    (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
+                    (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||
+                    (model.FieldType.Type == DataType.FusionLookup.ToString()) ||
+                    (model.FieldType.Type == DataType.RelationLookup.ToString())
+                    )
+                {
+                    ft.IsListable = false;
+                }
+                else
+                {
+                    ft.IsListable = model.FieldType.IsListable;
+                }
+
                 ft.IsRequired = model.FieldType.IsRequired;
 
                 ft.MinimumLength = model.FieldType.MinimumLength;

@@ -33,6 +33,8 @@ namespace d360.workflow
         {
             map = new Dictionary<WorkflowIdentity, Activity>();
 
+            #region CERTIFY
+
             CertifyArtifactIdentity_v1000 = new WorkflowIdentity { Name = "CertifyArtifactWorkflow v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(CertifyArtifactIdentity_v1000, new CertifyArtifact_v1000());
 
@@ -42,11 +44,22 @@ namespace d360.workflow
             CertifyArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "CertifyArtifactWorkflow v1.0.0.2", Version = new Version(1, 0, 0, 2) };
             map.Add(CertifyArtifactIdentity_vCurrent, new CertifyArtifact_v1002());
 
+            #endregion
+
+            #region SUGGEST
+
             SuggestNewArtifactIdentity_v1000 = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(SuggestNewArtifactIdentity_v1000, new SuggestNewArtifact_v1000());
 
-            SuggestNewArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.1", Version = new Version(1, 0, 0, 1) };
-            map.Add(SuggestNewArtifactIdentity_vCurrent, new SuggestNewArtifact_v1001());
+            SuggestNewArtifactIdentity_v1001 = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.1", Version = new Version(1, 0, 0, 1) };
+            map.Add(SuggestNewArtifactIdentity_v1001, new SuggestNewArtifact_v1001());
+
+            SuggestNewArtifactIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflow v1.0.0.2", Version = new Version(1, 0, 0, 2) };
+            map.Add(SuggestNewArtifactIdentity_vCurrent, new SuggestNewArtifact_v1002());
+
+            #endregion
+
+            #region ISSUE
 
             WorkIssue_v1000 = new WorkflowIdentity { Name = "WorkIssue v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(WorkIssue_v1000, new WorkIssue_v1000());
@@ -63,17 +76,27 @@ namespace d360.workflow
             WorkIssue_vCurrent = new WorkflowIdentity { Name = "WorkIssue v1.0.0.4", Version = new Version(1, 0, 0, 4) };
             map.Add(WorkIssue_vCurrent, new WorkIssue_v1004());
 
+            #endregion
+
+            #region CHALLENGE
+
             ChallengeArtifact_v1000 = new WorkflowIdentity { Name = "ChallengeArtifact v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(ChallengeArtifact_v1000, new ChallengeArtifact_v1000());
 
             ChallengeArtifact_vCurrent = new WorkflowIdentity { Name = "ChallengeArtifact v1.0.0.1", Version = new Version(1, 0, 0, 1) };
             map.Add(ChallengeArtifact_vCurrent, new ChallengeArtifact_v1001());
-            
+
+            #endregion
+
+            #region SUGGEST MULTI-LEVEL
+
             SuggestNewArtifactMultiStepIdentity_v1000 = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflowMultiStep v1.0.0.0", Version = new Version(1, 0, 0, 0) };
             map.Add(SuggestNewArtifactMultiStepIdentity_v1000, new SuggestNewArtifactMultiStep_v1000());
 
             SuggestNewArtifactMultiStepIdentity_vCurrent = new WorkflowIdentity { Name = "SuggestNewArtifactWorkflowMultiStep v1.0.0.1", Version = new Version(1, 0, 0, 1) };
             map.Add(SuggestNewArtifactMultiStepIdentity_vCurrent, new SuggestNewArtifactMultiStep_v1001());
+
+            #endregion
         }
 
         public static Activity GetWorkflowDefinition(WorkflowIdentity identity)

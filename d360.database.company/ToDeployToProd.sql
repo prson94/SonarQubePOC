@@ -226,12 +226,12 @@ GO
 
 
 
-ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_CreatedOn] DEFAULT (getutcdate()) FOR [CreatedOn];
-ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) FOR [UpdatedOn];
-ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_CreatedBy] DEFAULT (0) FOR [CreatedBy];
-ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT (0) FOR [UpdatedBy];
-ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_Deleted] DEFAULT (0) FOR [Deleted];
-GO
+--ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_CreatedOn] DEFAULT (getutcdate()) FOR [CreatedOn];
+--ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) FOR [UpdatedOn];
+--ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_CreatedBy] DEFAULT (0) FOR [CreatedBy];
+--ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT (0) FOR [UpdatedBy];
+--ALTER TABLE [Intersect] ADD CONSTRAINT [DF_Intersect_Deleted] DEFAULT (0) FOR [Deleted];
+--GO
 
 CREATE TRIGGER [dbo].[FusionQueryAttributeType_AfterUpsert]
    ON  [dbo].[FusionQueryAttributeType] 
@@ -484,8 +484,8 @@ go
 ALTER TABLE [dbo].[Policy] ADD  CONSTRAINT [DF_Policy_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
 GO
 
-alter table [Load] alter column [Action] varchar(2) not null
-go
+--alter table [Load] alter column [Action] varchar(2) not null
+--go
 
 
 -- add a constraint on name to reference item type to prevent duplicate names
