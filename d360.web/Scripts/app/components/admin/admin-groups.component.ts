@@ -1,4 +1,5 @@
 ﻿import { Component, NgZone, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from './admin-base.component';
@@ -7,7 +8,8 @@ import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '
 import { FormMode } from '../../models/form.model';
 import { Title } from '@angular/platform-browser';
 import { MessagesService } from '../../services/messages.service';
-
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-groups',
@@ -22,7 +24,12 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
-    constructor(private groupService: GroupService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
+    constructor(private router: Router,
+        private groupService: GroupService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        protected messagesService: MessagesService
+    ) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Groups";
         this.setCommonItems();
@@ -49,7 +56,6 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     edit(id: number) {
         this.selectedRow = this.groupItems.find(i => i.ID == id);        
         this.formMode = FormMode.Editing;
-
     }
 
     cancel() {
@@ -76,8 +82,9 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.selectedRow = e.data;        
     }
 
-    private groupUrl(id:number): string {
-        return `/a/group/${id}`;
+    private groupUrl(id: number) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
+        //return ;
     }
 
     success(e: any) {

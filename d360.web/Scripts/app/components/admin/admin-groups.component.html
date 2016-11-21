@@ -10,7 +10,7 @@
                     <p-column [style]="{ 'width': '20px' }">
                         <template let-col let-item="rowData" pTemplate type="body">
                             <div class="RowTools">
-                                <a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                                <a (click)="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
                             </div>
                         </template>
                     </p-column>

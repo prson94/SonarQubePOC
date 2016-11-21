@@ -14,6 +14,7 @@
     static ObjectTaxonomyType = "TaxonomyType";
     static ObjectPolicyType = "PolicyType";
     static ObjectRuleType = "RuleType";
+    static ObjectGroup = "Group";
 
     //claim types
     static ClaimRead = "Read";
