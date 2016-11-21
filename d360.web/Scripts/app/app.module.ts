@@ -2,7 +2,7 @@
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
-import { routing }        from './app.routes';
+import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
 
@@ -20,11 +20,10 @@ import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
 import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
-import { CommunityModule } from './components/community/community.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
-import { HelpModule } from './components/help/help.module';
+
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -287,7 +286,7 @@ import {
         BrowserModule,
         FormsModule,
         ReactiveFormsModule,
-        routing,
+        AppRoutingModule,
         HttpModule,
 
         //primeng
@@ -331,13 +330,11 @@ import {
         SocialModule,           
         FusionModule,
         D3SFormsModule,
-        GroupModule,
-        CommunityModule,
+        GroupModule,        
         CoreModule,
         MonitorModule,
         ReferenceModule,
-        PolicyModule,
-        HelpModule,
+        PolicyModule,        
     ],
     bootstrap: [AppComponent],
     providers: [

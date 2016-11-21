@@ -13,6 +13,7 @@ var webpackConfig = {
 
     output: {
         path: './scripts/app/',
+        publicPath: './scripts/app/'
     },
 
     plugins: [

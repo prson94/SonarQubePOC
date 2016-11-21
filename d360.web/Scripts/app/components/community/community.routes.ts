@@ -1,10 +1,14 @@
-﻿import { CommunityComponent } from './community.component';
-import { RouterModule } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { CommunityComponent } from './community.component';
 
-export const CommunityRoutes = [
-    {
-        path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT,
-        component: CommunityComponent
-    }
+const routes: Routes = [
+    { path: '', component: CommunityComponent },
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class CommunityRoutingModule { }
+

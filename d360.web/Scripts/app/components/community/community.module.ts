@@ -13,6 +13,8 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { CommunityComponent } from './community.component';
 import { CommunityResponsibilityCountComponent } from './community-responsibility-count.component';
 
+import { CommunityRoutingModule } from './community.routes';
+
 import {
     SharedModule,
     DataTableModule,
@@ -24,6 +26,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        CommunityRoutingModule,
 
         //highcharts
         ChartModule,

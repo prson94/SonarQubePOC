@@ -1,10 +1,13 @@
-﻿import { HelpComponent } from './help.component';
-import { RouterModule } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { HelpComponent } from './help.component';
 
-export const HelpRoutes = [
-    {
-        path: SiteUrlHelpers.SITE_URL_HELP_ROOT,
-        component: HelpComponent
-    }
+const routes: Routes = [
+    { path: '', component: HelpComponent },
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class HelpRoutingModule { }

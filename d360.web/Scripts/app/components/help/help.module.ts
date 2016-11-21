@@ -8,6 +8,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { HelpRoutingModule } from './help.routes';
+
 import { HelpComponent } from './help.component';
 
 @NgModule({
@@ -15,6 +17,9 @@ import { HelpComponent } from './help.component';
         FormsModule,
         HttpModule,
         RouterModule,
+
+        //routing 
+        HelpRoutingModule,
 
         //d3s
         D3SSharedModule,
