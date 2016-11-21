@@ -1259,8 +1259,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Scripts\app\components\parts\" />
-    <Folder Include="Scripts\app\components\tiles\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
   <ItemGroup>
