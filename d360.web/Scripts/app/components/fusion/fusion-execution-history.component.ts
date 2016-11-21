@@ -8,7 +8,7 @@ import * as _ from 'lodash';
     selector: 'd3s-fusion-execution-history',
     template: `                 
                 <div class="tile tile-detail" *ngIf="!showExecutionErrors && !showExecutionResults">
-                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                    <header>Execution History<span *ngIf="fusion"> - {{fusion.Name}}</span><d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasRefresh]="true" (refreshClick)="load();"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading">
                         <input [hidden]="!showSimpleFilter" #gb type="text" pInputText size="100" placeholder="Search..." class="grid-simple-filter">                                              
