@@ -77,24 +77,12 @@ import {
 } from './components/artifact/index';
 
 import {
-    HeaderActionsComponent,
-    HeaderBreadcrumbComponent,
-    HeaderBreadcrumbItemComponent,
-    HeaderComponent,
-    HeaderTypeaheadSearchComponent,
-    HeaderFavoritesComponent,
-    HeaderFollowComponent,
-} from './components/header/index';
-
-import {
     ModelComponent,
     ModelItemComponent,
     ModelListComponent,
     ModelItemStructureComponent,
 } from './components/model/index';
 
-import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
-import { RightSidebarItemComponent } from './components/rightsidebar/right-sidebar-item.component';
 
 import {
     RuleComponent,
@@ -117,20 +105,11 @@ import {
         ArtifactListComponent,
         ArtifactTopLevelListComponent,        
         ArtifactTypeMetricsComponent,
-        ArtifactTypeWorkflowStatusComponent,                             
-        HeaderActionsComponent,
-        HeaderBreadcrumbComponent,
-        HeaderBreadcrumbItemComponent,
-        HeaderComponent,
-        HeaderFavoritesComponent,
-        HeaderFollowComponent,
-        HeaderTypeaheadSearchComponent,                               
+        ArtifactTypeWorkflowStatusComponent,                                                                
         ModelComponent,
         ModelItemComponent,        
         ModelListComponent,
-        ModelItemStructureComponent,                                                                                      
-        RightSidebarComponent,
-        RightSidebarItemComponent,
+        ModelItemStructureComponent,                                                                                              
         RuleColumnFilterComponent,
         RuleComponent,        
         RuleItemComponent,

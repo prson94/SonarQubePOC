@@ -1,10 +1,10 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { FavoritesService, MessagesService } from '../../services/index';
-import { Favorite } from '../../models/favorite.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { FavoritesService, MessagesService } from '../../../services/index';
+import { Favorite } from '../../../models/favorite.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 

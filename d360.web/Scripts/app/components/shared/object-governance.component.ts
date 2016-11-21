@@ -1,5 +1,4 @@
-﻿/// <reference path="../header/index.ts" />
-import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ObjectStatisticsService } from '../../services/index';
 import { ObjectStatistics } from '../../models/object-statistics.model';

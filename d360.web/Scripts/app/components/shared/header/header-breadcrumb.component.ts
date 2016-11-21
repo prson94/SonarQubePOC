@@ -1,6 +1,6 @@
 ﻿import { Component, ViewChild } from '@angular/core';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription }   from 'rxjs/Subscription';
 
 @Component({

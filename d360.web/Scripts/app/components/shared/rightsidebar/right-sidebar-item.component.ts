@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy } from '@angular/core';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-right-sidebar-item',    

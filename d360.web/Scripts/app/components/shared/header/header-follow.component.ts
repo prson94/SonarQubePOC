@@ -1,10 +1,9 @@
-﻿
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { FollowerService } from '../../services/index';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderActionsService } from '../../services/header-actions.service';
+import { FollowerService } from '../../../services/index';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderActionsService } from '../../../services/header-actions.service';
 import * as _ from 'lodash';
 
 

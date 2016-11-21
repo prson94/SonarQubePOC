@@ -1,8 +1,8 @@
 ﻿import { Component } from '@angular/core';
-import { TypeaheadSearchService } from '../../services/index';
-import { SearchResult } from '../../models/search-result.model';
+import { TypeaheadSearchService } from '../../../services/index';
+import { SearchResult } from '../../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-header-typeahead-search',    

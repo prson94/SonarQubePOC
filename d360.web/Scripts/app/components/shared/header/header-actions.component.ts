@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 
 declare var CurrentResourceID;
