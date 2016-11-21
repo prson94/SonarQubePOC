@@ -886,7 +886,7 @@
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\impact.component.html" />
     <Content Include="Scripts\app\components\shared\lineage\lineage.component.html" />
-    <Content Include="Scripts\app\components\tiles\fusion-attributes.tile.html" />
+    <Content Include="Scripts\app\components\admin\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="Scripts\d3s.RelationshipsTile.js" />
@@ -933,7 +933,7 @@
     <Content Include="Scripts\all.min.js">
       <DependentUpon>all.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\app\components\tiles\fusion-configuration.tile.html" />
+    <Content Include="Scripts\app\components\admin\fusion-configuration.tile.html" />
     <None Include="Scripts\colorpicker-color.js" />
     <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
@@ -950,7 +950,7 @@
     <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\forms\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\forms\workflow-item.form.html" />
-    <Content Include="Scripts\app\components\tiles\claims.tile.html" />
+    <Content Include="Scripts\app\components\admin\claims.tile.html" />
     <Content Include="Scripts\app\components\shared\field-definition.component.html" />
     <Content Include="Scripts\app\components\shared\object-detail.component.html" />
     <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
@@ -1467,7 +1467,7 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\claims-matrix.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-detail-field.part.ts" />
@@ -1546,8 +1546,8 @@
     <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-attributes.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\fusion-configuration.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
@@ -1562,7 +1562,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\claims.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />

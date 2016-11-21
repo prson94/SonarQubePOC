@@ -1,30 +1,52 @@
-﻿import {  NgModule } from '@angular/core';
+﻿import { NgModule }       from '@angular/core';
+import { CommonModule }       from '@angular/common';
+import { FormsModule }    from '@angular/forms';
+import { HttpModule }     from '@angular/http';
+import { RouterModule } from '@angular/router';
+
+import { ColorPickerModule } from 'angular2-color-picker';
+
+import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
+
 import { routing } from './admin.routes';
+import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
-import { TilesModule } from '../tiles/tiles.module';
-import { PartsModule } from '../parts/parts.module';
-
-import { BrowserModule } from '@angular/platform-browser';
+import { PipesModule } from '../../pipes/pipes.module';
 
 import {
-    TreeTableModule,
-    DataTableModule,
+    GrowlModule,
+    InputTextareaModule,
     InputTextModule,
     InputMaskModule,
+    DataTableModule,
+    TreeTableModule,
     ButtonModule,
-    EditorModule,
-    SharedModule,
     DropdownModule,
+    CheckboxModule,
+    CalendarModule,
+    MenuModule,
+    MenubarModule,
+    AccordionModule,
+    SelectButtonModule,
+    AutoCompleteModule,
     MultiSelectModule,
     SpinnerModule,
-    CheckboxModule,    
+    EditorModule,
+    TooltipModule,
+    DragDropModule,
+    PaginatorModule,
+    DataListModule,
+    TreeModule,
+    OverlayPanelModule,
+    SharedModule,
 } from 'primeng/primeng';
 
 import {
+    AdminAttributeAllocationComponent,
     AdminArtifactsComponent,
-    AdminAttributesComponent,
     AdminComponent,
+    AdminAttributesComponent,
     AdminDashboardsComponent,
     AdminDomainComponent,
     AdminFusionComponent,
@@ -41,14 +63,39 @@ import {
     AdminSurveysComponent,
     AdminTaxonomiesComponent,
     AdminTemplatesComponent,
-    AdminWorkflowComponent
+    AdminWorkflowComponent,
+    AdminAttributeTypeEditor,
+    AdminDashboardsEditor,
+    AdminLookupTypeEditorComponent,
+    AdminLevelListComponent,
+    AdminRelationshipsEditor,
+    AdminRelationshipsListComponent,
+    AdminStatisticEditor,
+    AdminSurveyQuestionEditorEditor,
+    AdminTaxonomyDetailComponent,
+    AdminTaxonomyEditorComponent,
+    AdminLevelEditorComponent,
+    AdminTemplateEditorComponent,
+    AdminStatisticCheckTypeInput,
+    AdminReportItemsComponent,
+    AdminReportTileEditorComponent,
+    AdminRuleDimensionsComponent,
+    AdminSurveyQuestionsComponent,
+    AdminModelClassificationComponent,
+    AdminRelationshipRolesComponent,
+    ClaimsTile,
+    ClaimsMatrixPart,
+    FusionAttributesTile,
+    FusionConfigurationTile,
 } from './index';
+
 
 @NgModule({
     declarations: [
+        AdminAttributeAllocationComponent,
         AdminArtifactsComponent,
-        AdminAttributesComponent,
         AdminComponent,
+        AdminAttributesComponent,
         AdminDashboardsComponent,
         AdminDomainComponent,
         AdminFusionComponent,
@@ -63,32 +110,77 @@ import {
         AdminSettingsComponent,
         AdminStatisticsComponent,
         AdminSurveysComponent,
-        AdminTaxonomiesComponent, 
+        AdminTaxonomiesComponent,
         AdminTemplatesComponent,
-        AdminWorkflowComponent
-    ]
-    , imports: [
-        routing,
+        AdminWorkflowComponent,
+        AdminAttributeTypeEditor,
+        AdminDashboardsEditor,
+        AdminLookupTypeEditorComponent,
+        AdminLevelListComponent,
+        AdminRelationshipsEditor,
+        AdminRelationshipsListComponent,
+        AdminStatisticEditor,
+        AdminSurveyQuestionEditorEditor,
+        AdminTaxonomyDetailComponent,
+        AdminTaxonomyEditorComponent,
+        AdminLevelEditorComponent,
+        AdminTemplateEditorComponent,
+        AdminStatisticCheckTypeInput,
+        AdminReportItemsComponent,
+        AdminReportTileEditorComponent,
+        AdminRuleDimensionsComponent,
+        AdminSurveyQuestionsComponent,
+        AdminModelClassificationComponent,
+        AdminRelationshipRolesComponent,
+        ClaimsTile,
+        ClaimsMatrixPart,
+        FusionAttributesTile,
+        FusionConfigurationTile,
 
-        //prime
-        TreeTableModule,
-        DataTableModule,
+        AceEditorComponent,
+    ]
+    , imports: [CommonModule,
+        FormsModule,
+        HttpModule,
+        RouterModule,
+        routing,
+        
+        //primeng
+        GrowlModule,
+        InputTextareaModule,
         InputTextModule,
         InputMaskModule,
+        DataTableModule,
+        TreeTableModule,
         ButtonModule,
-        EditorModule,
         DropdownModule,
+        CheckboxModule,
+        CalendarModule,
+        MenuModule,
+        MenubarModule,
+        AccordionModule,
+        SelectButtonModule,
+        AutoCompleteModule,
         MultiSelectModule,
         SpinnerModule,
+        EditorModule,
+        TooltipModule,
+        DragDropModule,
+        PaginatorModule,
+        TreeModule,
+        OverlayPanelModule,
+        DataListModule,
         SharedModule,
-        CheckboxModule,
+
+
+        //color picker
+        ColorPickerModule,
 
         //d3s
         D3SSharedModule,
         D3SFormsModule,
-        TilesModule,
-        PartsModule,
-        BrowserModule,
+        CoreModule,
+        PipesModule,        
     ] 
 
 })

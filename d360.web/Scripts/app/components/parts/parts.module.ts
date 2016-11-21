@@ -15,24 +15,18 @@ import {
 } from 'primeng/primeng';
 
 import {
-    ActionBar,
-    ClaimsMatrixPart,    
-    MenuPart,
-    SimpleDropdown
+    ActionBar,    
+    MenuPart    
 } from './index';
 
 @NgModule({
     declarations: [
-        ActionBar,
-        ClaimsMatrixPart,        
-        MenuPart,        
-        SimpleDropdown
+        ActionBar,        
+        MenuPart
     ],
     exports: [
-        ActionBar,
-        ClaimsMatrixPart,        
-        MenuPart,        
-        SimpleDropdown
+        ActionBar,        
+        MenuPart
         ]
     , imports: [
         TreeTableModule,

@@ -10,7 +10,6 @@ import { ChartModule } from 'angular2-highcharts';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
-import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
 
 import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
@@ -23,6 +22,7 @@ import { GroupModule } from './components/group/group.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
+import { AdminModule } from './components/admin/admin.module';
 
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
@@ -63,48 +63,6 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
-import {
-    AdminAttributeAllocationComponent,
-    AdminArtifactsComponent,
-    AdminComponent,
-    AdminAttributesComponent,
-    AdminDashboardsComponent,
-    AdminDomainComponent,
-    AdminFusionComponent,
-    AdminGovernanceComponent,
-    AdminGroupsComponent,
-    AdminLoadComponent,
-    AdminLookupsComponent,
-    AdminPoliciesComponent,
-    AdminRelationshipsComponent,
-    AdminResourcesComponent,
-    AdminRulesComponent,
-    AdminSettingsComponent,
-    AdminStatisticsComponent,
-    AdminSurveysComponent,
-    AdminTaxonomiesComponent,
-    AdminTemplatesComponent,
-    AdminWorkflowComponent,
-    AdminAttributeTypeEditor,
-    AdminDashboardsEditor,
-    AdminLookupTypeEditorComponent,
-    AdminLevelListComponent,    
-    AdminRelationshipsEditor,
-    AdminRelationshipsListComponent,
-    AdminStatisticEditor,
-    AdminSurveyQuestionEditorEditor,
-    AdminTaxonomyDetailComponent,
-    AdminTaxonomyEditorComponent,
-    AdminLevelEditorComponent,
-    AdminTemplateEditorComponent,
-    AdminStatisticCheckTypeInput,
-    AdminReportItemsComponent,    
-    AdminReportTileEditorComponent,
-    AdminRuleDimensionsComponent,   
-    AdminSurveyQuestionsComponent,    
-    AdminModelClassificationComponent, 
-    AdminRelationshipRolesComponent,
-} from './components/admin/index';
 
 import {
     ArtifactBaseComponent,
@@ -143,8 +101,7 @@ import {
 } from './components/model/index';
 
 import {
-    ActionBar,    
-    ClaimsMatrixPart,    
+    ActionBar,        
     MenuPartItem,
     MenuPart,    
 } from './components/parts/index';
@@ -169,10 +126,7 @@ import {
 } from './components/rule/index';
 
 import {
-    AttributesTile,
-    FusionAttributesTile,    
-    ClaimsTile,    
-    FusionConfigurationTile,            
+    AttributesTile,               
     MenuBarItem,    
     ObjectDefinitionTile,                  
     StructureTile,    
@@ -187,47 +141,7 @@ import {
 
 @NgModule({
     declarations: [
-        ActionBar,
-        AdminAttributeAllocationComponent,
-        AdminArtifactsComponent,
-        AdminAttributeTypeEditor,
-        AdminAttributesComponent,
-        AdminComponent,
-        AdminDashboardsComponent,
-        AdminDashboardsEditor,
-        AdminDomainComponent,
-        AdminFusionComponent,
-        AdminGovernanceComponent,
-        AdminGroupsComponent,
-        AdminLoadComponent,
-        AdminLookupTypeEditorComponent,
-        AdminLookupsComponent,
-        AdminLevelListComponent,
-        AdminPoliciesComponent,
-        AdminRelationshipsComponent,
-        AdminRelationshipsEditor,
-        AdminResourcesComponent,
-        AdminRulesComponent,
-        AdminSettingsComponent,
-        AdminStatisticCheckTypeInput,
-        AdminReportItemsComponent,        
-        AdminReportTileEditorComponent,
-        AdminSurveyQuestionsComponent,
-        AdminModelClassificationComponent,
-        AdminRelationshipRolesComponent,
-        AdminRuleDimensionsComponent,
-        AdminRelationshipsListComponent,
-        AdminStatisticEditor,
-        AdminStatisticsComponent,
-        AdminSurveyQuestionEditorEditor,
-        AdminSurveysComponent,
-        AdminTaxonomiesComponent,
-        AdminTaxonomyDetailComponent,
-        AdminTaxonomyEditorComponent,
-        AdminLevelEditorComponent,
-        AdminTemplateEditorComponent,
-        AdminTemplatesComponent,
-        AdminWorkflowComponent,
+        ActionBar,        
         AppComponent,
         ArtifactColumnFilterComponent,        
         ArtifactComponent,
@@ -240,11 +154,7 @@ import {
         ArtifactTopLevelListComponent,        
         ArtifactTypeMetricsComponent,
         ArtifactTypeWorkflowStatusComponent,
-        AttributesTile,     
-        ClaimsMatrixPart,
-        ClaimsTile,           
-        FusionAttributesTile,        
-        FusionConfigurationTile,                
+        AttributesTile,                           
         HeaderActionsComponent,
         HeaderBreadcrumbComponent,
         HeaderBreadcrumbItemComponent,
@@ -278,9 +188,8 @@ import {
         ActivityTile,
         AssignmentsTile,
         BoardTile,
-        ActivityDetailsTile,  
+        ActivityDetailsTile,          
         
-        AceEditorComponent,
     ],
     imports: [
         BrowserModule,
@@ -335,6 +244,7 @@ import {
         MonitorModule,
         ReferenceModule,
         PolicyModule,        
+        AdminModule,
     ],
     bootstrap: [AppComponent],
     providers: [

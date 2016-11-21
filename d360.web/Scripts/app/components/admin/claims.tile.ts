@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { ClaimItem } from '../../models/claims.model';
 import { ClaimsService } from '../../services/claims.service';
 

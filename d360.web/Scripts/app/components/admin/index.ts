@@ -38,6 +38,10 @@ import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
+import { ClaimsTile } from './claims.tile';
+import { ClaimsMatrixPart } from './claims-matrix.part';
+import { FusionConfigurationTile } from './fusion-configuration.tile';
+import { FusionAttributesTile } from './fusion-attributes.tile';
 
 export * from './admin-attribute-allocation.component';
 export * from './admin-governance.component';
@@ -80,3 +84,7 @@ export * from './admin-level-list.component';
 export * from './admin-model-classification.component';
 export * from './admin-relationship-roles.component';
 export * from './admin-report-tile-editor.component';
+export * from './claims.tile';
+export * from './claims-matrix.part';
+export * from './fusion-configuration.tile';
+export * from './fusion-attributes.tile';
