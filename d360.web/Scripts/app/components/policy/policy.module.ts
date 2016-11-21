@@ -10,6 +10,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { PolicyRoutingModule } from './policy.routes';
+
 import { PolicyComponent } from './policy.component';
 import { PolicyItemComponent } from './policy-item.component';
 import { PolicyItemStructureComponent } from './policy-item-structure.component';
@@ -44,6 +46,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        PolicyRoutingModule,
 
         //primeng
         GrowlModule,

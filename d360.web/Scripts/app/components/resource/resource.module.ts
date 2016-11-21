@@ -4,6 +4,7 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { ResourceRoutingModule } from './resource.routes';
 
 import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
@@ -48,6 +49,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        ResourceRoutingModule,
 
         //prime
         ButtonModule,        

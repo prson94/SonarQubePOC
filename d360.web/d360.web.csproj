@@ -1362,7 +1362,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-mapping-rules.component.ts" />
@@ -1475,7 +1475,6 @@
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\resource\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\user-list.component.ts" />
@@ -1544,7 +1543,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\bulk-load-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />

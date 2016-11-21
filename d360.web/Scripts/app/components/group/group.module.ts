@@ -8,6 +8,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { GroupRoutingModule } from './group.routes';
+
 import { GroupComponent } from './group.component';
 import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
@@ -25,12 +27,13 @@ import {
         HttpModule,
         RouterModule,
 
+        GroupRoutingModule,
+
         //primeng
         GrowlModule,        
         DataTableModule,
         SharedModule,
         
-
         //d3s
         D3SSharedModule,        
         CoreModule,

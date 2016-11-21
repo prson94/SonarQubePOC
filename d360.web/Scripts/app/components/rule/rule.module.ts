@@ -9,6 +9,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { RuleRoutingModule } from './rule.routes';
+
 import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
@@ -37,6 +39,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        RuleRoutingModule,
 
         //primeng
         GrowlModule,

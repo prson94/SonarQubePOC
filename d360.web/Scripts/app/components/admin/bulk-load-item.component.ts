@@ -2,7 +2,7 @@
 import { LoadDetail } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
 import { GridColumn } from '../../models/grid-definition.model';
-import { BaseComponent } from './base.component'
+import { BaseComponent } from '../shared/base.component'
 
 @Component({
     selector: 'd3s-bulk-load-item',

@@ -6,10 +6,6 @@ import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
 
-import { ChartModule } from 'angular2-highcharts';
-
-import { ColorPickerModule } from 'angular2-color-picker';
-
 
 import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
@@ -17,14 +13,10 @@ import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
-import { GroupModule } from './components/group/group.module';
 import { ReferenceModule } from './components/reference/reference.module';
-import { PolicyModule } from './components/policy/policy.module';
 import { HomeModule } from './components/home/home.module';
-import { ResourceModule } from './components/resource/resource.module';
 import { ModelModule } from './components/model/model.module';
 import { ArtifactModule } from './components/artifact/artifact.module';
-import { RuleModule } from './components/rule/rule.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -35,32 +27,6 @@ import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSi
 import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';
-
-import {
-    GrowlModule,    
-    InputTextModule,
-    InputMaskModule,
-    DataTableModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,
-    CalendarModule,
-    MenuModule,
-    MenubarModule,
-    AccordionModule,
-    SelectButtonModule,
-    AutoCompleteModule,
-    MultiSelectModule,
-    SpinnerModule,
-    EditorModule,
-    TooltipModule,        
-    PaginatorModule,
-    DataListModule,
-    TreeModule,
-    OverlayPanelModule,
-    SharedModule,
-} from 'primeng/primeng';
 
 
 @NgModule({
@@ -73,37 +39,7 @@ import {
         ReactiveFormsModule,
         AppRoutingModule,
         HttpModule,
-
-        //primeng
-        GrowlModule,        
-        InputTextModule,
-        InputMaskModule,
-        DataTableModule,
-        TreeTableModule,
-        ButtonModule,
-        DropdownModule,
-        CheckboxModule,
-        CalendarModule,
-        MenuModule,
-        MenubarModule,
-        AccordionModule,
-        SelectButtonModule,
-        AutoCompleteModule,
-        MultiSelectModule,
-        SpinnerModule,
-        EditorModule,
-        TooltipModule,                
-        PaginatorModule,
-        TreeModule,
-        OverlayPanelModule,
-        DataListModule,
-        SharedModule,
-
-
-        //highcharts
-        ChartModule,
-
-        ColorPickerModule,
+        
 
         //d3s modules
         PipesModule,
@@ -111,16 +47,12 @@ import {
         WorkflowModule,
         D3SSharedModule,  
         SocialModule,                   
-        D3SFormsModule,
-        GroupModule,        
+        D3SFormsModule,         
         CoreModule,        
-        ReferenceModule,
-        PolicyModule,      
-        HomeModule,      
-        ResourceModule,   
+        ReferenceModule,         
+        HomeModule,              
         ModelModule, 
-        ArtifactModule,
-        RuleModule,
+        ArtifactModule,        
     ],
     bootstrap: [AppComponent],
     providers: [

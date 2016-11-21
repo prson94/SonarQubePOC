@@ -1,15 +1,24 @@
-﻿import { RuleComponent } from './rule.component';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-export const RuleRoutes = [
+const routes: Routes = [
     {
-        path: SiteUrlHelpers.SITE_URL_RULE_ROOT,
+        path: '',
         component: RuleComponent,
         children: [
             { path: '', component: RuleListComponent },
             { path: ':ruleId', component: RuleItemComponent }
         ]
-    }
+    },
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class RuleRoutingModule { }
+

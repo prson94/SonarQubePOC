@@ -1,11 +1,12 @@
-﻿import { GroupComponent } from './group.component';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { GroupComponent } from './group.component';
 import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-export const GroupRoutes = [
+const routes: Routes = [
     {
-        path: SiteUrlHelpers.SITE_URL_GROUP_ROOT,
+        path: '',
         component: GroupComponent,
         children: [
             { path: ':groupId', component: GroupItemComponent },
@@ -13,3 +14,10 @@ export const GroupRoutes = [
         ]
     }
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class GroupRoutingModule { }
+

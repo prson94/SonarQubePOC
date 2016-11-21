@@ -47,7 +47,6 @@ import { ArtifactStatusComponent } from './artifact-status.component';
 import { AssignmentsTile } from './assignments-tile.component';
 import { AttributesTile } from './attributes.tile';
 import { AuditComponent } from './audit.component';
-import { BulkLoadItemComponent } from './bulk-load-item.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
 import { DeleteForm } from './delete.form';
 import { DynamicFieldComponent } from './dynamic-field.component';
@@ -70,7 +69,6 @@ import { HeaderFavoritesComponent } from './header/header-favorites.component';
 import { HeaderFollowComponent } from './header/header-follow.component';
 import { HeaderComponent } from './header/header.component';
 import { ImpactComponent } from './impact.component';
-import { IconPickerComponent } from './icon-picker.component';
 import { LineageComponent } from './lineage/lineage.component';
 import { LineageFusionComponent } from './lineage/lineage-fusion.component';
 import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
@@ -128,8 +126,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ArtifactStatusComponent,
         AssignmentsTile,
         AttributesTile,
-        AuditComponent,
-        BulkLoadItemComponent,
+        AuditComponent,        
         DashboardTabComponent,
         DeleteForm,
         DynamicEditorComponent,
@@ -152,8 +149,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderComponent,
-        ImpactComponent,
-        IconPickerComponent,
+        ImpactComponent,        
         LineageComponent,
         LineageFusionComponent,
         LineageMappingRulesComponent,
@@ -207,8 +203,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ActionBar,
         ArtifactStatusComponent,
         AssignmentsTile,
-        AuditComponent,
-        BulkLoadItemComponent,
+        AuditComponent,        
         DashboardTabComponent,
         DeleteForm,
         DynamicEditorComponent,
@@ -231,8 +226,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderComponent,
-        ImpactComponent,
-        IconPickerComponent,
+        ImpactComponent,        
         LineageComponent,        
         MessagesBarComponent,        
         MessagesComponent,

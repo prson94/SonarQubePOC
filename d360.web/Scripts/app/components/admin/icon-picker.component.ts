@@ -1,5 +1,5 @@
 ﻿import { Component, Input, Output, EventEmitter} from '@angular/core';
-import { BaseComponent } from './base.component';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-icon-picker',

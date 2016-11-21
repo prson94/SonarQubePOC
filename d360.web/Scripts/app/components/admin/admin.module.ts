@@ -81,11 +81,13 @@ import { AdminModelClassificationComponent } from './admin-model-classification.
 import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 import { ArtifactTypeForm } from './artifact-type.form';
+import { BulkLoadItemComponent } from './bulk-load-item.component';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
+import { IconPickerComponent } from './icon-picker.component';
 import { LoadForm } from './load.form';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 import { WorkflowItemForm } from './workflow-item.form';
@@ -135,11 +137,13 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminModelClassificationComponent,
         AdminRelationshipRolesComponent,
         ArtifactTypeForm,
+        BulkLoadItemComponent,
         ClaimsTile,
         ClaimsMatrixPart,
         FusionAttributesTile,
         FusionConfigurationTile,
         GroupForm,
+        IconPickerComponent,
         LoadForm,
         ResponsibilityTypeForm,
         WorkflowItemForm,
