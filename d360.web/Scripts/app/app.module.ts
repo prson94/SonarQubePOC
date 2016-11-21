@@ -22,6 +22,7 @@ import { GroupModule } from './components/group/group.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
+import { HomeModule } from './components/home/home.module';
 
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
@@ -87,10 +88,6 @@ import {
 } from './components/header/index';
 
 import {
-    HomeComponent
-} from './components/home/home.component';
-
-import {
     ModelComponent,
     ModelItemComponent,
     ModelListComponent,
@@ -127,11 +124,7 @@ import {
     MenuBarItem,    
     ObjectDefinitionTile,                  
     StructureTile,    
-    SynonymsTile,
-    ActivityTile,
-    AssignmentsTile,
-    BoardTile,
-    ActivityDetailsTile,
+    SynonymsTile,            
     ResourceFollowingTile,    
     ResourceFollowingGridTile,    
 } from './components/tiles/index';
@@ -158,8 +151,7 @@ import {
         HeaderComponent,
         HeaderFavoritesComponent,
         HeaderFollowComponent,
-        HeaderTypeaheadSearchComponent,
-        HomeComponent,                 
+        HeaderTypeaheadSearchComponent,                       
         MenuPart,    
         ModelComponent,
         ModelItemComponent,        
@@ -181,11 +173,7 @@ import {
         RuleListComponent,    
         RuleResultsGridComponent,            
         StructureTile,        
-        SynonymsTile,
-        ActivityTile,
-        AssignmentsTile,
-        BoardTile,
-        ActivityDetailsTile,            
+        SynonymsTile,                                  
     ],
     imports: [
         BrowserModule,
@@ -237,7 +225,8 @@ import {
         CoreModule,
         MonitorModule,
         ReferenceModule,
-        PolicyModule,                
+        PolicyModule,      
+        HomeModule,          
     ],
     bootstrap: [AppComponent],
     providers: [

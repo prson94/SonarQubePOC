@@ -42,6 +42,7 @@ import { D3SFormsModule } from '../forms/d3sforms.module';
 import { ColorPickerModule } from 'angular2-color-picker';
 
 import { ArtifactStatusComponent } from './artifact-status.component';
+import { AssignmentsTile } from './assignments-tile.component';
 import { AuditComponent } from './audit.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
 import { DeleteForm } from './delete.form';
@@ -106,6 +107,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
 @NgModule({
     declarations: [
         ArtifactStatusComponent,
+        AssignmentsTile,
         AuditComponent,
         DashboardTabComponent,
         DeleteForm,
@@ -163,13 +165,14 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         SiteMenuComponent,    
         SiteMenuMegaItemComponent,    
         TakeSurveyComponent,
-        TileActionsComponent,        
+        TileActionsComponent,           
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
     ],
     exports: [
         ArtifactStatusComponent,
+        AssignmentsTile,
         AuditComponent,
         DashboardTabComponent,
         DeleteForm,
@@ -218,7 +221,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         SiteMenuCategoryComponent,
         SiteMenuComponent,
         TakeSurveyComponent,
-        TileActionsComponent,   
+        TileActionsComponent,        
         WorkflowDetailedViewComponent,     
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,

@@ -1,6 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { HomeComponent} from './components/index';
 import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
 import { ModelRoutes } from './components/model/model.routes';

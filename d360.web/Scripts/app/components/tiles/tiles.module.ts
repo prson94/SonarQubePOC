@@ -12,10 +12,6 @@ import { AttributesTile } from './attributes.tile';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
-import { ActivityTile } from './activity-tile.component';
-import { AssignmentsTile } from './assignments-tile.component';
-import { BoardTile} from './board-tile.component';
-import { ActivityDetailsTile} from './activity-details-tile.component';
 import { ResourceFollowingTile } from './resource-following.tile';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 
@@ -32,24 +28,16 @@ import {
 } from 'primeng/primeng';
 
 @NgModule({
-    declarations: [
-        ActivityDetailsTile,
-        ActivityTile,
-        AssignmentsTile,
-        AttributesTile,
-        BoardTile,                           
+    declarations: [                   
+        AttributesTile,                           
         ObjectDefinitionTile,                             
         ResourceFollowingGridTile,
         ResourceFollowingTile,               
         StructureTile,        
         SynonymsTile,        
     ],
-    exports: [
-        ActivityDetailsTile,
-        ActivityTile,
-        AssignmentsTile,
-        AttributesTile,
-        BoardTile,                                                           
+    exports: [                
+        AttributesTile,                                                  
         ObjectDefinitionTile,                        
         ResourceFollowingGridTile,
         ResourceFollowingTile,                      

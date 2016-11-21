@@ -2,10 +2,6 @@
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
-import { ActivityTile } from './activity-tile.component';
-import { AssignmentsTile } from './assignments-tile.component';
-import { BoardTile} from './board-tile.component';
-import { ActivityDetailsTile} from './activity-details-tile.component';
 import { ResourceFollowingTile } from './resource-following.tile';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 
@@ -13,9 +9,5 @@ export * from './attributes.tile';
 export * from './object-definition.tile';
 export * from './structure.tile';
 export * from './synonyms.tile';
-export * from './activity-tile.component';
-export * from './assignments-tile.component';
-export * from './board-tile.component';
-export * from './activity-details-tile.component';
 export * from './resource-following.tile';
 export * from './resource-following-grid.tile';

@@ -1353,6 +1353,7 @@
     <TypeScriptCompile Include="Scripts\app\components\help\help.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\home.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
@@ -1536,10 +1537,10 @@
     <TypeScriptCompile Include="Scripts\app\components\social\social-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social-comment.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social-input.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\activity-details-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\activity-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\assignments-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\board-tile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assignments-tile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow-issue-editor.component.ts" />

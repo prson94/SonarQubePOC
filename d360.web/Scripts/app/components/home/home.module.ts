@@ -6,16 +6,14 @@ import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
+import { SocialModule } from '../social/social.module';
+import { WorkflowModule } from '../workflow/workflow.module';
+import { SearchModule } from '../search/search.module';
 
-import { WorkflowDetailComponent } from './workflow-detail.component';
-import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
-import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.component';
-import { WorkflowCertifyEditorComponent } from './workflow-certify-editor.component';
-import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
-import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
-import { WorkflowViewStatusComponent } from './workflow-view-status.component';
-import { WorkflowWorkItemComponent } from './workflow-work-item.component';
-
+import { HomeComponent} from './home.component';
+import { ActivityTile } from './activity-tile.component';
+import { ActivityDetailsTile } from './activity-details-tile.component';
+import { BoardTile} from './board-tile.component';
 
 import {
     GrowlModule,
@@ -35,7 +33,7 @@ import {
     MultiSelectModule,
     SpinnerModule,
     EditorModule,
-    TooltipModule,    
+    TooltipModule,
     PaginatorModule,
     SharedModule,
 } from 'primeng/primeng';
@@ -69,26 +67,15 @@ import {
         //d3s
         D3SSharedModule,
         CoreModule,
-
+        SearchModule,
+        SocialModule,
+        WorkflowModule,
     ],
     declarations: [
-        WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,                 
-        WorkflowRaiseIssueComponent,
-        WorkflowSuggestDetailsComponent,
-        WorkflowSuggestEditorComponent,
-        WorkflowViewStatusComponent,
-        WorkflowWorkItemComponent,
-        WorkflowDetailComponent,
+        ActivityDetailsTile,
+        ActivityTile,
+        BoardTile,
+        HomeComponent,        
     ],
-    exports: [
-        WorkflowCertifyDetailsComponent,
-        WorkflowCertifyEditorComponent,             
-        WorkflowRaiseIssueComponent,
-        WorkflowSuggestDetailsComponent,
-        WorkflowSuggestEditorComponent,
-        WorkflowWorkItemComponent,
-        WorkflowDetailComponent,
-    ]
 })
-export class WorkflowModule { }
+export class HomeModule { }
