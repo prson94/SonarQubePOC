@@ -31,8 +31,7 @@ import {
     AutoCompleteModule,
     MultiSelectModule,
     SpinnerModule,    
-    TooltipModule,
-    DragDropModule,
+    TooltipModule,    
     PaginatorModule,
     SharedModule,
 } from 'primeng/primeng';

@@ -8,7 +8,7 @@ import { ColorPickerModule } from 'angular2-color-picker';
 
 import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
 
-import { routing } from './admin.routes';
+import { AdminRoutingModule } from './admin.routes';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
@@ -33,12 +33,10 @@ import {
     MultiSelectModule,
     SpinnerModule,
     EditorModule,
-    TooltipModule,
-    DragDropModule,
+    TooltipModule,    
     PaginatorModule,
     DataListModule,
-    TreeModule,
-    OverlayPanelModule,
+    TreeModule,    
     SharedModule,
 } from 'primeng/primeng';
 
@@ -143,7 +141,7 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
-        routing,
+        AdminRoutingModule,
         
         //primeng
         GrowlModule,
@@ -164,11 +162,9 @@ import {
         MultiSelectModule,
         SpinnerModule,
         EditorModule,
-        TooltipModule,
-        DragDropModule,
+        TooltipModule,        
         PaginatorModule,
-        TreeModule,
-        OverlayPanelModule,
+        TreeModule,        
         DataListModule,
         SharedModule,
 

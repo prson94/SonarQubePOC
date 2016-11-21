@@ -22,7 +22,6 @@ import { GroupModule } from './components/group/group.module';
 import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
-import { AdminModule } from './components/admin/admin.module';
 
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
@@ -36,8 +35,7 @@ import { DynamicTypeBuilder }     from './services/dynamic-type-builder';
 import { AuthenticationConnectionBackend } from './authentication-connection-backend';
 
 import {
-    GrowlModule,
-    InputTextareaModule,
+    GrowlModule,    
     InputTextModule,
     InputMaskModule,
     DataTableModule,
@@ -54,8 +52,7 @@ import {
     MultiSelectModule,
     SpinnerModule,
     EditorModule,
-    TooltipModule,    
-    DragDropModule,
+    TooltipModule,        
     PaginatorModule,
     DataListModule,
     TreeModule,
@@ -188,8 +185,7 @@ import {
         ActivityTile,
         AssignmentsTile,
         BoardTile,
-        ActivityDetailsTile,          
-        
+        ActivityDetailsTile,            
     ],
     imports: [
         BrowserModule,
@@ -199,8 +195,7 @@ import {
         HttpModule,
 
         //primeng
-        GrowlModule,
-        InputTextareaModule,
+        GrowlModule,        
         InputTextModule,
         InputMaskModule,
         DataTableModule,
@@ -217,8 +212,7 @@ import {
         MultiSelectModule,
         SpinnerModule,
         EditorModule,
-        TooltipModule,        
-        DragDropModule,
+        TooltipModule,                
         PaginatorModule,
         TreeModule,
         OverlayPanelModule,
@@ -243,8 +237,7 @@ import {
         CoreModule,
         MonitorModule,
         ReferenceModule,
-        PolicyModule,        
-        AdminModule,
+        PolicyModule,                
     ],
     bootstrap: [AppComponent],
     providers: [

@@ -1,14 +1,14 @@
-﻿import * as admin from './index'
-import { RouterModule } from '@angular/router';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import * as admin from './index'
 
-export const AdminRoutes = [
+const routes: Routes = [
     {
-        path: SiteUrlHelpers.SITE_URL_ADMIN_ROOT,
+        path: '',
         component: admin.AdminComponent,
-        canActivate: [AdminUserGuard],        
-        // index: true,
+        canActivate: [AdminUserGuard],
         children: [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, component: admin.AdminFusionComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS, component: admin.AdminStatisticsComponent },
@@ -33,4 +33,9 @@ export const AdminRoutes = [
     }
 ];
 
-export const routing = RouterModule.forChild(AdminRoutes);
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class AdminRoutingModule { }
+

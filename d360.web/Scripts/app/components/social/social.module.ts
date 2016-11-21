@@ -28,8 +28,7 @@ import {
     AutoCompleteModule,
     MultiSelectModule,
     SpinnerModule,
-    EditorModule,    
-    DragDropModule,
+    EditorModule,        
     PaginatorModule,
     SharedModule,
 } from 'primeng/primeng';
@@ -57,8 +56,7 @@ import {
         AutoCompleteModule,
         MultiSelectModule,
         SpinnerModule,
-        EditorModule,        
-        DragDropModule,
+        EditorModule,                
         PaginatorModule,
         SharedModule,
 

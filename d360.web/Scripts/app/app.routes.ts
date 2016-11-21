@@ -1,7 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent} from './components/index';
-import { AdminRoutes } from './components/admin/admin.routes';
 import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
 import { ModelRoutes } from './components/model/model.routes';
@@ -17,8 +16,7 @@ import { WorkflowRoutes } from './components/workflow/workflow.routes';
 import { SiteUrlHelpers } from './static/site-url-helpers';
 
 const routes: Routes = [    
-    { path: SiteUrlHelpers.SITE_URL_PREFIX, redirectTo: SiteUrlHelpers.SITE_URL_HOME_ROOT, pathMatch: 'full' },
-    ...AdminRoutes,
+    { path: SiteUrlHelpers.SITE_URL_PREFIX, redirectTo: SiteUrlHelpers.SITE_URL_HOME_ROOT, pathMatch: 'full' },  
     ...HomeRoutes,
     ...ArtifactRoutes,
     ...GroupRoutes,    
@@ -33,7 +31,8 @@ const routes: Routes = [
     ...WorkflowRoutes,   
     // lazy loaded modules 
     { path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, loadChildren: './components/community/community.module#CommunityModule' },            
-    { path: SiteUrlHelpers.SITE_URL_HELP_ROOT, loadChildren: './components/help/help.module#HelpModule' },            
+    { path: SiteUrlHelpers.SITE_URL_HELP_ROOT, loadChildren: './components/help/help.module#HelpModule' },
+    { path: SiteUrlHelpers.SITE_URL_ADMIN_ROOT, loadChildren: './components/admin/admin.module#AdminModule' },   
 ];
 
 @NgModule({
