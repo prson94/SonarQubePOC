@@ -4,10 +4,8 @@ import { HomeRoutes} from './components/home/home.routes';
 import { ArtifactRoutes } from './components/artifact/artifact.routes';
 import { ModelRoutes } from './components/model/model.routes';
 import { PolicyRoutes } from './components/policy/policy.routes';
-import { FusionRoutes } from './components/fusion/fusion.routes';
 import { ResourceRoutes } from './components/resource/resource.routes';
 import { RuleRoutes } from './components/rule/rule.routes';
-import { MonitorRoutes } from './components/monitor/monitor.routes';
 import { ReferenceRoutes } from './components/reference/reference.routes';
 import { SearchRoutes } from './components/search/search.routes';
 import { GroupRoutes } from './components/group/group.routes';
@@ -20,18 +18,18 @@ const routes: Routes = [
     ...ArtifactRoutes,
     ...GroupRoutes,    
     ...ModelRoutes,
-    ...PolicyRoutes,
-    ...FusionRoutes,
+    ...PolicyRoutes,    
     ...ResourceRoutes,
-    ...RuleRoutes,
-    ...MonitorRoutes,   
+    ...RuleRoutes,   
     ...ReferenceRoutes,    
     ...SearchRoutes,    
     ...WorkflowRoutes,   
     // lazy loaded modules 
-    { path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, loadChildren: './components/community/community.module#CommunityModule' },            
-    { path: SiteUrlHelpers.SITE_URL_HELP_ROOT, loadChildren: './components/help/help.module#HelpModule' },
-    { path: SiteUrlHelpers.SITE_URL_ADMIN_ROOT, loadChildren: './components/admin/admin.module#AdminModule' },   
+    { path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, loadChildren: './components/community/community.module#CommunityModule?chunkName=communityChunk' },            
+    { path: SiteUrlHelpers.SITE_URL_HELP_ROOT, loadChildren: './components/help/help.module#HelpModule?chunkName=helpChunk' },
+    { path: SiteUrlHelpers.SITE_URL_ADMIN_ROOT, loadChildren: './components/admin/admin.module#AdminModule?chunkName=adminChunk' },   
+    { path: SiteUrlHelpers.SITE_URL_FUSION_ROOT, loadChildren: './components/fusion/fusion.module#FusionModule?chunkName=fusionChunk' },   
+    { path: SiteUrlHelpers.SITE_URL_MONITOR_ROOT, loadChildren: './components/monitor/monitor.module#MonitorModule?chunkName=monitorChunk' },   
 ];
 
 @NgModule({

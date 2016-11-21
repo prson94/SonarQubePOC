@@ -1,9 +1,14 @@
-﻿import { MonitorListComponent } from './monitor-list.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { MonitorListComponent } from './monitor-list.component';
 
-export const MonitorRoutes = [
-    {
-        path: SiteUrlHelpers.SITE_URL_MONITOR_ROOT,
-        component: MonitorListComponent,        
-    }
+const routes: Routes = [
+    { path: '', component: MonitorListComponent },
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class MonitorRoutingModule { }
+

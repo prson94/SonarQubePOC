@@ -17,9 +17,7 @@ import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
-import { FusionModule } from './components/fusion/fusion.module';
 import { GroupModule } from './components/group/group.module';
-import { MonitorModule } from './components/monitor/monitor.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
 import { HomeModule } from './components/home/home.module';
@@ -218,12 +216,10 @@ import {
         SearchModule,
         WorkflowModule,
         D3SSharedModule,  
-        SocialModule,           
-        FusionModule,
+        SocialModule,                   
         D3SFormsModule,
         GroupModule,        
-        CoreModule,
-        MonitorModule,
+        CoreModule,        
         ReferenceModule,
         PolicyModule,      
         HomeModule,          

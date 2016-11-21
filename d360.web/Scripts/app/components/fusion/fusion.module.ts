@@ -10,6 +10,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { FusionRoutingModule } from './fusion.routes';
+
 import { FusionAgentHistoryComponent } from './fusion-agent-history.component';
 import { FusionAgentErrorsComponent } from './fusion-agent-errors.component';
 import { FusionAttributeItemComponent } from './fusion-attribute-item.component';
@@ -65,6 +67,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        FusionRoutingModule,
 
         //primeng
         GrowlModule,
@@ -123,33 +127,6 @@ import {
         FusionRuleStepLineageComponent,
         FusionRuleStepPromoteComponent,
         FusionRuleStepRelateComponent,
-    ],
-    exports: [
-        FusionAgentErrorsComponent,
-        FusionAgentHistoryComponent,        
-        FusionAttributeItemComponent,
-        FusionAttributeSummaryComponent,
-        FusionAttributeSummaryFiltersComponent,
-        FusionComponent,
-        FusionConfigurationComponent,
-        FusionExecutionErrorsComponent,
-        FusionExecutionHistoryComponent,
-        FusionExecutionResultsComponent,
-        FusionItemComponent,
-        FusionListComponent,
-        FusionManualLoadComponent,
-        FusionProcessErrorsComponent,
-        FusionPromotionHistoryComponent,
-        FusionStatisticsComponent,
-        FusionTechnicalMappingsComponent,
-        FusionStructureTreeComponent,
-        FusionRulesComponent,
-        FusionRuleStepComponent,
-        FusionRuleStepFindComponent,
-        FusionRuleStepFindViaRelationComponent,
-        FusionRuleStepLineageComponent,
-        FusionRuleStepPromoteComponent,
-        FusionRuleStepRelateComponent
-    ]
+    ],    
 })
 export class FusionModule { }

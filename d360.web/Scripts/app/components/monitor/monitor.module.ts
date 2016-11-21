@@ -8,7 +8,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
-
+import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorListComponent } from './monitor-list.component';
 
 import {
@@ -27,6 +27,8 @@ import {
         GrowlModule,
         DataTableModule,
         SharedModule,
+
+        MonitorRoutingModule,
 
         //d3s
         D3SSharedModule,
