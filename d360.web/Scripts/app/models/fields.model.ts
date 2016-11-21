@@ -39,7 +39,27 @@ export class FieldTypeEditorModel {
     RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
     LookupTokens: SelectItem[] = new Array<SelectItem>();
+    FilteredLookupItems: FilteredLookupItem[] = [];
+    FilteredLookupItem: FilteredLookupItem;
 
+}
+
+export class FilteredLookupItem {
+    HideFooter: boolean;
+    HideHeader: boolean;
+    ID: number;
+    Object: string;
+    ObjectID: number;
+    DisplayFields: FilteredLookupDisplayField[] = [];
+}
+
+export class FilteredLookupDisplayField {
+    Filter: boolean;
+    Show: boolean;
+    SortOrder: number;
+    value: string;
+    FieldTypeID: number;
+    FieldTypeName: string;
 }
 
 export class FieldType {
@@ -183,6 +203,7 @@ export class Lookups {
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
     ComplexLookupRelations: any[] = [];
+    FilteredLookups: any[] = [];
 
     ReferenceTypes: SelectItem[] = new Array<SelectItem>();
 }

@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { FieldType, FieldTypeEditorModel, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../models/fields.model';
+import { FieldType, FieldTypeEditorModel, FilteredLookupItem, FilteredLookupDisplayField, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../models/fields.model';
 import { FieldsService } from '../../services/fields.service';
 import { MessagesService } from '../../services/messages.service';
 import { ObjectDetailService } from '../../services/index';
@@ -63,6 +63,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private childIntersectsLoading = false;
     private childIntersectDisabled = true;
 
+    private filteredLookup: string = '';
+    private filteredLookupDisplayFields: any[] = [];
+    private filteredSortOrderList: any[] = [];
+    private filteredLookupHideHeader: boolean = false;
+    private filteredLookupHideFooter: boolean = false;
+
     private errorMessage: string = "";
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
@@ -104,7 +110,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
-                    //console.log('lookups: ', d);
+                    console.log('lookups: ', d);
                     this.lookups = d;
 
                     this.lookups.IntersectTypes.forEach(i => {
@@ -117,10 +123,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
-                        //console.log("form data: ", f);
+                        console.log("form data: ", f);
 
                         this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;
+                        this.model.FilteredLookupItems = f.FilteredLookupItems;
 
                         if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
                             this.loadComplexRelationLookup();
@@ -141,6 +148,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
                 .then(d => {
+                    console.log('lookups: ', d);
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                     this.model.FieldType.Type = 'Date';
@@ -313,6 +321,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.relationItemCount = 1;                    
                 }
                 break;
+            case 'filteredlookup':
+                this.loadFilteredLookup();
+                break;
             default:
                 break;
         }
@@ -369,6 +380,25 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
     }
 
+    private loadFilteredLookup() {
+        let item = this.model.FilteredLookupItems[0];
+
+        this.filteredLookup = item.Object + '|' + item.ObjectID;
+        this.filteredLookupHideHeader = item.HideHeader;
+        this.filteredLookupHideFooter = item.HideFooter;
+
+        this.changeFilteredLookup()
+            .then(() => {
+                this.filteredLookupDisplayFields.forEach(d => {
+                    let i = item.DisplayFields.find(j => j.value == d.value);
+                    if (i) {
+                        d.Show = i.Show;
+                        d.Filter = i.Filter;
+                        d.SortOrder = i.SortOrder;
+                    }
+                });
+            });
+    }
     //#endregion
     
     //#region form actions
@@ -425,6 +455,34 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             });
         }
+
+        if (this.model.FieldType.Type == 'FilteredLookup') {
+            let item = new FilteredLookupItem();
+            item.Object = this.filteredLookup.split('|')[0];
+            item.ObjectID = parseInt(this.filteredLookup.split('|')[1]);
+
+            if (this.model.FilteredLookupItems != null) {
+                item.ID = this.model.FilteredLookupItems[0].ID;
+            }
+
+            item.HideFooter = this.filteredLookupHideFooter;
+            item.HideHeader = this.filteredLookupHideHeader;
+
+            item.DisplayFields = [];
+            this.filteredLookupDisplayFields.forEach(i => {
+                item.DisplayFields.push({
+                    value: i.value,
+                    Filter: i.Filter,
+                    Show: i.Show,
+                    SortOrder: i.SortOrder,
+                    FieldTypeID: parseInt(i.value.split('|')[0]),
+                    FieldTypeName: i.value.split('|')[1]
+                });
+            });
+            this.model.FilteredLookupItem = item;
+            console.log(item);
+        }
+
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
@@ -488,6 +546,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 }
 
+                break;
+            case 'filteredlookup':
+                if (this.filteredLookup == null || this.filteredLookup == '') {
+                    this.errorMessage = "Please select a lookup list.";
+                    valid = false;
+                }
                 break;
         }
         return valid;
@@ -682,6 +746,31 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     item.SortOrderList = s;
                 });
         } else return Promise.resolve();
+    }
+
+    private changeFilteredLookup(): Promise<any> {
+        if (this.filteredLookup == null || this.filteredLookup == '') {
+            this.filteredLookupDisplayFields = [];
+            return Promise.resolve();
+        }
+        let params = this.filteredLookup.split('|');
+        let id = parseInt(params[1]);
+        let type = params[0];
+
+
+        return this.fieldsService.getFilteredLookupDisplayFields(this.objectType, this.objectID, type, id)
+            .then(d => {
+                this.filteredLookupDisplayFields = d;
+
+                this.filteredSortOrderList = [];
+                for (let i = 0; i < this.filteredLookupDisplayFields.length; i++) {
+                    this.filteredSortOrderList.push({
+                        id: i + 1,
+                        text: i + 1
+                    });
+                }
+                console.log(d);
+            });
     }
 
     //#endregion

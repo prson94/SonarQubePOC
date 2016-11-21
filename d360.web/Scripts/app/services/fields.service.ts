@@ -73,7 +73,8 @@ export class FieldsService extends BaseService implements IFieldsService {
 
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);      
-                l.ComplexLookupRelations = r.ComplexLookupRelations;          
+                l.ComplexLookupRelations = r.ComplexLookupRelations;
+                l.FilteredLookups = r.FilteredLookups;          
                 return l;
             })
             .catch(err => this.handleError(err));
@@ -180,6 +181,14 @@ export class FieldsService extends BaseService implements IFieldsService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    getFilteredLookupDisplayFields(type: string, id: number, listType: string, listID: number): Promise<any> {
+        return this.http.get(`form/FieldType_FilteredLookup_DisplayFields?type=${type}&id=${id}&listType=${listType}&listID=${listID}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
 }
 
 
