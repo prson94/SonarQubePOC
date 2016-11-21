@@ -21,6 +21,7 @@ import { GroupModule } from './components/group/group.module';
 import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
 import { HomeModule } from './components/home/home.module';
+import { ResourceModule } from './components/resource/resource.module';
 
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
@@ -92,20 +93,6 @@ import {
     ModelItemStructureComponent,
 } from './components/model/index';
 
-import {
-    ActionBar,        
-    MenuPartItem,
-    MenuPart,    
-} from './components/parts/index';
-
-import {
-    ResourceComponent,
-    ResourceItemComponent,
-    ResourceApiComponent,
-    ResourceListComponent,
-    ResourceGroupsComponent,
-} from './components/resource/index';
-
 import { RightSidebarComponent } from './components/rightsidebar/right-sidebar.component';
 import { RightSidebarItemComponent } from './components/rightsidebar/right-sidebar-item.component';
 
@@ -117,19 +104,8 @@ import {
     RuleResultsGridComponent,
 } from './components/rule/index';
 
-import {
-    AttributesTile,               
-    MenuBarItem,    
-    ObjectDefinitionTile,                  
-    StructureTile,    
-    SynonymsTile,            
-    ResourceFollowingTile,    
-    ResourceFollowingGridTile,    
-} from './components/tiles/index';
-
 @NgModule({
-    declarations: [
-        ActionBar,        
+    declarations: [          
         AppComponent,
         ArtifactColumnFilterComponent,        
         ArtifactComponent,
@@ -141,37 +117,25 @@ import {
         ArtifactListComponent,
         ArtifactTopLevelListComponent,        
         ArtifactTypeMetricsComponent,
-        ArtifactTypeWorkflowStatusComponent,
-        AttributesTile,                           
+        ArtifactTypeWorkflowStatusComponent,                             
         HeaderActionsComponent,
         HeaderBreadcrumbComponent,
         HeaderBreadcrumbItemComponent,
         HeaderComponent,
         HeaderFavoritesComponent,
         HeaderFollowComponent,
-        HeaderTypeaheadSearchComponent,                       
-        MenuPart,    
+        HeaderTypeaheadSearchComponent,                               
         ModelComponent,
         ModelItemComponent,        
         ModelListComponent,
-        ModelItemStructureComponent,        
-        ObjectDefinitionTile,                                                                           
-        ResourceApiComponent,
-        ResourceComponent,
-        ResourceFollowingGridTile,
-        ResourceFollowingTile,
-        ResourceItemComponent,                
-        ResourceListComponent,     
-        ResourceGroupsComponent,
+        ModelItemStructureComponent,                                                                                      
         RightSidebarComponent,
         RightSidebarItemComponent,
         RuleColumnFilterComponent,
         RuleComponent,        
         RuleItemComponent,
         RuleListComponent,    
-        RuleResultsGridComponent,            
-        StructureTile,        
-        SynonymsTile,                                  
+        RuleResultsGridComponent,                    
     ],
     imports: [
         BrowserModule,
@@ -222,7 +186,8 @@ import {
         CoreModule,        
         ReferenceModule,
         PolicyModule,      
-        HomeModule,          
+        HomeModule,      
+        ResourceModule,    
     ],
     bootstrap: [AppComponent],
     providers: [

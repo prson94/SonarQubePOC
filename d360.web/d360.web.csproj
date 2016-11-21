@@ -1259,6 +1259,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Scripts\app\components\parts\" />
+    <Folder Include="Scripts\app\components\tiles\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
   <ItemGroup>
@@ -1389,8 +1391,8 @@
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following-grid.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\resource-following.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-following-grid.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\resource\resource-following.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-work-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
@@ -1467,12 +1469,10 @@
     <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\action-bar.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\action-bar.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims-matrix.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\index.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\menu.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\menu.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-detail-field.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\parts\parts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
@@ -1544,9 +1544,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\workflow-issue-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\index.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\object-definition.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\attributes.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
@@ -1559,12 +1558,11 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rule-dimensions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\structure.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\structure.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-questions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\synonyms.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-details.component.ts" />

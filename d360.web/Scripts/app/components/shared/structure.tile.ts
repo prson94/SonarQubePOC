@@ -1,11 +1,10 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { HierarchyModel, PredicateType, HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../../models/relations.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TreeNode } from 'primeng/primeng';
 import { RelationshipsService } from '../../services/relationships.service';
-import { ActionBarItem } from '../parts/action-bar.part';
-import { MenuPartItem } from '../parts/menu.part';
+import { ActionBarItem } from '../shared/action-bar.part';
+import { MenuPartItem } from '../shared/menu.part';
 import { FormHelper } from '../../models/form.model';
 
 

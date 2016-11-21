@@ -1,5 +1,4 @@
-﻿
-import { NgModule }       from '@angular/core';
+﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
@@ -8,16 +7,18 @@ import { RouterModule } from '@angular/router';
 
 import { D3SSharedModule } from '../shared/shared.module';
 import { D3SFormsModule } from '../forms/d3sforms.module';
-import { TilesModule } from '../tiles/tiles.module';
+import { CoreModule } from '../shared/core.module';
+import { SocialModule } from '../social/social.module';
+import { WorkflowModule } from '../workflow/workflow.module';
+import { PipesModule } from '../../pipes/pipes.module';
 
-import { ResourceComponent } from './resource.component';
-import { ResourceItemComponent } from './resource-item.component';
 import { ResourceApiComponent } from './resource-api.component';
-import { ResourceListComponent } from './resource-list.component';
+import { ResourceComponent } from './resource.component';
 import { ResourceGroupsComponent} from './resource-groups.component';
-import { ResourceResponsibilityTile } from './resource-responsibility.tile';
+import { ResourceItemComponent } from './resource-item.component';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 import { ResourceFollowingTile } from './resource-following.tile';
+import { ResourceListComponent } from './resource-list.component';
   
 import { 
     ButtonModule,    
@@ -33,26 +34,15 @@ import {
 
 @NgModule({
     declarations: [
-    ResourceComponent,
-    ResourceItemComponent,
-    ResourceApiComponent, 
-    ResourceListComponent,
-    ResourceGroupsComponent,
-    ResourceResponsibilityTile,
-    ResourceFollowingGridTile,
-    ResourceFollowingTile, 
-    ],
-    exports: [
         ResourceComponent,
         ResourceItemComponent,
-        ResourceApiComponent,
+        ResourceApiComponent, 
         ResourceListComponent,
-        ResourceGroupsComponent,
-        ResourceResponsibilityTile,
+        ResourceGroupsComponent,    
         ResourceFollowingGridTile,
-        ResourceFollowingTile, 
-    ]
-    , imports: [
+        ResourceFollowingTile,         
+    ],    
+    imports: [
         //angular
         CommonModule,
         FormsModule,
@@ -72,8 +62,11 @@ import {
 
         //d3s
         D3SSharedModule,
-        D3SFormsModule,
-        TilesModule,
+        D3SFormsModule,     
+        CoreModule,   
+        SocialModule,
+        WorkflowModule,
+        PipesModule,
     ]
 
 })

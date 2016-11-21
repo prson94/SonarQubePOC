@@ -3,8 +3,8 @@ import { FormMode, FormHelper } from '../../models/form.model';
 import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TreeNode } from 'primeng/primeng';
-import { MenuPartItem } from '../parts/menu.part';
-import { ActionBarItem } from '../parts/action-bar.part'; 
+import { MenuPartItem } from '../shared/menu.part';
+import { ActionBarItem } from '../shared/action-bar.part'; 
 import * as _ from 'lodash';
 
 

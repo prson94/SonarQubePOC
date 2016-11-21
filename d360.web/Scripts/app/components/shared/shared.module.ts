@@ -41,9 +41,12 @@ import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
+import { ActionBar } from './action-bar.part';
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { AssignmentsTile } from './assignments-tile.component';
+import { AttributesTile } from './attributes.tile';
 import { AuditComponent } from './audit.component';
+import { BulkLoadItemComponent } from './bulk-load-item.component';
 import { DashboardTabComponent } from './dashboard-tab.component';
 import { DeleteForm } from './delete.form';
 import { DynamicFieldComponent } from './dynamic-field.component';
@@ -69,13 +72,14 @@ import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibili
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
-import { BulkLoadItemComponent } from './bulk-load-item.component';
+import { MenuPart } from './menu.part';
 import { MessagesComponent } from './messages.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ModelDiagramComponent } from './model-diagram.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectChallengeComponent } from './object-challenge.component';
+import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailField } from './object-detail-field.part';
 import { ObjectFollowersComponent } from './object-followers.component';
@@ -98,17 +102,24 @@ import { SimpleAccordion } from './simple-accordion.part';
 import { SiteMenuComponent } from './menu/site-menu.component';
 import { SiteMenuCategoryComponent } from './menu/site-menu-category.component';
 import { SiteMenuMegaItemComponent } from './menu/site-menu-mega-item.component';
+import { StructureTile } from './structure.tile';
+import { SynonymsTile } from './synonyms.tile';
 import { TileActionsComponent } from './tile-actions.component';
 import { TakeSurveyComponent } from './take-survey.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 
+
+
 @NgModule({
     declarations: [
+        ActionBar,
         ArtifactStatusComponent,
         AssignmentsTile,
+        AttributesTile,
         AuditComponent,
+        BulkLoadItemComponent,
         DashboardTabComponent,
         DeleteForm,
         DynamicEditorComponent,
@@ -135,13 +146,14 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
-        BulkLoadItemComponent,
+        MenuPart,        
         MessagesBarComponent,        
         MessagesComponent, 
         ModelDiagramComponent, 
         MultiSelectGridComponent,      
         ObjectBoardComponent,
         ObjectChallengeComponent,
+        ObjectDefinitionTile,
         ObjectDetailComponent,
         ObjectDetailField,
         ObjectFollowersComponent,
@@ -164,6 +176,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         SiteMenuCategoryComponent,
         SiteMenuComponent,    
         SiteMenuMegaItemComponent,    
+        StructureTile,
+        SynonymsTile,
         TakeSurveyComponent,
         TileActionsComponent,           
         WorkflowDetailedViewComponent,
@@ -171,9 +185,11 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         WorkflowIssueEditorComponent,
     ],
     exports: [
+        ActionBar,
         ArtifactStatusComponent,
         AssignmentsTile,
         AuditComponent,
+        BulkLoadItemComponent,
         DashboardTabComponent,
         DeleteForm,
         DynamicEditorComponent,
@@ -191,14 +207,15 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         GroupMembersComponent,
         ImpactComponent,
         IconPickerComponent,
-        LineageComponent,
-        BulkLoadItemComponent,
+        LineageComponent,        
         MessagesBarComponent,        
         MessagesComponent,
+        MenuPart,  
         MultiSelectGridComponent,
         ModelDiagramComponent,
         ObjectBoardComponent,
         ObjectChallengeComponent,
+        ObjectDefinitionTile,
         ObjectDetailComponent,
         ObjectDetailField,
         ObjectFollowersComponent,
