@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelation } from '../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { FormMessage, FormHelper } from '../../models/form.model';

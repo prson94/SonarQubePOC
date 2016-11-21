@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { LoadDetail, LoadFilePostModel } from '../../models/load.model';
 import { LoadService } from '../../services/load.service';
@@ -12,9 +11,7 @@ import * as _ from 'lodash';
     providers: [LoadService],
 })
 
-export class LoadForm implements OnInit, OnChanges, FormEvents {
-    //@Input() id: number;
-    //@Input() parentID: number;
+export class LoadForm implements OnInit, OnChanges, FormEvents {    
     @Input() title: string = "Upload a Spreadsheet Job";
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();

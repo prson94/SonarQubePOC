@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
 import { SelectItem } from '../../models/form.model';
 import { CompanySettings as cs } from '../../models/company-settings.model';

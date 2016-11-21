@@ -4,13 +4,9 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { ArtifactTypeForm } from './artifact-type.form';
+
 import { FieldTypeForm } from './field-type.form';
-import { GroupForm } from './group.form';
-import { LoadForm } from './load.form';
 import { ResponsibilityItemForm } from './responsibility-item.form';
-import { ResponsibilityTypeForm } from './responsibility-type.form';
-import { WorkflowItemForm } from './workflow-item.form';
 import { FormMessagePart } from './form-message.part';
 
 import { PipesModule } from '../../pipes/pipes.module';
@@ -74,25 +70,15 @@ import {
         //d3s          
         PipesModule,
     ],
-    declarations: [
-        ArtifactTypeForm,
+    declarations: [        
         FieldTypeForm,
-        FormMessagePart,
-        GroupForm,
-        LoadForm,
-        ResponsibilityItemForm,
-        ResponsibilityTypeForm,
-        WorkflowItemForm,
+        FormMessagePart,           
+        ResponsibilityItemForm,        
     ],
-    exports: [
-        ArtifactTypeForm,
+    exports: [        
         FieldTypeForm,
-        FormMessagePart,
-        GroupForm,
-        LoadForm,
-        ResponsibilityItemForm,
-        ResponsibilityTypeForm,
-        WorkflowItemForm,
+        FormMessagePart,        
+        ResponsibilityItemForm,        
     ]
 })
 export class D3SFormsModule { }

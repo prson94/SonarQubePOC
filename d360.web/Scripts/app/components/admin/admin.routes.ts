@@ -2,33 +2,54 @@
 import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import * as admin from './index'
+
+import { AdminGovernanceComponent } from './admin-governance.component';
+import { AdminSettingsComponent } from './admin-settings.component';
+import { AdminDomainComponent } from './admin-domain.component';
+import { AdminGroupsComponent } from './admin-groups.component';
+import { AdminWorkflowComponent } from './admin-workflow.component';
+import { AdminArtifactsComponent } from './admin-artifacts.component';
+import { AdminTemplatesComponent } from './admin-templates.component';
+import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
+import { AdminLookupsComponent } from './admin-lookups.component';
+import { AdminRulesComponent } from './admin-rules.component';
+import { AdminPoliciesComponent } from './admin-policies.component';
+import { AdminAttributesComponent } from './admin-attributes.component';
+import { AdminRelationshipsComponent } from './admin-relationships.component';
+import { AdminResourcesComponent } from './admin-resources.component';
+import { AdminStatisticsComponent } from './admin-statistics.component';
+import { AdminDashboardsComponent } from './admin-dashboards.component';
+import { AdminLoadComponent } from './admin-load.component';
+import { AdminFusionComponent } from './admin-fusion.component';
+import { AdminSurveysComponent } from './admin-surveys.component';
+import { AdminComponent } from './admin.component';
+
 
 const routes: Routes = [
     {
         path: '',
-        component: admin.AdminComponent,
+        component: AdminComponent,
         canActivate: [AdminUserGuard],
         children: [
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, component: admin.AdminFusionComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS, component: admin.AdminStatisticsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: admin.AdminArtifactsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: admin.AdminAttributesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, component: admin.AdminLoadComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: admin.AdminDashboardsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DOMAIN, component: admin.AdminDomainComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, component: admin.AdminGroupsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, component: admin.AdminLookupsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: admin.AdminPoliciesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, component: admin.AdminRelationshipsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: admin.AdminResourcesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, component: admin.AdminGovernanceComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, component: admin.AdminRulesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, component: admin.AdminSettingsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, component: admin.AdminSurveysComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: admin.AdminTaxonomiesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES, component: admin.AdminTemplatesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, component: admin.AdminWorkflowComponent }
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, component: AdminFusionComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS, component: AdminStatisticsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: AdminArtifactsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, component: AdminLoadComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: AdminDashboardsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DOMAIN, component: AdminDomainComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, component: AdminGroupsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, component: AdminLookupsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, component: AdminRelationshipsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: AdminResourcesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, component: AdminGovernanceComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, component: AdminRulesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, component: AdminSettingsComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, component: AdminSurveysComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: AdminTaxonomiesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES, component: AdminTemplatesComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, component: AdminWorkflowComponent }
         ]
     }
 ];
