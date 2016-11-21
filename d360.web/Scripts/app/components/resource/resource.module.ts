@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { ResourceRoutingModule } from './resource.routes';
 
 import { D3SSharedModule } from '../shared/shared.module';
-import { D3SFormsModule } from '../forms/d3sforms.module';
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
@@ -64,8 +63,7 @@ import {
         SharedModule,
 
         //d3s
-        D3SSharedModule,
-        D3SFormsModule,     
+        D3SSharedModule,          
         CoreModule,   
         SocialModule,
         WorkflowModule,

@@ -20,8 +20,7 @@ import {
     AccordionModule,
     SelectButtonModule,
     AutoCompleteModule,
-    MultiSelectModule,
-    SpinnerModule,
+    MultiSelectModule,    
     EditorModule,
     TooltipModule,    
     PaginatorModule,
@@ -38,7 +37,6 @@ import { ChartModule } from 'angular2-highcharts';
 import { SocialModule } from '../social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
-import { D3SFormsModule } from '../forms/d3sforms.module';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
@@ -56,7 +54,9 @@ import { DynamicFieldValueComponent } from './dynamic-field-value.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { FieldDefinitionComponent } from './field-definition.component';
+import { FieldTypeForm } from './field-type.form';
 import { FollowerGridComponent } from './follower-grid.component';
+import { FormMessagePart } from './form-message.part';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GridPagingInfoComponent } from './grid-paging-info.component';
@@ -105,6 +105,7 @@ import { RightSidebarComponent } from './rightsidebar/right-sidebar.component';
 import { RightSidebarItemComponent } from './rightsidebar/right-sidebar-item.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
+import { ResponsibilityItemForm } from './responsibility-item.form';
 import { SimpleAccordion } from './simple-accordion.part';
 import { SiteMenuComponent } from './menu/site-menu.component';
 import { SiteMenuCategoryComponent } from './menu/site-menu-category.component';
@@ -117,7 +118,6 @@ import { UserListComponent } from './user-list.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
-
 
 
 @NgModule({
@@ -137,7 +137,9 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
         FieldDefinitionComponent,
+        FieldTypeForm,
         FollowerGridComponent,
+        FormMessagePart,
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
         GridPagingInfoComponent,
@@ -183,6 +185,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RaiseIssueButtonComponent,
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
+        ResponsibilityItemForm,
         ResourceResponsibilityGridComponent,        
         RightSidebarComponent,
         RightSidebarItemComponent,
@@ -214,6 +217,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
         FieldDefinitionComponent,
+        FieldTypeForm,
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
@@ -253,6 +257,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,        
+        ResponsibilityItemForm,
         RightSidebarComponent,
         RightSidebarItemComponent,
         SimpleAccordion,
@@ -287,8 +292,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         AccordionModule,
         SelectButtonModule,
         AutoCompleteModule,
-        MultiSelectModule,
-        SpinnerModule,
+        MultiSelectModule,        
         EditorModule,
         TooltipModule,        
         PaginatorModule, 
@@ -305,8 +309,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ColorPickerModule,
 
         //d3s
-        PipesModule,             
-        D3SFormsModule,   
+        PipesModule,                    
         SocialModule,
         CoreModule,
     ]

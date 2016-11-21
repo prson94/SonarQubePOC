@@ -879,7 +879,7 @@
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\artifact-type.form.html" />
-    <Content Include="Scripts\app\components\forms\field-type.form.html" />
+    <Content Include="Scripts\app\components\shared\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\group.form.html" />
     <Content Include="Scripts\app\components\admin\load.form.html" />
     <Content Include="Scripts\app\components\admin\responsibility-type.form.html" />
@@ -948,7 +948,7 @@
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
-    <Content Include="Scripts\app\components\forms\responsibility-item.form.html" />
+    <Content Include="Scripts\app\components\shared\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\admin\workflow-item.form.html" />
     <Content Include="Scripts\app\components\admin\claims.tile.html" />
     <Content Include="Scripts\app\components\shared\field-definition.component.html" />
@@ -1259,6 +1259,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Scripts\app\components\forms\" />
     <Folder Include="Views\Tiles\" />
   </ItemGroup>
   <ItemGroup>
@@ -1414,8 +1415,7 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifact-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\field-type.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\d3sforms.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibility-type.form.ts" />
@@ -1563,7 +1563,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\responsibility-item.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\responsibility-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.aot.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
@@ -1690,7 +1690,7 @@
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\templates.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\field-definition.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\forms\form-message.part.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\form-message.part.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\people-responsibilities.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\services\typeahead-search.service.ts" />

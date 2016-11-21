@@ -28,8 +28,7 @@ import {
     CheckboxModule,
     AccordionModule,
     SelectButtonModule,
-    MultiSelectModule,
-    SpinnerModule,
+    MultiSelectModule,    
     TooltipModule,
     SharedModule,
 } from 'primeng/primeng';
@@ -53,8 +52,7 @@ import {
         CheckboxModule,                
         AccordionModule,
         SelectButtonModule,        
-        MultiSelectModule,
-        SpinnerModule,
+        MultiSelectModule,        
         TooltipModule,                
         SharedModule,
                 

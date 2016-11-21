@@ -11,7 +11,6 @@ import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
 import { AdminRoutingModule } from './admin.routes';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
-import { D3SFormsModule } from '../forms/d3sforms.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import {
@@ -28,10 +27,8 @@ import {
     MenuModule,
     MenubarModule,
     AccordionModule,
-    SelectButtonModule,
-    AutoCompleteModule,
-    MultiSelectModule,
-    SpinnerModule,
+    SelectButtonModule,    
+    MultiSelectModule,    
     EditorModule,
     TooltipModule,    
     PaginatorModule,
@@ -170,10 +167,8 @@ import { WorkflowItemForm } from './workflow-item.form';
         MenuModule,
         MenubarModule,
         AccordionModule,
-        SelectButtonModule,
-        AutoCompleteModule,
-        MultiSelectModule,
-        SpinnerModule,
+        SelectButtonModule,        
+        MultiSelectModule,        
         EditorModule,
         TooltipModule,        
         PaginatorModule,
@@ -186,8 +181,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         ColorPickerModule,
 
         //d3s
-        D3SSharedModule,
-        D3SFormsModule,
+        D3SSharedModule,        
         CoreModule,
         PipesModule,        
     ] 

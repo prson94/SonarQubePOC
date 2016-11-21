@@ -18,7 +18,6 @@ import { HomeModule } from './components/home/home.module';
 import { ModelModule } from './components/model/model.module';
 import { ArtifactModule } from './components/artifact/artifact.module';
 
-import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
 import { AdminUserGuard } from './guards/admin-user.guard';
 
@@ -46,8 +45,7 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         SearchModule,
         WorkflowModule,
         D3SSharedModule,  
-        SocialModule,                   
-        D3SFormsModule,         
+        SocialModule,                           
         CoreModule,        
         ReferenceModule,         
         HomeModule,              
