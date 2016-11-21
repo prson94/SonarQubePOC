@@ -22,7 +22,9 @@ import { ReferenceModule } from './components/reference/reference.module';
 import { PolicyModule } from './components/policy/policy.module';
 import { HomeModule } from './components/home/home.module';
 import { ResourceModule } from './components/resource/resource.module';
-
+import { ModelModule } from './components/model/model.module';
+import { ArtifactModule } from './components/artifact/artifact.module';
+import { RuleModule } from './components/rule/rule.module';
 
 import { D3SFormsModule } from './components/forms/d3sforms.module'; // why are some forms in a separate module instead of by area?
 
@@ -61,60 +63,9 @@ import {
 } from 'primeng/primeng';
 
 
-import {
-    ArtifactBaseComponent,
-    ArtifactColumnFilterComponent,    
-    ArtifactComponent,
-    ArtifactDefnintionComponent,
-    ArtifactGridComponent,
-    ArtifactItemChildGridComponent,
-    ArtifactItemChildrenComponent,
-    ArtifactItemComponent,    
-    ArtifactListComponent,
-    ArtifactTopLevelListComponent,   
-    ArtifactTypeMetricsComponent,
-    ArtifactTypeWorkflowStatusComponent,     
-} from './components/artifact/index';
-
-import {
-    ModelComponent,
-    ModelItemComponent,
-    ModelListComponent,
-    ModelItemStructureComponent,
-} from './components/model/index';
-
-
-import {
-    RuleComponent,
-    RuleColumnFilterComponent,
-    RuleItemComponent,
-    RuleListComponent,
-    RuleResultsGridComponent,
-} from './components/rule/index';
-
 @NgModule({
     declarations: [          
-        AppComponent,
-        ArtifactColumnFilterComponent,        
-        ArtifactComponent,
-        ArtifactDefnintionComponent,
-        ArtifactGridComponent,
-        ArtifactItemChildGridComponent,
-        ArtifactItemChildrenComponent,
-        ArtifactItemComponent,
-        ArtifactListComponent,
-        ArtifactTopLevelListComponent,        
-        ArtifactTypeMetricsComponent,
-        ArtifactTypeWorkflowStatusComponent,                                                                
-        ModelComponent,
-        ModelItemComponent,        
-        ModelListComponent,
-        ModelItemStructureComponent,                                                                                              
-        RuleColumnFilterComponent,
-        RuleComponent,        
-        RuleItemComponent,
-        RuleListComponent,    
-        RuleResultsGridComponent,                    
+        AppComponent,                          
     ],
     imports: [
         BrowserModule,
@@ -166,7 +117,10 @@ import {
         ReferenceModule,
         PolicyModule,      
         HomeModule,      
-        ResourceModule,    
+        ResourceModule,   
+        ModelModule, 
+        ArtifactModule,
+        RuleModule,
     ],
     bootstrap: [AppComponent],
     providers: [

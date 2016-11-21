@@ -1343,6 +1343,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-children.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community-responsibility-count.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rule-step-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-rule-step-findviarelation.component.ts" />
@@ -1354,10 +1355,12 @@
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\model\model.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
@@ -1407,7 +1410,6 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-type-workflow-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
@@ -1456,7 +1458,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
@@ -1482,7 +1483,6 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\index.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.component.ts" />
