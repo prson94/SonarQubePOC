@@ -48,13 +48,36 @@ export class SiteMenuCategoryComponent extends BaseComponent {
             let submenu = item.children[0].nextElementSibling;            
             if (submenu) {
                 this.menu.isActiveItem = true;
-
+                
                 submenu.style.zIndex = ++SiteNav.zindex;
 
                 submenu.style.top = '0px';
                 submenu.style.left = item.offsetWidth + 'px';
+                
+                window.setTimeout(() => {                    
+                    this.repositionMenuToFit(window.innerHeight, submenu);                    
+                }, 150);
             }
         }
+    }
+
+    repositionMenuToFit(windowHeight, element) {        
+        var dims = element.getBoundingClientRect();
+
+        if (dims) {
+            var maxHeight = dims.top + dims.height;
+
+            //case where menu is bigger than height of page
+            if (dims.height > windowHeight) {                
+                element.style.height = windowHeight + 'px';
+                element.style.overflow = 'auto';
+                element.style.top = '-'+ element.style.top + 'px';
+            }            
+            else if (maxHeight > windowHeight) { //case where bottom is below page
+                var topOffset = windowHeight - maxHeight;
+                element.style.top = topOffset + 'px';
+            }            
+        }        
     }
 
     hide(item) {
