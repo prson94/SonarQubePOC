@@ -3591,7 +3591,7 @@ select  case
                         setColumnTypeInfo(ft, i, fc);
 
 
-                        if (ft.LookupObjectType == "Lookup")
+                        if (ft.LookupObjectType == "Lookup" || ft.LookupObjectType == "ReferenceItem")
                         {
                             var context = "Preview";
                             if (ft.LookupObjectType == "Lookup")
