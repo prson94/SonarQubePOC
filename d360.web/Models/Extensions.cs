@@ -17,6 +17,7 @@ namespace d360.web.Models
         public string OverrideDisplayName { get; set; }
         public int DisplayOrder { get; set; }
         public int SortOrder { get; set; }
+        public bool Show { get; set; } = true;
     }
     public class FieldTypeLookupDefinitionRelation
     {

@@ -208,7 +208,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             let item = clone[i].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
                             if (item) {
-                                d.Show = true;
+                                d.Show = (item.Show == null) ? true : item.Show;
                                 d.DisplayOrder = item.DisplayOrder;
                                 d.FilterValue = item.Filter;
                                 d.OverrideDisplayName = item.OverrideDisplayName;
@@ -517,7 +517,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.RelationItem.DisplayFields) {
                     let count = 0;
                     this.model.RelationItem.DisplayFields.forEach(d => {
-                        if (d.Show) count++;
+                        if (d.Show || (d.FilterValue != null || d.FilterValue != '')) count++;
                     });
                     if (count < 1) {
                         this.errorMessage = "There are no display fields selected for this relationship lookup.";
@@ -776,6 +776,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#endregion
 
     private selectToken(value: string) {
+        if (this.model.FieldType.LookupDisplayFormat == null) {
+            this.model.FieldType.LookupDisplayFormat = '';
+        }
         this.model.FieldType.LookupDisplayFormat += value;
     }
 

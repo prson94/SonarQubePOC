@@ -5316,7 +5316,7 @@ namespace d360.web.Controllers
                             });
                             if (r.DisplayFields == null)
                                 r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
-                            foreach (var f in r.DisplayFields.Where(i => i.Show))
+                            foreach (var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue)))
                             {
                                 fields.Add(new FieldLookupFieldItem
                                 {
@@ -5327,7 +5327,8 @@ namespace d360.web.Controllers
                                     FieldTypeName = f.FieldTypeName,
                                     SortOrder = f.SortOrder ?? 0,
                                     OverrideDisplayName = f.OverrideDisplayName,
-                                    Filter = f.FilterValue
+                                    Filter = f.FilterValue,
+                                    Show = f.Show
                                 });
                             }
                         }
@@ -5959,7 +5960,7 @@ namespace d360.web.Controllers
                             });
                             if (r.DisplayFields == null)
                                 r.DisplayFields = new List<FieldTypeItemDisplayFieldEditorModel>();
-                            foreach(var f in r.DisplayFields.Where(i => i.Show))
+                            foreach(var f in r.DisplayFields.Where(i => i.Show || !string.IsNullOrEmpty(i.FilterValue)))
                             {
                                 fields.Add(new FieldLookupFieldItem
                                 {
@@ -5970,7 +5971,8 @@ namespace d360.web.Controllers
                                     FieldTypeName = f.FieldTypeName,
                                     SortOrder = f.SortOrder ?? 0,
                                     OverrideDisplayName = f.OverrideDisplayName,
-                                    Filter = f.FilterValue
+                                    Filter = f.FilterValue,
+                                    Show = f.Show
                                 });
                             }
                         }

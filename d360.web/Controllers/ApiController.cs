@@ -3521,6 +3521,8 @@ select  case
                 c.DisplayOrder = df.DisplayOrder;
                 c.SortOrder = df.SortOrder;
                 c.Filter = df.Filter;
+                c.OutputColumn = df.Show;
+                
                 if (ft != null)
                 {
                     switch (ft.Type)
@@ -3558,7 +3560,7 @@ select  case
 
             var multiFieldReferencePosition = 1;
             fields.ForEach(i => {
-
+                
                 FieldType ft = null;
 
                 var dataField = $"H{pos}_{i.FieldTypeName}";
