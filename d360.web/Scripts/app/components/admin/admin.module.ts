@@ -40,7 +40,6 @@ import {
 import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminSettingsComponent } from './admin-settings.component';
-import { AdminDomainComponent } from './admin-domain.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
@@ -97,8 +96,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminArtifactsComponent,
         AdminComponent,
         AdminAttributesComponent,
-        AdminDashboardsComponent,
-        AdminDomainComponent,
+        AdminDashboardsComponent,        
         AdminFusionComponent,
         AdminGovernanceComponent,
         AdminGroupsComponent,

@@ -1,7 +1,6 @@
 ﻿import { MessagesService } from './messages.service';
 import { ArtifactTypeService } from './artifact-type.service';
 import { ClaimsService } from './claims.service';
-import { DomainService } from './domain.service';
 import { FieldsService } from './fields.service';
 import { ResponsibilityTypeService } from './responsibility-type.service';
 import { HeaderActionsService } from './header-actions.service';
@@ -55,7 +54,6 @@ import { LevelsService } from './levels.service';
 export * from './messages.service';
 export * from './artifact-type.service';
 export * from './claims.service';
-export * from './domain.service';
 export * from './fields.service';
 export * from './responsibility-type.service';
 export * from './header-actions.service';

@@ -5,7 +5,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminSettingsComponent } from './admin-settings.component';
-import { AdminDomainComponent } from './admin-domain.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
@@ -36,8 +35,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: AdminArtifactsComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, component: AdminLoadComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: AdminDashboardsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DOMAIN, component: AdminDomainComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: AdminDashboardsComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, component: AdminGroupsComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, component: AdminLookupsComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },

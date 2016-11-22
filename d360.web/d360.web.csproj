@@ -956,7 +956,6 @@
     <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\admin\admin-domain.component.html" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.css" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
@@ -1318,7 +1317,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-domain.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-load.component.ts" />
@@ -1567,10 +1565,8 @@
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\challenge.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\counts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\dashboard.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\diagnostic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\enums.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\favorite.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\filter-field.model.ts" />
@@ -1598,7 +1594,6 @@
     <TypeScriptCompile Include="Scripts\app\models\action-bar.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\domain.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
@@ -1660,7 +1655,6 @@
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\claims.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\domain.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\editor-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />

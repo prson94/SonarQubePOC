@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
 declare var $: JQueryStatic;
-import 'rxjs/Rx';
 
 
 @Component({
@@ -27,18 +26,14 @@ import 'rxjs/Rx';
               `
 })
 
-export class AppComponent implements AfterViewInit, OnInit {        
+export class AppComponent implements AfterViewInit {        
     @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
     protected componentRef: ComponentRef<IHaveDynamicData>;
 
     constructor(protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver) {
         
     }
-    
-    ngOnInit() {
         
-    }
-    
     ngAfterViewInit() {
         this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                           
     }
@@ -104,6 +99,5 @@ export class AppComponent implements AfterViewInit, OnInit {
                 }             
             });
         });
-    }
-    
+    }    
 }

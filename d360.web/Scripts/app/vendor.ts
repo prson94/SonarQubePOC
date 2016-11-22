@@ -16,3 +16,4 @@ import 'highcharts/modules/solid-gauge';
 import 'brace';
 import 'brace/mode/sql';
 import 'brace/theme/eclipse';
+import 'gojs';

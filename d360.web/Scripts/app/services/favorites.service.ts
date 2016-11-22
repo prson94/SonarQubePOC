@@ -11,7 +11,7 @@ export class FavoritesService extends BaseService {
 
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getFavorites(adminOnly: boolean = false): Promise<Favorite[]> {
+    getFavorites(adminOnly: boolean = false): Promise<Favorite[]> {        
         return this.http.get(`navigation/getfavorites?adminOnly=${adminOnly}`)
             .toPromise()
             .then(response => <Favorite[]>response.json())
@@ -56,6 +56,4 @@ export class FavoritesService extends BaseService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
-
-
 }

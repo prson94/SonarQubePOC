@@ -45,7 +45,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {            
             this.currentObject = c.type;
             this.currentObjectId = c.id;            
-            if (this.favItems == null) {
+            if (this.favItems == null) {                
                 this.favoritesService.getFavorites()
                     .then(fav => {
                         this.favItems = fav;
@@ -60,18 +60,12 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             this.name = b.text;            
         });
         
-        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {        
+        this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {                
             this.favoritesService.getFavorites().then(res => {
                 this.favItems = res;
                 this.checkIsFavorite();
             });
-        });
-        
-        this.favoritesService.getFavorites()
-            .then(fav => {
-                this.favItems = fav;    
-                this.checkIsFavorite();       
-            });
+        });        
     }
     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
