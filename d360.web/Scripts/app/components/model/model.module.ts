@@ -10,6 +10,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { ModelRoutingModule } from './model.routes';
+
 import { ModelComponent } from './model.component';
 import { ModelListComponent } from './model-list.component';
 import { ModelItemComponent } from './model-item.component';
@@ -40,6 +42,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+
+        ModelRoutingModule,
 
         //primeng
         GrowlModule,

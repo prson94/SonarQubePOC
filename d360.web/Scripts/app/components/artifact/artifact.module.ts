@@ -10,6 +10,8 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { ArtifactRoutingModule } from './artifact.routes';
+
 import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
 import { ArtifactComponent } from './artifact.component';
 import { ArtifactDefnintionComponent } from './artifact-definition.component';
@@ -24,23 +26,16 @@ import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.compo
 
 import {
     GrowlModule,
-    InputTextModule,
-    InputMaskModule,
+    InputTextModule,    
     DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,
-    CheckboxModule,
-    CalendarModule,
-    MenuModule,
-    MenubarModule,
+    CheckboxModule,        
     AccordionModule,
     SelectButtonModule,    
     MultiSelectModule,    
-    TooltipModule,
-    PaginatorModule,
-    TreeModule,
-    FileUploadModule,
+    TooltipModule,        
     SharedModule,
 } from 'primeng/primeng';
 
@@ -50,25 +45,20 @@ import {
         HttpModule,
         RouterModule,
 
+        ArtifactRoutingModule,
+
         //primeng
         GrowlModule,
-        InputTextModule,
-        InputMaskModule,
+        InputTextModule,        
         DataTableModule,
         TreeTableModule,
         ButtonModule,
         DropdownModule,
-        CheckboxModule,
-        CalendarModule,
-        MenuModule,
-        MenubarModule,
+        CheckboxModule,             
         AccordionModule,
         SelectButtonModule,        
         MultiSelectModule,        
-        TooltipModule,
-        TreeModule,
-        PaginatorModule,
-        FileUploadModule,
+        TooltipModule,             
         SharedModule,
 
         //highcharts

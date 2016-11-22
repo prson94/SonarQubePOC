@@ -8,6 +8,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
+import { ReferenceRoutingModule } from './reference.routes';
 import { ReferenceComponent } from './reference.component';
 import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceItemTypeEditorComponent } from './reference-item-type-editor.component';
@@ -28,7 +29,8 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
-        
+
+        ReferenceRoutingModule,
 
         //primeng
         ButtonModule,

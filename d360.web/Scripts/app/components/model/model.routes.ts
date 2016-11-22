@@ -1,13 +1,15 @@
-﻿import { ModelComponent } from './model.component';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { ModelComponent } from './model.component';
 import { ModelListComponent } from './model-list.component';
 import { ModelItemComponent } from './model-item.component';
 import { ModelItemStructureComponent } from './model-item-structure.component';
 
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-export const ModelRoutes = [
+const routes: Routes = [
     {
-        path: SiteUrlHelpers.SITE_URL_MODEL_ROOT,
+        path: '',
         component: ModelComponent,
         children: [
             { path: SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION + '/:group', component: ModelListComponent },
@@ -18,3 +20,9 @@ export const ModelRoutes = [
         ]
     }
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class ModelRoutingModule { }

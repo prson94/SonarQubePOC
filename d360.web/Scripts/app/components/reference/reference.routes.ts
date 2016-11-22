@@ -1,16 +1,23 @@
-﻿import { ReferenceListComponent } from './reference-list.component';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceComponent } from './reference.component';
 
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-export const ReferenceRoutes = [
+const routes: Routes = [
     {
-        path: SiteUrlHelpers.SITE_URL_REFERENCE_ROOT,
+        path: '',
         component: ReferenceComponent,
-        children: [         
+        children: [
             { path: ':referenceListId', component: ReferenceListComponent },
             { path: '', component: ReferenceListComponent },
-         
         ]                
     }
 ];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class ReferenceRoutingModule { }

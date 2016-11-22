@@ -13,10 +13,7 @@ import { SearchModule } from './components/search/search.module';
 import { WorkflowModule } from './components/workflow/workflow.module';
 import { D3SSharedModule } from './components/shared/shared.module';
 import { SocialModule } from './components/social/social.module';
-import { ReferenceModule } from './components/reference/reference.module';
 import { HomeModule } from './components/home/home.module';
-import { ModelModule } from './components/model/model.module';
-import { ArtifactModule } from './components/artifact/artifact.module';
 
 
 import { AdminUserGuard } from './guards/admin-user.guard';
@@ -46,11 +43,8 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         WorkflowModule,
         D3SSharedModule,  
         SocialModule,                           
-        CoreModule,        
-        ReferenceModule,         
-        HomeModule,              
-        ModelModule, 
-        ArtifactModule,        
+        CoreModule,                 
+        HomeModule,                             
     ],
     bootstrap: [AppComponent],
     providers: [

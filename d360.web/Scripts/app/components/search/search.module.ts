@@ -16,16 +16,13 @@ import { SearchInputComponent } from './search-input.component';
 
 import {
     GrowlModule,
-    InputTextModule,
-    InputMaskModule,
+    InputTextModule,    
     DataTableModule,
     TreeTableModule,
     ButtonModule,
     DropdownModule,
-    CheckboxModule,
-    CalendarModule,
-    MenuModule,
-    MenubarModule,
+    CheckboxModule,    
+    MenuModule,    
     AccordionModule,
     SelectButtonModule,    
     MultiSelectModule,    
@@ -42,14 +39,12 @@ import {
 
         //primeng 
         GrowlModule,
-        InputTextModule,
-        InputMaskModule,
+        InputTextModule,        
         DataTableModule,        
         ButtonModule,
         DropdownModule,
         CheckboxModule,        
-        MenuModule,
-        MenubarModule,
+        MenuModule,        
         AccordionModule,
         SelectButtonModule,        
         MultiSelectModule,        
@@ -60,7 +55,6 @@ import {
         //d3s
         D3SSharedModule,
         CoreModule,
-
     ],
     declarations: [
         HomeSearchComponent,
@@ -71,8 +65,7 @@ import {
         SearchInputComponent,    
     ],
     exports: [
-        HomeSearchComponent,
-        SearchResultsComponent,
+        HomeSearchComponent,        
         SearchResultItemComponent,
         SearchComponent,
         SearchAutocompleteListComponent,        

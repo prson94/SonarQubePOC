@@ -7,8 +7,7 @@ import { RouterModule } from '@angular/router';
 
 import {
     GrowlModule,
-    InputTextModule,
-    InputMaskModule,
+    InputTextModule,    
     DataTableModule,
     TreeTableModule,
     ButtonModule,
@@ -25,10 +24,8 @@ import {
     TooltipModule,    
     PaginatorModule,
     SharedModule,
-    DialogModule,
-    TabViewModule,
-    TreeModule,
-    SliderModule,
+    DialogModule,    
+    TreeModule,    
     OverlayPanelModule,
 } from 'primeng/primeng';
 
@@ -273,8 +270,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
 
         //primeng
         GrowlModule,
-        InputTextModule,
-        InputMaskModule,
+        InputTextModule,        
         DataTableModule,
         TreeTableModule,
         ButtonModule,
@@ -291,10 +287,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         TooltipModule,        
         PaginatorModule, 
         SharedModule,  
-        DialogModule,
-        TabViewModule,
-        TreeModule,
-        SliderModule,
+        DialogModule,        
+        TreeModule,        
         OverlayPanelModule,
 
         //highcharts
