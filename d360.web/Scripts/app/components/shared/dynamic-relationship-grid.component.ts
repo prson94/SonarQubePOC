@@ -52,7 +52,7 @@ declare var CompanySettings;
                 <div *ngIf="showTechnical && !shouldShowEditor()">
                     <d3s-relationship-technical-relations [objectName]="objectName" [relationship]="selected" [addTechnicalRelationship]="addRelationship" (addTechnicalRelationshipChange)="addRelationship=false;addRelationshipChange.emit(addRelationship);" (closeClick)="showTechnical=false" [hasEdit]="hasEdit" [hasDelete]="hasDelete"></d3s-relationship-technical-relations>                    
                 </div>
-                <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="'Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
+                <d3s-dynamic-editor *ngIf="shouldShowEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="intersectTypeID" [objectType]="'IntersectType'" [targetType]="objectType" [targetTypeID]="objectID" [title]="targetName + ' Relationship'" [selection]="addRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                
                 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
                     <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.  Use the plus link in the upper left of this tile to setup new relationships.</h5>                    
                 </div>                                                   
@@ -66,6 +66,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Input() objectName: string;
     @Input() targetType: string;
     @Input() targetTypeID: number;
+    @Input() targetName: string;
     @Input() intersectTypeID: number;
     @Input() addRelationship: boolean;
     @Input() hasEdit: boolean = true;
@@ -100,7 +101,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         if ((changes['objectID'] || changes['objectType'] || changes['intersectTypeID'] || changes['targetTypeID']) && (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null)) {
             this.load();
-            this.showTechnical = false;
+            this.showTechnical = false;            
         }
     }
 
@@ -135,7 +136,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 }
                 this.relations = result;
                 this.isLoading = false;
-                if (this.relations.length > 0) this.selected = this.relations[0];                
+                if (this.relations.length > 0) this.selected = this.relations[0]; 
+                if (this.shouldShowEditor()) this.closeEditor();               
             });
     }
     

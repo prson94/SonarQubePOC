@@ -51,7 +51,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                     </div>
                 </div>
                 <div *ngIf="addTechnicalRelationship && !showEditor">
-                    <header>Add A Technical Relation</header>
+                    <header>Add A <em>{{objectName}}/{{relationship?.Name}}</em> Technical Relation</header>
                     <div *ngIf="possibleTechnicalIntersectTypes.length > 0" class="form-instructions">What type of object would you like to add a technical relationship to the relationship <b>{{relationship.Name}} / {{objectName}}</b>?</div>
                     <div class="row" *ngIf="possibleTechnicalIntersectTypes.length > 0">
                         <div class="col s12">                            
@@ -72,7 +72,7 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
                         </div>
                     </div>
                 </div>
-                <d3s-dynamic-editor *ngIf="showRelEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="selectedIntersectType" [objectType]="'IntersectType'" [targetType]="'Intersect'" [targetTypeID]="relationship.ID" [title]="'Fusion Relationship'" [selection]="addTechnicalRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveTechRelationship($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
+                <d3s-dynamic-editor *ngIf="showRelEditor()"  [createUri]="'form/dynamicedit/create/intersect/'" [editUri]="'form/dynamicedit/edit/intersect/'" [objectID]="selectedIntersectType" [objectType]="'IntersectType'" [targetType]="'Intersect'" [targetTypeID]="relationship.ID" [title]="objectName + '/' + relationship?.Name + ' Technical Relationship'" [selection]="addTechnicalRelationship ? null : selected" [rowID]="'ID'" (saveClick)="saveTechRelationship($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
                 <button *ngIf="!addTechnicalRelationship && !showEditor" pButton type="button" (click)="closeClick.emit();" label="Close" style="width: 150px;"></button>
                 `
 })
