@@ -84,7 +84,6 @@ import { MessagesBarComponent } from './messages-bar.component';
 import { ModelDiagramComponent } from './model-diagram.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
-import { ObjectChallengeComponent } from './object-challenge.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailField } from './object-detail-field.part';
@@ -95,7 +94,6 @@ import { ObjectHealthDetailsComponent } from './object-health-details.component'
 import { ObjectIssuesComponent } from './object-issues.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { OverlayWindowComponent } from './overlay-window.component';
-import { PageLinksComponent } from './page-links.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { PredicatesListComponent } from './predicates-list.component';
@@ -166,8 +164,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         MessagesComponent, 
         ModelDiagramComponent, 
         MultiSelectGridComponent,      
-        ObjectBoardComponent,
-        ObjectChallengeComponent,
+        ObjectBoardComponent,        
         ObjectDefinitionTile,
         ObjectDetailComponent,
         ObjectDetailField,
@@ -177,8 +174,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,       
         ObjectRelationshipsComponent, 
-        OverlayWindowComponent,
-        PageLinksComponent,
+        OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         PredicatesListComponent,
@@ -237,8 +233,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         MenuPart,  
         MultiSelectGridComponent,
         ModelDiagramComponent,
-        ObjectBoardComponent,
-        ObjectChallengeComponent,
+        ObjectBoardComponent,        
         ObjectDefinitionTile,
         ObjectDetailComponent,
         ObjectDetailField,
@@ -248,8 +243,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,        
         ObjectRelationshipsComponent,
-        OverlayWindowComponent,
-        PageLinksComponent,
+        OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
         PredicatesListComponent,

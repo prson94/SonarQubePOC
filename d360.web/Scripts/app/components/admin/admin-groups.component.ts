@@ -83,8 +83,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     private groupUrl(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
-        //return ;
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));        
     }
 
     success(e: any) {

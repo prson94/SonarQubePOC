@@ -1520,10 +1520,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-challenge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\page-links.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social-tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
@@ -1638,9 +1636,7 @@
     <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\authentication.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\challenge.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\diagnostic.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\favorites.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion-attribute.service.ts" />

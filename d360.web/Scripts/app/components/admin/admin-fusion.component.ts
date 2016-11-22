@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, FusionService, RightSidebarService, MessagesService  } from '../../services/index';
+import { HeaderBreadcrumbService, FusionService, RightSidebarService, MessagesService, ObjectStyleService  } from '../../services/index';
 import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
 import { FusionType } from '../../models/fusion.model';
@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-fusion',
-    providers: [FusionService],
+    providers: [FusionService, ObjectStyleService],
     templateUrl: './admin-fusion.component.html',
 })
 
@@ -27,7 +27,9 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         headerBreadcrumbService: HeaderBreadcrumbService,
         private fusionService: FusionService,
         titleService: Title,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesService,
+        private objectStyleService: ObjectStyleService
+    ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Fusion Types";
         this.setCommonItems();
@@ -57,7 +59,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
 
     edit() {
         this.isLoading = true;
-        this.fusionService.getFusionTypeStyle(this.selectedRow.ID)
+        this.objectStyleService.getObjectStyle(this.selectedRow.ID,'fusiontype')
             .then(data => {
                 
                 this.newFusionStyle = data;

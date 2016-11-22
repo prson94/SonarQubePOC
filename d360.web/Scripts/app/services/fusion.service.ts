@@ -204,14 +204,7 @@ export class FusionService extends BaseService {
             .then(response => <FusionQueryAttributeType[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    getFusionTypeStyle(fusionID: number): Promise<ObjectStyle> {
-        return this.http.get(`api/fusiontype/${fusionID}/style`)
-            .toPromise()
-            .then(response => <ObjectStyle>response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     postFusionType(fusionType: FusionType, objectStyle: ObjectStyle = null): Promise<any> {
         return this.http.post('form/FusionType', { fusion: fusionType, style: objectStyle })
             .toPromise().
