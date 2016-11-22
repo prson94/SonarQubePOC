@@ -956,7 +956,6 @@
     <Content Include="Scripts\app\components\shared\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\admin\admin.component.html" />
     <Content Include="Scripts\app\components\admin\admin-domain.component.html" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.css" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
@@ -1357,6 +1356,7 @@
     <TypeScriptCompile Include="Scripts\app\components\home\home.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\model\model.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\policy\policy-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\reference\reference.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />

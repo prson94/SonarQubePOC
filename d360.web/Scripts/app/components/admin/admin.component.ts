@@ -1,12 +1,12 @@
 ﻿import { Component } from '@angular/core';
 
-import 'rxjs/Rx';
-
 @Component({
     selector: 'd3s-admin',
-    templateUrl: './admin.component.html',
+    template: `
+        <div id="main">
+            <router-outlet></router-outlet>
+        </div>
+    `
 })
 
-export class AdminComponent {    
-   
-}
+export class AdminComponent {  }

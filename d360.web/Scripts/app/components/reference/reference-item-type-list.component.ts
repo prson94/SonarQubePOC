@@ -50,6 +50,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     @Input() selected: ReferenceItemType;
     @Output() selectedChange = new EventEmitter();
 
+    @Input() initialSelectedListId: number;
+
     private referenceTypes: ReferenceItemType[];
     private showEditor: boolean = false;
     private showDelete: boolean = false;
@@ -75,7 +77,20 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             .then(result => {
                 this.referenceTypes = result;
                 if (this.referenceTypes.length > 0) {
-                    this.selected = this.referenceTypes[0];
+                    if (this.initialSelectedListId > 0) {
+                        console.log('here');
+                        let index = this.referenceTypes.findIndex(x => x.ID == this.initialSelectedListId);
+                        this.initialSelectedListId = 0;
+                        if (index >= 0 && index < this.referenceTypes.length) {
+                            this.selected = this.referenceTypes[index];
+                        }
+                        else {
+                            this.selected = this.referenceTypes[0];
+                        }
+                    }
+                    else {
+                        this.selected = this.referenceTypes[0];
+                    }
                     this.selectedChange.emit(this.selected);
                 }
                 this.isLoading = false;

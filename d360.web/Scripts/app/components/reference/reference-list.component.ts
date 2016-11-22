@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarService, HeaderBreadcrumbService, PermissionsService } from '../../services/index';
@@ -29,7 +30,7 @@ import { ReferenceItemType } from '../../models/reference.model';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading && !isAuditVisible && !isOwnershipVisible && !isRelationshipsVisible && !isLineageVisible && !isImpactVisible">                                      
                     <div class="col s12 l3">
-                        <d3s-reference-item-type-list [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
+                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [(selected)]="selectedReferenceItemType"></d3s-reference-item-type-list>
                     </div>
                     <div class="col s12 l9" *ngIf="selectedReferenceItemType">
                         <div class="row">
@@ -60,13 +61,17 @@ import { ReferenceItemType } from '../../models/reference.model';
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {    
-
+    private sub: any;
     private selectedReferenceItemType: ReferenceItemType;
+    private selectedReferenceListId: number = 0;
 
-    constructor(rightSidebarService: RightSidebarService,
+    constructor(
+        rightSidebarService: RightSidebarService,
         private permissionsService: PermissionsService,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private route: ActivatedRoute
+    ) {
         super(rightSidebarService);
 
         this.setCommonRightSideBar(true, true, false, true, true, true);
@@ -80,6 +85,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
 
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
+
+        this.sub = this.route.params.subscribe(params => {
+            this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
+        });
     }
 
     ngOnDestroy() {

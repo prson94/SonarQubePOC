@@ -35,7 +35,7 @@ export class ObjectDetailField {
 
     constructor(private router: Router) {}
 
-    navigate(url: string) {
+    navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }    
 }

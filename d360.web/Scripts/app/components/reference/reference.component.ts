@@ -1,14 +1,12 @@
 ﻿import { Component } from '@angular/core';
 
 @Component({
-    selector: 'd3s-artifact',
+    selector: 'd3s-reference',
     template: `
                 <div id="main">
                     <router-outlet></router-outlet>
                 </div>
-             ` ,   
+             ` ,
 })
 
-export class ArtifactComponent {
-
-}
+export class ReferenceComponent { }
