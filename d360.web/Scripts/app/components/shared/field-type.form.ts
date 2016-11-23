@@ -110,7 +110,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 })
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
                 .then(d => {
-                    console.log('lookups: ', d);
+                    //console.log('lookups: ', d);
                     this.lookups = d;
 
                     this.lookups.IntersectTypes.forEach(i => {
@@ -123,7 +123,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
                 .then(f => {
                     if (f) {
-                        console.log("form data: ", f);
+                        //console.log("form data: ", f);
 
                         this.model.RelationItems = f.RelationItems;
                         this.model.FusionItems = f.FusionItems;
@@ -148,7 +148,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
                 .then(d => {
-                    console.log('lookups: ', d);
+                    //console.log('lookups: ', d);
                     this.lookups = d;
                     this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes()
                     this.model.FieldType.Type = 'Date';
@@ -275,8 +275,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     
     private loadDataType(value: string): Promise<void> {
         let promises = [];
-        console.log('load data type');
-        console.log(value);
+        //console.log('load data type');
+        //console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
@@ -483,7 +483,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 });
             });
             this.model.FilteredLookupItem = item;
-            console.log(item);
+            //console.log(item);
         }
 
         this.isLoading = true;
@@ -752,7 +752,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private changeFilteredLookup(): Promise<any> {
-        console.log(this.filteredLookup);
+        //console.log(this.filteredLookup);
         if (this.filteredLookup == null || this.filteredLookup == '') {
             this.filteredLookupDisplayFields = [];
             return Promise.resolve();
@@ -773,7 +773,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         text: i + 1
                     });
                 }
-                console.log(d);
+                //console.log(d);
             });
     }
 
