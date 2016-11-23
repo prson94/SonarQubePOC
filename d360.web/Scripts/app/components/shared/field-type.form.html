@@ -109,7 +109,7 @@
                             <th>Reference Columns</th>
                             <th>Table Settings</th>
                             <th style="width: 50px; text-align: right">
-                                <a class='btn btn-flat waves-effect blue-text' (click)="addFusion()"><i class='fa fa-plus' title='Add fusion item'></i></a>
+                                <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addFusion()"><i class='fa fa-plus' title='Add fusion item'></i></a>
                             </th>
                         </tr>
                     </thead>
@@ -131,7 +131,7 @@
                                 <div><input name="fusHideHeader" pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" /> Hide Header?</div>
                                 <div><input name="fusHideFooter" pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" /> Hide Footer?</div>
                             </td>
-                            <td><a class='btn btn-flat waves-effect red-text' (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
+                            <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -182,7 +182,7 @@
                                 <div *ngIf="x == 0">
                                     <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> Hide Footer?</div>
                                     <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> Hide Header?</div>
-                                    <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFilter" /> Hide Filter?</div>
+                                    <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFilter" /> Hide Search?</div>
                                 </div>
                                 <div class="RowTools">
                                     <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
@@ -246,7 +246,7 @@
                 <table cellpadding="5">
                     <thead>
                         <tr>
-                            <th>List</th>
+                            <th style="width:25%">List</th>
                             <th>Reference Columns</th>
                             <th>Table Settings</th>
                         </tr>

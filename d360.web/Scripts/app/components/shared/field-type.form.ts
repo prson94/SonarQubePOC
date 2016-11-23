@@ -275,8 +275,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     
     private loadDataType(value: string): Promise<void> {
         let promises = [];
-        //console.log('load data type');
-        //console.log(value);
+        console.log('load data type');
+        console.log(value);
         switch (value.toLowerCase()) {
             case 'lookup':
                 promises.push(this.loadTokens(this.model.FieldType.LookupObjectType, this.model.FieldType.LookupObjectID));
@@ -297,6 +297,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     r.ReferenceType = 1;
                     r.Object = this.objectType;
                     r.ObjectID = this.objectID;
+                    this.model.RelationItems = [];
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
@@ -381,6 +382,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadFilteredLookup() {
+        if (this.model.FilteredLookupItems == null || this.model.FilteredLookupItems.length < 1)
+            return;
         let item = this.model.FilteredLookupItems[0];
 
         this.filteredLookup = item.Object + '|' + item.ObjectID;
@@ -749,6 +752,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private changeFilteredLookup(): Promise<any> {
+        console.log(this.filteredLookup);
         if (this.filteredLookup == null || this.filteredLookup == '') {
             this.filteredLookupDisplayFields = [];
             return Promise.resolve();
