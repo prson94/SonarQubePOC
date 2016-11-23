@@ -12,13 +12,13 @@ const routes: Routes = [
         component: WorkflowComponent,
         children: [
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT + '/' + SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
             },
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT + '/' + SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM + '/:workflowType/:workflowId', component: WorkflowWorkItemComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM + '/:workflowType/:workflowId', component: WorkflowWorkItemComponent
             },
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT + '/' + SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_STATUS + '/:workflowId', component: WorkflowViewStatusComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_STATUS + '/:workflowId', component: WorkflowViewStatusComponent
             }   
         ]
     }

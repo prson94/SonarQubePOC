@@ -1,7 +1,6 @@
 ﻿import { NgModule }       from '@angular/core';
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
-import { FormsModule }    from '@angular/forms';
 import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
@@ -10,8 +9,6 @@ import {
     GrowlModule,    
 } from 'primeng/primeng';
 
-import { CoreModule } from './components/shared/core.module';
-//import { D3SSharedModule } from './components/shared/shared.module';
 import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
 import { SiteMenuModule } from './components/shared/menu/site-menu.module';
 import { HeaderModule } from './components/shared/header/header.module';
@@ -30,20 +27,17 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
         AppComponent,                          
     ],
     imports: [
-        BrowserModule,
-        FormsModule,        
+        BrowserModule,        
         AppRoutingModule,
         HttpModule,
 
         // prime 
         GrowlModule,
 
-        //d3s modules                
-      //  D3SSharedModule,                                 
+        //d3s modules                                            
         RightsidebarModule,
         SiteMenuModule,
-        HeaderModule,
-        CoreModule,                         
+        HeaderModule,                                 
     ],
     bootstrap: [AppComponent],
     providers: [

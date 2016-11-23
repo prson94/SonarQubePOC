@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 
+import { WorkflowComponent } from './workflow.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
 import { WorkflowCertifyDetailsComponent } from './workflow-certify-details.component';
@@ -16,6 +17,7 @@ import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.compon
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
 
+import { WorkflowRoutingModule } from './workflow.routes';
 
 import {
     GrowlModule,
@@ -45,6 +47,7 @@ import {
         HttpModule,
         RouterModule,
 
+        WorkflowRoutingModule,
         //primeng  
         GrowlModule,
         InputTextModule,
@@ -78,6 +81,7 @@ import {
         WorkflowViewStatusComponent,
         WorkflowWorkItemComponent,
         WorkflowDetailComponent,
+        WorkflowComponent,
     ],
     exports: [
         WorkflowCertifyDetailsComponent,
@@ -87,6 +91,7 @@ import {
         WorkflowSuggestEditorComponent,
         WorkflowWorkItemComponent,
         WorkflowDetailComponent,
+        WorkflowComponent,
     ]
 })
 export class WorkflowModule { }
