@@ -1,7 +1,10 @@
-import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';
 import { DynamicTypeBuilder, IHaveDynamicData } from './services/dynamic-type-builder';
+import { SiteMessage } from './models/site-message.model';
+import { Subscription }   from 'rxjs/Subscription';
+import { Message } from 'primeng/primeng';
 declare var $: JQueryStatic;
 
 
@@ -21,21 +24,36 @@ declare var $: JQueryStatic;
                     </div>                    
                     <d3s-right-sidebar></d3s-right-sidebar>                        
                 </main>
-                <d3s-messages></d3s-messages>                
+                <p-growl [value]="msgs"></p-growl>
                 <div #target></div>                
               `
 })
 
-export class AppComponent implements AfterViewInit {        
+export class AppComponent implements AfterViewInit, OnDestroy {        
     @ViewChild('target', { read: ViewContainerRef }) protected dynamicComponentTarget: ViewContainerRef;
     protected componentRef: ComponentRef<IHaveDynamicData>;
+    subscription: Subscription;
+    msgs: Message[];
 
-    constructor(protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver) {
-        
+    constructor(protected typeBuilder: DynamicTypeBuilder, public componentFactoryResolver: ComponentFactoryResolver, private messagesService: MessagesService) {
+        this.msgs = [];
+        this.subscription = messagesService.errorMessage$.subscribe(
+            errorMsg => {
+                this.msgs.push({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
+            });
+        this.subscription = messagesService.infoMessage$.subscribe(
+            infoMsg => {
+                this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
+            });
     }
         
     ngAfterViewInit() {
         this.initializeQtipTooltips();  // initialize qtips library for tooltips we use in the site it needs to be a global js function                           
+    }
+
+    ngOnDestroy() {
+        // prevent memory leak when component destroyed
+        this.subscription.unsubscribe();
     }
     
     private initializeQtipTooltips() {

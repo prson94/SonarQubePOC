@@ -1,20 +1,20 @@
 ﻿import { NgModule }       from '@angular/core';
 import { BrowserModule, Title  } from '@angular/platform-browser';
 import { AppComponent }   from './app.component';
-import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
+import { FormsModule }    from '@angular/forms';
 import { AppRoutingModule }        from './app.routes';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { COMPILER_PROVIDERS } from '@angular/compiler';
 
+import {
+    GrowlModule,    
+} from 'primeng/primeng';
 
-import { PipesModule } from './pipes/pipes.module';
 import { CoreModule } from './components/shared/core.module';
-import { SearchModule } from './components/search/search.module';
-import { WorkflowModule } from './components/workflow/workflow.module';
-import { D3SSharedModule } from './components/shared/shared.module';
-import { SocialModule } from './components/social/social.module';
-import { HomeModule } from './components/home/home.module';
-
+//import { D3SSharedModule } from './components/shared/shared.module';
+import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
+import { SiteMenuModule } from './components/shared/menu/site-menu.module';
+import { HeaderModule } from './components/shared/header/header.module';
 
 import { AdminUserGuard } from './guards/admin-user.guard';
 
@@ -31,20 +31,19 @@ import { AuthenticationConnectionBackend } from './authentication-connection-bac
     ],
     imports: [
         BrowserModule,
-        FormsModule,
-        ReactiveFormsModule,
+        FormsModule,        
         AppRoutingModule,
         HttpModule,
-        
 
-        //d3s modules
-        PipesModule,
-        SearchModule,
-        WorkflowModule,
-        D3SSharedModule,  
-        SocialModule,                           
-        CoreModule,                 
-        HomeModule,                             
+        // prime 
+        GrowlModule,
+
+        //d3s modules                
+      //  D3SSharedModule,                                 
+        RightsidebarModule,
+        SiteMenuModule,
+        HeaderModule,
+        CoreModule,                         
     ],
     bootstrap: [AppComponent],
     providers: [

@@ -1,9 +1,17 @@
-﻿import { SearchComponent} from './search.component';
-import { RouterModule } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { SearchComponent} from './search.component';
 
-export const SearchRoutes = [
-    { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, component: SearchComponent }
+
+const routes: Routes = [
+    {
+        path: '',
+        component: SearchComponent,
+    }
 ];
 
-export const routing = RouterModule.forChild(SearchRoutes);
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class SearchRoutingModule { }

@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { BaseComponent } from '../base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-raise-issue-button',

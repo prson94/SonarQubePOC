@@ -1,6 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
@@ -15,26 +14,26 @@ import { ActivityTile } from './activity-tile.component';
 import { ActivityDetailsTile } from './activity-details-tile.component';
 import { BoardTile} from './board-tile.component';
 
+import { HomeRoutingModule } from './home.routes';
+
 import {
     GrowlModule,
     InputTextModule,
     DataTableModule,
     ButtonModule,
     DropdownModule,
-    CheckboxModule,
-    AccordionModule,
-    SelectButtonModule,
+    CheckboxModule,        
     MultiSelectModule,
-    TooltipModule,
-    EditorModule,
+    TooltipModule,    
     SharedModule,
 } from 'primeng/primeng';
 
 @NgModule({
-    imports: [CommonModule,
-        FormsModule,
+    imports: [CommonModule,        
         HttpModule,
         RouterModule,
+
+        HomeRoutingModule,
 
         //primeng  
         GrowlModule,
@@ -42,12 +41,9 @@ import {
         DataTableModule,
         ButtonModule,
         DropdownModule,
-        CheckboxModule,        
-        AccordionModule,
-        SelectButtonModule,
+        CheckboxModule,                
         MultiSelectModule,        
-        TooltipModule,        
-        EditorModule,        
+        TooltipModule,                     
         SharedModule,
 
         //d3s

@@ -1,15 +1,12 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { HomeRoutes} from './components/home/home.routes';
-import { SearchRoutes } from './components/search/search.routes';
-import { WorkflowRoutes } from './components/workflow/workflow.routes';
+
+
 import { SiteUrlHelpers } from './static/site-url-helpers';
 
 const routes: Routes = [    
-    { path: SiteUrlHelpers.SITE_URL_PREFIX, redirectTo: SiteUrlHelpers.SITE_URL_HOME_ROOT, pathMatch: 'full' },  
-    ...HomeRoutes,    
-    ...SearchRoutes,    
-    ...WorkflowRoutes,   
+    { path: SiteUrlHelpers.SITE_URL_PREFIX, redirectTo: SiteUrlHelpers.SITE_URL_HOME_ROOT, pathMatch: 'full' },      
+    
     // lazy loaded modules 
     { path: SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT, loadChildren: './components/community/community.module#CommunityModule?chunkName=communityChunk' },            
     { path: SiteUrlHelpers.SITE_URL_HELP_ROOT, loadChildren: './components/help/help.module#HelpModule?chunkName=helpChunk' },
@@ -23,6 +20,9 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, loadChildren: './components/model/model.module#ModelModule?chunkName=modelChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_REFERENCE_ROOT, loadChildren: './components/reference/reference.module#ReferenceModule?chunkName=referenceChunk' },
     { path: SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT, loadChildren: './components/artifact/artifact.module#ArtifactModule?chunkName=artifactChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, loadChildren: './components/home/home.module#HomeModule?chunkName=homeChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, loadChildren: './components/search/search.module#SearchModule?chunkName=searchChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: './components/workflow/workflow.module#WorkflowModule?chunkName=workflowChunk' }, 
 ];
 
 @NgModule({

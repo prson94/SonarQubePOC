@@ -14,6 +14,8 @@ import { SearchComponent } from './search.component'
 import { SearchAutocompleteListComponent } from './search-autocomplete-list.component';
 import { SearchInputComponent } from './search-input.component';
 
+import { SearchRoutingModule} from './search.routes';
+
 import {
     GrowlModule,
     InputTextModule,    
@@ -36,6 +38,8 @@ import {
         FormsModule,                
         HttpModule,
         RouterModule,
+
+        SearchRoutingModule,
 
         //primeng 
         GrowlModule,

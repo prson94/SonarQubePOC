@@ -58,13 +58,6 @@ import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-det
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GridPagingInfoComponent } from './grid-paging-info.component';
 import { GroupMembersComponent } from './group-members.component';
-import { HeaderActionsComponent } from './header/header-actions.component';
-import { HeaderBreadcrumbItemComponent } from './header/header-breadcrumb-item.component';
-import { HeaderBreadcrumbComponent } from './header/header-breadcrumb.component';
-import { HeaderTypeaheadSearchComponent } from './header/header-typeahead-search.component';
-import { HeaderFavoritesComponent } from './header/header-favorites.component';
-import { HeaderFollowComponent } from './header/header-follow.component';
-import { HeaderComponent } from './header/header.component';
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
 import { LineageFusionComponent } from './lineage/lineage-fusion.component';
@@ -94,17 +87,12 @@ import { OverlayWindowComponent } from './overlay-window.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
 import { PredicatesListComponent } from './predicates-list.component';
-import { RaiseIssueButtonComponent } from './raise-issue-button.component';
+
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
-import { RightSidebarComponent } from './rightsidebar/right-sidebar.component';
-import { RightSidebarItemComponent } from './rightsidebar/right-sidebar-item.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { ResponsibilityItemForm } from './responsibility-item.form';
 import { SimpleAccordion } from './simple-accordion.part';
-import { SiteMenuComponent } from './menu/site-menu.component';
-import { SiteMenuCategoryComponent } from './menu/site-menu-category.component';
-import { SiteMenuMegaItemComponent } from './menu/site-menu-mega-item.component';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TileActionsComponent } from './tile-actions.component';
@@ -138,14 +126,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,
         GridPagingInfoComponent,
-        GroupMembersComponent,
-        HeaderActionsComponent,
-        HeaderBreadcrumbItemComponent,
-        HeaderBreadcrumbComponent,
-        HeaderTypeaheadSearchComponent,
-        HeaderFavoritesComponent,
-        HeaderFollowComponent,
-        HeaderComponent,
+        GroupMembersComponent,        
         ImpactComponent,        
         LineageComponent,
         LineageFusionComponent,
@@ -174,18 +155,12 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
-        PredicatesListComponent,
-        RaiseIssueButtonComponent,
+        PredicatesListComponent,        
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResponsibilityItemForm,
         ResourceResponsibilityGridComponent,        
-        RightSidebarComponent,
-        RightSidebarItemComponent,
-        SimpleAccordion,
-        SiteMenuCategoryComponent,
-        SiteMenuComponent,    
-        SiteMenuMegaItemComponent,    
+        SimpleAccordion,        
         StructureTile,
         SynonymsTile,
         TakeSurveyComponent,
@@ -215,14 +190,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
         GridPagingInfoComponent,
-        GroupMembersComponent,
-        HeaderActionsComponent,
-        HeaderBreadcrumbItemComponent,
-        HeaderBreadcrumbComponent,
-        HeaderTypeaheadSearchComponent,
-        HeaderFavoritesComponent,
-        HeaderFollowComponent,
-        HeaderComponent,
+        GroupMembersComponent,        
         ImpactComponent,        
         LineageComponent,        
         MessagesBarComponent,        
@@ -243,17 +211,12 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
         PowerBIViewerComponent,
-        PredicatesListComponent,
-        RaiseIssueButtonComponent,
+        PredicatesListComponent,        
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,        
-        ResponsibilityItemForm,
-        RightSidebarComponent,
-        RightSidebarItemComponent,
-        SimpleAccordion,
-        SiteMenuCategoryComponent,
-        SiteMenuComponent,
+        ResponsibilityItemForm,        
+        SimpleAccordion,        
         TakeSurveyComponent,
         TileActionsComponent,       
         UserListComponent, 

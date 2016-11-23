@@ -1,9 +1,17 @@
-﻿import { HomeComponent} from './home.component';
-import { RouterModule } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { HomeComponent} from './home.component';
 
-export const HomeRoutes = [
-    { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, component: HomeComponent }    
+
+const routes: Routes = [
+    {
+        path: '',
+        component: HomeComponent,        
+    }
 ];
 
-export const routing = RouterModule.forChild(HomeRoutes);
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class HomeRoutingModule { }

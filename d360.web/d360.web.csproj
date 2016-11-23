@@ -1362,6 +1362,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-mapping-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage-object-detail.component.ts" />
@@ -1373,10 +1374,13 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu-mega-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\menu\site-menu.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\model-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
@@ -1501,7 +1505,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\raise-issue-button.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
