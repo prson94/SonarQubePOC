@@ -50,6 +50,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             }
         }
 
+        this.isDeleting = false;
+            
         this.load();
     }
 
