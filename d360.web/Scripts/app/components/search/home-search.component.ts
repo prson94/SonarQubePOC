@@ -1,5 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService, TypeaheadSearchService } from '../../services/index';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';

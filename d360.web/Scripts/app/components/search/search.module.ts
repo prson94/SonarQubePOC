@@ -4,8 +4,8 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { HomeSearchComponent} from './home-search.component'
 import { SearchResultsComponent } from './search-results.component'
@@ -16,16 +16,12 @@ import { SearchInputComponent } from './search-input.component';
 
 import { SearchRoutingModule} from './search.routes';
 
-import {
-    GrowlModule,
-    InputTextModule,    
-    DataTableModule,
-    TreeTableModule,
+import {    
+    InputTextModule,        
     ButtonModule,
     DropdownModule,
     CheckboxModule,    
-    MenuModule,    
-    AccordionModule,
+    MenuModule,        
     SelectButtonModule,    
     MultiSelectModule,    
     TooltipModule,    
@@ -41,24 +37,21 @@ import {
 
         SearchRoutingModule,
 
-        //primeng 
-        GrowlModule,
-        InputTextModule,        
-        DataTableModule,        
+        //primeng         
+        InputTextModule,                  
         ButtonModule,
         DropdownModule,
         CheckboxModule,        
-        MenuModule,        
-        AccordionModule,
+        MenuModule,                
         SelectButtonModule,        
         MultiSelectModule,        
         TooltipModule,        
         PaginatorModule,
         SharedModule,
 
-        //d3s
-        D3SSharedModule,
+        //d3s        
         CoreModule,
+        TilesModule,
     ],
     declarations: [
         HomeSearchComponent,
@@ -69,11 +62,7 @@ import {
         SearchInputComponent,    
     ],
     exports: [
-        HomeSearchComponent,        
-        SearchResultItemComponent,
-        SearchComponent,
-        SearchAutocompleteListComponent,        
-        SearchInputComponent,
+        HomeSearchComponent,                                      
     ]
 })
 export class SearchModule { }

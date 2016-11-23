@@ -9,6 +9,7 @@ import { ChartModule } from 'angular2-highcharts';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { ModelRoutingModule } from './model.routes';
 
@@ -71,6 +72,7 @@ import {
         CoreModule,
         D3SSharedModule,
         PipesModule,
+        TilesModule
     ],
     declarations: [
         ModelComponent,

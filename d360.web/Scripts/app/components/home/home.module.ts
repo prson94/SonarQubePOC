@@ -8,6 +8,7 @@ import { D3SSharedModule } from '../shared/shared.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { SearchModule } from '../search/search.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
@@ -52,6 +53,7 @@ import {
         SearchModule,
         SocialModule,
         WorkflowModule,
+        TilesModule,
     ],
     declarations: [
         ActivityDetailsTile,

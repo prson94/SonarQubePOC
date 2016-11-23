@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
@@ -70,7 +71,7 @@ import {
         //d3s
         D3SSharedModule,
         CoreModule,
-
+        TilesModule,
     ],
     declarations: [
         WorkflowCertifyDetailsComponent,

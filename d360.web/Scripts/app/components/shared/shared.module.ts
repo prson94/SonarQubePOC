@@ -34,6 +34,7 @@ import { ChartModule } from 'angular2-highcharts';
 import { SocialModule } from '../social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
+import { TilesModule  } from './tiles/tiles.module';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
@@ -95,7 +96,6 @@ import { ResponsibilityItemForm } from './responsibility-item.form';
 import { SimpleAccordion } from './simple-accordion.part';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
-import { TileActionsComponent } from './tile-actions.component';
 import { TakeSurveyComponent } from './take-survey.component';
 import { UserListComponent } from './user-list.component';
 import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
@@ -163,8 +163,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         SimpleAccordion,        
         StructureTile,
         SynonymsTile,
-        TakeSurveyComponent,
-        TileActionsComponent,           
+        TakeSurveyComponent,                 
         UserListComponent,
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
@@ -217,8 +216,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ResourceResponsibilityGridComponent,        
         ResponsibilityItemForm,        
         SimpleAccordion,        
-        TakeSurveyComponent,
-        TileActionsComponent,       
+        TakeSurveyComponent,              
         UserListComponent, 
         WorkflowDetailedViewComponent,     
         WorkflowIssueDetailsComponent,
@@ -263,6 +261,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         PipesModule,                    
         SocialModule,
         CoreModule,
+        TilesModule,
     ]
 
 })

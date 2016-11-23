@@ -11,6 +11,7 @@ import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
@@ -68,6 +69,7 @@ import {
         SocialModule,
         WorkflowModule,
         PipesModule,
+        TilesModule,
     ]
 
 })

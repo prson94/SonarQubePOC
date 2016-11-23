@@ -1379,6 +1379,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\overlay-window.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tiles.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
@@ -1554,7 +1555,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\structure.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\tile-actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-suggest-editor.component.ts" />

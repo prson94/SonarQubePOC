@@ -12,6 +12,7 @@ import { AdminRoutingModule } from './admin.routes';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import {
     GrowlModule,
@@ -181,7 +182,8 @@ import { WorkflowItemForm } from './workflow-item.form';
         //d3s
         D3SSharedModule,        
         CoreModule,
-        PipesModule,        
+        PipesModule, 
+        TilesModule,       
     ] 
 
 })

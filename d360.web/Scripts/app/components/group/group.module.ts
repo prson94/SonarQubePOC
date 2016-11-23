@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { GroupRoutingModule } from './group.routes';
 
@@ -38,6 +39,7 @@ import {
         D3SSharedModule,        
         CoreModule,
         PipesModule,
+        TilesModule,
     ],
     declarations: [
         GroupComponent,

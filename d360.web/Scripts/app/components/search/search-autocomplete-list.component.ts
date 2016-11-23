@@ -1,5 +1,4 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Component, Input, ElementRef, HostBinding, OnChanges, OnInit, SimpleChange} from '@angular/core';
+﻿import { Component, Input, ElementRef, HostBinding, OnChanges, OnInit, SimpleChange} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchResult} from '../../models/search-result.model';
