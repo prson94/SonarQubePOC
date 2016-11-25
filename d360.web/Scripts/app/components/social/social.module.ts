@@ -27,8 +27,7 @@ import {
     SelectButtonModule,
     AutoCompleteModule,
     MultiSelectModule,    
-    EditorModule,        
-    PaginatorModule,
+    EditorModule,            
     SharedModule,
 } from 'primeng/primeng';
 
@@ -54,8 +53,7 @@ import {
         SelectButtonModule,
         AutoCompleteModule,
         MultiSelectModule,        
-        EditorModule,                
-        PaginatorModule,
+        EditorModule,                        
         SharedModule,
 
         //d3s

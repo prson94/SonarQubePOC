@@ -37,8 +37,7 @@ import {
     AutoCompleteModule,
     MultiSelectModule,    
     EditorModule,
-    TooltipModule,    
-    PaginatorModule,
+    TooltipModule,        
     SharedModule,
 } from 'primeng/primeng';
 
@@ -62,8 +61,7 @@ import {
         AccordionModule,
         SelectButtonModule,
         MultiSelectModule,        
-        TooltipModule,
-        PaginatorModule,
+        TooltipModule,        
         EditorModule,
         AutoCompleteModule,
         SharedModule,

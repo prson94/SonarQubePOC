@@ -1521,7 +1521,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-relationship-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lineage\lineage.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\messages.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
