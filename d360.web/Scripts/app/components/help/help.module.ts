@@ -5,8 +5,6 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { D3SSharedModule } from '../shared/shared.module';
-import { PipesModule } from '../../pipes/pipes.module';
 
 import { HelpRoutingModule } from './help.routes';
 
@@ -21,10 +19,8 @@ import { HelpComponent } from './help.component';
         //routing 
         HelpRoutingModule,
 
-        //d3s
-        D3SSharedModule,
-        CoreModule,
-        PipesModule,
+        //d3s        
+        CoreModule,        
     ],
     declarations: [
         HelpComponent,

@@ -99,10 +99,10 @@ declare var CompanySettings;
                         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
                         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
                         <div *ngSwitchCase="'Date'">                            
-                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar><span *ngIf="field.Value">{{field.Value|date:'fullDate'}}</span>
+                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName"></p-calendar>
                         </div>
                         <div *ngSwitchCase="'DateTime'">                            
-                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [showTime]="true"></p-calendar><span *ngIf="field.Value">{{field.Value|date:'medium'}}</span>
+                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [showTime]="true"></p-calendar>
                         </div>
                         <div *ngSwitchCase="'Link'">
                             <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >

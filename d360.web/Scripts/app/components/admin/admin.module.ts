@@ -14,8 +14,7 @@ import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 
-import {
-    GrowlModule,
+import {    
     InputTextareaModule,
     InputTextModule,
     InputMaskModule,
@@ -32,9 +31,9 @@ import {
     MultiSelectModule,    
     EditorModule,
     TooltipModule,    
-    PaginatorModule,
-    DataListModule,
-    TreeModule,    
+    PaginatorModule,    
+    TreeModule,
+    GrowlModule,
     SharedModule,
 } from 'primeng/primeng';
 
@@ -86,6 +85,7 @@ import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
 import { IconPickerComponent } from './icon-picker.component';
 import { LoadForm } from './load.form';
+import { PredicatesListComponent } from './predicates-list.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 import { WorkflowItemForm } from './workflow-item.form';
 
@@ -141,6 +141,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         GroupForm,
         IconPickerComponent,
         LoadForm,
+        PredicatesListComponent,
         ResponsibilityTypeForm,
         WorkflowItemForm,
 
@@ -152,11 +153,9 @@ import { WorkflowItemForm } from './workflow-item.form';
         RouterModule,
         AdminRoutingModule,
         
-        //primeng
-        GrowlModule,
+        //primeng        
         InputTextareaModule,
-        InputTextModule,
-        InputMaskModule,
+        InputTextModule,        
         DataTableModule,
         TreeTableModule,
         ButtonModule,
@@ -171,10 +170,9 @@ import { WorkflowItemForm } from './workflow-item.form';
         EditorModule,
         TooltipModule,        
         PaginatorModule,
-        TreeModule,        
-        DataListModule,
+        TreeModule,                
         SharedModule,
-
+        GrowlModule,
 
         //color picker
         ColorPickerModule,

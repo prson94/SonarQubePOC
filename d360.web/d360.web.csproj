@@ -1548,7 +1548,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-relationships.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\predicates-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\predicates-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rule-dimensions.component.ts" />

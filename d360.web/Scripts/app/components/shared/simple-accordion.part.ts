@@ -1,5 +1,4 @@
-﻿
-import { Input, Component, OnInit, Output, EventEmitter, transition, animate, style, trigger, state } from '@angular/core';
+﻿import { Input, Component, OnInit, Output, EventEmitter, transition, animate, style, trigger, state } from '@angular/core';
 
 @Component({
     selector: 'simple-accordion',

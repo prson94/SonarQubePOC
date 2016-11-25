@@ -87,7 +87,6 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { OverlayWindowComponent } from './overlay-window.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 import { PowerBIViewerComponent } from './powerbi-viewer.component';
-import { PredicatesListComponent } from './predicates-list.component';
 
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
@@ -154,8 +153,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectRelationshipsComponent, 
         OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
-        PowerBIViewerComponent,
-        PredicatesListComponent,        
+        PowerBIViewerComponent,        
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResponsibilityItemForm,
@@ -169,8 +167,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
     ],
-    exports: [
-        ActionBar,
+    exports: [        
         ArtifactStatusComponent,
         AssignmentsTile,
         AuditComponent,        
@@ -183,8 +180,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         DynamicLookupGridComponent,
         DynamicRelationshipGridComponent,
         DashboardTabComponent,
-        FieldDefinitionComponent,
-        FieldTypeForm,
+        FieldDefinitionComponent,        
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent, 
@@ -193,8 +189,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ImpactComponent,        
         LineageComponent,        
         MessagesBarComponent,        
-        MessagesComponent,
-        MenuPart,  
+        MessagesComponent,        
         MultiSelectGridComponent,
         ModelDiagramComponent,
         ObjectBoardComponent,        
@@ -209,13 +204,10 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectRelationshipsComponent,
         OverlayWindowComponent,        
         PeopleResponsibilitiesTile,
-        PowerBIViewerComponent,
-        PredicatesListComponent,        
+        PowerBIViewerComponent,        
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
-        ResourceResponsibilityGridComponent,        
-        ResponsibilityItemForm,        
-        SimpleAccordion,        
+        ResourceResponsibilityGridComponent,                        
         TakeSurveyComponent,              
         UserListComponent, 
         WorkflowDetailedViewComponent,     
