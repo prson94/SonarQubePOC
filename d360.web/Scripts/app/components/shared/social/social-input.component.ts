@@ -1,9 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output, HostBinding, ViewChildren, QueryList, ElementRef } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { SocialService } from '../../services/index';
-import { SocialComment, SocialEditCommentData } from '../../models/social.model';
-import { Tag } from '../../models/tag.model';
+﻿import { Input, Component, EventEmitter, Output, HostBinding, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { SocialService } from '../../../services/index';
+import { SocialComment, SocialEditCommentData } from '../../../models/social.model';
+import { Tag } from '../../../models/tag.model';
 
 @Component({
     selector: 'd3s-social-input',

@@ -25,7 +25,7 @@ import {
 
 import { ChartModule } from 'angular2-highcharts';
 
-import { SocialModule } from '../social/social.module';
+import { SocialModule } from '../shared/social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';

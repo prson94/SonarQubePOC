@@ -8,7 +8,7 @@ import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
-import { AssignmentsTile } from './assignments-tile.component';
+import { WorkflowAssignmentsComponent } from './workflow-assignments.component';
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
@@ -27,21 +27,14 @@ import { WorkflowRoutingModule } from './workflow.routes';
 import {
     GrowlModule,
     InputTextModule,
-    InputMaskModule,
     DataTableModule,
-    TreeTableModule,
     ButtonModule,
     DropdownModule,
     CheckboxModule,
-    CalendarModule,
-    MenuModule,
-    MenubarModule,
-    AccordionModule,
-    SelectButtonModule,
-    AutoCompleteModule,
-    MultiSelectModule,    
+    MultiSelectModule,
+    TooltipModule,
     EditorModule,
-    TooltipModule,        
+    AutoCompleteModule,
     SharedModule,
 } from 'primeng/primeng';
 
@@ -54,16 +47,11 @@ import {
         WorkflowRoutingModule,
         //primeng  
         GrowlModule,
-        InputTextModule,
-        InputMaskModule,
+        InputTextModule,        
         DataTableModule,
         ButtonModule,
         DropdownModule,
-        CheckboxModule,
-        MenuModule,
-        MenubarModule,
-        AccordionModule,
-        SelectButtonModule,
+        CheckboxModule,                        
         MultiSelectModule,        
         TooltipModule,        
         EditorModule,
@@ -77,7 +65,7 @@ import {
         SharedGridPagingInfoModule,
     ],
     declarations: [
-        AssignmentsTile,
+        WorkflowAssignmentsComponent,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,                 
         WorkflowRaiseIssueComponent,
@@ -92,7 +80,7 @@ import {
         WorkflowIssueEditorComponent,
     ],
     exports: [
-        AssignmentsTile,
+        WorkflowAssignmentsComponent,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,             
         WorkflowRaiseIssueComponent,

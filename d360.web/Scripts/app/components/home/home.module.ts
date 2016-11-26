@@ -4,7 +4,7 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { SocialModule } from '../social/social.module';
+import { SocialModule } from '../shared/social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';

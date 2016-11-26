@@ -30,8 +30,8 @@
         </div>
         <div class="col s12 m12 l5">
             <div>
-                <d3s-assignments-tile *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
-                <d3s-assignments-tile *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments-tile>
+                <d3s-workflow-assignments *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-workflow-assignments>
+                <d3s-workflow-assignments *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-workflow-assignments>
             </div>
             <d3s-resource-groups [resourceId]="resourceId"></d3s-resource-groups>
         </div>

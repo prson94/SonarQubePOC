@@ -8,7 +8,7 @@ import { ResourceRoutingModule } from './resource.routes';
 
 import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
-import { SocialModule } from '../social/social.module';
+import { SocialModule } from '../shared/social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';

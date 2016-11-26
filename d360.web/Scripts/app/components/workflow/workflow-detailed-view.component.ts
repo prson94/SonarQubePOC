@@ -29,8 +29,7 @@ import { WorkflowStatusDetails } from '../../models/workflow.model';
                             <span><i class="fa fa-times disabled" *ngIf="!activity.IsComplete"></i><i class="fa fa-check enabled" *ngIf="activity.IsComplete"></i></span>
                         </template>
                     </p-column>
-                </p-dataTable>
-                
+                </p-dataTable>                
             </div>
         `,
     providers: [WorkflowService]

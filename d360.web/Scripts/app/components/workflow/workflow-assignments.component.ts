@@ -6,7 +6,7 @@ import { Resource } from '../../models/resource.model';
 import { WorkflowType } from '../../models/workflow.model';
 
 @Component({
-    selector: 'd3s-assignments-tile',
+    selector: 'd3s-workflow-assignments',
     providers: [WorkflowService, ResourcesService],
     template: `
                 <div class="tile tile-detail">
@@ -30,7 +30,7 @@ import { WorkflowType } from '../../models/workflow.model';
                 `
 })
 
-export class AssignmentsTile extends BaseComponent implements OnInit {
+export class WorkflowAssignmentsComponent extends BaseComponent implements OnInit {
     @Input() resourceId = -1;
     @Output() showItemDetail = new EventEmitter();
     private counts: Count[] = [];

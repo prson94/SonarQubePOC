@@ -1,8 +1,7 @@
-﻿
-import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { TagService } from '../../services/index';
-import { Tag } from '../../models/tag.model';
+﻿import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { TagService } from '../../../services/index';
+import { Tag } from '../../../models/tag.model';
 
 @Component({
     selector: 'd3s-social-tag-input',

@@ -1,9 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { SocialService } from '../../services/index';
-import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../models/social.model';
-import { CurrentCompanySettings } from '../../static/company-settings'
+﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { SocialService } from '../../../services/index';
+import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../../models/social.model';
+import { CurrentCompanySettings } from '../../../static/company-settings'
 
 @Component({
     selector: 'd3s-social-board',

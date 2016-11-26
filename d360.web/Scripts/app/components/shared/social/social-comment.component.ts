@@ -1,10 +1,9 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { SocialService } from '../../services/index';
-import { SocialComment, SocialVoteType, SocialCommentType } from '../../models/social.model';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { SocialService } from '../../../services/index';
+import { SocialComment, SocialVoteType, SocialCommentType } from '../../../models/social.model';
 import { Router, NavigationEnd } from '@angular/router';
-import { CurrentCompanySettings } from '../../static/company-settings'
+import { CurrentCompanySettings } from '../../../static/company-settings'
 
 @Component({
     selector: 'd3s-social-comment',    
