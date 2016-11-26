@@ -5,9 +5,10 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { D3SSharedModule } from '../shared/shared.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
+import { AssignmentsTile } from './assignments-tile.component';
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowDetailComponent } from './workflow-detail.component';
 import { WorkflowSuggestDetailsComponent } from './workflow-suggest-details.component';
@@ -17,6 +18,9 @@ import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowSuggestEditorComponent } from './workflow-suggest-editor.component';
 import { WorkflowViewStatusComponent } from './workflow-view-status.component';
 import { WorkflowWorkItemComponent } from './workflow-work-item.component';
+import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
+import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
+import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
@@ -67,11 +71,13 @@ import {
         SharedModule,
 
         //d3s
-        D3SSharedModule,
+        
         CoreModule,
         TilesModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [
+        AssignmentsTile,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,                 
         WorkflowRaiseIssueComponent,
@@ -81,8 +87,12 @@ import {
         WorkflowWorkItemComponent,
         WorkflowDetailComponent,
         WorkflowComponent,
+        WorkflowDetailedViewComponent,
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
     ],
     exports: [
+        AssignmentsTile,
         WorkflowCertifyDetailsComponent,
         WorkflowCertifyEditorComponent,             
         WorkflowRaiseIssueComponent,
@@ -91,6 +101,9 @@ import {
         WorkflowWorkItemComponent,
         WorkflowDetailComponent,
         WorkflowComponent,
+        WorkflowDetailedViewComponent,
+        WorkflowIssueDetailsComponent,
+        WorkflowIssueEditorComponent,
     ]
 })
 export class WorkflowModule { }

@@ -7,9 +7,12 @@ import { RouterModule } from '@angular/router';
 import { ChartModule } from 'angular2-highcharts';
 
 import { CoreModule } from '../shared/core.module';
+import { WorkflowModule } from '../workflow/workflow.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -70,6 +73,9 @@ import {
         D3SSharedModule,
         PipesModule,
         TilesModule,
+        SharedGridPagingInfoModule,
+        WorkflowModule,
+        SharedDashboardModule,
     ],
     declarations: [        
         ArtifactColumnFilterComponent,

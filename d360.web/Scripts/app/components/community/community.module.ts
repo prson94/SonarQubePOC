@@ -9,6 +9,7 @@ import { ChartModule } from 'angular2-highcharts';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { CommunityComponent } from './community.component';
 import { CommunityResponsibilityCountComponent } from './community-responsibility-count.component';
@@ -41,6 +42,7 @@ import {
         D3SSharedModule,
         CoreModule,
         PipesModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [
         CommunityComponent,

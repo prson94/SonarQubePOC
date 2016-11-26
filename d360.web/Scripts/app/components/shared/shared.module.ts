@@ -26,18 +26,19 @@ import {
 import { ChartModule } from 'angular2-highcharts';
 
 import { SocialModule } from '../social/social.module';
+import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { TilesModule  } from './tiles/tiles.module';
+import { SharedGridPagingInfoModule } from './grid-paging-info.component';
+
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
 import { ActionBar } from './action-bar.part';
 import { ArtifactStatusComponent } from './artifact-status.component';
-import { AssignmentsTile } from './assignments-tile.component';
 import { AttributesTile } from './attributes.tile';
 import { AuditComponent } from './audit.component';
-import { DashboardTabComponent } from './dashboard-tab.component';
 import { DeleteForm } from './delete.form';
 import { DynamicFieldComponent } from './dynamic-field.component';
 import { DynamicGridComponent } from './dynamic-grid.component';
@@ -51,7 +52,6 @@ import { FollowerGridComponent } from './follower-grid.component';
 import { FormMessagePart } from './form-message.part';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
-import { GridPagingInfoComponent } from './grid-paging-info.component';
 import { GroupMembersComponent } from './group-members.component';
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -79,7 +79,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { OverlayWindowComponent } from './overlay-window.component';
 import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
-import { PowerBIViewerComponent } from './powerbi-viewer.component';
+
 
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
@@ -90,34 +90,27 @@ import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TakeSurveyComponent } from './take-survey.component';
 import { UserListComponent } from './user-list.component';
-import { WorkflowDetailedViewComponent } from './workflow-detailed-view.component';
-import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
-import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 
 
 @NgModule({
     declarations: [
         ActionBar,
-        ArtifactStatusComponent,
-        AssignmentsTile,
+        ArtifactStatusComponent,        
         AttributesTile,
-        AuditComponent,        
-        DashboardTabComponent,
+        AuditComponent,                
         DeleteForm,
         DynamicEditorComponent,
         DynamicFieldComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,
         DynamicLookupGridComponent,
-        DynamicRelationshipGridComponent,
-        DashboardTabComponent,
+        DynamicRelationshipGridComponent,        
         FieldDefinitionComponent,
         FieldTypeForm,
         FollowerGridComponent,
         FormMessagePart,
         FusionAttributeItemDetailsComponent,        
-        FusionFiltersComponent,
-        GridPagingInfoComponent,
+        FusionFiltersComponent,        
         GroupMembersComponent,        
         ImpactComponent,        
         LineageComponent,
@@ -144,8 +137,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ObjectIssuesComponent,       
         ObjectRelationshipsComponent, 
         OverlayWindowComponent,        
-        PeopleResponsibilitiesTile,
-        PowerBIViewerComponent,        
+        PeopleResponsibilitiesTile,               
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResponsibilityItemForm,
@@ -154,26 +146,19 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         StructureTile,
         SynonymsTile,
         TakeSurveyComponent,                 
-        UserListComponent,
-        WorkflowDetailedViewComponent,
-        WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
+        UserListComponent,        
     ],
-    exports: [                
-        AssignmentsTile,
-        AuditComponent,        
-        DashboardTabComponent,
+    exports: [                        
+        AuditComponent,                
         DeleteForm,
         DynamicEditorComponent,        
         DynamicFieldValueComponent,
         DynamicGridComponent,
-        DynamicLookupGridComponent,        
-        DashboardTabComponent,
+        DynamicLookupGridComponent,                
         FieldDefinitionComponent,        
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
-        FusionFiltersComponent, 
-        GridPagingInfoComponent,
+        FusionFiltersComponent,         
         GroupMembersComponent,        
         ImpactComponent,        
         LineageComponent,        
@@ -195,10 +180,7 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,                        
         TakeSurveyComponent,              
-        UserListComponent, 
-        WorkflowDetailedViewComponent,     
-        WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
+        UserListComponent,         
         ]
     , imports: [
         CommonModule,
@@ -234,6 +216,8 @@ import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component'
         SocialModule,
         CoreModule,
         TilesModule,
+        SharedGridPagingInfoModule,
+        WorkflowModule,
     ]
 
 })

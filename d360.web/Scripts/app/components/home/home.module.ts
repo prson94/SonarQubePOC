@@ -4,11 +4,12 @@ import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { D3SSharedModule } from '../shared/shared.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 
 import { HomeComponent} from './home.component';
 import { ActivityTile } from './activity-tile.component';
@@ -47,13 +48,14 @@ import {
         TooltipModule,                     
         SharedModule,
 
-        //d3s
-        D3SSharedModule,
+        //d3s        
         CoreModule,
         SearchModule,
         SocialModule,
         WorkflowModule,
         TilesModule,
+        SharedGridPagingInfoModule,
+        SharedDashboardModule,
     ],
     declarations: [
         ActivityDetailsTile,

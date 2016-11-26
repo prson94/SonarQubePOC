@@ -12,6 +12,7 @@ import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
@@ -70,6 +71,7 @@ import {
         WorkflowModule,
         PipesModule,
         TilesModule,
+        SharedGridPagingInfoModule,
     ]
 
 })

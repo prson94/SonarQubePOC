@@ -1359,6 +1359,7 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard\shared-dashboard.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field-value.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
@@ -1498,7 +1499,7 @@
     <TypeScriptCompile Include="Scripts\app\components\search\search.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard-tab.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard\dashboard-tab.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-lookup-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\follower-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\impact.component.ts" />
@@ -1510,12 +1511,12 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\workflow-detailed-view.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detailed-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\social\social.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-certify-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\workflow-issue-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\powerbi-viewer.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dashboard\powerbi-viewer.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamic-grid.component.ts" />
@@ -1532,11 +1533,11 @@
     <TypeScriptCompile Include="Scripts\app\components\social\social-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-details-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\activity-tile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\assignments-tile.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\assignments-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-detail.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\workflow-issue-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />

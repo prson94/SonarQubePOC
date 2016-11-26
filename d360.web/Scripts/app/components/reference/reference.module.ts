@@ -8,6 +8,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { ReferenceRoutingModule } from './reference.routes';
 import { ReferenceComponent } from './reference.component';
@@ -46,6 +47,7 @@ import {
         CoreModule,
         PipesModule,
         TilesModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [        
         ReferenceItemTypeEditorComponent,

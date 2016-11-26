@@ -10,6 +10,7 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { PolicyRoutingModule } from './policy.routes';
 
@@ -71,6 +72,7 @@ import {
         D3SSharedModule,
         PipesModule,
         TilesModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [
         PolicyComponent,

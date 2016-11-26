@@ -1,13 +1,11 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
 import { HttpModule }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { D3SSharedModule } from '../shared/shared.module';
-import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { MonitorRoutingModule } from './monitor.routes';
 import { MonitorListComponent } from './monitor-list.component';
@@ -19,8 +17,7 @@ import {
 } from 'primeng/primeng';
 
 @NgModule({
-    imports: [CommonModule,
-        FormsModule,
+    imports: [CommonModule,        
         HttpModule,
         RouterModule,
 
@@ -31,11 +28,10 @@ import {
 
         MonitorRoutingModule,
 
-        //d3s
-        D3SSharedModule,
-        CoreModule,
-        PipesModule,
+        //d3s        
+        CoreModule,        
         TilesModule,
+        SharedGridPagingInfoModule,
     ],
     declarations: [        
         MonitorListComponent,        
