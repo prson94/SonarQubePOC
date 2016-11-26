@@ -10,7 +10,7 @@ export class AuthenticationConnectionBackend extends XHRBackend {
         super(_browserXhr, _baseResponseOptions, _xsrfStrategy);
     }
 
-    createConnection(request: Request) {
+    createConnection(request: Request) {        
         let xhrConnection = super.createConnection(request);
         xhrConnection.response = xhrConnection.response.catch((error: Response) => {
             if ((error.status === 401 || error.status === 403) && (window.location.href.match(/\?/g) || []).length < 2) {

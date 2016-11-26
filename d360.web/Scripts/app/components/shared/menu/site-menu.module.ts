@@ -1,9 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { SiteMenuComponent } from './site-menu.component';
 import { SiteMenuMegaItemComponent } from './site-menu-mega-item.component';
@@ -30,6 +31,9 @@ import {
     ],
     exports: [
         SiteMenuComponent,        
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
 export class SiteMenuModule { }

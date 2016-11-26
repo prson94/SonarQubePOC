@@ -1,9 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
@@ -71,6 +72,9 @@ import {
         RuleItemComponent,
         RuleResultsGridComponent,
         RuleColumnFilterComponent,        
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
 export class RuleModule { }

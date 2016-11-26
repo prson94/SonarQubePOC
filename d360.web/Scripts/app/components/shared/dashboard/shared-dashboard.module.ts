@@ -1,7 +1,9 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
+
+import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {    
     ButtonModule,    
@@ -30,6 +32,9 @@ import { PowerBIViewerComponent } from './powerbi-viewer.component';
     ],
     exports: [
         DashboardTabComponent
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
 export class SharedDashboardModule { }

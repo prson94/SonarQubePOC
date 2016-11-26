@@ -1,8 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
@@ -182,8 +184,10 @@ import { WorkflowItemForm } from './workflow-item.form';
         PipesModule, 
         TilesModule,  
         SharedGridPagingInfoModule     
-    ] 
-
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+    ]
 })
 
 export class AdminModule { }

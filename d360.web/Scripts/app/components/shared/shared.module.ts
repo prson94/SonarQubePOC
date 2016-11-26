@@ -1,8 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 
 import {
@@ -218,8 +220,10 @@ import { UserListComponent } from './user-list.component';
         TilesModule,
         SharedGridPagingInfoModule,
         WorkflowModule,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
-
 })
 
 export class D3SSharedModule { }

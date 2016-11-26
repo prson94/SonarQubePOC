@@ -1,8 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { ChartModule } from 'angular2-highcharts';
 
@@ -89,6 +91,9 @@ import {
         ArtifactTypeWorkflowStatusComponent,
         ArtifactItemChildrenComponent,
         ArtifactItemChildGridComponent,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
 export class ArtifactModule { }

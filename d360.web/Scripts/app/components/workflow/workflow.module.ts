@@ -1,8 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule }     from '@angular/http';
+import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
@@ -92,6 +94,9 @@ import {
         WorkflowDetailedViewComponent,
         WorkflowIssueDetailsComponent,
         WorkflowIssueEditorComponent,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
 export class WorkflowModule { }
