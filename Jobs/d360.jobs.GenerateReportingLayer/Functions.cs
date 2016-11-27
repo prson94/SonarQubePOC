@@ -608,93 +608,93 @@ cross apply (select count(1) as AttributeCount from Attribute where ObjectType =
 
                         #endregion
 
-                        #region Domain Type
+    //                    #region Domain Type
 
-                        objectType = "Domain";
-                        objectTypeKey = "DomainTypeID";
-                        prefix = "Domain";
-                        tableName = "Domain";
+    //                    objectType = "ReferenceItemType";
+    //                    objectTypeKey = "ReferenceItemTypeID";
+    //                    prefix = "ReferenceItemType";
+    //                    tableName = "ReferenceItemType";
 
-                        var domainTypes = companyConnection.Query<DomainType>("select * from DomainType").ToList();
+    //                    var domainTypes = companyConnection.Query<DomainType>("select * from ReferenceItemType").ToList();
 
-                        domainTypes.ForEach(o =>
-                        {
-                            #region Object Views
+    //                    domainTypes.ForEach(o =>
+    //                    {
+    //                        #region Object Views
 
-                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
-                            viewNames.Add(objectName);
+    //                        objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, pluralize.Pluralize(cleanObjectName(o.Name)));
+    //                        viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select A.ID, A.Name, A.Description, G.Name as DomainGroup, MA.Name as GroupMasterList, dbo.GenerateObjectUrl('{1}', A.DomainTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount 
-    from Domain A
-    left join DomainGroup G on G.ID = A.DomainGroupID
-    left join Domain MA on MA.ID = G.MasterListID
-    cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{1}' and ObjectID = A.ID) AC 
-    cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{1}' and SourceObjectID = A.ID) Rels
-    where A.DomainTypeID = {0}", o.ID, objectType);
+    //                        selectSql = string.Format(@"select A.ID, A.Name, A.Description, G.Name as DomainGroup, MA.Name as GroupMasterList, dbo.GenerateObjectUrl('{1}', A.DomainTypeID, A.ID) as Url, AC.AttributeCount, Rels.[Count] as RelationshipCount 
+    //from Domain A
+    //left join DomainGroup G on G.ID = A.DomainGroupID
+    //left join Domain MA on MA.ID = G.MasterListID
+    //cross apply (select count(1) as AttributeCount from Attribute where ObjectType = '{1}' and ObjectID = A.ID) AC 
+    //cross apply (select count(1) as [Count] from cache.Relationships where SourceObject = '{1}' and SourceObjectID = A.ID) Rels
+    //where A.DomainTypeID = {0}", o.ID, objectType);
 
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+    //                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+    //                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+    //                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+    //                        try
+    //                        {
+    //                            companyConnection.Execute(viewSql.ToString());
+    //                        }
+    //                        catch (Exception ex)
+    //                        {
+    //                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+    //                            Console.WriteLine(msg);
+    //                            Console.WriteLine("Attempted SQL: " + viewSql);
+    //                        }
 
-                            #endregion
+    //                        #endregion
 
-                            #region Object Item Views
+    //                        #region Object Item Views
 
-                            objectName = string.Format("{0}.[{1}_{2}Items]", SCHEMA, prefix, cleanObjectName(o.Name));
-                            viewNames.Add(objectName);
+    //                        objectName = string.Format("{0}.[{1}_{2}Items]", SCHEMA, prefix, cleanObjectName(o.Name));
+    //                        viewNames.Add(objectName);
 
-                            selectSql = string.Format(@"select AI.ID,  A.ID as DomainID, AI.[Code], AI.Name, AI.Description, G.Name as DomainGroup
-    from Domain A
-    inner join DomainItem AI on AI.DomainID = A.ID
-    left join DomainGroup G on G.ID = A.DomainGroupID
-    left join Domain MA on MA.ID = G.MasterListID
-    where A.DomainTypeID = {0}", o.ID, objectType);
+    //                        selectSql = string.Format(@"select AI.ID,  A.ID as DomainID, AI.[Code], AI.Name, AI.Description, G.Name as DomainGroup
+    //from Domain A
+    //inner join DomainItem AI on AI.DomainID = A.ID
+    //left join DomainGroup G on G.ID = A.DomainGroupID
+    //left join Domain MA on MA.ID = G.MasterListID
+    //where A.DomainTypeID = {0}", o.ID, objectType);
 
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+    //                        objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
+    //                        viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+    //                        viewSql += string.Format(@" VIEW {0} AS {1}", objectName, selectSql);
 
-                            try
-                            {
-                                companyConnection.Execute(viewSql.ToString());
-                            }
-                            catch (Exception ex)
-                            {
-                                var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                Console.WriteLine(msg);
-                                Console.WriteLine("Attempted SQL: " + viewSql);
-                            }
+    //                        try
+    //                        {
+    //                            companyConnection.Execute(viewSql.ToString());
+    //                        }
+    //                        catch (Exception ex)
+    //                        {
+    //                            var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+    //                            Console.WriteLine(msg);
+    //                            Console.WriteLine("Attempted SQL: " + viewSql);
+    //                        }
 
-                            #endregion
+    //                        #endregion
 
-                            // Object Views
-                            GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
+    //                        // Object Views
+    //                        GenerateAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                        GeneratObjectRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                        GenerateObjectResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectType, o.ID);
 
-                            // Object Missing Views
-                            GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                            GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
-                        });
+    //                        // Object Missing Views
+    //                        GenerateMissingOverallView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                        GenerateMissingAttributeView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                        GenerateMissingRelationshipView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                        GenerateMissingResponsibilityView(viewNames, companyConnection, SCHEMA, prefix, o.Name, objectTypeKey, tableName, objectType, o.ID);
+    //                    });
 
-                        domainTypes = null;
+    //                    domainTypes = null;
 
-                        #endregion
+    //                    #endregion
 
                         #region Event
 

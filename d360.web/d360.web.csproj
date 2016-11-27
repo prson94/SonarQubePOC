@@ -376,7 +376,6 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\AppsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\ReferenceController.cs" />
@@ -401,9 +400,6 @@
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\FormController.cs" />
-    <Compile Include="Controllers\DomainsController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\FieldsController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -425,7 +421,6 @@
     <Compile Include="Controllers\NavigationController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\PartsController.cs" />
     <Compile Include="Controllers\RelationsController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -461,7 +456,6 @@
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML" />
     <Content Include="Content\font-awesome.css" />
-    <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\d3s\images\icons_16.png" />
@@ -481,10 +475,6 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
-    <Content Include="Content\styles\all.css" />
-    <Content Include="Content\styles\all.min.css">
-      <DependentUpon>all.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -500,12 +490,6 @@
     <Content Include="Content\styles\apps.min.css">
       <DependentUpon>apps.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\jqx.metro.css">
-      <DependentUpon>jqx.metro.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\jqx.metro.min.css">
-      <DependentUpon>jqx.metro.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\navigation.css">
       <DependentUpon>navigation.less</DependentUpon>
     </Content>
@@ -517,6 +501,24 @@
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Scripts\app\0.chunk.js" />
+    <Content Include="Scripts\app\1.chunk.js" />
+    <Content Include="Scripts\app\10.chunk.js" />
+    <Content Include="Scripts\app\11.chunk.js" />
+    <Content Include="Scripts\app\12.chunk.js" />
+    <Content Include="Scripts\app\13.chunk.js" />
+    <Content Include="Scripts\app\14.chunk.js" />
+    <Content Include="Scripts\app\15.chunk.js" />
+    <Content Include="Scripts\app\16.chunk.js" />
+    <Content Include="Scripts\app\17.chunk.js" />
+    <Content Include="Scripts\app\2.chunk.js" />
+    <Content Include="Scripts\app\3.chunk.js" />
+    <Content Include="Scripts\app\4.chunk.js" />
+    <Content Include="Scripts\app\5.chunk.js" />
+    <Content Include="Scripts\app\6.chunk.js" />
+    <Content Include="Scripts\app\7.chunk.js" />
+    <Content Include="Scripts\app\8.chunk.js" />
+    <Content Include="Scripts\app\9.chunk.js" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-findviarelation.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rule-step-lineage.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-rules.component.html" />
@@ -530,21 +532,6 @@
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
     <None Include="Content\styles\typeahead.less" />
-    <Content Include="Content\templates\actionsmonitor.list.html" />
-    <Content Include="Content\templates\artifacts.root.html" />
-    <Content Include="Content\templates\parts\DetailTile.html" />
-    <Content Include="Content\templates\parts\DetailTileSmall.html" />
-    <Content Include="Content\templates\parts\NewLineageDiagram.html" />
-    <Content Include="Content\templates\parts\LineageDiagram.html" />
-    <Content Include="Content\templates\parts\LineageDiagramBusinessTransformations.html" />
-    <Content Include="Content\templates\parts\LineageDiagramMappingRules.html" />
-    <Content Include="Content\templates\parts\LineageDiagramSourceRules.html" />
-    <Content Include="Content\templates\rules.admin.html" />
-    <Content Include="Content\templates\rules.item.html" />
-    <Content Include="Content\templates\rules.list.html" />
-    <Content Include="Content\templates\policies.list.html" />
-    <Content Include="Content\templates\policies.admin.html" />
-    <Content Include="Content\templates\taxonomies.root.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
@@ -710,15 +697,6 @@
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
-    <Content Include="Content\svg\menu.svg" />
-    <Content Include="Content\templates\workflow.admin.html" />
-    <Content Include="Content\templates\workflow.item.status.html" />
-    <Content Include="Content\templates\workflow.item.html" />
-    <Content Include="Content\templates\community.alert.html" />
-    <Content Include="Content\templates\community.vendor.html" />
-    <Content Include="Content\templates\community.group.html" />
-    <Content Include="Content\templates\community.home.html" />
-    <Content Include="Content\templates\load.html" />
     <Content Include="Content\styles\navigation.less" />
     <Content Include="Content\styles\Tooltip.css.map">
       <DependentUpon>Tooltip.css</DependentUpon>
@@ -726,7 +704,6 @@
     <Content Include="Content\styles\Root.css.map">
       <DependentUpon>Root.css</DependentUpon>
     </Content>
-    <Content Include="Content\templates\reporting.admin.html" />
     <Content Include="images\loader-small.gif" />
     <Content Include="images\gritter.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -758,12 +735,6 @@
     <None Include="Content\styles\ContentFormatting.min.css">
       <DependentUpon>ContentFormatting.css</DependentUpon>
     </None>
-    <None Include="Content\styles\d3s.social.css">
-      <DependentUpon>d3s.social.less</DependentUpon>
-    </None>
-    <None Include="Content\styles\d3s.social.min.css">
-      <DependentUpon>d3s.social.css</DependentUpon>
-    </None>
     <None Include="Content\redactor\redactor.min.css.gzip">
       <DependentUpon>redactor.min.css</DependentUpon>
     </None>
@@ -771,9 +742,6 @@
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\colorpicker.css.map">
       <DependentUpon>colorpicker.css</DependentUpon>
-    </None>
-    <None Include="Content\styles\d3s.social.css.map">
-      <DependentUpon>d3s.social.css</DependentUpon>
     </None>
     <None Include="Content\styles\Diagrams.less" />
     <None Include="Content\styles\Diagrams.css.map">
@@ -788,14 +756,6 @@
     <Content Include="Content\styles\img\hue-horizontal.png" />
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
-    <None Include="Content\styles\jqx.flat.less" />
-    <Content Include="Content\styles\jqx.metro.less" />
-    <None Include="Content\styles\jqx.plain.css.map">
-      <DependentUpon>jqx.plain.css</DependentUpon>
-    </None>
-    <None Include="Content\styles\jqx.plain.less" />
-    <None Include="Content\styles\d3s.social.less" />
-    <None Include="Content\styles\d3s.surveyreport.less" />
     <None Include="Content\styles\jquery.gritter.less" />
     <None Include="Content\styles\jqx.base.css">
       <DependentUpon>jqx.base.less</DependentUpon>
@@ -803,13 +763,6 @@
     <None Include="Content\styles\jqx.base.min.css">
       <DependentUpon>jqx.base.css</DependentUpon>
     </None>
-    <None Include="Content\styles\jqx.plain.css">
-      <DependentUpon>jqx.plain.less</DependentUpon>
-    </None>
-    <None Include="Content\styles\jqx.plain.min.css">
-      <DependentUpon>jqx.plain.less</DependentUpon>
-    </None>
-    <Content Include="Content\styles\jqx.transparent.less" />
     <None Include="Content\styles\Root.css">
       <DependentUpon>Root.less</DependentUpon>
     </None>
@@ -817,36 +770,6 @@
     <None Include="Content\styles\Root.min.css">
       <DependentUpon>Root.css</DependentUpon>
     </None>
-    <Content Include="Content\templates\analytics.admin.html" />
-    <Content Include="Content\templates\monitor.list.html" />
-    <Content Include="Content\templates\search.html" />
-    <Content Include="Content\templates\home.html" />
-    <Content Include="Content\templates\artifacts.item.html" />
-    <Content Include="Content\templates\artifacts.list.html" />
-    <Content Include="Content\templates\fusion.list.html" />
-    <Content Include="Content\templates\domains.list.html" />
-    <Content Include="Content\templates\fusion.item.html" />
-    <Content Include="Content\templates\groups.list.html" />
-    <Content Include="Content\templates\groups.item.html" />
-    <Content Include="Content\templates\resources.item.html" />
-    <Content Include="Content\templates\settings.admin.html" />
-    <Content Include="Content\templates\resources.admin.html" />
-    <Content Include="Content\templates\groups.admin.html" />
-    <Content Include="Content\templates\lookups.admin.html" />
-    <Content Include="Content\templates\surveyresponsetypes.admin.html" />
-    <Content Include="Content\templates\synonyms.admin.html" />
-    <Content Include="Content\templates\taxonomies.list.html" />
-    <Content Include="Content\templates\taxonomies.admin.html" />
-    <Content Include="Content\templates\templates.admin.html" />
-    <Content Include="Content\templates\surveys.admin.html" />
-    <Content Include="Content\templates\relations.admin.html" />
-    <Content Include="Content\templates\governance.admin.html" />
-    <Content Include="Content\templates\fusion.admin.html" />
-    <Content Include="Content\templates\fields.admin.html" />
-    <Content Include="Content\templates\domains.admin.html" />
-    <Content Include="Content\templates\attributes.admin.html" />
-    <Content Include="Content\templates\artifacts.admin.html" />
-    <Content Include="Content\templates\_content.header.html" />
     <Content Include="images\logo.png" />
     <Content Include="node_modules\primeng\resources\images\loading.gif" />
     <Content Include="node_modules\primeng\resources\images\password-meter.png" />
@@ -871,10 +794,6 @@
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\theme.css" />
-    <Content Include="Scripts\all-ang.js" />
-    <Content Include="Scripts\all-ang.min.js">
-      <DependentUpon>all-ang.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
@@ -889,18 +808,8 @@
     <Content Include="Scripts\app\components\admin\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
-    <Content Include="Scripts\d3s.RelationshipsTile.js" />
-    <Content Include="Scripts\d3s.MapItems.js" />
-    <Content Include="Scripts\moment-with-locales.js" />
-    <Content Include="Scripts\moment-with-locales.min.js" />
-    <Content Include="Scripts\moment.js" />
-    <Content Include="Scripts\moment.min.js" />
-    <Content Include="Scripts\parts\ImpactDiagram.js" />
-    <Content Include="Scripts\parts\LineageDiagram.js" />
-    <Content Include="Scripts\parts\Survey.js" />
     <Content Include="Scripts\powerbi.js" />
     <Content Include="Scripts\powerbi.min.js" />
-    <Content Include="ui.html" />
     <Content Include="node-test.html" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -924,27 +833,8 @@
     <None Include="Properties\PublishProfiles\UI - Nightly.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - EU North.pubxml" />
-    <None Include="Scripts\ace\ace.js" />
-    <Content Include="Scripts\ace\mode-json.js" />
-    <None Include="Scripts\ace\mode-sql.js" />
-    <None Include="Scripts\ace\theme-dawn.js" />
-    <None Include="Scripts\amplify-vsdoc.js" />
-    <Content Include="Scripts\all.js" />
-    <Content Include="Scripts\all.min.js">
-      <DependentUpon>all.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\app\components\admin\fusion-configuration.tile.html" />
-    <None Include="Scripts\colorpicker-color.js" />
-    <None Include="Scripts\colorpicker.js" />
     <None Include="Scripts\Common.js" />
-    <None Include="Scripts\d3s.Editor.js" />
-    <None Include="Scripts\d3s.FormTools.js" />
-    <None Include="Scripts\d3s.PageTools.js" />
-    <None Include="Scripts\d3s.SurveyReport.js" />
-    <Content Include="Scripts\Apps.js" />
-    <Content Include="Scripts\Apps.min.js">
-      <DependentUpon>Apps.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
@@ -960,131 +850,15 @@
     <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
-    <Content Include="Scripts\d3s.Synonyms.js" />
-    <Content Include="Scripts\d3s.Attributes.js" />
     <Content Include="Scripts\errors.json" />
     <None Include="Content\styles\_Variables.less" />
-    <Content Include="Scripts\GoJS\GoJS-1-5-18-debug.js" />
-    <Content Include="Scripts\GoJS\GoJS-1-5-18.js" />
-    <Content Include="Scripts\handlebars.amd.js" />
-    <Content Include="Scripts\handlebars.js" />
-    <Content Include="Scripts\handlebars.runtime.amd.js" />
-    <Content Include="Scripts\handlebars.runtime.js" />
-    <None Include="Scripts\jquery-2.2.3.intellisense.js" />
-    <Content Include="Scripts\jquery-2.2.3.js" />
-    <Content Include="Scripts\jquery-2.2.3.min.js" />
-    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
-    <Content Include="Scripts\jquery-2.2.3.min.map" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <Content Include="Scripts\powerbi.js.map" />
-    <None Include="Scripts\redactor.js" />
-    <None Include="Scripts\sammy-0.7.5.js" />
-    <None Include="Scripts\sammy.handlebars.js" />
-    <None Include="Scripts\sammy.title.js" />
-    <None Include="Scripts\StartHub.js" />
     <None Include="Content\styles\Root.less" />
-    <None Include="Scripts\amplify.js" />
     <None Include="Scripts\jquery.gritter.js" />
-    <None Include="Scripts\jquery.easing.1.3.js" />
-    <None Include="Scripts\jquery.fileDownload.js" />
-    <None Include="Scripts\jquery.date.js" />
     <None Include="Scripts\jquery.qtip.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Scripts\jqx\3.9.1\jqx-all.js" />
-    <Content Include="Scripts\knockout-3.4.0.debug.js" />
-    <Content Include="Scripts\knockout-file-bindings.js" />
-    <Content Include="Scripts\knockout.models.js" />
-    <None Include="Scripts\templates\analytics.admin.js" />
-    <None Include="Scripts\templates\workflow.admin.js" />
-    <None Include="Scripts\templates\workflow.item.status.js" />
-    <None Include="Scripts\templates\workflow.item.js" />
-    <None Include="Scripts\templates\community.home.js" />
-    <None Include="Scripts\templates\load.js" />
-    <None Include="Scripts\templates\monitor.list.js" />
-    <None Include="Scripts\templates\search.js" />
-    <None Include="Scripts\templates\home.js" />
-    <None Include="Scripts\templates\artifacts.item.js" />
-    <None Include="Scripts\templates\artifacts.list.js" />
-    <None Include="Scripts\templates\artifacts.admin.js" />
-    <None Include="Scripts\templates\fusion.list.js" />
-    <None Include="Scripts\templates\domains.list.js" />
-    <None Include="Scripts\templates\domains.admin.js" />
-    <None Include="Scripts\templates\fusion.item.js" />
-    <None Include="Scripts\templates\fusion.admin.js" />
-    <None Include="Scripts\templates\governance.admin.js" />
-    <None Include="Scripts\templates\groups.list.js" />
-    <None Include="Scripts\templates\groups.item.js" />
-    <None Include="Scripts\templates\resources.item.js" />
-    <None Include="Scripts\templates\settings.admin.js" />
-    <None Include="Scripts\templates\resources.admin.js" />
-    <None Include="Scripts\templates\relations.admin.js" />
-    <None Include="Scripts\templates\lookups.admin.js" />
-    <None Include="Scripts\templates\surveyresponsetypes.admin.js" />
-    <None Include="Scripts\templates\groups.admin.js" />
-    <None Include="Scripts\templates\reporting.admin.js" />
-    <None Include="Scripts\templates\taxonomies.list.js" />
-    <None Include="Scripts\templates\taxonomies.admin.js" />
-    <None Include="Scripts\templates\templates.admin.js" />
-    <None Include="Scripts\templates\surveys.admin.js" />
-    <Content Include="Scripts\metafizzy\isotope.pkgd.js" />
-    <Content Include="Scripts\packery.pkgd.js" />
-    <Content Include="Scripts\parts\AttributeTypeAllocationGrid.js" />
-    <Content Include="Scripts\parts\CertificationNotificationTile.js" />
-    <Content Include="Scripts\parts\ChallengeNotificationTile.js" />
-    <Content Include="Scripts\parts\CollapsibleConversationTile.js" />
-    <Content Include="Scripts\parts\CollapsibleTypeHierarchyTile.js" />
-    <Content Include="Scripts\parts\CriticalRelationshipsTile.js" />
-    <Content Include="Scripts\parts\DomainAllocationsTile.js" />
-    <Content Include="Scripts\parts\DomainItemsTile.js" />
-    <Content Include="Scripts\parts\DomainItemXrefTile.js" />
-    <Content Include="Scripts\parts\DomainListXrefTile.js" />
-    <Content Include="Scripts\parts\EventAgeBreakdownChart.js" />
-    <Content Include="Scripts\parts\EventCriticalityBreakdownChart.js" />
-    <Content Include="Scripts\parts\EventHeadersGrid.js" />
-    <Content Include="Scripts\parts\EventsGrid.js" />
-    <Content Include="Scripts\parts\EventStatusBreakdownChart.js" />
-    <Content Include="Scripts\parts\FieldsGrid.js" />
-    <Content Include="Scripts\parts\FusionAttributeDetailTile.js" />
-    <Content Include="Scripts\parts\FusionConfigurationsGrid.js" />
-    <Content Include="Scripts\parts\FusionItemsGrid.js" />
-    <Content Include="Scripts\parts\FusionRelationshipChartTile.js" />
-    <Content Include="Scripts\parts\FusionTypesGrid.js" />
-    <Content Include="Scripts\parts\GlobalTypeahead.js" />
-    <Content Include="Scripts\parts\GroupMembersGrid.js" />
-    <Content Include="Scripts\parts\HierarchyTile.js" />
-    <Content Include="Scripts\parts\IntersectTypeRolesGrid.js" />
-    <Content Include="Scripts\parts\LookupTypeItemsGrid.js" />
-    <Content Include="Scripts\parts\ObjectDetail.js" />
-    <Content Include="Scripts\parts\ObjectStatisticsTile.js" />
-    <Content Include="Scripts\parts\PeopleResponsibilityTile.js" />
-    <Content Include="Scripts\parts\PolicyStatusKpi.js" />
-    <Content Include="Scripts\parts\PolicyTypeLevelsGrid.js" />
-    <Content Include="Scripts\parts\RelatedArtifactsGrid.js" />
-    <Content Include="Scripts\parts\RelationshipAggregatesTile.js" />
-    <Content Include="Scripts\parts\RelationshipTypeTreeTile.js" />
-    <Content Include="Scripts\parts\Relationship_SimpleHierarchyTile.js" />
-    <Content Include="Scripts\parts\ResourceStatisticsTile.js" />
-    <Content Include="Scripts\parts\SearchBarTypeahead.js" />
-    <Content Include="Scripts\parts\SearchResultsGrid.js" />
-    <Content Include="Scripts\parts\StatisticTypeAllocationGrid.js" />
-    <Content Include="Scripts\parts\TaxonomyTypeLevelsGrid.js" />
-    <Content Include="Scripts\parts\WorkflowTypeRelationsGrid.js" />
-    <Content Include="Scripts\parts\YourFollowedItemsTile.js" />
-    <Content Include="Scripts\parts\YourOwnedItemsTile.js" />
-    <Content Include="Scripts\parts\YourWorkflowTasks.js" />
-    <Content Include="Scripts\parts\_Utils.js" />
-    <Content Include="Scripts\r.js" />
-    <Content Include="Scripts\require.js" />
-    <Content Include="Scripts\templates\artifacts.root.js" />
-    <Content Include="Scripts\templates\actionsmonitor.list.js" />
-    <Content Include="Scripts\templates\rules.admin.js" />
-    <Content Include="Scripts\templates\rules.item.js" />
-    <Content Include="Scripts\templates\rules.list.js" />
-    <Content Include="Scripts\templates\policies.list.js" />
-    <Content Include="Scripts\templates\policies.admin.js" />
-    <Content Include="Scripts\templates\taxonomies.root.js" />
-    <Content Include="Scripts\typeahead.bundle.js" />
     <Content Include="Scripts\version.json" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config">
@@ -1093,120 +867,9 @@
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Parts\AuditGrid.cshtml" />
-    <Content Include="Views\Parts\Board.cshtml" />
-    <Content Include="Views\Parts\Detail.cshtml" />
-    <Content Include="Views\Parts\SurveyReport.cshtml" />
-    <Content Include="Views\Resources\_EmailTemplates.cshtml" />
-    <Content Include="Views\Resources\_TooltipTemplates.cshtml" />
-    <Content Include="Views\Parts\Followers.cshtml" />
-    <Content Include="Views\Parts\Following.cshtml" />
-    <Content Include="Views\Parts\Groups.cshtml" />
-    <Content Include="Views\Parts\Members.cshtml" />
-    <Content Include="Views\Parts\Ownership.cshtml" />
-    <Content Include="Views\Shared\EditableForm.cshtml" />
-    <Content Include="Views\Parts\Resolutions.cshtml" />
-    <Content Include="Views\Parts\OwnershipForGroup.cshtml" />
-    <Content Include="Views\Shared\ImageEditor.cshtml" />
-    <Content Include="Views\Shared\SPA.cshtml" />
-    <None Include="Scripts\templates\attributes.admin.js" />
-    <Content Include="Views\Shared\KnockoutTemplates.cshtml" />
-    <Content Include="Views\Form\StatisticTypeEditForm.cshtml" />
-    <Content Include="Views\Relations\RelationOverlay.cshtml" />
-    <Content Include="Views\Shared\DeleteForm.cshtml" />
-    <Content Include="Views\Form\FieldTypeEditForm.cshtml" />
-    <Content Include="Views\Form\AttributeTypeEditForm.cshtml" />
-    <Content Include="Views\Parts\ResponsibilityTypeClaimGrid.cshtml" />
-    <Content Include="Views\Parts\ResponsibilityTypeObjectClaimGrid.cshtml" />
-    <Content Include="Views\Form\AddRelationship.cshtml" />
-    <Content Include="Views\Parts\ResponsibilityTypeUsageGrid.cshtml" />
-    <Content Include="Views\Form\EditRelationship.cshtml" />
-    <Content Include="Views\Parts\DetailWithSynonyms.cshtml" />
-    <Content Include="Views\Overlays\Events.cshtml" />
-    <Content Include="Views\Overlays\Followers.cshtml" />
-    <Content Include="Views\Overlays\ChildArtifacts.cshtml" />
-    <Content Include="Views\Overlays\Comments.cshtml" />
-    <Content Include="Views\Parts\CriticalRelationshipsByObject.cshtml" />
-    <Content Include="Views\Overlays\RedFlags.cshtml" />
-    <Content Include="Views\Tooltips\RedFlags.cshtml" />
-    <Content Include="Views\Form\AddLoad.cshtml" />
-    <Content Include="Views\Overlays\TaxonomyTypeDiagram_Catalog.cshtml" />
-    <Content Include="Views\Form\EditorTemplates\LoadTypeRuleEditorModel.cshtml" />
-    <Content Include="Views\Form\EditorTemplates\ClaimsMatrixEditorModel.cshtml" />
-    <Content Include="Views\Form\AddResponsibilityTypeClaims.cshtml" />
-    <Content Include="Views\Form\EditResponsibilityTypeClaims.cshtml" />
-    <Content Include="Views\Parts\DisplayClaimsMatrix.cshtml" />
-    <Content Include="Views\Relations\AggregateRelationOverlay.cshtml" />
-    <Content Include="Views\Overlays\Score.cshtml" />
-    <Content Include="Views\Form\ReportEditForm.cshtml" />
-    <Content Include="Views\Form\ReportTileEditForm.cshtml" />
-    <Content Include="Views\Reports\PreviewOverlay.cshtml" />
-    <Content Include="Views\Reports\Overlay.cshtml" />
-    <Content Include="Views\Form\AttributeEditForm.cshtml" />
-    <Content Include="Views\Form\AttributeDeleteForm.cshtml" />
-    <Content Include="Views\Form\Upsert.cshtml" />
-    <Content Include="Views\Overlays\Detail.cshtml" />
-    <Content Include="Views\Fusion\FusionExecutionRawLog.cshtml" />
-    <Content Include="Views\Fusion\FusionExecution.cshtml" />
-    <Content Include="Views\Fusion\RelationshipAggregatesOverlay.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay_1.cshtml" />
-    <Content Include="Views\Shared\RowCommandTooltip.cshtml" />
-    <Content Include="Views\Workflow\ArtifactTypeWorkflowStatusOverlay.cshtml" />
-    <Content Include="Views\Overlays\Audit.cshtml" />
-    <Content Include="Views\Form\AddFusionSpreadsheetImport.cshtml" />
-    <Content Include="Views\Overlays\MyApiCredentials.cshtml" />
-    <Content Include="Views\Form\WorkflowTypeRelationEditForm.cshtml" />
-    <Content Include="Views\Shared\Apps.cshtml" />
-    <Content Include="Views\Shared\FormHeader.cshtml" />
-    <Content Include="Views\Form\ArtifactTypeEditForm.cshtml" />
-    <Content Include="Views\Form\ResponsibilityEditForm.cshtml" />
-    <Content Include="Views\Overlays\ArtifactListMetricsDashboard.cshtml" />
-    <Content Include="Views\Overlays\AttributeTypeCategories.cshtml" />
-    <Content Include="Views\Overlays\FusionConfigurationFilters.cshtml" />
-    <Content Include="Views\Overlays\FusionConfigurationHistory.cshtml" />
-    <Content Include="Views\Shared\OverlayEditableForm.cshtml" />
-    <Content Include="Views\Shared\OverlayDeleteForm.cshtml" />
-    <Content Include="Views\Shared\FusionAttributeTypeFormTreeControl.cshtml" />
-    <Content Include="Views\Overlays\LookupTypeUsage.cshtml" />
-    <Content Include="Views\Form\IntersectTypeEditForm.cshtml" />
-    <Content Include="Views\Overlays\TaxonomyTypeClasses.cshtml" />
-    <Content Include="Views\Overlays\PolicyTypeClasses.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay_3.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay_2.cshtml" />
-    <Content Include="Views\Apps\Search.cshtml" />
-    <Content Include="Views\Form\IntersectTypePredicateEditForm.cshtml" />
-    <Content Include="Views\Fusion\FusionErrorsAgentOverlay.cshtml" />
-    <Content Include="Views\Fusion\FusionErrorsProcessOverlay.cshtml" />
-    <Content Include="Views\Shared\Core.cshtml" />
-    <Content Include="Views\Home\ArtifactActivityOverlay.cshtml" />
-    <Content Include="Views\Home\SocialActivityOverlay.cshtml" />
-    <Content Include="Views\Home\AssignmentActivityOverlay.cshtml" />
-    <Content Include="Views\Apps\SearchRedirect.cshtml" />
-    <Content Include="Views\Form\RelationTypeEditForm.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay_4.cshtml" />
-    <Content Include="Views\Apps\Artifacts.cshtml" />
-    <Content Include="Views\Apps\Workflow.cshtml" />
-    <Content Include="Views\Overlays\Issues.cshtml" />
-    <Content Include="Views\Form\DomainXrefItemForm.cshtml" />
-    <Content Include="Views\Form\DomainForm.cshtml" />
-    <Content Include="Views\Overlays\RaiseIssue.cshtml" />
-    <Content Include="Views\Shared\App.cshtml" />
-    <Content Include="Views\Overlays\FusionRules.cshtml" />
-    <Content Include="Views\Form\FusionRuleEditForm.cshtml" />
-    <Content Include="Views\Form\FusionRuleStepEditForm.cshtml" />
-    <Content Include="Views\Form\FusionRuleItemEditForm.cshtml" />
-    <Content Include="Views\Form\FusionRuleStepMappingEditForm.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
     <Content Include="typings.json" />
-    <Content Include="Views\Reports\PowerBIOverlay.cshtml" />
-    <Content Include="Views\Overlays\FusionTechMapping.cshtml" />
-    <Content Include="Views\Overlays\Predicates.cshtml" />
-    <Content Include="Views\Overlays\IntersectRoles.cshtml" />
-    <Content Include="Views\Relations\ImpactAnalysisOverlay.cshtml" />
-    <Content Include="Views\Workflow\WorkflowActionOverlay_5.cshtml" />
-    <Content Include="Views\Form\QuestionTypeEditForm.cshtml" />
-    <Content Include="Views\Relations\Lineage.cshtml" />
-    <Content Include="Views\Relations\Impact.cshtml" />
+    <Content Include="Views\Shared\App.cshtml" />
     <None Include="Web.Client Development.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1224,15 +887,6 @@
       <LastGenOutput>PageInfo.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Shared\CommentCategoriesTree.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Navigation\Top.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Shared\Error.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Authentication\Login.cshtml" />
@@ -1256,9 +910,7 @@
       <LastGenOutput>Validation.Designer.cs</LastGenOutput>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Tiles\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="App_GlobalResources\FormInfo.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>

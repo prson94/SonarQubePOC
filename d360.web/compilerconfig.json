@@ -16,16 +16,6 @@
     "sourceMap": false
   },
   {
-    "outputFile": "Content/styles/d3s.social.css",
-    "inputFile": "Content/styles/d3s.social.less",
-    "sourceMap": false
-  },
-  {
-    "outputFile": "Content/styles/jqx.metro.css",
-    "inputFile": "Content/styles/jqx.metro.less",
-    "sourceMap": false
-  },
-  {
     "outputFile": "Content/styles/navigation.css",
     "inputFile": "Content/styles/navigation.less",
     "sourceMap": false

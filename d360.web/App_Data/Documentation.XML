@@ -1763,113 +1763,45 @@
         </member>
         <member name="T:d360.web.Controllers.Services.DomainsController">
             <summary>
-            This services houses all endpoints handling domain types, groups, lists, and items.
+            This services houses all endpoints handling reference lists, and items.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.AddItemToDomain(System.Int32,System.Int32,d360.core.entities.DomainItem)">
+        <member name="M:d360.web.Controllers.Services.DomainsController.AddItemToList(System.Int32,d360.core.entities.ReferenceItem)">
             <summary>
-            Adds an item to a specified domain.
+            Adds an item to a specified reference.
             </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="listID">The ID of the domain to add the item to.</param>
-            <param name="item">The item to add to the specified domain.</param>
+            <param name="typeID">The ID of the reference type the reference belongs to.</param>
+            <param name="item">The item to add to the specified list.</param>
             <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.AddGroupToType(System.Int32,d360.core.entities.DomainGroup)">
+        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteItemFromList(System.Int32,System.Int32)">
             <summary>
-            Adds a group to a specified domain type.
+            Removes an item from a specified reference, based on its ID.
             </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="group">The group to add to the specified domain type.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.AddDomainToType(System.Int32,d360.core.entities.Domain)">
-            <summary>
-            Adds a domain to a specified domain type.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="list">The list to add to the specified domain type.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteItemFromDomain(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Removes an item from a specified domain, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="listID">The ID of the domain to remove the item from.</param>
+            <param name="typeID">The ID of the reference type the reference belongs to.</param>
             <param name="id">The ID of the item to remove.</param>
             <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteGroupFromType(System.Int32,System.Int32)">
-            <summary>
-            Removes a group from a specified domain type, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="groupID">The ID of the group to remove.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.DeleteListFromType(System.Int32,System.Int32)">
-            <summary>
-            Removes a domain from a specified domain type, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="id">The ID of the list to remove.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.PutItemInDomain(System.Int32,System.Int32,System.Int32,d360.core.entities.DomainItem)">
+        <member name="M:d360.web.Controllers.Services.DomainsController.PutItemInList(System.Int32,System.Int32,d360.core.entities.ReferenceItem)">
             <summary>
             Updates an item in the specified domain, based on its ID.
             </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="listID">The ID of the domain to update the item from.</param>
+            <param name="typeID">The ID of the list.</param>
             <param name="id">The ID of the item to update.</param>
             <param name="item">The item to update</param>
             <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.PutListInType(System.Int32,System.Int32,d360.core.entities.Domain)">
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetLists">
             <summary>
-            Updates a list in the specified domain type, based on its ID.
+            Gets an OData-queryable list of reference types. 
             </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="listID">The ID of the domain to add the item to.</param>
-            <param name="list">The list to update</param>
-            <returns></returns>
+            <returns>A list of reference types.</returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.PutGroupInType(System.Int32,System.Int32,d360.core.entities.DomainGroup)">
+        <member name="M:d360.web.Controllers.Services.DomainsController.GetItemsByList(System.Int32)">
             <summary>
-            Updates a group in the specified domain type, based on its ID.
+            Gets an OData-queryable list of items within a specified reference.
             </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="groupID">The ID of the group to update.</param>
-            <param name="group">The group to update.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetTypes">
-            <summary>
-            Gets an OData-queryable list of domain types. 
-            </summary>
-            <returns>A list of domain types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetGroupsByType(System.Int32)">
-            <summary>
-            Gets an OData-queryable list of groups within a specified domain type.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <returns>A list of groups.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetListsByType(System.Int32)">
-            <summary>
-            Gets an OData-queryable list of domains within a specified domain type.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <returns>A list of domains.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.DomainsController.GetItemsByDomain(System.Int32,System.Int32)">
-            <summary>
-            Gets an OData-queryable list of items within a specified domain.
-            </summary>
-            <param name="typeID">The ID of the domain type the domain belongs to.</param>
-            <param name="listID">The ID of the domain to get the items from.</param>
+            <param name="typeID">The ID of the reference type the reference belongs to.</param>
             <returns>A list of items.</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.GetTaskBreakdownForCurrentUser">
@@ -2307,42 +2239,6 @@
             <param name="ObjectID"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Domain_AddFields(System.Int32,System.Int32)">
-            <param name="t">DomainTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Domain_EditFields(System.Int32)">
-            <param name="id">DomainID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Domain_DeleteFields(System.Int32)">
-            <param name="id">DomainID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainGroup_AddFields(System.Int32)">
-            <param name="t">DomainTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainGroup_DeleteFields(System.Int32)">
-            <param name="id">DomainGroupID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainGroup_EditFields(System.Int32)">
-            <param name="id">DomainGroupID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainItem_AddFields(System.Int32)">
-            <param name="t">DomainID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainItem_DeleteFields(System.Int32)">
-            <param name="id">DomainItemID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainItem_EditFields(System.Int32)">
-            <param name="id">DomainItemID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainItemXref_DeleteFields(System.Int32)">
-            <param name="id">DomainItemXrefID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainType_DeleteFields(System.Int32)">
-            <param name="id">DomainTypeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.DomainType_EditFields(System.Int32)">
-            <param name="id">DomainTypeID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.EmailTemplate_DeleteFields(System.Int32)">
             <param name="id">EmailTemplateID</param>
         </member>
@@ -2699,12 +2595,6 @@
             Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
             </summary>
             <returns>A list of available fusion configurations.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.HomeController.LegacyIndex">
-            <summary>
-            Sammy SPA - Legacy
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.HomeController.App">
             <summary>

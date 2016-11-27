@@ -40,45 +40,6 @@ namespace d360.web.Controllers
 
         #region Partials
 
-        [Route("{typeID:int}/configurations/{id:int}/ownership")]
-        public ActionResult Ownership(int typeID, int id)
-        {
-            ViewData.Add("FusionTypeID", typeID);
-            ViewData.Add("FusionID", id);
-
-            return PartialView();
-        }
-
-        [Route("{typeID:int}/configurations/{id:int}/promotion")]
-        public ActionResult Promotion(int typeID, int id)
-        {
-            ViewData.Add("FusionTypeID", typeID);
-            ViewData.Add("FusionID", id);
-
-            return PartialView();
-        }
-
-        [Route("FusionExecution")]
-        public ActionResult FusionExecution(int id)
-        {
-            return PartialView(new ObjectModel { ObjectType = "FusionExecution", ObjectID = id });
-        }
-
-        [Route("FusionExecutionRawLog")]
-        public ActionResult FusionExecutionRawLog(int id)
-        {
-            //var execution = Company.Query<dynamic>(@"select * from fusion.Execution where ID = @id", new { id = id }).SingleOrDefault();
-            //if (execution == null) return HttpNotFound();
-
-            //var url = "";
-            //if (!string.IsNullOrEmpty(execution.RawLogFileName))
-            //    url = Storage.GetFileSecureUrl(string.Format("bulk-fusion-{0}", Company.CurrentCompanyID), execution.RawLogFileName);
-
-            //ViewBag.LogFileUrl = url;
-
-            return PartialView();
-        }
-
         [Route("_FusionExecutionRawLog")]
         public ContentResult _FusionExecutionRawLog(int id)
         {
@@ -86,24 +47,6 @@ namespace d360.web.Controllers
 
             var bytes = Storage.GetFileAsBytes(string.Format("bulk-fusion-{0}", Company.CurrentCompanyID), execution.RawLogFileName);
             return Content(Encoding.UTF8.GetString(bytes), "application/json");
-        }
-
-        [Route("RelationshipAggregatesOverlay")]
-        public ActionResult RelationshipAggregatesOverlay(SystemObjects type, int id, SystemObjects targetType, int targetID, int parentAttributeID = 0)
-        {
-            var dtl = Company.GetObjectDetail(type, id);
-            ViewBag.Title = (dtl != null) ? string.Format("Relationships for {0}", dtl.Name) : "Relationships";
-            dtl = null;
-
-            ViewBag.Type = type.ToString();
-            ViewBag.ID = id;
-            
-            ViewBag.TargetType = targetType.ToString();
-            ViewBag.TargetID = targetID;
-
-            ViewBag.ParentAttributeID = parentAttributeID;
-
-            return PartialView();
         }
 
         [Route("{typeID:int}/configurations/{id:int}/template/{attributeTypeID:int}"), FileDownload, HttpGet]
@@ -378,22 +321,6 @@ namespace d360.web.Controllers
                 });
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ex.Message);//jsonException(ex.Message, HttpStatusCode.InternalServerError);
             }
-        }
-
-        #endregion
-
-        #region Overlays
-
-        [Route("FusionErrorsProcessOverlay")]
-        public ActionResult FusionErrorsProcessOverlay()
-        {            
-            return PartialView();
-        }
-
-        [Route("FusionErrorsAgentOverlay")]
-        public ActionResult FusionErrorsAgentOverlay()
-        {
-            return PartialView();
         }
 
         #endregion

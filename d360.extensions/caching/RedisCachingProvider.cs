@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using d360.extensions;
 using StackExchange.Redis;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.IO;
 using Newtonsoft.Json;

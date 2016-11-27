@@ -51,16 +51,6 @@ namespace d360.web.Controllers
                     if (at != null) objectName = at.Name;
                     at = null;
                     break;
-                case "Domain":
-                    var d = Company.GetById<Domain>(id);
-                    if (d != null) objectName = d.Name;
-                    d = null;
-                    break;
-                case "DomainType":
-                    var dt = Company.GetById<DomainType>(id);
-                    if (dt != null) objectName = dt.Name;
-                    dt = null;
-                    break;
                 case "Resource":
                     var r = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).SingleOrDefault();
                     if (r != null) objectName = string.Format("{0} {1}", r.FirstName, r.LastName);
@@ -250,10 +240,10 @@ namespace d360.web.Controllers
                         Data = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id).OrderBy(i => i.TextPath).ToList().Select(i => new { Name = i.TextPath, i.ID }),
                         Formatting = Newtonsoft.Json.Formatting.None
                     };
-                case "DomainType":
+                case "ReferenceItemType":
                     return new JsonNetResult
                     {
-                        Data = Company.Filter<Domain>(i => i.DomainTypeID == id).OrderBy(i => i.Name).ToList().Select(i => new { i.Name, i.ID }),
+                        Data = Company.Table<ReferenceItemType>().OrderBy(i => i.Name).ToList().Select(i => new { i.Name, i.ID }),
                         Formatting = Newtonsoft.Json.Formatting.None
                     };
                 case "ResourceType":

@@ -109,8 +109,6 @@
     <Compile Include="entities\FusionQueryAttributeType.cs" />
     <Compile Include="entities\ReferenceItemType.cs" />
     <Compile Include="entities\ReferenceItem.cs" />
-    <Compile Include="entities\DomainItemXref.cs" />
-    <Compile Include="entities\DomainSourceType.cs" />
     <Compile Include="entities\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
@@ -133,9 +131,7 @@
     <Compile Include="entities\Plugins\FusionTypeField.cs" />
     <Compile Include="entities\Plugins\FusionAttributeTypeField.cs" />
     <Compile Include="entities\Environment.cs" />
-    <Compile Include="entities\FieldTypeRelationLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
-    <Compile Include="entities\FieldTypeRelationLookupDisplayField.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\FusionAgentError.cs" />
     <Compile Include="entities\FusionAgentErrorItem.cs" />
@@ -230,10 +226,6 @@
     <Compile Include="entities\Fusion.cs" />
     <Compile Include="entities\Field.cs" />
     <Compile Include="entities\FieldType.cs" />
-    <Compile Include="entities\DomainGroup.cs" />
-    <Compile Include="entities\Domain.cs" />
-    <Compile Include="entities\DomainItem.cs" />
-    <Compile Include="entities\DomainType.cs" />
     <Compile Include="entities\TaxonomyTypeLevel.cs" />
     <Compile Include="entities\Taxonomy.cs" />
     <Compile Include="entities\TaxonomyType.cs" />

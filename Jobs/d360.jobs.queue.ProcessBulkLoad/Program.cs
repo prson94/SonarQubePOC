@@ -251,8 +251,8 @@ namespace d360.jobs.queue.ProcessBulkLoad
                     case "ArtifactType":
                         types = company.Table<ArtifactType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
                         break;
-                    case "DomainType":
-                        types = company.Table<DomainType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
+                    case "ReferenceItemType":
+                        types = company.Table<ReferenceItemType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
                         break;
                     case "FusionType":
                         types = company.Table<FusionType>().Select(i => new SimpleTypeModel { Name = i.Name.ToLower(), ID = i.ID }).ToList();
@@ -360,12 +360,11 @@ namespace d360.jobs.queue.ProcessBulkLoad
                                     .SingleOrDefault();
                                 }
                                 break;
-                            case "DomainType":
-                                verifiedItem = company.Filter<Domain>(x =>
-                                    x.DomainTypeID == verifiedType.ID &&
+                            case "ReferenceItemType":
+                                verifiedItem = company.Filter<ReferenceItemType>(x =>
                                     x.Name.ToLower() == rawItemPath
                                 )
-                                .Select(x => new SimpleTypeModel { Name = "Domain", ID = x.ID })
+                                .Select(x => new SimpleTypeModel { Name = "ReferenceItemType", ID = x.ID })
                                 .SingleOrDefault();
                                 break;
                             case "FusionType":

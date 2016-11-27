@@ -106,22 +106,6 @@ namespace d360.model
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
 
-        public DbSet<DomainAllocationDetail> DomainAllocationDetails { get; set; }      /* VIEW */
-
-        public DbSet<Domain> Domains { get; set; }
-
-        public DbSet<DomainClassification> DomainClassifications { get; set; }
-
-        public DbSet<DomainGroup> DomainGroups { get; set; }
-
-        public DbSet<DomainItem> DomainItems { get; set; }
-
-        public DbSet<DomainItemXref> DomainItemXrefs { get; set; }
-
-        public DbSet<DomainSourceType> DomainSourceTypes { get; set; }
-
-        public DbSet<DomainType> DomainTypes { get; set; }
-
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         public DbSet<Event> Events { get; set; }
@@ -151,10 +135,6 @@ namespace d360.model
         public DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
 
         public DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
-
-        public DbSet<FieldTypeRelationLookupDefinition> FieldTypeRelationLookupDefinitions { get; set; }
-
-        public DbSet<FieldTypeRelationLookupDisplayField> FieldTypeRelationLookupDisplayFields { get; set; }
 
         public DbSet<Follow> Follows { get; set; }
 
@@ -2346,7 +2326,7 @@ order by Name", new { workflowType, type, id });
         {
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<FieldTypeRelationLookupDisplayField>().HasRequired(t => t.FieldTypeRelationLookupDefinition).WithMany(t => t.FieldTypeRelationLookupDisplayFields).HasForeignKey(k => k.FieldTypeRelationLookupDefinitionID).WillCascadeOnDelete(true);
+            modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<Fusion>().HasMany<Artifact>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
                 i.MapLeftKey("FusionID").MapRightKey("ArtifactID").ToTable("FusionOwner");
@@ -2499,89 +2479,6 @@ order by Name", new { workflowType, type, id });
                             break;
                         case EntityState.Modified:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : Domain
-                if (entry.Entity is Domain)
-                {
-                    var o = entry.Entity as Domain;
-                    var id = o.ID.ToString();
-                    var domainTypeID = o.DomainTypeID;
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<Domain>(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Deleted:
-                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Domain" && f.FieldType.LookupObjectID == domainTypeID && f.Value == id);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
-                            any = Any<Intersect>(i => (i.Subject == "Domain" && i.SubjectID == o.ID) || (i.Object == "Domain" && i.ObjectID == o.ID));
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Domain list"), Messages.Error_List_FieldReferences);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<Domain>(i => i.Name == o.Name && i.DomainTypeID == o.DomainTypeID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : DomainGroup
-                if (entry.Entity is DomainGroup)
-                {
-                    var o = entry.Entity as DomainGroup;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<DomainGroup>(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<DomainGroup>(i => i.DomainTypeID == o.DomainTypeID && i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : DomainItem
-                if (entry.Entity is DomainItem)
-                {
-                    var o = entry.Entity as DomainItem;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<DomainItem>(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        //case EntityState.Unchanged:
-                        case EntityState.Modified:
-                            if (Any<DomainItem>(i => ((i.Code == o.Code) || (i.Name == o.Name)) && i.DomainID == o.DomainID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : DomainType
-                if (entry.Entity is DomainType)
-                {
-                    var o = entry.Entity as DomainType;
-                    var id = o.ID.ToString();
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<DomainType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<DomainType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }

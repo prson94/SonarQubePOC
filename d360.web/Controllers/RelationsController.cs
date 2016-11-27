@@ -111,27 +111,27 @@ namespace d360.web.Controllers
 
         #region Json
 
-        [Route("contexts")]
-        public JsonResult IntersectContexts()
-        {
-            var model = (
-                        from d in Company.Table<Domain>()
-                        from i in d.Items
-                        where d.Items.Count > 0
-                        orderby d.DomainType.Name
-                        orderby i.Name
-                        select new
-                        {
-                            i.Code,
-                            i.Name,
-                            i.ID,
-                            List = d.Name,
-                            Type = d.DomainType.Name
-                        })
-                         .ToList();
+        //[Route("contexts")]
+        //public JsonResult IntersectContexts()
+        //{
+        //    var model = (
+        //                from d in Company.Table<Domain>()
+        //                from i in d.Items
+        //                where d.Items.Count > 0
+        //                orderby d.DomainType.Name
+        //                orderby i.Name
+        //                select new
+        //                {
+        //                    i.Code,
+        //                    i.Name,
+        //                    i.ID,
+        //                    List = d.Name,
+        //                    Type = d.DomainType.Name
+        //                })
+        //                 .ToList();
 
-            return Json(model, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(model, JsonRequestBehavior.AllowGet);
+        //}
 
         [HttpGet, Route("Classifications")]
         public JsonResult Classifications()

@@ -14,14 +14,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="Shortcut Icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="/Content/styles/all@(suffix).css?version=@(VersionNumber)" />
-    <script type="text/javascript" src="/scripts/all@(suffix).js?version=@(VersionNumber)"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="/Scripts/jqx/3.7.1/jqx-all.js"></script>
+    <link rel="stylesheet" href="/Content/styles/root@(suffix).css?version=@(VersionNumber)" />
     <script type="text/javascript">
     $(document).ready(function () {
-        $("#UserName").jqxInput({ width: '95%', theme: theme, minLength: 10 });
-        $("#Password").jqxInput({ width: '95%', theme: theme, minLength: 6 });
-        //$("#RememberMe").jqxCheckBox({ width: 25 });
-        $("#LoginButton").jqxButton({ width: '95%' });
+        $("#UserName").jqxInput({ width: '95%', theme: 'd3s', minLength: 10 });
+        $("#Password").jqxInput({ width: '95%', theme: 'd3s', minLength: 6 });
+        $("#LoginButton").jqxButton({ width: '95%', theme: 'd3s' });
         $("#Username").focus();
         $('input').keypress(function (e) {
             if (e.which == 13) {

@@ -61,42 +61,42 @@ namespace d360.web.Controllers
 
         #region Exports
 
-        [Route("{id:int}.xlsx"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id)
-        {
-            var domain = Company.GetById<Domain>(id, i => i.Items);
-            //var items = Company.Filter<DomainItem>(i => i.DomainID == id);
+        //[Route("{id:int}.xlsx"), FileDownload, HttpGet]
+        //public FileResult ToExcel(int id)
+        //{
+        //    var domain = Company.GetById<Domain>(id, i => i.Items);
+        //    //var items = Company.Filter<DomainItem>(i => i.DomainID == id);
 
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
+        //    var document = new SLDocument();
+        //    document.AddWorksheet("Items");
 
-            #region Create the list sheet
+        //    #region Create the list sheet
 
-            int r = 1;
+        //    int r = 1;
 
-            #region Header
+        //    #region Header
 
-            document.SetCellValue(r, 1, "Name");
-            document.SetCellValue(r, 2, "Code");
-            document.SetCellValue(r, 3, "Description");
+        //    document.SetCellValue(r, 1, "Name");
+        //    document.SetCellValue(r, 2, "Code");
+        //    document.SetCellValue(r, 3, "Description");
 
-            #endregion
+        //    #endregion
 
             
-            foreach(var item in domain.Items.OrderBy(i => i.Name))
-            {
-                r++;
-                document.SetCellValue(r, 1, item.Name);
-                document.SetCellValue(r, 2, item.Code);
-                document.SetCellValue(r, 3, item.Description);
-            }
+        //    foreach(var item in domain.Items.OrderBy(i => i.Name))
+        //    {
+        //        r++;
+        //        document.SetCellValue(r, 1, item.Name);
+        //        document.SetCellValue(r, 2, item.Code);
+        //        document.SetCellValue(r, 3, item.Description);
+        //    }
 
-            #endregion
+        //    #endregion
 
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{domain.Name} - Items.xlsx");
-        }
+        //    var stream = new MemoryStream();
+        //    document.SaveAs(stream);
+        //    return File(stream.ToArray(), "application/vnd.ms-excel", $"{domain.Name} - Items.xlsx");
+        //}
 
         #endregion
     }

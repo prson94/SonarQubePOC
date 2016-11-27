@@ -396,7 +396,7 @@ namespace d360.web.Controllers
                                 redirectURL = sendToUrl;
                             }
                         }
-                        catch (Exception ex)
+                        catch
                         {
                             redirectURL = "/#";
                         }

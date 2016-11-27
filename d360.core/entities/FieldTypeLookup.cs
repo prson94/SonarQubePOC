@@ -28,7 +28,7 @@ namespace d360.core.entities
         [DataMember]
         public string Definition { get; set; }
 
-        //[IgnoreDataMember, ForeignKey("FieldTypeID")]
-        //public virtual FieldType FieldType { get; set; }
+        [IgnoreDataMember, ForeignKey("FieldTypeID")]
+        public virtual FieldType FieldType { get; set; }
     }
 }
