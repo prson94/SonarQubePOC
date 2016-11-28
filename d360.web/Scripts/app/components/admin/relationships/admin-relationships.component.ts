@@ -1,9 +1,9 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
-import { Relationship } from '../../models/relationship.model';
+import { MessagesService, HeaderBreadcrumbService, RightSidebarService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
+import { Relationship } from '../../../models/relationship.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-relationships-component',

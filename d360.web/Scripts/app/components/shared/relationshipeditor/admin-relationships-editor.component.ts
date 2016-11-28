@@ -1,8 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
-import { RelationshipsService } from '../../services/index';
-import { RelationshipDetail } from '../../models/relationship.model';
+import { RelationshipsService } from '../../../services/index';
+import { RelationshipDetail } from '../../../models/relationship.model';
 import * as _ from 'lodash';
 
 @Component({

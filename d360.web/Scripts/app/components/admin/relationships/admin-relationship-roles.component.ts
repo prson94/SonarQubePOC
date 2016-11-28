@@ -1,7 +1,7 @@
 ﻿import { Component } from '@angular/core';
-import { RelationshipRole } from '../../models/relationship.model';
-import { MessagesService, RelationshipsService  } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { RelationshipRole } from '../../../models/relationship.model';
+import { MessagesService, RelationshipsService  } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 
 @Component({

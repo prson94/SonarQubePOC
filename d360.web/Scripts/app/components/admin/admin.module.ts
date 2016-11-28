@@ -10,6 +10,7 @@ import { ColorPickerModule } from 'angular2-color-picker';
 
 import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
 
+import { AdminRelationshipEditorModule } from '../shared/relationshipeditor/admin-relationship-editor.module';
 import { AdminRoutingModule } from './admin.routes';
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
@@ -56,7 +57,6 @@ import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
-import { AdminRelationshipsComponent } from './admin-relationships.component';
 import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
@@ -66,7 +66,6 @@ import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
-import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
 import { AdminReportItemsComponent } from './admin-report-items.component';
 import { AdminStatisticEditor } from './admin-statistics-editor.component';
 import { AdminSurveyQuestionEditorEditor } from './admin-survey-question-editor.component';
@@ -77,10 +76,8 @@ import { AdminTemplateEditorComponent } from './admin-template-editor';
 import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
 import { AdminSurveyQuestionsComponent } from './admin-survey-questions.component';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
-import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
-import { AdminRelationshipRolesComponent } from './admin-relationship-roles.component';
 import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 import { ArtifactTypeForm } from './artifact-type.form';
 import { BulkLoadItemComponent } from './bulk-load-item.component';
@@ -91,7 +88,6 @@ import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
 import { IconPickerComponent } from './icon-picker.component';
 import { LoadForm } from './load.form';
-import { PredicatesListComponent } from './predicates-list.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 import { WorkflowItemForm } from './workflow-item.form';
 
@@ -108,8 +104,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminGovernanceComponent,
         AdminGroupsComponent,
         AdminLoadComponent,        
-        AdminPoliciesComponent,
-        AdminRelationshipsComponent,
+        AdminPoliciesComponent,        
         AdminResourcesComponent,
         AdminRulesComponent,
         AdminSettingsComponent,
@@ -120,9 +115,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminWorkflowComponent,
         AdminAttributeTypeEditor,
         AdminDashboardsEditor,        
-        AdminLevelListComponent,
-        AdminRelationshipsEditor,
-        AdminRelationshipsListComponent,
+        AdminLevelListComponent,        
         AdminStatisticEditor,
         AdminSurveyQuestionEditorEditor,
         AdminTaxonomyDetailComponent,
@@ -134,8 +127,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminReportTileEditorComponent,
         AdminRuleDimensionsComponent,
         AdminSurveyQuestionsComponent,
-        AdminModelClassificationComponent,
-        AdminRelationshipRolesComponent,
+        AdminModelClassificationComponent,        
         ArtifactTypeForm,
         BulkLoadItemComponent,
         ClaimsTile,
@@ -144,8 +136,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         FusionConfigurationTile,
         GroupForm,
         IconPickerComponent,
-        LoadForm,
-        PredicatesListComponent,
+        LoadForm,        
         ResponsibilityTypeForm,
         WorkflowItemForm,
 
@@ -181,6 +172,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         ColorPickerModule,
 
         //d3s
+        AdminRelationshipEditorModule,
         CoreModule,
         D3SSharedModule,                
         PipesModule,    
