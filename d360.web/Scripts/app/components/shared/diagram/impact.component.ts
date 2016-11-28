@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
-import { BaseComponent } from './base.component';
-import { PermissionsService, DiagramService } from '../../services/index';
-import { Permission } from '../../models/permission.model';
-import { ImpactDiagramModel, NodeModel, LinkModel } from '../../models/impact.model';
+import { BaseComponent } from '../base.component';
+import { PermissionsService, DiagramService } from '../../../services/index';
+import { Permission } from '../../../models/permission.model';
+import { ImpactDiagramModel, NodeModel, LinkModel } from '../../../models/impact.model';
 import { MenuItem } from 'primeng/primeng';
 
 import * as go from 'gojs';

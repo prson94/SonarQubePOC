@@ -15,6 +15,7 @@ import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 
 import { ModelRoutingModule } from './model.routes';
@@ -78,6 +79,7 @@ import {
         SharedGridPagingInfoModule,
         SharedDashboardModule,
         SharedDeleteFormModule,
+        SharedDiagramModule,
         SharedResponsibilitiesModule,
         TilesModule,
     ],

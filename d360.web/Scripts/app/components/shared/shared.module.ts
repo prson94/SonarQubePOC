@@ -51,19 +51,8 @@ import { FollowerGridComponent } from './follower-grid.component';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
-import { ImpactComponent } from './impact.component';
-import { LineageComponent } from './lineage/lineage.component';
-import { LineageFusionComponent } from './lineage/lineage-fusion.component';
-import { LineageMappingRulesComponent } from './lineage/lineage-mapping-rules.component';
-import { LineageObjectDetailComponent } from './lineage/lineage-object-detail.component';
-import { LineageRelationshipsComponent } from './lineage/lineage-relationships.component';
-import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibilities.component';
-import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
-import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
-import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { MenuPart } from './menu.part';
 import { MessagesBarComponent } from './messages-bar.component';
-import { ModelDiagramComponent } from './model-diagram.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
@@ -75,7 +64,6 @@ import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
-import { OverlayWindowComponent } from './overlay-window.component';
 
 
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
@@ -102,20 +90,9 @@ import { UserListComponent } from './user-list.component';
         FollowerGridComponent,        
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,        
-        GroupMembersComponent,        
-        ImpactComponent,        
-        LineageComponent,
-        LineageFusionComponent,
-        LineageMappingRulesComponent,
-        LineageObjectDetailComponent,
-        LineageRelationshipsComponent,
-        LineageResponsibilitiesComponent,
-        LineageSourceRuleEditorComponent,
-        LineageSourceRulesComponent,
-        LineageTechnicalRelationshipsComponent,
+        GroupMembersComponent,                         
         MenuPart,        
-        MessagesBarComponent,                
-        ModelDiagramComponent, 
+        MessagesBarComponent,                        
         MultiSelectGridComponent,      
         ObjectBoardComponent,        
         ObjectDefinitionTile,
@@ -126,8 +103,7 @@ import { UserListComponent } from './user-list.component';
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,       
-        ObjectRelationshipsComponent, 
-        OverlayWindowComponent,                             
+        ObjectRelationshipsComponent,                                    
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,        
@@ -145,12 +121,9 @@ import { UserListComponent } from './user-list.component';
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent,         
-        GroupMembersComponent,        
-        ImpactComponent,        
-        LineageComponent,        
+        GroupMembersComponent,                             
         MessagesBarComponent,                      
-        MultiSelectGridComponent,
-        ModelDiagramComponent,
+        MultiSelectGridComponent,        
         ObjectBoardComponent,        
         ObjectDefinitionTile,
         ObjectDetailComponent,
@@ -159,8 +132,7 @@ import { UserListComponent } from './user-list.component';
         ObjectGovernanceComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,               
-        ObjectRelationshipsComponent,
-        OverlayWindowComponent,                         
+        ObjectRelationshipsComponent,                           
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,                        
