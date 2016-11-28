@@ -5,38 +5,7 @@ import { Group } from '../../models/group.model';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
-    selector: 'd3s-group-responsibility',
-    styles: [`
-    div.relationship-container{
-        max-height: 360px;min-height:200px;
-        overflow: auto;
-    }
-    div.relationship{
-        padding:5px 3px 5px 0;
-        cursor: pointer; cursor: hand;        
-    }
-    div.relationship .name{
-        text-transform: uppercase;
-        color: rgba(84,164,218,1);
-        font-weight:bold;
-    }
-    div.relationship .count, div.relationship .empty-count{
-        color:#ffffff;        
-        font-weight: bold;
-        padding:2px;
-        border-radius:3px;
-    }
-    div.active{
-        background:#d3d5d8;
-    }
-    div.relationship .count{
-        background-color: rgba(84,164,218,1);
-    }
-    div.relationship .empty-count{
-        background-color:#646464;
-    }
-
-  `],
+    selector: 'd3s-group-responsibility',  
     template: `
                 <header>
                     Items {{group?.Name}} Owns

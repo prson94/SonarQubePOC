@@ -49,7 +49,7 @@ export class FusionManualLoadComponent extends BaseComponent {
     
 
     private fileUploadUrl() {
-        return `fusion/${this.fusion.FusionTypeID}/configurations/${this.fusion.ID}/template/${this.selectedFusionAttributeTypeId}`;
+        return `internal/fusion/${this.fusion.FusionTypeID}/configurations/${this.fusion.ID}/template/${this.selectedFusionAttributeTypeId}`;
     }
 
     private onUpload(event) {
