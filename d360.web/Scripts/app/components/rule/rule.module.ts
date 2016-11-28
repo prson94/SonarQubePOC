@@ -15,6 +15,8 @@ import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { RuleRoutingModule } from './rule.routes';
 
@@ -72,7 +74,9 @@ import {
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedDiagramModule,
+        SharedDynamicGridEditorModule,
         SharedResponsibilitiesModule,
+        SharedRelationshipModule,
     ],
     declarations: [
         RuleComponent,

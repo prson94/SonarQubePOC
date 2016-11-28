@@ -1,9 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { CommonModule } from '@angular/common';
+import { NgModule, Input, Component, EventEmitter, Output, OnChanges, SimpleChange } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/index';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { CoreModule } from './core.module';
 
 @Component({
     selector: 'd3s-fusion-attribute-item-details',
@@ -65,3 +67,23 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionAttributeValueDetails.FusionID};fusionAttributeTypeId=${this.fusionAttributeValueDetails.FusionAttributeTypeID};fusionAttributeId=${this.fusionAttributeId}`);
     }
 };
+
+
+
+@NgModule({
+    declarations: [
+        FusionAttributeItemDetailsComponent,
+    ],
+    exports: [
+        FusionAttributeItemDetailsComponent,
+    ]
+    , imports: [
+        CommonModule,
+        RouterModule,
+
+        CoreModule,
+    ]
+
+})
+
+export class SharedFusionAttributeItemDetailsModule { }

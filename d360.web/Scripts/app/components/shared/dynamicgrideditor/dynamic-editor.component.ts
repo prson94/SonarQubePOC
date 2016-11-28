@@ -1,9 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { EditorDefinitionService, UriBasedService, MessagesService } from '../../services/index';
-import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../models/editor-field.model';
-import { BaseComponent } from './base.component';
+import { EditorDefinitionService, UriBasedService, MessagesService } from '../../../services/index';
+import { EditorField, EditorRow, FieldValidation, EditorDropDownItem } from '../../../models/editor-field.model';
+import { BaseComponent } from '../base.component';
 
 import * as _ from 'lodash';
 

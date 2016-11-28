@@ -18,7 +18,9 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -83,7 +85,9 @@ import {
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedDiagramModule,
+        SharedDynamicGridEditorModule,
         SharedResponsibilitiesModule,
+        SharedRelationshipModule,
         TilesModule,
         WorkflowModule,
         

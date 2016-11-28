@@ -32,44 +32,31 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { TilesModule  } from './tiles/tiles.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from './grid-paging-info.component';
 import { SharedDeleteFormModule } from './delete.form';
-
+import { SimpleAccordionModule } from './simple-accordion.part';
+import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
 import { ActionBar } from './action-bar.part';
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { AttributesTile } from './attributes.tile';
-import { DynamicFieldComponent } from './dynamic-field.component';
-import { DynamicGridComponent } from './dynamic-grid.component';
-import { DynamicEditorComponent } from './dynamic-editor.component';
-import { DynamicFieldValueComponent } from './dynamic-field-value.component';
-import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
-import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { FollowerGridComponent } from './follower-grid.component';
-import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
 import { MenuPart } from './menu.part';
 import { MessagesBarComponent } from './messages-bar.component';
-import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
-import { ObjectDetailComponent } from './object-detail.component';
-import { ObjectDetailField } from './object-detail-field.part';
 import { ObjectFollowersComponent } from './object-followers.component';
 import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthComponent } from './object-health.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
-import { ObjectRelationshipsComponent } from './object-relationships.component';
-
-
-import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
-import { SimpleAccordion } from './simple-accordion.part';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
 import { TakeSurveyComponent } from './take-survey.component';
@@ -80,60 +67,37 @@ import { UserListComponent } from './user-list.component';
     declarations: [
         ActionBar,
         ArtifactStatusComponent,        
-        AttributesTile,                            
-        DynamicEditorComponent,
-        DynamicFieldComponent,
-        DynamicFieldValueComponent,
-        DynamicGridComponent,
-        DynamicLookupGridComponent,
-        DynamicRelationshipGridComponent,                
-        FollowerGridComponent,        
-        FusionAttributeItemDetailsComponent,        
+        AttributesTile,                                                                            
+        FollowerGridComponent,                 
         FusionFiltersComponent,        
         GroupMembersComponent,                         
         MenuPart,        
-        MessagesBarComponent,                        
-        MultiSelectGridComponent,      
+        MessagesBarComponent,                                
         ObjectBoardComponent,        
-        ObjectDefinitionTile,
-        ObjectDetailComponent,
-        ObjectDetailField,
+        ObjectDefinitionTile,        
         ObjectFollowersComponent,
         ObjectGovernanceComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,
-        ObjectIssuesComponent,       
-        ObjectRelationshipsComponent,                                    
-        RelationshipTechnicalRelationsComponent,        
+        ObjectIssuesComponent,                   
         ResourceResponsibilityComponent,        
-        ResourceResponsibilityGridComponent,        
-        SimpleAccordion,        
+        ResourceResponsibilityGridComponent,                
         StructureTile,
         SynonymsTile,
         TakeSurveyComponent,                 
         UserListComponent,        
     ],
-    exports: [                                                   
-        DynamicEditorComponent,        
-        DynamicFieldValueComponent,
-        DynamicGridComponent,
-        DynamicLookupGridComponent,                          
-        FollowerGridComponent, 
-        FusionAttributeItemDetailsComponent,      
+    exports: [                                                                                                               
+        FollowerGridComponent,          
         FusionFiltersComponent,         
         GroupMembersComponent,                             
-        MessagesBarComponent,                      
-        MultiSelectGridComponent,        
+        MessagesBarComponent,                                  
         ObjectBoardComponent,        
-        ObjectDefinitionTile,
-        ObjectDetailComponent,
-        ObjectDetailField,
+        ObjectDefinitionTile,        
         ObjectFollowersComponent,
         ObjectGovernanceComponent,
         ObjectHealthComponent,
-        ObjectHealthDetailsComponent,               
-        ObjectRelationshipsComponent,                           
-        RelationshipTechnicalRelationsComponent,        
+        ObjectHealthDetailsComponent,                              
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,                        
         TakeSurveyComponent,              
@@ -144,8 +108,7 @@ import { UserListComponent } from './user-list.component';
         FormsModule,
         HttpModule,
         RouterModule,
-        ReactiveFormsModule,
-
+        
         //primeng
         GrowlModule,
         InputTextModule,        
@@ -172,7 +135,10 @@ import { UserListComponent } from './user-list.component';
         CoreModule,
         PipesModule,                    
         SharedDeleteFormModule,
+        SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
+        SharedObjectDetailsModule,
+        SimpleAccordionModule,
         SocialModule,
         TilesModule,
         WorkflowModule,        

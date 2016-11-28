@@ -1,9 +1,9 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { RelationshipsService } from '../../services/index';
-import { ObjectRelationshipCount } from '../../models/relationship.model';
-import { DynamicRelationshipGridComponent } from '../shared/dynamic-relationship-grid.component';
-import { Permission } from '../../models/permission.model'
+import { BaseComponent } from '../base.component';
+import { RelationshipsService } from '../../../services/index';
+import { ObjectRelationshipCount } from '../../../models/relationship.model';
+import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
+import { Permission } from '../../../models/permission.model'
 
 @Component({
     selector: 'd3s-object-relationships',

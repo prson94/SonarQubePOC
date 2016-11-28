@@ -1,6 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { BaseComponent } from './base.component';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { BaseComponent } from '../base.component';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-dynamic-field-value',
@@ -58,3 +58,4 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         return 'string';
     }
 }
+

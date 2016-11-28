@@ -15,6 +15,8 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
@@ -73,7 +75,9 @@ import {
         WorkflowModule,
         PipesModule,
         TilesModule,
+        SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
+        SharedObjectDetailsModule,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

@@ -1,11 +1,11 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Router } from '@angular/router';
-import { Lookup, LookupItem } from '../../models/lookup.model';
-import { GridDefinition, GridColumn } from '../../models/grid-definition.model';
-import { MessagesService, GridDefinitionService, RelationshipsService} from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { Lookup, LookupItem } from '../../../models/lookup.model';
+import { GridDefinition, GridColumn } from '../../../models/grid-definition.model';
+import { MessagesService, GridDefinitionService, RelationshipsService} from '../../../services/index';
+import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 declare var CompanySettings;
 

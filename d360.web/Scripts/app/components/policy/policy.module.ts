@@ -16,7 +16,10 @@ import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { PolicyRoutingModule } from './policy.routes';
 
@@ -81,7 +84,10 @@ import {
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedDiagramModule,
+        SharedDynamicGridEditorModule,
+        SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
+        SharedRelationshipModule,
         TilesModule,
     ],
     declarations: [

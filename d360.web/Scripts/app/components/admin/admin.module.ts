@@ -18,8 +18,10 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
 import {    
     InputTextareaModule,
@@ -190,6 +192,8 @@ import { WorkflowItemForm } from './workflow-item.form';
         SharedDeleteFormModule,
         SharedFieldDefinitionModule,
         SharedGridPagingInfoModule, 
+        SharedDynamicGridEditorModule,
+        SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
         TilesModule,  
     ],

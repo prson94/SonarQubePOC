@@ -6,7 +6,7 @@ import { AdminBaseComponent } from './admin-base.component';
 import { FormMode } from '../../models/form.model';
 import { LoadService } from '../../services/load.service';
 import { Title } from '@angular/platform-browser';
-import { ObjectDetailComponent} from '../shared/object-detail.component';
+import { ObjectDetailComponent} from '../shared/objectdetails/object-detail.component';
 import * as _ from 'lodash';
 
 @Component({

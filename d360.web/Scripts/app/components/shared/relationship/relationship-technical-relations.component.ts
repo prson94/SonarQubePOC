@@ -1,10 +1,10 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { MessagesService, RelationshipsService} from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
-import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
-import { ObjectRelationship, PossibleTechnicalRelationship } from '../../models/relationship.model';
-import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
+import { MessagesService, RelationshipsService} from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
+import { FusionAttributeItemDetailsComponent } from '../fusion-attribute-item-details.component';
+import { ObjectRelationship, PossibleTechnicalRelationship } from '../../../models/relationship.model';
+import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
 
 @Component({
     selector: 'd3s-relationship-technical-relations',

@@ -1,10 +1,10 @@
 ﻿import { Component, Input, Output, OnInit } from '@angular/core';
 import { Column } from 'primeng/primeng';
-import { Lookup, LookupItem } from '../../models/lookup.model';
-import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../models/grid-definition.model';
+import { Lookup, LookupItem } from '../../../models/lookup.model';
+import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../../models/grid-definition.model';
 import { Router } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { BaseComponent } from './base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { BaseComponent } from '../base.component';
 
 import * as _ from 'lodash';
 /*

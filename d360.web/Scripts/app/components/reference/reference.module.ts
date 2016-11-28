@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
-import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedAuditModule } from '../shared/audit/shared-audit.module';
@@ -16,6 +15,9 @@ import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-fi
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { ReferenceRoutingModule } from './reference.routes';
 import { ReferenceComponent } from './reference.component';
@@ -50,15 +52,17 @@ import {
         TooltipModule,
         
         //d3s        
-        CoreModule,
-        D3SSharedModule,
+        CoreModule,      
         PipesModule,    
         SharedAuditModule,    
         SharedDeleteFormModule,
         SharedFieldDefinitionModule,
         SharedDiagramModule,
+        SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,   
         SharedResponsibilitiesModule,     
+        SharedObjectDetailsModule,
+        SharedRelationshipModule,
         TilesModule,
     ],
     declarations: [        

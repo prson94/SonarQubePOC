@@ -13,8 +13,11 @@ import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedFusionAttributeItemDetailsModule } from '../shared/fusion-attribute-item-details.component';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
+import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
 import { FusionRoutingModule } from './fusion.routes';
 
@@ -101,8 +104,11 @@ import {
         D3SSharedModule,        
         PipesModule,        
         SharedDeleteFormModule,
+        SharedDynamicGridEditorModule,
+        SharedFusionAttributeItemDetailsModule,
         SharedGridPagingInfoModule,
         SharedResponsibilitiesModule,
+        SharedRelationshipModule,
         TilesModule,
     ],
     declarations: [

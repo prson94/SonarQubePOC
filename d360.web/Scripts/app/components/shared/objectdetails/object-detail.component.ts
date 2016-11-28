@@ -1,7 +1,7 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../models/object-detail.model';
-import { ObjectDetailService } from '../../services/object-detail.service';
-import { LookupGrid } from '../../models/grid-definition.model';
+import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { LookupGrid } from '../../../models/grid-definition.model';
 
 declare var CompanySettings;
 

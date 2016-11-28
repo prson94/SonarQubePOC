@@ -1,6 +1,6 @@
 ﻿import { Input, Component, OnInit, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { DetailRow, DetailField, DetailModel, DetailFieldType, DetailSubField } from '../../models/object-detail.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { DetailRow, DetailField, DetailModel, DetailFieldType, DetailSubField } from '../../../models/object-detail.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 
 @Component({
