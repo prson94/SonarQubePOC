@@ -68,13 +68,13 @@ import { StringConstants } from '../../static/string-constants';
                     </div>
                 </div>                                  
                 <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="artifactType?.ID" objectType="Artifact" [title]="artifactType?.Name + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
                             [itemId]="selected?.ID"
                             method="callback"
                             [prompt]="'Are you sure you want to delete ['+ selected?.Name + ']?'"                                         
                             (onCancel)="showDelete=false;"
-                ></delete-form>  
+                ></d3s-delete-form>  
                 `
 })
 

@@ -269,11 +269,11 @@
 
         <div *ngSwitchCase="FormMode.DeleteMapping">
             <div class="tile tile-detail">
-                <delete-form [uri]="'form/DeleteFusionRuleStepMappingByID?id=' + selectedFusionRuleMapping?.ID"
+                <d3s-delete-form [uri]="'form/DeleteFusionRuleStepMappingByID?id=' + selectedFusionRuleMapping?.ID"
                              [method]="'delete'"
                              [prompt]="'Are you sure you want to delete this fusion rule step mapping?'"
                              (onCancel)="formMode = FormMode.Default;"
-                             (onDeleteComplete)="confirmDeleteMapping()"></delete-form>
+                             (onDeleteComplete)="confirmDeleteMapping()"></d3s-delete-form>
             </div>
         </div>
 

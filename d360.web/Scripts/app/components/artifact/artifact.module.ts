@@ -13,8 +13,11 @@ import { WorkflowModule } from '../workflow/workflow.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
+import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -71,13 +74,17 @@ import {
         ChartModule,
 
         //d3s
-        CoreModule,
         D3SSharedModule,
+        CoreModule,        
         PipesModule,
-        TilesModule,
-        SharedGridPagingInfoModule,
-        WorkflowModule,
+        SharedAuditModule,
         SharedDashboardModule,
+        SharedDeleteFormModule,
+        SharedGridPagingInfoModule,
+        SharedResponsibilitiesModule,
+        TilesModule,
+        WorkflowModule,
+        
     ],
     declarations: [        
         ArtifactColumnFilterComponent,

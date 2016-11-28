@@ -49,12 +49,12 @@
             <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
-            <delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to delete this owner?'"
                          (onDeleteSuccess)="confirmDeleteRow(selectedRow.ID)"
                          (onCancel)="isDeleting=false;">
-            </delete-form>
+            </d3s-delete-form>
         </div>
         <div *ngIf="isAdding">
             <d3s-responsibility-item-form [item]="addingRow" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>

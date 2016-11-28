@@ -56,12 +56,12 @@
     </div>
     <div class="col l6 m12 s12" *ngIf="isDeleting">
         <div class="tile tile-detail">
-            <delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteWorkflowAllocationByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to de-allocate this workflow?'"
                          (onDeleteSuccess)="deleteRow(selectedRow.ID)"
                          (onCancel)="isDeleting=false;">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

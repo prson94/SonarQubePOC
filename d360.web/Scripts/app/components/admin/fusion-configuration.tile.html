@@ -56,12 +56,12 @@
             </d3s-dynamic-editor>
         </div>
         <div *ngSwitchCase="FormModeConfig.Deleting">
-            <delete-form [uri]="'form/DeleteFusionByID?id='+selectedRow.ID"
+            <d3s-delete-form [uri]="'form/DeleteFusionByID?id='+selectedRow.ID"
             [method]="'delete'"
             [prompt]="'Are you sure you want to delete this fusion configuration?'"
             (onCancel)="formMode = FormModeConfig.Default;"
             (onDeleteComplete)="formMode = FormModeConfig.Default; load();">
-            </delete-form>
+            </d3s-delete-form>
         </div>
         <div *ngSwitchCase="FormModeConfig.Filters">
 			<div style="text-align:right;"><a (click)="formMode = FormModeConfig.Default;" style="cursor:pointer;color:black;display:block; padding:0 5px 0 5px; background-color: #c3c3c3;"><i class="fa fa-2x fa-remove"></i></a></div>

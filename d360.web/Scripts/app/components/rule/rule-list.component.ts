@@ -51,13 +51,13 @@ import * as _ from 'lodash';
                                 </div>
                             </div>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                                     [callback]="theDeleteCallback"
                                                     [itemId]="selected?.ID"
                                                     [method]="'callback'"
                                                     [prompt]="'Are you sure you want to delete the selected item?'"                                         
                                                     (onCancel)="showDelete=false;"
-                            ></delete-form>  
+                            ></d3s-delete-form>  
                         </div>                        
                     </div>
                 </div>

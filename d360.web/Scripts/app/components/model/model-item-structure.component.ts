@@ -62,13 +62,13 @@ import { StringConstants } from '../../static/string-constants';
                                     </template>
                         </p-column>       
                     </p-treeTable>                                   
-                    <delete-form *ngIf="showDelete"
+                    <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.data?.id"
                         [method]="'callback'"
                         [prompt]="'Are you sure you want to delete the model item [' + [selected?.data?.name] + ']?'"                                         
                         (onCancel)="showDelete=false;"
-                    ></delete-form>        
+                    ></d3s-delete-form>        
                     <d3s-dynamic-editor rowID="id" *ngIf="showEditor" [objectID]="model.ID" [objectType]="'Taxonomy'" [parentID]="selectedParentID" [title]="'Model Taxonomy'" [selection]="selected?.data" (saveClick)="saveTaxonomy($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>              
                 </div>                
                 `

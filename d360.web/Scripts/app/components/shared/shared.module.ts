@@ -33,6 +33,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { TilesModule  } from './tiles/tiles.module';
 import { SharedGridPagingInfoModule } from './grid-paging-info.component';
+import { SharedDeleteFormModule } from './delete.form';
 
 
 import { ColorPickerModule } from 'angular2-color-picker';
@@ -40,18 +41,13 @@ import { ColorPickerModule } from 'angular2-color-picker';
 import { ActionBar } from './action-bar.part';
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { AttributesTile } from './attributes.tile';
-import { AuditComponent } from './audit.component';
-import { DeleteForm } from './delete.form';
 import { DynamicFieldComponent } from './dynamic-field.component';
 import { DynamicGridComponent } from './dynamic-grid.component';
 import { DynamicEditorComponent } from './dynamic-editor.component';
 import { DynamicFieldValueComponent } from './dynamic-field-value.component';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
-import { FieldDefinitionComponent } from './field-definition.component';
-import { FieldTypeForm } from './field-type.form';
 import { FollowerGridComponent } from './follower-grid.component';
-import { FormMessagePart } from './form-message.part';
 import { FusionAttributeItemDetailsComponent } from './fusion-attribute-item-details.component';
 import { FusionFiltersComponent } from './fusion-filters.component';
 import { GroupMembersComponent } from './group-members.component';
@@ -80,13 +76,11 @@ import { ObjectHealthDetailsComponent } from './object-health-details.component'
 import { ObjectIssuesComponent } from './object-issues.component';
 import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { OverlayWindowComponent } from './overlay-window.component';
-import { PeopleResponsibilitiesTile } from './people-responsibilities.tile';
 
 
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
-import { ResponsibilityItemForm } from './responsibility-item.form';
 import { SimpleAccordion } from './simple-accordion.part';
 import { StructureTile } from './structure.tile';
 import { SynonymsTile } from './synonyms.tile';
@@ -98,19 +92,14 @@ import { UserListComponent } from './user-list.component';
     declarations: [
         ActionBar,
         ArtifactStatusComponent,        
-        AttributesTile,
-        AuditComponent,                
-        DeleteForm,
+        AttributesTile,                            
         DynamicEditorComponent,
         DynamicFieldComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,
         DynamicLookupGridComponent,
-        DynamicRelationshipGridComponent,        
-        FieldDefinitionComponent,
-        FieldTypeForm,
-        FollowerGridComponent,
-        FormMessagePart,
+        DynamicRelationshipGridComponent,                
+        FollowerGridComponent,        
         FusionAttributeItemDetailsComponent,        
         FusionFiltersComponent,        
         GroupMembersComponent,        
@@ -138,11 +127,9 @@ import { UserListComponent } from './user-list.component';
         ObjectHealthDetailsComponent,
         ObjectIssuesComponent,       
         ObjectRelationshipsComponent, 
-        OverlayWindowComponent,        
-        PeopleResponsibilitiesTile,               
+        OverlayWindowComponent,                             
         RelationshipTechnicalRelationsComponent,        
-        ResourceResponsibilityComponent,
-        ResponsibilityItemForm,
+        ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,        
         SimpleAccordion,        
         StructureTile,
@@ -150,14 +137,11 @@ import { UserListComponent } from './user-list.component';
         TakeSurveyComponent,                 
         UserListComponent,        
     ],
-    exports: [                        
-        AuditComponent,                
-        DeleteForm,
+    exports: [                                                   
         DynamicEditorComponent,        
         DynamicFieldValueComponent,
         DynamicGridComponent,
-        DynamicLookupGridComponent,                
-        FieldDefinitionComponent,        
+        DynamicLookupGridComponent,                          
         FollowerGridComponent, 
         FusionAttributeItemDetailsComponent,      
         FusionFiltersComponent,         
@@ -176,8 +160,7 @@ import { UserListComponent } from './user-list.component';
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,               
         ObjectRelationshipsComponent,
-        OverlayWindowComponent,        
-        PeopleResponsibilitiesTile,          
+        OverlayWindowComponent,                         
         RelationshipTechnicalRelationsComponent,        
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,                        
@@ -214,12 +197,13 @@ import { UserListComponent } from './user-list.component';
         ColorPickerModule,
 
         //d3s
-        PipesModule,                    
-        SocialModule,
         CoreModule,
-        TilesModule,
+        PipesModule,                    
+        SharedDeleteFormModule,
         SharedGridPagingInfoModule,
-        WorkflowModule,
+        SocialModule,
+        TilesModule,
+        WorkflowModule,        
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

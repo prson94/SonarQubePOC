@@ -33,12 +33,12 @@
     <div class="root-tile" *ngSwitchCase="FormMode.Deleting">
         //DeleteFusionFilterByID(int fusionID, int fusionAttributeTypeID)
 
-        <delete-form [uri]="'form/DeleteFusionFilterByID?fusionID=' + selectedRow.FusionID + '&fusionAttributeTypeID=' + selectedRow.FusionAttributeTypeID"
+        <d3s-delete-form [uri]="'form/DeleteFusionFilterByID?fusionID=' + selectedRow.FusionID + '&fusionAttributeTypeID=' + selectedRow.FusionAttributeTypeID"
                      [method]="'delete'"
                      [prompt]="'Are you sure you want to delete this filter?'"
                      (onCancel)="formMode = FormMode.Default;"
                      (onDeleteComplete)="formMode = FormMode.Default; load();">
-        </delete-form>
+        </d3s-delete-form>
     </div>
     <div class="root-tile" *ngSwitchCase="FormMode.Adding">
         <div class="row">

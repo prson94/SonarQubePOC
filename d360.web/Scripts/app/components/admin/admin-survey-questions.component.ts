@@ -33,13 +33,13 @@ import { BaseComponent } from '../shared/base.component';
                         </p-column>                                                
                     </p-dataTable>      
                 </span>
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the question [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>  
+                ></d3s-delete-form>  
                 <d3s-admin-survey-question-editor *ngIf="showEditor" [questionId]="selected?.ID" [surveyTypeId]="survey?.ID" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
                 `
 })

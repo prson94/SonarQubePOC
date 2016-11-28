@@ -38,13 +38,13 @@ import { Title } from '@angular/platform-browser';
                                     </p-column>    
                                 </p-dataTable>  
                             </span>
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the dashboard [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>   
+                            ></d3s-delete-form>   
                             <d3s-admin-dashboards-editor *ngIf="!isLoading && showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>                            
                             <span *ngIf="showCredentials">
                                 <form (ngSubmit)="onSubmitPowerCreds()" #powerBICredsForm="ngForm">

@@ -35,13 +35,13 @@
             <d3s-responsibility-type-form [id]="0" (onSaveComplete)="save($event)" (onCancel)="cancel()"></d3s-responsibility-type-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            <delete-form [uri]="'/form/DeleteResponsibilityTypeByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteResponsibilityTypeByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to delete this responsibility type?'"
                          (onDeleteSuccess)="confirmDelete('success')"
                          (onDeleteFail)="confirmDelete('error')"
                          (onCancel)="cancel()">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

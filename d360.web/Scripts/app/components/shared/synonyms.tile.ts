@@ -87,12 +87,12 @@ declare var CompanySettings: any;
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            <delete-form [uri]="'/form/DeleteSynonymByID?id=' + selectedItem.IntersectID"
+            <d3s-delete-form [uri]="'/form/DeleteSynonymByID?id=' + selectedItem.IntersectID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedItem.Name + '?'"
                          (onDeleteSuccess)="load();formMode = FormMode.Default;"
                          (onCancel)="formMode = FormMode.Default;">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

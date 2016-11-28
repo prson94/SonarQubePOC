@@ -38,13 +38,13 @@ import { BaseComponent } from '../shared/base.component';
                         </p-column>                            
                     </p-dataTable>      
                 </span>
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selectedLevel?.Level"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the level [' + [selectedLevel?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form> 
+                ></d3s-delete-form> 
                 <d3s-admin-level-editor *ngIf="showEditor" [maxDepth]="maxDepth" [level]="selectedLevel" [objectId]="objectId" [objectType]="objectType" (closeClick)="closeEditor()" (saveClick)="saveLevel($event)"></d3s-admin-level-editor>                                           
                 `
 })

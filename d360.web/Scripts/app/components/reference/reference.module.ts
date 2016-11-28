@@ -10,7 +10,11 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
+import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 
 import { ReferenceRoutingModule } from './reference.routes';
 import { ReferenceComponent } from './reference.component';
@@ -23,7 +27,7 @@ import {
     ButtonModule,
     DataTableModule,
     EditorModule,
-    GrowlModule,
+    InputTextModule,
     SharedModule,
     TooltipModule,
 } from 'primeng/primeng';
@@ -40,16 +44,20 @@ import {
         ButtonModule,
         DataTableModule,
         EditorModule,
-        GrowlModule,                
+        InputTextModule,                       
         SharedModule,
         TooltipModule,
         
-        //d3s
-        D3SSharedModule,
+        //d3s        
         CoreModule,
-        PipesModule,
+        D3SSharedModule,
+        PipesModule,    
+        SharedAuditModule,    
+        SharedDeleteFormModule,
+        SharedFieldDefinitionModule,
+        SharedGridPagingInfoModule,   
+        SharedResponsibilitiesModule,     
         TilesModule,
-        SharedGridPagingInfoModule,
     ],
     declarations: [        
         ReferenceItemTypeEditorComponent,

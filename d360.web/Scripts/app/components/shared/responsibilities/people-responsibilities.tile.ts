@@ -1,9 +1,9 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { ResponsibilityItem, IResponsibilityService } from '../../models/responsibility.model';
-import { FormMessage } from '../../models/form.model';
-import { ResponsibilityService } from '../../services/responsibility.service';
-import { BaseComponent } from '../shared/base.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { ResponsibilityItem, IResponsibilityService } from '../../../models/responsibility.model';
+import { FormMessage } from '../../../models/form.model';
+import { ResponsibilityService } from '../../../services/responsibility.service';
+import { BaseComponent } from '../../shared/base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router, ActivatedRoute }       from '@angular/router';
 import * as _ from 'lodash';
 

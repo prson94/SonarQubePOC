@@ -1,9 +1,9 @@
 ﻿import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
-import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../models/responsibility.model';
-import { FormMessage, FormHelper } from '../../models/form.model';
+import { ResponsibilityItem, ResponsibilityContextItem, ResponsibilityEditorModel } from '../../../models/responsibility.model';
+import { FormMessage, FormHelper } from '../../../models/form.model';
 import { SelectItem } from 'primeng/primeng';
-import { MessagesService, ResponsibilityService } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { MessagesService, ResponsibilityService } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 
 @Component({

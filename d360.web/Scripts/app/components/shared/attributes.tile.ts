@@ -100,13 +100,13 @@ import * as _ from 'lodash';
                                     (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
                 </div> 
                 <div *ngSwitchCase="FormMode.Deleting">
-                    <delete-form
+                    <d3s-delete-form
                         [uri]="'form/DeleteAttributeByID?id=' + attributeID"
                         [method]="'delete'"
                         [prompt]="'Are you sure you want to remove this attribute?'"
                         (onCancel)="formMode = FormMode.Default"
                         (onDeleteSuccess)="formMode = FormMode.Default">
-                    </delete-form>
+                    </d3s-delete-form>
                 </div>
             </div>
         </div>

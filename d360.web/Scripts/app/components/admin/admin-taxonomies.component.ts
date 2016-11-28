@@ -14,13 +14,13 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
                 <div *ngIf="showEditor || showDelete && !isAuditVisible && !isLoading && !isClassificationsVisible" class="row">
                     <div class="tile tile-detail">                            
                             <d3s-admin-model-editor *ngIf="showEditor" [taxonomy]="selectedTaxonomy" (saveClick)="saveModel($event)" (closeClick)="closeEditor()"></d3s-admin-model-editor>
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                         [callback]="theDeleteCallback"
                                         [itemId]="selectedTaxonomy?.ID"
                                          [method]="'callback'"
                                          [prompt]="'Are you sure you want to delete the model [' + [selectedTaxonomy?.Name] + ']?'"                                         
                                          (onCancel)="showDelete=false;"
-                            ></delete-form>
+                            ></d3s-delete-form>
                     </div>
                 </div>
                 <div *ngIf="!showEditor && !showDelete && !isAuditVisible && !isClassificationsVisible" class="row">

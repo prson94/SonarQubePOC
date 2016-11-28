@@ -34,13 +34,13 @@ import * as _ from 'lodash';
                         </p-dataTable>  
                     </span>
                     <d3s-reference-item-type-editor *ngIf="showEditor" [referenceItemType]="selected" (closeClick)="showEditor = false;" (saveClick)="saveReferenceItemType($event)"></d3s-reference-item-type-editor>
-                    <delete-form *ngIf="showDelete"
+                    <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
                         [itemId]="selected?.ID"
                         [method]="'callback'"
                         [prompt]="'Are you sure you want to delete the selected item?'"                                         
                         (onCancel)="showDelete=false;"
-                    ></delete-form>  
+                    ></d3s-delete-form>  
                 </div>
               `,
     providers: [ReferenceService, PermissionsService],

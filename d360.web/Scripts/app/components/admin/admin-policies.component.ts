@@ -39,13 +39,13 @@ import { Title } from '@angular/platform-browser';
                                 </p-dataTable>      
                             </span>
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'PolicyType'" [title]="'Policy Type'" [selection]="selected" (saveClick)="savePolicyType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the policy type [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>        
+                            ></d3s-delete-form>        
                         </div>
                     </div>               
                     <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">

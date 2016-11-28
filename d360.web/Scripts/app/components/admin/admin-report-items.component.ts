@@ -32,13 +32,13 @@ import { BaseComponent } from '../shared/base.component';
                         </p-column>                            
                     </p-dataTable>  
                 </span>    
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the tile [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>   
+                ></d3s-delete-form>   
                 <d3s-admin-report-tile-editor *ngIf="showEditor" [reportId]="report?.ID" [tile]="selected" (saveClick)="saveTile($event);" (closeClick)="showEditor=false"></d3s-admin-report-tile-editor>              
                 `
 })

@@ -1,8 +1,8 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { FieldDefinition, IFieldsService } from '../../models/fields.model';
-import { FieldsService } from '../../services/fields.service';
-import { MessagesService } from '../../services/messages.service';
-import { BaseComponent } from '../shared/base.component';
+import { FieldDefinition, IFieldsService } from '../../../models/fields.model';
+import { FieldsService } from '../../../services/fields.service';
+import { MessagesService } from '../../../services/messages.service';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -124,26 +124,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     moveUp(field: FieldDefinition) {
 
         this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID)
-            .then(r => {
-                //let thisFieldIndex = this.fieldDefinitions.findIndex(f => f.ID == field.ID);
-                //if (thisFieldIndex > 0) {
-                //    let previousField = this.fieldDefinitions[thisFieldIndex - 1];
-                //    previousField.SortOrder = (parseInt(field.SortOrder) + 1).toString();
-                //}
-                //field.SortOrder = (parseInt(field.SortOrder) - 1).toString();
+            .then(r => {                
                 this.load();
             });
     }
 
     moveDown(field: FieldDefinition) {
         this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID)
-            .then(r => {
-                //let thisFieldIndex = this.fieldDefinitions.findIndex(f => f.ID == field.ID);
-                //if (thisFieldIndex < this.fieldDefinitions.length - 1) {
-                //    let nextField = this.fieldDefinitions[thisFieldIndex + 1];
-                //    nextField.SortOrder = (parseInt(field.SortOrder) - 1).toString();
-                //}
-                //field.SortOrder = (parseInt(field.SortOrder) + 1).toString();
+            .then(r => {                
                 this.load();
             });
     }

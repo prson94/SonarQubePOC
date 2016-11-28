@@ -1,11 +1,11 @@
 ﻿import { Component, Input} from '@angular/core';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, AuditService  } from '../../services/index';
-import { Audit } from '../../models/audit.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService, AuditService  } from '../../../services/index';
+import { Audit } from '../../../models/audit.model';
 import { LazyLoadEvent } from 'primeng/primeng';
-import { SortOrder } from '../../models/enums.model';
-import { GridFilterExpression } from '../../models/grid-definition.model';
-import { BaseComponent } from './base.component';
+import { SortOrder } from '../../../models/enums.model';
+import { GridFilterExpression } from '../../../models/grid-definition.model';
+import { BaseComponent } from '../base.component';
 
 @Component({
     selector: 'd3s-audit',

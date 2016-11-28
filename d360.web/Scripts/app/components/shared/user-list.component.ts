@@ -64,13 +64,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                     </div>
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" objectType="ResourceType" title="Resource" [selection]="selected" rowID="ResourceID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
                                 method="callback"
                                 [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                ></delete-form>
+                ></d3s-delete-form>
                 `
 })
 

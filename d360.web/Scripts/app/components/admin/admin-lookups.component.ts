@@ -38,13 +38,13 @@ import { Title } from '@angular/platform-browser';
                                     </p-column>                            
                                 </p-dataTable>  
                             </span> 
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selectedLookup?.ID"
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the lookup [' + [selectedLookup?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>  
+                            ></d3s-delete-form>  
                             <d3s-admin-lookup-type-editor *ngIf="showEditor" [lookup]="selectedLookup" (saveClick)="saveLookup($event)" (closeClick)="closeEditor()"></d3s-admin-lookup-type-editor>                       
                         </div>
                     </div>                    

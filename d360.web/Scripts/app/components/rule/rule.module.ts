@@ -10,7 +10,10 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
+import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 
 import { RuleRoutingModule } from './rule.routes';
 
@@ -64,7 +67,10 @@ import {
         D3SSharedModule,
         PipesModule,
         TilesModule,
+        SharedAuditModule,
         SharedGridPagingInfoModule,
+        SharedDeleteFormModule,
+        SharedResponsibilitiesModule,
     ],
     declarations: [
         RuleComponent,

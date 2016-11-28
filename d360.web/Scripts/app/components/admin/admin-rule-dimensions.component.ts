@@ -39,13 +39,13 @@ import { BaseComponent } from '../shared/base.component';
                     </p-dataTable> 
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'RuleDimension'" [title]="'Rule Dimension'" [selection]="selected" (saveClick)="saveDimension($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the dimension [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>              
+                ></d3s-delete-form>              
                 `
 })
 

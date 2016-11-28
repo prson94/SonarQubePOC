@@ -46,13 +46,13 @@ import { Title } from '@angular/platform-browser';
                 </div>  
                 <div class="col" [ngClass]="{'s4':isDeleting||isEditing||isAdding}">
                     <div class="tile tile-detail" *ngIf="isDeleting">
-                    <delete-form 
+                    <d3s-delete-form 
                                         [callback]="theDeleteCallback"
                                         [itemId]="selectedTemplate.ID"
                                          [method]="'callback'"
                                          [prompt]="'Are you sure you want to delete ' + [selectedTemplate.Name] + '?'"                                         
                                          (onCancel)="isDeleting=false;"
-                                ></delete-form>
+                                ></d3s-delete-form>
                     </div>
                     <div class="tile tile-detail" *ngIf="isEditing">
                     <d3s-admin-template-editor

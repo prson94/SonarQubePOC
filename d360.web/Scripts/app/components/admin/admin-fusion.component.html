@@ -129,12 +129,12 @@
 
     <div class="col l9 m12 s12" *ngIf="formMode == FormMode.Deleting">
         <div class="tile tile-detail">
-            <delete-form [uri]="'/form/DeleteFusionTypeByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteFusionTypeByID?id=' + selectedRow.ID"
                             [method]="'delete'"
                             [prompt]="'Are you sure you want to delete the ' + selectedRow.Name + ' fusion type?'"
                             (onDeleteSuccess)="formMode = FormMode.Default; load();"
                             (onCancel)="formMode = FormMode.Default;">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

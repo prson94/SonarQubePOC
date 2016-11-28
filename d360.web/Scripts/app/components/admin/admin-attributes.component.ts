@@ -32,13 +32,13 @@ import { Title } from '@angular/platform-browser';
                                     </p-column>
                                 </p-treeTable>      
                             </span>
-                            <delete-form *ngIf="showDelete"
+                            <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.data?.ID"
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the attribute type [' + [selected?.data?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
-                            ></delete-form>   
+                            ></d3s-delete-form>   
                             <d3s-admin-attribute-type-editor *ngIf="showEditor && !isLoading" [parentID]="parentID" [attribute]="selected?.data" (saveClick)="saveAttributeType($event)" (closeClick)="closeEditor()"></d3s-admin-attribute-type-editor>
                         </div>
                     </div>                    

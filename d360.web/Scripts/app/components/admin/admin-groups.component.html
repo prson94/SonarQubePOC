@@ -43,13 +43,13 @@
             <d3s-group-form [id]="selectedRow.ID" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            <delete-form [uri]="'/form/DeleteGroupByID?id=' + selectedRow.ID"
+            <d3s-delete-form [uri]="'/form/DeleteGroupByID?id=' + selectedRow.ID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
                          (onDeleteSuccess)="confirmDelete($event);"
                          (onDeleteFail)="errorDelete($event)"
                          (onCancel)="cancel();">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

@@ -11,8 +11,11 @@ import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
+import { SharedAuditModule } from '../shared/audit/shared-audit.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module'
+import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.module';
+import { SharedDeleteFormModule } from '../shared/delete.form';
+import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 
 import { ModelRoutingModule } from './model.routes';
 
@@ -70,10 +73,13 @@ import {
         //d3s
         CoreModule,
         D3SSharedModule,
-        PipesModule,
-        TilesModule,
+        PipesModule,  
+        SharedAuditModule,      
         SharedGridPagingInfoModule,
         SharedDashboardModule,
+        SharedDeleteFormModule,
+        SharedResponsibilitiesModule,
+        TilesModule,
     ],
     declarations: [
         ModelComponent,

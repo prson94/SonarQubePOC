@@ -1,10 +1,12 @@
-﻿import { Input, Output, Component, EventEmitter } from '@angular/core';
+﻿import { CommonModule }       from '@angular/common';
+import { NgModule, Input, Output, Component, EventEmitter } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { FormMessage} from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
+import { SharedFormMessageModule } from './form-message.part';
 
 @Component({
-    selector: 'delete-form',
+    selector: 'd3s-delete-form',
     templateUrl: './delete.form.html',    
 })
 
@@ -87,8 +89,7 @@ export class DeleteForm {
                 this.http.delete(this.uri)
                     .map(data => data.json())
                     .subscribe(
-                    data => {
-                        //console.log(data);
+                    data => {                        
                         var r = new JsonResult(data);
                         if (r.isError) {
                             this.message.Error(r.message);
@@ -116,3 +117,21 @@ export class DeleteForm {
         this.onCancel.emit(null);
     }
 }
+
+
+@NgModule({
+    declarations: [
+        DeleteForm,        
+    ],
+    exports: [
+        DeleteForm,        
+    ]
+    , imports: [
+        CommonModule,
+
+        SharedFormMessageModule,
+    ]
+
+})
+
+export class SharedDeleteFormModule { }

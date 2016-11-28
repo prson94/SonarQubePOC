@@ -42,12 +42,12 @@
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            <delete-form [uri]="'/form/ResourceGroup?groupID=' + selectedRow.GroupID + '&resourceID=' + selectedRow.ResourceID"
+            <d3s-delete-form [uri]="'/form/ResourceGroup?groupID=' + selectedRow.GroupID + '&resourceID=' + selectedRow.ResourceID"
                          [method]="'delete'"
                          [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + item.Name + '?'"
                          (onDeleteSuccess)="confirmDelete()"
                          (onCancel)="cancel();">
-            </delete-form>
+            </d3s-delete-form>
         </div>
     </div>
 </div>

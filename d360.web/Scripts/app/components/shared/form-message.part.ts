@@ -1,5 +1,5 @@
-﻿
-import {Input, Component, OnInit } from '@angular/core';
+﻿import { CommonModule }       from '@angular/common';
+import {NgModule, Input, Component, OnInit } from '@angular/core';
 import { FormMessage, MessageType } from '../../models/form.model';
 
 
@@ -76,5 +76,19 @@ export class FormMessagePart implements OnInit {
             this.messages.push(this.message);
         }
     }
-
 }
+
+@NgModule({
+    declarations: [
+        FormMessagePart,
+    ],
+    exports: [
+        FormMessagePart,
+    ]
+    , imports: [
+        CommonModule
+    ]
+
+})
+
+export class SharedFormMessageModule { }

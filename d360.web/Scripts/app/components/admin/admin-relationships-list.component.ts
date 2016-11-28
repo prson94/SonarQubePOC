@@ -45,13 +45,13 @@ import * as _ from 'lodash';
                         </p-dataTable>  
                     </div>
                 </div>
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the relationship [' + [selected?.SubjectName] + ' / ' + [selected?.ObjectName]  + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>  
+                ></d3s-delete-form>  
                 <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.ID" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>       
             `    
 })

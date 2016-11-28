@@ -36,13 +36,13 @@ import * as _ from 'lodash';
                         </p-dataTable>                          
                 </span>
                 <d3s-dynamic-editor *ngIf="showEditor" rowID="ObjectID" [editParams]="editParams" [parentID]="attributeID" [objectID]="selected?.ObjectID" objectType="AttributeAllocation" title="Attribute Allocation" [selection]="selected" (saveClick)="saveAllocation($event)" (closeClick)="this.showEditor = false;"></d3s-dynamic-editor>     
-                <delete-form *ngIf="showDelete"
+                <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the attribute allocation to [' + [selected?.ObjectName] + ']?'"                                         
                     (onCancel)="showDelete=false;"
-                ></delete-form>  
+                ></d3s-delete-form>  
                 `
 })
 

@@ -1,10 +1,10 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { FieldType, FieldTypeEditorModel, FilteredLookupItem, FilteredLookupDisplayField, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../models/fields.model';
-import { FieldsService } from '../../services/fields.service';
-import { MessagesService } from '../../services/messages.service';
-import { ObjectDetailService } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { FieldType, FieldTypeEditorModel, FilteredLookupItem, FilteredLookupDisplayField, Lookups, FieldTypeFusionItemEditorModel, FieldTypeFusionLookupDisplayField, FieldTypeRelationItemEditorModel, ComplexLookupRelationType, FieldTypeItemDisplayFieldEditorModel } from '../../../models/fields.model';
+import { FieldsService } from '../../../services/fields.service';
+import { MessagesService } from '../../../services/messages.service';
+import { ObjectDetailService } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
 

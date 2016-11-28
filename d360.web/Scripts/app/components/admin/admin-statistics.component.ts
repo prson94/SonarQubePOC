@@ -16,13 +16,13 @@ import { Title } from '@angular/platform-browser';
                     </div>
                     <div class="col s12" *ngIf="showDelete">
                         <div class="tile tile-detail">
-                            <delete-form
+                            <d3s-delete-form
                                     [callback]="theDeleteCallback"
                                     [itemId]="selected?.ID"
                                     [method]="'callback'"
                                     [prompt]="'Are you sure you want to delete the Analytic type [' + [selected?.Name] + ']?'"                                         
                                     (onCancel)="showDelete=false;"
-                                ></delete-form>
+                                ></d3s-delete-form>
                         </div>
                     </div>
                     <div class="col l6 s12" *ngIf="!showEditor && !showDelete">                    
