@@ -45,7 +45,7 @@ import { TreeNode, Column } from 'primeng/primeng';
         </div> 
         <div class="row" style="margin-top: 20px">
             <div class="col s12">
-                <button type="button" label="Save" pButton (click)="save();"></button>
+                <button type="button" label="Save" pButton (click)="save();" [disabled]="isLoading"></button>
                 <button type="button" label="Cancel" pButton (click)="onClose.emit()"></button>
             </div>
         </div>
@@ -249,20 +249,25 @@ export class FusionRuleStepComponent extends BaseComponent implements OnInit {
     //}
 
     save() {
+        if (this.isLoading) return;
         //console.log(this.model.RuleStep.Settings);
         if (this.ruleStepID && this.ruleStepID != 0) {
             //edit
             //this.saveSettings();
+            this.isLoading = true;
             this.fusionService.putEditFusionRuleStep(this.model.RuleStep)
                 .then(r => {
                     this.onSave.emit(r);
+                    this.isLoading = false;
                 });
         } else {
             //add
             //this.saveSettings();
+            this.isLoading = true;
             this.fusionService.postAddFusionRuleStep(this.model.RuleStep)
                 .then(r => {
                     this.onSave.emit(r);
+                    this.isLoading = false;
                 });
         }
     }

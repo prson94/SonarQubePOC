@@ -13,7 +13,7 @@ import * as _ from 'lodash';
     template:
     `
         <span (click)="handleClick()" class="favorite" [ngClass]="{'active':isFavoriteItem}" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
-            <i *ngIf="!isLoading" class="fa fa-star"></i>            
+            <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>        
         </span>
     `,
     providers: [FavoritesService]

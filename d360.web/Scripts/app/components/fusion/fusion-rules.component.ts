@@ -118,28 +118,34 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
         this.addFusionRule = new FusionRule();
         this.addFusionRule.FusionID = this.fusionID;
         this.addFusionRule.Description = "";
+        this.isLoading = true;
         this.fusionService.getAddFusionRule(this.fusionTypeID)
             .then(r => {
                 this.addFusionAttributeTypes = r;
                 this.formMode = FormMode.AddRule;
+                this.isLoading = false;
             });
     }
 
     saveAddRule() {
+        this.isLoading = true;
         this.fusionService.postAddFusionRule(this.addFusionRule)
             .then(r => {
                 this.formMode = FormMode.Default;
                 this.showMessageForResult(this.messagesService, r);
                 this.loadRules();
+                this.isLoading = false;
             });
     }
 
     editRule(row: FusionRule) {
         this.selectedFusionRule = row;
+        this.isLoading = true;
         this.fusionService.getEditFusionRule(this.selectedFusionRule.ID)
             .then(r => {
                 this.fusionRuleEditorModel = r;                
                 this.formMode = FormMode.EditRule;
+                this.isLoading = false;
             });
     }
 
@@ -149,20 +155,24 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     confirmDeleteRule() {
+        this.isLoading = true;
         this.fusionService.deleteFusionRuleById(this.selectedFusionRule.ID)
             .then(r => {
                 this.formMode = FormMode.Default;
                 this.showMessageForResult(this.messagesService, r);
+                this.isLoading = false;
                 this.loadRules();
             });
     }
 
     saveRule() {
+        this.isLoading = true;
         this.fusionService.postEditFusionRule(this.fusionRuleEditorModel.Rule)
             .then(r => {
                 this.formMode = FormMode.Default;
                 this.showMessageForResult(this.messagesService, r);
                 this.loadRules();
+                this.isLoading = false;
             });
     }
 
@@ -177,11 +187,13 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     confirmDeleteStep() {
+        this.isLoading = true;
         this.fusionService.deleteFusionRuleStep(this.selectedFusionRuleStep.RuleID, this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.loadSteps();
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+                this.isLoading = false;
             });
     }
 
@@ -243,6 +255,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
 
     saveAddItem() {
         let form: any = {};
+        this.isLoading = true;
         
         form.RuleID = this.selectedFusionRule.ID;
         form.AllSelected = this.selectAllItems;
@@ -255,6 +268,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
                 this.selectAllItems = false;
                 this.addItemSearch = '';
                 this.attributeNodes = [];
+                this.isLoading = false;
                 this.loadRules();
             });        
     }
@@ -281,26 +295,31 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     confirmDeleteItem() {
+        this.isLoading = true;
         this.fusionService.deleteFusionRuleItem(this.selectedFusionRuleItem.ID)
             .then(r => {
                 this.loadSteps();
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+                this.isLoading = false;
             });
     }
 
     editMapping(row: FusionRuleMapping) {
+        this.isLoading = true;
         this.fusionService.getEditFusionRuleStepMapping(row.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
                 this.fusionRuleMappingEditorModel.sourceValue = this.fusionRuleMappingEditorModel.Item.SourceFieldName + '|' + this.fusionRuleMappingEditorModel.Item.SourceFieldTypeID.toString();
                 this.fusionRuleMappingEditorModel.targetValue = this.fusionRuleMappingEditorModel.Item.TargetFieldName + '|' + this.fusionRuleMappingEditorModel.Item.TargetFieldTypeID.toString();
 
-                this.formMode = FormMode.EditMapping;                
+                this.formMode = FormMode.EditMapping;  
+                this.isLoading = false;              
             });
     }
 
     saveEditMapping() {
+        this.isLoading = true;
         let m = this.fusionRuleMappingEditorModel.Item;
 
         if (!m.IsConstantValue) {
@@ -320,6 +339,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+                this.isLoading = false;
             })
             .then(r => {
                 this.loadMappings();
@@ -328,16 +348,20 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     addMapping() {
-        if (this.selectedFusionRuleStep == null || this.selectedFusionRuleStep.ID == null)
+        if (this.selectedFusionRuleStep == null || this.selectedFusionRuleStep.ID == null || this.isLoading)
             return;
+        this.isLoading = true;
         this.fusionService.getAddFusionRuleStepMapping(this.selectedFusionRuleStep.ID)
             .then(r => {
                 this.fusionRuleMappingEditorModel = r;
-                this.formMode = FormMode.AddMapping;                
+                this.formMode = FormMode.AddMapping;   
+                this.isLoading = false;             
             });
     }
 
     saveAddMapping() {
+        if (this.isLoading) return;
+        this.isLoading = true;
         let m = this.fusionRuleMappingEditorModel.Item;
 
         if (!m.IsConstantValue) {
@@ -353,6 +377,7 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
             .then(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+                this.isLoading = false;
             }).then(() => {
                 this.loadMappings();
             });
@@ -364,11 +389,15 @@ export class FusionRulesComponent extends BaseComponent implements OnInit {
     }
 
     confirmDeleteMapping() {
+        if (this.isLoading) return;
+
+        this.isLoading = true;
         this.fusionService.deleteFusionRuleStepMapping(this.selectedFusionRuleMapping.ID)
             .then(r => {
                 this.loadSteps();
                 this.showMessageForResult(this.messagesService, r);
                 this.formMode = FormMode.Default;
+                this.isLoading = false;
             });
     }
 
