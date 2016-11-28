@@ -10,7 +10,7 @@ import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminLookupsComponent } from './admin-lookups.component';
+//import { AdminLookupsComponent } from './admin-lookups.component';
 import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
@@ -37,7 +37,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, component: AdminLoadComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: AdminDashboardsComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, component: AdminGroupsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, component: AdminLookupsComponent },
+            //{ path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, component: AdminLookupsComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, component: AdminRelationshipsComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: AdminResourcesComponent },
@@ -47,7 +47,9 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, component: AdminSurveysComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: AdminTaxonomiesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES, component: AdminTemplatesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, component: AdminWorkflowComponent }
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, component: AdminWorkflowComponent },
+            //lazy load
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: './lookups/admin-lookups.module#AdminLookupsModule?chunkName=adminLookupsChunk' }, 
         ]
     }
 ];

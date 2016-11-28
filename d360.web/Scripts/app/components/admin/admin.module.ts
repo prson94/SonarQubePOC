@@ -53,7 +53,6 @@ import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminLookupsComponent } from './admin-lookups.component';
 import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
@@ -67,7 +66,6 @@ import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
-import { AdminLookupTypeEditorComponent } from './admin-lookup-type-editor.component';
 import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
 import { AdminReportItemsComponent } from './admin-report-items.component';
 import { AdminStatisticEditor } from './admin-statistics-editor.component';
@@ -109,8 +107,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminFusionComponent,
         AdminGovernanceComponent,
         AdminGroupsComponent,
-        AdminLoadComponent,
-        AdminLookupsComponent,
+        AdminLoadComponent,        
         AdminPoliciesComponent,
         AdminRelationshipsComponent,
         AdminResourcesComponent,
@@ -122,8 +119,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminTemplatesComponent,
         AdminWorkflowComponent,
         AdminAttributeTypeEditor,
-        AdminDashboardsEditor,
-        AdminLookupTypeEditorComponent,
+        AdminDashboardsEditor,        
         AdminLevelListComponent,
         AdminRelationshipsEditor,
         AdminRelationshipsListComponent,

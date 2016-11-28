@@ -972,8 +972,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-load.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookup-type-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-lookups.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-policies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-resources.component.ts" />
@@ -990,6 +990,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item-children.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.module.ts" />

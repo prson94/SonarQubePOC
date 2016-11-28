@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, LookupService, RightSidebarService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
-import { Lookup } from '../../models/lookup.model';
+import { MessagesService, HeaderBreadcrumbService, LookupService, RightSidebarService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
+import { Lookup } from '../../../models/lookup.model';
 import { Title } from '@angular/platform-browser';
 
 
