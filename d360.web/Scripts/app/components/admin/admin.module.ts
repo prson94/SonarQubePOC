@@ -36,37 +36,24 @@ import {
     SharedModule,
 } from 'primeng/primeng';
 
-import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
-import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminComponent } from './admin.component';
-import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
-import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
-import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
-import { AdminModelClassificationComponent } from './admin-model-classification.component';
+
 import { ArtifactTypeForm } from './artifact-type.form';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
 
 @NgModule({
-    declarations: [
-        AdminAttributeAllocationComponent,
+    declarations: [        
         AdminArtifactsComponent,
-        AdminComponent,
-        AdminAttributesComponent,        
-        AdminTaxonomiesComponent,
-        AdminAttributeTypeEditor,
+        AdminComponent,                
         AdminLevelListComponent,
-        AdminTaxonomyDetailComponent,
-        AdminTaxonomyEditorComponent,
-        AdminLevelEditorComponent,                
-        AdminModelClassificationComponent,        
-        ArtifactTypeForm,                
+        AdminLevelEditorComponent,        
+        ArtifactTypeForm,
         ClaimsMatrixPart,
-        ClaimsTile,                                
+        ClaimsTile,                          
     ],
     exports: [
         ClaimsTile,

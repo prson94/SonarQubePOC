@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { MessagesService, AttributeTypeService  } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
-import { AttributeType, AttributeTypeAllocation } from '../../models/attribute-type.model';
+import { MessagesService, AttributeTypeService  } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
+import { AttributeType, AttributeTypeAllocation } from '../../../models/attribute-type.model';
 import * as _ from 'lodash';
 
 @Component({

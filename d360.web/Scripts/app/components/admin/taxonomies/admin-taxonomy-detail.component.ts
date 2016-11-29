@@ -1,6 +1,6 @@
 ﻿import { Component, Input} from '@angular/core';
-import { Taxonomy } from '../../models/taxonomy.model';
-import { MessagesService } from '../../services/index';
+import { Taxonomy } from '../../../models/taxonomy.model';
+import { MessagesService } from '../../../services/index';
 
 @Component({
     selector: 'd3s-admin-model-detail-component',

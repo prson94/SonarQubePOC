@@ -1,9 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { AttributeTypeService, FieldsService } from '../../services/index';
-import { AttributeType } from '../../models/attribute-type.model';
-import { DropdownOption } from '../../models/dropdown.model';
+import { AttributeTypeService, FieldsService } from '../../../services/index';
+import { AttributeType } from '../../../models/attribute-type.model';
+import { DropdownOption } from '../../../models/dropdown.model';
 
 import * as _ from 'lodash';
 

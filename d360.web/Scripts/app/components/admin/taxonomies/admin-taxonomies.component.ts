@@ -1,10 +1,10 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { Taxonomy} from '../../models/taxonomy.model';
-import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, RightSidebarService, StateService } from '../../services/index';
-import { AdminBaseComponent} from './admin-base.component';
-import { FieldDefinition } from '../../models/fields.model';
+import { Taxonomy} from '../../../models/taxonomy.model';
+import { MessagesService, HeaderBreadcrumbService, TaxonomiesService, FieldsService, RightSidebarService, StateService } from '../../../services/index';
+import { AdminBaseComponent} from '../admin-base.component';
+import { FieldDefinition } from '../../../models/fields.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-models-component',    
