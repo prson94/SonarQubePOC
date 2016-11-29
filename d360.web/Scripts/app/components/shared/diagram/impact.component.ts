@@ -61,9 +61,9 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.menuItems.push({
             icon: 'fa-refresh menu-icon'
         });
-        this.menuItems.push({
-            icon: 'fa-sitemap menu-icon'
-        });
+        //this.menuItems.push({
+        //    icon: 'fa-sitemap menu-icon'
+        //});
         this.menuItems.push({
             icon: 'fa-info-circle menu-icon'
         });
@@ -78,10 +78,12 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private initializeDiagram() {
         this.myDiagram = this.createDiagram();
 
+        this.myDiagram.nodeTemplateMap.add("", this.createDefaultNode());
         this.myDiagram.nodeTemplateMap.add("NonFocal", this.createNonFocalNode());
         this.myDiagram.nodeTemplateMap.add("Category", this.createCategoryNode());
-        this.myDiagram.nodeTemplateMap.add("", this.createDefaultNode());
-        this.myDiagram.linkTemplate = this.createLinkTemplate();
+
+        this.myDiagram.linkTemplateMap.add("", this.createLinkTemplate());
+        this.myDiagram.linkTemplateMap.add("Category", this.createCategoryLinkTemplate());
 
         this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
@@ -111,7 +113,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                     n.everExpanded = isFocal;
                     n.isTreeExpanded = isFocal;
-                    n.template = isFocal ? "" : "NonFocal";
+                    n.category = isFocal ? "" : "NonFocal";
 
                     let predicate = this.predicates.find(p => p.id == n.predicateid);
                     if (predicate == null && n.predicateid != null)
@@ -127,6 +129,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
                 this.isLoading = false;
+            }).then(() => {
+                this.myDiagram.zoomToFit();
             });
     }
 
@@ -160,7 +164,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
             let node = new NodeModel();
             node.key = root.key + '|' + c.type + c.id;
-            node.template = 'Category';
+            node.category = 'Category';
             node.name = c.count + ' ' + c.name;
             node.fore = c.fore;
             node.back = c.back;
@@ -169,6 +173,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             let link = new LinkModel();
             link.from = root.key
             link.to = node.key;
+            link.category = 'Category';
 
             nodes.filter(n => n.typeId == c.id && n.type == c.type).forEach(n => {
                 if (n.key == root.key)
@@ -224,7 +229,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     r.nodes.forEach(n => {
                         if (!(n.obj == data.obj && n.objid == data.objid)) {
                             n.everExpanded = false;
-                            n.template = 'NonFocal';
+                            n.category = 'NonFocal';
 
                             let allowAdd = true;
 
@@ -271,25 +276,25 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                         this.addCategoryLayer(node.data, nodes, links);
                     }
 
+                })
+                .then(() => {
+                    if (node.isTreeExpanded) {
+                        diagram.commandHandler.collapseTree(node);
+                    } else {
+                        diagram.commandHandler.expandTree(node);
+                    }
+                    diagram.commitTransaction("CollapseExpandTree");
+                    this.myDiagram.zoomToFit();
                 });
-        }
-        if (node.isTreeExpanded) {
-            diagram.commandHandler.collapseTree(node);
         } else {
-            diagram.commandHandler.expandTree(node);
+            if (node.isTreeExpanded) {
+                diagram.commandHandler.collapseTree(node);
+            } else {
+                diagram.commandHandler.expandTree(node);
+            }
+            diagram.commitTransaction("CollapseExpandTree");
+            this.myDiagram.zoomToFit();
         }
-        diagram.commitTransaction("CollapseExpandTree");
-        this.myDiagram.zoomToFit();
-    }
-
-    private htmlDecode(s: string): string {
-        s = s.replace(/&#39;/g, '\'');
-        s = s.replace(/&amp;/g, '&')
-        s = s.replace(/&lt;/g, '<')
-        s = s.replace(/&gt;/g, '>')
-        s = s.replace(/&#34;/g, '"');
-
-        return s;
     }
 
     private menuAction(e: MenuItem) {
@@ -476,7 +481,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         return this.g(go.Node, "Spot",
             {
                 selectionObjectName: "PANEL",
-                isTreeExpanded: false,
+                isTreeExpanded: true,
                 isTreeLeaf: false
             },
             this.g(go.Panel, "Auto", {
@@ -616,6 +621,15 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     },
                     new go.Binding("text", "text"))
             )
+        );
+    }
+
+    private createCategoryLinkTemplate(): go.Link {
+        return this.g(go.Link,  // the whole link panel
+            this.g(go.Shape,  // the link shape
+                { stroke: "black" }),
+            this.g(go.Shape,  // the arrowhead
+                { toArrow: "standard", stroke: null })
         );
     }
 

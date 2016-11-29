@@ -10,6 +10,7 @@ export class LinkModel {
     predicateid: number;
     to: string;
     visible: boolean = true;
+    category: string;
 }
 
 export class NodeModel {
@@ -27,7 +28,7 @@ export class NodeModel {
     typeId: number;
     everExpanded: boolean = false;
     isTreeExpanded: boolean;
-    template: string;
+    category: string;
     visible: boolean = true;
     childNodes: NodeModel[] = [];
 }
