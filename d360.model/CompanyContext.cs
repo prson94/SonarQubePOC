@@ -466,9 +466,7 @@ end", new { ss = source, tt = target });
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
 			select	'ArtifactType' as ObjectType, ID as ObjectTypeID, 'Artifacts :: ' + Name as Name from ArtifactType
-			union
-			select	'DomainType' as ObjectType, ID as ObjectTypeID, 'Reference :: ' + Name as Name from DomainType
-			union
+			union			
 			select	'TaxonomyType' as ObjectType, ID as ObjectTypeID, 'Models :: ' + Name as Name from TaxonomyType
 			union
 			select	'PolicyType' as ObjectType, ID as ObjectTypeID, 'Policies :: ' + Name as Name from PolicyType
