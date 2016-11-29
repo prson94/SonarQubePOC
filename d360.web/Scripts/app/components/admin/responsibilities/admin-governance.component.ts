@@ -1,9 +1,9 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, MessagesService } from '../../services/index';
-import { ResponsibilityType, IResponsibilityTypeService } from '../../models/responsibility-type.model';
-import { FormMode } from '../../models/form.model';
-import { AdminBaseComponent } from './admin-base.component';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService, RightSidebarService, ResponsibilityTypeService, MessagesService } from '../../../services/index';
+import { ResponsibilityType, IResponsibilityTypeService } from '../../../models/responsibility-type.model';
+import { FormMode } from '../../../models/form.model';
+import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
 @Component({

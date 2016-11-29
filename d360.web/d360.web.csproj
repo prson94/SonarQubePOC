@@ -801,7 +801,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\group.form.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
-    <Content Include="Scripts\app\components\admin\responsibility-type.form.html" />
+    <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage.component.html" />
@@ -836,7 +836,7 @@
     <Content Include="Scripts\app\components\admin\fusion-configuration.tile.html" />
     <None Include="Scripts\Common.js" />
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
-    <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
+    <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.html" />
     <Content Include="Scripts\app\components\admin\workflow\workflow-item.form.html" />
@@ -965,6 +965,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rules.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rules.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.module.ts" />
@@ -987,7 +989,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
@@ -1102,7 +1104,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\responsibility-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-errors.component.ts" />
