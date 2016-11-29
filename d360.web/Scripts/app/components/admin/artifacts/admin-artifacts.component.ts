@@ -1,11 +1,11 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService, MessagesService } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component'
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { ArtifactTypeService, AuditService, HeaderBreadcrumbService, RightSidebarService, StateService, MessagesService } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 
 @Component({

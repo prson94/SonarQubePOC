@@ -798,7 +798,7 @@
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
-    <Content Include="Scripts\app\components\admin\artifact-type.form.html" />
+    <Content Include="Scripts\app\components\admin\artifacts\artifact-type.form.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
@@ -836,7 +836,7 @@
     <None Include="Properties\PublishProfiles\UI - Production - EU North.pubxml" />
     <Content Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.html" />
     <None Include="Scripts\Common.js" />
-    <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
+    <Content Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.html" />
@@ -955,6 +955,8 @@
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.module.ts" />
@@ -998,7 +1000,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistic-checktype-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.component.ts" />
@@ -1113,7 +1115,7 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\artifact-type.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />

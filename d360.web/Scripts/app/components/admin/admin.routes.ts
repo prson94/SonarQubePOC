@@ -2,8 +2,6 @@
 import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
-import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -12,9 +10,7 @@ const routes: Routes = [
         path: '',
         component: AdminComponent,
         canActivate: [AdminUserGuard],
-        children: [            
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: AdminArtifactsComponent },
-                                    
+        children: [                                                
             //lazy load
             { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: './lookups/admin-lookups.module#AdminLookupsModule?chunkName=adminLookupsChunk' }, 
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, loadChildren: './relationships/admin-relationships.module#AdminRelationshipsModule?chunkName=adminRelationshipsChunk' }, 
@@ -33,6 +29,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: './policies/admin-policies.module#AdminPoliciesModule?chunkName=adminPoliciesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, loadChildren: './taxonomies/admin-taxonomies.module#AdminTaxonomiesModule?chunkName=adminTaxonomiesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, loadChildren: './attributes/admin-attributes.module#AdminAttributesModule?chunkName=adminAttributesChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, loadChildren: './artifacts/admin-artifacts.module#AdminArtifactsModule?chunkName=adminArtifactsChunk' },
         ]
     }
 ];

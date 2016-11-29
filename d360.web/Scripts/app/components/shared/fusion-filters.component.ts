@@ -1,5 +1,4 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
 import { FusionFilter, FusionAttributeType } from '../../models/fusion.model';
 import { FusionService } from '../../services/fusion.service';

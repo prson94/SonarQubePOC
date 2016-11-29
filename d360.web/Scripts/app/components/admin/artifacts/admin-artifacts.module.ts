@@ -4,9 +4,11 @@ import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 import { RouterModule } from '@angular/router';
 
+import { ColorPickerModule } from 'angular2-color-picker';
+
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
-
+import { AdminModule } from '../admin.module';
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -14,14 +16,14 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedAuditModule } from '../../shared/audit/shared-audit.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
-import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
-import { AdminAttributesComponent } from './admin-attributes.component';
-import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
-import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
+import { AdminArtifactsComponent } from './admin-artifacts.component';
+import { ArtifactTypeForm } from './artifact-type.form';
 
-import { AdminAttributesRoutingModule } from './admin-attributes.routes';
+import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
 
 import {
     ButtonModule,
@@ -29,8 +31,7 @@ import {
     EditorModule,
     InputTextModule,
     MultiSelectModule,
-    SharedModule,
-    DataTableModule,
+    SharedModule,    
     TreeTableModule,
 } from 'primeng/primeng';
 
@@ -39,7 +40,7 @@ import {
         FormsModule,
         HttpModule,
 
-        AdminAttributesRoutingModule,
+        AdminArtifactsRoutingModule,
 
         //prime
         ButtonModule,
@@ -47,28 +48,31 @@ import {
         EditorModule,
         InputTextModule,
         MultiSelectModule,
-        SharedModule,
-        DataTableModule,
+        SharedModule,        
         TreeTableModule,
 
-        //d3s        
+        //color picker 
+        ColorPickerModule,
+
+        //d3s  
+        AdminModule,
+        AdminRelationshipEditorModule,
         CoreModule,
         PipesModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAuditModule,
-        SharedObjectDetailsModule,
-        SharedDynamicGridEditorModule,
+        SharedObjectDetailsModule,       
         SharedFieldDefinitionModule,
+        SharedResponsibilitiesModule,
         TilesModule,
     ],
     declarations: [
-        AdminAttributesComponent,
-        AdminAttributeTypeEditor,
-        AdminAttributeAllocationComponent,
+        AdminArtifactsComponent,
+        ArtifactTypeForm,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class AdminAttributesModule { }
+export class AdminArtifactsModule { }
