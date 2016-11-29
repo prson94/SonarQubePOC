@@ -1,10 +1,10 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/primeng';
-import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
-import { FormEvents, FormHelper } from '../../models/form.model';
-import { JsonResult } from '../../models/jsonresult.model';
-import { GroupService } from '../../services/group.service';
-import { MessagesService } from '../../services/messages.service';
+import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../../models/group.model';
+import { FormEvents, FormHelper } from '../../../models/form.model';
+import { JsonResult } from '../../../models/jsonresult.model';
+import { GroupService } from '../../../services/group.service';
+import { MessagesService } from '../../../services/messages.service';
 import * as _ from 'lodash';
 
 @Component({

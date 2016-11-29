@@ -37,7 +37,6 @@ import {
 } from 'primeng/primeng';
 
 import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
-import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
@@ -55,7 +54,7 @@ import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
-import { GroupForm } from './group.form';
+
 
 
 @NgModule({
@@ -64,8 +63,7 @@ import { GroupForm } from './group.form';
         AdminArtifactsComponent,
         AdminComponent,
         AdminAttributesComponent,            
-        AdminFusionComponent,        
-        AdminGroupsComponent,           
+        AdminFusionComponent,                        
         AdminPoliciesComponent,                                
         AdminTaxonomiesComponent,
         AdminAttributeTypeEditor,
@@ -78,8 +76,7 @@ import { GroupForm } from './group.form';
         ClaimsMatrixPart,
         ClaimsTile,
         FusionAttributesTile,
-        FusionConfigurationTile,
-        GroupForm,                    
+        FusionConfigurationTile,                         
     ],
     exports: [
         ClaimsTile,

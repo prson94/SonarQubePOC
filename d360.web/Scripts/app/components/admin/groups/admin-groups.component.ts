@@ -1,15 +1,15 @@
 ﻿import { Component, NgZone, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { AdminBaseComponent } from './admin-base.component';
-import { GroupService } from '../../services/group.service';
-import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../models/group.model';
-import { FormMode } from '../../models/form.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { AdminBaseComponent } from '../admin-base.component';
+import { GroupService } from '../../../services/group.service';
+import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../../models/group.model';
+import { FormMode } from '../../../models/form.model';
 import { Title } from '@angular/platform-browser';
-import { MessagesService } from '../../services/messages.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
+import { MessagesService } from '../../../services/messages.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-groups',
