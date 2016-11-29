@@ -42,7 +42,6 @@ import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
-import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
@@ -67,8 +66,7 @@ import { GroupForm } from './group.form';
         AdminAttributesComponent,            
         AdminFusionComponent,        
         AdminGroupsComponent,           
-        AdminPoliciesComponent,        
-        AdminResourcesComponent,                           
+        AdminPoliciesComponent,                                
         AdminTaxonomiesComponent,
         AdminAttributeTypeEditor,
         AdminLevelListComponent,

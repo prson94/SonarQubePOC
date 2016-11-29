@@ -1,8 +1,8 @@
 ﻿import { Component, NgZone, OnInit } from '@angular/core';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { AdminBaseComponent } from './admin-base.component';
-import { FormMode } from '../../models/form.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { AdminBaseComponent } from '../admin-base.component';
+import { FormMode } from '../../../models/form.model';
 import { Title } from '@angular/platform-browser';
 
 
