@@ -1,7 +1,7 @@
 ﻿import { Input, Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, StatisticService, RightSidebarService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
-import { StatisticType } from '../../models/statistic.model';
+import { MessagesService, HeaderBreadcrumbService, StatisticService, RightSidebarService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
+import { StatisticType } from '../../../models/statistic.model';
 import { Title } from '@angular/platform-browser';
 
 @Component({

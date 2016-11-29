@@ -1,9 +1,9 @@
 ﻿import { Component, Input, OnChanges, SimpleChange, Output, EventEmitter} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { StatisticType, StatisticCheckTypes} from '../../models/statistic.model';
+import { StatisticType, StatisticCheckTypes} from '../../../models/statistic.model';
 import { SelectItem } from 'primeng/primeng';
-import { StatisticService } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { StatisticService } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-statistic-checktype-input',

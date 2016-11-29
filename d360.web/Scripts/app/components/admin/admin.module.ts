@@ -24,24 +24,16 @@ import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-fi
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
-import {    
-    InputTextareaModule,
-    InputTextModule,
-    InputMaskModule,
+import {        
+    InputTextModule,    
     DataTableModule,
     TreeTableModule,
     ButtonModule,
-    DropdownModule,
-    CheckboxModule,
-    CalendarModule,
-    MenuModule,
-    MenubarModule,
-    AccordionModule,
+    DropdownModule,                
     SelectButtonModule,    
     MultiSelectModule,    
     EditorModule,
-    TooltipModule,        
-    TreeModule,
+    TooltipModule,            
     GrowlModule,
     SharedModule,
 } from 'primeng/primeng';
@@ -56,19 +48,16 @@ import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminResourcesComponent } from './admin-resources.component';
-import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 import { AdminReportItemsComponent } from './admin-report-items.component';
-import { AdminStatisticEditor } from './admin-statistics-editor.component';
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminTemplateEditorComponent } from './admin-template-editor';
-import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
@@ -80,9 +69,6 @@ import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
-
-
-
 
 @NgModule({
     declarations: [
@@ -96,19 +82,16 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminGroupsComponent,           
         AdminPoliciesComponent,        
         AdminResourcesComponent,
-        AdminRulesComponent,        
-        AdminStatisticsComponent,        
+        AdminRulesComponent,                    
         AdminTaxonomiesComponent,
         AdminTemplatesComponent,        
         AdminAttributeTypeEditor,
         AdminDashboardsEditor,        
-        AdminLevelListComponent,        
-        AdminStatisticEditor,        
+        AdminLevelListComponent,                 
         AdminTaxonomyDetailComponent,
         AdminTaxonomyEditorComponent,
         AdminLevelEditorComponent,
-        AdminTemplateEditorComponent,
-        AdminStatisticCheckTypeInput,
+        AdminTemplateEditorComponent,        
         AdminReportItemsComponent,
         AdminReportTileEditorComponent,
         AdminRuleDimensionsComponent,        
@@ -128,23 +111,16 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         RouterModule,
         AdminRoutingModule,
         
-        //primeng        
-        InputTextareaModule,
+        //primeng                
         InputTextModule,        
         DataTableModule,
         TreeTableModule,
         ButtonModule,
-        DropdownModule,
-        CheckboxModule,
-        CalendarModule,
-        MenuModule,
-        MenubarModule,
-        AccordionModule,
+        DropdownModule,                
         SelectButtonModule,        
         MultiSelectModule,        
         EditorModule,
-        TooltipModule,                
-        TreeModule,                
+        TooltipModule,                        
         SharedModule,
         GrowlModule,
 

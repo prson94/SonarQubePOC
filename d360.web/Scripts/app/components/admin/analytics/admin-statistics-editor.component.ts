@@ -1,9 +1,8 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
-import { StatisticService } from '../../services/index';
-import { StatisticType, StatisticCheckTypes } from '../../models/statistic.model';
+import { StatisticService } from '../../../services/index';
+import { StatisticType, StatisticCheckTypes } from '../../../models/statistic.model';
 import * as _ from 'lodash';
 
 @Component({

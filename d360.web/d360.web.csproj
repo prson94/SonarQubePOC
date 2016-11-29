@@ -959,6 +959,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.module.ts" />
@@ -972,9 +974,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-tile-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistic-checktype-input.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-statistics.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistic-checktype-input.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
