@@ -3881,15 +3881,7 @@ from        (
             union
             select      'ArtifactType|' + cast(ID as varchar(15)) as value,
                         'Artifact Type : ' + Name as title
-            from        ArtifactType
-            union
-            select      'Domain|' + cast(ID as varchar(15)) as value,
-                        'Domain Instance : ' + Name as title
-            from        DomainType
-            union
-            select      'DomainType|' + cast(ID as varchar(15)) as value,
-                        'Domain Type : ' + Name as title
-            from        DomainType
+            from        ArtifactType                        
             union
             select      'Resource|1' as value,
                         'Resource' as title
