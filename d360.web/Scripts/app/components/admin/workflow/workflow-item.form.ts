@@ -1,8 +1,8 @@
 ﻿import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
-import { SelectItem } from '../../models/form.model';
-import { CompanySettings as cs } from '../../models/company-settings.model';
-import { WorkflowService } from '../../services/workflow.service';
+import { WorkflowItem, WorkflowType } from '../../../models/workflow.model';
+import { SelectItem } from '../../../models/form.model';
+import { CompanySettings as cs } from '../../../models/company-settings.model';
+import { WorkflowService } from '../../../services/workflow.service';
 import * as _ from 'lodash';
 
 
@@ -23,8 +23,7 @@ export class WorkflowItemForm implements OnInit {
 
     private ObjectTypes = new Array<SelectItem>();
     private ParentTypes = new Array<SelectItem>();
-    private ResponsibilityTypes = new Array<SelectItem>();
-    //private message: FormMessage = new FormMessage();
+    private ResponsibilityTypes = new Array<SelectItem>();    
     private initialItem: WorkflowItem;
 
     private ObjectType: string;
@@ -72,17 +71,14 @@ export class WorkflowItemForm implements OnInit {
         this.ObjectType = this.item.Object + '|' + this.item.ObjectID;
         this.ParentType = this.item.Parent + '|' + this.item.ParentID;
 
-        this.workflowService.getWorkflow(this.item.ID, this.item.WorkflowType).then(data => {
-            //console.log(data);
+        this.workflowService.getWorkflow(this.item.ID, this.item.WorkflowType).then(data => {            
             this.ObjectTypes = data.ObjectTypes;
             this.ObjectTypes.map(o => { o.label = o.Text; o.value = o.Value });
             this.ParentTypes = data.ParentTypes;
             this.ParentTypes.map(o => { o.label = o.Text; o.value = o.Value });
             this.ResponsibilityTypes = data.ResponsibilityTypes
             this.ResponsibilityTypes.map(o => { o.label = o.Text; o.value = o.Value });
-
-            //this.objectTypeChange();
-
+            
             if (this.item.WorkflowType == WorkflowType.CertifyArtifact) {
                 this.numDays = data.WorkflowTypeRelation.Fields["DaysGivenToCompleteCertification"] || this.numDays;
                 this.numMonths = data.WorkflowTypeRelation.Fields["MonthsUntilCertification"] || this.numMonths;
@@ -165,7 +161,5 @@ export class WorkflowItemForm implements OnInit {
             .then(r => {
                 this.ParentTypes = r;
             });
-
     }
-
 }

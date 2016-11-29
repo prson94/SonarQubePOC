@@ -50,7 +50,6 @@ import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminGroupsComponent } from './admin-groups.component';
-import { AdminWorkflowComponent } from './admin-workflow.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
@@ -86,7 +85,7 @@ import { GroupForm } from './group.form';
 import { IconPickerComponent } from './icon-picker.component';
 import { LoadForm } from './load.form';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
-import { WorkflowItemForm } from './workflow-item.form';
+
 
 
 
@@ -107,8 +106,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminSettingsComponent,
         AdminStatisticsComponent,        
         AdminTaxonomiesComponent,
-        AdminTemplatesComponent,
-        AdminWorkflowComponent,
+        AdminTemplatesComponent,        
         AdminAttributeTypeEditor,
         AdminDashboardsEditor,        
         AdminLevelListComponent,        
@@ -132,8 +130,6 @@ import { WorkflowItemForm } from './workflow-item.form';
         IconPickerComponent,
         LoadForm,        
         ResponsibilityTypeForm,
-        WorkflowItemForm,
-
         AceEditorComponent,
     ]
     , imports: [CommonModule,

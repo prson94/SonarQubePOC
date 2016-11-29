@@ -1,10 +1,10 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
-import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../services/index';
-import { WorkflowItem, WorkflowType } from '../../models/workflow.model';
+import { HeaderBreadcrumbService, WorkflowService, RightSidebarService } from '../../../services/index';
+import { WorkflowItem, WorkflowType } from '../../../models/workflow.model';
 import { MenuItem } from 'primeng/primeng';
-import { ActionBarItem } from '../../models/action-bar.model';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { AdminBaseComponent} from './admin-base.component';
+import { ActionBarItem } from '../../../models/action-bar.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { AdminBaseComponent} from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -68,9 +68,6 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
             items: items
         });
 
-
-
-
         this.load();
     }
         
@@ -129,8 +126,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent  {
     }
 
     editRow(workflow: WorkflowItem) {
-        this.selectedRow = workflow;
-      //  console.log(this.selectedRow);
+        this.selectedRow = workflow;      
         this.isAdding = false;
         this.isDeleting = false;
         this.isEditing= true;

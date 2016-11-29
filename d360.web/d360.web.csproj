@@ -839,13 +839,13 @@
     <Content Include="Scripts\app\components\admin\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.html" />
-    <Content Include="Scripts\app\components\admin\workflow-item.form.html" />
+    <Content Include="Scripts\app\components\admin\workflow\workflow-item.form.html" />
     <Content Include="Scripts\app\components\admin\claims.tile.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-definition.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
-    <Content Include="Scripts\app\components\admin\admin-workflow.component.html" />
+    <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.css" />
     <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
@@ -961,6 +961,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationship-roles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
@@ -992,7 +994,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-template-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.routes.ts" />
@@ -1231,7 +1233,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\delete.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-item.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\workflow-item.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\workflow\workflow-item.form.ts" />
     <TypeScriptCompile Include="Scripts\app\main.aot.ts" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
