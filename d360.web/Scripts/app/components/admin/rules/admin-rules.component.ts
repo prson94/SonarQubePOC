@@ -1,9 +1,9 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, RulesService, RightSidebarService  } from '../../services/index';
-import {AdminBaseComponent } from './admin-base.component';
-import { RuleType } from '../../models/rule.model';
+import { MessagesService, HeaderBreadcrumbService, RulesService, RightSidebarService  } from '../../../services/index';
+import {AdminBaseComponent } from '../admin-base.component';
+import { RuleType } from '../../../models/rule.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 @Component({
     selector: 'd3s-admin-rules-component',

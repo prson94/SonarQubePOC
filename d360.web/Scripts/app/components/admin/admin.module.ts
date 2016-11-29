@@ -41,7 +41,6 @@ import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminResourcesComponent } from './admin-resources.component';
@@ -51,7 +50,6 @@ import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.componen
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
-import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { ArtifactTypeForm } from './artifact-type.form';
@@ -72,25 +70,26 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminGovernanceComponent,
         AdminGroupsComponent,           
         AdminPoliciesComponent,        
-        AdminResourcesComponent,
-        AdminRulesComponent,                    
+        AdminResourcesComponent,                           
         AdminTaxonomiesComponent,
         AdminAttributeTypeEditor,
         AdminLevelListComponent,
         AdminTaxonomyDetailComponent,
         AdminTaxonomyEditorComponent,
-        AdminLevelEditorComponent,        
-        AdminRuleDimensionsComponent,        
+        AdminLevelEditorComponent,                
         AdminModelClassificationComponent,        
-        ArtifactTypeForm,        
-        ClaimsTile,
+        ArtifactTypeForm,                
         ClaimsMatrixPart,
+        ClaimsTile,
         FusionAttributesTile,
         FusionConfigurationTile,
         GroupForm,            
         ResponsibilityTypeForm,        
-    ]
-    , imports: [CommonModule,
+    ],
+    exports: [
+        ClaimsTile,
+    ],
+    imports: [CommonModule,
         FormsModule,
         HttpModule,
         RouterModule,

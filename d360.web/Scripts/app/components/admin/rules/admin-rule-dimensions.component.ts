@@ -1,8 +1,7 @@
 ﻿import { Component } from '@angular/core';
-import { RuleDimension } from '../../models/rule.model';
-import { MessagesService, RulesService  } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
-
+import { RuleDimension } from '../../../models/rule.model';
+import { MessagesService, RulesService  } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-rule-dimensions',

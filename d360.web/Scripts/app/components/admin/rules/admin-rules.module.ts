@@ -1,0 +1,63 @@
+﻿import { NgModule }       from '@angular/core';
+import { CommonModule }       from '@angular/common';
+import { FormsModule }    from '@angular/forms';
+import { HttpModule, XHRBackend  }     from '@angular/http';
+import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+
+import { CoreModule } from '../../shared/core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { TilesModule  } from '../../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
+import { AdminModule } from '../admin.module';
+
+import { AdminRulesComponent } from './admin-rules.component';
+import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
+
+import { AdminRulesRoutingModule } from './admin-rules.routes';
+
+import {
+    ButtonModule,
+    DropdownModule,
+    InputTextModule,
+    SharedModule,
+    DataTableModule,
+} from 'primeng/primeng';
+
+@NgModule({
+    imports: [CommonModule,
+        FormsModule,
+        HttpModule,
+
+        AdminRulesRoutingModule,
+
+        //prime
+        ButtonModule,
+        DropdownModule,
+        InputTextModule,
+        SharedModule,
+        DataTableModule,
+
+        //d3s        
+        CoreModule,
+        PipesModule,
+        SharedDeleteFormModule,
+        SharedGridPagingInfoModule,    
+        SharedDynamicGridEditorModule,
+        SharedResponsibilitiesModule,    
+        TilesModule,
+        AdminModule,
+    ],
+    declarations: [
+        AdminRulesComponent,
+        AdminRuleDimensionsComponent,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+    ]
+})
+export class AdminRulesModule { }
