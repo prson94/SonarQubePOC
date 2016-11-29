@@ -91,3 +91,7 @@ GO
 
 ALTER TABLE [workflow].[ItemStep] CHECK CONSTRAINT [FK_WorkflowItemStep_WorkflowVersionStep]
 GO
+
+
+--change size of decimal to support values of 1 on rule threshold
+ALTER TABLE [dbo].[rule] ALTER COLUMN [Threshold] decimal(4,3)
