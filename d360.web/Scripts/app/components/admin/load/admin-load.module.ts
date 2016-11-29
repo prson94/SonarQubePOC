@@ -7,24 +7,24 @@ import { RouterModule } from '@angular/router';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { CoreModule } from '../../shared/core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
-import { AdminWorkflowComponent } from './admin-workflow.component';
-import { WorkflowItemForm } from './workflow-item.form';
+import { BulkLoadItemComponent } from './bulk-load-item.component';
+import { LoadForm } from './load.form';
+import { AdminLoadComponent } from './admin-load.component';
 
-import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
+import { AdminLoadRoutingModule } from './admin-load.routes';
 
 import {
     ButtonModule,
-    CalendarModule,
-    EditorModule,
-    GrowlModule,
+    DropdownModule,
     InputTextModule,
     SharedModule,
-    DataTableModule
+    DataTableModule,    
 } from 'primeng/primeng';
 
 @NgModule({
@@ -32,29 +32,30 @@ import {
         FormsModule,
         HttpModule,
 
-        AdminWorkflowRoutingModule,
+        AdminLoadRoutingModule,
 
-        //prime  
+        //prime
         ButtonModule,
-        CalendarModule,        
-        GrowlModule,
+        DropdownModule,
         InputTextModule,
         SharedModule,
-        DataTableModule,
+        DataTableModule,        
 
-        //d3s                
+        //d3s        
         CoreModule,
-        SharedDeleteFormModule,        
-        SharedObjectDetailsModule,
+        PipesModule,        
+        SharedDeleteFormModule,                
         SharedGridPagingInfoModule,
+        SharedObjectDetailsModule,
         TilesModule,
     ],
     declarations: [
-        AdminWorkflowComponent,        
-        WorkflowItemForm,
+        BulkLoadItemComponent,
+        LoadForm,
+        AdminLoadComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
-export class AdminWorkflowModule { }
+export class AdminLoadModule { }

@@ -59,7 +59,6 @@ import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
-import { AdminLoadComponent } from './admin-load.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
@@ -76,14 +75,12 @@ import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
 import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 import { ArtifactTypeForm } from './artifact-type.form';
-import { BulkLoadItemComponent } from './bulk-load-item.component';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
 import { IconPickerComponent } from './icon-picker.component';
-import { LoadForm } from './load.form';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 
 
@@ -98,8 +95,7 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminDashboardsComponent,        
         AdminFusionComponent,
         AdminGovernanceComponent,
-        AdminGroupsComponent,
-        AdminLoadComponent,        
+        AdminGroupsComponent,           
         AdminPoliciesComponent,        
         AdminResourcesComponent,
         AdminRulesComponent,
@@ -120,15 +116,13 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminReportTileEditorComponent,
         AdminRuleDimensionsComponent,        
         AdminModelClassificationComponent,        
-        ArtifactTypeForm,
-        BulkLoadItemComponent,
+        ArtifactTypeForm,        
         ClaimsTile,
         ClaimsMatrixPart,
         FusionAttributesTile,
         FusionConfigurationTile,
         GroupForm,
-        IconPickerComponent,
-        LoadForm,        
+        IconPickerComponent,        
         ResponsibilityTypeForm,
         AceEditorComponent,
     ]

@@ -795,12 +795,12 @@
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\theme.css" />
     <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
-    <Content Include="Scripts\app\components\admin\admin-load.component.html" />
+    <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\artifact-type.form.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\group.form.html" />
-    <Content Include="Scripts\app\components\admin\load.form.html" />
+    <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
@@ -959,6 +959,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
@@ -977,7 +979,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-load.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-policies.component.ts" />
@@ -1089,7 +1091,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\artifact-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\group.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load.form.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
@@ -1212,7 +1214,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\bulk-load-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
