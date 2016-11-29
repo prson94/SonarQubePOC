@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { PermissionsService, DiagramService } from '../../../services/index';
 import { Permission } from '../../../models/permission.model';
-import { ImpactDiagramModel, NodeModel, LinkModel } from '../../../models/impact.model';
+import { ImpactDiagramModel, NodeModel, LinkModel, PredicateFilter } from '../../../models/impact.model';
 import { MenuItem } from 'primeng/primeng';
 
 import * as go from 'gojs';
@@ -41,10 +41,12 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private myDiagram: go.Diagram;
 
     private zoomLevel: number = 50;
-    private tab: string = 'info';
-    private headerText: string = 'Info';
+    private tab: string = 'filter';
+    private headerText: string = 'Filter By Predicate';
     private isWindowVisible = false;
     private menuItems: MenuItem[] = [];
+
+    private predicates: PredicateFilter[] = [];
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
         super();
@@ -92,6 +94,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
     private populateDiagram() {
         this.isLoading = true;
+        this.predicates = [];
+
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
                 this.model = data;
@@ -100,13 +104,22 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
 
                     n.everExpanded = isFocal;
+                    n.isTreeExpanded = isFocal;
                     n.template = isFocal ? "" : "NonFocal";
+
+                    let predicate = this.predicates.find(p => p.id == n.predicateid);
+                    if (predicate == null && n.predicateid != null)
+                        this.predicates.push({
+                            id: n.predicateid,
+                            name: n.predicate,
+                            selected: true
+                        });
 
                 });
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
                 this.isLoading = false;
-                //console.log(data);
+                console.log(data);
             });
     }
 
@@ -120,6 +133,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
             this.diagramService.getImpactDiagram(data.obj, data.objid)
                 .then(r => {
+                    let hasChildren = false;
+                    
                     r.nodes.forEach(n => {
                         if (!(n.obj == data.obj && n.objid == data.objid)) {
                             n.everExpanded = false;
@@ -133,15 +148,25 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                                 }
                             });
 
-                            if (allowAdd)
+                            if (allowAdd) {
                                 this.myDiagram.model.addNodeData(n);
+                                hasChildren = true;
+                            }
                         }
                     });
 
                     r.links.forEach(l => {
+                        if (l.to == this.objectType + this.objectID.toString())
+                            return;
+                        hasChildren = true;
                         let links: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
                         links.addLinkData(l);
                     });
+
+                    if (!hasChildren) {
+                        node.findObject('TREEBUTTON').visible = false;
+                    }
+
                 });
         }
         if (node.isTreeExpanded) {
@@ -168,8 +193,33 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.refreshDiagram();
         } else if (e.icon == 'fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
+        } else if (e.icon == 'fa-sitemap menu-icon') {
+            this.myDiagram.layout.invalidateLayout();
+            this.myDiagram.layoutDiagram();
         }
     }
+
+    private togglePredicate(p: PredicateFilter) {
+        let id = (p == null) ? 0 : p.id;
+        let visible = (p == null) ? true : p.selected;
+
+        console.log(id, visible);
+        this.myDiagram.startTransaction("togglePredicate");
+
+        this.myDiagram.nodes.each(n => {
+            if (n.data.predicateid == id || id == 0) {
+                n.visible = visible;
+            }
+        });
+        this.myDiagram.links.each(l => {
+            if (l.data.predicateid == id || id == 0) {
+                l.visible = visible;
+            }
+        });
+
+        this.myDiagram.commitTransaction("togglePredicate");
+    }
+
     //#region events
 
     @HostListener('window:resize', ['$event'])
@@ -215,6 +265,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         } else {
             this.selectedObject = null;
             this.selectedObjectID = null;
+            this.selectTab('filter');
         }
     }
 
@@ -223,6 +274,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             case 'info': this.headerText = 'Info'; break;
             case 'user': this.headerText = 'Responsibilities'; break;
             case 'fusion': this.headerText = 'Fusion Relationships'; break;
+            case 'filter': this.headerText = 'Filter By Predicate'; break;
             default: this.headerText = ''; break;
         }
         this.tab = val;
@@ -237,9 +289,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             {
                 initialAutoScale: go.Diagram.UniformToFill,  // an initial automatic zoom-to-fit
                 contentAlignment: go.Spot.Center,  // align document to the center of the viewport
-                layout:
-                this.g(go.ForceDirectedLayout,  // automatically spread nodes apart
-                    { defaultSpringLength: 30, defaultElectricalCharge: 100 })
+                layout: this.g(go.ForceDirectedLayout, { defaultSpringLength: 50, defaultElectricalCharge: 250, arrangementSpacing: new go.Size(250,250) }),
+                "draggingTool.dragsTree": true, //drag subtree with node
             }
         );
     }
@@ -266,7 +317,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     strokeWidth: 2,
                     spot1: go.Spot.TopLeft,
                     spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    name: "NodeShape",
                 },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
@@ -321,7 +372,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         return this.g(go.Node, "Spot",
             {
                 selectionObjectName: "PANEL",
-                isTreeExpanded: true,
+                isTreeExpanded: false,
                 isTreeLeaf: false
             },
             this.g(go.Panel, "Auto", {

@@ -57,8 +57,8 @@ namespace d360.web.Controllers
         public JsonNetResult ImpactAnalysis(SystemObjects type, int id)
         {
             var sql = @"
-	declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), intersectid int)
-	declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), intersectid int)
+	declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
+	declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
 	
 	insert into @nodes
 		select	D.Object + cast(D.ObjectID as varchar),
@@ -72,6 +72,7 @@ namespace d360.web.Controllers
 					when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
 					else coalesce(P.Inverse, 'used in')
 				end as [Predicate],
+				P.ID as PredicateID,
 				I.ID
 		from	[Intersect] I
 				inner join cache.ObjectDetails D on 
@@ -95,6 +96,7 @@ namespace d360.web.Controllers
 		select	@type + cast(@id as varchar),
 				[key],
 				[predicate],
+				[predicateid],
 				[intersectid]
 		from	@nodes
 
@@ -107,6 +109,7 @@ namespace d360.web.Controllers
 				D.TextPath,
 				D.IconBackColor,
 				D.IconForeColor,
+				null,
 				null,
 				null
 		from	cache.ObjectDetails D

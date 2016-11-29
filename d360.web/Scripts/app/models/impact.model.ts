@@ -7,7 +7,9 @@ export class LinkModel {
     from: string;
     intersectid: number;
     text: string;
+    predicateid: number;
     to: string;
+    visible: boolean = true;
 }
 
 export class NodeModel {
@@ -19,7 +21,16 @@ export class NodeModel {
     obj: string;
     objid: number;
     predicate: string;
+    predicateid: number;
     typeName: string;
     everExpanded: boolean = false;
+    isTreeExpanded: boolean;
     template: string;
+    visible: boolean = true;
+}
+
+export class PredicateFilter {
+    id: number;
+    name: string;
+    selected: boolean = true;
 }

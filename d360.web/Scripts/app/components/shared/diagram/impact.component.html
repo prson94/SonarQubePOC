@@ -6,17 +6,19 @@
     </header>
 
     <div style="position:relative;left: 100%; display: inline; width: 1px;">
-        <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(selectedObject || selectedObjectID) ? headerText : ''">
-            <div *ngIf="!selectedObject && !selectedObjectID">Nothing selected</div>
-            <ul class="tab-menu" *ngIf="selectedObject && selectedObjectID">
-                <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'">
+        <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="headerText">
+            <ul class="tab-menu">
+                <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="selectedObject && selectedObjectID">
                     <i class="fa fa-info-circle fa-2x"></i>
                 </li>
-                <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'">
+                <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'" *ngIf="selectedObject && selectedObjectID">
                     <i class="fa fa-user fa-2x"></i>
                 </li>
-                <li (click)="selectTab('fusion')" class="tab-item" [class.selected]="tab == 'fusion'">
+                <li (click)="selectTab('fusion')" class="tab-item" [class.selected]="tab == 'fusion'" *ngIf="selectedObject && selectedObjectID">
                     <i class="fa fa-database fa-2x"></i>
+                </li>
+                <li (click)="selectTab('filter')" class="tab-item" [class.selected]="tab == 'filter'">
+                    <i class="fa fa-filter fa-2x"></i>
                 </li>
             </ul>
             <div [ngSwitch]="tab">
@@ -28,6 +30,26 @@
                 </div>
                 <div *ngSwitchCase="'fusion'">
                     <d3s-lineage-technical *ngIf="selectedObject && selectedObjectID" [source]="objectType" [sourceId]="objectID" [target]="selectedObject" [targetId]="selectedObjectID"></d3s-lineage-technical>
+                </div>
+                <div *ngSwitchCase="'filter'">
+                    <div class="row">
+                        <!-- split into 2 columns for better use of space -->
+                        <div class="col s6">
+                            <div *ngFor="let p of predicates; let i=index">
+                                <div *ngIf="i % 2 == 0">
+                                    <input type="checkbox" [(ngModel)]="p.selected" (ngModelChange)="togglePredicate(p)" /> {{p.name}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div *ngFor="let p of predicates; let i=index">
+                                <div *ngIf="i % 2 == 1">
+                                    <input type="checkbox" [(ngModel)]="p.selected" (ngModelChange)="togglePredicate(p)" /> {{p.name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </d3s-overlay-window>
