@@ -48,7 +48,6 @@ import {
 
 import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
 import { AdminGovernanceComponent } from './admin-governance.component';
-import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
@@ -80,7 +79,6 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { GroupForm } from './group.form';
-import { IconPickerComponent } from './icon-picker.component';
 import { ResponsibilityTypeForm } from './responsibility-type.form';
 
 
@@ -98,8 +96,7 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminGroupsComponent,           
         AdminPoliciesComponent,        
         AdminResourcesComponent,
-        AdminRulesComponent,
-        AdminSettingsComponent,
+        AdminRulesComponent,        
         AdminStatisticsComponent,        
         AdminTaxonomiesComponent,
         AdminTemplatesComponent,        
@@ -121,8 +118,7 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         ClaimsMatrixPart,
         FusionAttributesTile,
         FusionConfigurationTile,
-        GroupForm,
-        IconPickerComponent,        
+        GroupForm,            
         ResponsibilityTypeForm,
         AceEditorComponent,
     ]

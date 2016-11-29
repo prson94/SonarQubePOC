@@ -1,12 +1,12 @@
 import { Component, NgZone } from '@angular/core';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../models/settings.model';
-import { SiteNav } from '../../models/site-menu.model';
-import { CompanySettingsService, SiteMenuService, HeaderActionsService, StateService, MessagesService } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../../models/settings.model';
+import { SiteNav } from '../../../models/site-menu.model';
+import { CompanySettingsService, SiteMenuService, HeaderActionsService, StateService, MessagesService } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { FormMode } from '../../models/form.model';
+import { FormMode } from '../../../models/form.model';
 
 import * as _ from 'lodash';
 

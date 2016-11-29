@@ -1,0 +1,53 @@
+﻿import { NgModule }       from '@angular/core';
+import { CommonModule }       from '@angular/common';
+import { FormsModule }    from '@angular/forms';
+import { HttpModule, XHRBackend  }     from '@angular/http';
+import { RouterModule } from '@angular/router';
+
+import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+
+import { CoreModule } from '../../shared/core.module';
+import { TilesModule  } from '../../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+
+import { IconPickerComponent } from './icon-picker.component';
+import { AdminSettingsComponent } from './admin-settings.component';
+
+import { AdminSettingsRoutingModule } from './admin-settings.routes';
+
+import {
+    ButtonModule,
+    DropdownModule,
+    InputTextModule,
+    SharedModule,
+    DataTableModule,
+} from 'primeng/primeng';
+
+@NgModule({
+    imports: [CommonModule,
+        FormsModule,
+        HttpModule,
+
+        AdminSettingsRoutingModule,
+
+        //prime
+        ButtonModule,
+        DropdownModule,
+        InputTextModule,
+        SharedModule,
+        DataTableModule,
+
+        //d3s        
+        CoreModule,        
+        SharedGridPagingInfoModule,        
+        TilesModule,
+    ],
+    declarations: [
+        IconPickerComponent,
+        AdminSettingsComponent,
+    ],
+    providers: [
+        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+    ]
+})
+export class AdminSettingsModule { }

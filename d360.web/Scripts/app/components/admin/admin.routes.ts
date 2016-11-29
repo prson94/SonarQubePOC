@@ -4,7 +4,6 @@ import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 import { AdminGovernanceComponent } from './admin-governance.component';
-import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTemplatesComponent } from './admin-templates.component';
@@ -34,8 +33,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: AdminResourcesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, component: AdminGovernanceComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, component: AdminRulesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, component: AdminSettingsComponent },            
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, component: AdminRulesComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: AdminTaxonomiesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES, component: AdminTemplatesComponent },            
             //lazy load
@@ -44,6 +42,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, loadChildren: './surveys/admin-surveys.module#AdminSurveysModule?chunkName=adminSurveysChunk' },             
             { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, loadChildren: './workflow/admin-workflow.module#AdminWorkflowModule?chunkName=adminWorkflowChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, loadChildren: './load/admin-load.module#AdminLoadModule?chunkName=adminLoadChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, loadChildren: './settings/admin-settings.module#AdminSettingsModule?chunkName=adminSettingsChunk' },
         ]
     }
 ];

@@ -846,8 +846,8 @@
     <Content Include="Scripts\app\components\shared\responsibilities\people-responsibilities.tile.html" />
     <Content Include="Scripts\app\components\admin\admin-groups.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\admin\admin-settings.component.css" />
-    <Content Include="Scripts\app\components\admin\admin-settings.component.html" />
+    <Content Include="Scripts\app\components\admin\settings\admin-settings.component.css" />
+    <Content Include="Scripts\app\components\admin\settings\admin-settings.component.html" />
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
@@ -961,6 +961,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
@@ -989,7 +991,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-editor.component.ts" />
@@ -1025,7 +1027,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\audit\shared-audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dashboard\shared-dashboard.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\settings\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\shared-dynamic-grid-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\shared-field-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-paging-info.component.ts" />
