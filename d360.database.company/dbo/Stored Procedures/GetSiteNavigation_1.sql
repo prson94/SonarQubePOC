@@ -41,7 +41,7 @@ SELECT	n.Name as MenuID,
 					FROM		ArtifactType a
 					left join SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
 					WHERE		a.ParentID IS NULL and v.ObjectID is null
-					ORDER BY	name
+					ORDER BY	a.name
 					) BG
 					FOR XML PATH('nav'), TYPE
 		) AS Items
@@ -116,13 +116,7 @@ SELECT	n.Name as MenuID,
 		0 as Feature,
 		n.Icon as Icon,
 		n.Title as Title,
-		(
-		SELECT	name, 
-				dbo.GenerateNgObjectUrl('DomainType', ID, 0)  As url,
-				0 as feature
-		FROM	DomainType
-		FOR XML PATH('nav'), TYPE				
-		) AS Items
+		null AS Items
 FROM SiteNav n
 WHERE n.Name = '#Reference'
 

@@ -215,7 +215,6 @@
     <Compile Include="entities\Contracts\IIntObject.cs" />
     <Compile Include="entities\Contracts\IFieldsObject.cs" />
     <Compile Include="entities\ObjectSecurity.cs" />
-    <Compile Include="entities\ResolutionRelation.cs" />
     <Compile Include="entities\EventGroup.cs" />
     <Compile Include="entities\Event.cs" />
     <Compile Include="entities\QuestionType.cs" />
@@ -242,7 +241,6 @@
     <Compile Include="entities\IntersectType.cs" />
     <Compile Include="entities\LookupType.cs" />
     <Compile Include="entities\Lookup.cs" />
-    <Compile Include="entities\Resolution.cs" />
     <Compile Include="entities\Resource.cs" />
     <Compile Include="entities\Role.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />

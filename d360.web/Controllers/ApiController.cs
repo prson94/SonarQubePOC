@@ -5330,36 +5330,6 @@ from    (
                     report = null;
                     break;
                     #endregion
-                case SystemObjects.Resolution:
-                    #region Fields
-                    var resolution = Company.GetById<Resolution>(id);
-                    if (resolution != null)
-                    {
-                        model.columns = 1;
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = resolution.GetName(i => i.Name), FieldName = "ResolutionName", FieldDescription = resolution.GetDescription(i => i.Name), Value = resolution.Name }
-                            }
-                        });
-                        if (!string.IsNullOrEmpty(resolution.Body))
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = resolution.GetName(i => i.Body), FieldName = "ResolutionBody", FieldDescription = resolution.GetDescription(i => i.Body), Value = resolution.Body }
-                                }
-                            });
-                        }
-                    }
-                    resolution = null;
-                    break;
-                    #endregion
                 case SystemObjects.Resource:
                     #region Fields
                     var resource = Community.GetById<Resource>(id);

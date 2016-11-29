@@ -21,7 +21,7 @@ BEGIN
 					FROM		ArtifactType a
 					LEFT JOIN SiteNav v on v.ObjectID = a.ID and v.Object = 'ArtifactType'
 					WHERE		a.ParentID = @id AND v.ObjectID IS NULL
-					ORDER BY	name
+					ORDER BY	a.name
 			--		) A
 			) BG
 			FOR XML PATH('nav'), TYPE

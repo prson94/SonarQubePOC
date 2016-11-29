@@ -1,30 +1,30 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.exceptions;
-using d360.web.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Web.Mvc;
-using System.Xml.Linq;
-using d360.extensions;
-using Resources;
-using d360.core.enums;
-using d360.model;
-using System.IO;
-using SpreadsheetLight;
 using d360.core.entities.Views;
-using d360.workflow.models;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.queue;
+using d360.extensions;
+using d360.extensions.powerbi;
+using d360.model;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
 using d360.workflow;
 using d360.workflow.entities;
-using d360.web.Filters;
-using d360.web.Models.Attributes;
+using d360.workflow.models;
 using Newtonsoft.Json.Linq;
+using Resources;
+using SpreadsheetLight;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
-using d360.extensions.powerbi;
 using System.Web;
-using d360.core.queue;
+using System.Web.Mvc;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -15355,200 +15355,6 @@ order by	D.Name, I.Name";
                 Company.SaveChanges();
 
                 return jsonSuccess("Item successfully created.", "0", null, "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Resolution
-
-        #region Field Generation
-
-        /// <param name="t">ObjectType</param>
-        /// <param name="id">ObjectID</param>
-        [Route("Resolution_AddFields")]
-        public JsonResult Resolution_AddFields(SystemObjects t, int id)
-        {
-            var list = new List<EditableField>();
-            IQueryable<Resolution> model = null;
-            switch (t)
-            {
-                case SystemObjects.Rule:
-                    model = Company.Filter<Resolution>(i => i.RuleID == id);
-                    break;
-            }
-
-            list.Add(new EditableField { FieldName = "ObjectType", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            var items = model.ToList().Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
-            if (items.Count > 0)
-            {
-                items.Insert(0, new SelectListItem { Text = "", Value = "" });
-                list.Add(new EditableField
-                {
-                    Row = 1,
-                    Column = 1,
-                    FieldName = "ExistingResolution",
-                    Name = "Resolve With Existing Resolution",
-                    FieldType = DataType.Lookup.ToString(),
-                    Items = items
-                });
-            }
-            else
-            {
-                list.Add(new EditableField
-                {
-                    Row = 1,
-                    Column = 1,
-                    FieldName = "ExistingResolution",
-                    FieldType = DataType.Hidden.ToString()
-                });
-            }
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 3, Column = 1, FieldName = "Body", Name = "Body", FieldType = DataType.Html.ToString(), Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResolutionID</param>
-        [Route("Resolution_DeleteFields")]
-        public JsonResult Resolution_DeleteFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Resolution>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">ResolutionID</param>
-        [Route("Resolution_EditFields")]
-        public JsonResult Resolution_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Resolution>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Body", Name = "Body", FieldType = DataType.Html.ToString(), Value = a.Body, Validations = checkAndAddValidation("Text", "Body", true, "", null, null) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [ValidateHttpAntiForgeryToken, HttpPost, ValidateInput(false), Route("AddResolution")]
-        public JsonResult AddResolution(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resolution");
-
-                Resolution a = null;
-                SystemObjects type;
-                int id;
-
-                try
-                {
-                    type = (SystemObjects)Enum.Parse(typeof(SystemObjects), form["ObjectType"]);
-                    id = parseIntField(form, "ObjectID");
-                }
-                catch
-                {
-                    throw new NoFormDataException("target object");
-                }
-
-                if (form["ExistingResolution"] != "")
-                {
-                    a = Company.GetById<Resolution>(parseIntField(form, "ExistingResolution"));
-                }
-                else
-                {
-                    a = new Resolution();
-
-                    // Static fields
-                    a.Name = parseTextField(form, "Name");
-                    a.Body = parseTextField(form, "Body");
-                    a.RuleID = 0;
-
-                    Company.Add<Resolution>(a);
-                }
-
-                var relation = new ResolutionRelation { ResolutionID = a.ID, ObjectType = type.ToString(), ObjectID = id };
-                Company.Add<ResolutionRelation>(relation);
-
-                return jsonSuccess("Resolution successfully created.", a.ID.ToString(), form["_context"], "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteResolution")]
-        public JsonResult DeleteResolution(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resolution");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Resolution>(id);
-                if (model == null) throw new NotFoundException("resolution");
-
-                Company.Delete<Resolution>(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), form["_context"], "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditResolution")]
-        public JsonResult EditResolution(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resolution");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Resolution>(id);
-
-                if (model == null) throw new NotFoundException("resolution");
-
-                // Static fields
-                model.Name = parseTextField(form, "Name");
-                model.Body = parseTextField(form, "Body");
-
-                Company.Update<Resolution>(model);
-
-                return jsonSuccess("Resolution successfully updated.", id.ToString(), form["_context"], "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

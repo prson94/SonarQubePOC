@@ -2504,16 +2504,6 @@
         <member name="M:d360.web.Controllers.FormController.ResponsibilityType_EditFields(System.Int32)">
             <param name="id">ResponsibilityTypeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.Resolution_AddFields(d360.core.SystemObjects,System.Int32)">
-            <param name="t">ObjectType</param>
-            <param name="id">ObjectID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Resolution_DeleteFields(System.Int32)">
-            <param name="id">ResolutionID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.Resolution_EditFields(System.Int32)">
-            <param name="id">ResolutionID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Resource_AddFields(System.Int32)">
             <param name="id">ResourceTypeID</param>
         </member>

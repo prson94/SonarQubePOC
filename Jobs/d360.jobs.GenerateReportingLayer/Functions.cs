@@ -978,6 +978,7 @@ from      Artifact A
 
                         selectSql = @"
 select	A.ID as FusionAttributeID,
+        A.ParentID as ParentFusionAttributeID,
         A.TextPath as FusionAttributePath,
         A.Name as FusionAttribute,
         F.ID as ConfigurationID,

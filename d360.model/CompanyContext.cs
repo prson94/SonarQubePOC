@@ -240,10 +240,6 @@ namespace d360.model
 
         public DbSet<ReportTile> ReportTiles { get; set; }
 
-        public DbSet<Resolution> Resolutions { get; set; }
-
-        public DbSet<ResolutionRelation> ResolutionRelations { get; set; }
-
         public DbSet<ResourceGroup> ResourceGroups { get; set; }
 
         public DbSet<Responsibility> Responsibilities { get; set; }
