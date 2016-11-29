@@ -23,10 +23,13 @@ export class NodeModel {
     predicate: string;
     predicateid: number;
     typeName: string;
+    type: string;
+    typeId: number;
     everExpanded: boolean = false;
     isTreeExpanded: boolean;
     template: string;
     visible: boolean = true;
+    childNodes: NodeModel[] = [];
 }
 
 export class PredicateFilter {

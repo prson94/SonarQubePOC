@@ -62,6 +62,9 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             icon: 'fa-refresh menu-icon'
         });
         this.menuItems.push({
+            icon: 'fa-sitemap menu-icon'
+        });
+        this.menuItems.push({
             icon: 'fa-info-circle menu-icon'
         });
 
@@ -76,6 +79,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.myDiagram = this.createDiagram();
 
         this.myDiagram.nodeTemplateMap.add("NonFocal", this.createNonFocalNode());
+        this.myDiagram.nodeTemplateMap.add("Category", this.createCategoryNode());
         this.myDiagram.nodeTemplateMap.add("", this.createDefaultNode());
         this.myDiagram.linkTemplate = this.createLinkTemplate();
 
@@ -95,6 +99,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     private populateDiagram() {
         this.isLoading = true;
         this.predicates = [];
+        let focal: NodeModel = null;
 
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
             .then(data => {
@@ -102,6 +107,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                 this.model.nodes.forEach(n => {
                     let isFocal = (n.obj == this.objectType && n.objid == this.objectID);
+                    if (isFocal) focal = n;
 
                     n.everExpanded = isFocal;
                     n.isTreeExpanded = isFocal;
@@ -117,16 +123,96 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                 });
 
+                this.addCategoryLayer(focal, this.model.nodes, this.model.links, false);
+
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
                 this.isLoading = false;
-                console.log(data);
             });
+    }
+
+    private addCategoryLayer(root: NodeModel, nodes: NodeModel[], links: LinkModel[], append: boolean = true) {
+        let categories: any[] = [];
+        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+
+        if (links == null) links = [];
+        if (nodes == null) nodes = [];
+
+        nodes.forEach(n => {
+            if (n.key == root.key)
+                return;
+
+            let cat = categories.find(c => c.id == n.typeId && c.type == n.type);
+            if (cat == null && n.typeId != null) {
+                categories.push({
+                    id: n.typeId,
+                    type: n.type,
+                    name: n.typeName,
+                    fore: n.fore,
+                    back: n.back,
+                    count: 1
+                });
+            } else {
+                cat.count++;
+            }
+        });
+
+        categories.forEach(c => {
+
+            let node = new NodeModel();
+            node.key = root.key + '|' + c.type + c.id;
+            node.template = 'Category';
+            node.name = c.count + ' ' + c.name;
+            node.fore = c.fore;
+            node.back = c.back;
+            node.everExpanded = true;
+
+            let link = new LinkModel();
+            link.from = root.key
+            link.to = node.key;
+
+            nodes.filter(n => n.typeId == c.id && n.type == c.type).forEach(n => {
+                if (n.key == root.key)
+                    return;
+                node.childNodes.push(n);
+                let i = nodes.findIndex(i => i.key == n.key);
+                let clink: LinkModel = null;
+                if (append)
+                    clink = links.find(<LinkModel>(l) => l.from == root.key && l.to == n.key);
+                else
+                    clink = this.model.links.find(l => l.from == root.key && l.to == n.key);
+
+                if (clink) {
+                    clink.from = node.key;
+                }
+            });
+
+            this.model.nodes.push(node);
+            this.model.links.push(link);
+
+            if (append) {
+                this.myDiagram.startTransaction("addCategoryLayer");
+                diagramModel.addNodeData(node);
+                diagramModel.addLinkData(link);
+                this.myDiagram.commitTransaction("addCategoryLayer");
+            }
+
+
+        });
+        if (append) {
+            nodes.forEach(n => { this.model.nodes.push(n); diagramModel.addNodeData(n); });
+            links.forEach(l => { this.model.links.push(l); diagramModel.addLinkData(l); });
+        }
+
     }
 
     private expandNode(node) {
         var diagram = node.diagram;
         diagram.startTransaction("CollapseExpandTree");
         var data = node.data;
+
+        let nodes = [];
+        let links = [];
+
         if (!data.everExpanded) {
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
@@ -134,7 +220,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.diagramService.getImpactDiagram(data.obj, data.objid)
                 .then(r => {
                     let hasChildren = false;
-                    
+
                     r.nodes.forEach(n => {
                         if (!(n.obj == data.obj && n.objid == data.objid)) {
                             n.everExpanded = false;
@@ -149,22 +235,40 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                             });
 
                             if (allowAdd) {
-                                this.myDiagram.model.addNodeData(n);
+                                nodes.push(n);
                                 hasChildren = true;
                             }
                         }
                     });
 
                     r.links.forEach(l => {
+                        let addLink = true;
                         if (l.to == this.objectType + this.objectID.toString())
-                            return;
-                        hasChildren = true;
-                        let links: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
-                        links.addLinkData(l);
+                            addLink = false;
+
+                        //prevent duplicate links of the same predicate between the same nodes
+                        if (addLink)
+                            this.myDiagram.links.each(k => {
+                                if ((k.data.to == l.to && k.data.from == l.from) || (k.data.to == l.from && k.data.from == l.to)) {
+                                    if (k.data.predicateid == l.predicateid) {
+                                        addLink = false;
+                                        return;
+                                    }
+                                }
+                            });
+
+                        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+                        if (addLink) {
+                            hasChildren = true;
+                            links.push(l);
+                        }
                     });
 
+                    //if there are no children, hide the expand/collapse button
                     if (!hasChildren) {
                         node.findObject('TREEBUTTON').visible = false;
+                    } else {
+                        this.addCategoryLayer(node.data, nodes, links);
                     }
 
                 });
@@ -203,7 +307,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         let id = (p == null) ? 0 : p.id;
         let visible = (p == null) ? true : p.selected;
 
-        console.log(id, visible);
         this.myDiagram.startTransaction("togglePredicate");
 
         this.myDiagram.nodes.each(n => {
@@ -218,6 +321,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         });
 
         this.myDiagram.commitTransaction("togglePredicate");
+        this.myDiagram.zoomToFit();
     }
 
     //#region events
@@ -432,6 +536,64 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         );
     }
 
+    private createCategoryNode(): go.Node {
+        let nodeWidth = 200;
+        let nodeHeight = 85;
+        let nodeFontSize = 13;
+
+        return this.g(go.Node, "Spot",
+            {
+                selectionObjectName: "PANEL",
+                isTreeExpanded: false,
+                isTreeLeaf: false
+            },
+            this.g(go.Panel, "Auto", {
+                name: "PANEL",
+                width: nodeWidth,
+                height: nodeHeight
+            },
+                this.g(go.Shape, "RoundedRectangle", {
+                    stroke: '#000',
+                    strokeWidth: 2,
+                    spot1: go.Spot.TopLeft,
+                    spot2: go.Spot.BottomRight,
+                    name: "NodeShape"
+                },
+                    new go.Binding("fill", "back").makeTwoWay()
+                ),
+                this.g(go.Panel, "Table",
+                    this.g(go.TextBlock, {
+                        row: 0,
+                        margin: 3,
+                        alignment: go.Spot.Top,
+                        editable: false,
+                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                        font: "bold " + nodeFontSize + "pt sans-serif"
+                    },
+                        new go.Binding("text", "name").makeTwoWay(),
+                        new go.Binding("stroke", "fore").makeTwoWay()
+                    )
+                )
+            ),
+            // the expand/collapse button, at the top-right corner
+            this.g("TreeExpanderButton",
+                {
+                    name: 'TREEBUTTON',
+                    width: 20, height: 20,
+                    alignment: go.Spot.TopRight,
+                    alignmentFocus: go.Spot.Center,
+                    // customize the expander behavior to
+                    // create children if the node has never been expanded
+                    click: (e, obj) => {  // OBJ is the Button
+                        var node = obj.part;  // get the Node containing this Button
+                        if (node === null) return;
+                        e.handled = true;
+                        this.expandNode(node);
+                    }
+                }
+            )  // end TreeExpanderButton
+        );
+    }
 
     private createLinkTemplate(): go.Link {
         return this.g(go.Link,  // the whole link panel
