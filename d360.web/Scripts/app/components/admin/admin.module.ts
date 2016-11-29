@@ -8,8 +8,6 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 
 import { ColorPickerModule } from 'angular2-color-picker';
 
-import { AceEditorDirective, AceEditorComponent } from 'ng2-ace-editor';
-
 import { AdminRelationshipEditorModule } from '../shared/relationshipeditor/admin-relationship-editor.module';
 import { AdminRoutingModule } from './admin.routes';
 import { CoreModule } from '../shared/core.module';
@@ -48,12 +46,9 @@ import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminResourcesComponent } from './admin-resources.component';
-import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
-import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
-import { AdminReportItemsComponent } from './admin-report-items.component';
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
@@ -61,7 +56,6 @@ import { AdminTemplateEditorComponent } from './admin-template-editor';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
-import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 import { ArtifactTypeForm } from './artifact-type.form';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
@@ -75,8 +69,7 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminAttributeAllocationComponent,
         AdminArtifactsComponent,
         AdminComponent,
-        AdminAttributesComponent,
-        AdminDashboardsComponent,        
+        AdminAttributesComponent,            
         AdminFusionComponent,
         AdminGovernanceComponent,
         AdminGroupsComponent,           
@@ -85,15 +78,12 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminRulesComponent,                    
         AdminTaxonomiesComponent,
         AdminTemplatesComponent,        
-        AdminAttributeTypeEditor,
-        AdminDashboardsEditor,        
+        AdminAttributeTypeEditor,        
         AdminLevelListComponent,                 
         AdminTaxonomyDetailComponent,
         AdminTaxonomyEditorComponent,
         AdminLevelEditorComponent,
-        AdminTemplateEditorComponent,        
-        AdminReportItemsComponent,
-        AdminReportTileEditorComponent,
+        AdminTemplateEditorComponent,                
         AdminRuleDimensionsComponent,        
         AdminModelClassificationComponent,        
         ArtifactTypeForm,        
@@ -102,8 +92,7 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         FusionAttributesTile,
         FusionConfigurationTile,
         GroupForm,            
-        ResponsibilityTypeForm,
-        AceEditorComponent,
+        ResponsibilityTypeForm,        
     ]
     , imports: [CommonModule,
         FormsModule,

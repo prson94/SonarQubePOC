@@ -1,8 +1,8 @@
 ﻿import { Component, OnDestroy, OnInit} from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { MessagesService, HeaderBreadcrumbService, ReportsService, RightSidebarService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
-import { Report, ReportType } from '../../models/report.model';
+import { MessagesService, HeaderBreadcrumbService, ReportsService, RightSidebarService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
+import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 
 

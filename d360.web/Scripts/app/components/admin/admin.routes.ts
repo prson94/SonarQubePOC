@@ -12,7 +12,6 @@ import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminResourcesComponent } from './admin-resources.component';
-import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 
@@ -25,8 +24,7 @@ const routes: Routes = [
         children: [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, component: AdminFusionComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: AdminArtifactsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },            
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, component: AdminDashboardsComponent },            
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },                        
             { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, component: AdminGroupsComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: AdminResourcesComponent },
@@ -42,6 +40,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, loadChildren: './load/admin-load.module#AdminLoadModule?chunkName=adminLoadChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, loadChildren: './settings/admin-settings.module#AdminSettingsModule?chunkName=adminSettingsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS, loadChildren: './analytics/admin-analytics.module#AdminAnalyticsModule?chunkName=adminAnalyticsChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, loadChildren: './dashboards/admin-dashboards.module#AdminDashboardsModule?chunkName=adminDashboardsChunk' },
         ]
     }
 ];

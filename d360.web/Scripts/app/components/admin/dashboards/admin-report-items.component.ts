@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import { Report, ReportTile } from '../../models/report.model';
-import { MessagesService, ReportsService  } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { Report, ReportTile } from '../../../models/report.model';
+import { MessagesService, ReportsService  } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-report-item',
