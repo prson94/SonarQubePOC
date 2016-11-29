@@ -41,7 +41,6 @@ import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
-import { AdminFusionComponent } from './admin-fusion.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
@@ -52,18 +51,13 @@ import { AdminModelClassificationComponent } from './admin-model-classification.
 import { ArtifactTypeForm } from './artifact-type.form';
 import { ClaimsTile } from './claims.tile';
 import { ClaimsMatrixPart } from './claims-matrix.part';
-import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { FusionAttributesTile } from './fusion-attributes.tile';
-
-
 
 @NgModule({
     declarations: [
         AdminAttributeAllocationComponent,
         AdminArtifactsComponent,
         AdminComponent,
-        AdminAttributesComponent,            
-        AdminFusionComponent,                        
+        AdminAttributesComponent,                    
         AdminPoliciesComponent,                                
         AdminTaxonomiesComponent,
         AdminAttributeTypeEditor,
@@ -74,9 +68,7 @@ import { FusionAttributesTile } from './fusion-attributes.tile';
         AdminModelClassificationComponent,        
         ArtifactTypeForm,                
         ClaimsMatrixPart,
-        ClaimsTile,
-        FusionAttributesTile,
-        FusionConfigurationTile,                         
+        ClaimsTile,                                
     ],
     exports: [
         ClaimsTile,

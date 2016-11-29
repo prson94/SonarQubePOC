@@ -1,10 +1,10 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
-import { FusionConfiguration, FusionType, FusionFilter } from '../../models/fusion.model';
-import { FusionService } from '../../services/fusion.service';
-import { GridColumn } from '../../models/grid-definition.model';
-import { BaseComponent } from '../shared/base.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { FusionConfiguration, FusionType, FusionFilter } from '../../../models/fusion.model';
+import { FusionService } from '../../../services/fusion.service';
+import { GridColumn } from '../../../models/grid-definition.model';
+import { BaseComponent } from '../../shared/base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',

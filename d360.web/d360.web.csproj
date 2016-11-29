@@ -794,7 +794,7 @@
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\images\ui-icons_ffffff_256x240.png" />
     <Content Include="node_modules\primeng\resources\themes\omega\theme.css" />
-    <Content Include="Scripts\app\components\admin\admin-fusion.component.html" />
+    <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\artifact-type.form.html" />
@@ -805,7 +805,7 @@
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage.component.html" />
-    <Content Include="Scripts\app\components\admin\fusion-attributes.tile.html" />
+    <Content Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.html" />
     <Content Include="Scripts\app\components\shared\fusion-filters.component.html" />
     <Content Include="Scripts\app\components\shared\group-members.component.html" />
     <Content Include="Scripts\powerbi.js" />
@@ -833,7 +833,7 @@
     <None Include="Properties\PublishProfiles\UI - Nightly.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - EU North.pubxml" />
-    <Content Include="Scripts\app\components\admin\fusion-configuration.tile.html" />
+    <Content Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.html" />
     <None Include="Scripts\Common.js" />
     <Content Include="Scripts\app\components\admin\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
@@ -957,12 +957,14 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attribute-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-attribute-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\admin-fusion.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
@@ -1227,8 +1229,8 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion-attributes.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\fusion-configuration.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />

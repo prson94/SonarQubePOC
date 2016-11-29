@@ -1,9 +1,8 @@
-﻿
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
-import { FusionAttributeType, FusionType } from '../../models/fusion.model';
-import { FusionService } from '../../services/fusion.service';
-import { FormMode } from '../../models/form.model';
+import { FusionAttributeType, FusionType } from '../../../models/fusion.model';
+import { FusionService } from '../../../services/fusion.service';
+import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 
 @Component({
