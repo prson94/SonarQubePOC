@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import { SurveyQuestionType, SurveyType } from '../../models/survey.model';
-import { MessagesService, SurveysService  } from '../../services/index';
-import { BaseComponent } from '../shared/base.component';
+import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
+import { MessagesService, SurveysService  } from '../../../services/index';
+import { BaseComponent } from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-survey-questions',

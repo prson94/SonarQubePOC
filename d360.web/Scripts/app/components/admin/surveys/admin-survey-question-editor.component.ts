@@ -1,10 +1,9 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SelectItem } from 'primeng/primeng';
-import { SurveysService } from '../../services/index';
-import { SurveyQuestionType, SurveyQuestionTypeDetails } from '../../models/survey.model';
-import { DropdownOption } from '../../models/dropdown.model';
+import { SurveysService } from '../../../services/index';
+import { SurveyQuestionType, SurveyQuestionTypeDetails } from '../../../models/survey.model';
+import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 
 @Component({

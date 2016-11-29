@@ -959,6 +959,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-dashboards-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-model-classification.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationship-roles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
@@ -980,8 +982,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rules.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-question-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-surveys.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
@@ -1218,7 +1220,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-rule-dimensions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\structure.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-survey-questions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\claims.tile.ts" />

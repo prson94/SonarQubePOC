@@ -62,19 +62,16 @@ import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminLoadComponent } from './admin-load.component';
 import { AdminFusionComponent } from './admin-fusion.component';
-import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
 import { AdminReportItemsComponent } from './admin-report-items.component';
 import { AdminStatisticEditor } from './admin-statistics-editor.component';
-import { AdminSurveyQuestionEditorEditor } from './admin-survey-question-editor.component';
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminTemplateEditorComponent } from './admin-template-editor';
 import { AdminStatisticCheckTypeInput } from './admin-statistic-checktype-input';
-import { AdminSurveyQuestionsComponent } from './admin-survey-questions.component';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
@@ -108,16 +105,14 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminResourcesComponent,
         AdminRulesComponent,
         AdminSettingsComponent,
-        AdminStatisticsComponent,
-        AdminSurveysComponent,
+        AdminStatisticsComponent,        
         AdminTaxonomiesComponent,
         AdminTemplatesComponent,
         AdminWorkflowComponent,
         AdminAttributeTypeEditor,
         AdminDashboardsEditor,        
         AdminLevelListComponent,        
-        AdminStatisticEditor,
-        AdminSurveyQuestionEditorEditor,
+        AdminStatisticEditor,        
         AdminTaxonomyDetailComponent,
         AdminTaxonomyEditorComponent,
         AdminLevelEditorComponent,
@@ -125,8 +120,7 @@ import { WorkflowItemForm } from './workflow-item.form';
         AdminStatisticCheckTypeInput,
         AdminReportItemsComponent,
         AdminReportTileEditorComponent,
-        AdminRuleDimensionsComponent,
-        AdminSurveyQuestionsComponent,
+        AdminRuleDimensionsComponent,        
         AdminModelClassificationComponent,        
         ArtifactTypeForm,
         BulkLoadItemComponent,

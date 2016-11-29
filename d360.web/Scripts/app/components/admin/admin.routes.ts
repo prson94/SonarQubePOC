@@ -18,7 +18,6 @@ import { AdminStatisticsComponent } from './admin-statistics.component';
 import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminLoadComponent } from './admin-load.component';
 import { AdminFusionComponent } from './admin-fusion.component';
-import { AdminSurveysComponent } from './admin-surveys.component';
 import { AdminComponent } from './admin.component';
 
 
@@ -39,15 +38,14 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, component: AdminResourcesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, component: AdminGovernanceComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, component: AdminRulesComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, component: AdminSettingsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, component: AdminSurveysComponent },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, component: AdminSettingsComponent },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: AdminTaxonomiesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TEMPLATES, component: AdminTemplatesComponent },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, component: AdminWorkflowComponent },
             //lazy load
             { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: './lookups/admin-lookups.module#AdminLookupsModule?chunkName=adminLookupsChunk' }, 
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, loadChildren: './relationships/admin-relationships.module#AdminRelationshipsModule?chunkName=adminRelationshipsChunk' }, 
-            
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, loadChildren: './surveys/admin-surveys.module#AdminSurveysModule?chunkName=adminSurveysChunk' },             
         ]
     }
 ];

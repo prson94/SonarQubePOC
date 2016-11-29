@@ -1,9 +1,9 @@
 ﻿import { Component } from '@angular/core';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, TemplatesService,  SurveysService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component'
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { MessagesService, HeaderBreadcrumbService, TemplatesService,  SurveysService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
-import { SurveyType } from '../../models/survey.model';
+import { SurveyType } from '../../../models/survey.model';
 
 @Component({
     selector: 'd3s-admin-surveys',
