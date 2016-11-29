@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy} from '@angular/core';
-import { MessagesService, HeaderBreadcrumbService, PoliciesService, RightSidebarService, StateService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component';
-import { PolicyType } from '../../models/policy.model';
+import { MessagesService, HeaderBreadcrumbService, PoliciesService, RightSidebarService, StateService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component';
+import { PolicyType } from '../../../models/policy.model';
 import { Title } from '@angular/platform-browser';
 
 @Component({

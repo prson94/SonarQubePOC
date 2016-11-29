@@ -39,7 +39,6 @@ import {
 import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminComponent } from './admin.component';
 import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.component';
@@ -57,8 +56,7 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
         AdminAttributeAllocationComponent,
         AdminArtifactsComponent,
         AdminComponent,
-        AdminAttributesComponent,                    
-        AdminPoliciesComponent,                                
+        AdminAttributesComponent,        
         AdminTaxonomiesComponent,
         AdminAttributeTypeEditor,
         AdminLevelListComponent,
@@ -72,6 +70,7 @@ import { ClaimsMatrixPart } from './claims-matrix.part';
     ],
     exports: [
         ClaimsTile,
+        AdminLevelListComponent,
     ],
     imports: [CommonModule,
         FormsModule,

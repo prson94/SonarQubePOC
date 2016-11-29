@@ -5,7 +5,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 import { AdminArtifactsComponent } from './admin-artifacts.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
-import { AdminPoliciesComponent } from './admin-policies.component';
 import { AdminAttributesComponent } from './admin-attributes.component';
 import { AdminComponent } from './admin.component';
 
@@ -17,8 +16,7 @@ const routes: Routes = [
         canActivate: [AdminUserGuard],
         children: [            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, component: AdminArtifactsComponent },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },            
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, component: AdminPoliciesComponent },                      
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, component: AdminAttributesComponent },                        
             { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, component: AdminTaxonomiesComponent },
             
             //lazy load
@@ -36,6 +34,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, loadChildren: './resources/admin-resources.module#AdminResourcesModule?chunkName=adminResourcesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, loadChildren: './groups/admin-groups.module#AdminGroupsModule?chunkName=adminGroupsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, loadChildren: './fusion/admin-fusion.module#AdminFusionModule?chunkName=adminFusionChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: './policies/admin-policies.module#AdminPoliciesModule?chunkName=adminPoliciesChunk' },
         ]
     }
 ];

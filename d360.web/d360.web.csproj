@@ -969,6 +969,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.module.ts" />
@@ -1000,7 +1002,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-policies.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rules.component.ts" />
