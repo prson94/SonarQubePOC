@@ -1,8 +1,7 @@
-﻿///<reference path="../../../../node_modules/typings/index.d.ts"/>  
-import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { TemplatesService } from '../../services/templates.service';
-import { Template } from '../../models/template.model';
+import { TemplatesService } from '../../../services/templates.service';
+import { Template } from '../../../models/template.model';
 import { SelectItem } from 'primeng/primeng';
 import * as _ from 'lodash';
 

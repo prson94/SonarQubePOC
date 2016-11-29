@@ -1,8 +1,8 @@
 ﻿import { Component } from '@angular/core';
-import { Template } from '../../models/template.model';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService, HeaderBreadcrumbService, TemplatesService  } from '../../services/index';
-import { AdminBaseComponent } from './admin-base.component'
+import { Template } from '../../../models/template.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { MessagesService, HeaderBreadcrumbService, TemplatesService  } from '../../../services/index';
+import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 
 @Component({

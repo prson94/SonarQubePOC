@@ -40,7 +40,6 @@ import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.
 import { AdminGovernanceComponent } from './admin-governance.component';
 import { AdminGroupsComponent } from './admin-groups.component';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
-import { AdminTemplatesComponent } from './admin-templates.component';
 import { AdminTaxonomiesComponent } from './admin-taxonomies.component';
 import { AdminRulesComponent } from './admin-rules.component';
 import { AdminPoliciesComponent } from './admin-policies.component';
@@ -52,7 +51,6 @@ import { AdminAttributeTypeEditor } from './admin-attribute-type-editor.componen
 import { AdminTaxonomyEditorComponent } from './admin-taxonomy-editor.component';
 import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component';
 import { AdminLevelEditorComponent } from './admin-level-editor.component';
-import { AdminTemplateEditorComponent } from './admin-template-editor';
 import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminModelClassificationComponent } from './admin-model-classification.component';
@@ -77,13 +75,11 @@ import { ResponsibilityTypeForm } from './responsibility-type.form';
         AdminResourcesComponent,
         AdminRulesComponent,                    
         AdminTaxonomiesComponent,
-        AdminTemplatesComponent,        
-        AdminAttributeTypeEditor,        
-        AdminLevelListComponent,                 
+        AdminAttributeTypeEditor,
+        AdminLevelListComponent,
         AdminTaxonomyDetailComponent,
         AdminTaxonomyEditorComponent,
-        AdminLevelEditorComponent,
-        AdminTemplateEditorComponent,                
+        AdminLevelEditorComponent,        
         AdminRuleDimensionsComponent,        
         AdminModelClassificationComponent,        
         ArtifactTypeForm,        

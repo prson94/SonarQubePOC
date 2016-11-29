@@ -969,6 +969,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
@@ -1000,8 +1002,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-taxonomy-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-template-editor.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-templates.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-template-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
