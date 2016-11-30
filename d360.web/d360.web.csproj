@@ -770,7 +770,7 @@
     </Content>
     <Content Include="Metadata\deploymentTemplates\apiappconfig.azureresource.json" />
     <Content Include="package.json" />
-    <Content Include="Content\styles\_VariablesAng.less" />
+    <Content Include="Content\styles\_Variables.less" />
     <Content Include="fonts\FontAwesome.otf" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\fontawesome-webfont.woff" />
