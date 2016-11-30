@@ -6,7 +6,6 @@ import { HeaderBreadcrumbService, PoliciesService, RightSidebarService, Permissi
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
-import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
@@ -47,33 +46,14 @@ import { StringConstants } from '../../static/string-constants';
                                 </div>
                             </div>
                         </div>
-                        <div *ngIf="formMode == FormMode.Default" class="row">
+                        <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">
-                                    <header><d3s-tile-actions [hasEdit]="hasRootUpdatePermissions()" (editClick)="edit()"></d3s-tile-actions></header>
-                                    <object-detail [objectType]="'Policy'" [objectID]="selected?.ID"></object-detail>
+                                    <d3s-object-definition-tile [objectPermissions]="permissions" [objectType]="'Policy'" [objectID]="selected?.ID" [hasAttributes]="policyType.AllowAttributes" [hasSynonyms]="false" (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
                                 </div>
                             </div>
-                        </div>                       
-                    </div> 
-                    <div *ngIf="formMode == FormMode.Editing" class="col s12">
-                         <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">
-                                    <d3s-dynamic-editor
-                                        [selection]="selected"
-                                        [title]="selected.Name"
-                                        objectType="policy"
-                                        [objectID]="selected.ID"
-                                        editUri="form/dynamicedit/edit/policy"
-                                        hasCloseButton="true"
-                                        (closeClick)="formMode = FormMode.Default"
-                                        (saveClick)="save($event)" >
-                                    </d3s-dynamic-editor>
-                                </div>
-                            </div>
-                        </div>
-                    </div>                  
+                        </div>  
+                    </div>                     
                 </div>
                 `,
     providers: [PoliciesService, PermissionsService]
@@ -87,10 +67,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     selected: Policy;
     sub: any;
     treeSub: any;
-
-    formMode: FormMode = FormMode.Default;
-    FormMode = FormMode;
-    
+        
     constructor(
         private headerActionsService: HeaderActionsService,
         protected titleService: Title,
@@ -152,7 +129,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.clearSidebar();
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
-
     }
 
     load(hierarchyId: number): Promise<any> {
@@ -183,6 +159,10 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             this.treeNodeArray = this.buildTreeNodeArray(this.policies);
             this.selectPolicyHierarchy(selectedHierarchyId);
         });
+    }
+
+    private editComplete(e: any) {
+        this.load(e.ID);
     }
 
 
@@ -262,26 +242,4 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     private showHierarchy(id: number) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
     }
-
-    private edit() {
-        this.formMode = FormMode.Editing;
-    }
-
-    private save(e: any) {                
-        if (this.selected && e.values) {
-            this.selected.Name = e.values.Name;
-            let hierarchyId = e.values.ID;
-
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerActionsService.emitFavoritesChange();
-
-            this.load(hierarchyId)
-                .then(() => {
-                this.formMode = FormMode.Default;
-            });
-
-        }
-
-    }
-
 };
