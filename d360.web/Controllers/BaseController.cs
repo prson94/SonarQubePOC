@@ -104,6 +104,7 @@ namespace d360.web.Controllers
         public JsonNetResult()
         {
             SerializerSettings = new JsonSerializerSettings();
+            SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;            
         }
 
         public override void ExecuteResult(ControllerContext context)

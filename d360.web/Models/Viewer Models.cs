@@ -295,7 +295,16 @@ namespace d360.web.Models
                             {
                                 value = dateVal.ToShortDateString();
                             }
-                            break;                           
+                            break;
+                        case "DateTime":
+                            var stringDateTime = form[ft.Name];
+                            DateTime dateTimeVal = DateTime.MinValue;
+                            //throw out any time piece sent in
+                            if (DateTime.TryParse(stringDateTime, out dateTimeVal))
+                            {
+                                value = dateTimeVal.ToString("s"); //already in utc
+                            }
+                            break;
                         default:
                             value = Server.HtmlEncode(form[ft.Name]);
                             break;
