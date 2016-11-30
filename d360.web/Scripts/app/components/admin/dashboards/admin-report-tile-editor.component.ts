@@ -28,7 +28,7 @@ import * as _ from 'lodash';
                             <div class="FieldName">SQL</div>
                             <div>
                                 <ace-editor
-                                    [text]="editedTile.CommandText" 
+                                    [text]="initialSql" 
                                     (textChanged)="editedTile.CommandText=$event" 
                                     [mode]="'sql'"
                                     theme="eclipse"
@@ -59,6 +59,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     action: string = "Edit";
     urlPrefix: string;
     editedTile: ReportTile;
+    initialSql: string;
     
     constructor(private companySettingsService: CompanySettingsService) {
         super();        
@@ -74,6 +75,8 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
             this.editedTile.ReportID = this.reportId;
             this.action = "New";
         }
+
+        this.initialSql = this.editedTile.CommandText;
 
         this.load();
     }
