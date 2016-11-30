@@ -992,6 +992,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\templates\admin-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationship-roles.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
@@ -1135,7 +1136,7 @@
     <TypeScriptCompile Include="Scripts\app\components\group\group.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-groups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\artifact-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-item-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary-filters.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-summary.component.ts" />
@@ -1204,7 +1205,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
@@ -1220,9 +1221,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-board.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-health.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-issues.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
@@ -1244,7 +1245,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\object-governance.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\predicates-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />

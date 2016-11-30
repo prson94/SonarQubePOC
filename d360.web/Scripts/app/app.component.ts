@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/typings/index.d.ts"/>  
 import { Component, AfterViewInit, ViewChild, ViewChildren, OnInit, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagesService, HeaderBreadcrumbService, HeaderActionsService, RightSidebarService, WebAnalyticsService, StateService  } from './services/index';

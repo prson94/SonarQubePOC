@@ -1,5 +1,5 @@
 ﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
+import { BaseComponent } from '../base.component';
 
 @Component({
     selector: 'd3s-object-issues',

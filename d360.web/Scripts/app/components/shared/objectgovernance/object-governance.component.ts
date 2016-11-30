@@ -1,7 +1,7 @@
-﻿import { Input, Output, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { ObjectStatisticsService } from '../../services/index';
-import { ObjectStatistics } from '../../models/object-statistics.model';
+﻿import { Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { ObjectStatisticsService } from '../../../services/index';
+import { ObjectStatistics } from '../../../models/object-statistics.model';
 
 @Component({
     selector: 'd3s-object-governance',    
@@ -56,7 +56,7 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
     providers: [ObjectStatisticsService]
 })
 
-export class ObjectGovernanceComponent extends BaseComponent implements OnInit, OnChanges {
+export class ObjectGovernanceComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -74,11 +74,7 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnInit, 
     constructor(protected objectStatisticsService: ObjectStatisticsService) {
         super();
     }    
-
-    ngOnInit() {
     
-    }
-
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.objectType && this.objectID)
             this.load();

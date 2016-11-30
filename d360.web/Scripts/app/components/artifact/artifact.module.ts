@@ -19,6 +19,7 @@ import { SharedDashboardModule } from '../shared/dashboard/shared-dashboard.modu
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDiagramModule } from '../shared/diagram/shared-diagram.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedResponsibilitiesModule } from '../shared/responsibilities/shared-responsibilities.module';
 import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 
@@ -82,6 +83,7 @@ import {
         SharedGridPagingInfoModule,
         SharedDiagramModule,
         SharedDynamicGridEditorModule,
+        SharedObjectGovernanceModule,
         SharedResponsibilitiesModule,
         SharedRelationshipModule,
         TilesModule,

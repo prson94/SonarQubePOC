@@ -17,6 +17,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 import { ResourceApiComponent } from './resource-api.component';
 import { ResourceComponent } from './resource.component';
@@ -78,6 +79,7 @@ import {
         SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
+        SharedObjectGovernanceModule,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

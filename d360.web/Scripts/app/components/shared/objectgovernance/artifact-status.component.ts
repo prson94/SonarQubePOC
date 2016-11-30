@@ -1,12 +1,11 @@
-﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { ArtifactService, MessagesService } from '../../services/index';
+﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { ArtifactService, MessagesService } from '../../../services/index';
 
 @Component({
     selector: 'd3s-artifact-status',
     template: `
-            <div>
-                <!--header>Status</header-->
+            <div>                
                 <span *ngIf="!showRequestCertification">
                     <div class="status-value" [ngClass]="{'status-value-certified':isCertified(), 'status-value-review': isUnderReview()}">{{status}}</div>            
                     <div *ngIf="isDraft() && isWorkflowEnabled">
@@ -30,7 +29,7 @@ import { ArtifactService, MessagesService } from '../../services/index';
     providers: [ArtifactService]
 })
 
-export class ArtifactStatusComponent extends BaseComponent implements OnChanges {
+export class ArtifactStatusComponent extends BaseComponent  {
     @Input() objectID: number = 0;
     @Input() status: string;
     
@@ -44,11 +43,7 @@ export class ArtifactStatusComponent extends BaseComponent implements OnChanges 
     constructor(protected artifactService: ArtifactService, protected messagesService: MessagesService) {
         super();        
     }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        
-    }
-
+    
     private isCertified(): boolean {
         return this.status && this.status.toUpperCase() == "CERTIFIED";
     }
