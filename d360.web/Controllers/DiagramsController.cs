@@ -8,6 +8,7 @@ using d360.core.enums;
 using d360.web.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Data.Entity.Design.PluralizationServices;
 
 namespace d360.web.Controllers
 {
@@ -61,9 +62,21 @@ namespace d360.web.Controllers
                 type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                 id
             });
+            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var json = string.Join("", list);
-            var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+            //var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+            dynamic obj = JsonConvert.DeserializeObject(string.IsNullOrEmpty(json) ? "{}" : json);
+
+            if (obj != null && obj.nodes != null)
+                foreach(var node in obj.nodes)
+                {
+                    try
+                    {
+                        node.typeNamePlural.Value = pluralize.IsPlural(node.typeNamePlural.Value) ? node.typeNamePlural.Value : pluralize.Pluralize(node.typeNamePlural.Value);
+                    }
+                    catch { }
+                }
 
             return new JsonNetResult
             {

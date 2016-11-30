@@ -87,6 +87,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
         this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -156,6 +157,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     count: 1
                 });
             } else {
+                cat.name = n.typeNamePlural;
                 cat.count++;
             }
         });
@@ -169,6 +171,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             node.fore = c.fore;
             node.back = c.back;
             node.everExpanded = true;
+            node.childCount = c.count;
 
             let link = new LinkModel();
             link.from = root.key
@@ -178,7 +181,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             nodes.filter(n => n.typeId == c.id && n.type == c.type).forEach(n => {
                 if (n.key == root.key)
                     return;
-                node.childNodes.push(n);
                 let i = nodes.findIndex(i => i.key == n.key);
                 let clink: LinkModel = null;
                 if (append)
@@ -319,14 +321,52 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                 n.visible = visible;
             }
         });
+
         this.myDiagram.links.each(l => {
             if (l.data.predicateid == id || id == 0) {
                 l.visible = visible;
             }
         });
-
+        this.calculateCategoryNumbers();
         this.myDiagram.commitTransaction("togglePredicate");
         this.myDiagram.zoomToFit();
+    }
+
+
+    private calculateCategoryNumbers() {
+        let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
+        this.myDiagram.startTransaction("calculateCategoryNumbers");
+        this.myDiagram.nodes.each(n => {
+            if (n.data.category != 'Category')
+                return;
+
+            //get nodes connected to this category
+            let children = [];
+            let name = '';
+
+            diagramModel.linkDataArray.filter((l: LinkModel) => l.from == n.data.key).forEach((l: LinkModel) => {
+
+                let node = this.myDiagram.findNodeForKey(l.to);
+                if (node && node.visible) {
+                    if (children.length == 0)
+                        name = node.data.typeName;
+                    else
+                        name = node.data.typeNamePlural;
+                    children.push(node);
+                }
+            });
+
+            diagramModel.setDataProperty(n.data, "childCount", children.length);
+            diagramModel.setDataProperty(n.data, "name", n.data.childCount + ' ' + name);
+
+
+            if (n.data.childCount == 0) {
+                n.visible = false;
+            } else {
+                n.visible = true;
+            }
+        });
+        this.myDiagram.commitTransaction("calculateCategoryNumbers");
     }
 
     //#region events
@@ -375,6 +415,16 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.selectedObject = null;
             this.selectedObjectID = null;
             this.selectTab('filter');
+        }
+    }
+
+    private ObjectDoubleClicked(e: any) {
+        var obj = e.diagram.selection.first().data;
+        if (obj != null) {
+            if (obj.key != null) {
+                let node = this.myDiagram.findNodeForKey(obj.key);
+                this.expandNode(node);
+            }
         }
     }
 

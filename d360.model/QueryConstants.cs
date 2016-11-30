@@ -1120,12 +1120,13 @@ where	T.ID = @id";
 
         public static string ImpactAnalysisDiagram = @"
 declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250),[type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
+declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateid int, intersectid int)
 
 	insert into @nodes
 		select	D.Object + cast(D.ObjectID as varchar),
 				D.Object,
 				D.ObjectID,
+				D.ObjectTypeName,
 				D.ObjectTypeName,
 				D.ObjectType,
 				D.ObjectTypeID,
@@ -1169,6 +1170,7 @@ declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName
 		select	D.Object + cast(D.ObjectID as varchar),
 				D.Object,
 				D.ObjectID,
+				D.ObjectTypeName,
 				D.ObjectTypeName,
 				D.ObjectType,
 				D.ObjectTypeID,
