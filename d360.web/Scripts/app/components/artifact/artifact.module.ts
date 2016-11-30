@@ -37,8 +37,7 @@ import { ArtifactTypeWorkflowStatusComponent } from './artifact-type-workflow-st
 import { ArtifactItemChildrenComponent } from './artifact-item-children.component';
 import { ArtifactItemChildGridComponent } from './artifact-item-child-grid.component';
 
-import {
-    GrowlModule,
+import {    
     InputTextModule,    
     DataTableModule,
     TreeTableModule,
@@ -58,8 +57,7 @@ import {
 
         ArtifactRoutingModule,
 
-        //primeng
-        GrowlModule,
+        //primeng        
         InputTextModule,        
         DataTableModule,
         TreeTableModule,

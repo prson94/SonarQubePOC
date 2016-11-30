@@ -23,7 +23,6 @@ import {
 } from 'primeng/primeng';
 
 
-import { SocialModule } from '../shared/social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
 import { TilesModule  } from './tiles/tiles.module';
@@ -107,8 +106,7 @@ import { UserListComponent } from './user-list.component';
         SharedDynamicGridEditorModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
-        SimpleAccordionModule,
-        SocialModule,
+        SimpleAccordionModule,        
         TilesModule,    
     ],
     providers: [
