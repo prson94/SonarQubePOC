@@ -119,6 +119,10 @@ export class DeleteForm {
 }
 
 
+import {    
+    ButtonModule,    
+} from 'primeng/primeng';
+
 @NgModule({
     declarations: [
         DeleteForm,        
@@ -128,6 +132,8 @@ export class DeleteForm {
     ]
     , imports: [
         CommonModule,
+
+        ButtonModule,
 
         SharedFormMessageModule,
     ]

@@ -133,7 +133,8 @@ export class DynamicEditorComponent extends BaseComponent {
                     field.Value = [];
                     for (let item of selected) {                        
                         field.Value.push(item.Value);
-                    }                    
+                    }
+                    if (field.Value.length == 0) field.Value = null;                   
                 }
                 group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
             }
