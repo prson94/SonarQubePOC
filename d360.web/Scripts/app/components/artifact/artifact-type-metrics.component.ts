@@ -8,12 +8,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
 import { ArtifactGridComponent} from './artifact-grid.component';
 
 @Component({
-    selector: 'd3s-artifact-type-metrics',
-    styles: [`
-      chart {
-        display: block;
-      }
-    `],
+    selector: 'd3s-artifact-type-metrics',    
     template: `     
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>            
                 <div class="row" *ngIf="!isLoading">                    

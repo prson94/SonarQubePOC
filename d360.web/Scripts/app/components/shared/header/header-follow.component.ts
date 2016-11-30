@@ -6,22 +6,8 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import * as _ from 'lodash';
 
-
 @Component({
-    selector: 'd3s-header-follow',
-    styles: [
-        `
-            .follow {
-                font-size: 1.2em;
-                color: #666;
-                padding: 0 15px;
-            }
-
-            .follow.active {
-                color: #0376c4;
-            }
-        `
-    ],
+    selector: 'd3s-header-follow',    
     template:
     `
         <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow" [title]="tooltipString">
@@ -63,8 +49,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.objectType = c.type;
-            this.objectId = c.id;
-            //console.log(c);
+            this.objectId = c.id;            
             this.checkActive();
         });
 
@@ -74,10 +59,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             this.objectType = o.type;
             this.objectId = o.id;
         }
-        this.checkActive();
-
-        //console.log(o);
-
+        this.checkActive();        
     }
 
 
@@ -91,8 +73,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
 
         this.followerService.getFollowInfo(this.objectType, this.objectId)
-            .then(f => {
-                //console.log('getFollowInfo', f);
+            .then(f => {                
                 this.isFollowing = f.isFollowing;
                 this.isFollowingParent = f.isFollowingParent;
 
@@ -105,13 +86,9 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
                 }
                 this.updateTooltip();
             });
-
-
     }
 
     toggleFollow() {
-
-        //console.log('follow', this.isFollowingParent, this.objectType, this.objectId);
         if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId))
             return;
         if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
@@ -121,8 +98,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         let includeChildren = this.objectType.endsWith('Type');
 
         this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren)
-            .then(f => {
-                //console.log(f);
+            .then(f => {                
                 if (f.type == 'notification') {
                     this.active = !this.active;
                     this.checkActive();

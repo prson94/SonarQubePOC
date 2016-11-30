@@ -9,12 +9,7 @@ require('highcharts/highcharts-more')(Highcharts);
 require('highcharts/modules/solid-gauge')(Highcharts);
 
 @Component({
-    selector: 'd3s-object-health',
-    styles: [`
-      chart {
-        display: block;
-      }
-    `],
+    selector: 'd3s-object-health',    
     template: `            
             <table class="governance-value" (click)="toggleDetails()">
                 <tr>

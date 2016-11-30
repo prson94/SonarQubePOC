@@ -19966,3 +19966,6 @@ label {
   overflow-y: scroll;
 }
 /* end diagram*/
+chart {
+  display: block;
+}

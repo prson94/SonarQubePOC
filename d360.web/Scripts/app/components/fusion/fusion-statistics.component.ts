@@ -9,12 +9,7 @@ require('highcharts/highcharts-more')(Highcharts);
 require('highcharts/modules/solid-gauge')(Highcharts);
 
 @Component({
-    selector: 'd3s-fusion-statistics',
-    styles: [`
-      chart {
-        display: block;
-      }
-    `],
+    selector: 'd3s-fusion-statistics',    
     template: ` 
                 <div class="tile tile-detail" *ngIf="!showAgentHistory && !showFusionHistory">
                     <header>Statistics <span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>

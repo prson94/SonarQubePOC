@@ -5,12 +5,7 @@ import { PointBreakdown, AverageScore } from '../../models/score.model';
 import { Highcharts } from 'angular2-highcharts';
 
 @Component({
-    selector: 'd3s-object-health-details',
-    styles: [`
-      chart {
-        display: block;
-      }
-    `],
+    selector: 'd3s-object-health-details',    
     template: `
             <div class="row">
                 <div class="col l6 m12 s12">
