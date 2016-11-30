@@ -16,6 +16,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION, component: PolicyListComponent },
             { path: ':policyTypeId', component: PolicyItemComponent },
             { path: ':policyTypeId/structure', component: PolicyItemStructureComponent },
+            { path: ':policyTypeId/id/:id', component: PolicyItemComponent }
         ]
     }
 ];

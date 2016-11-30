@@ -84,6 +84,8 @@
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/classification/${objectId}`;                
             case 'POLICYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;                
+            case 'POLICY':
+                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'RULE':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${objectId}`;
             default:

@@ -119,7 +119,11 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.sub = this.route.params.subscribe(params => {
             let newPolicyTypeId = +params['policyTypeId'];
-            let hierarchyId = +params['hierarchyId'] || 0;
+
+            let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
+
+            if (!hierarchyId)
+                hierarchyId = +params['hierarchyId'] || 0;
 
             this.hideSidebarItems();
 
