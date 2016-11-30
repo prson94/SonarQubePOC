@@ -804,7 +804,6 @@
     <Content Include="Scripts\app\components\home\home.component.html" />
     <Content Include="Scripts\app\tsconfig.json" />
     <Content Include="Scripts\errors.json" />
-    <None Include="Content\styles\_Variables.less" />
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <Content Include="Scripts\powerbi.js.map" />
     <None Include="Content\styles\Root.less" />
