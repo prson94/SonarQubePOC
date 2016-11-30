@@ -6,8 +6,8 @@
       "Content/styles/materialize.css",
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
-      "Content/styles/navigation.css",
-      "Content/styles/angular.css"
+      "Content/styles/angular.css",
+      "Content/quill/quill.snow.css"
     ]
   }
 ]

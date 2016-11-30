@@ -476,6 +476,7 @@
     <Content Include="Content\primeng\d3s\images\ui-icons_cd0a0a_256x240.png" />
     <Content Include="Content\primeng\d3s\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\primeng\d3s\theme.css" />
+    <Content Include="Content\quill\quill.snow.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -490,12 +491,6 @@
     <Content Include="Content\styles\apps.css" />
     <Content Include="Content\styles\apps.min.css">
       <DependentUpon>apps.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\navigation.css">
-      <DependentUpon>navigation.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\navigation.min.css">
-      <DependentUpon>navigation.css</DependentUpon>
     </Content>
     <Content Include="Content\styles\angular.less" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.eot" />
@@ -532,7 +527,6 @@
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
-    <None Include="Content\styles\typeahead.less" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
@@ -626,12 +620,6 @@
     <Content Include="Content\styles\images\tick.png" />
     <Content Include="Content\styles\images\time.png" />
     <Content Include="Content\styles\images\warning.png" />
-    <Content Include="Content\styles\jqx.d3s.css">
-      <DependentUpon>jqx.d3s.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\jqx.d3s.min.css">
-      <DependentUpon>jqx.d3s.css</DependentUpon>
-    </Content>
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -679,26 +667,12 @@
     <Content Include="Content\styles\Diagrams.min.css">
       <DependentUpon>Diagrams.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\jquery.gritter.css.map">
-      <DependentUpon>jquery.gritter.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\jqx.d3s.css.map">
-      <DependentUpon>jqx.d3s.css</DependentUpon>
-    </Content>
-    <None Include="Content\styles\jqx.d3s.less" />
-    <Content Include="Content\styles\jquery.gritter.css">
-      <DependentUpon>jquery.gritter.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\jquery.gritter.min.css">
-      <DependentUpon>jquery.gritter.css</DependentUpon>
-    </Content>
     <Content Include="Content\styles\Tooltip.css">
       <DependentUpon>Tooltip.less</DependentUpon>
     </Content>
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\navigation.less" />
     <Content Include="Content\styles\Tooltip.css.map">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
@@ -724,12 +698,6 @@
     <None Include="Content\redactor\redactor.min.css">
       <DependentUpon>redactor.css</DependentUpon>
     </None>
-    <None Include="Content\styles\colorpicker.css">
-      <DependentUpon>colorpicker.less</DependentUpon>
-    </None>
-    <None Include="Content\styles\colorpicker.min.css">
-      <DependentUpon>colorpicker.css</DependentUpon>
-    </None>
     <None Include="Content\styles\ContentFormatting.css">
       <DependentUpon>ContentFormatting.less</DependentUpon>
     </None>
@@ -739,31 +707,16 @@
     <None Include="Content\redactor\redactor.min.css.gzip">
       <DependentUpon>redactor.min.css</DependentUpon>
     </None>
-    <None Include="Content\styles\colorpicker.less" />
     <None Include="Content\styles\ContentFormatting.less" />
-    <None Include="Content\styles\colorpicker.css.map">
-      <DependentUpon>colorpicker.css</DependentUpon>
-    </None>
     <None Include="Content\styles\Diagrams.less" />
     <None Include="Content\styles\Diagrams.css.map">
       <DependentUpon>Diagrams.css</DependentUpon>
     </None>
-    <None Include="Content\styles\jqx.base.css.map">
-      <DependentUpon>jqx.base.css</DependentUpon>
-    </None>
-    <None Include="Content\styles\jqx.base.less" />
     <Content Include="Content\styles\img\alpha-horizontal.png" />
     <Content Include="Content\styles\img\alpha.png" />
     <Content Include="Content\styles\img\hue-horizontal.png" />
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
-    <None Include="Content\styles\jquery.gritter.less" />
-    <None Include="Content\styles\jqx.base.css">
-      <DependentUpon>jqx.base.less</DependentUpon>
-    </None>
-    <None Include="Content\styles\jqx.base.min.css">
-      <DependentUpon>jqx.base.css</DependentUpon>
-    </None>
     <None Include="Content\styles\Root.css">
       <DependentUpon>Root.less</DependentUpon>
     </None>
@@ -835,7 +788,6 @@
     <None Include="Properties\PublishProfiles\UI - Production - East.pubxml" />
     <None Include="Properties\PublishProfiles\UI - Production - EU North.pubxml" />
     <Content Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.html" />
-    <None Include="Scripts\Common.js" />
     <Content Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\admin-governance.component.html" />
     <Content Include="Scripts\app\components\shared\delete.form.html" />
@@ -856,7 +808,6 @@
     <None Include="Scripts\jqx\3.7.1\jqx-all.js" />
     <Content Include="Scripts\powerbi.js.map" />
     <None Include="Content\styles\Root.less" />
-    <None Include="Scripts\jquery.gritter.js" />
     <None Include="Scripts\jquery.qtip.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
