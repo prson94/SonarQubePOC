@@ -1,8 +1,8 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { PermissionsService, DiagramService } from '../../../services/index';
 import { Permission } from '../../../models/permission.model';
-import { ImpactDiagramModel, NodeModel, LinkModel, PredicateFilter } from '../../../models/impact.model';
+import { ImpactDiagramModel, NodeModel, LinkModel, ImpactFilter, FilterType} from '../../../models/impact.model';
 import { MenuItem } from 'primeng/primeng';
 
 import * as go from 'gojs';
@@ -17,7 +17,7 @@ declare var window: any;
     providers: [ PermissionsService, DiagramService ]
 })
 
-export class ImpactComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class ImpactComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -42,15 +42,19 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
     private zoomLevel: number = 50;
     private tab: string = 'filter';
-    private headerText: string = 'Filter By Predicate';
+    private headerText: string = 'Filter';
     private isWindowVisible = false;
     private menuItems: MenuItem[] = [];
+    private showRelationsTable = false;
 
-    private predicates: PredicateFilter[] = [];
+    private filters: ImpactFilter[] = [];
+    FilterType = FilterType;
 
     constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
         super();
     }
+
+    //#region angular
 
     public ngOnInit() {
         this.originalObject = this.objectType;
@@ -62,7 +66,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             icon: 'fa-refresh menu-icon'
         });
         //this.menuItems.push({
-        //    icon: 'fa-sitemap menu-icon'
+        //    icon: 'fa-table menu-icon'
         //});
         this.menuItems.push({
             icon: 'fa-info-circle menu-icon'
@@ -74,6 +78,13 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     public ngAfterViewInit() {
         this.resizeDiagram();
     }
+
+    public ngOnDestroy() {
+        //garbage collection
+        this.myDiagram.div = null;
+    }
+
+    //#endregion
 
     private initializeDiagram() {
         this.myDiagram = this.createDiagram();
@@ -88,6 +99,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
         this.myDiagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
         this.myDiagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.myDiagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
+        this.myDiagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
 
         this.myDiagram.grid.visible = false;
         this.myDiagram.grid.gridCellSize = new go.Size(8, 8);
@@ -101,7 +113,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
     private populateDiagram() {
         this.isLoading = true;
-        this.predicates = [];
+        this.filters = [];
         let focal: NodeModel = null;
 
         this.diagramService.getImpactDiagram(this.objectType, this.objectID)
@@ -116,11 +128,12 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                     n.isTreeExpanded = isFocal;
                     n.category = isFocal ? "" : "NonFocal";
 
-                    let predicate = this.predicates.find(p => p.id == n.predicateid);
+                    let predicate = this.filters.find(p => p.type == FilterType.Predicate && p.key == (n.predicateid || '').toString());
                     if (predicate == null && n.predicateid != null)
-                        this.predicates.push({
-                            id: n.predicateid,
+                        this.filters.push({
+                            key: n.predicateid.toString(),
                             name: n.predicate,
+                            type: FilterType.Predicate,
                             selected: true
                         });
 
@@ -130,9 +143,38 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
 
                 this.myDiagram.model = new go.GraphLinksModel(this.model.nodes, this.model.links);
                 this.isLoading = false;
-            }).then(() => {
-                this.myDiagram.zoomToFit();
             });
+    }
+
+    private refreshFilters() {
+        this.myDiagram.nodes.each(n => {
+
+            if (n.data.category == 'Category')
+                return;
+
+            let typeKey = n.data.type + '|' + n.data.typeId;
+            let existing = this.filters.findIndex(f => f.type == FilterType.Category && f.key == typeKey);
+
+            if (existing == -1 && n.data.type != null && n.data.typeId != null) {
+                this.filters.push({
+                    key: typeKey,
+                    name: n.data.typeName,
+                    type: FilterType.Category,
+                    selected: true
+                });
+            }
+
+            existing = this.filters.findIndex(f => f.type == FilterType.Predicate && f.key == (n.data.predicateid ||'').toString());
+            if (existing == -1 && n.data.predicateid != null) {
+                this.filters.push({
+                    key: n.data.predicateid.toString(),
+                    name: n.data.predicate,
+                    type: FilterType.Predicate,
+                    selected: true
+                });
+            }
+            
+        });
     }
 
     private addCategoryLayer(root: NodeModel, nodes: NodeModel[], links: LinkModel[], append: boolean = true) {
@@ -209,6 +251,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             nodes.forEach(n => { this.model.nodes.push(n); diagramModel.addNodeData(n); });
             links.forEach(l => { this.model.links.push(l); diagramModel.addLinkData(l); });
         }
+        this.refreshFilters();
 
     }
 
@@ -276,6 +319,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                         node.findObject('TREEBUTTON').visible = false;
                     } else {
                         this.addCategoryLayer(node.data, nodes, links);
+                        this.filterView();
                     }
 
                 })
@@ -286,6 +330,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                         diagram.commandHandler.expandTree(node);
                     }
                     diagram.commitTransaction("CollapseExpandTree");
+                    this.refreshFilters();
                     this.myDiagram.zoomToFit();
                 });
         } else {
@@ -295,6 +340,7 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
                 diagram.commandHandler.expandTree(node);
             }
             diagram.commitTransaction("CollapseExpandTree");
+            this.refreshFilters();
             this.myDiagram.zoomToFit();
         }
     }
@@ -304,34 +350,58 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             this.refreshDiagram();
         } else if (e.icon == 'fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
-        } else if (e.icon == 'fa-sitemap menu-icon') {
-            this.myDiagram.layout.invalidateLayout();
-            this.myDiagram.layoutDiagram();
+        } else if (e.icon == 'fa-table menu-icon') {
+            this.showRelationsTable = !this.showRelationsTable;
         }
     }
 
-    private togglePredicate(p: PredicateFilter) {
-        let id = (p == null) ? 0 : p.id;
-        let visible = (p == null) ? true : p.selected;
-
-        this.myDiagram.startTransaction("togglePredicate");
+    private filterView() {
+        this.myDiagram.startTransaction("filterView");
 
         this.myDiagram.nodes.each(n => {
-            if (n.data.predicateid == id || id == 0) {
-                n.visible = visible;
-            }
+            let visible = true;
+
+            if (n.category == '') //skip focal node
+                return;
+            this.filters.forEach(f => {
+
+                switch (f.type) {
+                    case FilterType.Category:
+                        if ((n.data.type + '|' + n.data.typeId) == f.key && !f.selected)
+                            visible = false;
+                        break;
+                    case FilterType.Predicate:
+                        if ((n.data.predicateid || '').toString() == f.key && !f.selected)
+                            visible = false;
+                        break;
+                }
+            });
+
+            n.visible = visible;
+            if (!n.visible && n.isTreeExpanded)
+                this.myDiagram.commandHandler.collapseTree(n);
         });
 
         this.myDiagram.links.each(l => {
-            if (l.data.predicateid == id || id == 0) {
-                l.visible = visible;
-            }
+            let visible = true;
+
+            this.filters.forEach(f => {
+                switch (f.type) {
+                    case FilterType.Category:
+                        break;
+                    case FilterType.Predicate:
+                        if ((l.data.predicateid || '').toString() == f.key && !f.selected)
+                            visible = false;
+                        break;
+                }
+            });
+            l.visible = visible;
         });
+
         this.calculateCategoryNumbers();
-        this.myDiagram.commitTransaction("togglePredicate");
+        this.myDiagram.commitTransaction("filterView");
         this.myDiagram.zoomToFit();
     }
-
 
     private calculateCategoryNumbers() {
         let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>this.myDiagram.model;
@@ -340,10 +410,11 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             if (n.data.category != 'Category')
                 return;
 
-            //get nodes connected to this category
+            
             let children = [];
             let name = '';
 
+            //get nodes connected to this category
             diagramModel.linkDataArray.filter((l: LinkModel) => l.from == n.data.key).forEach((l: LinkModel) => {
 
                 let node = this.myDiagram.findNodeForKey(l.to);
@@ -433,10 +504,17 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             case 'info': this.headerText = 'Info'; break;
             case 'user': this.headerText = 'Responsibilities'; break;
             case 'fusion': this.headerText = 'Fusion Relationships'; break;
-            case 'filter': this.headerText = 'Filter By Predicate'; break;
+            case 'filter': this.headerText = 'Filter'; break;
+            case 'relations': this.headerText = 'Relationships'; break;
             default: this.headerText = ''; break;
         }
         this.tab = val;
+    }
+
+    private InitialLayoutCompleted() {
+        console.log('initial layout complete');
+        this.myDiagram.zoomToFit();
+        this.refreshFilters();
     }
     //#endregion
 
@@ -453,7 +531,6 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
             }
         );
     }
-
 
     private createNonFocalNode(): go.Node {
         let nodeWidth = 200;
@@ -675,10 +752,10 @@ export class ImpactComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
     private createCategoryLinkTemplate(): go.Link {
-        return this.g(go.Link,  // the whole link panel
-            this.g(go.Shape,  // the link shape
+        return this.g(go.Link,
+            this.g(go.Shape,
                 { stroke: "black" }),
-            this.g(go.Shape,  // the arrowhead
+            this.g(go.Shape,
                 { toArrow: "standard", stroke: null })
         );
     }

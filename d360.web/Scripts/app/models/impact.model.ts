@@ -34,8 +34,15 @@ export class NodeModel {
     childCount: number;
 }
 
-export class PredicateFilter {
-    id: number;
+export class ImpactFilter {
+    key: string;
     name: string;
+    type: FilterType;
     selected: boolean = true;
 }
+
+export enum FilterType {
+    Predicate,
+    Category
+}
+

@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { DiagramService } from '../../../services/index';
 import { HierarchyDiagramModel } from '../../../models/model.model';
@@ -54,7 +54,7 @@ declare var window: any;
     providers: [DiagramService]
 })
 
-export class ModelDiagramComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class ModelDiagramComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() id: number = 0;
     @ViewChild('diagram') diagramRef;
 
@@ -90,6 +90,11 @@ export class ModelDiagramComponent extends BaseComponent implements OnInit, Afte
 
     public ngAfterViewInit() {
         this.resizeDiagram();
+    }
+
+    public ngOnDestroy() {
+        //garbage collection
+        this.myDiagram.div = null;
     }
 
     private initializeDiagram() {

@@ -78,7 +78,8 @@ export class LineageComponent extends BaseComponent implements OnInit, AfterView
     }
 
     public ngOnDestroy() {
-
+        //garbage collection
+        this.myDiagram.div = null;
     }
 
     //#region helper methods

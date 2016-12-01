@@ -33,27 +33,64 @@
                 </div>
                 <div *ngSwitchCase="'filter'">
                     <div class="row">
-                        <!-- split into 2 columns for better use of space -->
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Predicates
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col s6">
-                            <div *ngFor="let p of predicates; let i=index">
-                                <div *ngIf="i % 2 == 0">
-                                    <input type="checkbox" [(ngModel)]="p.selected" (ngModelChange)="togglePredicate(p)" /> {{p.name}}
+                            <div *ngFor="let f of filters; let i=index">
+                                <div *ngIf="f.type == FilterType.Predicate && i % 2 == 0">
+                                    <input type="checkbox" [(ngModel)]="f.selected" (ngModelChange)="filterView()" /> {{f.name}}
                                 </div>
                             </div>
                         </div>
                         <div class="col s6">
-                            <div *ngFor="let p of predicates; let i=index">
-                                <div *ngIf="i % 2 == 1">
-                                    <input type="checkbox" [(ngModel)]="p.selected" (ngModelChange)="togglePredicate(p)" /> {{p.name}}
+                            <div *ngFor="let f of filters; let i=index">
+                                <div *ngIf="f.type == FilterType.Predicate && i % 2 == 1">
+                                    <input type="checkbox" [(ngModel)]="f.selected" (ngModelChange)="filterView()" /> {{f.name}}
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Types
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s6">
+                            <div *ngFor="let f of filters; let i=index">
+                                <div *ngIf="f.type == FilterType.Category && i % 2 == 0">
+                                    <input type="checkbox" [(ngModel)]="f.selected" (ngModelChange)="filterView()" /> {{f.name}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s6">
+                            <div *ngFor="let f of filters; let i=index">
+                                <div *ngIf="f.type == FilterType.Category && i % 2 == 1">
+                                    <input type="checkbox" [(ngModel)]="f.selected" (ngModelChange)="filterView()" /> {{f.name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </d3s-overlay-window>
     </div>
 
     <div id="ImpactDiagram" style="overflow: hidden;" class="diagram" #diagram></div>
+
+</div>
+
+<div class="tile tile-detail" *ngIf="showRelationsTable">
+    <div class="row">
+        <div class="col s12">
+            relations table
+        </div>
+    </div>
 </div>
